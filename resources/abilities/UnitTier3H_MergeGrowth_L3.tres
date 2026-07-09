@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 4 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 4 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3h_merge_growth_l3"
+name_key = "ability.unit_t3_h.name"
+description_key = "ability.unit_tier3h_merge_growth_l3.desc"
+trigger = &"on_merge"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_3"), SubResource("EffectModifyStat_GainPWR_3")])
+priority = 0
+required_level = 3
+max_level = 3

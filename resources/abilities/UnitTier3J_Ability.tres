@@ -3,18 +3,19 @@
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
 [ext_resource type="Script" path="res://scripts/EffectTransferItemBehind.gd" id="2_effect_script"]
 
-[sub_resource type="Resource" id="EffectTransferItemBehind"]
+[sub_resource type="Resource" id="EffectTransferItemBehind_1"]
 script = ExtResource("2_effect_script")
-parameters = {}
+parameters = { "pass_count": 1 }
 target_type = &"ALLY_BEHIND"
 
 [resource]
 script = ExtResource("1_ability")
-id = &"unit_t3_j_ability"
+id = &"unit_t3_j_ability_l1"
 name_key = "ability.unit_t3_j_ability.name"
 trigger = &"on_death"
-effects = Array[Resource]([SubResource("EffectTransferItemBehind")])
-description_key = "ability.unit_t3_j_ability.desc"
+effects = Array[Resource]([SubResource("EffectTransferItemBehind_1")])
+description_key = "ability.unit_t3_j_ability_l1.desc"
 priority = 10
 execute_on_lethal = true
 replaces_basic_attack = false
+max_level = 1

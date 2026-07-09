@@ -145,15 +145,17 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Hover-to-Lock Promotion: if clicking the entity whose hover window is already
 	# showing, promote the hover to a lock RIGHT NOW so the rest of the flow sees it
 	# as "already locked" and skips close→reopen (brief L271-273: no churn).
+	var was_hover_promoted: bool = false
 	if _hover_entity_view_id != -1 and _hover_entity_view_id == context.source_view_instance_id:
 		_is_inspection_locked = true
 		_locked_entity_view_id = _hover_entity_view_id
+		was_hover_promoted = true
 
 	# Clear hover state on any click (hover is replaced by lock or selection)
 	_hover_entity_view_id = -1
 
 	# Generate commands based on the interaction context and current state
-	command_queue = _generate_command_queue(context)
+	command_queue = _generate_command_queue(context, was_hover_promoted)
 	
 	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
 		# print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
@@ -170,6 +172,32 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 func _process(_delta: float) -> void:
 	if is_instance_valid(_drag_overlay_preview):
 		_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
+
+func _input(event: InputEvent) -> void:
+	if not _is_inspection_locked:
+		return
+	if InputUtils.is_primary_pointer_press(event):
+		var pos: Vector2
+		if event is InputEventMouse:
+			pos = event.position
+		elif event is InputEventScreenTouch:
+			pos = event.position
+		else:
+			return
+		
+		# If the click is not inside any active inspection window, close them and swallow the event
+		if not WindowManager.is_point_inside_any_inspection_window(pos):
+			get_viewport().set_input_as_handled()
+			
+			if not _is_close_suppressed_now():
+				_is_inspection_locked = false
+				_locked_entity_view_id = -1
+				_hover_entity_view_id = -1
+				_execute_close_all_inspection_windows()
+				
+			if not is_vcr_playing() and not _is_combat_phase:
+				_execute_deselect()
+
 
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
@@ -279,7 +307,7 @@ func _on_window_closed(window: Control) -> void:
 			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
-func _generate_command_queue(context: InteractionContext) -> Array[Command]:
+func _generate_command_queue(context: InteractionContext, was_hover_promoted: bool = false) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# If a drag is active, this incoming context is the drop target.
@@ -359,7 +387,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 			commands.append(Command.new(CommandType.DESELECT))
 			
 		&"UNIT", &"ITEM", &"TRINKET", &"CONSUMABLE":
-			commands.append_array(_handle_gachaball_interaction(context))
+			commands.append_array(_handle_gachaball_interaction(context, was_hover_promoted))
 			
 		&"EMPTY_SLOT":
 			commands.append_array(_handle_empty_slot_interaction(context))
@@ -440,7 +468,7 @@ func _handle_hover_exit(context: InteractionContext) -> void:
 		_window_manager.close_top_contextual_window()
 
 ## Handle interactions with GachaBall instances
-func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
+func _handle_gachaball_interaction(context: InteractionContext, was_hover_promoted: bool = false) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# Legacy: _is_inspection_event() now always returns false;
@@ -455,9 +483,13 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 		&"INSPECTION_ONLY":
 			# Single-click locks inspection (no selection in InspectionOnly)
 			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-				# BATTLE BOARD FIX: Already locked on this entity -> Toggle Off (Close)
-				commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
-				commands.append(Command.new(CommandType.DESELECT))
+				if was_hover_promoted:
+					# Just promoted from hover to lock. Keep it open.
+					pass
+				else:
+					# BATTLE BOARD FIX: Already locked on this entity -> Toggle Off (Close)
+					commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+					commands.append(Command.new(CommandType.DESELECT))
 			else:
 				commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 					"context": context,

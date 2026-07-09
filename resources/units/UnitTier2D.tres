@@ -5,6 +5,10 @@
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power.tres" id="4_ability_power"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init.tres" id="5_ability_init"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_L2.tres" id="pwr2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init_L2.tres" id="init2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_L3.tres" id="pwr3"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init_L3.tres" id="init3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -22,4 +26,4 @@ base_hp = 2
 base_pwr = 3
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability_power"), ExtResource("5_ability_init")])
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability_power"), ExtResource("5_ability_init"), ExtResource("pwr2"), ExtResource("init2"), ExtResource("pwr3"), ExtResource("init3")])

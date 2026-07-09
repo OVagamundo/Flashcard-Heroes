@@ -16,5 +16,6 @@ id = &"unit_t2_h_ability"
 name_key = "ability.unit_t2_h.name"
 trigger = &"on_pre_combat"
 effects = Array[Resource]([SubResource("EffectGrantStats")])
-description_key = "ability.unit_t2_h.desc"
+description_key = "ability.unit_t2_h_l1.desc"
 priority = 0
+max_level = 1

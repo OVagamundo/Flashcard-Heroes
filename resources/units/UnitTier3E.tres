@@ -4,6 +4,10 @@
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitE.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator.tres" id="3_ability"]
 
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator_L2.tres" id="102_ability"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t3_e"
@@ -20,4 +24,8 @@ base_hp = 6
 base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_ability")])
+ability_definitions = Array[Resource]([
+	ExtResource("101_ability"),
+	ExtResource("102_ability"),
+	ExtResource("100_ability")
+])

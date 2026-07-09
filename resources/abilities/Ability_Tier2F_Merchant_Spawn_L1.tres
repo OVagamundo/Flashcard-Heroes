@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 0.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_spawn_pwr"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l1.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+max_level = 1

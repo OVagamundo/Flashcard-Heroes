@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDuplicateToGacha_3"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+
+[sub_resource type="Resource" id="EffectDuplicateToGacha_4"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_death_l3"
+name_key = "ability.doppleganger_death.name"
+description_key = "ability.doppleganger_death_l3.desc"
+trigger = &"on_death"
+priority = 205
+effects = Array[Resource]([SubResource("EffectDuplicateToGacha_3"), SubResource("EffectDuplicateToGacha_4")])
+execute_on_lethal = true
+required_level = 3
+max_level = 3

@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffHP_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"ADJACENT_ALLIES"
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffPWR_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"ADJACENT_ALLIES"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3d_resilient_aura_l2"
+name_key = "ability.unit_tier3d_resilient_aura.name"
+description_key = "ability.unit_tier3d_resilient_aura_l2.desc"
+trigger = &"on_hurt"
+priority = 100
+effects = Array[Resource]([SubResource("EffectModifyStat_BuffHP_2"), SubResource("EffectModifyStat_BuffPWR_2")])
+execute_on_lethal = true
+required_level = 2
+max_level = 2

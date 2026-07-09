@@ -22,3 +22,4 @@ effects = Array[Resource]([SubResource("EffectAllyShield")])
 description_key = "ability.unit_t1_c_ally_shield_l2.desc"
 priority = 100
 required_level = 2
+max_level = 2

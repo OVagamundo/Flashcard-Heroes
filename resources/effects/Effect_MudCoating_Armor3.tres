@@ -1,0 +1,11 @@
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 3,
+"status_id": "armor"
+}
+target_type = &"SELF"

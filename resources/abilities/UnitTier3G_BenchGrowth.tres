@@ -1,20 +1,22 @@
-[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
 [ext_resource type="Script" path="res://scripts/effects/EffectBenchGrowth.gd" id="2_effect"]
 
-[sub_resource type="Resource" id="EffectDeadAllyScaling"]
+[sub_resource type="Resource" id="EffectDeadAllyScaling_1"]
 script = ExtResource("2_effect")
 parameters = {
-"ability_id": "unit_t3_g_ability"
+"ability_id": "unit_t3_g_ability",
+"scale_amount": 3
 }
 target_type = &"SELF"
 
 [resource]
 script = ExtResource("1_ability")
-id = &"unit_t3_g_ability"
-name_key = "ability.unit_t3_g.name"
+id = &"unit_tier3g_bench_growth_l1"
+name_key = "ability.unit_tier3g_bench_growth.name"
 trigger = &"on_turn_start"
-effects = Array[Resource]([SubResource("EffectDeadAllyScaling")])
-description_key = "ability.unit_t3_g.desc"
+effects = Array[Resource]([SubResource("EffectDeadAllyScaling_1")])
+description_key = "ability.unit_tier3g_bench_growth_l1.desc"
 priority = 0
+max_level = 1

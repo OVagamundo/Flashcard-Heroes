@@ -5,6 +5,9 @@
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt.tres" id="4_counter_attack"]
 
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt_L3.tres" id="6_l3"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t1_b"
@@ -21,4 +24,4 @@ base_hp = 1
 base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_counter_attack")])
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_counter_attack"), ExtResource("5_l2"), ExtResource("6_l3")])

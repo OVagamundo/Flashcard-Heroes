@@ -178,7 +178,7 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var source_definition = item_data.definition
 	var source_location: LocationIdentifier = item_data.location
 
-	var result_definition := GameManager.get_transform_result(source_definition.id, int(source_definition.tier))
+	var result_definition := GameManager.get_transform_result(source_definition)
 	if not is_instance_valid(result_definition):
 		return
 
@@ -227,7 +227,8 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 			"cost": transform_cost,
 			"instance_uuid": item_data.uuid,
 			"source_location": source_location,
-			"result_definition": result_definition
+			"result_definition": result_definition,
+			"source_level": item_data.instance.level
 		})
 
 		# Animation starts from the interaction point

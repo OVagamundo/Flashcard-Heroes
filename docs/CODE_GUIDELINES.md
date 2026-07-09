@@ -167,5 +167,20 @@ When implementing content (Units, Items, Recipes, Abilities):
 
 > [!CRITICAL]
 > **Violation of this protocol allows you to be fired (or reset).**
-> If you create a resource pointing to a non-existent script, you have failed.
 > If you use property names that don't match the script's `@export` variables, you have failed.
+
+---
+
+## 9. Localization and UI Text Rules
+
+Translations and descriptions in Flashcard Heroes use Godot's `Translation` system (`game.csv`), but the UI scripts apply strict contextual rules on how keys are interpreted and displayed. **Do not assume all translation keys in a Resource must be mapped to `game.csv`.**
+
+### 9.1 The "Hidden Ability" Trick (Trinkets)
+When an ability is attached to a Trinket (e.g., `Beginner's Charm`), the Trinket's base description already explains what the ability does mechanically. 
+*   To prevent the UI from displaying redundant or duplicate text, the `AbilityDefinition` `.tres` file should intentionally leave its `name_key` and `description_key` empty (`""`).
+*   **Agent Rule:** If a script audits for "missing keys" and finds an ability `.tres` with unmapped keys, **check if it is attached to a Trinket**. Do not hastily inject generic descriptions into `game.csv`, as this will cause the UI to display duplicate/incorrect ability blocks.
+
+### 9.2 The Trait Synergy Override (`SOUL_` tags)
+Items that grant trait synergies (e.g., `Fire Emblem`) apply the trait to the equipped unit using tags (e.g., `SOUL_FIRE`). 
+*   **The Display Override:** If the `ItemInspectionWindow` detects a `SOUL_` tag on an item, it is hardcoded to erase the item's base description and replace it with the **full Trinket Trait description** instead. 
+*   **Agent Rule:** If an item description in `game.csv` is not displaying in-game, always check `ItemInspectionWindow.gd` or `UnitInspectionWindow.gd` to verify if a UI override is hijacking the text based on its tags or traits.

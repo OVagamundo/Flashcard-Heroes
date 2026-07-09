@@ -260,14 +260,6 @@ func _get_linked_trait_id(item_def: Resource) -> String:
 	if "linked_trait_id" in item_def and item_def.linked_trait_id != &"":
 		return String(item_def.linked_trait_id)
 	
-	# Check for trait tags (Emblems)
-	var tags := _instance.get_active_tags(_get_all_instances_db()) if is_instance_valid(_instance) else []
-	for tag in tags:
-		match tag:
-			&"SOUL_FIRE": return "FIRE"
-			&"SOUL_EARTH": return "EARTH"
-			&"SOUL_WATER": return "WATER"
-			&"SOUL_AIR": return "AIR"
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})

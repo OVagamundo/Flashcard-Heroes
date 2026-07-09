@@ -9,7 +9,7 @@ parameters = {
 "ability_id": "unit_t1_c_ally_shield",
 "log_format": "%s shields their ally (+%d HP)",
 "stat": "hp",
-"use_source_pwr": true
+"base_value": 1
 }
 target_type = &"ALLY_SLOT_AHEAD"
 
@@ -21,3 +21,4 @@ trigger = &"on_ally_hurt"
 effects = Array[Resource]([SubResource("EffectAllyShield")])
 description_key = "ability.unit_t1_c_ally_shield.desc"
 priority = 100
+max_level = 1

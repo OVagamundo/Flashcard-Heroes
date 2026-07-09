@@ -3,26 +3,42 @@ hero.name,Bounty Hunter,CaÃ§ador de Recompensas
 hero.desc,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.","Um caÃ§ador habilidoso que lucra com cada morte e fica mais forte com perdas. Ganha ouro por cada inimigo morto, e ganha +1 HP e +1 PWR quando aliados morrem."
 enemy_hero.name,Enemy Hero,HerÃ³i Inimigo
 enemy_hero.desc,The enemy's champion.,O campeÃ£o do inimigo.
-unit_t1_a.name,Apprentice,Aprendiz
+unit_t1_a.name,Rocky,Pedrita
 unit_t1_a.desc,Novice unit.,Unidade novata. Passiva: [ResiliÃªncia]
-unit_t1_b.name,Squire,Escudeiro
+unit_t1_b.name,Burny,Chaminho
 unit_t1_b.desc,Loyal squire.,Escudeiro leal. Passiva: [RetaliaÃ§Ã£o]
 unit_t2_d.name,Templar,Templar
 unit_t2_d.desc,A devout templar.,Um templÃ¡rio devoto.
 ability.unit_t2_d_power.name,Token Power,Poder das Fichas
-ability.unit_t2_d_power.desc,PWR equals [100% / 125% / 150%] of Tokens (Min 1). PWR buffs become HP.,PWR Ã© igual a [100% / 125% / 150%] das Fichas (MÃ­n. 1). Buffs de PWR tornam-se HP.
+ability.unit_t2_d_power_l1.desc,"PWR equals 100% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 100% das Fichas (Mín 1). Buffs de PWR viram HP."
+ability.unit_t2_d_power_l2.desc,"PWR equals 150% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 150% das Fichas (Mín 1). Buffs de PWR viram HP."
+ability.unit_t2_d_power_l3.desc,"PWR equals 200% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 200% das Fichas (Mín 1). Buffs de PWR viram HP."
 unit_t2_f.name,Merchant,Merchant
-unit_t2_f.desc,Traveling merchant. Initial PWR equals [100% / 150% / 200%] of Gold.,Mercador viajante. PWR inicial igual a [100% / 150% / 200%] do Ouro.
+unit_t2_f.desc,Traveling merchant.,Mercador viajante. Passiva: [Investimentos em Ouro]
 ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
-ability.unit_t2_f_gold_pwr.desc,Initial PWR equals [100% / 150% / 200%] of Gold when drawn or spawned.,PWR inicial igual a [100% / 150% / 200%] do Ouro ao ser comprado ou invocado.
-unit_t1_c.name,Protector,Protetor
+ability.unit_t2_f_gold_pwr_l1.desc,"Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
+ability.unit_t2_f_gold_pwr_l2.desc,"Initial PWR equals your current Gold multiplied by 100% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado."
+ability.unit_t2_f_gold_pwr_l3.desc,"Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
+unit_t1_c.name,Dewey,Dewey
 unit_t1_c.desc,Steadfast guardian.,GuardiÃ£o firme. Passiva: [GraÃ§a do GuardiÃ£o]
 ability.unit_t1_c_ally_shield.name,Guardian's Grace,GraÃ§a do GuardiÃ£o
-ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage, heal them for [50% / 100% / 150%] of current PWR.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por [50% / 100% / 150%] do PWR atual."
-unit_t1_d.name,Empath,Empata
+ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage, heal them for 1 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 1 HP."
+ability.unit_t1_c_ally_shield_l2.desc,"When the ally directly in front takes damage, heal them for 2 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 2 HP."
+ability.unit_t1_c_ally_shield_l3.desc,"When the ally directly in front takes damage, heal them for 3 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 3 HP."
+unit_t1_d.name,Windy,Ventania
 unit_t1_d.desc,Sensitive soul.,Alma sensÃ­vel. Passiva: [VÃ­nculo EmpÃ¡tico]
 ability.unit_t1_d_empathic_link.name,Empathic Link,VÃ­nculo EmpÃ¡tico
-ability.unit_t1_d_empathic_link.desc,"When this unit dies, grant [100% / 150% / 200%] of its current PWR to the ally behind.","Quando esta unidade morre, concede [100% / 150% / 200%] de seu PWR atual ao aliado atrÃ¡s."
+ability.unit_t1_d_empathic_link.desc,"When this unit dies, grant its current PWR to the ally behind.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s."
+ability.unit_t1_d_empathic_link_l2.desc,"When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s, e metade disso ao prÃ³ximo aliado."
+ability.unit_t1_d_empathic_link_l3.desc,"When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s, metade ao prÃ³ximo, e metade ao prÃ³ximo."
+ability.unit_tier1a_passive_heal.name,Resilience,ResiliÃªncia
+ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
+ability.unit_tier1a_passive_heal_l2.desc,"When hurt BY AN ATTACK, Heal this unit by 2 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 2 de HP."
+ability.unit_tier1a_passive_heal_l3.desc,"When hurt BY AN ATTACK, Heal this unit by 3 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 3 de HP."
+ability.unit_tier1b_counter_on_hurt.name,Retaliation,RetaliaÃ§Ã£o
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR. Ativa mesmo se letal."
+ability.unit_tier1b_counter_on_hurt_l2.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR, and shoot a fire projectile adding PWR as burn to a random unit. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR, e dispara um projÃ©til de fogo adicionando PWR como queimadura a uma unidade aleatÃ³ria. Ativa mesmo se letal."
+ability.unit_tier1b_counter_on_hurt_l3.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR, and shoot 2 fire projectiles adding PWR as burn to random units. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR, e dispara 2 projÃ©teis de fogo adicionando PWR como queimadura a unidades aleatÃ³rias. Ativa mesmo se letal."
 unit_t2_c.name,Knight,Cavaleiro
 unit_t2_c.desc,Valiant knight.,Cavaleiro valente. Passiva: [Impulso de Moral]
 item_t1_a.name,Koi's Blessing,BÃªnÃ§Ã£o da Carpa
@@ -52,14 +68,12 @@ tutorial.btn.got_it,Got it!,Entendi!
 battle.speed.label,Speed:,Velocidade:
 ability.item_tier2c_passive_heal.name,Regeneration,RegeneraÃ§Ã£o
 ability.item_tier2c_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
-ability.unit_tier1a_passive_heal.name,Resilience,ResiliÃªncia
-ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by [1 / 2 / 3] HP.","Ao ser ferido POR UM ATAQUE, cura esta unidade em [1 / 2 / 3] HP."
-ability.unit_tier1b_counter_on_hurt.name,Retaliation,RetaliaÃ§Ã£o
-ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for [100% / 150% / 200%] of PWR. Triggers even if lethal.","Ao ser ferido POR UM ATAQUE, contra-ataca o atacante com [100% / 150% / 200%] de PWR. Dispara mesmo se letal."
 ability.item_tier1a_turn_start_heal.name,Restoration,RestauraÃ§Ã£o
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No inÃ­cio do turno, cura o portador em 2 HP."
 ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
-ability.unit_tier2c_ally_death_buff.desc,"When an ally is defeated, gain [+1 / +2 / +3] HP and PWR.","Quando um aliado Ã© derrotado, ganha [+1 / +2 / +3] de HP e PWR."
+ability.unit_tier2c_ally_death_buff_l1.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
+ability.unit_tier2c_ally_death_buff_l2.desc,"When an ally is defeated, gain +2 HP and +1 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +1 de PWR."
+ability.unit_tier2c_ally_death_buff_l3.desc,"When an ally is defeated, gain +2 HP and +2 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +2 de PWR."
 ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,DeterminaÃ§Ã£o do Saqueador
 ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado Ã© derrotado, ganha +1 HP e +1 PWR."
 ability.item_tier3d_retaliate.name,Retaliation,RetaliaÃ§Ã£o
@@ -363,17 +377,17 @@ trait.earth.5,All Allies gain 2 Armor. Earth units gain 4 Armor.,Todos aliados g
 trait.earth.7,All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura.
 trait.earth.9,All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura.
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
-item.emblem_fire.desc,Grants the [b]Fire[/b] trait to this unit. Grants +2 PWR.,Concede a sinergia [b]Fogo[/b] a esta unidade. Concede +2 PWR.
+item.emblem_fire.desc,"When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies.","Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
-item.emblem_earth.desc,Grants the [b]Earth[/b] trait to this unit. Grants +4 HP.,Concede a sinergia [b]Terra[/b] a esta unidade. Concede +4 HP.
+item.emblem_earth.desc,"When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies.","Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que a unidade se beneficie das sinergias do traço de Terra."
 trait.water.name,Water,Ãgua
 trait.water.2,Water units heal adjacent allies 1 HP at start of turn.,Unidades de Ãgua curam aliados adjacentes em 1 HP no inÃ­cio do turno.
 trait.air.name,Air,Ar
 trait.air.2,Air units steal 1 PWR from the opposite enemy at start of turn.,Unidades de Ar roubam 1 PWR do inimigo oposto no inÃ­cio do turno.
 item.emblem_water.name,Water Emblem,Emblema de Ãgua
-item.emblem_water.desc,Grants the [b]Water[/b] trait to this unit. Grants +2 HP and +1 PWR.,Concede a sinergia [b]Ãgua[/b] a esta unidade. Concede +2 HP e +1 PWR.
+item.emblem_water.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
 item.emblem_air.name,Air Emblem,Emblema de Ar
-item.emblem_air.desc,Grants the [b]Air[/b] trait to this unit. Grants +1 PWR and +2 HP.,Concede a sinergia [b]Ar[/b] a esta unidade. Concede +1 PWR e +2 HP.
+item.emblem_air.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
 item.potion_t1.name,Minor Healing Potion,PoÃ§Ã£o de Cura Menor
 item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
 ability.potion_t1.name,Drink,Beber
@@ -400,20 +414,26 @@ ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
 ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them.","Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
 unit_t2_h.name,Hermit,Eremita
 unit_t2_h.desc,Solitary warrior.,Guerreiro solitÃ¡rio. Passiva: [ForÃ§a SolitÃ¡ria]
-ability.unit_t2_h.name,Solitary Strength,ForÃ§a SolitÃ¡ria
-ability.unit_t2_h.desc,"At start of combat, gain [+1 / +2 / +3] HP and PWR for each empty slot in your team.","No inÃ­cio do combate, ganha [+1 / +2 / +3] de HP e PWR para cada espaÃ§o vazio no seu time."
+ability.unit_t2_h.name,Solitary Strength,Força Solitária
+ability.unit_t2_h_l1.desc,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.","No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
+ability.unit_t2_h_l2.desc,"At start of combat, gain +2 HP and +2 PWR for each empty slot in your team.","No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazio no seu time."
+ability.unit_t2_h_l3.desc,"At start of combat, gain +3 HP and +3 PWR for each empty slot in your team.","No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
 unit_t2_i.name,Mud Wretch,MiserÃ¡vel de Lama
 unit_t2_i.desc,Mud creature.,Criatura de lama. Passiva: [Camada de Lama]
 ability.mud_coating.name,Mud Coating,Camada de Lama
-ability.mud_coating.desc,"When healed, gain [1 / 2 / 3] Armor and Spikes.","Quando curado, ganha [1 / 2 / 3] de Armadura e Espinhos."
+ability.mud_coating_l1.desc,"When healed, gain 1 Armor and 1 Spikes.","Quando curado, ganha 1 de Armadura e 1 de Espinhos."
+ability.mud_coating_l2.desc,"When healed, gain 2 Armor and 2 Spikes.","Quando curado, ganha 2 de Armadura e 2 de Espinhos."
+ability.mud_coating_l3.desc,"When healed, gain 3 Armor and 3 Spikes.","Quando curado, ganha 3 de Armadura e 3 de Espinhos."
 unit_t2_j.name,Steam Wisp,Fogo FÃ¡tuo
 unit_t2_j.desc,Scalding spirit.,EspÃ­rito fervilhante. Passiva: [Escaldar]
 ability.scald.name,Scald,Escaldar
-ability.scald.desc,"When this unit is healed, deal damage equal to [100% / 150% / 200%] of the heal amount to the frontmost enemy.","Quando esta unidade Ã© curada, causa dano igual a [100% / 150% / 200%] do valor da cura ao inimigo da frente."
+ability.scald_l1.desc,"When this unit is healed, deal damage equal to 100% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 100% do valor da cura ao inimigo da frente."
+ability.scald_l2.desc,"When this unit is healed, deal damage equal to 150% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 150% do valor da cura ao inimigo da frente."
+ability.scald_l3.desc,"When this unit is healed, deal damage equal to 200% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 200% do valor da cura ao inimigo da frente."
 unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
 unit_t3_g.desc,Mysterious traveler.,Viajante misterioso. Passiva: [MeditaÃ§Ã£o Silenciosa]
-ability.unit_t3_g.name,Quiet Meditation,MeditaÃ§Ã£o Silenciosa
-ability.unit_t3_g.desc,"If on the player bench at start of turn, gain [**+3 / +5 / +7 HP and PWR**].","Se estiver no banco do jogador no inÃ­cio do turno, ganhe [**+3 / +5 / +7 de HP e PWR**]."
+ability.unit_tier3g_bench_growth.name,Quiet Meditation,MeditaÃ§Ã£o Silenciosa
+
 unit_t3_h.name,Fusion Warden,GuardiÃ£o da FusÃ£o
 unit_t3_h.desc,Volatile hybrid.,HÃ­brido volÃ¡til. Passiva: [Surto de ConversÃ£o]
 ability.unit_t3_h.name,Convergence Surge,Surto de ConvergÃªncia
@@ -519,13 +539,21 @@ ability.echoing_orb_death.name,Echo Split,DivisÃ£o de Eco
 ability.echoing_orb_death.desc,Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,Gera um Orbe Ressonante na MÃ¡quina Gacha de NÃ­vel 2 ao morrer.
 unit_t3_j.name,Standard Bearer,Porta-Estandarte
 unit_t3_j.desc,Valiant commander.,Comandante valente. Morte: [Legado do Estandarte]
-ability.unit_t3_j_ability.name,Standard's Legacy,Legado do Estandarte
-ability.unit_t3_j_ability.desc,"On death, transfers its equipped item to the ally directly behind it.","Ao morrer, transfere seu item equipado para o aliado diretamente atrÃ¡s."
+ability.unit_t3_j_ability_l1.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l1.desc,"On death, transfers its equipped item to the ally directly behind it.","Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
+ability.unit_t3_j_ability_l2.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l2.desc,"On death, transfers its equipped item to the ally behind and 1 copy behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 1 cópia para trás deles."
+ability.unit_t3_j_ability_l3.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l3.desc,"On death, transfers its equipped item to the ally behind and 2 copies behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias para trás deles."
 ui.transfer_item_msg,%s transfers %s to %s!,%s transfere %s para %s!
 unit_t3_l.name,Golden Hermit,Eremita Dourado
 unit_t3_l.desc,A solitary sage of wealth.,Um sÃ¡bio solitÃ¡rio da riqueza. Passiva: [AcÃºmulo de Riqueza]
-ability.unit_t3_l.name,Wealth Accumulation,AcÃºmulo de Riqueza
-ability.unit_t3_l.desc,"At the start of each turn, gain +3 HP and +3 PWR for every 5 Gold you have.","No inÃ­cio de cada turno, ganha +3 HP e +3 PWR para cada 5 de Ouro que vocÃª possuir."
+ability.unit_t3_l_l1.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l1.desc,"At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
+ability.unit_t3_l_l2.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l2.desc,"At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +4 HP e +4 PWR para cada 5 de Ouro que você possuir no momento."
+ability.unit_t3_l_l3.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l3.desc,"At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +5 HP e +5 PWR para cada 5 de Ouro que você possuir no momento."
 options.audio.pronunciation,Card Pronunciation,PronÃºncia de Cartas
 trinket.underdog_emblem.name,Underdog Emblem,Emblema do AzarÃ£o
 trinket.underdog_emblem.desc,An emblem that protects the outnumbered.,Um emblema que protege aqueles em menor nÃºmero.
@@ -592,3 +620,52 @@ ui.utg_desc,"Shape your units!\nOpen your inventory to drag a unit here,\nand tr
 ui.rest_study,"Get Tokens! (%d Gold)","Ganhar Fichas! (%d Ouro)"
 ui.reward_desc,"Get tokens to spend on prizes in the machines below!","Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
 ui.rewards_title,REWARDS,RECOMPENSAS
+ability.unit_tier3_berserker_shockwave.name,Shockwave,Onda de Choque
+ability.unit_tier3_berserker_shockwave_l1.desc,"Deals 100% cascade AOE damage to front enemy and units behind.","Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3_berserker_shockwave_l2.desc,"Deals 150% cascade AOE damage to front enemy and units behind.","Causa 150% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3_berserker_shockwave_l3.desc,"Deals 200% cascade AOE damage to front enemy and units behind.","Causa 200% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
+ability.unit_tier3d_resilient_aura_l1.desc,"Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.","Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3d_resilient_aura_l2.desc,"Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack.","Concede +2 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3d_resilient_aura_l3.desc,"Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack.","Concede +2 HP e +2 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
+ability.unit_tier3a_mirror_strike_l1.desc,"Attacks enemy in opposite mirror slot for 100% damage.","Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
+ability.unit_tier3a_mirror_strike_l2.desc,"Attacks enemy in opposite mirror slot for 150% damage.","Ataca o inimigo no espaço espelhado oposto causando 150% de dano."
+ability.unit_tier3a_mirror_strike_l3.desc,"Attacks enemy in opposite mirror slot for 200% damage.","Ataca o inimigo no espaço espelhado oposto causando 200% de dano."
+ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
+ability.unit_tier3b_guardian_sacrifice_l1.desc,"Leaps to intercept lethal damage on allies and gains 2 Armor.","Salta para interceptar dano letal em aliados e ganha 2 de Armadura."
+ability.unit_tier3b_guardian_sacrifice_l2.desc,"Leaps to intercept lethal damage on allies and gains 4 Armor.","Salta para interceptar dano letal em aliados e ganha 4 de Armadura."
+ability.unit_tier3b_guardian_sacrifice_l3.desc,"Leaps to intercept lethal damage on allies and gains 6 Armor.","Salta para interceptar dano letal em aliados e ganha 6 de Armadura."
+ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
+ability.unit_tier3c_soul_summon_l1.desc,"Summons a random Level 1 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
+ability.unit_tier3c_soul_summon_l2.desc,"Summons a random Level 2 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 2 ao morrer."
+ability.unit_tier3c_soul_summon_l3.desc,"Summons a random Level 3 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 3 ao morrer."
+ability.unit_tier3e_ambush_predator_l1.desc,"Deals damage to enemies equal to 100% of PWR when they are summoned.","Causa dano aos inimigos igual a 100% do PWR quando eles são invocados."
+ability.unit_tier3e_ambush_predator_l2.desc,"Deals damage to enemies equal to 150% of PWR when they are summoned.","Causa dano aos inimigos igual a 150% do PWR quando eles são invocados."
+ability.unit_tier3e_ambush_predator_l3.desc,"Deals damage to enemies equal to 200% of PWR when they are summoned.","Causa dano aos inimigos igual a 200% do PWR quando eles são invocados."
+ability.unit_tier3f_summon_blessing_l1.desc,"Grants +3 HP to newly summoned allies.","Concede +3 de HP a aliados recém-invocados."
+ability.unit_tier3f_summon_blessing_l2.desc,"Grants +5 HP to newly summoned allies.","Concede +5 de HP a aliados recém-invocados."
+ability.unit_tier3f_summon_blessing_l3.desc,"Grants +7 HP to newly summoned allies.","Concede +7 de HP a aliados recém-invocados."
+ability.unit_tier3g_bench_growth_l1.desc,"If on the player bench at start of turn, gain +3 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
+ability.unit_tier3g_bench_growth_l2.desc,"If on the player bench at start of turn, gain +5 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +5 de HP e PWR."
+ability.unit_tier3g_bench_growth_l3.desc,"If on the player bench at start of turn, gain +7 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +7 de HP e PWR."
+ability.unit_tier3h_merge_growth_l1.desc,"Whenever a merge happens on the battle board, gain +2 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
+ability.unit_tier3h_merge_growth_l2.desc,"Whenever a merge happens on the battle board, gain +3 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +3 de HP e PWR."
+ability.unit_tier3h_merge_growth_l3.desc,"Whenever a merge happens on the battle board, gain +4 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +4 de HP e PWR."
+ability.doppleganger_scale_l1.desc,"Gains +3 PWR for each other Doppleganger in battle.","Ganha +3 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_scale_l2.desc,"Gains +4 PWR for each other Doppleganger in battle.","Ganha +4 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_scale_l3.desc,"Gains +5 PWR for each other Doppleganger in battle.","Ganha +5 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_death_l1.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+ability.doppleganger_death_l2.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+ability.doppleganger_death_l3.desc,"Summons 2 copies of itself on death into the Gacha Machine.","Invoca 2 cópias de si mesmo ao morrer na Máquina de Gacha."
+ability.unit_tier2a_defensive_stance_l1.desc,"Gain +2 HP before taking damage.","Ganha +2 de HP antes de receber dano."
+ability.unit_tier2a_defensive_stance_l2.desc,"Gain +4 HP before taking damage.","Ganha +4 de HP antes de receber dano."
+ability.unit_tier2a_defensive_stance_l3.desc,"Gain +6 HP before taking damage.","Ganha +6 de HP antes de receber dano."
+ability.unit_t3_mimic_l1.desc,"Transforms into the enemy unit in the mirror slot (+0 Level).","Transforma-se na unidade inimiga no espaço espelhado (+0 Nível)."
+ability.unit_t3_mimic_l2.desc,"Transforms into the enemy unit in the mirror slot (+1 Level).","Transforma-se na unidade inimiga no espaço espelhado (+1 Nível)."
+ability.unit_t3_mimic_l3.desc,"Transforms into the enemy unit in the mirror slot (Level 3 MAX).","Transforma-se na unidade inimiga no espaço espelhado (Nível 3 MAX)."
+ability.unit_t3_shadow_l1.desc,"Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
+ability.unit_t3_shadow_l2.desc,"Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 150% de eficácia."
+ability.unit_t3_shadow_l3.desc,"Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 200% de eficácia."
+ability.unit_t3_l.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_j_ability.name,Standard's Legacy,Legado do Estandarte

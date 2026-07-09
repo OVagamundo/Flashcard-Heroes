@@ -4,6 +4,10 @@
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="2_ability"]
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitA.png" id="3_icon"]
 
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance_L3.tres" id="102_ability"]
+
 [resource]
 script = ExtResource("1_unit")
 id = &"unit_t3_paladin"
@@ -21,4 +25,8 @@ base_hp = 5
 base_pwr = 6
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("2_ability")])
+ability_definitions = Array[Resource]([
+	ExtResource("100_ability"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability")
+])

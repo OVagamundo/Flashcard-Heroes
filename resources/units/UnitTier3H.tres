@@ -5,6 +5,10 @@
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth.tres" id="4_ability"]
 
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth_L2.tres" id="102_ability"]
+
 [resource]
 script = ExtResource("1_script")
 id = &"unit_t3_h"
@@ -21,4 +25,9 @@ base_hp = 5
 base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability")])
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic_attack"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability"),
+	ExtResource("100_ability")
+])

@@ -19,6 +19,11 @@ extends Resource
 ## The localization key for the ability's description text.
 @export var description_key: String
 
+## The minimum unit level required for this ability to be active.
+@export var required_level: int = 1
+## The maximum unit level for this ability to be active (use this to replace abilities at higher levels).
+@export var max_level: int = 99
+
 ## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
 ## See scripts/Constants.gd for named constants (PRIORITY_*) and full reference.
 ## Default is 0 (PRIORITY_STANDARD).

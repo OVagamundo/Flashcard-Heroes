@@ -4,6 +4,8 @@
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitJ.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_Scald.tres" id="4_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Scald_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Scald_L3.tres" id="l3"]
 
 [resource]
 script = ExtResource("1_script")
@@ -21,4 +23,4 @@ base_hp = 2
 base_pwr = 3
 bonus_hp = 0
 bonus_pwr = 0
-ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability")])
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability"), ExtResource("l2"), ExtResource("l3")])

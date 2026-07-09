@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Armor2.tres" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Spikes2.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_mud_coating_l2"
+name_key = "ability.mud_coating.name"
+description_key = "ability.mud_coating_l2.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
+priority = 0
+execute_on_lethal = false
+required_level = 2
+max_level = 2

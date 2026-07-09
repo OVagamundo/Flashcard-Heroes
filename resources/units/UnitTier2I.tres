@@ -2,6 +2,8 @@
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L3.tres" id="l3"]
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitI.png" id="3_icon"]
 
 [resource]
@@ -15,7 +17,7 @@ base_pwr = 2
 is_hero = false
 
 souls = 2
-ability_definitions = Array[Resource]([ExtResource("2_ability")])
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("l2"), ExtResource("l3")])
 icon = ExtResource("3_icon")
 display_name_key = "unit_t2_i.name"
 description_key = "unit_t2_i.desc"

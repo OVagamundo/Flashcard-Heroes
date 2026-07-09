@@ -83,8 +83,9 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 | **W4** Global Close | Click non-interactive area = close all + deselect |
 | **W5** Escape | 1) Cancel drag → 2) Close windows → 3) Deselect |
 | **W6** Selection Persist | Parent entity stays selected when opening child windows |
-| **W7** Transition Block | Interaction is completely blocked during drawer/inventory animations (Open/Close) |
-| **W8** Bounce Animation | Windows open with a subtle scale overshoot (bounce) and vanish instantly on close |
+| **W7** Contextual Freeze | Locking an inspection window pauses the game state ONLY during battle contexts (normal, elite, boss) to allow VCR freeze. Outside of battle, inspecting does not freeze the game. |
+| **W8** Transition Block | Interaction is completely blocked during drawer/inventory animations (Open/Close) |
+| **W9** Bounce Animation | Windows open with a subtle scale overshoot (bounce) and vanish instantly on close |
 
 ### Window Categories
 

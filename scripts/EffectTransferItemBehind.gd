@@ -34,47 +34,70 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return EffectResult.empty() if is_simulation else null
 
 	if is_simulation:
-		# Measure stats before transfer so we can capture the exact chronological state
-		var old_pwr: int = target.current_pwr
-		var old_hp: int = target.current_hp
-		
-		# Perform the actual equipment transfer silently in the simulated game state
-		battle_manager.bm_equip_item(item_uuid, target_uuid, 0, true)
-		
-		# Measure stats after transfer
-		var new_pwr: int = target.current_pwr
-		var new_hp: int = target.current_hp
-		
 		var result := EffectResult.new()
 		result.state_applied = true
+		var pass_count = self.parameters.get("pass_count", 1)
 		
-		# Add a nice combat log message event
+		# Find units behind
+		var current_unit = source
+		var units_behind: Array[GachaBallInstance] = []
+		
+		for i in range(pass_count):
+			var ally_behind = battle_manager._get_ally_behind(current_unit)
+			if is_instance_valid(ally_behind):
+				units_behind.append(ally_behind)
+				current_unit = ally_behind
+			else:
+				break
+				
 		var item_def = item.get_definition()
-		var item_name = tr(item_def.display_name_key) if item_def else "Item"
-		var target_name = BattleHelpers.get_instance_display_name(target)
-		var source_name = BattleHelpers.get_instance_display_name(source)
-		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"visual_payload": {
-				"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
-			}
-		}))
-		
 		var item_icon_path: String = ""
 		if is_instance_valid(item_def) and is_instance_valid(item_def.icon):
 			item_icon_path = item_def.icon.resource_path
+		
+		# Now iterate and equip
+		for i in range(units_behind.size()):
+			var tgt = units_behind[i]
+			var tgt_uuid = tgt.ball_uuid
 			
-		result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
-			"source_uuid": source_uuid,
-			"target_uuids": [target_uuid],
-			"visual_payload": {
-				"item_uuid": item_uuid,
-				"item_icon_path": item_icon_path,
-				"old_pwr": old_pwr,
-				"new_pwr": new_pwr,
-				"old_hp": old_hp,
-				"new_hp": new_hp
-			}
-		}))
+			var old_pwr: int = tgt.current_pwr
+			var old_hp: int = tgt.current_hp
+			
+			if i == 0:
+				# First unit gets the ACTUAL item transferred
+				battle_manager.bm_equip_item(item_uuid, tgt_uuid, 0, true)
+			else:
+				# Subsequent units get a COPY of the item
+				var new_item = GachaBallInstance.new()
+				new_item.initialize(item_def)
+				battle_manager._state.bm_add_instance(new_item, "", -1)
+				battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true)
+			
+			var new_pwr: int = tgt.current_pwr
+			var new_hp: int = tgt.current_hp
+			
+			var target_name = BattleHelpers.get_instance_display_name(tgt)
+			var source_name = BattleHelpers.get_instance_display_name(source)
+			var item_name = tr(item_def.display_name_key) if item_def else "Item"
+			
+			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"visual_payload": {
+					"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
+				}
+			}))
+			
+			result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
+				"source_uuid": source_uuid,
+				"target_uuids": [tgt_uuid],
+				"visual_payload": {
+					"item_uuid": item_uuid if i == 0 else "", # visual doesn't strictly matter for copy
+					"item_icon_path": item_icon_path,
+					"old_pwr": old_pwr,
+					"new_pwr": new_pwr,
+					"old_hp": old_hp,
+					"new_hp": new_hp
+				}
+			}))
 		
 		return result
 		

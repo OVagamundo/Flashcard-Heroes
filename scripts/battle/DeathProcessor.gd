@@ -394,14 +394,16 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "PLAYER")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
 						dying_units_data.append({
 							"unit": unit,
 							"death_location": death_location,
 							"team": "PLAYER",
-							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
+							"has_lethal_counter": has_lethal,
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-						deferred_deaths.append(unit.ball_uuid)
+						if has_lethal:
+							deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
 				if register_death(bm._state, unit, &"COMBAT"):
 					bm._perform_unit_death_cleanup(unit)
@@ -422,14 +424,16 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "ENEMY")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
 						dying_units_data.append({
 							"unit": unit,
 							"death_location": death_location,
 							"team": "ENEMY",
-							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
+							"has_lethal_counter": has_lethal,
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-						deferred_deaths.append(unit.ball_uuid)
+						if has_lethal:
+							deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
 				if register_death(bm._state, unit, &"COMBAT"):
 					bm._perform_unit_death_cleanup(unit)
@@ -507,19 +511,27 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
 	# Priority sorting now correctly orders trinket (210) before item (200)
 	if is_simulation and out_events != null:
-		# APPEND DEATH EVENTS BEFORE DRAINING:
-		# This ensures the Animator plays the fade-out before any effect triggered by the death (like a Summon).
-		out_events.append_array(pending_death_events)
-		pending_death_events.clear()
-		
+		var cascade_evts: Array[CombatEvent] = []
 		if not bm._pending_reactions.is_empty():
 			if OS.is_debug_build():
 				pass
 				# print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 			bm.drain_pending_reactions_inline(0)
-			var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
-			for evt in cascade_evts:
-				out_events.append(evt)
+			cascade_evts = bm.collect_inline_events()
+			
+		var insert_index = cascade_evts.size()
+		for i in range(cascade_evts.size()):
+			var type = cascade_evts[i].type
+			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM or type == CombatEvent.Type.ITEM_TRANSFER:
+				insert_index = i
+				break
+				
+		# Insert DEATH events between VFX reactions (like BUFF/HEAL) and physical replacements (SUMMON/TRANSFORM)
+		# This ensures the Animator plays the dying unit's buffs BEFORE the fade-out, but plays summons AFTER the fade-out.
+		out_events.append_array(cascade_evts.slice(0, insert_index))
+		out_events.append_array(pending_death_events)
+		out_events.append_array(cascade_evts.slice(insert_index, cascade_evts.size()))
+		pending_death_events.clear()
 		
 		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
 		# The kamikaze animation handles the death at the target position

@@ -120,6 +120,7 @@ const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization
 const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 
 const PRIORITY_EXTRA_ACTION = -100
+const PRIORITY_TRAIT_START_EFFECTS = -10
 const PRIORITY_TRAIT_BURN = 100 # Trait burn application
 
 # --- UI Sizing ---

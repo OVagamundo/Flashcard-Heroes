@@ -92,14 +92,17 @@ func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Contr
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+	
 	anim_ball.force_inventory_mode = true
 	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
 	# to ensure stat labels and icons are correctly positioned.
 	if anim_ball.has_method("set_size_scale"):
 		anim_ball.set_size_scale(1.0)
 	
-	anim_ball.custom_minimum_size = Vector2(192.0, 192.0) # C.SLOT_SIZE_BASE is 192
-	anim_ball.size = Vector2(192.0, 192.0)
+	anim_ball.custom_minimum_size = Vector2(96.0, 96.0) # Match C.SLOT_SIZE_BASE
+	anim_ball.size = Vector2(96.0, 96.0)
 	
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)

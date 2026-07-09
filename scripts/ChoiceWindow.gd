@@ -13,6 +13,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 var _source_location: LocationIdentifier
 var _target_location: LocationIdentifier
 var _recipe_id: StringName
+var _result_id: StringName
 var _source_view_instance_id: int = -1
 var _choice_made: bool = false
 
@@ -76,6 +77,7 @@ func populate(context: Dictionary) -> void:
 	_source_location = context.get("source_location")
 	_target_location = context.get("target_location")
 	_recipe_id = context.get("recipe_id")
+	_result_id = context.get("result_id", &"")
 	_source_view_instance_id = context.get("source_view_id", -1)
 
 	_update_localized_text()
@@ -95,9 +97,14 @@ func populate(context: Dictionary) -> void:
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
 			merge_button.pressed.connect(_on_merge_pressed)
 			
-		var recipe = Database.recipes.get(_recipe_id)
-		if recipe and recipe.result_id:
-			var result_def = Database.get_definition(recipe.result_id)
+		var result_id = _result_id
+		if result_id == &"":
+			var recipe = Database.recipes.get(_recipe_id)
+			if recipe and recipe.result_id:
+				result_id = recipe.result_id
+				
+		if result_id != &"":
+			var result_def = Database.get_definition(result_id)
 			if result_def and result_def.icon:
 				result_image.texture = result_def.icon
 				result_image.visible = true
