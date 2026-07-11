@@ -207,11 +207,14 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	
 	# Play any trinket activations associated with this damage impact
 	if payload.has("trinket_activations"):
+		# Extract visual_uuid from trinket_activations if available
 		var raw_activations = payload.get("trinket_activations", [])
 		if raw_activations is Array:
 			for raw_activation in raw_activations:
 				if raw_activation is Dictionary:
 					var visual_uuid = String(raw_activation.get("visual_uuid", ""))
+					if not visual_uuid.is_empty():
+						source_uuid = visual_uuid
 					var def_id = StringName(raw_activation.get("definition_id", &""))
 					var is_enemy = bool(raw_activation.get("is_enemy", false))
 					if animator.has_method("play_trinket_activation"):
@@ -432,4 +435,4 @@ func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount:
 	_spawn_floating_damage(_animator, target_uuid, amount)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
-	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat, true)
