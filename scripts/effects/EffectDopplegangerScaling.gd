@@ -4,7 +4,7 @@ extends EffectDefinition
 
 ## Grants +3 PWR for every OTHER Doppleganger in the Battle Pool.
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
-	var is_simulation = context.get("is_simulation", false)
+	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
 	
@@ -37,11 +37,27 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if bonus_pwr > 0: 
 		source.add_status_effect_silent(status_key, bonus_pwr)
 		
-	# Apply standard PWR modification (dispatches unit_stat_changed signals to UI)
+	# Apply standard PWR modification
 	source.apply_pwr_delta(delta, {"silent": is_simulation})
 
 	if is_simulation:
-		var result = EffectResult.new()
+		var result := EffectResult.new()
+		var event_type = CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DAMAGE
+
+		# Since this is a self-buff from a unit, the visual source should be the combat instance's UUID
+		# so that it maps correctly to the position snapshot, and the projectile originates from itself.
+		result.add_event(CombatEvent.new(event_type, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": {
+				"source_uuid": source_uuid,
+				"stat": "pwr",
+				"amount": abs(delta),
+				"targets_new_pwr": [source.current_pwr]
+			}
+		}))
+		
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
 		}))

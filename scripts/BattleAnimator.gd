@@ -128,6 +128,8 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 							var gacha_view: GachaBallView = null
 							var fallback_view: GachaBallView = null
 							for child in slot_view.get_children():
+								if child.is_queued_for_deletion():
+									continue
 								if child is GachaBallView:
 									var candidate: GachaBallView = child
 									if not is_instance_valid(fallback_view):
@@ -316,6 +318,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
 					Audio.play_sfx("combat_buff")
+					event.visual_payload["trinket_activations"] = event.trinket_activations
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Buff animation not found in registry!")
@@ -637,8 +640,10 @@ func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, 
 	var trinket_views := _get_trinket_views_from_tree()
 	if not visual_uuid.is_empty():
 		for view in trinket_views:
-			if is_instance_valid(view) and view.get_instance_uuid() == visual_uuid:
-				return view
+			if is_instance_valid(view):
+				var v_uuid = view.get_instance_uuid()
+				if v_uuid == visual_uuid or visual_uuid.begins_with(v_uuid + "_"):
+					return view
 	if trinket_definition_id != &"":
 		for view in trinket_views:
 			if is_instance_valid(view):

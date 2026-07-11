@@ -451,13 +451,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			# Handle delegated damage requests (from EffectModifyStat negative HP)
 			# This routes through the proper damage pipeline with armor/burn/guardian handling
-			if not effect_result.damage_request.is_empty():
-				var dmg_data: Dictionary = effect_result.damage_request
-				var stat: String = dmg_data.get("stat", "")
-				var amount: int = dmg_data.get("amount", 0)
-				var targets: Array = dmg_data.get("targets", [])
+			if effect_result.damage_request != null:
+				var dmg_req: EffectResult.DamageRequest = effect_result.damage_request
+				var amount: int = dmg_req.amount
+				var targets: Array = dmg_req.targets
 				
-				if stat == "hp" and amount < 0 and not targets.is_empty():
+				if amount > 0 and not targets.is_empty():
 					var dmg_source: GachaBallInstance = bm.get_instance_by_uuid(request.source_uuid)
 					var resolved_targets: Array[String] = []
 					var target_display_names: Array[String] = []
@@ -495,7 +494,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					out_events.append_array(before_damage_evts)
 					
 					var damage_result := EffectHandlers.handle_damage_effect(
-						request, resolved_targets, dmg_source, source_name, target_display_names, amount, false, bm
+						request, dmg_req, dmg_source, source_name, target_display_names, bm
 					)
 					out_events.append_array(damage_result.events)
 					
@@ -505,7 +504,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					# Trigger on_hurt for damaged units
 					var on_hurt_start_index = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
-						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, dmg_req.cause)
 					
 					# Drain on_hurt reactions
 					drain_reactions_inline(on_hurt_start_index, bm)
@@ -555,11 +554,11 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			# TWO-PHASE PROCESSING for visual "wave" effect:
 			# Phase 1: Apply all damage + DAMAGE events in sequence
 			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
-			if not effect_result.cascade_request.is_empty():
-				var cascade_list = effect_result.cascade_request
+			if effect_result.cascade_request != null:
+				var cascade_req = effect_result.cascade_request
 				
 				# Phase 1: Apply all damage via EffectHandlers
-				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, bm)
+				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_req, source, bm)
 				out_events.append_array(cascade_result.events)
 				
 				# Phase 2: Process reactions one target at a time (after all damage shown)
@@ -570,7 +569,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					# Trigger on_hurt for counter-attacks
 					var cascade_hurt_start = _pending_reactions.size()
-					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 					
 					# Drain on_hurt reactions for THIS target
 					drain_reactions_inline(cascade_hurt_start, bm)
@@ -587,11 +586,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			# Handle kamikaze attack request (from EffectDeathDamageHighestEnemy)
 			# Creates KAMIKAZE_ATTACK event for animation + applies damage
-			if not effect_result.kamikaze_request.is_empty():
+			if effect_result.kamikaze_request != null:
 				var kamikaze_data = effect_result.kamikaze_request
-				var source_uuid: String = kamikaze_data.get("source_uuid", "")
-				var target_uuid: String = kamikaze_data.get("target_uuid", "")
-				var damage: int = kamikaze_data.get("damage", 0)
+				var source_uuid: String = kamikaze_data.source_uuid
+				var target_uuid: String = kamikaze_data.target_uuid
+				var damage: int = kamikaze_data.damage
+				var damage_type: int = kamikaze_data.damage_type
 				
 				if not target_uuid.is_empty() and damage > 0:
 					var target_inst = bm.get_instance_by_uuid(target_uuid)
@@ -600,17 +600,16 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						var old_armor = target_inst.get_status_effect_amount(&"armor")
 						var _old_spikes = target_inst.get_status_effect_amount(&"spikes")
 						
-						# Use apply_stat_delta to trigger Spikes (even though attacker is dead)
-						# The Spikes damage won't affect dead attacker, but stacks will decay properly
-						var damage_result = bm.apply_stat_delta(target_inst, "hp", -damage, false, source_uuid)
+						# apply_damage triggered Spikes (even though attacker is dead)
+						var damage_result = bm.apply_damage(target_inst, damage, damage_type, source_uuid)
 						
-						var new_hp: int = damage_result.get("new_hp", target_inst.current_hp) if damage_result is Dictionary else target_inst.current_hp
-						var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-						var new_armor: int = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+						var new_hp: int = damage_result.get("new_hp", target_inst.current_hp) if not damage_result.is_empty() else target_inst.current_hp
+						var armor_consumed: int = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+						var new_armor: int = damage_result.get("new_armor", old_armor) if not damage_result.is_empty() else old_armor
 						
 						# Extract Spikes data for animation (will be shown at impact)
 						var spikes_data_list: Array[Dictionary] = []
-						if damage_result is Dictionary and damage_result.has("spikes_data"):
+						if not damage_result.is_empty() and damage_result.has("spikes_data"):
 							var spikes = damage_result["spikes_data"]
 							spikes_data_list.append({
 								"attacker_uuid": spikes["attacker_uuid"],
@@ -648,14 +647,14 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						}))
 						
 						# Fire on_hurt trigger
-						bm.trigger_on_hurt(target_uuid, damage, source_uuid)
+						bm.trigger_on_hurt(target_uuid, damage, source_uuid, C.CAUSE_ABILITY)
 						
 						# Check for kills
 						if new_hp <= 0:
 							bm.trigger_on_kill(source_uuid, target_uuid)
 				
 				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
-				return
+				# Removed early return here so custom events can be processed alongside damage_request
 			
 			out_events.append_array(effect_result.events)
 			
@@ -664,7 +663,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				var result_hurt_start = _pending_reactions.size()
 				for damaged_uuid in effect_result.damaged_uuids:
 					var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
-					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
+					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid, C.CAUSE_ABILITY)
 				
 				drain_reactions_inline(result_hurt_start, bm)
 				var hurt_inline_evts = collect_and_clear_inline_events()
@@ -723,7 +722,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					# Trigger on_hurt for counter-attacks
 					var cascade_hurt_start = _pending_reactions.size()
-					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 					
 					# Drain on_hurt reactions for THIS target
 					drain_reactions_inline(cascade_hurt_start, bm)
@@ -774,8 +773,14 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						var tgt = bm.get_instance_by_uuid(t)
 						target_display_names.append(BattleHelpers.get_instance_display_name(tgt))
 					
+					var fallback_dmg_type = C.DamageType.MAGIC
+					if is_instance_valid(dmg_source) and is_instance_valid(dmg_source.get_definition()):
+						if dmg_source.get_definition().category != &"TRINKET":
+							fallback_dmg_type = C.DamageType.RANGED # Default to ranged for unit-based legacy effects
+					
+					var dmg_req = EffectResult.DamageRequest.new(abs(amount), fallback_dmg_type, resolved_targets, skip_bump)
 					var damage_result := EffectHandlers.handle_damage_effect(
-						request, resolved_targets, dmg_source, source_name, target_display_names, amount, skip_bump, bm
+						request, dmg_req, dmg_source, source_name, target_display_names, bm
 					)
 					out_events.append_array(damage_result.events)
 					
@@ -785,7 +790,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
 					var single_hurt_start = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
-						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, dmg_req.cause)
 					
 					# AEGIS FIX: Drain on_hurt effects BEFORE death check
 					drain_reactions_inline(single_hurt_start, bm)
@@ -960,6 +965,9 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
+		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
+		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+		
 		# Drain reactions immediately so summon abilities execute before the summoned unit acts
 		while not _pending_reactions.is_empty():
 			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
@@ -1007,6 +1015,7 @@ func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm,
 			"definition_id": source.definition_id,
 			"is_enemy": is_enemy_trinket
 		})
+		event.visual_payload["trinket_activations"] = event.trinket_activations
 
 # ============================================================================
 # CLEANUP
