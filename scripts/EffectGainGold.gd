@@ -32,11 +32,7 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 			"source_uuid": source_uuid,
 			"target_uuids": targets,
 			"amount": amount,
-			"visual_payload": {
-				"amount": amount,
-				"origin_uuid": origin_uuid,
-				"target_gold_amount": target_gold_amount
-			}
+		"visual_payload": _make_gold_payload(amount, origin_uuid, target_gold_amount)
 		}))
 		
 		result.state_applied = true
@@ -47,3 +43,10 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 		GameManager.run_state.add_gold(amount)
 	
 	return amount
+
+func _make_gold_payload(amount: int, origin_uuid: String, target_gold_amount: int) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = amount
+	payload.origin_uuid = origin_uuid
+	payload.target_gold_amount = target_gold_amount
+	return payload

@@ -40,13 +40,12 @@ var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_bloodlust"
 var trigger_type: StringName = &"" # e.g., "on_kill", "on_hurt", "on_turn_start", ""
 var ability_holder_uuid: String = "" # UUID of unit/item that owns the ability
 
-# Strong typed array for trinket animations to play with this event
-var trinket_activations: Array[Dictionary] = []
+# Strong typed array for trinket animations to play with this event.
+var trinket_activations: Array[CombatTrinketActivation] = []
 
-# The Absolute Truth Payload
-# MANDATORY KEYS for DAMAGE/HEAL: { "new_hp": int, "amount": int, "is_crit": bool }
-# MANDATORY KEYS for SUMMON: { "snapshot": Dictionary }
-var visual_payload: Dictionary = {}
+# The Absolute Truth Payload.  Sparse typed fields replace untyped dictionary
+# keys; see CombatPayload for the event-family contracts.
+var visual_payload: CombatPayload = CombatPayload.new()
 
 # Legacy fields for backward compatibility during refactor (marked for removal)
 var text: String = ""
@@ -82,7 +81,9 @@ func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	self.ability_holder_uuid = String(p_context.get("ability_holder_uuid", ""))
 		
 	# Visual Payload (The new standard)
-	self.visual_payload = p_context.get("visual_payload", {})
+	var supplied_payload = p_context.get("visual_payload", null)
+	if supplied_payload is CombatPayload:
+		self.visual_payload = supplied_payload
 	
 	# Legacy field population for compatibility
 	self.text = String(p_context.get("text", ""))
@@ -122,7 +123,8 @@ func deep_clone() -> CombatEvent:
 	copy.ability_id = self.ability_id
 	copy.trigger_type = self.trigger_type
 	copy.ability_holder_uuid = self.ability_holder_uuid
-	copy.trinket_activations = self.trinket_activations.duplicate(true)
+	for activation in trinket_activations:
+		copy.trinket_activations.append(activation.deep_clone())
 	copy.text = self.text
 	copy.amount = self.amount
 	copy.stat = self.stat
@@ -131,16 +133,5 @@ func deep_clone() -> CombatEvent:
 	copy.target_names = self.target_names.duplicate()
 	copy.apply_burn = self.apply_burn
 	
-	var new_payload = self.visual_payload.duplicate()
-	# Recursively clone nested events
-	for key in ["windup_events", "pre_impact_events", "impact_events"]:
-		if new_payload.has(key):
-			var nested_copies: Array[CombatEvent] = []
-			for nested in new_payload[key]:
-				if is_instance_valid(nested) and nested.has_method("deep_clone"):
-					nested_copies.append(nested.deep_clone())
-			new_payload[key] = nested_copies
-			
-	copy.visual_payload = new_payload
+	copy.visual_payload = visual_payload.deep_clone()
 	return copy
-

@@ -52,15 +52,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": 1,
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_old_armor": [old_armor],
-			"targets_new_armor": [new_armor],
-			"armor_consumed": [armor_consumed]
-		}
+		"visual_payload": CombatPayload.damage(source_uuid, 1, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	}))
 	
 	result.state_applied = true

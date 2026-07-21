@@ -52,14 +52,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			{
 				"target_uuids": [current_target_uuid],
 				"is_simulation": context.get("is_simulation", false),
-				"visual_payload": {
-					"source_uuid": current_source_uuid,
-					"amount": current_burn_amount,
-					"stat": "burn_stacks",
-					"targets_old_val": [old_burn],
-					"targets_new_val": [new_burn],
-					"status_color": Color.ORANGE_RED
-				}
+				"visual_payload": CombatPayload.status_change(current_source_uuid, current_burn_amount, "burn_stacks", [old_burn], [new_burn], Color.ORANGE_RED)
 			}
 		)
 		result.events.append(burn_event)

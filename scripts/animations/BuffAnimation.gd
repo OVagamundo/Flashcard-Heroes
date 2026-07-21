@@ -6,10 +6,10 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var stat = String(payload.get("stat", "pwr"))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var stat = payload.stat if not payload.stat.is_empty() else "pwr"
 	
 	
 	# Ensure coroutine
@@ -33,8 +33,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				
 	# 2. Apply Stat Buff (HP or PWR only)
 	var final_target_uuid = ""
-	var pwr_values = payload.get("targets_new_pwr", [])
-	var hp_values = payload.get("targets_new_hp", [])
+	var pwr_values = payload.targets_new_pwr
+	var hp_values = payload.targets_new_hp
 	
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
@@ -48,7 +48,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			if not hp_values.is_empty() and i < hp_values.size():
 				new_hp = int(hp_values[i])
 			else:
-				new_hp = int(payload.get("new_hp", 0)) # Fallback
+				new_hp = payload.new_hp
 			
 			animator.apply_hp_delta(target_uuid, amount, new_hp)
 			
@@ -68,7 +68,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			if not pwr_values.is_empty() and i < pwr_values.size():
 				new_pwr = int(pwr_values[i])
 			else:
-				new_pwr = int(payload.get("new_pwr", 0)) # Fallback
+				new_pwr = payload.new_pwr
 				
 			if amount < 0:
 				_spawn_floating_pwr_damage(animator, target_uuid, abs(amount))

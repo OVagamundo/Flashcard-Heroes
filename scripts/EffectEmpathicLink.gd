@@ -39,13 +39,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				"target_uuids": [current_target.ball_uuid],
 				"ability_id": context.get("ability_id", &"empathic_link"),
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": source_uuid,
-					"stat": "pwr",
-					"amount": apply_buff,
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(source_uuid, apply_buff, [old_pwr], [new_pwr])
 			}))
 			
 		current_target = battle_manager._get_ally_behind(current_target)

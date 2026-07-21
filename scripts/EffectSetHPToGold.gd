@@ -45,13 +45,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
-		"visual_payload": {
-			"stat": "hp",
-			"amount": delta,
-			"targets_old_hp": [current_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [source.get_definition().base_hp] # Approx
-		}
+		"visual_payload": CombatPayload.hp_change("", delta, [current_hp], [new_hp], [source.get_definition().base_hp])
 	})
 	
 	var result = EffectResult.new()

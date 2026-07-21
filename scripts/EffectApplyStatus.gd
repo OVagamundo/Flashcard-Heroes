@@ -36,15 +36,7 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 			CombatEvent.Type.STATUS_EFFECT,
 			{
 				"target_uuids": [target_uuid],
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": amount,
-					"stat": stat_name,
-					"targets_old_val": [old_val],
-					"targets_new_val": [new_val],
-					# Default colors (can be enhanced via StatusEffectRegistry later if needed)
-					"status_color": Color.WHITE
-				}
+				"visual_payload": CombatPayload.status_change(_source_uuid, amount, stat_name, [old_val], [new_val])
 			}
 		))
 	

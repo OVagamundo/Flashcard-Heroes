@@ -103,23 +103,23 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var source_name = BattleHelpers.get_instance_display_name(source)
 			var item_name = tr(item_def.display_name_key) if item_def else "Item"
 			
+			var message_payload := CombatPayload.new()
+			message_payload.message = tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
 			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"visual_payload": {
-					"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
-				}
+				"visual_payload": message_payload
 			}))
 			
+			var transfer_payload := CombatPayload.new()
+			transfer_payload.item_uuid = item_uuid if i == 0 else ""
+			transfer_payload.item_icon_path = item_icon_path
+			transfer_payload.old_pwr = old_pwr
+			transfer_payload.new_pwr = new_pwr
+			transfer_payload.old_hp = old_hp
+			transfer_payload.new_hp = new_hp
 			result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
 				"source_uuid": source_uuid,
 				"target_uuids": [tgt_uuid],
-				"visual_payload": {
-					"item_uuid": item_uuid if i == 0 else "", # visual doesn't strictly matter for copy
-					"item_icon_path": item_icon_path,
-					"old_pwr": old_pwr,
-					"new_pwr": new_pwr,
-					"old_hp": old_hp,
-					"new_hp": new_hp
-				}
+				"visual_payload": transfer_payload
 			}))
 		
 		return result

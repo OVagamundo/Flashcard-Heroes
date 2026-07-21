@@ -82,12 +82,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				"source_uuid": visual_source_uuid,
 				"target_uuids": buff_groups[d]["targets"],
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": visual_source_uuid,
-					"stat": "pwr",
-					"amount": d,
-					"targets_new_pwr": buff_groups[d]["new_pwrs"]
-				}
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, [], buff_groups[d]["new_pwrs"])
 			}))
 			
 		for d in debuff_groups:
@@ -95,12 +90,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				"source_uuid": visual_source_uuid,
 				"target_uuids": debuff_groups[d]["targets"],
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": visual_source_uuid,
-					"stat": "pwr",
-					"amount": -d,
-					"targets_new_pwr": debuff_groups[d]["new_pwrs"]
-				}
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, -d, [], debuff_groups[d]["new_pwrs"])
 			}))
 			
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

@@ -67,11 +67,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": {
-			"stat": "hp",
-			"amount": amount,
-			"new_hp": new_hp
-		}
+		"visual_payload": CombatPayload.hp_change("", amount, [], [new_hp])
 	}))
 	
 	result.state_applied = true

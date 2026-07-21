@@ -122,14 +122,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": hp_amount,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 			}))
 			
 			# PWR BUFF event
@@ -139,13 +132,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": pwr_amount,
-					"stat": "pwr",
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 			}))
 			state_applied_any = true
 		else:

@@ -124,19 +124,13 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": conv_log}))
 					
 					# HEAL Event
+					var conversion_payload := CombatPayload.hp_change(visual_source_uuid, tgt_amount, [old_hp], [new_hp], [max_hp])
 					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": _source_uuid,
 						"target_uuids": [target_uuid],
 						"ability_id": context.get("ability_id", &"modify_stat"),
 						"trigger_type": context.get("trigger_type", ""),
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": tgt_amount,
-							"stat": "hp",
-							"targets_old_hp": [old_hp],
-							"targets_new_hp": [new_hp],
-							"targets_max_hp": [max_hp]
-						}
+						"visual_payload": conversion_payload
 					}))
 					result.mark_healed(target_uuid, tgt_amount)
 					continue # Skip adding to batched list
@@ -176,21 +170,15 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+					var heal_payload := CombatPayload.hp_change(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
+					heal_payload.skip_bump = parameters.get("skip_bump", false)
 					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": _source_uuid,
 						"target_uuids": all_target_uuids,
 						"ability_id": aid,
 						"trigger_type": context.get("trigger_type", ""),
 						"ability_holder_uuid": _source_uuid,
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": amount,
-							"stat": stat,
-							"skip_bump": parameters.get("skip_bump", false),
-							"targets_old_hp": all_old_vals,
-							"targets_new_hp": all_new_vals,
-							"targets_max_hp": all_max_hp
-						}
+						"visual_payload": heal_payload
 					}))
 				else:
 					# DAMAGE
@@ -202,22 +190,19 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), " and ".join(target_names)]
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+					var damage_payload := CombatPayload.damage(visual_source_uuid, amount, all_old_vals, all_new_vals)
+					damage_payload.stat = stat
+					damage_payload.attack_type = parameters.get("attack_type", "ranged")
+					damage_payload.skip_bump = parameters.get("skip_bump", true)
+					var projectile_data: Dictionary = parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"})
+					damage_payload.projectile = CombatProjectile.new(String(projectile_data.get("stat", "hp")), int(projectile_data.get("amount", abs(amount))), String(projectile_data.get("color", "red")))
 					result.add_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": _source_uuid,
 						"target_uuids": all_target_uuids,
 						"ability_id": aid,
 						"trigger_type": context.get("trigger_type", ""),
 						"ability_holder_uuid": _source_uuid,
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": amount,
-							"stat": stat,
-							"attack_type": parameters.get("attack_type", "ranged"), # Default ranged for effect damage
-							"skip_bump": parameters.get("skip_bump", true), # Default skip bump for effect damage
-							"projectile_data": parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"}),
-							"targets_old_hp": all_old_vals,
-							"targets_new_hp": all_new_vals
-						}
+						"visual_payload": damage_payload
 					}))
 			elif stat == "pwr":
 				# Log message with all target names
@@ -235,19 +220,14 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
 
 				# Single BUFF event with all targets batched
+				var pwr_payload := CombatPayload.pwr_change(visual_source_uuid, amount, all_old_vals, all_new_vals)
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"targets_old_pwr": all_old_vals,
-						"targets_new_pwr": all_new_vals
-					}
+					"visual_payload": pwr_payload
 				}))
 			else:
 				# Generic Stat / Status Effect (e.g. armor_stacks)
@@ -265,20 +245,15 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
 
 				# STATUS_EFFECT event
+				var status_payload := CombatPayload.status_change(visual_source_uuid, amount, stat, all_old_vals, all_new_vals)
+				status_payload.new_val = all_new_vals[0] if not all_new_vals.is_empty() else 0
 				result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"targets_old_val": all_old_vals,
-						"targets_new_val": all_new_vals,
-						"new_val": all_new_vals[0] if not all_new_vals.is_empty() else 0
-					}
+					"visual_payload": status_payload
 				}))
 		
 		result.state_applied = true

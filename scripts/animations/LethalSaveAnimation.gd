@@ -4,12 +4,12 @@ extends BattleAnimation
 ## Animation for Aegis Charm preventing lethal damage.
 ## Unit floats up with golden glow, then lands back, surviving at 1 HP.
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
 	if targets.is_empty():
 		return
 	
 	var saved_uuid: String = targets[0]
-	var heal_amount: int = int(payload.get("heal_amount", 1))
+	var heal_amount: int = payload.heal_amount
 	
 	# Ensure this is a coroutine
 	await animator.get_tree().process_frame

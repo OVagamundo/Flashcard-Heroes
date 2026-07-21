@@ -102,12 +102,12 @@ static func find_empty_slot_in_container(container: DataContainer) -> int:
 
 ## Create a summon event
 static func create_summon_event(unit_uuid: String, slot_index: int, is_player: bool) -> CombatEvent:
+	var payload := CombatPayload.new()
+	payload.slot_index = slot_index
+	payload.is_player = is_player
 	return CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {
-			"slot_index": slot_index,
-			"is_player": is_player
-		}
+		"visual_payload": payload
 	})
 
 ## UNIFIED SLOT FINDER
@@ -199,13 +199,7 @@ static func handle_burn_stacks(
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "burn_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(request.source_uuid, amount, "burn_stacks", targets_old_val, targets_new_val)
 	})
 
 # ============================================================================
@@ -342,11 +336,7 @@ static func handle_damage_effect(
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [tgt_uuid],
-					"visual_payload": {
-						"guardian_uuid": guardian.ball_uuid,
-						"original_target_uuid": tgt_uuid,
-						"damage": actual_damage
-					}
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, tgt_uuid)
 				}))
 				tgt_uuid = guardian.ball_uuid
 				tgt = guardian
@@ -482,46 +472,32 @@ static func handle_damage_effect(
 	if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
 		attack_type = "ranged"
 	
-	var t_acts = []
+	var t_acts: Array[CombatTrinketActivation] = []
 	if burn_from_trinket:
-		t_acts.append({
-			"definition_id": &"trinket_burn_vial",
-			"is_enemy": not is_player_source
-		})
+		t_acts.append(CombatTrinketActivation.new(&"trinket_burn_vial", not is_player_source))
 		
 	# Add DAMAGE event with ARMOR data included for unified animation
-	result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+	var damage_payload := CombatPayload.damage(animation_source_uuid, amount, targets_old_hp, targets_new_hp, targets_old_armor, targets_new_armor, armor_consumed_list)
+	damage_payload.targets_max_hp = targets_max_hp
+	damage_payload.targets_old_burn = targets_old_burn
+	damage_payload.targets_new_burn = targets_new_burn
+	damage_payload.apply_burn = should_apply_burn
+	damage_payload.skip_bump = skip_bump
+	damage_payload.bump_direction = bump_dir
+	damage_payload.attack_type = attack_type
+	damage_payload.original_target_uuids = original_target_uuids
+	damage_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+	damage_payload.projectile = CombatProjectile.new("hp", amount, "red")
+	var damage_event := CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": result.damaged_uuids,
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": animation_source_uuid,
-			"amount": amount,
-			"stat": "hp",
-			"skip_bump": skip_bump,
-			"bump_direction": bump_dir,
-			"apply_burn": should_apply_burn,
-			"targets_old_hp": targets_old_hp,
-			"targets_new_hp": targets_new_hp,
-			"targets_max_hp": targets_max_hp,
-			"targets_old_burn": targets_old_burn,
-			"targets_new_burn": targets_new_burn,
-			"targets_old_armor": targets_old_armor,
-			"targets_new_armor": targets_new_armor,
-			"armor_consumed": armor_consumed_list,
-			"attack_type": attack_type,
-			"original_target_uuids": original_target_uuids,
-			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
-			"projectile_data": {
-				"stat": "hp",
-				"amount": amount,
-				"color": "red"
-			},
-			"trinket_activations": t_acts
-		}
-	}))
+		"visual_payload": damage_payload
+	})
+	damage_event.trinket_activations = t_acts
+	result.events.append(damage_event)
 	
 	return result
 
@@ -615,11 +591,7 @@ static func handle_cascade_damage(
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [cascade_target_uuid],
-					"visual_payload": {
-						"guardian_uuid": guardian.ball_uuid,
-						"original_target_uuid": cascade_target_uuid,
-						"damage": cascade_amount
-					}
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, cascade_target_uuid)
 				}))
 				cascade_target_uuid = guardian.ball_uuid
 				cascade_tgt = guardian
@@ -719,47 +691,32 @@ static func handle_cascade_damage(
 		if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
 			attack_type = "ranged"
 		
-		var t_acts = []
+		var t_acts: Array[CombatTrinketActivation] = []
 		if burn_from_trinket:
-			t_acts.append({
-				"definition_id": &"trinket_burn_vial",
-				"is_enemy": not is_player_source
-			})
+			t_acts.append(CombatTrinketActivation.new(&"trinket_burn_vial", not is_player_source))
 			
-		var payload = {
-			"source_uuid": animation_source_uuid,
-			"amount": - cascade_amount,
-			"stat": "hp",
-			"skip_bump": cascade_skip_bump,
-			"bump_direction": bump_dir,
-			"apply_burn": should_apply_burn,
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [max_hp],
-			"targets_old_burn": [old_burn],
-			"targets_new_burn": [burn_val],
-			"targets_old_armor": [old_armor],
-			"targets_new_armor": [new_armor],
-			"armor_consumed": [armor_consumed],
-			"attack_type": attack_type,
-			"original_target_uuid": original_target_uuid,
-			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
-			"projectile_data": {
-				"stat": "hp",
-				"amount": - cascade_amount,
-				"color": "red"
-			},
-			"trinket_activations": t_acts
-		}
+		var payload := CombatPayload.damage(animation_source_uuid, -cascade_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+		payload.targets_max_hp = [max_hp]
+		payload.targets_old_burn = [old_burn]
+		payload.targets_new_burn = [burn_val]
+		payload.apply_burn = should_apply_burn
+		payload.skip_bump = cascade_skip_bump
+		payload.bump_direction = bump_dir
+		payload.attack_type = attack_type
+		payload.original_target_uuid = original_target_uuid
+		payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+		payload.projectile = CombatProjectile.new("hp", -cascade_amount, "red")
 		
-		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+		var cascade_event := CombatEvent.new(CombatEvent.Type.DAMAGE, {
 			"source_uuid": request.source_uuid,
 			"target_uuids": [cascade_target_uuid],
 			"ability_id": request.ability_id,
 			"trigger_type": "cascade_damage",
 			"ability_holder_uuid": request.source_uuid,
 			"visual_payload": payload
-		}))
+		})
+		cascade_event.trinket_activations = t_acts
+		result.events.append(cascade_event)
 		
 		# Track for Phase 2 reactions
 		result.hit_targets.append({
@@ -941,20 +898,14 @@ static func handle_summon_unit(
 	if final_location.container != holder_location.container or final_location.index != holder_location.index:
 		final_old_uuid = ""
 		
+	var summon_payload := _make_summon_payload(final_old_uuid, new_inst.ball_uuid, final_location, snapshot, String(effect_data.get("spawn_source_uuid", "")), int(effect_data.get("unit_tier", 1)))
 	result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": [new_inst.ball_uuid],
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"old_unit_uuid": final_old_uuid,
-			"new_unit_uuid": new_inst.ball_uuid,
-			"old_unit_location": final_location,
-			"new_unit_snapshot": snapshot,
-			"spawn_source_uuid": effect_data.get("spawn_source_uuid", ""),
-			"unit_tier": effect_data.get("unit_tier", 1)
-		}
+		"visual_payload": summon_payload
 	}))
 	
 	return result
@@ -1047,18 +998,14 @@ static func handle_summon_units(
 		
 		# Create SUMMON event
 		var snapshot := create_unit_snapshot(new_unit, unit_def)
+		var boss_summon_payload := _make_summon_payload("", new_unit.ball_uuid, summon_loc, snapshot)
 		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 			"source_uuid": request.source_uuid,
 			"target_uuids": [new_unit.ball_uuid],
 			"ability_id": request.ability_id,
 			"trigger_type": request.trigger_context.get("trigger_type", ""),
 			"ability_holder_uuid": request.source_uuid,
-			"visual_payload": {
-				"old_unit_uuid": "", # No old unit for boss summons
-				"new_unit_uuid": new_unit.ball_uuid,
-				"old_unit_location": summon_loc,
-				"new_unit_snapshot": snapshot
-			}
+			"visual_payload": boss_summon_payload
 		}))
 	
 	return result
@@ -1097,9 +1044,7 @@ static func handle_mirror_transform(
 	# 2. Visual Event (Transform: Hop & Vanish)
 	result.events.append(CombatEvent.new(CombatEvent.Type.TRANSFORM, {
 		"target_uuids": [self_uuid],
-		"visual_payload": {
-			"style": "yellow_flash"
-		}
+		"visual_payload": _make_transform_payload()
 	}))
 	
 	# 3. State Mutation: Preserve items for the new unit
@@ -1155,12 +1100,8 @@ static func handle_mirror_transform(
 		var is_player = battle_manager._is_player_unit(new_unit)
 		
 		# Construct robust SUMMON event with visual style
-		var summon_payload = {
-			"visual_style": "yellow_flash",
-			"new_unit_uuid": new_unit.ball_uuid,
-			"old_unit_location": my_loc, # Used by Animator to find the slot
-			"new_unit_snapshot": VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances())
-		}
+		var summon_payload := _make_summon_payload("", new_unit.ball_uuid, my_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
+		summon_payload.visual_style = "yellow_flash"
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 			"target_uuids": [new_unit.ball_uuid],
@@ -1170,4 +1111,36 @@ static func handle_mirror_transform(
 			"text": "%s appeared!" % [BattleHelpers.get_definition_display_name(new_def)]
 		}))
 			
+	return result
+
+static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.old_unit_uuid = old_unit_uuid
+	payload.new_unit_uuid = new_unit_uuid
+	payload.old_unit_location = old_unit_location
+	payload.new_unit_snapshot = new_unit_snapshot
+	payload.spawn_source_uuid = spawn_source_uuid
+	payload.unit_tier = unit_tier
+	return payload
+
+static func _make_transform_payload() -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.visual_style = "yellow_flash"
+	return payload
+
+static func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
 	return result

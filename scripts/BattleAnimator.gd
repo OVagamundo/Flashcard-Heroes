@@ -82,7 +82,7 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	for event in turn_log:
 		if event.type == CombatEvent.Type.TOKEN_GAIN:
 			var payload = event.visual_payload
-			total_tokens_gained_in_log += int(payload.get("amount", 0))
+			total_tokens_gained_in_log += payload.amount
 	_visual_gacha_tokens = final_tokens - total_tokens_gained_in_log
 	
 	_register_all_puppets(start_snapshot)
@@ -224,7 +224,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		
 		_play_trinket_activations_for_event(event)
 		if event.type == CombatEvent.Type.LOG_MESSAGE:
-			var has_trinket = event.trinket_activations.size() > 0 or event.visual_payload.has("trinket_activations")
+			var has_trinket = event.trinket_activations.size() > 0
 			if has_trinket:
 				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
 				await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
@@ -245,7 +245,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.DRAW:
 				var payload = event.visual_payload
-				var draw_result = payload.get("draw_result")
+				var draw_result = payload.draw_result
 				if draw_result:
 					SignalBus.emit_signal("gacha_draw_animated", draw_result)
 					await AnimationConstants.create_pausable_timer(get_tree(), 0.45 / AnimationConstants.speed_factor).timeout
@@ -278,7 +278,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 										child.queue_free()
 							
 							slot_view.add_child(new_view)
-							var new_snapshot = payload.get("new_unit_snapshot", {})
+							var new_snapshot = payload.new_unit_snapshot
 							if not new_snapshot.is_empty():
 								var new_location = LocationIdentifier.new(container_tag, index)
 								new_view.populate(new_location, new_snapshot, false)
@@ -321,7 +321,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
 					Audio.play_sfx("combat_buff")
-					event.visual_payload["trinket_activations"] = event.trinket_activations
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Buff animation not found in registry!")
@@ -353,10 +352,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
-				var new_unit_uuid = payload.get("new_unit_uuid", "")
-				var old_location = payload.get("old_unit_location")
-				var spawn_source_uuid = payload.get("spawn_source_uuid", "")
-				var unit_tier = int(payload.get("unit_tier", 1))
+				var new_unit_uuid = payload.new_unit_uuid
+				var old_location = payload.old_unit_location
+				var spawn_source_uuid = payload.spawn_source_uuid
+				var unit_tier = payload.unit_tier
 				
 				var container_tag = old_location.container if old_location else &""
 				var index = old_location.index if old_location else -1
@@ -380,7 +379,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						anim_capsule.anchors_preset = Control.PRESET_TOP_LEFT
 						anim_capsule.set_size_scale(1.0)
 						anim_capsule.force_inventory_mode = true
-						var new_snapshot = payload.get("new_unit_snapshot", {})
+						var new_snapshot = payload.new_unit_snapshot
 						anim_capsule.populate(null, new_snapshot)
 						
 						var initial_scale := 0.3
@@ -423,7 +422,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
 						
 						var has_existing_unit := false
-						var old_unit_uuid = payload.get("old_unit_uuid", "")
+						var old_unit_uuid = payload.old_unit_uuid
 						for child in slot_view.get_children():
 							if child.is_queued_for_deletion():
 								continue
@@ -441,7 +440,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									child.queue_free()
 									
 						slot_view.add_child(new_view)
-						var new_snapshot = payload.get("new_unit_snapshot", {})
+						var new_snapshot = payload.new_unit_snapshot
 						if not new_snapshot.is_empty():
 							var new_location = LocationIdentifier.new(container_tag, index)
 							new_view.populate(new_location, new_snapshot, false)
@@ -497,16 +496,16 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.GOLD_GAIN:
 				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				var origin_uuid = payload.get("origin_uuid", "")
-				var target_gold_amount = payload.get("target_gold_amount", -1)
+				var amount = payload.amount
+				var origin_uuid = payload.origin_uuid
+				var target_gold_amount = payload.target_gold_amount
 				if has_method("_animate_gold_gain"):
 					await _animate_gold_gain(origin_uuid, amount, target_gold_amount)
 
 			CombatEvent.Type.TOKEN_GAIN:
 				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				var origin_uuid = payload.get("origin_uuid", "")
+				var amount = payload.amount
+				var origin_uuid = payload.origin_uuid
 				if has_method("_animate_token_gain"):
 					await _animate_token_gain(origin_uuid, amount)
 
@@ -520,9 +519,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.SLOT_EFFECT_CHANGE:
 				var payload = event.visual_payload
-				var container_tag: StringName = payload.get("container_tag", &"")
-				var slot_index: int = int(payload.get("slot_index", -1))
-				var to_effect: StringName = payload.get("to_effect", &"")
+				var container_tag: StringName = payload.container_tag
+				var slot_index: int = payload.slot_index
+				var to_effect: StringName = payload.to_effect
 				if has_method("_get_slot_view"):
 					var slot_view = _get_slot_view(container_tag, slot_index)
 					if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
@@ -607,40 +606,18 @@ func register_dynamic_position(uuid: String, view) -> void:
 		_visual_registry[uuid] = view
 
 func _play_trinket_activations_for_event(event: CombatEvent) -> void:
-	var activations: Array = []
-	
-	# Primary: new strongly typed array
-	if event.trinket_activations.size() > 0:
-		for act in event.trinket_activations:
-			activations.append(act)
-	
-	# Fallback: legacy visual payload keys
-	var payload: Dictionary = event.visual_payload
-	if payload.has("trinket_activations"):
-		var raw_activations = payload.get("trinket_activations", [])
-		if raw_activations is Array:
-			for raw_activation in raw_activations:
-				if raw_activation is Dictionary:
-					activations.append(raw_activation)
-	elif payload.has("trinket_visual_uuid") or payload.has("trinket_definition_id"):
-		activations.append({
-			"visual_uuid": String(payload.get("trinket_visual_uuid", "")),
-			"definition_id": StringName(payload.get("trinket_definition_id", &"")),
-			"is_enemy": bool(payload.get("trinket_is_enemy", false))
-		})
-	
-	for activation in activations:
-		var act_visual_uuid := String(activation.get("visual_uuid", ""))
+	for activation in event.trinket_activations:
+		var act_visual_uuid := activation.visual_uuid
 		play_trinket_activation(
 			act_visual_uuid,
-			StringName(activation.get("definition_id", &"")),
-			bool(activation.get("is_enemy", false))
+			activation.definition_id,
+			activation.is_enemy
 		)
 		# The trinket activation registers the view under visual_uuid (origin UUID).
 		# The BUFF/DAMAGE event's visual_payload.source_uuid may be the combat UUID,
 		# which is different. Register the same view under that UUID too so the
 		# projectile in BuffAnimation can locate its source.
-		var event_source_uuid := String(payload.get("source_uuid", ""))
+		var event_source_uuid := event.visual_payload.source_uuid
 		if not event_source_uuid.is_empty() and event_source_uuid != act_visual_uuid:
 			var snap = get_snapshot_position(act_visual_uuid)
 			if not snap.is_empty():
@@ -769,25 +746,25 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 	
 	match event.type:
 		CombatEvent.Type.DAMAGE:
-			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			var amount = abs(event.visual_payload.amount)
 			info["description"] = "Deals %d damage" % amount
 		CombatEvent.Type.HEAL:
-			var amount = int(event.visual_payload.get("amount", 0))
+			var amount = event.visual_payload.amount
 			info["description"] = "Heals for %d" % amount
 		CombatEvent.Type.BUFF:
-			var stat = String(event.visual_payload.get("stat", ""))
-			var amount = int(event.visual_payload.get("amount", 0))
+			var stat = event.visual_payload.stat
+			var amount = event.visual_payload.amount
 			info["description"] = "+%d %s" % [amount, stat.to_upper()]
 		CombatEvent.Type.DEATH:
 			info["description"] = "Dies"
 		CombatEvent.Type.SUMMON:
 			info["description"] = "Summoned"
 		CombatEvent.Type.KAMIKAZE_ATTACK:
-			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			var amount = abs(event.visual_payload.amount)
 			info["description"] = "Kamikaze for %d damage" % amount
 		CombatEvent.Type.STATUS_EFFECT:
-			var stat = String(event.visual_payload.get("stat", ""))
-			var amount = int(event.visual_payload.get("amount", 0))
+			var stat = event.visual_payload.stat
+			var amount = event.visual_payload.amount
 			info["description"] = "%s %d" % [stat.trim_suffix("_stacks").to_upper(), amount]
 		CombatEvent.Type.LETHAL_SAVE:
 			info["description"] = "Saved from lethal damage"
@@ -796,8 +773,8 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 		CombatEvent.Type.TRANSFORM:
 			info["description"] = "Transforms"
 		CombatEvent.Type.SLOT_EFFECT_CHANGE:
-			var to_effect: String = String(event.visual_payload.get("to_effect", ""))
-			var slot_index: int = int(event.visual_payload.get("slot_index", -1))
+			var to_effect: String = String(event.visual_payload.to_effect)
+			var slot_index: int = event.visual_payload.slot_index
 			info["description"] = "Slot %d becomes %s" % [slot_index + 1, to_effect]
 		_:
 			info["description"] = event.get_type_name()
@@ -943,17 +920,17 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 	var total_wait_token = 0.5 + (tokens_to_spawn * stagger_delay)
 	await AnimationConstants.create_pausable_timer(get_tree(), total_wait_token).timeout
 
-func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: Dictionary) -> void:
+func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: CombatPayload) -> void:
 	var source_view = _visual_registry.get(source_uuid)
 	var target_view = _visual_registry.get(target_uuid)
 	
-	var item_icon_path = payload.get("item_icon_path", "")
+	var item_icon_path = payload.item_icon_path
 	
 	# Extract chronological stats from the payload so we do not query the "future" simulated state
-	var old_hp = int(payload.get("old_hp", 0))
-	var new_hp = int(payload.get("new_hp", 0))
-	var old_pwr = int(payload.get("old_pwr", 0))
-	var new_pwr = int(payload.get("new_pwr", 0))
+	var old_hp = payload.old_hp
+	var new_hp = payload.new_hp
+	var old_pwr = payload.old_pwr
+	var new_pwr = payload.new_pwr
 	
 	var hp_diff = new_hp - old_hp
 	var pwr_diff = new_pwr - old_pwr

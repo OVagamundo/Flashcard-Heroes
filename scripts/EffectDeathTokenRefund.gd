@@ -47,10 +47,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"ability_holder_uuid": _source_uuid,
 			"ability_id": "ability_trinket_token_return_charm",
 			"amount": tier,
-			"visual_payload": {
-				"amount": tier,
-				"origin_uuid": dying_uuid
-			}
+			"visual_payload": _make_token_payload(tier, dying_uuid)
 		}))
 
 		result.state_applied = true
@@ -59,3 +56,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Non-simulation (live/direct call fallback): add tokens directly to live state
 	battle_manager.add_gacha_token(tier)
 	return tier
+
+func _make_token_payload(amount: int, origin_uuid: String) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = amount
+	payload.origin_uuid = origin_uuid
+	return payload

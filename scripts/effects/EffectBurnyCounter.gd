@@ -62,11 +62,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				result.add_event(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [current_target_uuid],
-					"visual_payload": {
-						"guardian_uuid": guardian.ball_uuid,
-						"original_target_uuid": current_target_uuid,
-						"damage": current_damage
-					}
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, current_target_uuid)
 				}))
 				current_target_uuid = guardian.ball_uuid
 				target_inst = guardian
@@ -95,22 +91,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_uuids": [current_target_uuid],
 			"is_simulation": context.get("is_simulation", false)
 		})
-		dmg_event.visual_payload = {
-			"source_uuid": current_source_uuid,
-			"amount": current_damage,
-			"stat": "hp",
-			"attack_type": "ranged",
-			"skip_bump": true, # Bounces don't bump
-			"projectile_data": {"stat": "hp", "amount": current_damage, "color": "red"},
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_old_armor": [old_armor],
-			"targets_new_armor": [new_armor],
-			"targets_old_burn": [old_burn] if should_apply_burn else [],
-			"targets_new_burn": [new_burn] if should_apply_burn else [],
-			"apply_burn": should_apply_burn,
-			"armor_consumed": [armor_consumed]
-		}
+		var damage_payload := CombatPayload.damage(current_source_uuid, current_damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+		damage_payload.attack_type = "ranged"
+		damage_payload.skip_bump = true
+		damage_payload.projectile = CombatProjectile.new("hp", current_damage, "red")
+		damage_payload.targets_old_burn = [old_burn] if should_apply_burn else []
+		damage_payload.targets_new_burn = [new_burn] if should_apply_burn else []
+		damage_payload.apply_burn = should_apply_burn
+		dmg_event.visual_payload = damage_payload
 		result.events.append(dmg_event)
 		
 		# 3. Trigger Reactions

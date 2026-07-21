@@ -69,18 +69,16 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"text": "%s grants %s +%d %s" % [holder_name, target_name, buff_amount, stat_label]
 			}))
 			
-			# Build visual_payload with correct key names
-			var visual_payload := {
-				"source_uuid": holder_uuid,
-				"amount": buff_amount,
-				"stat": buff_stat
-			}
+			var visual_payload := CombatPayload.new()
+			visual_payload.source_uuid = holder_uuid
+			visual_payload.amount = buff_amount
+			visual_payload.stat = buff_stat
 			if buff_stat == "pwr":
-				visual_payload["targets_old_pwr"] = [old_val]
-				visual_payload["targets_new_pwr"] = [new_val]
+				visual_payload.targets_old_pwr = [old_val]
+				visual_payload.targets_new_pwr = [new_val]
 			else:
-				visual_payload["targets_old_val"] = [old_val]
-				visual_payload["targets_new_val"] = [new_val]
+				visual_payload.targets_old_val = [old_val]
+				visual_payload.targets_new_val = [new_val]
 			
 			# BUFF event
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {

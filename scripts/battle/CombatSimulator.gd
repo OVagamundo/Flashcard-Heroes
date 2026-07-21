@@ -630,20 +630,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 								out_events.remove_at(i)
 								break
 						
-						# Create KAMIKAZE_ATTACK event for animation
+						var kamikaze_payload := CombatPayload.damage(source_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+						kamikaze_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
 						out_events.append(CombatEvent.new(CombatEvent.Type.KAMIKAZE_ATTACK, {
 							"source_uuid": source_uuid,
 							"target_uuids": [target_uuid],
-							"visual_payload": {
-								"source_uuid": source_uuid,
-								"amount": damage,
-								"targets_old_hp": [old_hp],
-								"targets_new_hp": [new_hp],
-								"targets_old_armor": [old_armor],
-								"targets_new_armor": [new_armor],
-								"armor_consumed": [armor_consumed],
-								"spikes_data_list": spikes_data_list
-							}
+							"visual_payload": kamikaze_payload
 						}))
 						
 						# Fire on_hurt trigger
@@ -662,7 +654,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			if not effect_result.damaged_uuids.is_empty():
 				var result_hurt_start = _pending_reactions.size()
 				for damaged_uuid in effect_result.damaged_uuids:
-					var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
+					var damage_amount: int = effect_result.events[0].visual_payload.amount if not effect_result.events.is_empty() else 0
 					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid, C.CAUSE_ABILITY)
 				
 				drain_reactions_inline(result_hurt_start, bm)
@@ -1010,16 +1002,28 @@ func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm,
 		if event.ability_holder_uuid != request.source_uuid:
 			continue
 			
-		event.trinket_activations.append({
-			"visual_uuid": visual_uuid,
-			"definition_id": source.definition_id,
-			"is_enemy": is_enemy_trinket
-		})
-		event.visual_payload["trinket_activations"] = event.trinket_activations
+		event.trinket_activations.append(CombatTrinketActivation.new(source.definition_id, is_enemy_trinket, visual_uuid))
 
 # ============================================================================
 # CLEANUP
 # ============================================================================
+
+func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
+	return result
 
 func clear() -> void:
 	_actor_queue.clear()

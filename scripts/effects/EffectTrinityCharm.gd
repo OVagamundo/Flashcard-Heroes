@@ -40,10 +40,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 							"ability_holder_uuid": _source_uuid,
 							"ability_id": "ability_trinket_trinity_charm_draw",
 							"amount": 1,
-							"visual_payload": {
-								"amount": 1,
-								"origin_uuid": _source_uuid
-							}
+							"visual_payload": _make_token_payload(_source_uuid)
 						}))
 						result.state_applied = true
 						return result
@@ -57,8 +54,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		trinket.status_effects.erase(&"trinity_t2_drawn")
 		trinket.status_effects.erase(&"trinity_t3_drawn")
 		trinket.status_effects.erase(&"trinity_rewarded_this_cycle")
-		
-		# Return a valid result so simulation succeeds but does nothing visual
+
+			# Return a valid result so simulation succeeds but does nothing visual
 		if is_simulation:
 			var result := EffectResult.new()
 			result.state_applied = true
@@ -66,3 +63,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		return true
 
 	return EffectResult.empty()
+
+func _make_token_payload(source_uuid: String) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = 1
+	payload.origin_uuid = source_uuid
+	return payload
