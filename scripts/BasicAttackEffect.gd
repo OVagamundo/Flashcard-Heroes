@@ -80,18 +80,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_instance_valid(source_instance):
 		is_player_source = battle_manager._is_player_unit(source_instance)
 	
-	var burn_amount := 0
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
 	
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		
-	if fire_level >= 3:
-		if is_instance_valid(source_instance) and battle_manager._has_trait_soul(source_instance, "FIRE"):
-			burn_amount += 1
-			if fire_level >= 5:
-				burn_amount += 1
+	var burn_amount := 0
+	if is_instance_valid(source_instance):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source_instance)
 	
 	var should_apply_burn = burn_amount > 0
 	
@@ -103,7 +97,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				damage += burn_count
 				
 	# Guardian Sentinel Intercept
-	var would_be_lethal = target_instance.current_hp - damage <= 0
+	var target_armor = target_instance.get_status_effect_amount(&"armor")
+	var hp_damage = max(0, damage - target_armor)
+	var would_be_lethal = target_instance.current_hp - hp_damage <= 0
 	var tgt_is_player_unit = battle_manager._is_player_unit(target_instance)
 	var is_ally_damage = (tgt_is_player_unit != is_player_source)
 	
@@ -143,18 +139,29 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var old_armor = final_target.get_status_effect_amount(&"armor")
 	var old_burn = final_target.get_status_effect_amount(&"burn")
 	
-	var damage_result = battle_manager.apply_stat_delta(final_target, "hp", -damage, false, attacker_uuid)
+	var attack_type = parameters.get("attack_type", "melee")
 	
-	var new_hp = damage_result.get("new_hp", final_target.current_hp) if damage_result is Dictionary else final_target.current_hp
-	var armor_consumed = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-	var new_armor = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+	# Sniper Aim override
+	if is_instance_valid(source_instance):
+		for item_uuid in source_instance.equipped_item_uuids:
+			if not item_uuid.is_empty():
+				var item = battle_manager.get_instance_by_uuid(item_uuid)
+				if is_instance_valid(item) and item.definition_id == &"item_t3_g":
+					attack_type = "ranged"
+					break
+	var damage_type = C.DamageType.MELEE if attack_type == "melee" else C.DamageType.RANGED
+	var damage_result = battle_manager.apply_damage(final_target, damage, damage_type, attacker_uuid)
+	
+	var new_hp = damage_result.get("new_hp", final_target.current_hp) if not damage_result.is_empty() else final_target.current_hp
+	var armor_consumed = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+	var new_armor = damage_result.get("new_armor", old_armor) if not damage_result.is_empty() else old_armor
 	
 	var burn_val = old_burn
 	if should_apply_burn:
 		burn_val = battle_manager.apply_stat_delta(final_target, "burn_stacks", burn_amount)
 	
 	var spikes_data_list: Array[Dictionary] = []
-	if damage_result is Dictionary and damage_result.has("spikes_data"):
+	if not damage_result.is_empty() and damage_result.has("spikes_data"):
 		spikes_data_list.append(damage_result["spikes_data"])
 		
 	var impact_start: int = battle_manager.get_pending_reactions_size()
@@ -179,7 +186,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"targets_new_burn": [burn_val],
 		"apply_burn": should_apply_burn,
 		"armor_consumed": [armor_consumed],
-		"attack_type": "melee",
+		"attack_type": attack_type,
+		"projectile_data": {"stat": "hp", "amount": abs(damage), "color": "red"} if attack_type == "ranged" else {},
 		"original_target_uuids": [target_instance.ball_uuid], # The original target the attack aimed for
 		"spikes_data_list": spikes_data_list,
 		"windup_events": windup_events,

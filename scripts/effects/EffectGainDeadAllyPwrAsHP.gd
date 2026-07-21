@@ -53,7 +53,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		
 	var new_hp = source_unit.current_hp + amount
 	if not is_simulation:
-		new_hp = battle_manager.apply_stat_delta(source_unit, "hp", amount)
+		new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
 		
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"hero_starter_ally_death_absorb")

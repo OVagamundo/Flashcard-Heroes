@@ -58,7 +58,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Step 2: Calculate damage for frontmost slot + cascade_depth slots behind
 	# on_before_damage is triggered for each target in the loop below.
 	# on_hurt is triggered by CombatSimulator after applying damage from cascade_request.
-	var damage_data: Array = []
+	var damage_data: Array[EffectResult.CascadeRequestItem] = []
 	var current_damage = base_damage
 	var damage_index: int = 0 # For skip_bump logic
 	
@@ -103,11 +103,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		battle_manager.drain_pending_reactions_inline(0)
 		
 		# Add to damage data - CombatSimulator will handle applying damage and triggering on_hurt
-		damage_data.append({
-			"target": target.ball_uuid,
-			"amount": damage_amount,
-			"skip_bump": (damage_index > 0) # Only bump for the first actual hit
-		})
+		damage_data.append(EffectResult.CascadeRequestItem.new(
+			target.ball_uuid,
+			damage_amount,
+			(damage_index > 0) # Only bump for the first actual hit
+		))
 		
 		damage_index += 1
 		current_damage = current_damage * falloff
@@ -117,5 +117,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	# Return EffectResult with cascade_request for CombatSimulator to process
 	var result := EffectResult.new()
-	result.cascade_request = damage_data
+	var damage_type = parameters.get("damage_type", C.DamageType.MELEE)
+	result.cascade_request = EffectResult.CascadeRequest.new(
+		damage_type,
+		damage_data
+	)
 	return result

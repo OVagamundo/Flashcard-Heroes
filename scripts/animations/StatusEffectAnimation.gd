@@ -99,7 +99,8 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	elif stat == "burn_stacks": projectile_stat = "burn"
 	elif stat == "spikes_stacks" or stat == "spikes": projectile_stat = "spikes"
 	
-	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat)
+	var is_attack = (projectile_stat == "burn")
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat, is_attack)
 
 func _spawn_floating_status(animator: Node, target_uuid: String, amount: int, type: String) -> void:
 	var view = animator._visual_registry.get(target_uuid)

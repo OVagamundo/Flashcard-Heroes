@@ -460,8 +460,8 @@ func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vect
 	tween.tween_callback(func():
 		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
-		if is_instance_valid(main_node) and main_node.has_method("trigger_machine_bounce"):
-			main_node.trigger_machine_bounce(tier)
+		if is_instance_valid(main_node) and main_node.has_method("animate_machine_inventory_change"):
+			main_node.animate_machine_inventory_change(tier, 1)
 	)
 
 func _on_leave_pressed() -> void:

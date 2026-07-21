@@ -25,6 +25,15 @@ const CONTAINER_DISCARD_PILE = &"DiscardPile"
 const CONTAINER_REWARDS = &"Rewards"
 const CONTAINER_SHOP = &"Shop"
 
+# --- Combat & Damage ---
+enum DamageType {
+	MELEE,   # Mitigated by Armor, Triggers Spikes, Triggers on_hurt
+	RANGED,  # Mitigated by Armor, NO Spikes, Triggers on_hurt
+	MAGIC,   # Mitigated by Armor, NO Spikes, Triggers on_hurt
+	BURN,    # NO Armor, NO Spikes, Triggers on_hurt (Requires CAUSE_STATUS_EFFECT)
+	SPIKES   # Mitigated by Armor, NO Spikes, Triggers on_hurt
+}
+
 # --- Entity & Category Types ---
 const CATEGORY_UNIT = &"UNIT"
 const CATEGORY_ITEM = &"ITEM"
@@ -74,6 +83,7 @@ const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
 const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
 const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
+const TRIGGER_ON_BOARD_ENTER = &"on_board_enter" # When this specific unit enters the board (drawn, summoned, merged, or battle start)
 const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
 const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
 const TRIGGER_ON_MERGE = &"on_merge" # Any merge completed on the battle board (lineup/bench, unit/item)
@@ -145,6 +155,7 @@ const ENEMY_TRINKET_CAP: int = 5
 #[-100] EXTRA_ACTION: E.g., granting an extra turn. Must be lowest priority.
 
 const PRIORITY_GUARDIAN_INTERCEPT = 300
+const PRIORITY_ITEM_TRANSFER = 220
 const PRIORITY_DEATH_DAMAGE = 215
 const PRIORITY_TRINKET_SUMMON = 210
 const PRIORITY_UNIT_SUMMON = 205

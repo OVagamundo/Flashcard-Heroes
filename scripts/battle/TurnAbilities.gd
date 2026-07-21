@@ -127,14 +127,15 @@ static func trigger_on_damage_dealt(actual_attacker_uuid: String, victim_uuid: S
 ## @param victim_team: String - "PLAYER" or "ENEMY"
 ## @param victim_current_hp: int - The victim's current HP after damage
 ## @param cause: StringName - The cause of damage (C.CAUSE_ATTACK, etc.)
-static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName) -> void:
+static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName, status_id: StringName = &"") -> void:
 	var hurt_context: Dictionary = {
 		"victim_uuid": victim_uuid,
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid,
 		"victim_team": victim_team,
 		"victim_current_hp": victim_current_hp,
-		"trigger_cause": cause
+		"trigger_cause": cause,
+		"status_id": status_id
 	}
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
 

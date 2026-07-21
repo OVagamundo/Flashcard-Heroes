@@ -2,6 +2,7 @@
 extends Node
 
 signal turn_animation_finished
+signal all_chains_finished
 
 const ANIM_TIMEOUT_DURATION = 1.1
 const BUMP_DURATION = 0.5
@@ -55,9 +56,11 @@ func play_async_chain(chain_events: Array[CombatEvent], snapshot: Dictionary = {
 	await _animate_events(chain_events)
 	
 	_active_async_chains -= 1
-	if _active_async_chains == 0 and not _is_playing_sequence:
-		_visual_registry.clear()
-		_position_snapshot.clear()
+	if _active_async_chains == 0:
+		emit_signal("all_chains_finished")
+		if not _is_playing_sequence:
+			_visual_registry.clear()
+			_position_snapshot.clear()
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	_is_playing_sequence = true
@@ -404,8 +407,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						await tween.finished
 						anim_capsule.queue_free()
 						Audio.play_sfx("coin_land")
-						if main_node.has_method("trigger_machine_bounce"):
-							main_node.trigger_machine_bounce(unit_tier)
+						if main_node.has_method("animate_machine_inventory_change"):
+							main_node.animate_machine_inventory_change(unit_tier, 1)
 						arc_completed = true
 
 				if not is_inventory_summon and is_instance_valid(battle_view):
@@ -582,6 +585,17 @@ func get_snapshot_position(uuid: String) -> Dictionary:
 		
 	return {}
 
+func get_live_position(uuid: String) -> Dictionary:
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.is_inside_tree():
+		var rect = view.get_global_rect()
+		return {
+			"position": rect.position,
+			"size": rect.size,
+			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+		}
+	return get_snapshot_position(uuid)
+
 func register_dynamic_position(uuid: String, view) -> void:
 	if is_instance_valid(view):
 		var rect = view.get_global_rect()
@@ -616,16 +630,34 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 		})
 	
 	for activation in activations:
+		var act_visual_uuid := String(activation.get("visual_uuid", ""))
 		play_trinket_activation(
-			String(activation.get("visual_uuid", "")),
+			act_visual_uuid,
 			StringName(activation.get("definition_id", &"")),
 			bool(activation.get("is_enemy", false))
 		)
+		# The trinket activation registers the view under visual_uuid (origin UUID).
+		# The BUFF/DAMAGE event's visual_payload.source_uuid may be the combat UUID,
+		# which is different. Register the same view under that UUID too so the
+		# projectile in BuffAnimation can locate its source.
+		var event_source_uuid := String(payload.get("source_uuid", ""))
+		if not event_source_uuid.is_empty() and event_source_uuid != act_visual_uuid:
+			var snap = get_snapshot_position(act_visual_uuid)
+			if not snap.is_empty():
+				_position_snapshot[event_source_uuid] = snap
+				# Also copy the visual registry entry
+				var view_ref = _visual_registry.get(act_visual_uuid)
+				if is_instance_valid(view_ref):
+					_visual_registry[event_source_uuid] = view_ref
 		# No await timer here to allow concurrent playback
 
 func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
 	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
 	if is_instance_valid(view):
+		# Register the trinket view in the position snapshot so subsequent
+		# BuffAnimation / DamageAnimation projectiles can locate it as a source.
+		if not visual_uuid.is_empty():
+			register_dynamic_position(visual_uuid, view)
 		if view.has_method("play_trinket_activation_bounce"):
 			view.play_trinket_activation_bounce()
 		elif view.has_method("play_landing_bounce"):

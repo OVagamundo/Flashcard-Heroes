@@ -36,9 +36,9 @@ ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by
 ability.unit_tier1a_passive_heal_l2.desc,"When hurt BY AN ATTACK, Heal this unit by 2 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 2 de HP."
 ability.unit_tier1a_passive_heal_l3.desc,"When hurt BY AN ATTACK, Heal this unit by 3 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 3 de HP."
 ability.unit_tier1b_counter_on_hurt.name,Retaliation,RetaliaÃ§Ã£o
-ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR. Ativa mesmo se letal."
-ability.unit_tier1b_counter_on_hurt_l2.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR, and shoot a fire projectile adding PWR as burn to a random unit. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR, e dispara um projÃ©til de fogo adicionando PWR como queimadura a uma unidade aleatÃ³ria. Ativa mesmo se letal."
-ability.unit_tier1b_counter_on_hurt_l3.desc,"When hurt BY AN ATTACK, Counter-attack the attacker for 100% of PWR, and shoot 2 fire projectiles adding PWR as burn to random units. Triggers even if lethal.","Quando ferido POR UM ATAQUE, Contra-ataca o atacante por 100% de PWR, e dispara 2 projÃ©teis de fogo adicionando PWR como queimadura a unidades aleatÃ³rias. Ativa mesmo se letal."
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
+ability.unit_tier1b_counter_on_hurt_l2.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para outro inimigo aleatório, causando metade do dano."
+ability.unit_tier1b_counter_on_hurt_l3.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para 2 inimigos aleatórios, causando metade do dano por salto."
 unit_t2_c.name,Knight,Cavaleiro
 unit_t2_c.desc,Valiant knight.,Cavaleiro valente. Passiva: [Impulso de Moral]
 item_t1_a.name,Koi's Blessing,BÃªnÃ§Ã£o da Carpa
@@ -427,9 +427,9 @@ ability.mud_coating_l3.desc,"When healed, gain 3 Armor and 3 Spikes.","Quando cu
 unit_t2_j.name,Steam Wisp,Fogo FÃ¡tuo
 unit_t2_j.desc,Scalding spirit.,EspÃ­rito fervilhante. Passiva: [Escaldar]
 ability.scald.name,Scald,Escaldar
-ability.scald_l1.desc,"When this unit is healed, deal damage equal to 100% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 100% do valor da cura ao inimigo da frente."
-ability.scald_l2.desc,"When this unit is healed, deal damage equal to 150% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 150% do valor da cura ao inimigo da frente."
-ability.scald_l3.desc,"When this unit is healed, deal damage equal to 200% of the heal amount to the frontmost enemy.","Quando esta unidade é curada, causa dano igual a 200% do valor da cura ao inimigo da frente."
+ability.scald_l1.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
+ability.scald_l2.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para 1 alvo extra, reduzindo pela metade os acúmulos aplicados."
+ability.scald_l3.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
 unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
 unit_t3_g.desc,Mysterious traveler.,Viajante misterioso. Passiva: [MeditaÃ§Ã£o Silenciosa]
 ability.unit_tier3g_bench_growth.name,Quiet Meditation,MeditaÃ§Ã£o Silenciosa
@@ -589,7 +589,7 @@ item.trinket_hero_catalyst.desc,"Whenever an ally merges, grants +1 HP and +1 PW
 ability.hero_catalyst.name,"Hero's Catalyst","Catalisador do Herói"
 ability.hero_catalyst.desc,"Grants the Hero +1 HP and +1 PWR on any merge.","Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
 trinket.purifying_pendant.name,"Purifying Pendant","Pingente Purificador"
-trinket.purifying_pendant.desc,"At turn start, affected allies with a negative status effect gain +1 HP.","No inÃ­cio do turno, aliados afetados com efeitos negativos ganham +1 HP."
+trinket.purifying_pendant.desc,"When an ally takes damage from a negative status effect, removes all remaining stacks of that effect.","Quando um aliado recebe dano de um efeito de status negativo, remove todas as pilhas restantes desse efeito."
 
 trinket.awe_inspiring_totem.name,"Awe Inspiring Totem","Totem Inspirador"
 trinket.awe_inspiring_totem.desc,"At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.","No inÃ­cio do turno, se houver uma unidade de NÃ­vel 3 ou Tier 3 na formaÃ§Ã£o, concede +1 HP e +1 PWR a todas as outras unidades de tier e nÃ­vel inferiores."
@@ -633,9 +633,9 @@ ability.unit_tier3a_mirror_strike_l1.desc,"Attacks enemy in opposite mirror slot
 ability.unit_tier3a_mirror_strike_l2.desc,"Attacks enemy in opposite mirror slot for 150% damage.","Ataca o inimigo no espaço espelhado oposto causando 150% de dano."
 ability.unit_tier3a_mirror_strike_l3.desc,"Attacks enemy in opposite mirror slot for 200% damage.","Ataca o inimigo no espaço espelhado oposto causando 200% de dano."
 ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
-ability.unit_tier3b_guardian_sacrifice_l1.desc,"Leaps to intercept lethal damage on allies and gains 2 Armor.","Salta para interceptar dano letal em aliados e ganha 2 de Armadura."
-ability.unit_tier3b_guardian_sacrifice_l2.desc,"Leaps to intercept lethal damage on allies and gains 4 Armor.","Salta para interceptar dano letal em aliados e ganha 4 de Armadura."
-ability.unit_tier3b_guardian_sacrifice_l3.desc,"Leaps to intercept lethal damage on allies and gains 6 Armor.","Salta para interceptar dano letal em aliados e ganha 6 de Armadura."
+ability.unit_tier3b_guardian_sacrifice_l1.desc,"Leaps to intercept lethal damage on allies.","Salta para interceptar dano letal em aliados."
+ability.unit_tier3b_guardian_sacrifice_l2.desc,"Leaps to intercept lethal damage on allies and gains 1 Armor.","Salta para interceptar dano letal em aliados e ganha 1 de Armadura."
+ability.unit_tier3b_guardian_sacrifice_l3.desc,"Leaps to intercept lethal damage on allies and gains 2 Armor.","Salta para interceptar dano letal em aliados e ganha 2 de Armadura."
 ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
 ability.unit_tier3c_soul_summon_l1.desc,"Summons a random Level 1 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
 ability.unit_tier3c_soul_summon_l2.desc,"Summons a random Level 2 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 2 ao morrer."
@@ -657,7 +657,7 @@ ability.doppleganger_scale_l2.desc,"Gains +4 PWR for each other Doppleganger in 
 ability.doppleganger_scale_l3.desc,"Gains +5 PWR for each other Doppleganger in battle.","Ganha +5 de PWR para cada outro Doppleganger em batalha."
 ability.doppleganger_death_l1.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
 ability.doppleganger_death_l2.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
-ability.doppleganger_death_l3.desc,"Summons 2 copies of itself on death into the Gacha Machine.","Invoca 2 cópias de si mesmo ao morrer na Máquina de Gacha."
+ability.doppleganger_death_l3.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
 ability.unit_tier2a_defensive_stance_l1.desc,"Gain +2 HP before taking damage.","Ganha +2 de HP antes de receber dano."
 ability.unit_tier2a_defensive_stance_l2.desc,"Gain +4 HP before taking damage.","Ganha +4 de HP antes de receber dano."
 ability.unit_tier2a_defensive_stance_l3.desc,"Gain +6 HP before taking damage.","Ganha +6 de HP antes de receber dano."

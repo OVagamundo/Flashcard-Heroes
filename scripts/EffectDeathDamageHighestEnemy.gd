@@ -2,6 +2,8 @@
 class_name EffectDeathDamageHighestEnemy
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Death's Bargain effect: When holder dies, deal damage equal to half of the
 ## highest HP enemy's HP to that enemy with a kamikaze attack animation.
 
@@ -43,11 +45,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return result
 	
 	# Create kamikaze request for CombatSimulator to handle
-	result.kamikaze_request = {
-		"source_uuid": dying_uuid, # The dying unit is the source of the kamikaze
-		"target_uuid": target_uuid,
-		"damage": damage,
-		"dying_location": dying_location
-	}
+	result.kamikaze_request = EffectResult.KamikazeRequest.new(
+		dying_uuid,
+		target_uuid,
+		damage,
+		C.DamageType.RANGED,
+		target_inst.current_hp # dying_max_hp? It's just a dummy value or target HP
+	)
 	
 	return result

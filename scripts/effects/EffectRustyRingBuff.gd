@@ -69,7 +69,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -77,7 +77,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -134,8 +134,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			state_applied_any = true
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
 	if is_simulation:

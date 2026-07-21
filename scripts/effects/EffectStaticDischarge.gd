@@ -25,7 +25,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Set re-entrancy guard in battle_manager to avoid infinite loops
 	battle_manager._is_applying_static_damage = true
-	var hp_res = battle_manager.apply_stat_delta(target_unit, "hp", -1, true, source_uuid)
+	var hp_res = battle_manager.apply_damage(target_unit, 1, C.DamageType.RANGED, source_uuid)
 	battle_manager._is_applying_static_damage = false
 	
 	var new_hp = target_unit.current_hp

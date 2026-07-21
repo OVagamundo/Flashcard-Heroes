@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 parameters = {
-"multiplier": 2.0
+"extra_bounces": 2
 }
-target_type = &"FRONTMOST_ENEMY"
+target_type = &"RANDOM_ENEMY"

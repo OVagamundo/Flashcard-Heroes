@@ -244,6 +244,9 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
+			
+			# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		else:
 			# Still has pending counter-attacks, keep deferred
 			remaining_deferred.append(uuid)
@@ -522,7 +525,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var insert_index = cascade_evts.size()
 		for i in range(cascade_evts.size()):
 			var type = cascade_evts[i].type
-			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM or type == CombatEvent.Type.ITEM_TRANSFER:
+			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM:
 				insert_index = i
 				break
 				

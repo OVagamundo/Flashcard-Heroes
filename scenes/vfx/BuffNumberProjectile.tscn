@@ -1,9 +1,9 @@
-[gd_scene load_steps=2 format=3 uid="uid://statprojectile001"]
+[gd_scene format=3 uid="uid://buffnumbpr0j1"]
 
-[ext_resource type="Script" path="res://scripts/vfx/StatProjectile.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/vfx/BuffNumberProjectile.gd" id="1_script"]
 [ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_font"]
 
-[node name="StatProjectile" type="Node2D"]
+[node name="BuffNumberProjectile" type="Node2D"]
 script = ExtResource("1_script")
 
 [node name="Icon" type="Sprite2D" parent="."]

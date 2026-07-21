@@ -9,7 +9,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var copy_count = 0
 	
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source):
+	if not is_instance_valid(source) or battle_manager.is_dead_this_turn(source_uuid):
 		return EffectResult.empty() if is_simulation else null
 		
 	var source_is_player = _is_player_unit_team(source, battle_manager)
@@ -18,6 +18,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if uuid == source_uuid: 
 			continue
 		var inst = all_instances[uuid]
+		if not is_instance_valid(inst):
+			continue
 		if inst.definition_id == &"unit_t3_i": 
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
@@ -40,9 +42,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Apply standard PWR modification
 	source.apply_pwr_delta(delta, {"silent": is_simulation})
 
-	if is_simulation:
+	if is_simulation and _is_on_board(source):
 		var result := EffectResult.new()
-		var event_type = CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DAMAGE
+		var event_type = CombatEvent.Type.BUFF
 
 		# Since this is a self-buff from a unit, the visual source should be the combat instance's UUID
 		# so that it maps correctly to the position snapshot, and the projectile originates from itself.
@@ -53,7 +55,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			"visual_payload": {
 				"source_uuid": source_uuid,
 				"stat": "pwr",
-				"amount": abs(delta),
+				"amount": delta,
 				"targets_new_pwr": [source.current_pwr]
 			}
 		}))
@@ -70,3 +72,9 @@ func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool
 	if not is_instance_valid(inst):
 		return false
 	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)
+
+func _is_on_board(inst: GachaBallInstance) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	var container: StringName = inst.location_container_tag
+	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"

@@ -15,5 +15,4 @@ name_key = "ability.unit_tier3b_guardian_sacrifice.name"
 trigger = &"passive_intercept"
 description_key = "ability.unit_tier3b_guardian_sacrifice_l1.desc"
 priority = 300
-effects = Array[Resource]([SubResource("EffectModifyStat_Armor_1")])
 max_level = 1

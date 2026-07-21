@@ -71,7 +71,9 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 			if bm.has_method("block_ui_updates"):
 				bm.block_ui_updates()
 				
+			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
 			AbilityResolver.process_trigger(&"on_merge", merge_context)
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 			
 			var pending_count: int = 0
 			if bm.has_method("get_pending_reactions_size"):

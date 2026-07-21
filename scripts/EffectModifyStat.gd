@@ -45,11 +45,29 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# The on_hurt/on_kill trigger logic is handled by CombatSimulator via EffectHandlers
 		if stat == "hp" and amount < 0:
 			var damage_result := EffectResult.new()
-			damage_result.damage_request = {
-				"stat": stat,
-				"amount": amount,
-				"targets": valid_targets
-			}
+			var damage_type = parameters.get("damage_type", -1)
+			if damage_type == -1:
+				var src_inst = battle_manager.get_instance_by_uuid(_source_uuid) if _source_uuid != "" else null
+				if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
+					var src_cat = src_inst.get_definition().category
+					if src_cat == &"TRINKET":
+						damage_type = C.DamageType.MAGIC
+					else:
+						# Unit or Item on a Unit
+						if self.target_type == C.TARGET_FRONTMOST_ENEMY:
+							damage_type = C.DamageType.MELEE
+						else:
+							damage_type = C.DamageType.RANGED
+				else:
+					damage_type = C.DamageType.MAGIC
+			
+			damage_result.damage_request = EffectResult.DamageRequest.new(
+				abs(amount),
+				damage_type,
+				valid_targets,
+				false,
+				C.CAUSE_ABILITY
+			)
 			return damage_result
 		
 		# HEALS (positive HP) and BUFFS (positive PWR) use new EffectResult path
@@ -271,6 +289,6 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			battle_manager.apply_stat_delta(inst, stat, amount, false, _source_uuid)
+			battle_manager.apply_stat_delta(inst, stat, amount)
 	# Non-simulation return (legacy compatibility)
 	return amount

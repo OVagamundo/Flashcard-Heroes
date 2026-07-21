@@ -1,15 +1,3 @@
-Perfect. That clears all mechanical ambiguities.
-
-Below is the complete, clean, assumption-free document built strictly from your provided materials and your clarifications.
-
-No engine details.
-No implementation internals.
-No speculation.
-
-Only mechanical truth.
-
----
-
 # Flashcard Heroes
 
 # Deterministic Gameplay Specification
@@ -161,7 +149,7 @@ The game automatically determines intent when dropping one entity onto another:
 3. **Use**: Consumable dropped on Unit → Instant effect.
 4. **Move/Swap**: Positions are swapped if legal.
 
-## 5.2 Management Actions
+## 5.3 Management Actions
 During Management Phase, the player may:
 
 1. **Draw**
@@ -314,7 +302,7 @@ Reactions are resolved using a **Priority Band** system:
 
 ---
 
-## 8.2 Default Attack
+## 8.3 Default Attack
 
 * Deals damage equal to current PWR.
 * Targets frontmost enemy.
@@ -323,7 +311,7 @@ Reactions are resolved using a **Priority Band** system:
 
 ---
 
-## 8.3 Damage
+## 8.4 Damage
 
 * Immediate HP stat reduction (but has to consider reaction effects first like armor and other effects).
 * If HP ≤ 0 → death.
@@ -331,7 +319,7 @@ Reactions are resolved using a **Priority Band** system:
 
 No randomness involved.
 
-## 8.4 Battlefield Slots
+## 8.5 Battlefield Slots
 
 Lineup slots can contain battlefield slot abilities, which affect the unit placed on them:
 * **Burn Slot**: Adds 1 stack of Burn to the unit standing on it every turn at the start of the turn (after DOT application). Burn stacks applied or held on units in a Burn slot do not decay.
@@ -401,8 +389,8 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 | :--- | :--- | :--- | :--- |
 | **Fire** | Pressure | 3/5/7/9 | Applies Burn on attack, more stacks per quantity threshold. 7+ applies to entire enemy team. |
 | **Earth** | Defense | 3/5/7/9 | Grants Armor (3,5,7,9) and Spikes (7,9) to allies. Earth units gain double armor. |
-| **Water** | Resilience | 2 | Heals adjacent allies at turn start. |
-| **Wind** | Disruption | 2 | Steals PWR from mirrored enemy slot. |
+| **Water** | Resilience | 2/4/6/8 | Heals adjacent allies at turn start. |
+| **Air** | Disruption | 2/4/6/8 | Steals PWR from mirrored enemy slot. |
 
 # 11. Stat Scaling Rules
 
@@ -414,7 +402,7 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 
 ---
 
-# 11. Flashcard Resource Engine
+# 12. Flashcard Resource Engine
 
 ## In Battle:
 
@@ -451,9 +439,9 @@ Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. Th
 
 ---
 
-# 12. Risk Calculation Framework
+# 13. Risk Calculation Framework
 
-## 12.1 Draw Probability
+## 13.1 Draw Probability
 
 If Tier Pool contains 4 Gachaballs,
 Chance of specific Gachaball = 1 / 4
@@ -462,7 +450,7 @@ Player can inspect and calculate manually.
 
 ---
 
-## 12.2 Merge Risk
+## 14.2 Merge Risk
 
 Merging:
 
@@ -473,14 +461,14 @@ Irreversible during battle.
 
 ---
 
-## 12.3 Token Banking Risk
+## 14.3 Token Banking Risk
 
 * Tokens carry between turns.
 * Not spending increases future draw flexibility for future turns at the cost of power for the current turn.
 
 ---
 
-## 12.4 Tier Compression Risk
+## 14.4 Tier Compression Risk
 
 Tier 3:
 
@@ -491,7 +479,9 @@ Tier 3:
 
 ---
 
-## 13.1 Encounter Budget
+# 14. Encounter & Shop System
+
+## 18.1 Encounter Budget
 * Uses Gold Budget.
 * Budget formula: `3 + (Day - 1)`.
 * Buys units/items using tier gold cost.
@@ -499,7 +489,7 @@ Tier 3:
 * **Elite Pity System**: The encounter generator dynamically adjusts weights for elite boss variants based on the run's encounter history. Each prior encounter with a specific elite significantly reduces its weight for future selection, ensuring variety between variants (e.g., Dust Sentinel vs. Dust Overlord).
 * Boss Reinforcements use 33% of the daily budget (baseline `3 + (Day-1)`).
 
-## 13.2 Shop Node Logic
+## 14.2 Shop Node Logic
 - **Stock**: 3 random GachaBalls.
 - **Rerolling**: 
     - Base cost: 1 Gold.
@@ -507,7 +497,7 @@ Tier 3:
     - Reset: Resets to 1 Gold on next shop entry.
     - **Stock Type**: Draws exclusively from the World Pool (all unlocked definitions of the appropriate tier).
 
-## 13.3 Black Market Node
+## 14.3 Black Market Node
 - **Primary Actions**:
     - **Remove**: Permanently deletes a Gachaball from the run collection.
     - **Transform**: Replaces a Gachaball with a random one of the same tier.
@@ -515,7 +505,7 @@ Tier 3:
     - **Remove**: Base cost **5 Gold**. Cost increases by **+1 Gold** for each subsequent removal during the run.
     - **Transform**: Flat fee of **5 Gold**. Cost does not escalate.
 
-## 13.4 Post-Battle Reward Sequence (PrizeLineup)
+## 14.4 Post-Battle Reward Sequence (PrizeLineup)
 After victory, the player enters the Reward scene:
 - **Prize Lineup**: 5 random GachaBalls (Units/Items/Trinkets) are displayed.
 - **Service Area**: 
@@ -525,9 +515,9 @@ After victory, the player enters the Reward scene:
 - **Auto-Collection**: If the player attempts to leave the scene with uncollected items, the system automatically triggers sequential collection for all remaining prizes to prevent accidental reward loss.
 - **Machine Interaction**: The Gacha Machines remain active for spending tokens banked during the final battle turn. Any remaining tokens are lost upon leaving this scene.
 
-# 14. UI/UX Hierarchy & Inspection
+# 15. UI/UX Hierarchy & Inspection
 
-## 14.1 Inspection Window System
+## 18.1 Inspection Window System
 Rules for locking and closing inspection modals:
 - **Opening**: Hover to preview; Click to "Lock" open.
 - **Robust Sizing**: Windows utilize a "Show-before-Measure" strategy, rendering with alpha 0.0 for 3 frames before positioning. To prevent these invisible windows from intercepting mouse events (especially for units near the screen origin), they are moved to an off-screen "waiting room" at `Vector2(-2000, -2000)` during the measurement phase.
@@ -539,7 +529,7 @@ Rules for locking and closing inspection modals:
     - Click Background of specific Window: Closes its children only.
     - Drip Selection: Opening any window deselects active GachaBalls.
 
-# 15. The Economic Theory of Board Value
+# 16. The Economic Theory of Board Value
 
 The following must remain true for solvability and balance:
 
@@ -558,7 +548,7 @@ The following must remain true for solvability and balance:
 9. **Discard**: All discards are permanent for the duration of the battle encounter. There is no automatic reshuffle.
 10. **Hero Death**: Hero death = immediate run loss.
 
-## 15.1 Unified Item Slot Constraint
+## 18.1 Unified Item Slot Constraint
 All units (including the Hero) are restricted to **one single item slot**.
      - Tier 0 (Hero): 1 Slot
      - Tier 1: 1 Slot
@@ -569,7 +559,7 @@ Breaking these changes game identity.
 
 ---
 
-# 15. Adjustable Balance Levers
+# 17. Adjustable Balance Levers
 
 Safe tuning variables:
 
@@ -588,11 +578,11 @@ These affect difficulty without altering deterministic contract.
 
 ---
 
-# 16. Strategic Risk Review & System Safeguards
+# 18. Strategic Risk Review & System Safeguards
 
 This section documents key systemic risks identified during design review and the intended solutions or monitoring strategies. The purpose is to preserve game identity while ensuring long-term balance, clarity, and replayability.
 
-## 16.1 Infinite Scaling – Design Position
+## 18.1 Infinite Scaling – Design Position
 
 ### Design Intent
 
@@ -624,7 +614,7 @@ This preserves deterministic math, counter-scaling dynamics, and clean UI readab
 
 ---
 
-## 16.2 Counter-Scaling Philosophy
+## 18.2 Counter-Scaling Philosophy
 
 The system assumes any scaling strategy must be counterable. Examples:
 
@@ -639,7 +629,7 @@ Meta-breaking tools must always exist. Balance is achieved via ecosystem pressur
 
 ---
 
-## 16.3 Boss Design Evolution
+## 18.3 Boss Design Evolution
 
 ### Identified Weakness
 
@@ -670,7 +660,7 @@ Boss fights should feel structurally different from regular encounters.
 
 ---
 
-## 16.4 Flashcard-Based Pacing System
+## 18.4 Flashcard-Based Pacing System
 
 Boss appearance timing will scale with Flashcard Mastery progression.
 
@@ -687,7 +677,7 @@ This ensures learning progression equals gameplay progression and every run impr
 
 ---
 
-## 16.5 Run Failure Philosophy
+## 18.5 Run Failure Philosophy
 
 Runs are designed to be fast, deterministic, and recoverable through learning. Even failed runs provide:
 
@@ -699,7 +689,7 @@ Thus, no run is wasted time. Out-of-game mastery replaces meta-progression syste
 
 ---
 
-## 16.6 RNG Mitigation & Player Agency
+## 18.6 RNG Mitigation & Player Agency
 
 Although gacha draws are random within tier pools, player agency exists through:
 
@@ -716,7 +706,7 @@ Failure due to RNG is acceptable only if runs are fast, recovery potential exist
 
 ---
 
-## 16.7 Trait System Expansion Requirement
+## 18.7 Trait System Expansion Requirement
 
 **Current imbalance risk:**
 *   Fire & Earth scale vertically (3–5–7–9 tiers).
@@ -729,7 +719,7 @@ Trait symmetry must be intentional, not accidental.
 
 ---
 
-## 16.8 Enemy Template Diversity
+## 18.8 Enemy Template Diversity
 
 To prevent single-build dominance, encounters will include template archetypes such as:
 
@@ -744,7 +734,7 @@ Players must construct flexible builds.
 
 ---
 
-## 16.9 Long-Term Replayability Strategy
+## 18.9 Long-Term Replayability Strategy
 
 Replayability will come from:
 
@@ -764,7 +754,7 @@ Replayability focuses on mastery variation, not permanent power creep.
 
 ---
 
-## 16.10 Clarity as a Core Design Constraint
+## 18.10 Clarity as a Core Design Constraint
 
 The game includes deterministic combat, trait stacking, merge inheritance, trigger timing, durability, and pollution.
 
@@ -792,24 +782,28 @@ The long-term health of the system depends on:
 Expansion must reinforce identity, not dilute it.
 
 
-# Result
+# 19. Progression & Meta-Systems
 
-This document now:
-
-* Defines exact player agency
-* Defines exact resource math
-* Defines exact randomness boundaries
-* Separates gold economy vs battle economy
-* Clarifies merge conservation rules
-* Defines discard mechanics precisely
-* Provides balancing levers
-* Removes engine implementation noise
-# 17. Progression & Meta-Systems
-
-## 17.1 Achievement & Unlocks
+## 19.1 Achievement & Unlocks
 - **Unlocking**: Permanent content (Heroes, Decks, Recipes) is tied to `AchievementManager`.
 - **The Codex**: A global registry displaying all unlocked `GachaBallDefinition` and discovered `MergeRecipe`.
 
-## 17.2 Run Progression
+## 19.2 Run Progression
 - **Difficulty Scaling**: `Day` counter increments `EncounterGenerator` budgets.
 - **Boss Tapering**: Bosses appear at deck unlock thresholds (every 20%).
+
+## 18.2 Detailed Status Effects
+Status effects are active modifiers applied to units during combat.
+| ID | Name | Mechanics | Decay Mode |
+|---|---|---|---|
+| `burn` | Burn | Deals damage equal to the number of stacks at the end of each turn. **Burn damage ignores armor.** | Halved (reduced by 50% rounded down) at the end of each turn. Burn stacks applied by a Burn Slot do not decay. |
+| `armor` | Armor | Absorbs incoming direct HP damage (1 point of Armor blocks 1 point of HP damage). Does not block Burn or Static damage. | Decays to 0 at the end of each turn unless preserved by specific abilities (e.g. Bastion's Fortify) or trinkets (e.g. Polished Plate). |
+| `spikes` | Spikes | Deals PWR damage back to attackers when hit by a direct attack. | Does not decay. |
+| `static` | Static | Consumed stack-by-stack when the holder suffers any form of stat change (HP damage, healing, or power modification). Consuming a stack deals 1 armor-ignoring damage to the unit. | Does not decay. Stacks are only consumed by stat changes. |
+
+## 18.3 Battlefield Slots Detail
+Special slots placed on the battlefield grid that apply persistent or turn-start effects to the units standing on them.
+| ID | Name | Trigger | Effect | Cost (Gold) |
+|---|---|---|---|---|
+| `burn` | Burn Slot | `on_turn_start` | Applies 1 stack of Burn to the unit standing on it. Burn stacks on units in this slot do not decay. | 3 |
+| `lightning` | Lightning Slot | `on_turn_start` | Applies 1 stack of Static to the unit standing on it. | 2 |

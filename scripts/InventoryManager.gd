@@ -135,11 +135,26 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
 		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
 
+	var data_owner = _get_data_owner()
+	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
+	
+	if is_instance_valid(bm):
+		bm.block_ui_updates()
+
 	match choice:
 		&"MERGE":
 			_merge(source_loc, target_loc, recipe_id)
 		&"SWAP":
 			_swap(source_loc, target_loc)
+
+	if is_instance_valid(bm):
+		bm.unblock_ui_updates()
+		
+		# Clear the skip meta from all units now that initial scaling is processed
+		for uuid in data_owner.get_all_instances():
+			var inst = data_owner.get_all_instances()[uuid]
+			if inst.has_meta("skip_initial_scaling_anim"):
+				inst.remove_meta("skip_initial_scaling_anim")
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
 	var def = consumable_instance.get_definition()
@@ -330,6 +345,11 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		return
 
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
+	
+	# Flag the new instance so that its initial passive scaling (Twin Charm, Doppleganger, etc.) 
+	# applies silently rather than popping up floating buff numbers over a freshly spawned unit.
+	new_instance.set_meta("skip_initial_scaling_anim", true)
+	
 	var result_def = new_instance.get_definition()
 	if not is_instance_valid(result_def): return
 
