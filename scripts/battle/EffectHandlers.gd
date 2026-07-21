@@ -231,15 +231,17 @@ class DamageResult:
 ## Returns DamageResult with events and damaged_uuids for trigger callbacks
 static func handle_damage_effect(
 	request: EffectRequest,
-	resolved_targets: Array[String],
+	damage_req: EffectResult.DamageRequest,
 	source: GachaBallInstance,
 	source_name: String,
 	target_names: Array[String],
-	amount: int,
-	skip_bump: bool,
 	battle_manager: Node
 ) -> DamageResult:
 	var result := DamageResult.new()
+	var amount = damage_req.amount
+	var skip_bump = damage_req.skip_bump
+	var resolved_targets = damage_req.targets
+	var damage_type = damage_req.damage_type
 	
 	# Log message
 	# Log message moved inside loop to report actual damage (varying per target)
@@ -250,30 +252,18 @@ static func handle_damage_effect(
 	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
-	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	elif request.trigger_context.has("team"):
 		is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
 	
-	# 1. Trinket: Burn Vial (Team-wide)
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		burn_from_trinket = true
-		
-	# 2. Fire Trait Logic
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
+	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
 	
-		# Fire 3: Apply Burn
-	if fire_level >= 3:
-		# Check if source is a Fire unit
-		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-			burn_amount += 1
-			# Fire 5: Extra Burn Stack (Total 2)
-			if fire_level >= 5:
-				burn_amount += 1
+	if is_instance_valid(source):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
 			
 	var should_apply_burn = burn_amount > 0
 	
@@ -335,11 +325,18 @@ static func handle_damage_effect(
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var original_tgt_uuid = tgt_uuid
 		var actual_damage = abs(damage_to_apply)
-		var would_be_lethal = tgt.current_hp - actual_damage <= 0
+		var predicted_hp_damage = actual_damage
+		if damage_type != C.DamageType.BURN:
+			var target_armor = tgt.get_status_effect_amount(&"armor")
+			predicted_hp_damage = max(0, actual_damage - target_armor)
+			
+		var would_be_lethal = tgt.current_hp - predicted_hp_damage <= 0
 		var tgt_is_player_unit = battle_manager._is_player_unit(tgt)
 		var is_ally_damage = (tgt_is_player_unit != is_player_source)
 		
-		if would_be_lethal and is_ally_damage:
+		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
+		
+		if would_be_lethal and is_ally_damage and can_intercept:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
 			if is_instance_valid(guardian):
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
@@ -385,13 +382,13 @@ static func handle_damage_effect(
 			else:
 				attacker_uuid_for_spikes = source.ball_uuid
 		
-		# CENTRALIZED ARMOR: apply_stat_delta now handles armor mitigation automatically
+		# CENTRALIZED ARMOR: apply_damage now handles armor mitigation automatically
 		# It returns a dictionary with armor data for animations
 		# Also handles Spikes reflection if attacker_uuid is provided
-		var damage_result = battle_manager.apply_stat_delta(tgt, "hp", damage_to_apply, false, attacker_uuid_for_spikes)
+		var damage_result = battle_manager.apply_damage(tgt, abs(damage_to_apply), damage_type, attacker_uuid_for_spikes)
 		
 		# Skip if target was already dead
-		if damage_result == null:
+		if damage_result.is_empty():
 			continue
 		
 		# Extract data from the damage result dictionary
@@ -482,6 +479,8 @@ static func handle_damage_effect(
 			bump_dir = Vector2(-1, 0)
 			
 	var attack_type := "trinket" if is_trinket else "melee"
+	if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+		attack_type = "ranged"
 	
 	var t_acts = []
 	if burn_from_trinket:
@@ -547,46 +546,38 @@ class CascadeResult:
 ## Returns CascadeResult with events and hit_targets for Phase 2 callbacks
 static func handle_cascade_damage(
 	request: EffectRequest,
-	cascade_list: Array,
+	cascade_req: EffectResult.CascadeRequest,
 	source: GachaBallInstance,
 	battle_manager: Node
 ) -> CascadeResult:
 	var result := CascadeResult.new()
+	var damage_type = cascade_req.damage_type
+	var cascade_list = cascade_req.items
 	
 	# Check if burn should be applied
-	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
-	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	
-	# 1. Trinket: Burn Vial (Team-wide)
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		burn_from_trinket = true
-		
-	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
-	if fire_level >= 3:
-		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-			burn_amount += 1
-			# Fire 5: Extra Burn Stack (Total 2)
-			if fire_level >= 5:
-				burn_amount += 1
+	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
+	
+	if is_instance_valid(source):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
 			
 	var should_apply_burn = burn_amount > 0
 	
 	# Process each cascade target
 	for cascade_item in cascade_list:
-		var cascade_target_uuid := String(cascade_item.get("target", ""))
-		var cascade_amount := int(cascade_item.get("amount", 0))
-		var cascade_skip_bump := bool(cascade_item.get("skip_bump", false))
+		var cascade_target_uuid: String = cascade_item.target
+		var cascade_amount: int = cascade_item.amount
+		var cascade_skip_bump: bool = cascade_item.skip_bump
 		
 		# Store original target for animation (in case Guardian redirects)
-		var original_target_uuid := cascade_target_uuid
+		var original_target_uuid: String = cascade_target_uuid
 		
 		var cascade_tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(cascade_target_uuid)
 		if not is_instance_valid(cascade_tgt):
@@ -607,11 +598,18 @@ static func handle_cascade_damage(
 					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
-		var would_be_lethal: bool = cascade_tgt.current_hp - cascade_amount <= 0
+		var predicted_hp_damage = cascade_amount
+		if damage_type != C.DamageType.BURN:
+			var target_armor = cascade_tgt.get_status_effect_amount(&"armor")
+			predicted_hp_damage = max(0, cascade_amount - target_armor)
+			
+		var would_be_lethal: bool = cascade_tgt.current_hp - predicted_hp_damage <= 0
 		var tgt_is_player_unit: bool = battle_manager._is_player_unit(cascade_tgt)
 		var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
 		
-		if would_be_lethal and is_ally_damage:
+		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
+		
+		if would_be_lethal and is_ally_damage and can_intercept:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
 			if is_instance_valid(guardian):
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
@@ -638,12 +636,12 @@ static func handle_cascade_damage(
 			else:
 				attacker_uuid_for_spikes = source.ball_uuid
 		
-		# apply_stat_delta now returns a dictionary with armor mitigation data
+		# apply_damage now returns a dictionary with armor mitigation data
 		# Also handles Spikes reflection if attacker_uuid is provided
-		var damage_result = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount, false, attacker_uuid_for_spikes)
+		var damage_result = battle_manager.apply_damage(cascade_tgt, cascade_amount, damage_type, attacker_uuid_for_spikes)
 		
-		# Skip if target was already dead (apply_stat_delta returns null)
-		if damage_result == null:
+		# Skip if target was already dead (apply_damage returns empty dict)
+		if damage_result.is_empty():
 			continue
 		
 		# Extract data from the damage result dictionary
@@ -718,6 +716,8 @@ static func handle_cascade_damage(
 				bump_dir = Vector2(-1, 0)
 		
 		var attack_type := "trinket" if is_trinket else "melee"
+		if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+			attack_type = "ranged"
 		
 		var t_acts = []
 		if burn_from_trinket:
@@ -837,9 +837,19 @@ static func handle_summon_unit(
 		return result
 	
 	# Create new instance
-	var new_inst := GachaBallInstance.new()
-	new_inst.initialize(unit_def)
-	new_inst.reset_battle_stats_silent()
+	var new_inst: GachaBallInstance = null
+	
+	if effect_data.has("copy_from_uuid"):
+		var copy_source = battle_manager.get_instance_by_uuid(effect_data.get("copy_from_uuid"))
+		if is_instance_valid(copy_source):
+			new_inst = copy_source.create_battle_copy(battle_manager.get_all_instances())
+			new_inst.equipped_item_uuids.fill("") # Clones should not steal the original's items
+			new_inst.reset_battle_stats_silent() # Restores HP/PWR to max base + persistent modifiers
+
+	if not is_instance_valid(new_inst):
+		new_inst = GachaBallInstance.new()
+		new_inst.initialize(unit_def)
+		new_inst.reset_battle_stats_silent()
 	
 	# 2. Add to result for BattleManager to register
 	result.new_instances.append(new_inst)

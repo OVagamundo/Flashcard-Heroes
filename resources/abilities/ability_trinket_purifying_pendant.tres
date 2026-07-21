@@ -9,6 +9,6 @@ script = ExtResource("2_effect")
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_purifying_pendant"
-trigger = &"on_turn_start"
+trigger = &"on_hurt"
 effect = SubResource("Resource_effect")
 priority = 0

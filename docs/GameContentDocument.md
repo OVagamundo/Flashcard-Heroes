@@ -1,231 +1,131 @@
-# Game Content Document: Flashcard Heroes
-## Recipe Unlock System
+# Game Content Document
 
-**Important**: Merge recipes are LOCKED by default at the start of each run. Recipes only unlock when you acquire the resulting gachaball (via shop purchase, battle reward, etc.). These unlocks are per-run only and reset when starting a new run.
+*This document is auto-generated from the game's resource files.*
 
-- **Tier 1 units** (Rocky, Burny) are base units with NO recipes
-- **Tier 2+ units** have recipes that unlock upon acquisition
-- Example: Buying a Knight from the shop unlocks its recipe (Rocky + Burny → Knight)
 
-### Ability Stacking Logic
-When merging units, all abilities from both parent units are retained in the resulting unit. If identical abilities exist, their effects stack (e.g., two "Resilience" triggers result in two separate heals) unless otherwise specified in the unit's unique script.
-
-## 1. Units
-Units are the primary actors in battle. They have Health (HP) and Power (PWR) stats, can equip items, and possess abilities.
-
-### Player Heroes
-| ID | Name | Tier | Stats | Abilities |
+## Units (Tier 1)
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `hero_bounty_hunter` | Bounty Hunter | 0 | 10 HP / 2 PWR | **Bounty**: Gain 1 Gold on kill (originates from victim).<br>**Scavenger's Resolve** (`on_ally_death`): Gain +1 HP and +1 PWR when an ally dies.<br>**Quick Wits** (Minigame): +1.0s on correct answer, -0.5s on incorrect. |
-| `hero_timekeeper` | Timekeeper | 0 | 50 HP / 2 PWR | **Time Warp**: Gains 10 tokens at start of battle and Rest Sites (Passive).<br>**Temporal Aura**: At start of each turn, grants +2 HP to units in front and +2 PWR to units behind (Passive).<br>**Time Dilation** (Minigame): +1.5s on correct answer, -0.8s on incorrect. |
-| `hero_avenger` | Avenger | 0 | 6 HP / 2 PWR | **Leap Attack** (`on_ally_death`): Leap and attack the frontmost enemy. |
-| `hero_bastion` | Bastion | 0 | 10 HP / 2 PWR | **Fortify** (`on_ally_death`): Gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. |
-| `hero_pyro` | Pyromancer | 0 | 8 HP / 2 PWR | **Incinerate** (`on_attack`): Instead of damage, apply Burn stacks equal to PWR. |
+| `unit_dust_elite_t1` | **Dust Guard (T1)**<br>_A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 3 HP / 3 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1)**: Spawns a T1 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse (Turn)**: Spawns a Dust unit at Turn Start. [Target: TRIGGERING_ENTITY]<br><br>**Dust Pulse (Attack)**: Spawns a Dust unit when Attacking. [Target: TRIGGERING_ENTITY] |
+| `unit_dust_t1` | **Dust Minion (T1)**<br>_A fragile construct. Stays in the fight._ | 1 HP / 1 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+| `unit_t1_a` | **Rocky**<br>_Novice unit._ | 2 HP / 1 PWR | EARTH | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 1 HP. [Target: HOLDER]<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 2 HP. [Target: HOLDER]<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 3 HP. [Target: HOLDER] |
+| `unit_t1_b` | **Burny**<br>_Loyal squire._ | 1 HP / 2 PWR | FIRE | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce. [Target: ATTACKER] [Trigger: CAUSE_ATTACK] |
+| `unit_t1_c` | **Dewey**<br>_Steadfast guardian._ | 1 HP / 1 PWR | WATER | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 1 HP. [Target: ALLY_SLOT_AHEAD]<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 2 HP. [Target: ALLY_SLOT_AHEAD]<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 3 HP. [Target: ALLY_SLOT_AHEAD] |
+| `unit_t1_d` | **Windy**<br>_Sensitive soul._ | 1 HP / 1 PWR | AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind. [Target: ALLY_BEHIND]<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally. [Target: ALLY_BEHIND]<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next. [Target: ALLY_BEHIND] |
 
-### Tier 1 Units (Cost: 1 * 2^(L-1))
-| ID | Name | Stats | Souls | Abilities |
+
+## Units (Tier 2)
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `unit_t1_a` | Rocky | 3 HP / 1 PWR | 1 Earth | **Resilience** (`on_hurt`):<br>**L1**: When hurt by a non-lethal attack, heal this unit by 1 HP.<br>**L2**: When hurt by a non-lethal attack, heal this unit by 2 HP.<br>**L3**: When hurt by a non-lethal attack, heal this unit by 3 HP. |
-| `unit_t1_b` | Burny | 1 HP / 2 PWR | 1 Fire | **Retaliation** (`on_hurt`):<br>**L1**: Counter-attack the attacker for 100% of PWR. Triggers even if lethal.<br>**L2**: Counter-attack the attacker for 100% of PWR, and shoot a fire projectile adding PWR as burn to a random unit. Triggers even if lethal.<br>**L3**: Counter-attack the attacker for 100% of PWR, and shoot 2 fire projectiles adding PWR as burn to random units. Triggers even if lethal. |
-| `unit_t1_c` | Dewey | 2 HP / 1 PWR | 1 Water | **Guardian's Grace** (`on_ally_hurt`):<br>**L1**: When the ally directly in front takes damage, heal them for 1 HP.<br>**L2**: When the ally directly in front takes damage, heal them for 2 HP.<br>**L3**: When the ally directly in front takes damage, heal them for 3 HP. |
-| `unit_t1_d` | Windy | 1 HP / 1 PWR | 1 Wind | **Empathic Link** (`on_death`):<br>**L1**: Grant current PWR to the ally behind.<br>**L2**: Grant current PWR to the ally behind, and half to the next ally.<br>**L3**: Grant current PWR to the ally behind, half to the next ally, and half to the next. |
+| `unit_dust_elite_t2` | **Dust Sentinel (T2)**<br>_A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit._ | 4 HP / 4 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1/T2)**: Spawns a random T1 or T2 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse**: Spawns a Dust unit in the player's inventory. [Target: TRIGGERING_ENTITY] |
+| `unit_dust_t2` | **Dust Minion (T2)**<br>_A construct. Stays in the fight._ | 2 HP / 2 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+| `unit_t2_c` | **Knight**<br>_Valiant knight._ | 3 HP / 3 PWR | FIRE, EARTH |  |
+| `unit_t2_d` | **Templar**<br>_A devout templar._ | 2 HP / 3 PWR | WATER, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Token Power**: PWR equals 100% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]<br><br>**Token Power**: PWR equals 100% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]<br><br>**Token Power**: PWR equals 150% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]<br><br>**Token Power**: PWR equals 150% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]<br><br>**Token Power**: PWR equals 200% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]<br><br>**Token Power**: PWR equals 200% of Tokens (Min 1). PWR buffs become HP. [Target: SELF] |
+| `unit_t2_f` | **Merchant**<br>_Traveling merchant._ | 3 HP / 2 PWR | EARTH, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 100% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 100% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned. [Target: SELF] |
+| `unit_t2_h` | **Hermit**<br>_Solitary warrior._ | 2 HP / 2 PWR | WATER, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Solitary Strength**: At start of combat, gain +1 HP and +1 PWR for each empty slot in your team. [Target: SELF]<br><br>**Solitary Strength**: At start of combat, gain +2 HP and +2 PWR for each empty slot in your team. [Target: SELF]<br><br>**Solitary Strength**: At start of combat, gain +3 HP and +3 PWR for each empty slot in your team. [Target: SELF] |
+| `unit_t2_i` | **Mud Wretch**<br>_Mud creature._ | 3 HP / 2 PWR | EARTH, WATER | **Mud Coating**: When healed, gain 1 Armor and 1 Spikes.<br><br>**Mud Coating**: When healed, gain 2 Armor and 2 Spikes.<br><br>**Mud Coating**: When healed, gain 3 Armor and 3 Spikes. |
+| `unit_t2_j` | **Steam Wisp**<br>_Scalding spirit._ | 2 HP / 3 PWR | FIRE, WATER | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce. |
 
-### Tier 2 Units (Cost: 2 * 2^(L-1))
-| ID | Name | Merge Recipe | Stats | Souls | Abilities |
-|---|---|---|---|---|---|
-| `unit_t2_c` | Knight | **Rocky + Burny** | 3 HP / 3 PWR | 1 Fire, 1 Earth | **Morale Boost** (`on_ally_death`):<br>**L1**: Gain +1 HP and +1 PWR.<br>**L2**: Gain +2 HP and +1 PWR.<br>**L3**: Gain +2 HP and +2 PWR. |
-| `unit_t2_d` | Templar | **Burny + Windy** | 2 HP / 3 PWR | 1 Water, 1 Wind | **Gacha Power** (`passive`):<br>**L1**: PWR equals 100% of Gacha Tokens (Min 1). PWR buffs convert to HP.<br>**L2**: PWR equals 125% of Gacha Tokens (Min 1). PWR buffs convert to HP.<br>**L3**: PWR equals 150% of Gacha Tokens (Min 1). PWR buffs convert to HP. |
-| `unit_t2_f` | Merchant | **Rocky + Windy** | 3 HP / 2 PWR | 1 Earth, 1 Wind | **Gold Investments** (`on_draw`, `on_battle_start`):<br>**L1**: Initial PWR equals your current Gold multiplied by 1.0 when drawn or spawned.<br>**L2**: Initial PWR equals your current Gold multiplied by 1.5 when drawn or spawned.<br>**L3**: Initial PWR equals your current Gold multiplied by 2.0 when drawn or spawned. |
-| `unit_t2_h` | Hermit | **Dewey + Windy** | 2 HP / 2 PWR | 1 Water, 1 Wind | **Solitary Strength** (`on_pre_combat`): Start of Combat (Lineup Only):<br>**L1**: Gains +1 HP and +1 PWR per empty lineup slot.<br>**L2**: Gains +2 HP and +2 PWR per empty lineup slot.<br>**L3**: Gains +3 HP and +3 PWR per empty lineup slot. |
-| `unit_t2_i` | Mud Wretch | **Rocky + Dewey** | 3 HP / 2 PWR | 1 Earth, 1 Water | **Mud Coating** (`on_healed`):<br>**L1**: When healed, gain 1 Armor and 1 Spikes.<br>**L2**: When healed, gain 2 Armor and 2 Spikes.<br>**L3**: When healed, gain 3 Armor and 3 Spikes. |
-| `unit_t2_j` | Steam Wisp | **Burny + Dewey** | 2 HP / 3 PWR | 1 Fire, 1 Water | **Scald** (`on_healed`):<br>**L1**: When healed, deal damage to the front enemy equal to 100% of the heal amount.<br>**L2**: When healed, deal damage to the front enemy equal to 150% of the heal amount.<br>**L3**: When healed, deal damage to the front enemy equal to 200% of the heal amount. |
 
-### Tier 3 Units (Gold Cost: 4 * 2^(L-1) | Draw Cost: 3 Tokens)
-| ID | Name | Merge Recipe | Stats | Souls | Abilities (Level Scaling `[L1 / L2 / L3]`) |
-|---|---|---|---|---|---|
-| `unit_t3_a` | Shadow Striker | **Merchant + Steam Wisp** | 5 HP / 5 PWR | 4 Fire | **Mirror Strike** (`on_attack`): Attacks enemy in opposite mirror slot. If empty, targets backmost enemy.<br>**L1**: Deals 100% damage.<br>**L2**: Deals 150% damage.<br>**L3**: Deals 200% damage. |
-| `unit_t3_b` | Guardian Sentinel | **Knight + Hermit** | 5 HP / 5 PWR | 4 Earth | **Guardian Sacrifice** (`passive_intercept`): Leaps to intercept lethal damage on allies.<br>**L1**: Gains 2 temporary Armor.<br>**L2**: Gains 4 temporary Armor.<br>**L3**: Gains 6 temporary Armor. |
-| `unit_t3_c` | Soul Caller | **Merchant + Templar** | 5 HP / 5 PWR | 2 Fire, 2 Earth | **Soul Summon** (`on_death`):<br>**L1**: Summons a Tier 2 unit on death at Level 1.<br>**L2**: Summons a Tier 2 unit on death at Level 2.<br>**L3**: Summons a Tier 2 unit on death at Level 3. |
-| `unit_t3_d` | Sakura Spirit | **Knight + Mud Wretch** | 6 HP / 5 PWR | 2 Fire, 2 Earth | **Resilient Aura** (`on_hurt`): When hurt by an attack:<br>**L1**: Grants +1 HP and +1 PWR to adjacent allies.<br>**L2**: Grants +2 HP and +1 PWR to adjacent allies.<br>**L3**: Grants +2 HP and +2 PWR to adjacent allies. |
-| `unit_t3_e` | Assassin | **Knight + Merchant** | 6 HP / 5 PWR | 3 Fire, 1 Earth | **Ambush Predator** (`on_enemy_summon`): Deals damage to enemies equal to `[100% / 150% / 200%]` of PWR when they are summoned. |
-| `unit_t3_f` | Summoner | **Mud Wretch + Templar** | 5 HP / 5 PWR | 1 Fire, 3 Earth | **Summon Blessing** (`on_ally_summon`): Heals allies for `[2 / 4 / 6]` HP when they are summoned. |
-| `unit_t3_g` | Phantom Wayfarer | **Templar + Hermit** | 4 HP / 5 PWR | 4 Wind | **Quiet Meditation** (`on_turn_start`): If on bench, gain `[+3/+3, +4/+4, +6/+6]` HP/PWR. **[Player Exclusive]** |
-| `unit_t3_h` | Fusion Warden | **Mud Wretch + Steam Wisp** | 5 HP / 5 PWR | 1 Fire, 1 Water, 2 Wind | **Convergence Surge** (`on_merge`): If on board when a merge happens, gain `[+2/+2, +3/+3, +4/+4]` HP/PWR. |
-| `unit_t3_i` | Doppleganger | **Mud Wretch + Hermit** | 5 HP / 4 PWR | — | **Mirrored Might** (`passive`): `[+3 / +4 / +5]` PWR for every other Doppleganger in the Battle Pool.<br>**Clone Split** (`on_death`): Spawn `[1 / 1 / 2]` additional Dopplegangers into the Gacha Machine. **[Player Exclusive]** |
-| `unit_t3_paladin` | Paladin | **Knight + Templar** | 5 HP / 6 PWR | 2 Earth | **Defensive Stance** (`on_before_damage`): Gain `[+2, +4, +6]` HP before taking damage. |
-| `unit_t3_berserker` | Berserker | **Knight + Steam Wisp** | 5 HP / 6 PWR | 2 Fire | **Shockwave** (`on_attack`): Deals cascade AOE damage to front enemy and units behind.<br>**L1**: Deals 100% of PWR as damage to the front enemy.<br>**L2**: Deals 150% of PWR as damage to the front enemy.<br>**L3**: Deals 200% of PWR as damage to the front enemy. |
-| `unit_t3_mimic` | Mimic | **Mud Wretch + Merchant** | 6 HP / 4 PWR | 2 Water | **Mirror Transformation** (`on_turn_start`): Transforms into the enemy unit in the mirror slot. Level matches target level `[+0 / +1 / maxed out]`. |
-| `unit_t3_shadow` | Shadow Cloner | **Steam Wisp + Hermit** | 4 HP / 5 PWR | 1 Wind | **Buff Echo** (`on_stat_increased`): Repeats any buff received by an adjacent ally at `[100% / 150% / 200%]` effectiveness. |
-| `unit_t3_j` | Standard Bearer | **Steam Wisp + Templar** | 5 HP / 5 PWR | 1 Fire, 2 Water, 1 Wind | **Standard's Legacy** (`on_death`): Transfers its equipped item.<br>**L1**: Transfers item to ally directly behind.<br>**L2**: Transfers item to ally behind and 1 copy behind them.<br>**L3**: Transfers item to ally behind and 2 copies behind them. |
-| `unit_t3_l` | Golden Hermit | **Hermit + Merchant** | 5 HP / 4 PWR | 1 Earth, 1 Water, 2 Wind | **Wealth Accumulation** (`on_turn_start`): At the start of each turn, gain `[+3 / +4 / +5]` HP and PWR for every 5 Gold you have. **[Player Exclusive]** |
-
-### Enemies
-| ID | Name | Stats | Type | Abilities |
+## Units (Tier 3)
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `enemy_hero` | Enemy Hero | 10 HP / 2 PWR | Boss | (None by default) |
-| `unit_dust_t1` | Dust Minion (T1) | 1 HP / 0 PWR | Support | **Basic Attack**: Attacks for 0 damage. |
-| `unit_dust_t2` | Dust Minion (T2) | 1 HP / 0 PWR | Support | **Basic Attack**: Attacks for 0 damage. |
-| `unit_dust_elite_t2` | Dust Sentinel (Elite T2) | 3 HP / 1 PWR | Elite | **Dust Pulse (Death)**: Summons a Dust Minion (T2) whenever an ally dies. |
-| `unit_dust_elite_t3` | Dust Overlord (Elite T3) | 3 HP / 1 PWR | Elite | **Dust Pulse (Multi)**: Summons random Dust Minions (T1/T2) on Turn Start, On Hurt, On Attack, and On Ally Death. |
-| `boss_1` | The Awakened Guardian | 10 HP / 10 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Draining Presence** (`on_draw`): Gains +1 HP when player draws from gacha. |
-| `boss_2` | The Shadow Warden | 15 HP / 15 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Token Hunger** (`on_token_spent`): Gains +1 HP for each token the player spends. |
-| `boss_3` | The Storm Herald | 20 HP / 20 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots.<br>**Storm Rising** (`on_ally_death`): Gains +1 HP and +1 PWR for each ally that died this combat (Triggers on Turn Start). |
-| `boss_4` | The Ancient Titan | 25 HP / 25 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
-| `boss_5` | The Final Arbiter | 30 HP / 30 PWR | Boss | **Call Reinforcements** (`on_turn_end`): Summons units to fill empty slots. |
+| `unit_dust_elite_t3` | **Dust Overlord (T3)**<br>_An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 5 HP / 5 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Universal Dust Pulse (Death)**: Spawns a random T1 [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF] |
+| `unit_dust_t3` | **Dust Minion (T3)**<br>_A heavy construct. Stays in the fight._ | 3 HP / 3 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+| `unit_t3_a` | **Shadow Striker**<br>_Master of precise strikes._ | 5 HP / 5 PWR | FIRE, FIRE, FIRE, FIRE | **Mirror Strike**: Attacks enemy in opposite mirror slot for 100% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Mirror Strike**: Attacks enemy in opposite mirror slot for 150% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Mirror Strike**: Attacks enemy in opposite mirror slot for 200% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN] |
+| `unit_t3_b` | **Guardian Sentinel**<br>_Stalwart protector._ | 5 HP / 5 PWR | intercept_lethal, EARTH, EARTH, EARTH, EARTH | **Guardian Sacrifice**: Leaps to intercept lethal damage on allies. [Target: SELF]<br><br>**Guardian Sacrifice**: Leaps to intercept lethal damage on allies and gains 1 Armor. [Target: SELF]<br><br>**Guardian Sacrifice**: Leaps to intercept lethal damage on allies and gains 2 Armor. [Target: SELF] |
+| `unit_t3_berserker` | **Berserker**<br>_Powerful warrior._ | 5 HP / 6 PWR | FIRE, FIRE | **Shockwave**: Deals 100% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Shockwave**: Deals 150% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Shockwave**: Deals 200% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN] |
+| `unit_t3_c` | **Soul Caller**<br>_Mystical unit._ | 5 HP / 5 PWR | FIRE, FIRE, EARTH, EARTH | **Soul Summon**: Summons a random Level 1 Tier 2 unit on death. [Target: SELF]<br><br>**Soul Summon**: Summons a random Level 2 Tier 2 unit on death. [Target: SELF]<br><br>**Soul Summon**: Summons a random Level 3 Tier 2 unit on death. [Target: SELF] |
+| `unit_t3_d` | **Sakura Spirit**<br>_A powerful spirit guarding the cherry blossoms._ | 6 HP / 5 PWR | FIRE, FIRE, EARTH, EARTH | **Resilient Aura**: Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>**Resilient Aura**: Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>**Resilient Aura**: Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES] |
+| `unit_t3_e` | **Dreadnought**<br>_A terrifying predator that strikes down newly summoned enemies._ | 6 HP / 5 PWR | EARTH, FIRE, FIRE, FIRE | **Ambush Predator**: Deals damage to enemies equal to 100% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>**Ambush Predator**: Deals damage to enemies equal to 150% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>**Ambush Predator**: Deals damage to enemies equal to 200% of PWR when they are summoned. [Target: TRIGGERING_ENTITY] |
+| `unit_t3_f` | **Warden**<br>_A protective guardian that empowers newly summoned allies._ | 5 HP / 5 PWR | EARTH, EARTH, EARTH, FIRE | **Summon Blessing**: Grants +3 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>**Summon Blessing**: Grants +5 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>**Summon Blessing**: Grants +7 HP to newly summoned allies. [Target: TRIGGERING_ENTITY] |
+| `unit_t3_g` | **Phantom Wayfarer**<br>_Mysterious traveler._ | 4 HP / 5 PWR | AIR, AIR, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +3 HP and PWR. [Target: SELF]<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +5 HP and PWR. [Target: SELF]<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +7 HP and PWR. [Target: SELF] |
+| `unit_t3_h` | **Fusion Warden**<br>_Volatile hybrid._ | 5 HP / 5 PWR | FIRE, WATER, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +2 HP and PWR. [Target: SELF]<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +3 HP and PWR. [Target: SELF]<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +4 HP and PWR. [Target: SELF] |
+| `unit_t3_i` | **Doppleganger**<br>_Volatile clone._ | 5 HP / 4 PWR |  | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Mirrored Might**: Gains +3 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Mirrored Might**: Gains +4 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Mirrored Might**: Gains +5 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Clone Split**: Summons 1 copy of itself on death into the Gacha Machine. [Target: NONE]<br><br>**Clone Split**: Summons 1 copy of itself on death into the Gacha Machine. [Target: NONE]<br><br>**Clone Split**: Summons 1 copy of itself on death into the Gacha Machine. [Target: NONE] |
+| `unit_t3_j` | **Standard Bearer**<br>_Valiant commander._ | 5 HP / 5 PWR | FIRE, WATER, WATER, AIR | **Standard's Legacy**: On death, transfers its equipped item to the ally directly behind it. [Target: ALLY_BEHIND]<br><br>**Standard's Legacy**: On death, transfers its equipped item to the ally behind and 1 copy behind them. [Target: ALLY_BEHIND]<br><br>**Standard's Legacy**: On death, transfers its equipped item to the ally behind and 2 copies behind them. [Target: ALLY_BEHIND] |
+| `unit_t3_l` | **Golden Hermit**<br>_A solitary sage of wealth._ | 5 HP / 4 PWR | EARTH, WATER, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have. [Target: SELF] |
+| `unit_t3_mimic` | **Mimic**<br>_Mysterious entity._ | 6 HP / 4 PWR | WATER, WATER | **Mirror Image**: Transforms into the enemy unit in the mirror slot (+0 Level). [Target: NONE]<br><br>**Mirror Image**: Transforms into the enemy unit in the mirror slot (+1 Level). [Target: NONE]<br><br>**Mirror Image**: Transforms into the enemy unit in the mirror slot (Level 3 MAX). [Target: NONE] |
+| `unit_t3_paladin` | **Paladin**<br>_Heavily armored tank._ | 5 HP / 6 PWR | EARTH, EARTH | **Defensive Stance**: Gain +2 HP before taking damage. [Target: SELF]<br><br>**Defensive Stance**: Gain +4 HP before taking damage. [Target: SELF]<br><br>**Defensive Stance**: Gain +6 HP before taking damage. [Target: SELF] |
+| `unit_t3_shadow` | **Shadow Cloner**<br>_Ethereal unit._ | 4 HP / 5 PWR | AIR | **Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>**Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>**Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness. [Target: TRIGGERING_ENTITY] |
 
----
 
-## 2. Items
-Items are equipped on units to provide stats and new abilities.
-
-### Tier 1 Items (Cost: 1)
-| ID | Name | Stats | Ability |
-|---|---|---|---|
-| `item_t1_a` | Koi's Blessing (Small HP Potion) | +1 HP | **Restoration** (`on_turn_start`): Heal holder 2 HP. |
-| `item_t1_b` | Tiger's Spirit (Small PWR Potion) | +1 PWR | **Extra Attack** (`on_attack`): When attacking, if target has more HP than holder, perform an extra attack. |
-
-### Tier 2 Items (Cost: 2)
-| ID | Name | Merge Recipe | Stats | Ability |
+## Heroes
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `item_t2_a` | Summoning Scroll (Summon Scroll) | **Koi's Blessing + Koi's Blessing** | +2 HP | **Summon** (`on_death`): Summons a random Tier 1 unit. |
-| `item_t2_b` | Bloodlust Edge (Bloodlust Blade) | **Tiger's Spirit + Tiger's Spirit** | +2 PWR | **Bloodlust** (`on_kill`): When holder defeats an enemy, act again immediately. |
-| `item_t2_c` | Phoenix Elixir (Large HP Potion) | **Koi's Blessing + Tiger's Spirit** | +1 HP / +1 PWR | **Regeneration** (`on_hurt`): When hurt by an attack, heal holder 1 HP and gain +1 PWR (non-lethal only). |
-| `item_t2_d` | Echoing Orb | N/A | +0 HP / +0 PWR | **Resonance** (`on_board_changed`): Gains PWR for each other Echoing Orb in battle.<br>**Echo Split** (`on_death`): Copy self to the Gacha Machine of the same tier. **[Player Exclusive]** |
+| `hero_avenger` | **Avenger**<br>_A fierce warrior who strikes when allies fall._ | 6 HP / 2 PWR |  | **Leap Attack**: When an ally dies, leap and attack the frontmost enemy. [Target: FRONTMOST_ENEMY] |
+| `hero_bastion` | **Bastion**<br>_A steadfast defender who grows stronger as allies fall._ | 10 HP / 2 PWR |  | **Fortify**: When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. [Target: SELF] |
+| `hero_pyro` | **Pyromancer**<br>_A fiery mage who incinerates enemies instead of striking them._ | 8 HP / 2 PWR |  | **Incinerate**: On attack, instead of dealing damage, apply Burn stacks equal to your Power. [Target: ATTACK_TARGET] |
+| `hero_starter` | **Starter**<br>_A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck._ | 10 HP / 2 PWR |  | **Soul Harvest**: When an ally dies, gain HP equal to their PWR. [Target: SELF] |
+| `hero_timekeeper` | **Timekeeper**<br>_A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer._ | 50 HP / 2 PWR |  | **Time Warp**: Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.<br><br>**Temporal Aura**: At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind. [Target: ALLIES_IN_FRONT] |
+| `hero_bounty_hunter` | **Bounty Hunter**<br>_A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall._ | 10 HP / 2 PWR |  | **Bounty Hunter**: Gain 1 gold when this hero kills an enemy. [Target: SELF]<br><br>**Scavenger's Resolve**: When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF] |
 
-### Tier 3 Items (Gold Cost: 4 | Draw Cost: 3 Tokens)
-| ID | Name | Merge Recipe | Stats | Ability |
+
+## Enemies
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `item_t3_a` | Heart Stone (Healing Totem) | **Summoning Scroll + Summoning Scroll** | +4 HP | **Vital Link** (`on_hurt`): When holder is hurt by an attack, heal two random allies for 2 HP each. |
-| `item_t3_b` | Power Amulet (War Banner) | **Bloodlust Edge + Bloodlust Edge** | +4 PWR | **Battle Cry** (`on_attack`): When holder attacks, grant +2 PWR to two random allies. |
-| `item_t3_c` | Lifesteal Ring (Vampiric Dagger) | **Bloodlust Edge + Summoning Scroll** | +2 HP / +2 PWR | **Vampiric Strike** (`on_damage_dealt`): On dealing damage, heal holder for 20% of damage dealt (min 1 HP). |
-| `item_t3_d` | Vengeful Thorn (Retaliation Shield) | **Phoenix Elixir + Phoenix Elixir** | +2 HP / +2 PWR | **Retaliation** (`on_hurt`): When hurt by an attack, deal half of the holder's PWR as damage to a random enemy. |
-| `item_t3_e` | Death's Bargain (Deathbomb) | **Summoning Scroll + Phoenix Elixir** | +3 HP / +1 PWR | **Final Strike** (`on_death`): When holder dies, deal damage equal to half of the highest HP enemy's HP to that enemy. |
-| `item_t3_f` | Soul Siphon | N/A | +1 HP / +3 PWR | **Power Drain** (`on_damage_dealt`): After dealing damage, steal half of target's PWR (min 1). |
-| `item_t3_g` | Sniper Aim | **Bloodlust Edge + Phoenix Elixir** | +1 PWR | **Mirror Strike** (`on_attack`): Replaces basic attack targeting with Mirror Strike targeting (opposite slot, or backmost enemy). |
-| `item_emblem_fire` | Fire Emblem | Obtained from boss/rewards | +2 PWR | **Fire Soul** (`passive`): Counts as a Fire unit and grants the Fire trait. |
-| `item_emblem_earth` | Earth Emblem | Obtained from boss/rewards | +4 HP | **Earth Soul** (`passive`): Counts as an Earth unit and grants the Earth trait. |
-| `item_emblem_water` | Water Emblem | Obtained from boss/rewards | +2 HP / +1 PWR | **Water Soul** (`passive`): Counts as a Water unit and grants the Water trait. |
-| `item_emblem_air` | Air Emblem (Wind Emblem) | Obtained from boss/rewards | +2 HP / +1 PWR | **Air Soul** (`passive`): Counts as an Air unit and grants the Air trait. |
+| `boss_1` | **The Awakened Guardian**<br>_A powerful guardian that summons allies and grows stronger as you draw from the gacha machines._ | 6 HP / 6 PWR |  |  |
+| `boss_2` | **The Shadow Warden**<br>_Drains power from every token you spend. Calls upon shadow creatures to fight alongside it._ | 8 HP / 8 PWR |  |  |
+| `boss_3` | **The Storm Herald**<br>_Grows stronger as allies fall around it. Commands reinforcements to join its ranks._ | 10 HP / 10 PWR |  |  |
+| `boss_4` | **The Ancient Titan**<br>_An ancient being that summons warriors from ages past._ | 12 HP / 12 PWR |  |  |
+| `boss_5` | **The Final Arbiter**<br>_The ultimate challenge. Defeat it to complete your run._ | 15 HP / 15 PWR |  |  |
+| `enemy_hero` | **Enemy Hero**<br>_The enemy's champion._ | 10 HP / 2 PWR |  |  |
+| `unit_dust_elite_t1` | **Dust Guard (T1)**<br>_A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 3 HP / 3 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1)**: Spawns a T1 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse (Turn)**: Spawns a Dust unit at Turn Start. [Target: TRIGGERING_ENTITY]<br><br>**Dust Pulse (Attack)**: Spawns a Dust unit when Attacking. [Target: TRIGGERING_ENTITY] |
+| `unit_dust_t1` | **Dust Minion (T1)**<br>_A fragile construct. Stays in the fight._ | 1 HP / 1 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+| `unit_dust_elite_t2` | **Dust Sentinel (T2)**<br>_A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit._ | 4 HP / 4 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1/T2)**: Spawns a random T1 or T2 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse**: Spawns a Dust unit in the player's inventory. [Target: TRIGGERING_ENTITY] |
+| `unit_dust_t2` | **Dust Minion (T2)**<br>_A construct. Stays in the fight._ | 2 HP / 2 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+| `unit_dust_elite_t3` | **Dust Overlord (T3)**<br>_An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 5 HP / 5 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Universal Dust Pulse (Death)**: Spawns a random T1 [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF] |
+| `unit_dust_t3` | **Dust Minion (T3)**<br>_A heavy construct. Stays in the fight._ | 3 HP / 3 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
 
----
 
-### Consumables
-Consumables are one-time use items during the Management Phase. Their Gold cost is equal to their Tier.
-| ID | Name | Tier | Effect |
-|---|---|---|---|
-| `item_potion_t1` | Minor Healing Potion | 1 | **Heal**: Restores **4 HP** to a target unit. |
-| `item_potion_spikes` | Thorn Potion | 2 | **Status**: Grants **4 Spikes** stacks to the target unit. |
-| `item_potion_heroism` | Heroism Potion | 2 | **Buff**: Grants **+3 HP**, **+3 PWR**, and **3 Armor** stacks to the target unit. |
-| `consumable_potion_plunder` | Potion of Plunder | 3 | **Steal**: Steals a random equipped item from an enemy unit. |
-
----
-
-## 3. Trinkets
-Team-wide passive artifacts obtained from bosses.
-
-| ID | Name | Trigger | Effect |
-|---|---|---|---|
-| `trinket_polished_plate` | Polished Plate | `passive` | Armor does not decay at the end of the turn. |
-| `trinket_aegis` | Aegis Charm (Aegis) | `on_hurt` | Prevents lethal damage once per battle (leaves unit at 1 HP). |
-| `trinket_armor_aura` | Armor Aura | `on_turn_start` | Grants 3 **Armor** to all allies. |
-| `trinket_burn_vial` | Burn Vial | `on_damage_dealt` | Dealing damage applies 1 **Burn** stack (DoT). |
-| `trinket_royal_insignia` | Royal Insignia | `on_draw`, `on_summon` | Grants **+1 HP/+1 PWR** to any **Tier 1** unit entering the board. |
-| `trinket_hero_catalyst` | Hero's Catalyst | `on_merge` | Grants **+1 HP/+1 PWR** to your Hero whenever an ally merges. **[Player Exclusive]** |
-| `trinket_rusty_ring` | Rusty Ring | `on_draw, on_summon, on_battle_start` | Grants **+1 HP/+1 PWR** to all units with no equipment. Equipping an item cancels this buff. |
-| `trinket_veteran_insignia`| Veteran Insignia | `on_draw / on_ally_summon / on_battle_start` | Grants +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start. |
-| `trinket_bargain_charm` | Bargain Charm | `gacha_draw_cost` | Spend 1 token less, once per machine, per turn (minimum 1 token cost). |
-| `trinket_token_return_charm` | Token Return Charm | `on_unit_death` | The first unit to die that round returns tokens equivalent to its tier. |
-| `trinket_time_sprint_charm` | Sprint Charm | `minigame_start` | Minigame timer gets a flat 2-second increase in battle context. |
-| `trinket_merge_damage_charm` | Fusion Spark | `on_merge` | Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. |
-| `trinket_soul_echo` | Soul Echo | `on_ally_death` | Resurrects the **first** non-hero ally to die each turn. |
-| `trinket_vengeance` | Vengeance Charm (Vengeance) | `on_ally_death` | Grants **+1 HP** and **+1 PWR** to a random ally. |
-| `trinket_twin_charm` | Twin Charm | `on_board_changed` | **Shared Reflection**: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
-| `trinket_underdog_emblem` | Underdog Emblem | `on_turn_start` | **Outnumbered Bulwark**: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference. |
-| `trinket_trait_fire` | Fire Trait | `passive` | Enables the Fire synergy whenever your team has enough Fire souls. |
-| `trinket_trait_earth` | Earth Trait | `passive` | Enables the Earth synergy whenever your team has enough Earth souls. |
-| `trinket_trait_water` | Water Trait | `passive` | Enables the Water synergy whenever your team has enough Water souls. |
-| `trinket_trait_air` | Air Trait | `passive` | Enables the Air synergy whenever your team has enough Air souls. |
-| `trinket_spiked_armor` | Spiked Armor | `on_turn_start` | At turn start, the frontmost unit gains 2 Armor and 2 Spikes. |
-| `trinket_purifying_pendant` | Purifying Pendant | `on_turn_start` | At turn start, affected allies with a negative status effect gain +1 HP. |
-| `trinket_awe_inspiring_totem` | Awe Inspiring Totem | `on_turn_start` | At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units (excluding the Hero). |
-| `trinket_beginners_charm` | Beginner's Charm | `minigame_start` | Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard). **[Player Exclusive]** |
-| `trinket_trinity_charm` | Trinity Charm | `on_draw` | If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token. |
-| *N/A* | Cloning Idol | *N/A* | *Historical / Deprecated (Not present in active game files).* |
-
----
-
-## 4. Traits
-Traits are active bonuses based on the composition of your team. Each unit contributes 1 Soul to its corresponding Trait. Equipped **Emblem** items also contribute 1 Soul and allow the equipped unit to benefit from Trait effects.
-
-### Fire Trait (`SOUL_FIRE`)
-*Focus: Offensive Pressure & Damage Over Time*
-
-| Souls | Effect |
-|---|---|
-| **3** | Fire units apply **1 Burn** stack on attack. |
-| **5** | Fire units apply **+1 Extra Burn** stack (Total 2 on hit). |
-| **7** | Start of Turn: Apply **2 Burn** stacks to the **entire opposing team**. |
-| **9** | **Traitor's Flame**: Attacks deal **bonus damage** equal to the target's current Burn stacks. |
-
-### Earth Trait (`SOUL_EARTH`)
-*Focus: Defensive Mitigation, Sustain & Damage Reflection*
-
-| Souls | Effect |
-|---|---|
-| **3** | All Allies gain **1 Armor**; Earth units gain **2 Armor**. |
-| **5** | All Allies gain **2 Armor**; Earth units gain **4 Armor**. |
-| **7** | All Allies gain **2 Armor + 1 Spike**; Earth units gain **4 Armor**. |
-| **9** | **Fortress**: All Allies gain **2 Armor + 2 Spikes**; Earth units gain **4 Armor**. |
-
-### Water Trait (`SOUL_WATER`)
-*Focus: Adjacent Healing & Resilience*
-
-| Souls | Effect |
-|---|---|
-| **2** | At Turn Start: Water units **heal adjacent allies** for 1 HP. |
-
-### Air Trait (`SOUL_AIR`)
-*Focus: Power Theft & Disruption*
-
-| Souls | Effect |
-|---|---|
-| **2** | At Turn Start: Wind units **steal 1 PWR** from the opposite enemy (Mirror slot or backmost enemy; floor: 1 PWR). |
-
----
-
-## 5. Battlefield Slots
-Special slots placed on the battlefield grid that apply persistent or turn-start effects to the units standing on them.
-
-| ID | Name | Trigger | Effect | Cost (Gold) |
+## Items
+| ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
-| `burn` | Burn Slot | `on_turn_start` | Applies 1 stack of Burn to the unit standing on it. Burn stacks on units in this slot do not decay. | 3 |
-| `lightning` | Lightning Slot | `on_turn_start` | Applies 1 stack of Static to the unit standing on it. | 2 |
+| `item_t1_a` | **Koi's Blessing**<br>_A gentle remedy infused with the spirit of koi._ | 0 HP / 0 PWR |  | **Restoration**: At the start of the turn, Heal the holder for 2 HP. [Target: HOLDER] |
+| `item_t1_b` | **Tiger's Spirit**<br>_A fierce elixir that awakens inner strength._ | 0 HP / 0 PWR |  | **Extra Attack**: When attacking, if target has more HP than holder then perform an extra attack. [Target: ATTACK_TARGET] [Trigger: CAUSE_TURN] |
+| `item_t2_a` | **Summoning Scroll**<br>_A scroll containing a summoning spell._ | 0 HP / 0 PWR |  | **Summon**: A scroll containing a summoning spell. |
+| `item_t2_b` | **Bloodlust Edge**<br>_A blade thirsty for blood._ | 0 HP / 0 PWR |  | **Bloodlust**: When the holder defeats an enemy, they act again immediately. [Target: HOLDER] |
+| `item_t2_c` | **Phoenix Elixir**<br>_A restorative brew that renews body and spirit._ | 0 HP / 0 PWR |  | **Regeneration**: When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR. [Target: HOLDER] |
+| `item_t2_d` | **Echoing Orb**<br>_A resonant orb that amplifies the power of others._ | 0 HP / 0 PWR |  | **Resonance**: Grants the holder +2 PWR for each other Echoing Orb in battle.<br><br>**Echo Split**: Spawns an Echoing Orb into the Tier 2 Gacha Machine on death. |
+| `item_t3_a` | **Heart Stone**<br>_A stone pulsating with life._ | 0 HP / 0 PWR |  | **Vital Link**: When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each. [Target: RANDOM_ALLY] |
+| `item_t3_b` | **Power Amulet**<br>_An ancient amulet of power._ | 0 HP / 0 PWR |  | **Battle Cry**: When the holder attacks, grant +2 PWR to two random allies. [Target: NONE] |
+| `item_t3_c` | **Lifesteal Ring**<br>_A ring that feeds on the living._ | 0 HP / 0 PWR |  | **Vampiric Strike**: On attack, heal the holder for 20% of damage dealt (min 1 HP). [Target: HOLDER] |
+| `item_t3_d` | **Vengeful Thorn**<br>_A thorny charm that strikes back at those who harm its bearer._ | 0 HP / 0 PWR |  | **Retaliation**: When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy. [Target: RANDOM_ENEMY] [Trigger: CAUSE_ATTACK] |
+| `item_t3_e` | **Death's Bargain**<br>_A cursed bargain with death._ | 0 HP / 0 PWR |  | **Final Strike**: When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy. |
+| `item_t3_f` | **Soul Siphon**<br>_A dark siphon of souls._ | 0 HP / 0 PWR |  | **Power Drain**: After dealing damage steal half of target's PWR (min 1). [Target: DEFENDER] |
+| `item_t3_g` | **Sniper Aim**<br>_A scope for precise targeting._ | 0 HP / 0 PWR |  |  |
+| `consumable_potion_plunder` | **Potion of Plunder**<br>_Steals a random item from the target._ | 0 HP / 0 PWR |  | **Plunder**: Steals a random item from the target. |
+| `item_emblem_air` | **Air Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies._ | 0 HP / 0 PWR | ITEM, AIR |  |
+| `item_emblem_earth` | **Earth Emblem**<br>_When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies._ | 0 HP / 0 PWR | ITEM, EARTH |  |
+| `item_emblem_fire` | **Fire Emblem**<br>_When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies._ | 0 HP / 0 PWR | ITEM, FIRE |  |
+| `item_emblem_water` | **Water Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies._ | 0 HP / 0 PWR | ITEM, WATER |  |
+| `item_potion_t1` | **Minor Healing Potion**<br>_Restores 4 HP to a target unit._ | 0 HP / 0 PWR |  | **Drink**: Restores 4 HP. |
 
----
 
-## 6. Status Effects
-Status effects are active modifiers applied to units during combat. They can be applied by unit abilities, traits, items, or battlefield slots.
-
-| ID | Name | Mechanics | Decay Mode |
-|---|---|---|---|
-| `burn` | Burn | Deals damage equal to the number of stacks at the end of each turn. **Burn damage ignores armor.** | Halved (reduced by 50% rounded down) at the end of each turn. Burn stacks applied by a Burn Slot do not decay. |
-| `armor` | Armor | Absorbs incoming direct HP damage (1 point of Armor blocks 1 point of HP damage). Does not block Burn or Static damage. | Decays to 0 at the end of each turn unless preserved by specific abilities (e.g. Bastion's Fortify) or trinkets (e.g. Polished Plate). |
-| `spikes` | Spikes | Deals PWR damage back to attackers when hit by a direct attack. | Does not decay. |
-| `static` | Static | Consumed stack-by-stack when the holder suffers any form of stat change (HP damage, healing, or power modification). Consuming a stack deals 1 armor-ignoring damage to the unit. | Does not decay. Stacks are only consumed by stat changes. |
-
----
-
-## 7. Encounter & Budget Systems
-
-### Daily Budget Formula
-The game allocates a precise amount of gold for enemy recruitment every day. The system ensures the entire budget is spent, prioritizing units, then items, and finally trinkets.
-
-- **Regular Battle**: `3 + (Day - 1)` (e.g., Day 1: 3, Day 2: 4, Day 3: 5).
-- **Elite Battle**: `Daily Budget`. Elite nodes contain boss-tier units and grant **Trinket Rewards**.
-- **Boss Battle**: `Daily Budget`.
-    - **Boss Unit**: Free (does not consume budget).
-    - **Boss Summons**: Use one-third (33%) of the daily budget. Summons can spawn with randomly equipped items.
-
-### Progression Scaling
-- **Elite battles** occur randomly on the path.
-- **Boss battles** occur every time **20% of the Flashcard deck** is unlocked (20%, 40%, 60%, 80%, 100%).
+## Trinkets
+| ID | Name | Stats | Tags | Abilities |
+|---|---|---|---|---|
+| `trinket_polished_plate` | **Polished Plate**<br>_A perfectly polished piece of armor._ | 0 HP / 0 PWR |  |  |
+| `ability_trinket_aegis` | **Aegis Charm**<br>_Once per turn: When an ally would die, they survive with 1 HP instead._ | 0 HP / 0 PWR |  |  |
+| `trinket_armor_aura` | **Armor Aura**<br>_An aura that hardens the resolve of allies._ | 0 HP / 0 PWR |  | **Armor Aura**: At turn start, all allies gain 3 Armor. |
+| `trinket_awe_inspiring_totem` | **Awe Inspiring Totem**<br>_At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units._ | 0 HP / 0 PWR |  | **** |
+| `trinket_bargain_charm` | **Bargain Charm**<br>_A charm that haggles for a better price._ | 0 HP / 0 PWR |  | **Bargain Charm**: Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive. |
+| `trinket_beginners_charm` | **Beginner's Charm**<br>_Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard)._ | 0 HP / 0 PWR |  | **** |
+| `trinket_burn_vial` | **Burn Vial**<br>_ability.burn_vial.desc_ | 0 HP / 0 PWR |  |  |
+| `trinket_hero_catalyst` | **Hero's Catalyst**<br>_Whenever an ally merges, grants +1 HP and +1 PWR to your Hero._ | 0 HP / 0 PWR |  | **Hero's Catalyst**: Grants the Hero +1 HP and +1 PWR on any merge. |
+| `trinket_merge_damage_charm` | **Fusion Spark**<br>_A charm that weaponizes fusion._ | 0 HP / 0 PWR |  | **Fusion Spark**: Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. |
+| `trinket_purifying_pendant` | **Purifying Pendant**<br>_When an ally takes damage from a negative status effect, removes all remaining stacks of that effect._ | 0 HP / 0 PWR |  | **** |
+| `trinket_royal_insignia` | **Royal Insignia**<br>_A medal signifying royal favor._ | 0 HP / 0 PWR |  | **Royal Blessing**: When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.<br><br>****<br><br>**** |
+| `trinket_rusty_ring` | **Rusty Ring**<br>_Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff._ | 0 HP / 0 PWR |  | **Rusty Ring**: Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.<br><br>****<br><br>****<br><br>**** |
+| `trinket_soul_echo` | **Soul Echo**<br>_A mystical gem that echoes the souls of the fallen._ | 0 HP / 0 PWR |  | **Soul Echo**: When an ally dies, resurrect the first non-hero unit that died this turn. |
+| `trinket_spiked_armor` | **Spiked Armor**<br>_At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]._ | 0 HP / 0 PWR |  | **Spiked Armor**: At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]. |
+| `trinket_time_sprint_charm` | **Sprint Charm**<br>_A charm that bends time._ | 0 HP / 0 PWR |  | **Time Sprint**: Minigame timer gets a flat 2-second increase in battle. |
+| `trinket_token_return_charm` | **Token Return Charm**<br>_A charm that reclaims spent potential._ | 0 HP / 0 PWR |  | **Token Return**: The first unit to die each round returns tokens equivalent to its tier. |
+| `trinket_trait_air` | **Air Trait**<br>_Enables the Air trait whenever your team has enough Air souls._ | 0 HP / 0 PWR |  |  |
+| `trinket_trait_earth` | **Earth Trait**<br>_Enables the Earth trait whenever your team has enough Earth souls._ | 0 HP / 0 PWR |  |  |
+| `trinket_trait_fire` | **Fire Trait**<br>_Enables the Fire trait whenever your team has enough Fire souls._ | 0 HP / 0 PWR |  |  |
+| `trinket_trait_water` | **Water Trait**<br>_Enables the Water trait whenever your team has enough Water souls._ | 0 HP / 0 PWR |  |  |
+| `trinket_trinity_charm` | **Trinity Charm**<br>_If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token._ | 0 HP / 0 PWR |  | **Trinity Charm**: If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.<br><br>****<br><br>**** |
+| `trinket_twin_charm` | **Twin Charm**<br>_A mirrored charm that reflects its surroundings._ | 0 HP / 0 PWR |  | **Shared Reflection**: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
+| `trinket_underdog_emblem` | **Underdog Emblem**<br>_An emblem that protects the outnumbered._ | 0 HP / 0 PWR |  | **Outnumbered Bulwark**: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference. |
+| `ability_trinket_vengeance` | **Vengeance Charm**<br>_When an ally dies, grant +1 HP and +1 PWR to a random ally._ | 0 HP / 0 PWR |  |  |
+| `trinket_veteran_insignia` | **Veteran Insignia**<br>_A badge of honor for seasoned warriors._ | 0 HP / 0 PWR |  | **Veteran Blessing**: When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.<br><br>****<br><br>****<br><br>**** |

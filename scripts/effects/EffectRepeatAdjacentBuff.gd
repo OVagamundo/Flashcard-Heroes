@@ -52,7 +52,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			
 			# Apply the echo buff
 			# Pass source_uuid to prevent infinite loops (though AbilityResolver should filter it too)
-			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, false, source_uuid)
+			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid)
 			# Handle case where apply_stat_delta returns null (e.g. target already dead)
 			if new_val == null:
 				new_val = old_val
@@ -73,15 +73,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var log_text = "%s echoes buff! Grants +%d %s to adjacent ally." % [source_name, amount, stat_str]
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+		var visual_source_uuid = context.get("source_holder_uuid", source_uuid)
+
 		if stat == "hp":
 			result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-				"source_uuid": source_uuid,
+				"source_uuid": visual_source_uuid,
 				"target_uuids": all_target_uuids,
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
 				"visual_payload": {
-					"source_uuid": source_uuid,
+					"source_uuid": visual_source_uuid,
 					"amount": amount,
 					"stat": "hp",
 					"targets_old_hp": all_old_vals,
@@ -91,13 +93,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			}))
 		elif stat == "pwr":
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": source_uuid,
+				"source_uuid": visual_source_uuid,
 				"target_uuids": all_target_uuids,
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
 				"visual_payload": {
-					"source_uuid": source_uuid,
+					"source_uuid": visual_source_uuid,
 					"amount": amount,
 					"stat": "pwr",
 					"targets_old_pwr": all_old_vals,
@@ -112,5 +114,5 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		for target_uuid in targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
-				battle_manager.apply_stat_delta(tgt, stat, amount, false, source_uuid)
+				battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid)
 		return null

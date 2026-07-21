@@ -1695,12 +1695,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var heal_amount: int = context.get("heal_amount", 0)
 	if heal_amount <= 0:
 		return result
+		
+	var multiplier: float = parameters.get("multiplier", 1.0)
+	
+	if OS.is_debug_build():
+		print("[EffectScald] execute: heal_amount=", heal_amount, ", multiplier=", multiplier, ", computed_dmg=", int(floor(heal_amount * multiplier)))
 	
 	# Apply damage to all targets (usually just FRONT_ENEMY)
 	if not targets.is_empty():
 		result.damage_request = {
 			"stat": "hp",
-			"amount": - heal_amount,
+			"amount": - int(floor(heal_amount * multiplier)),
 			"targets": targets
 		}
 		
@@ -1741,7 +1746,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1a_passive_heal": {
-		"owner": "Apprentice (T1A)",
+		"owner": "Rocky (T1A)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_NON_LETHAL",
 		"effect": "Heal self for PWR",
@@ -1749,7 +1754,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1b_counter_on_hurt": {
-		"owner": "Squire (T1B)",
+		"owner": "Burny (T1B)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
 		"effect": "Attack the attacker for PWR damage",
@@ -1898,7 +1903,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Phoenix Egg (T2C02)",
 		"trigger": "on_death",
 		"condition": null,
-		"effect": "Summon a Squire when holder dies",
+		"effect": "Summon a Burny when holder dies",
 	},
 	
 	# ==================== TRINKET ABILITIES ====================
@@ -2087,6 +2092,11 @@ extends Resource
 @export var effects: Array[EffectDefinition]
 ## The localization key for the ability's description text.
 @export var description_key: String
+
+## The minimum unit level required for this ability to be active.
+@export var required_level: int = 1
+## The maximum unit level for this ability to be active (use this to replace abilities at higher levels).
+@export var max_level: int = 99
 
 ## Execution priority. Higher numbers resolve first. Default 0 for all existing abilities.
 ## See scripts/Constants.gd for named constants (PRIORITY_*) and full reference.
@@ -2904,15 +2914,8 @@ extends RefCounted
 # targets: Array of target UUIDs
 # payload: The visual_payload dictionary from the CombatEvent
 func execute(_animator: Node, _targets: Array[String], _payload: Dictionary) -> void:
+	push_warning("BattleAnimation.execute() not implemented")
 	pass
-
-## Helper to launch a list of events concurrently instead of sequentially
-func _execute_parallel_events(animator: Node, events: Array[CombatEvent]) -> void:
-	for e in events:
-		_fire_and_forget_event(animator, e)
-
-func _fire_and_forget_event(animator: Node, event: CombatEvent) -> void:
-	await animator._animate_events([event])
 ```
 
 ### File: `scripts/animations/BuffAnimation.gd`
@@ -2996,13 +2999,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			if SignalBus.has_signal("unit_move"):
 				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
 
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
-
 	# Wait for hop animation completion
 	if final_target_uuid != "":
 		await animator.wait_for_animation_completion("move", final_target_uuid)
@@ -3028,6 +3024,12 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var attack_type = String(payload.get("attack_type", "melee")) # Default to melee
 	var main_target_uuid = String(payload.get("main_target_uuid", "")) # For multi-target attacks
 	
+	var _raw_wind = payload.get("windup_events", [])
+	var windup_events: Array[CombatEvent] = []
+	for e in _raw_wind: windup_events.append(e as CombatEvent)
+	var _raw_pre = payload.get("pre_impact_events", [])
+	var pre_impact_events: Array[CombatEvent] = []
+	for e in _raw_pre: pre_impact_events.append(e as CombatEvent)
 	var _raw_imp = payload.get("impact_events", [])
 	var impact_events: Array[CombatEvent] = []
 	for e in _raw_imp: impact_events.append(e as CombatEvent)
@@ -3088,12 +3090,10 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		# KEYFRAME 1: WIND-UP
 		# Execute windup events before lunge
-		if payload.has("windup_events"):
-			var windup_events = payload.get("windup_events", [])
-			var wind_evs: Array[CombatEvent] = []
-			for e in windup_events: wind_evs.append(e as CombatEvent)
-			if not wind_evs.is_empty():
-				_execute_parallel_events(animator, wind_evs)
+		if not windup_events.is_empty():
+			await animator._animate_events(windup_events)
+		if not pre_impact_events.is_empty():
+			await animator._animate_events(pre_impact_events)
 		
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
@@ -3118,12 +3118,10 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# ------------------------------------------------------------------
 	elif attack_type == "trinket":
 		# KEYFRAME 1: WIND-UP
-		if payload.has("windup_events"):
-			var windup_events = payload.get("windup_events", [])
-			var wind_evs: Array[CombatEvent] = []
-			for e in windup_events: wind_evs.append(e as CombatEvent)
-			if not wind_evs.is_empty():
-				_execute_parallel_events(animator, wind_evs)
+		if not windup_events.is_empty():
+			await animator._animate_events(windup_events)
+		if not pre_impact_events.is_empty():
+			await animator._animate_events(pre_impact_events)
 			
 		# 1. Activate the trinket view (play hop/bounce animation)
 		if animator.has_method("play_trinket_activation"):
@@ -3153,12 +3151,10 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# ------------------------------------------------------------------
 	elif attack_type == "ranged":
 		# KEYFRAME 1: WIND-UP
-		if payload.has("windup_events"):
-			var windup_events = payload.get("windup_events", [])
-			var wind_evs: Array[CombatEvent] = []
-			for e in windup_events: wind_evs.append(e as CombatEvent)
-			if not wind_evs.is_empty():
-				_execute_parallel_events(animator, wind_evs)
+		if not windup_events.is_empty():
+			await animator._animate_events(windup_events)
+		if not pre_impact_events.is_empty():
+			await animator._animate_events(pre_impact_events)
 			
 		# Trigger Bump (if applicable)
 		var should_bump = (not skip_bump) and (not source_uuid.is_empty())
@@ -3199,14 +3195,17 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# ------------------------------------------------------------------
 	else:
 		# KEYFRAME 1: WIND-UP
-		if payload.has("windup_events"):
-			var windup_events = payload.get("windup_events", [])
-			var wind_evs: Array[CombatEvent] = []
-			for e in windup_events: wind_evs.append(e as CombatEvent)
-			if not wind_evs.is_empty():
-				_execute_parallel_events(animator, wind_evs)
+		if not windup_events.is_empty():
+			await animator._animate_events(windup_events)
+		if not pre_impact_events.is_empty():
+			await animator._animate_events(pre_impact_events)
 			
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+
+	# KEYFRAME 3: POST-RETURN (Impact Callback)
+	# Execute on_hurt and on_kill events AFTER the primary attack sequence completes
+	if not impact_events.is_empty():
+		await animator._animate_events(impact_events)
 
 func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dictionary, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
 	var targets_new_hp = payload.get("targets_new_hp", [])
@@ -3235,19 +3234,6 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	var shake_intensity = minf(float(abs(amount)) / 5.0, 1.0)
 	if shake_intensity > 0.0:
 		SignalBus.screen_shake_requested.emit(shake_intensity)
-		
-	# EXACT-MOMENT CAUSALITY: Execute pre_impact and impact events NOW
-	var _raw_pre = payload.get("pre_impact_events", [])
-	var pre_impact_events: Array[CombatEvent] = []
-	for e in _raw_pre: pre_impact_events.append(e as CombatEvent)
-	if not pre_impact_events.is_empty():
-		_execute_parallel_events(animator, pre_impact_events)
-		
-	var _raw_imp = payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
 	
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
@@ -3574,15 +3560,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		
 		if SignalBus.has_signal("unit_move"):
 			SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
-			
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
 		
-	for target_uuid in targets:
 		# Wait for movement completion
 		await animator.wait_for_animation_completion("move", target_uuid)
 
@@ -3742,13 +3720,6 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 	
 	if SignalBus.has_signal("unit_move"):
 		SignalBus.emit_signal("unit_move", target_uuid, &"RECOIL", recoil_direction)
-		
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
 	
 	# SPIKES: When target has Spikes, decay stacks (attacker is dead so no damage shown)
 	for spikes_data in spikes_data_list:
@@ -3936,13 +3907,6 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if SignalBus.has_signal("unit_deform"):
 			SignalBus.emit_signal("unit_deform", target_uuid, &"SQUISH_BOUNCE")
 
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
-
 	# Wait for visual effect completion
 	await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.2)).timeout
 
@@ -4023,13 +3987,6 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 				
 			# Wait for appear animation
 			await animator.wait_for_animation_completion("summon_fade", target_uuid)
-			
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = _payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
 ```
 
 ### File: `scripts/animations/TransformAnimation.gd`
@@ -4078,13 +4035,6 @@ func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> vo
 			if animator._visual_registry.has(target_uuid):
 				animator._visual_registry.erase(target_uuid)
 			view.queue_free()
-			
-	# EXACT-MOMENT CAUSALITY: Execute impact events NOW
-	var _raw_imp = _payload.get("impact_events", [])
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	if not impact_events.is_empty():
-		_execute_parallel_events(animator, impact_events)
 ```
 
 ### File: `scripts/animations/UnitAnimationController.gd`
@@ -4325,9 +4275,6 @@ func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void
 	# so that no matter what tweens were running (leap, recoil, etc),
 	# it is visually detached and floating exactly from its slot.
 	if is_instance_valid(_view):
-		if _view.top_level:
-			stay_in_place = true
-			
 		if not stay_in_place:
 			_view.top_level = false
 			_view.position = Vector2.ZERO
@@ -5308,7 +5255,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		}
 		AbilityResolver.process_trigger(&"on_attack", attack_context)
 		
-	var windup_events: Array[CombatEvent] = battle_manager.drain_and_capture_reactions_inline(windup_start)
+	var windup_events: Array[CombatEvent] = []
+	if is_simulation:
+		windup_events = battle_manager.drain_and_capture_reactions_inline(windup_start)
 
 	# PRE-IMPACT PHASE
 	var pre_impact_start: int = battle_manager.get_pending_reactions_size()
@@ -5321,7 +5270,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	}
 	AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
 	
-	var pre_impact_events: Array[CombatEvent] = battle_manager.drain_and_capture_reactions_inline(pre_impact_start)
+	var pre_impact_events: Array[CombatEvent] = []
+	if is_simulation:
+		pre_impact_events = battle_manager.drain_and_capture_reactions_inline(pre_impact_start)
 
 	# -------------------------------------------------------------------------
 	# TRAIT & TRINKET LOGIC
@@ -5375,6 +5326,19 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			}))
 			final_target_uuid = guardian.ball_uuid
 			final_target = guardian
+			
+			# Trigger Guardian passive effects (e.g., gain Armor)
+			var combat_sim = battle_manager._combat
+			var intercept_start = combat_sim._pending_reactions.size()
+			
+			AbilityResolver.process_trigger(&"passive_intercept", {
+				"source_uuid": guardian.ball_uuid,
+				"is_simulation": true
+			})
+			
+			combat_sim.drain_reactions_inline(intercept_start, battle_manager)
+			var guardian_results = combat_sim.collect_and_clear_inline_events()
+			pre_impact_events.append_array(guardian_results)
 
 	# IMPACT PHASE (Damage Application)
 	var old_hp = final_target.current_hp
@@ -5401,7 +5365,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if new_hp <= 0:
 		battle_manager.trigger_on_kill(attacker_uuid, final_target_uuid)
 		
-	var impact_events: Array[CombatEvent] = battle_manager.drain_and_capture_reactions_inline(impact_start)
+	var impact_events: Array[CombatEvent] = []
+	if is_simulation:
+		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
 		
 	# PACKAGE EVENTS INTO PAYLOAD
 	var visual_payload: Dictionary = {
@@ -6602,6 +6568,8 @@ func has_pending_reactions() -> bool:
 	return not _pending_reactions.is_empty()
 
 func enqueue_reaction(request: EffectRequest) -> void:
+	if OS.is_debug_build():
+		print("[CS] Enqueue reaction: ", request.ability_id, " Prio:", request.priority)
 	_pending_reactions.append(request)
 
 func sort_reactions_by_priority() -> void:
@@ -6881,6 +6849,28 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					if source_name == "":
 						source_name = String(request.ability_id)
 					
+					# CRITICAL: Trigger on_before_damage for each target BEFORE damage
+					# This allows defensive abilities like Guardian's Defensive Stance to proc
+					# Capture queue size BEFORE triggering reactions to avoid draining unrelated events
+					var on_before_damage_start_index = _pending_reactions.size()
+					
+					for tgt_uuid in resolved_targets:
+						var tgt = bm.get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp > 0:
+							var before_ctx := {
+								"source_uuid": tgt_uuid, # The target is source of its own defensive ability
+								"defender_uuid": tgt_uuid,
+								"attacker_uuid": request.source_uuid,
+								"target_initial_hp": tgt.current_hp,
+								"is_simulation": true
+							}
+							AbilityResolver.process_trigger(&"on_before_damage", before_ctx)
+					
+					# Drain on_before_damage reactions before damage is applied
+					drain_reactions_inline(on_before_damage_start_index, bm)
+					var before_damage_evts = collect_and_clear_inline_events()
+					out_events.append_array(before_damage_evts)
+					
 					var damage_result := EffectHandlers.handle_damage_effect(
 						request, resolved_targets, dmg_source, source_name, target_display_names, amount, false, bm
 					)
@@ -6888,7 +6878,23 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					if damage_result.should_return:
 						return
-						
+					
+					# Trigger on_hurt for damaged units
+					var on_hurt_start_index = _pending_reactions.size()
+					for tgt_uuid in damage_result.damaged_uuids:
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+					
+					# Drain on_hurt reactions
+					drain_reactions_inline(on_hurt_start_index, bm)
+					var hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(hurt_inline_evts)
+					
+					# Trigger on_kill for killed units
+					for tgt_uuid in damage_result.damaged_uuids:
+						var tgt = bm.get_instance_by_uuid(tgt_uuid)
+						if is_instance_valid(tgt) and tgt.current_hp <= 0:
+							bm.trigger_on_kill(request.source_uuid, tgt_uuid)
+					
 					# Death check
 					bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 					return
@@ -6933,7 +6939,24 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, bm)
 				out_events.append_array(cascade_result.events)
 				
-				# Phase 2: Removed since EffectHandlers.handle_cascade_damage now encapsulates this into impact_events.
+				# Phase 2: Process reactions one target at a time (after all damage shown)
+				for hit_data in cascade_result.hit_targets:
+					var target_uuid: String = hit_data.uuid
+					var damage_amount: int = hit_data.amount
+					var was_killed: bool = hit_data.was_killed
+					
+					# Trigger on_hurt for counter-attacks
+					var cascade_hurt_start = _pending_reactions.size()
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					
+					# Drain on_hurt reactions for THIS target
+					drain_reactions_inline(cascade_hurt_start, bm)
+					var cascade_hurt_inline_evts = collect_and_clear_inline_events()
+					out_events.append_array(cascade_hurt_inline_evts)
+					
+					# Trigger on_kill if killed
+					if was_killed:
+						bm.trigger_on_kill(request.source_uuid, target_uuid)
 				
 				# Check for deaths after cascade
 				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
@@ -6977,16 +7000,13 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 								"new_spikes": spikes["new_spikes"]
 							})
 						
-						# CRITICAL: Prevent the standard DEATH event from being generated for the source
-						# since KAMIKAZE_ATTACK handles the death animation at the target position
-						death_tracking[source_uuid] = true
-						
-						# Handle Kamikaze triggers inline and encapsulate into visual_payload
-						var impact_start = _pending_reactions.size()
-						bm.trigger_on_hurt(target_uuid, damage, source_uuid)
-						if new_hp <= 0:
-							bm.trigger_on_kill(source_uuid, target_uuid)
-						var impact_events = drain_and_capture_reactions_inline(impact_start, bm)
+						# CRITICAL: Remove the DEATH event for the source since KAMIKAZE_ATTACK
+						# handles the death animation at the target position
+						for i in range(out_events.size() - 1, -1, -1):
+							var evt = out_events[i]
+							if evt.type == CombatEvent.Type.DEATH and evt.target_uuids.has(source_uuid):
+								out_events.remove_at(i)
+								break
 						
 						# Create KAMIKAZE_ATTACK event for animation
 						out_events.append(CombatEvent.new(CombatEvent.Type.KAMIKAZE_ATTACK, {
@@ -7000,19 +7020,36 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 								"targets_old_armor": [old_armor],
 								"targets_new_armor": [new_armor],
 								"armor_consumed": [armor_consumed],
-								"spikes_data_list": spikes_data_list,
-								"impact_events": impact_events
+								"spikes_data_list": spikes_data_list
 							}
 						}))
+						
+						# Fire on_hurt trigger
+						bm.trigger_on_hurt(target_uuid, damage, source_uuid)
+						
+						# Check for kills
+						if new_hp <= 0:
+							bm.trigger_on_kill(source_uuid, target_uuid)
 				
 				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 				return
 			
 			out_events.append_array(effect_result.events)
 			
-			# Fire triggers are now handled completely inside EffectHandlers methods
-			# (like handle_damage_effect, handle_heal_effect, etc.)
-			# We no longer flat dump reactions here.
+			# Fire triggers based on result data and drain reactions
+			if not effect_result.damaged_uuids.is_empty():
+				var result_hurt_start = _pending_reactions.size()
+				for damaged_uuid in effect_result.damaged_uuids:
+					var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
+					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
+				
+				drain_reactions_inline(result_hurt_start, bm)
+				var hurt_inline_evts = collect_and_clear_inline_events()
+				out_events.append_array(hurt_inline_evts)
+			
+			# Fire on_kill triggers
+			for killed_uuid in effect_result.killed_uuids:
+				bm.trigger_on_kill(request.source_uuid, killed_uuid)
 			
 			# DEPRECATED: on_healed is now triggered systemically in BattleManager.apply_stat_delta
 			# So we don't need to trigger it from EffectResult.healed_events anymore.
@@ -7047,6 +7084,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			# Phase 1: Apply all damage + DAMAGE events in sequence
 			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
 			if effect_data.has("cascade_damage"):
+				if OS.is_debug_build():
+					print("[CS] Processing cascade_damage from ability:", request.ability_id, "source:", request.source_uuid)
 				var cascade_list = effect_data.get("cascade_damage", [])
 				
 				# Phase 1: Apply all damage via EffectHandlers
@@ -7184,6 +7223,10 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
 	
 	for request in reactions_to_process:
+		# DEBUG: Trace priority execution
+		if OS.is_debug_build():
+			print("[CS] Draining reaction: ", request.ability_id, " Prio:", request.priority, " Src:", request.source_uuid)
+			
 		# Capture events to _inline_events so they can be collected by the outer loop
 		# IMPORTANT: Pass a special death_tracking that disables death checking
 		var inline_start_index := _inline_events.size()
@@ -7263,8 +7306,6 @@ func collect_and_clear_inline_events() -> Array[CombatEvent]:
 func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonResult, out_events: Array[CombatEvent], bm) -> void:
 	var is_combat_phase: bool = bm.get_current_phase_name() == &"COMBAT"
 	
-	var impact_start: int = bm.get_pending_reactions_size()
-	
 	# For each new instance, trigger summon reactions
 	for i in range(summon_result.new_instances.size()):
 		var new_inst: GachaBallInstance = summon_result.new_instances[i]
@@ -7296,25 +7337,19 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
-	# Drain reactions and capture them
-	var captured_impacts = drain_and_capture_reactions_inline(impact_start, bm)
-	
-	# Find the SUMMON events in summon_result and distribute impact events
-	# Typically there is one SUMMON event per unit or one batch.
-	# We will just put all impact events into the LAST SUMMON event.
-	var last_summon_event: CombatEvent = null
-	for evt in summon_result.events:
-		if evt.type == CombatEvent.Type.SUMMON:
-			last_summon_event = evt
+		# Drain reactions immediately so summon abilities execute before the summoned unit acts
+		while not _pending_reactions.is_empty():
+			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+			var reaction = _pending_reactions.pop_front()
 			
-	if is_instance_valid(last_summon_event):
-		if not last_summon_event.visual_payload.has("impact_events"):
-			last_summon_event.visual_payload["impact_events"] = []
-		var impact_arr = last_summon_event.visual_payload["impact_events"]
-		for e in captured_impacts: impact_arr.append(e as Resource)
-	else:
-		# Fallback if no SUMMON event found (shouldn't happen)
-		out_events.append_array(captured_impacts)
+			var reaction_events: Array[CombatEvent] = []
+			resolve_effect_request(reaction, reaction_events, {}, bm)
+			_tag_trinket_events(reaction_events, reaction, bm)
+			
+			# Collect inline events
+			var inline_evts = collect_and_clear_inline_events()
+			out_events.append_array(inline_evts)
+			out_events.append_array(reaction_events)
 
 func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
 	if request.source_uuid.is_empty():
@@ -7759,14 +7794,16 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "PLAYER")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
 						dying_units_data.append({
 							"unit": unit,
 							"death_location": death_location,
 							"team": "PLAYER",
-							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
+							"has_lethal_counter": has_lethal,
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-						deferred_deaths.append(unit.ball_uuid)
+						if has_lethal:
+							deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
 				if register_death(bm._state, unit, &"COMBAT"):
 					bm._perform_unit_death_cleanup(unit)
@@ -7787,14 +7824,16 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 						_track_first_killed(bm, unit, "ENEMY")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
 						dying_units_data.append({
 							"unit": unit,
 							"death_location": death_location,
 							"team": "ENEMY",
-							"has_lethal_counter": has_lethal_counter_abilities(unit, bm._battle_instances),
+							"has_lethal_counter": has_lethal,
 							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
 						})
-						deferred_deaths.append(unit.ball_uuid)
+						if has_lethal:
+							deferred_deaths.append(unit.ball_uuid)
 			elif not is_simulation:
 				if register_death(bm._state, unit, &"COMBAT"):
 					bm._perform_unit_death_cleanup(unit)
@@ -7872,19 +7911,27 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
 	# Priority sorting now correctly orders trinket (210) before item (200)
 	if is_simulation and out_events != null:
-		# APPEND DEATH EVENTS BEFORE DRAINING:
-		# This ensures the Animator plays the fade-out before any effect triggered by the death (like a Summon).
-		out_events.append_array(pending_death_events)
-		pending_death_events.clear()
-		
+		var cascade_evts: Array[CombatEvent] = []
 		if not bm._pending_reactions.is_empty():
 			if OS.is_debug_build():
 				pass
 				# print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 			bm.drain_pending_reactions_inline(0)
-			var cascade_evts: Array[CombatEvent] = bm.collect_inline_events()
-			for evt in cascade_evts:
-				out_events.append(evt)
+			cascade_evts = bm.collect_inline_events()
+			
+		var insert_index = cascade_evts.size()
+		for i in range(cascade_evts.size()):
+			var type = cascade_evts[i].type
+			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM or type == CombatEvent.Type.ITEM_TRANSFER:
+				insert_index = i
+				break
+				
+		# Insert DEATH events between VFX reactions (like BUFF/HEAL) and physical replacements (SUMMON/TRANSFORM)
+		# This ensures the Animator plays the dying unit's buffs BEFORE the fade-out, but plays summons AFTER the fade-out.
+		out_events.append_array(cascade_evts.slice(0, insert_index))
+		out_events.append_array(pending_death_events)
+		out_events.append_array(cascade_evts.slice(insert_index, cascade_evts.size()))
+		pending_death_events.clear()
 		
 		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
 		# The kamikaze animation handles the death at the target position
@@ -8197,8 +8244,6 @@ static func handle_damage_effect(
 	battle_manager: Node
 ) -> DamageResult:
 	var result := DamageResult.new()
-	var pre_impact_events: Array[Resource] = []
-	var impact_events: Array[Resource] = []
 	
 	# Log message
 	# Log message moved inside loop to report actual damage (varying per target)
@@ -8263,9 +8308,13 @@ static func handle_damage_effect(
 		if fire_level >= 9 and damage_to_apply < 0: # Check damage < 0 to be sure it's damage
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 				var burn_count = tgt.get_status_effect_amount(&"burn")
-
+				if OS.is_debug_build():
+					print("[EffectHandlers] Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, damage_to_apply])
+				
 				if burn_count > 0:
 					var bonus_damage = burn_count
+					if OS.is_debug_build():
+						print("[EffectHandlers] Fire 9 Bonus: +%d" % bonus_damage)
 					damage_to_apply -= bonus_damage # Make it more negative (increase damage)
 		
 		# Log message (Per Target)
@@ -8297,7 +8346,7 @@ static func handle_damage_effect(
 		if would_be_lethal and is_ally_damage:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
 			if is_instance_valid(guardian):
-				pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [tgt_uuid],
 					"visual_payload": {
@@ -8308,6 +8357,19 @@ static func handle_damage_effect(
 				}))
 				tgt_uuid = guardian.ball_uuid
 				tgt = guardian
+				
+				# Trigger Guardian passive effects (e.g., gain Armor)
+				var combat_sim = battle_manager._combat
+				var intercept_start = combat_sim._pending_reactions.size()
+				
+				AbilityResolver.process_trigger(&"passive_intercept", {
+					"source_uuid": guardian.ball_uuid,
+					"is_simulation": true
+				})
+				
+				combat_sim.drain_reactions_inline(intercept_start, battle_manager)
+				var guardian_results = combat_sim.collect_and_clear_inline_events()
+				result.events.append_array(guardian_results)
 		
 		original_target_uuids.append(original_tgt_uuid)
 		targets_old_hp.append(tgt.current_hp)
@@ -8432,19 +8494,6 @@ static func handle_damage_effect(
 			"is_enemy": not is_player_source
 		})
 		
-	# Calculate triggers before appending damage event
-	var impact_start: int = battle_manager.get_pending_reactions_size()
-	
-	for i in range(result.damaged_uuids.size()):
-		var tgt_uuid = result.damaged_uuids[i]
-		var dmg_val = abs(amount)
-		battle_manager.trigger_on_hurt(tgt_uuid, dmg_val, request.source_uuid)
-		if targets_new_hp[i] <= 0:
-			battle_manager.trigger_on_kill(request.source_uuid, tgt_uuid)
-			
-	var captured_impacts = battle_manager.drain_and_capture_reactions_inline(impact_start)
-	for e in captured_impacts: impact_events.append(e as Resource)
-	
 	# Add DAMAGE event with ARMOR data included for unified animation
 	result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": request.source_uuid,
@@ -8475,9 +8524,7 @@ static func handle_damage_effect(
 				"amount": amount,
 				"color": "red"
 			},
-			"trinket_activations": t_acts,
-			"pre_impact_events": pre_impact_events,
-			"impact_events": impact_events
+			"trinket_activations": t_acts
 		}
 	}))
 	
@@ -8538,8 +8585,6 @@ static func handle_cascade_damage(
 	
 	# Process each cascade target
 	for cascade_item in cascade_list:
-		var pre_impact_events: Array[Resource] = []
-		var impact_events: Array[Resource] = []
 		var cascade_target_uuid := String(cascade_item.get("target", ""))
 		var cascade_amount := int(cascade_item.get("amount", 0))
 		var cascade_skip_bump := bool(cascade_item.get("skip_bump", false))
@@ -8556,8 +8601,13 @@ static func handle_cascade_damage(
 		if fire_level >= 9:
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 				var burn_count = cascade_tgt.get_status_effect_amount(&"burn")
+				if OS.is_debug_build():
+					print("[EffectHandlers] Cascade Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, cascade_amount])
+					
 				if burn_count > 0:
 					var bonus_damage = burn_count
+					if OS.is_debug_build():
+						print("[EffectHandlers] Cascade Fire 9 Bonus: +%d" % bonus_damage)
 					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
@@ -8568,7 +8618,7 @@ static func handle_cascade_damage(
 		if would_be_lethal and is_ally_damage:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
 			if is_instance_valid(guardian):
-				pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [cascade_target_uuid],
 					"visual_payload": {
@@ -8680,13 +8730,6 @@ static func handle_cascade_damage(
 				"is_enemy": not is_player_source
 			})
 			
-		var impact_start = battle_manager.get_pending_reactions_size()
-		battle_manager.trigger_on_hurt(cascade_target_uuid, cascade_amount, request.source_uuid)
-		if cascade_tgt.current_hp <= 0:
-			battle_manager.trigger_on_kill(request.source_uuid, cascade_target_uuid)
-		var captured_impacts = battle_manager.drain_and_capture_reactions_inline(impact_start)
-		for e in captured_impacts: impact_events.append(e as Resource)
-		
 		var payload = {
 			"source_uuid": animation_source_uuid,
 			"amount": - cascade_amount,
@@ -8710,9 +8753,7 @@ static func handle_cascade_damage(
 				"amount": - cascade_amount,
 				"color": "red"
 			},
-			"trinket_activations": t_acts,
-			"pre_impact_events": pre_impact_events,
-			"impact_events": impact_events
+			"trinket_activations": t_acts
 		}
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
@@ -8723,6 +8764,13 @@ static func handle_cascade_damage(
 			"ability_holder_uuid": request.source_uuid,
 			"visual_payload": payload
 		}))
+		
+		# Track for Phase 2 reactions
+		result.hit_targets.append({
+			"uuid": cascade_target_uuid,
+			"amount": cascade_amount,
+			"was_killed": cascade_tgt.current_hp <= 0
+		})
 	
 	return result
 
@@ -8950,6 +8998,10 @@ static func handle_summon_units(
 		# Create new unit
 		var new_unit := GachaBallInstance.new()
 		new_unit.initialize(unit_def)
+		if summon_data.has("level"):
+			var target_level = summon_data.get("level")
+			for i in range(1, target_level):
+				new_unit.level_up()
 		new_unit.reset_battle_stats_silent()
 		
 		# Equip items if provided in summon data
@@ -9044,13 +9096,17 @@ static func handle_mirror_transform(
 		}
 	}))
 	
-	# 3. State Mutation: Discard Items
-	var items_to_discard = source.equipped_item_uuids.duplicate()
-	for item_uuid in items_to_discard:
+	# 3. State Mutation: Preserve items for the new unit
+	var items_to_transfer = []
+	for slot_idx in range(source.equipped_item_uuids.size()):
+		var item_uuid = source.equipped_item_uuids[slot_idx]
 		if not item_uuid.is_empty():
 			var item_inst = battle_manager.get_instance_by_uuid(item_uuid)
 			if is_instance_valid(item_inst):
-				InventoryOperations.move_instance_to_discard(battle_manager._state, item_inst)
+				items_to_transfer.append({"uuid": item_uuid, "slot": slot_idx})
+				source.unequip_item_bonus(item_inst)
+				item_inst.equipped_on_uuid = ""
+				item_inst.equipped_slot_index = -1
 	# Clear on source
 	source.equipped_item_uuids.fill("")
 	
@@ -9065,16 +9121,23 @@ static func handle_mirror_transform(
 	# 5. Determine Summon Location
 	# We want to summon EXACTLY where we were.
 	
+	var target_level: int = transform_data.get("target_level", 1)
+
 	# Create the new instance
 	var new_def = Database.get_definition(target_unit_id)
 	if is_instance_valid(new_def):
 		var new_unit = GachaBallInstance.new()
 		new_unit.initialize(new_def)
+		new_unit.level = target_level
 		new_unit.reset_battle_stats_silent()
 		
 		# Place it in the container
 		# Use atomic API to register and place
 		battle_manager._state.bm_add_instance(new_unit, my_loc.container, my_loc.index)
+		
+		# Transfer preserved items to the new unit
+		for transfer_data in items_to_transfer:
+			InventoryOperations.equip_item(battle_manager._state, transfer_data["uuid"], new_unit.ball_uuid, transfer_data["slot"])
 		
 		# Populate result
 		result.new_instances.append(new_unit)
@@ -13950,7 +14013,7 @@ func _trigger_turn_start_abilities() -> void:
 		null,
 		[],
 		{},
-		C.PRIORITY_TRAIT_BURN # 100
+		C.PRIORITY_TRAIT_START_EFFECTS # -10
 	)
 	_pending_reactions.append(trait_request)
 	
@@ -16264,7 +16327,7 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	var source_definition = item_data.definition
 	var source_location: LocationIdentifier = item_data.location
 
-	var result_definition := GameManager.get_transform_result(source_definition.id, int(source_definition.tier))
+	var result_definition := GameManager.get_transform_result(source_definition)
 	if not is_instance_valid(result_definition):
 		return
 
@@ -16313,7 +16376,8 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 			"cost": transform_cost,
 			"instance_uuid": item_data.uuid,
 			"source_location": source_location,
-			"result_definition": result_definition
+			"result_definition": result_definition,
+			"source_level": item_data.instance.level
 		})
 
 		# Animation starts from the interaction point
@@ -16618,6 +16682,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 var _source_location: LocationIdentifier
 var _target_location: LocationIdentifier
 var _recipe_id: StringName
+var _result_id: StringName
 var _source_view_instance_id: int = -1
 var _choice_made: bool = false
 
@@ -16681,6 +16746,7 @@ func populate(context: Dictionary) -> void:
 	_source_location = context.get("source_location")
 	_target_location = context.get("target_location")
 	_recipe_id = context.get("recipe_id")
+	_result_id = context.get("result_id", &"")
 	_source_view_instance_id = context.get("source_view_id", -1)
 
 	_update_localized_text()
@@ -16700,9 +16766,14 @@ func populate(context: Dictionary) -> void:
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
 			merge_button.pressed.connect(_on_merge_pressed)
 			
-		var recipe = Database.recipes.get(_recipe_id)
-		if recipe and recipe.result_id:
-			var result_def = Database.get_definition(recipe.result_id)
+		var result_id = _result_id
+		if result_id == &"":
+			var recipe = Database.recipes.get(_recipe_id)
+			if recipe and recipe.result_id:
+				result_id = recipe.result_id
+				
+		if result_id != &"":
+			var result_def = Database.get_definition(result_id)
 			if result_def and result_def.icon:
 				result_image.texture = result_def.icon
 				result_image.visible = true
@@ -17056,6 +17127,7 @@ const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization
 const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 
 const PRIORITY_EXTRA_ACTION = -100
+const PRIORITY_TRAIT_START_EFFECTS = -10
 const PRIORITY_TRAIT_BURN = 100 # Trait burn application
 
 # --- UI Sizing ---
@@ -18030,7 +18102,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 extends EffectDefinition
 
 ## Grants +1 PWR to the target (ally behind the source unit).
-## Used by the Empath unit's Empathic Link ability.
+## Used by the Windy unit's Empathic Link ability.
 
 func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var is_simulation: bool = context.get("is_simulation", false)
@@ -19171,7 +19243,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if empty_slots_count <= 0:
 		return EffectResult.empty()
 		
-	var amount_per_slot: int = context.get("parameters", {}).get("amount", 1)
+	var amount_per_slot: int = self.parameters.get("amount", 1)
 	var total_amount: int = amount_per_slot * empty_slots_count
 	
 	if total_amount <= 0:
@@ -19617,7 +19689,6 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# MULTI-TARGET BATCHING: Collect all target data first, then create ONE event
 		# This enables simultaneous projectile animations for multi-target abilities
 		var result := EffectResult.new()
-		var impact_start: int = battle_manager.get_pending_reactions_size()
 		
 		# Collect data for all targets
 		var all_target_uuids: Array[String] = []
@@ -19702,10 +19773,6 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			if tgt_stat == "hp":
 				result.mark_healed(target_uuid, tgt_amount)
 		
-		var captured_impacts = battle_manager.drain_and_capture_reactions_inline(impact_start)
-		var impact_events: Array[Resource] = []
-		for e in captured_impacts: impact_events.append(e as Resource)
-		
 		# Create batched event for all targets at once (enables simultaneous projectiles)
 		if not all_target_uuids.is_empty():
 			if stat == "hp":
@@ -19737,8 +19804,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 							"skip_bump": parameters.get("skip_bump", false),
 							"targets_old_hp": all_old_vals,
 							"targets_new_hp": all_new_vals,
-							"targets_max_hp": all_max_hp,
-							"impact_events": impact_events
+							"targets_max_hp": all_max_hp
 						}
 					}))
 				else:
@@ -19795,8 +19861,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						"amount": amount,
 						"stat": stat,
 						"targets_old_pwr": all_old_vals,
-						"targets_new_pwr": all_new_vals,
-						"impact_events": impact_events
+						"targets_new_pwr": all_new_vals
 					}
 				}))
 			else:
@@ -19827,8 +19892,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						"stat": stat,
 						"targets_old_val": all_old_vals,
 						"targets_new_val": all_new_vals,
-						"new_val": all_new_vals[0] if not all_new_vals.is_empty() else 0,
-						"impact_events": impact_events
+						"new_val": all_new_vals[0] if not all_new_vals.is_empty() else 0
 					}
 				}))
 		
@@ -20339,9 +20403,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var scale_amount = 3 if source_unit.level == 1 else (5 if source_unit.level == 2 else 7)
-	var hp_amount: int = scale_amount
-	var pwr_amount: int = scale_amount
+	var hp_amount: int = self.parameters.get("scale_amount", 3)
+	var pwr_amount: int = self.parameters.get("scale_amount", 3)
 	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
@@ -20429,7 +20492,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
 	
-	var scale_amount = 3 if source.level == 1 else (4 if source.level == 2 else 5)
+	var scale_amount = self.parameters.get("scale_amount", 3)
 	var bonus_pwr = copy_count * scale_amount
 	var status_key = &"doppleganger_scaling"
 	var last_scaling = source.get_status_effect_amount(status_key)
@@ -20961,11 +21024,23 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# 2. RETURN TRANSFORM REQUEST (Simulation Only)
 	# We do NOT mutate state here. We request the transformation.
 	
+	# Calculate Level
+	var level_delta = parameters.get("level_delta", 0)
+	var max_level = parameters.get("max_level", false)
+	var target_level = target_unit.level
+	if max_level:
+		target_level = 3
+	else:
+		target_level += level_delta
+	
+	target_level = clamp(target_level, 1, 3)
+
 	var result := EffectResult.new()
 	
 	result.transform_request = {
 		"self_uuid": source_uuid,
 		"target_unit_id": target_def.id,
+		"target_level": target_level,
 		"target_name": BattleHelpers.get_instance_display_name(target_unit)
 	}
 	
@@ -21010,8 +21085,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var hp_amount: int = multiplier * 3
-	var pwr_amount: int = multiplier * 3
+	var hp_scale = parameters.get("hp_per_5_gold", 3)
+	var pwr_scale = parameters.get("pwr_per_5_gold", 3)
+	var hp_amount: int = multiplier * hp_scale
+	var pwr_amount: int = multiplier * pwr_scale
 	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
@@ -21181,6 +21258,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	if stat == null or amount <= 0:
 		return EffectResult.empty() if is_simulation else null
+		
+	var multiplier = parameters.get("effectiveness", 1.0)
+	amount = int(floor(amount * multiplier))
 		
 	# Validate targets
 	if targets.is_empty():
@@ -21951,37 +22031,39 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var gold = 0
 	if is_instance_valid(GameManager.run_state):
-		gold = GameManager.run_state.gold
+		var multiplier: float = self.parameters.get("multiplier", 1.0)
+		gold = maxi(1, int(GameManager.run_state.gold * multiplier))
 	
-	var current_pwr = source.current_pwr
+	# Delta-safe scaling logic: calculate the required bonus relative to base stats
+	var base_pwr = source.get_definition_base_pwr()
+	var required_bonus = max(0, gold - base_pwr)
 	
-	# Calculate delta to reach target
-	var delta = gold - current_pwr
+	# Fetch previously applied bonus
+	var previous_bonus = source.get_meta("gold_pwr_bonus", 0)
+	var delta = required_bonus - previous_bonus
 	
 	if delta == 0:
 		return EffectResult.new()
 		
+	# Store the new total bonus applied
+	source.set_meta("gold_pwr_bonus", required_bonus)
+	
 	# Apply change via BattleManager
-	# Note: We apply this as bonus_pwr so it's additive to base stats
 	var pwr_result = battle_manager.apply_stat_delta(source, "pwr", delta)
-	var _new_pwr: int = current_pwr
+	var _new_pwr: int = source.current_pwr
 	if pwr_result is Dictionary:
-		_new_pwr = pwr_result.get("new_pwr", current_pwr)
+		_new_pwr = pwr_result.get("new_pwr", source.current_pwr)
 	elif pwr_result != null:
 		_new_pwr = int(pwr_result)
 	
-	# Create visual event - Use LOG_MESSAGE for quiet initialization if it's draw/spawn
-	# Or just a BUFF event if we want the visual. User mentioned "taking damage" was weird.
-	# We'll use a LOG_MESSAGE to explain the stat jump.
 	var unit_name = BattleHelpers.get_instance_display_name(source)
 	
 	var result = EffectResult.new()
-	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-		"text": "%s's investments mature! PWR set to %d (current Gold)" % [unit_name, gold]
-	}))
-	
-	# Still send a BUFF event for the UI to update, but maybe with 0 delta or use state_applied
-	# SignalBus will handle the visual if we emit stat_changed.
+	# Only log if it's a significant change to prevent spamming logs on every board event
+	if abs(delta) >= 1:
+		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+			"text": "%s's investments mature! PWR set to %d (current Gold)" % [unit_name, gold]
+		}))
 	
 	result.state_applied = true
 	return result
@@ -22169,13 +22251,12 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	
 	var random_def = tier_2_units.pick_random()
 	
-	# 4. Return EffectResult with summon instructions
-	# CombatSimulator will process summon_request via EffectHandlers
 	var result := EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": random_def.id,
 		"holder_uuid": holder_uuid,
-		"holder_location": holder_location
+		"holder_location": holder_location,
+		"level": self.parameters.get("level", 1)
 	}
 	return result
 ```
@@ -22218,47 +22299,70 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return EffectResult.empty() if is_simulation else null
 
 	if is_simulation:
-		# Measure stats before transfer so we can capture the exact chronological state
-		var old_pwr: int = target.current_pwr
-		var old_hp: int = target.current_hp
-		
-		# Perform the actual equipment transfer silently in the simulated game state
-		battle_manager.bm_equip_item(item_uuid, target_uuid, 0, true)
-		
-		# Measure stats after transfer
-		var new_pwr: int = target.current_pwr
-		var new_hp: int = target.current_hp
-		
 		var result := EffectResult.new()
 		result.state_applied = true
+		var pass_count = self.parameters.get("pass_count", 1)
 		
-		# Add a nice combat log message event
+		# Find units behind
+		var current_unit = source
+		var units_behind: Array[GachaBallInstance] = []
+		
+		for i in range(pass_count):
+			var ally_behind = battle_manager._get_ally_behind(current_unit)
+			if is_instance_valid(ally_behind):
+				units_behind.append(ally_behind)
+				current_unit = ally_behind
+			else:
+				break
+				
 		var item_def = item.get_definition()
-		var item_name = tr(item_def.display_name_key) if item_def else "Item"
-		var target_name = BattleHelpers.get_instance_display_name(target)
-		var source_name = BattleHelpers.get_instance_display_name(source)
-		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"visual_payload": {
-				"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
-			}
-		}))
-		
 		var item_icon_path: String = ""
 		if is_instance_valid(item_def) and is_instance_valid(item_def.icon):
 			item_icon_path = item_def.icon.resource_path
+		
+		# Now iterate and equip
+		for i in range(units_behind.size()):
+			var tgt = units_behind[i]
+			var tgt_uuid = tgt.ball_uuid
 			
-		result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
-			"source_uuid": source_uuid,
-			"target_uuids": [target_uuid],
-			"visual_payload": {
-				"item_uuid": item_uuid,
-				"item_icon_path": item_icon_path,
-				"old_pwr": old_pwr,
-				"new_pwr": new_pwr,
-				"old_hp": old_hp,
-				"new_hp": new_hp
-			}
-		}))
+			var old_pwr: int = tgt.current_pwr
+			var old_hp: int = tgt.current_hp
+			
+			if i == 0:
+				# First unit gets the ACTUAL item transferred
+				battle_manager.bm_equip_item(item_uuid, tgt_uuid, 0, true)
+			else:
+				# Subsequent units get a COPY of the item
+				var new_item = GachaBallInstance.new()
+				new_item.initialize(item_def)
+				battle_manager._state.bm_add_instance(new_item, "", -1)
+				battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true)
+			
+			var new_pwr: int = tgt.current_pwr
+			var new_hp: int = tgt.current_hp
+			
+			var target_name = BattleHelpers.get_instance_display_name(tgt)
+			var source_name = BattleHelpers.get_instance_display_name(source)
+			var item_name = tr(item_def.display_name_key) if item_def else "Item"
+			
+			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"visual_payload": {
+					"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
+				}
+			}))
+			
+			result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
+				"source_uuid": source_uuid,
+				"target_uuids": [tgt_uuid],
+				"visual_payload": {
+					"item_uuid": item_uuid if i == 0 else "", # visual doesn't strictly matter for copy
+					"item_icon_path": item_icon_path,
+					"old_pwr": old_pwr,
+					"new_pwr": new_pwr,
+					"old_hp": old_hp,
+					"new_hp": new_hp
+				}
+			}))
 		
 		return result
 		
@@ -22281,17 +22385,21 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.new()
 
 	var current_tokens = battle_manager.get_gacha_tokens()
-	var target_pwr = maxi(1, current_tokens) # Min PWR 1
-	var old_pwr = source.current_pwr
+	var multiplier: float = self.parameters.get("multiplier", 1.0)
+	var target_pwr = maxi(1, int(current_tokens * multiplier)) # Min PWR 1
 	
-	# Calculate delta to reach target
-	var delta = target_pwr - old_pwr
+	var base_pwr = source.get_definition_base_pwr()
+	var required_bonus = max(0, target_pwr - base_pwr)
+	
+	var previous_bonus = source.get_meta("token_pwr_bonus", 0)
+	var delta = required_bonus - previous_bonus
 	
 	if delta == 0:
 		return EffectResult.new()
 		
+	source.set_meta("token_pwr_bonus", required_bonus)
+	
 	# Apply change via BattleManager for consistency and signals
-	# Note: We are setting it TO a value, so we calculate the delta.
 	var new_pwr = battle_manager.apply_stat_delta(source, "pwr", delta)
 	
 	# Create visual event
@@ -22302,7 +22410,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"visual_payload": {
 			"stat": "pwr",
 			"amount": delta,
-			"targets_old_pwr": [old_pwr],
+			"targets_old_pwr": [source.current_pwr - delta],
 			"targets_new_pwr": [new_pwr]
 		}
 	})
@@ -25067,6 +25175,8 @@ func _add_ability_entry(entries: Array[Dictionary], seen: Dictionary, ability: A
 		source_uuid: String, source_type: StringName, holder_uuid: String, priority_value: int,
 		component_id: StringName) -> void:
 	if not is_instance_valid(ability):
+		return
+	if self.level < ability.required_level or self.level > ability.max_level:
 		return
 	var seen_key := "%s|%s" % [String(ability.id), source_uuid]
 	if seen.has(seen_key):
@@ -28247,14 +28357,16 @@ func reset_gacha_discounts() -> void:
 func get_black_market_transform_cost() -> int:
 	return 5
 
-func get_transform_result(source_definition_id: StringName, source_tier: int) -> GachaBallDefinition:
+func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []
 	for definition in Database.get_all_pool_definitions():
 		if not is_instance_valid(definition):
 			continue
-		if definition.id == source_definition_id:
+		if definition.id == source_definition.id:
 			continue
-		if definition.tier != source_tier:
+		if definition.tier != source_definition.tier:
+			continue
+		if definition.category != source_definition.category:
 			continue
 		eligible.append(definition)
 
@@ -28279,6 +28391,7 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 		var instance_uuid: String = payload.instance_uuid
 		var source_location: LocationIdentifier = payload.source_location
 		var result_definition: GachaBallDefinition = payload.result_definition
+		var source_level: int = payload.get("source_level", 1)
 		
 		if not is_instance_valid(result_definition): return
 		
@@ -28287,6 +28400,7 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 			
 			var new_instance := GachaBallInstance.new()
 			new_instance.initialize(result_definition)
+			new_instance.level = source_level
 			run_state.add_instance(new_instance, source_location.container, source_location.index)
 			run_state.unlock_recipe_for_result(result_definition.id)
 ```
@@ -28440,15 +28554,17 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Hover-to-Lock Promotion: if clicking the entity whose hover window is already
 	# showing, promote the hover to a lock RIGHT NOW so the rest of the flow sees it
 	# as "already locked" and skips close→reopen (brief L271-273: no churn).
+	var was_hover_promoted: bool = false
 	if _hover_entity_view_id != -1 and _hover_entity_view_id == context.source_view_instance_id:
 		_is_inspection_locked = true
 		_locked_entity_view_id = _hover_entity_view_id
+		was_hover_promoted = true
 
 	# Clear hover state on any click (hover is replaced by lock or selection)
 	_hover_entity_view_id = -1
 
 	# Generate commands based on the interaction context and current state
-	command_queue = _generate_command_queue(context)
+	command_queue = _generate_command_queue(context, was_hover_promoted)
 	
 	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
 		# print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
@@ -28465,6 +28581,32 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 func _process(_delta: float) -> void:
 	if is_instance_valid(_drag_overlay_preview):
 		_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
+
+func _input(event: InputEvent) -> void:
+	if not _is_inspection_locked:
+		return
+	if InputUtils.is_primary_pointer_press(event):
+		var pos: Vector2
+		if event is InputEventMouse:
+			pos = event.position
+		elif event is InputEventScreenTouch:
+			pos = event.position
+		else:
+			return
+		
+		# If the click is not inside any active inspection window, close them and swallow the event
+		if not WindowManager.is_point_inside_any_inspection_window(pos):
+			get_viewport().set_input_as_handled()
+			
+			if not _is_close_suppressed_now():
+				_is_inspection_locked = false
+				_locked_entity_view_id = -1
+				_hover_entity_view_id = -1
+				_execute_close_all_inspection_windows()
+				
+			if not is_vcr_playing() and not _is_combat_phase:
+				_execute_deselect()
+
 
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
@@ -28574,7 +28716,7 @@ func _on_window_closed(window: Control) -> void:
 			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
-func _generate_command_queue(context: InteractionContext) -> Array[Command]:
+func _generate_command_queue(context: InteractionContext, was_hover_promoted: bool = false) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# If a drag is active, this incoming context is the drop target.
@@ -28654,7 +28796,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 			commands.append(Command.new(CommandType.DESELECT))
 			
 		&"UNIT", &"ITEM", &"TRINKET", &"CONSUMABLE":
-			commands.append_array(_handle_gachaball_interaction(context))
+			commands.append_array(_handle_gachaball_interaction(context, was_hover_promoted))
 			
 		&"EMPTY_SLOT":
 			commands.append_array(_handle_empty_slot_interaction(context))
@@ -28735,7 +28877,7 @@ func _handle_hover_exit(context: InteractionContext) -> void:
 		_window_manager.close_top_contextual_window()
 
 ## Handle interactions with GachaBall instances
-func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
+func _handle_gachaball_interaction(context: InteractionContext, was_hover_promoted: bool = false) -> Array[Command]:
 	var commands: Array[Command] = []
 	
 	# Legacy: _is_inspection_event() now always returns false;
@@ -28750,9 +28892,13 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 		&"INSPECTION_ONLY":
 			# Single-click locks inspection (no selection in InspectionOnly)
 			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-				# BATTLE BOARD FIX: Already locked on this entity -> Toggle Off (Close)
-				commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
-				commands.append(Command.new(CommandType.DESELECT))
+				if was_hover_promoted:
+					# Just promoted from hover to lock. Keep it open.
+					pass
+				else:
+					# BATTLE BOARD FIX: Already locked on this entity -> Toggle Off (Close)
+					commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+					commands.append(Command.new(CommandType.DESELECT))
 			else:
 				commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
 					"context": context,
@@ -29891,7 +30037,12 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
-		var context: Dictionary = {"source_location": source_loc, "target_location": target_loc, "recipe_id": recipe.id}
+		var context: Dictionary = {
+			"source_location": source_loc, 
+			"target_location": target_loc, 
+			"recipe_id": recipe.id,
+			"result_id": recipe.result_id
+		}
 		
 		# VISUAL FIX: Hide the source view so it doesn't snap back while the prompt is open.
 		# CRITICAL: Use GIR's known source view, NOT WindowManager lookup (which might find placeholders/wrong views).
@@ -30997,14 +31148,6 @@ func _get_linked_trait_id(item_def: Resource) -> String:
 	if "linked_trait_id" in item_def and item_def.linked_trait_id != &"":
 		return String(item_def.linked_trait_id)
 	
-	# Check for trait tags (Emblems)
-	var tags := _instance.get_active_tags(_get_all_instances_db()) if is_instance_valid(_instance) else []
-	for tag in tags:
-		match tag:
-			&"SOUL_FIRE": return "FIRE"
-			&"SOUL_EARTH": return "EARTH"
-			&"SOUL_WATER": return "WATER"
-			&"SOUL_AIR": return "AIR"
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
@@ -33336,14 +33479,17 @@ func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Contr
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)
 	
+	# Fix warning: Reset anchors before setting size for a manual-transform node
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
+	
 	anim_ball.force_inventory_mode = true
 	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
 	# to ensure stat labels and icons are correctly positioned.
 	if anim_ball.has_method("set_size_scale"):
 		anim_ball.set_size_scale(1.0)
 	
-	anim_ball.custom_minimum_size = Vector2(192.0, 192.0) # C.SLOT_SIZE_BASE is 192
-	anim_ball.size = Vector2(192.0, 192.0)
+	anim_ball.custom_minimum_size = Vector2(96.0, 96.0) # Match C.SLOT_SIZE_BASE
+	anim_ball.size = Vector2(96.0, 96.0)
 	
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
@@ -45199,6 +45345,15 @@ func _index_in_active_group(node: Node) -> int:
 			return i
 	return -1
 
+# Checks if a given global screen point is inside any active inspection window.
+func is_point_inside_any_inspection_window(pos: Vector2) -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if is_instance_valid(w) and w.is_visible_in_tree():
+			if w.get_global_rect().has_point(pos):
+				return true
+	return false
+
 # Public API for inspection windows to handle background clicks locally.
 # Windows should call this from their `_gui_input` when detecting a click on their
 # background. This prunes only the descendants of the clicked window (W3),
@@ -45817,6 +45972,11 @@ func _update_tree_pause_state() -> void:
 				has_tooltip = true
 	if has_tooltip:
 		has_tooltip = GlobalInteractionRouter.is_inspection_locked()
+		
+	# Only freeze the game for inspection windows during battle contexts.
+	# Outside of battle, the game should not freeze when inspecting.
+	if not GameManager.is_in_battle:
+		has_tooltip = false
 		
 	get_tree().paused = has_tooltip
 

@@ -156,15 +156,19 @@ func _emit_battle_inventory_changed() -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	
 	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
-		# Instantly resolve these updates silently so that stats are computed in real time.
-		# This ensures active units and equipped items update their stats instantly.
-		_combat.process_reaction_queue(self, {})
+		# Process passive updates (e.g. Twin Charm scaling) and capture generated events
+		var events = _combat.process_reaction_queue(self, {})
 		
 		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
 		_flush_deferred_enemy_erasures()
 		
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
+		
+		# If any passive abilities generated events (like PWR buffs/debuffs), animate them!
+		if not events.is_empty():
+			_resolve_animator()
+			_animator.play_async_chain(events, get_board_snapshot())
 	else:
 		_pending_inventory_refresh = true
 
@@ -506,6 +510,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		"tokens_spent": tier # Tier equals tokens spent
 	}
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
 	AbilityResolver.process_trigger(&"on_draw", context)
 	AbilityResolver.process_trigger(&"on_token_spent", context)
 	
@@ -665,6 +670,9 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		
 		# Update instance location
 		_update_instance_location(uuid, container_tag, slot)
+		
+		# Fire on_board_enter for the newly placed unit
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": uuid})
 	
 	# 4. Handle queue replacements (single unit summons replace holder in queue)
 	var replaced_new_uuids: Dictionary = {}
@@ -754,6 +762,14 @@ func get_board_snapshot() -> Dictionary:
 func _resolve_combat_phase() -> void:
 	if _is_processing_effect: return
 	_resolve_animator()
+	
+	# Wait for any in-flight management-phase async animation chains to finish.
+	# Without this, a management Twin Charm buff projectile could still be in flight
+	# when play_turn_sequence clears the visual registry, causing apply_pwr_delta
+	# to find a null view for the management chain's targets.
+	if _animator.is_playing_sequence():
+		await _animator.all_chains_finished
+	
 	_populate_actor_queue()
 	
 	# CRITICAL: Enforce global "Puppet Mode" block before capturing snapshot and running simulation.
@@ -1175,139 +1191,193 @@ func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) 
 ## @param stat_type: The stat to modify ("hp", "pwr", "burn_stacks", etc.)
 ## @param delta: The amount to add (negative for damage)
 ## @param bypass_armor: If true, damage bypasses armor (for future armor-piercing abilities)
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, bypass_armor: bool = false, attacker_uuid: String = "") -> Variant:
+
+# ============================================================================
+# DAMAGE & STAT DELTAS
+# ============================================================================
+
+func get_bonus_burn_stacks_for_attack(source: GachaBallInstance) -> int:
+	if not is_instance_valid(source): return 0
+	var is_player = _is_player_unit(source)
+	var burn = 0
+	
+	if _has_team_trinket(is_player, &"trinket_burn_vial"):
+		burn += 1
+		
+	var active_traits = get_active_traits("PLAYER" if is_player else "ENEMY")
+	var fire_level = active_traits.get("FIRE", 0)
+	
+	if fire_level >= 3 and _has_trait_soul(source, "FIRE"):
+		burn += 1
+		if fire_level >= 5:
+			burn += 1
+			
+	return burn
+
+func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, attacker_uuid: String = "") -> Dictionary:
+	assert(is_instance_valid(instance), "apply_damage: instance is null")
+	
+	if instance.current_hp <= 0 or amount <= 0:
+		return {}
+		
+	var actual_damage = amount
+	var armor_consumed = 0
+	var old_armor = 0
+	var new_armor = 0
+	
+	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless BURN)
+	if damage_type != C.DamageType.BURN:
+		old_armor = instance.get_status_effect_amount(&"armor")
+		if old_armor > 0:
+			armor_consumed = mini(old_armor, actual_damage)
+			var hp_damage = actual_damage - armor_consumed
+			actual_damage = hp_damage if hp_damage > 0 else 0
+			# Consume armor stacks
+			instance.add_status_effect_silent(&"armor", -armor_consumed)
+			new_armor = instance.get_status_effect_amount(&"armor")
+			
+	var new_hp = instance.current_hp - actual_damage
+	
+	if actual_damage > 0:
+		var comp = StatComponent.new()
+		comp.id = &"battle_damage"
+		comp.category = &"COMBAT_STATE"
+		comp.modifiers = {"hp": -actual_damage}
+		instance.battle_components.append(comp)
+		
+	instance.set_current_hp_silent(new_hp)
+	
+	# SPIKES REFLECTION
+	var spikes_data: Dictionary = {}
+	if damage_type == C.DamageType.MELEE and not attacker_uuid.is_empty():
+		var old_spikes = instance.get_status_effect_amount(&"spikes")
+		if old_spikes > 0:
+			var attacker = get_instance_by_uuid(attacker_uuid)
+			if is_instance_valid(attacker) and attacker.current_hp > 0:
+				var spikes_damage = old_spikes
+				var attacker_old_hp = attacker.current_hp
+				
+				var damage_result = apply_damage(attacker, spikes_damage, C.DamageType.SPIKES, "")
+				
+				var attacker_new_hp = attacker.current_hp
+				var spikes_armor_consumed = 0
+				var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
+				
+				if not damage_result.is_empty():
+					attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
+					spikes_armor_consumed = damage_result.get("armor_consumed", 0)
+					spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
+				
+				# Decay spikes by 1 stack
+				instance.add_status_effect_silent(&"spikes", -1)
+				var new_spikes = instance.get_status_effect_amount(&"spikes")
+				
+				spikes_data = {
+					"spikes_triggered": true,
+					"spikes_damage": spikes_damage,
+					"armor_consumed": spikes_armor_consumed,
+					"new_armor": spikes_new_armor,
+					"attacker_uuid": attacker_uuid,
+					"attacker_old_hp": attacker_old_hp,
+					"attacker_new_hp": attacker_new_hp,
+					"defender_uuid": instance.ball_uuid,
+					"old_spikes": old_spikes,
+					"new_spikes": new_spikes
+				}
+				
+	var result = {
+		"new_hp": new_hp,
+		"armor_consumed": armor_consumed,
+		"old_armor": old_armor,
+		"new_armor": new_armor,
+		"hp_damage": actual_damage
+	}
+	if not spikes_data.is_empty():
+		result["spikes_data"] = spikes_data
+		
+	if actual_damage != 0 and not _is_applying_static_damage:
+		_trigger_static_consumption(instance)
+		
+	return result
+
+func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_id: String) -> Variant:
+	assert(is_instance_valid(instance), "apply_permanent_stat_delta: instance is null")
+	
+	if delta == 0:
+		return instance.current_hp if stat_type == "hp" else instance.current_pwr
+		
+	var hp_delta = delta if stat_type == "hp" else 0
+	var pwr_delta = delta if stat_type == "pwr" else 0
+	
+	instance.add_or_update_stat_component(
+		StringName(source_id + "_permanent"),
+		&"PERMANENT_BUFF",
+		source_id,
+		hp_delta,
+		pwr_delta,
+		false,
+		"Permanent Buff",
+		"Permanent stat increase"
+	)
+	
+	return apply_stat_delta(instance, stat_type, delta)
+
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
-	# CRITICAL: Reject damage to already-dead units
-	# This is the "Validate Before Apply" pattern - ensures ghost attacks are impossible
-	# Heals and buffs still apply normally (they won't resurrect without explicit resurrection logic)
-	if stat_type == "hp" and delta < 0 and instance.current_hp <= 0:
-		return null # Signal to caller: operation skipped - target already dead
-	
-	# CRITICAL: Use SILENT methods during simulation to prevent UI coupling
-	# The BattleAnimator handles all visual updates during COMBAT phase
 	match stat_type:
 		"hp":
-			var actual_delta = delta
-			var armor_consumed = 0
-			var old_armor = 0
-			var new_armor = 0
+			if delta < 0:
+				push_error("apply_stat_delta called for HP damage. Use apply_damage instead!")
+				return 0
+				
+			var new_hp = instance.current_hp + delta
 			
-			# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first
-			# Unless bypass_armor is true (for future armor-piercing abilities)
-			if delta < 0 and not bypass_armor:
-				old_armor = instance.get_status_effect_amount(&"armor")
-				if old_armor > 0:
-					var incoming_damage = abs(delta)
-					armor_consumed = mini(old_armor, incoming_damage)
-					var hp_damage = incoming_damage - armor_consumed
-					actual_delta = - hp_damage if hp_damage > 0 else 0
-					# Consume armor stacks
-					instance.add_status_effect_silent(&"armor", -armor_consumed)
-					new_armor = instance.get_status_effect_amount(&"armor")
+			var comp = StatComponent.new()
+			comp.id = &"battle_heal"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": delta}
+			instance.battle_components.append(comp)
 			
-			# Apply remaining damage (or full heal) to HP
-			var new_hp = instance.current_hp + actual_delta
 			instance.set_current_hp_silent(new_hp)
 			
-			# SPIKES REFLECTION: Handle Spikes status effect for HP damage
-			# Spikes deals current stacks as damage to attacker, then decays by 1
-			var spikes_data: Dictionary = {}
-			if delta < 0 and not attacker_uuid.is_empty():
-				var old_spikes = instance.get_status_effect_amount(&"spikes")
-				if old_spikes > 0:
-					var attacker = get_instance_by_uuid(attacker_uuid)
-					if is_instance_valid(attacker) and attacker.current_hp > 0:
-						# Deal spikes damage to attacker (respects armor)
-						var spikes_damage = old_spikes
-						var attacker_old_hp = attacker.current_hp
-						
-						var damage_result = apply_stat_delta(attacker, "hp", -spikes_damage, false, "")
-						
-						var attacker_new_hp = attacker.current_hp
-						var spikes_armor_consumed = 0
-						var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
-						
-						if damage_result is Dictionary:
-							attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
-							spikes_armor_consumed = damage_result.get("armor_consumed", 0)
-							spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
-						
-						# Decay spikes by 1 stack
-						instance.add_status_effect_silent(&"spikes", -1)
-						var new_spikes = instance.get_status_effect_amount(&"spikes")
-						
-						# Collect spikes data for presentation layer (does NOT emit events here!)
-						spikes_data = {
-							"spikes_triggered": true,
-							"spikes_damage": spikes_damage,
-							"armor_consumed": spikes_armor_consumed,
-							"new_armor": spikes_new_armor,
-							"attacker_uuid": attacker_uuid,
-							"attacker_old_hp": attacker_old_hp,
-							"attacker_new_hp": attacker_new_hp,
-							"defender_uuid": instance.ball_uuid,
-							"old_spikes": old_spikes,
-							"new_spikes": new_spikes
-						}
-			
-			# For damage, return full mitigation data for animations
-			# For heals, just return new_hp for backwards compatibility
-			if delta < 0:
-				var result = {
-					"new_hp": new_hp,
-					"armor_consumed": armor_consumed,
-					"old_armor": old_armor,
-					"new_armor": new_armor,
-					"hp_damage": abs(actual_delta)
-				}
-				if not spikes_data.is_empty():
-					result["spikes_data"] = spikes_data
-				if actual_delta != 0 and not _is_applying_static_damage:
+			if delta > 0:
+				AbilityResolver.process_trigger(&"on_stat_increased", {
+					"unit_uuid": instance.ball_uuid,
+					"triggering_uuid": instance.ball_uuid,
+					"stat": "hp",
+					"amount": delta,
+					"source_uuid": source_uuid
+				})
+				TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, "")
+				
+				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
-				return result
-			else:
-				if delta > 0:
-					# Trigger on_stat_increased for healing
-					AbilityResolver.process_trigger(&"on_stat_increased", {
-						"unit_uuid": instance.ball_uuid,
-						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
-						"stat": "hp",
-						"amount": delta,
-						"source_uuid": attacker_uuid
-					})
 					
-					# Trigger on_healed event
-					TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, attacker_uuid)
-					if not _is_applying_static_damage:
-						_trigger_static_consumption(instance)
-				return new_hp
+			return new_hp
 		"pwr":
 			var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
 			
 			if delta != 0:
 				if delta > 0:
-					# Trigger on_stat_increased for PWR buff
 					AbilityResolver.process_trigger(&"on_stat_increased", {
 						"unit_uuid": instance.ball_uuid,
-						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
+						"triggering_uuid": instance.ball_uuid,
 						"stat": "pwr",
 						"amount": delta,
-						"source_uuid": attacker_uuid
+						"source_uuid": source_uuid
 					})
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
 			
 			return new_pwr
 		"burn_stacks":
-			# Status effects use add_status_effect_silent internally
-			instance.add_status_effect_silent(&"burn", delta) # Silent during simulation
+			instance.add_status_effect_silent(&"burn", delta)
 			return instance.status_effects.get(&"burn", 0)
 		_:
-			# Generic status effect pattern: "effect_name_stacks"
 			if stat_type.ends_with("_stacks"):
 				var effect_name = stat_type.trim_suffix("_stacks")
-				instance.add_status_effect_silent(StringName(effect_name), delta) # Silent
+				instance.add_status_effect_silent(StringName(effect_name), delta)
 				return instance.status_effects.get(StringName(effect_name), 0)
 			else:
 				push_error("Unknown stat type: %s" % stat_type)
@@ -1344,7 +1414,7 @@ func _trigger_static_consumption(instance: GachaBallInstance) -> void:
 		)
 		_pending_reactions.append(request)
 
-func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK) -> void:
+func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"") -> void:
 	# Get target instance data for context (effects should not query instances directly)
 	var target_instance = get_instance_by_uuid(target_uuid)
 	var victim_team := ""
@@ -1370,7 +1440,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		TurnAbilities.trigger_on_damage_dealt(actual_attacker_uuid, target_uuid, damage_amount, victim_current_hp)
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
-	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause)
+	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id)
 	
 	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
 	var victim_loc = get_location_for_uuid(target_uuid)
@@ -1386,6 +1456,12 @@ func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
+	# First, fire on_board_enter for all units currently on the board
+	var all_units = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		if is_instance_valid(unit) and unit.current_hp > 0:
+			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": unit.ball_uuid})
+			
 	TurnAbilities.trigger_battle_start_abilities(_state)
 	# Trigger passive scaling right after battle start abilities
 	AbilityResolver.process_trigger(&"on_board_changed", {})
@@ -1823,13 +1899,14 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			var old_hp: int = unit.current_hp
 			var old_armor: int = unit.get_status_effect_amount(&"armor")
 			
-			# apply_stat_delta now returns dictionary for damage with armor mitigation data
-			var damage_result = apply_stat_delta(unit, "hp", -damage, status_def.id == &"burn")
+			# apply_damage now returns dictionary for damage with armor mitigation data
+			var damage_type = C.DamageType.BURN if status_def.id == &"burn" else C.DamageType.MAGIC
+			var damage_result = apply_damage(unit, damage, damage_type)
 			
 			# Extract data from dictionary return
-			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if damage_result is Dictionary else unit.current_hp
-			var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-			var new_armor: int = damage_result.get("new_armor", 0) if damage_result is Dictionary else 0
+			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if not damage_result.is_empty() else unit.current_hp
+			var armor_consumed: int = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+			var new_armor: int = damage_result.get("new_armor", 0) if not damage_result.is_empty() else 0
 			
 			var max_hp: int = 0
 			var unit_def = unit.get_definition()
@@ -1856,6 +1933,8 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 					"armor_consumed": [armor_consumed]
 				}
 			}))
+			
+			trigger_on_hurt(unit.ball_uuid, damage, "", C.CAUSE_STATUS_EFFECT, status_def.id)
 
 		elif status_def.turn_effect == "HEAL":
 			var heal: int = int(stacks * status_def.turn_effect_multiplier)

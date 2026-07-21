@@ -33,10 +33,11 @@ func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_man
 	
 	# Return damage request for CombatSimulator to process
 	# This routes through the proper damage pipeline with armor/burn/guardian handling
-	result.damage_request = {
-		"stat": "hp",
-		"amount": - damage_amount,
-		"targets": [summoned_uuid]
-	}
+	result.damage_request = EffectResult.DamageRequest.new(
+		damage_amount,
+		C.DamageType.MELEE,
+		[summoned_uuid],
+		false
+	)
 	
 	return result

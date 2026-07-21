@@ -1,0 +1,19 @@
+commit 2f9dfc9c587d498e5f44d6a5626c739306b98760
+Author: OVagamundo <160952609+OVagamundo@users.noreply.github.com>
+Date:   Thu Jul 9 00:25:49 2026 -0300
+
+    bug fixes and descriptions fixes
+
+diff --git a/scripts/GachaBallInstance.gd b/scripts/GachaBallInstance.gd
+index bf0db78..5e07944 100644
+--- a/scripts/GachaBallInstance.gd
++++ b/scripts/GachaBallInstance.gd
+@@ -630,6 +630,8 @@ func _add_ability_entry(entries: Array[Dictionary], seen: Dictionary, ability: A
+ 		component_id: StringName) -> void:
+ 	if not is_instance_valid(ability):
+ 		return
++	if self.level < ability.required_level or self.level > ability.max_level:
++		return
+ 	var seen_key := "%s|%s" % [String(ability.id), source_uuid]
+ 	if seen.has(seen_key):
+ 		return

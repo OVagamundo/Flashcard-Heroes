@@ -38,14 +38,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
 	
-	var hp_res = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount)
+	var hp_res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", hp_amount, source_uuid)
 	var new_hp = old_hp + hp_amount
 	if hp_res is Dictionary:
 		new_hp = hp_res.get("new_hp", old_hp + hp_amount)
 	elif hp_res != null:
 		new_hp = int(hp_res)
 
-	var pwr_res = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount)
+	var pwr_res = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", pwr_amount, source_uuid)
 	var new_pwr = old_pwr + pwr_amount
 	if pwr_res is Dictionary:
 		new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)

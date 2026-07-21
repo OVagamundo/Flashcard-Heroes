@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Grants allied units +1 PWR for each pair of that unit
 ## in the allied battle pool (lineup, bench, gacha trays, discard).
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
-	var is_simulation := bool(context.get("is_simulation", false))
+	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
@@ -16,16 +16,21 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var copy_counts: Dictionary = {}
 	var changed_units := 0
 	var total_delta := 0
+	
+	var buff_groups: Dictionary = {} # delta -> { "targets": [], "new_pwrs": [] }
+	var debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "new_pwrs": [] }
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
+		if not is_instance_valid(inst):
+			continue
 		if not _is_valid_count_target(inst, team, battle_manager):
 			continue
 		copy_counts[inst.definition_id] = int(copy_counts.get(inst.definition_id, 0)) + 1
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
-		if not is_instance_valid(inst):
+		if not is_instance_valid(inst) or battle_manager.is_dead_this_turn(uuid):
 			continue
 
 		var last_bonus: int = inst.get_status_effect_amount(status_key)
@@ -34,6 +39,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				_clear_scaling(inst, status_key, last_bonus, is_simulation)
 				changed_units += 1
 				total_delta -= last_bonus
+				
+				if is_simulation and _is_on_board(inst):
+					if not debuff_groups.has(last_bonus):
+						debuff_groups[last_bonus] = {"targets": [], "new_pwrs": []}
+					debuff_groups[last_bonus]["targets"].append(uuid)
+					debuff_groups[last_bonus]["new_pwrs"].append(inst.current_pwr)
 			continue
 
 		var total_copies: int = int(copy_counts.get(inst.definition_id, 0))
@@ -46,11 +57,52 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		changed_units += 1
 		total_delta += delta
 
+		if is_simulation and _is_on_board(inst) and not inst.has_meta("skip_initial_scaling_anim"):
+			if delta > 0:
+				if not buff_groups.has(delta):
+					buff_groups[delta] = {"targets": [], "new_pwrs": []}
+				buff_groups[delta]["targets"].append(uuid)
+				buff_groups[delta]["new_pwrs"].append(inst.current_pwr)
+			else:
+				var abs_delta = abs(delta)
+				if not debuff_groups.has(abs_delta):
+					debuff_groups[abs_delta] = {"targets": [], "new_pwrs": []}
+				debuff_groups[abs_delta]["targets"].append(uuid)
+				debuff_groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
+
 	if changed_units == 0:
 		return EffectResult.empty() if is_simulation else null
 
 	if is_simulation:
 		var result := EffectResult.new()
+		var visual_source_uuid = source.equipped_on_uuid if source.get("equipped_on_uuid") and not source.equipped_on_uuid.is_empty() else source_uuid
+
+		for d in buff_groups:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": visual_source_uuid,
+				"target_uuids": buff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": {
+					"source_uuid": visual_source_uuid,
+					"stat": "pwr",
+					"amount": d,
+					"targets_new_pwr": buff_groups[d]["new_pwrs"]
+				}
+			}))
+			
+		for d in debuff_groups:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": visual_source_uuid,
+				"target_uuids": debuff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": {
+					"source_uuid": visual_source_uuid,
+					"stat": "pwr",
+					"amount": -d,
+					"targets_new_pwr": debuff_groups[d]["new_pwrs"]
+				}
+			}))
+			
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Twin Charm updated %d units (%+d total PWR)" % [changed_units, total_delta]
 		}))
@@ -97,3 +149,9 @@ func _get_team_for_instance(inst: GachaBallInstance, battle_manager: Node) -> St
 		return "ENEMY"
 
 	return ""
+
+func _is_on_board(inst: GachaBallInstance) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	var container: StringName = inst.location_container_tag
+	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"

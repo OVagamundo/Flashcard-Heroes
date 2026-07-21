@@ -74,6 +74,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Unit must be alive and on the opposite team
 			return unit.current_hp > 0 and unit_team != "" and unit_team != summoned_team
 		
+		&"on_board_enter":
+			# Only the unit that just entered the board responds
+			return unit_uuid == context.get("entered_uuid", "")
+		
 		&"on_ally_summon":
 			# Only units on the SAME team as the summoned unit respond
 			var summoned_team = context.get("summoned_team", "")
@@ -156,16 +160,6 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			if unit_uuid == source_uuid:
 				return false
 			
-			# Ping-Pong Prevention: Do not respond if the source is the SAME TYPE of unit
-			# This prevents two Shadow Cloners from echoing each other infinitely
-			if not source_uuid.is_empty():
-				var source_inst = battle_manager.get_instance_by_uuid(source_uuid)
-				if is_instance_valid(source_inst):
-					var source_def = source_inst.get_definition()
-					var unit_def = unit.get_definition()
-					if is_instance_valid(source_def) and is_instance_valid(unit_def):
-						if source_def.id == unit_def.id:
-							return false
 
 			# Must be alive
 			if unit.current_hp <= 0:
@@ -447,27 +441,17 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		if ability.id.contains("counter"):
 			effect_context["is_counter"] = true
 		
-		if ability.trigger == &"on_board_changed":
-			# ALWAYS execute passive stat scaling instantly and synchronously
-			# to ensure real-time mathematical correctness in all combat states.
-			if is_instance_valid(effect):
-				var sim_ctx = effect_context.duplicate(true)
-				var is_sim = context.get("is_simulation", false) or (battle_manager.get_current_phase() == BattleManager.Phases.COMBAT)
-				sim_ctx["is_simulation"] = is_sim
-				sim_ctx["ability_id"] = ability.id
-				effect.execute(source_uuid, resolved_targets, battle_manager, sim_ctx)
-		else:
-			var effect_request = EffectRequest.new(
-				source_uuid,
-				ability.id,
-				effect,
-				resolved_targets,
-				effect_context,
-				ability.priority # Pass priority from ability definition
-			)
-			
-			# Enqueue the request
-			battle_manager.enqueue_effect_request(effect_request)
+		var effect_request = EffectRequest.new(
+			source_uuid,
+			ability.id,
+			effect,
+			resolved_targets,
+			effect_context,
+			ability.priority # Pass priority from ability definition
+		)
+		
+		# Enqueue the request
+		battle_manager.enqueue_effect_request(effect_request)
 
 	# If ability successfully activated (found targets) AND it replaces basic attack, set flag
 	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)

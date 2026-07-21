@@ -14,11 +14,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var trigger = context.get("trigger_type", "")
 	var drawn_uuid = context.get("drawn_uuid", "")
 	
-	# Logic check: If this is an 'on_draw' trigger, only proceed if we are the ones being drawn.
-	# This prevents enemy/lineup Merchants from scaling every time the player draws (intended for boss_1 only).
-	if trigger == "on_draw" and source_uuid != drawn_uuid:
-		return EffectResult.new()
-
+	# The on_board_enter trigger handles filtering the target, so we don't need a guard clause here.
 	var gold = 0
 	if is_instance_valid(GameManager.run_state):
 		var multiplier: float = self.parameters.get("multiplier", 1.0)

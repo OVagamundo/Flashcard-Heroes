@@ -59,6 +59,8 @@ var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
 var _confirm_drop_zone_visible: bool = false
 var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
 
+var _visual_machine_counts: Dictionary = {1: 0, 2: 0, 3: 0}
+
 # Black Market split drop zones (Remove / Transform)
 var _split_action_drop_zone_container: PanelContainer = null
 var _action_zone_2: PanelContainer = null
@@ -159,8 +161,8 @@ func _ready() -> void:
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
 	
-	# Update machine counts after battle manager is ready
-	call_deferred("_update_machine_counts")
+	# Initial sync of machine counts based on model data
+	call_deferred("sync_visual_machine_counts_with_model")
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
@@ -266,6 +268,8 @@ func _sync_scene_background(scene_instance: Node) -> void:
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	load_content(BATTLE_SCENE)
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	# Use call_deferred to ensure the BattleManager is ready before calling it
 	call_deferred("_start_battle_with_encounter", encounter_def)
 
@@ -273,6 +277,9 @@ func _on_path_choice_scene_requested() -> void:
 	load_content(PATH_CHOICE_SCENE)
 	# AUDIO HOOK: Menu BGM (Returning from battle or shop)
 	Audio.play_music(SoundRegistry.BGM_MENU)
+	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
@@ -295,6 +302,9 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	scene_slot.add_child(instance)
 	
 	_sync_scene_background(instance)
+	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
@@ -419,9 +429,12 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	
 	_play_machine_bounce(machine)
 
-## Public function to trigger machine bounce animation from external scripts
-## Used when gachballs arrive at or depart from a machine
-func trigger_machine_bounce(tier: int) -> void:
+## Public function to trigger machine bounce and update inventory counts visually
+## Used when gachballs visually arrive at or depart from a machine
+func animate_machine_inventory_change(tier: int, amount: int) -> void:
+	_visual_machine_counts[tier] = max(0, _visual_machine_counts[tier] + amount)
+	_update_machine_count_labels()
+	
 	var target_machine: Control = null
 	match tier:
 		1: target_machine = gacha_machine_1
@@ -469,9 +482,6 @@ func _on_battle_inventory_changed() -> void:
 
 	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
 	_populate_player_trinkets()
-	
-	# Update machine inventory counts
-	_update_machine_counts()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	# The gacha machines are always visible in the permanent HUD.
@@ -485,8 +495,8 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 		if is_instance_valid(tokens_label):
 			tokens_label.text = "0"
 	else:
-		# Entering battle - update machine counts
-		_update_machine_counts()
+		# Entering battle - snap visual counters to model state
+		call_deferred("sync_visual_machine_counts_with_model")
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
@@ -596,6 +606,9 @@ func _on_shop_scene_requested(context: Dictionary) -> void:
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
 	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
+	
 	if instance.has_method("populate"):
 		instance.populate(context)
 
@@ -609,7 +622,6 @@ func _on_run_data_changed() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
-		_update_machine_counts()
 
 func _populate_player_trinkets() -> void:
 	if not is_instance_valid(GameManager.run_state):
@@ -720,8 +732,8 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	else:
 		pass
 
-## Update the inventory count labels on all three gacha machines
-func _update_machine_counts() -> void:
+## Hard-sync visual counts to current model data (only during screen transitions or loading)
+func sync_visual_machine_counts_with_model() -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	
 	for tier in [1, 2, 3]:
@@ -730,15 +742,19 @@ func _update_machine_counts() -> void:
 			count = bm.get_inventory_tier_instances(tier).size()
 		elif is_instance_valid(GameManager.run_state):
 			count = GameManager.run_state.get_inventory_tier_instances(tier).size()
-			
-		var label = null
-		match tier:
-			1: label = machine_1_count_label
-			2: label = machine_2_count_label
-			3: label = machine_3_count_label
-			
-		if is_instance_valid(label):
-			label.text = "x%d" % count
+		
+		_visual_machine_counts[tier] = count
+	
+	_update_machine_count_labels()
+
+## Update the inventory count labels on all three gacha machines from visual variables
+func _update_machine_count_labels() -> void:
+	if is_instance_valid(machine_1_count_label):
+		machine_1_count_label.text = "x%d" % _visual_machine_counts[1]
+	if is_instance_valid(machine_2_count_label):
+		machine_2_count_label.text = "x%d" % _visual_machine_counts[2]
+	if is_instance_valid(machine_3_count_label):
+		machine_3_count_label.text = "x%d" % _visual_machine_counts[3]
 
 # =============================================================================
 # CONFIRM DROP ZONE OVERLAY

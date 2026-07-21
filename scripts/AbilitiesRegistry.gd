@@ -41,7 +41,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Burny (T1B)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
-		"effect": "Attack the attacker for PWR damage",
+		"effect": "Apply 1 Burn stack to the attacker",
 		"execute_on_lethal": true,
 		"notes": "Counter-attacks even when taking lethal damage",
 	},

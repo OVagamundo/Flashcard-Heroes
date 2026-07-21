@@ -238,7 +238,9 @@ func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void
 			_view.top_level = false
 			_view.position = Vector2.ZERO
 		else:
+			var gp = _view.global_position
 			_view.top_level = true
+			_view.global_position = gp
 	_reset_sprite_scale()
 	
 	var original_position: Vector2 = _view.position

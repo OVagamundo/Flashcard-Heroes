@@ -39,16 +39,39 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var pass_count = self.parameters.get("pass_count", 1)
 		
 		# Find units behind
-		var current_unit = source
 		var units_behind: Array[GachaBallInstance] = []
 		
-		for i in range(pass_count):
-			var ally_behind = battle_manager._get_ally_behind(current_unit)
-			if is_instance_valid(ally_behind):
-				units_behind.append(ally_behind)
-				current_unit = ally_behind
-			else:
-				break
+		var current_location: LocationIdentifier = context.get("dying_location")
+		var is_player_team: bool = context.get("dying_team", "PLAYER") == "PLAYER"
+		
+		var current_container_tag = current_location.container
+		var current_index = current_location.index
+		
+		if current_index != -1 and not current_container_tag.is_empty():
+			for i in range(pass_count):
+				var container = battle_manager.get_container(current_container_tag)
+				if not is_instance_valid(container):
+					break
+					
+				var behind_index: int
+				if is_player_team:
+					behind_index = current_index - 1
+				else:
+					behind_index = current_index + 1
+					
+				if behind_index < 0 or behind_index >= container.get_size():
+					break
+					
+				var behind_uuid = container.get_uuid(behind_index)
+				if behind_uuid.is_empty():
+					break
+					
+				var ally_behind = battle_manager.get_instance_by_uuid(behind_uuid)
+				if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+					units_behind.append(ally_behind)
+					current_index = behind_index
+				else:
+					break
 				
 		var item_def = item.get_definition()
 		var item_icon_path: String = ""

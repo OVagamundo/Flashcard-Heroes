@@ -27,6 +27,56 @@ var killed_uuids: Array[String] = []
 var healed_events: Array[Dictionary] = []
 
 # ============================================================================
+# DTO CLASSES
+# ============================================================================
+
+class DamageRequest extends RefCounted:
+	var amount: int
+	var damage_type: int
+	var targets: Array[String]
+	var skip_bump: bool
+	var cause: StringName
+	
+	func _init(p_amount: int, p_damage_type: int, p_targets: Array[String], p_skip_bump: bool = false, p_cause: StringName = &"CAUSE_ATTACK"):
+		amount = p_amount
+		damage_type = p_damage_type
+		targets = p_targets
+		skip_bump = p_skip_bump
+		cause = p_cause
+
+class CascadeRequestItem extends RefCounted:
+	var target: String
+	var amount: int
+	var skip_bump: bool
+	
+	func _init(p_target: String, p_amount: int, p_skip_bump: bool = false):
+		target = p_target
+		amount = p_amount
+		skip_bump = p_skip_bump
+
+class CascadeRequest extends RefCounted:
+	var damage_type: int
+	var items: Array[CascadeRequestItem]
+	
+	func _init(p_damage_type: int, p_items: Array[CascadeRequestItem]):
+		damage_type = p_damage_type
+		items = p_items
+
+class KamikazeRequest extends RefCounted:
+	var source_uuid: String
+	var target_uuid: String
+	var damage: int
+	var damage_type: int
+	var dying_max_hp: int
+	
+	func _init(p_source_uuid: String, p_target_uuid: String, p_damage: int, p_damage_type: int, p_dying_max_hp: int):
+		source_uuid = p_source_uuid
+		target_uuid = p_target_uuid
+		damage = p_damage
+		damage_type = p_damage_type
+		dying_max_hp = p_dying_max_hp
+
+# ============================================================================
 # STATE FLAGS
 # ============================================================================
 
@@ -39,8 +89,7 @@ var skip_death_check: bool = false
 
 ## Delegated damage data for CombatSimulator to process via EffectHandlers.
 ## When set, CombatSimulator should call handle_damage_effect with this data.
-## Format: {stat: "hp", amount: negative_int, targets: Array[String]}
-var damage_request: Dictionary = {}
+var damage_request: DamageRequest = null
 
 ## Summon request data for CombatSimulator to process via EffectHandlers.
 ## Format: {summon_unit_id: StringName, holder_uuid: String, holder_location: LocationIdentifier, ...}
@@ -54,12 +103,10 @@ var summon_units_request: Array = []
 var summon_team: String = ""
 
 ## Cascade damage request for AOE effects like Shockwave.
-## Format: [{target: uuid, amount: int, skip_bump: bool}, ...]
-var cascade_request: Array = []
+var cascade_request: CascadeRequest = null
 
 ## Kamikaze attack request for Death's Bargain on-death effect.
-## Format: {source_uuid: String, target_uuid: String, damage: int, dying_max_hp: int}
-var kamikaze_request: Dictionary = {}
+var kamikaze_request: KamikazeRequest = null
 
 ## Transform request for Mimic effect.
 ## Format: {self_uuid: String, target_unit_id: StringName}

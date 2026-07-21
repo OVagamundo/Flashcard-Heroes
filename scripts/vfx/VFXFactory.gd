@@ -6,7 +6,8 @@ extends Node
 ## Provides factory methods for creating VFX nodes with proper layer placement.
 
 # Preloaded VFX scenes
-const StatProjectileScene = preload("res://scenes/vfx/StatProjectile.tscn")
+const CannonballProjectileScene = preload("res://scenes/vfx/CannonballProjectile.tscn")
+const BuffNumberProjectileScene = preload("res://scenes/vfx/BuffNumberProjectile.tscn")
 const FloatingDamageNumberScene = preload("res://scenes/vfx/FloatingDamageNumber.tscn")
 const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 
@@ -15,8 +16,10 @@ const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 # -----------------------------------------------------------------------------
 
 ## Create a stat projectile (damage/heal/buff)
-func create_projectile() -> Node:
-	return StatProjectileScene.instantiate()
+func create_projectile(is_attack_projectile: bool = false) -> Node:
+	if is_attack_projectile:
+		return CannonballProjectileScene.instantiate()
+	return BuffNumberProjectileScene.instantiate()
 
 ## Create a floating damage number
 func create_damage_number() -> Node:
@@ -60,8 +63,8 @@ func get_viewport_offset() -> Vector2:
 
 ## Spawn a projectile on the effects layer with proper positioning
 ## Returns the projectile node (caller must call setup() and launch())
-func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool) -> Node:
-	var projectile = create_projectile()
+func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool, is_attack_projectile: bool = false) -> Node:
+	var projectile = create_projectile(is_attack_projectile)
 	var effects_layer = get_effects_layer()
 	
 	if is_instance_valid(effects_layer):
@@ -173,29 +176,31 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 ## Launch a projectile from source to target using animator position snapshots.
 ## Handles position resolution, self-cast detection, and projectile spawning.
 ## Returns the projectile node for awaiting impact, or null if positions invalid.
-func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String) -> Node:
-	# Get target position from animator snapshot
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
+func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, is_attack_projectile: bool = false) -> Node:
+	# Get target position from animator live view (fallback to snapshot)
+	var tgt_snap = animator.get_live_position(target_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(target_uuid)
 	if tgt_snap.is_empty():
 		return null
 	
 	# Get source position (optional - may be self-cast)
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
-	var src_snap = animator.get_snapshot_position(source_uuid)
-	if not src_snap.is_empty():
+	if not source_uuid.is_empty():
+		var src_snap = animator.get_live_position(source_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(source_uuid)
+		# No defensive code! If a source was specified, its visual must exist.
+		assert(not src_snap.is_empty(), "CRITICAL: Missing valid source view in snapshot for uuid: " + source_uuid)
 		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
 		is_source_valid = true
 	
 	# Calculate end position
 	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 	
-	# Detect self-cast (no valid source or source == target)
+	# Detect self-cast (no source or source == target)
 	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
 	var launch_pos = end_pos if is_self_cast else start_pos
 	
 	# Spawn and launch projectile
-	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast)
+	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast, is_attack_projectile)
 	if projectile:
 		projectile.launch()
 	return projectile

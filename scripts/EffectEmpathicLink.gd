@@ -32,7 +32,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		if is_simulation:
 			var old_pwr: int = current_target.current_pwr
 			# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
-			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff, false, source_uuid)
+			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff)
 			
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": source_uuid,

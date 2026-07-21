@@ -580,8 +580,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	await tween.finished
 	Audio.play_sfx("coin_land")
 	anim_ball.queue_free()
-	if main_node.has_method("trigger_machine_bounce"):
-		main_node.trigger_machine_bounce(tier)
+	if main_node.has_method("animate_machine_inventory_change"):
+		main_node.animate_machine_inventory_change(tier, 1)
 
 func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int, instance_uuid: String) -> void:
 	var main_node = GameManager._active_main_node

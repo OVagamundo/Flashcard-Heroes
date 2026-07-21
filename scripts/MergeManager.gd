@@ -23,23 +23,17 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Determine if this is a "Level Up" (Self-Merge with same result) or a "Tier Evolution"
 	var is_level_up: bool = recipe.is_self_merge and recipe.result_id == instance_a.definition_id
 	
-	# Initial combined stats (excluding items, handled below)
-	var total_hp: int = instance_a.current_hp + instance_b.current_hp
-	var total_pwr: int = instance_a.current_pwr + instance_b.current_pwr
+	# Calculate initial combined stats using ONLY permanent stats.
+	# This ensures temporary battle buffs (like Doppleganger scaling) and item bonuses
+	# are NOT permanently baked into the merged unit's base stats.
+	var total_hp: int = instance_a.get_definition_base_hp() + instance_a.get_persistent_hp_modifier() + \
+						instance_b.get_definition_base_hp() + instance_b.get_persistent_hp_modifier()
+	var total_pwr: int = instance_a.get_definition_base_pwr() + instance_a.get_persistent_pwr_modifier() + \
+						 instance_b.get_definition_base_pwr() + instance_b.get_persistent_pwr_modifier()
 	
-	# Subtract bonuses from all parent items to avoid double-dipping.
-	# We want the inherent stats (Base + Inherent Extra), and then items will be re-applied.
+	# Determine items to transfer (items will be re-equipped and their stats re-applied later)
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
 	var target_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_b, all_instances_db)
-	var all_parent_items: Array[GachaBallInstance] = []
-	all_parent_items.append_array(source_items)
-	all_parent_items.append_array(target_items)
-
-	for item in all_parent_items:
-		var item_def = item.get_definition()
-		if is_instance_valid(item_def):
-			total_hp -= item_def.bonus_hp
-			total_pwr -= item_def.bonus_pwr
 
 	# Apply New Stat Logic
 	var final_hp: int
@@ -69,12 +63,19 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
 	
-	# Merge status effects: sum up stacks of each status effect
+	# Merge status effects: sum up stacks of each status effect.
+	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
+	# These are used to calculate dynamic deltas. Summing them creates artificially massive trackers 
+	# that cause catastrophic negative deltas (debuffs) when the board re-evaluates the unit.
 	for status_id in instance_a.status_effects:
+		if String(status_id).contains("scaling"):
+			continue
 		var amount = instance_a.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 	for status_id in instance_b.status_effects:
+		if String(status_id).contains("scaling"):
+			continue
 		var amount = instance_b.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount

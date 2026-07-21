@@ -41,8 +41,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var _old_hp = source_unit.current_hp
 	var _old_pwr = source_unit.current_pwr
 	
-	var new_hp = battle_manager.apply_stat_delta(source_unit, "hp", amount)
-	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", amount)
+	var new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	var new_pwr = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", amount, source_uuid)
 	
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"storm_herald_scaling")

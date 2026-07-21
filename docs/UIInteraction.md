@@ -50,6 +50,13 @@ For high-fidelity transitions involving screen-space movement (Gacha Draws, Elit
 - **Parabolic Vertical Arc**: $Y = \text{lerp}(start, end, t) - (4.0 \cdot H \cdot t \cdot (1.0 - t))$. This simulates uniform gravitational acceleration, where $H$ is the peak arc height.
 - **Visual Impact**: Transitions land with a frame-synchronous impact (machine bounce or landing squash) and matching audio hooks.
 
+### Visual-Driven Inventory Counters
+To ensure the UI presentation remains completely decoupled from the instantaneous logical model data, the Gacha Machine UI counters (`x3`, etc.) are **Visual-Driven**:
+1. They are NOT tied to `run_data_changed` or `battle_inventory_changed` signals.
+2. They increment or decrement *exactly* when the `GachaBallView` animations (drawing or returning) impact the machine visually, utilizing `animate_machine_inventory_change(tier, amount)`.
+3. To prevent permanent desynchronization, the counters are hard-snapped to the actual model data strictly during **Screen Transitions** (entering Battle, Shop, Rewards, Map, etc.).
+
+
 - **Scaling**: All slots maintain their 192px baseline asset scale.
 
 ---

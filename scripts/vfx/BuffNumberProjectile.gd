@@ -1,4 +1,4 @@
-class_name StatProjectile
+class_name BuffNumberProjectile
 extends Node2D
 
 signal impact
@@ -14,9 +14,12 @@ var _is_moving: bool = false
 
 func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
 	# Visual setup
-	label.text = "%d" % value
-	icon.visible = false # Hide icon by default
-	label.visible = true # Show label by default
+	if value >= 0:
+		label.text = "+%d" % value
+	else:
+		label.text = "%d" % value  # Negative sign included automatically
+	icon.visible = false # Buff numbers never show an icon
+	label.visible = true
 	
 	# Handle specific stat visuals
 	if stat == "hp":
@@ -25,12 +28,6 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 		label.add_theme_color_override("font_color", Color.BLACK)
 	elif stat == "burn":
 		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
-		# Use FireBall texture for burn projectiles
-		var fireball_tex = load("res://assets/Realistic/ui/textures/FireBall.png")
-		if fireball_tex:
-			icon.texture = fireball_tex
-			icon.visible = true
-			label.visible = false # Hide number if using fireball texture as requested
 	elif stat == "spikes":
 		label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.0)) # Green
 	elif stat == "armor":

@@ -1,27 +1,24 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
-[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBurnyCounter.gd" id="2_effect"]
 [ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_cause_condition"]
 
-[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="4_effect_status"]
 
 [sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
-script = ExtResource("3_condition")
-id = &"cond_damage_was_received"
-condition_type = &"DAMAGE_WAS_RECEIVED"
-parameters = {}
+script = ExtResource("3_cause_condition")
+id = &"cond_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_ATTACK"]) }
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
 invert_result = false
 
-[sub_resource type="Resource" id="BasicAttackEffect_Counter_1"]
+
+[sub_resource type="Resource" id="EffectBurnyCounter_1"]
 script = ExtResource("2_effect")
 target_type = &"ATTACKER"
-parameters = { "damage": { "pwr_multiplier": 1.0, "base_value": 0 } }
-
-[sub_resource type="Resource" id="EffectApplyStatus_Burn"]
-script = ExtResource("4_effect_status")
-parameters = {"amount": {"use_source_pwr": true}, "status_id": "burn"}
-target_type = &"RANDOM_ENEMY"
+parameters = { "extra_bounces": 1 }
 
 [resource]
 script = ExtResource("1_ability")
@@ -29,7 +26,7 @@ id = &"unit_tier1b_counter_on_hurt_l2"
 name_key = "ability.unit_tier1b_counter_on_hurt.name"
 trigger = &"on_hurt"
 condition = SubResource("ConditionDefinition_DamageReceived_1")
-effects = Array[Resource]([SubResource("BasicAttackEffect_Counter_1"), SubResource("EffectApplyStatus_Burn")])
+effects = Array[Resource]([SubResource("EffectBurnyCounter_1")])
 description_key = "ability.unit_tier1b_counter_on_hurt_l2.desc"
 execute_on_lethal = true
 required_level = 2

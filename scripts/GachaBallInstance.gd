@@ -504,11 +504,26 @@ func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 		var debt_added = abs(amount) - actual_drop
 		_hp_debt += debt_added
 		current_hp -= actual_drop
+		
+		if actual_drop > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_hp_loss"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": -actual_drop}
+			battle_components.append(comp)
+			
 	elif amount > 0:
 		var debt_paid = min(amount, _hp_debt)
 		_hp_debt -= debt_paid
 		var actual_gain = amount - debt_paid
 		current_hp += actual_gain
+		
+		if actual_gain > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_hp_gain"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": actual_gain}
+			battle_components.append(comp)
 		
 	if not bool(context.get("silent", false)) and old_hp != current_hp:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
@@ -523,11 +538,26 @@ func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 		var debt_added = abs(amount) - actual_drop
 		_pwr_debt += debt_added
 		current_pwr -= actual_drop
+		
+		if actual_drop > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_pwr_loss"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"pwr": -actual_drop}
+			battle_components.append(comp)
+			
 	elif amount > 0:
 		var debt_paid = min(amount, _pwr_debt)
 		_pwr_debt -= debt_paid
 		var actual_gain = amount - debt_paid
 		current_pwr += actual_gain
+		
+		if actual_gain > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_pwr_gain"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"pwr": actual_gain}
+			battle_components.append(comp)
 		
 	if not bool(context.get("silent", false)) and old_pwr != current_pwr:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)

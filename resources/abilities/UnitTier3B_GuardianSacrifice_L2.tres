@@ -3,9 +3,9 @@
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
 [ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
 
-[sub_resource type="Resource" id="EffectModifyStat_Armor_2"]
+[sub_resource type="Resource" id="EffectModifyStat_Armor_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "armor", "base_value": 4 }
+parameters = { "stat": "armor", "base_value": 1 }
 target_type = &"SELF"
 
 [resource]
@@ -15,6 +15,6 @@ name_key = "ability.unit_tier3b_guardian_sacrifice.name"
 trigger = &"passive_intercept"
 description_key = "ability.unit_tier3b_guardian_sacrifice_l2.desc"
 priority = 300
-effects = Array[Resource]([SubResource("EffectModifyStat_Armor_2")])
+effects = Array[Resource]([SubResource("EffectModifyStat_Armor_1")])
 required_level = 2
 max_level = 2
