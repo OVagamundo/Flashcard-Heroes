@@ -67,13 +67,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_id": context.get("ability_id", &"ability_trinket_underdog_emblem"),
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": amount,
-			"stat": "armor_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(source_uuid, amount, "armor_stacks", targets_old_val, targets_new_val)
 	}))
 	result.state_applied = true
 	return result

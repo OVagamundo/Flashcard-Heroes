@@ -71,13 +71,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": hp_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp])
 	}))
 	
 	# Event 2: PWR Gain (Buff visual)
@@ -87,13 +81,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": pwr_amount,
-			"stat": "pwr",
-			"targets_old_pwr": [old_pwr],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change(source_uuid, pwr_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true

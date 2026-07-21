@@ -3,9 +3,9 @@ extends BattleAnimation
 
 const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 
-func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var item_name = String(payload.get("item_name", "Item"))
+func execute(animator: Node, _targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var item_name = payload.item_name
 	# var icon_path = String(payload.get("icon_path", "")) 
 	
 	# Ensure coroutine

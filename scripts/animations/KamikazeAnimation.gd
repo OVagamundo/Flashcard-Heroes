@@ -4,9 +4,9 @@ extends BattleAnimation
 ## Kamikaze Attack Animation for Death's Bargain item
 ## Flow: Dying unit lunges to target → applies damage → dies at target position (no return)
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -61,12 +61,12 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	if animator._visual_registry.has(source_uuid):
 		animator._visual_registry.erase(source_uuid)
 
-func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: Dictionary) -> void:
-	var targets_new_hp = payload.get("targets_new_hp", [])
-	var _targets_old_hp = payload.get("targets_old_hp", [])
-	var armor_consumed_list = payload.get("armor_consumed", [])
-	var targets_new_armor = payload.get("targets_new_armor", [])
-	var spikes_data_list = payload.get("spikes_data_list", [])
+func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: CombatPayload) -> void:
+	var targets_new_hp = payload.targets_new_hp
+	var _targets_old_hp = payload.targets_old_hp
+	var armor_consumed_list = payload.armor_consumed
+	var targets_new_armor = payload.targets_new_armor
+	var spikes_data_list = payload.spikes_data_list
 	
 	var new_hp = targets_new_hp[0] if not targets_new_hp.is_empty() else 0
 	var armor_consumed = armor_consumed_list[0] if not armor_consumed_list.is_empty() else 0
@@ -116,8 +116,8 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 	
 	# SPIKES: When target has Spikes, decay stacks (attacker is dead so no damage shown)
 	for spikes_data in spikes_data_list:
-		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
-		var new_spikes = int(spikes_data.get("new_spikes", 0))
+		var defender_uuid = spikes_data.defender_uuid
+		var new_spikes = spikes_data.new_spikes
 		
 		# Update defender's Spikes stacks (attacker is dead, no HP update for them)
 		if not defender_uuid.is_empty():

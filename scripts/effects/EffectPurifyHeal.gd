@@ -64,14 +64,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		CombatEvent.Type.STATUS_EFFECT,
 		{
 			"target_uuids": [victim_uuid],
-			"visual_payload": {
-				"source_uuid": source_uuid,
-				"amount": -stacks,
-				"stat": stat_name,
-				"targets_old_val": [old_val],
-				"targets_new_val": [new_val],
-				"status_color": def.color
-			}
+			"visual_payload": CombatPayload.status_change(source_uuid, -stacks, stat_name, [old_val], [new_val], def.color)
 		}
 	))
 	

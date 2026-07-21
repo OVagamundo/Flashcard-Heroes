@@ -3,16 +3,16 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var stat = String(payload.get("stat", "hp"))
-	var amount = int(payload.get("amount", 0))
-	var _color_hint = String(payload.get("color", "red"))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var stat = payload.stat if not payload.stat.is_empty() else "hp"
+	var amount = payload.amount
+	var _color_hint = payload.projectile.color if payload.projectile != null else "red"
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
 	# Get visual registry from animator
-	var source_uuid = String(payload.get("source_uuid", "")) # Passed in payload or context
+	var source_uuid = payload.source_uuid
 	
 	# DECOUPLING FIX: Use position snapshots instead of visual_registry
 	# Determine start position from snapshot

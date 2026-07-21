@@ -117,7 +117,7 @@ static func create_death_event_if_needed(unit_uuid: String, death_tracking: Dict
 	death_tracking[unit_uuid] = true
 	return CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {"container_tag": container_tag}
+		"visual_payload": CombatPayload.container_payload(container_tag)
 	})
 
 # ============================================================================
@@ -279,7 +279,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {"container_tag": unit.location_container_tag}
+					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -314,7 +314,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {"container_tag": unit.location_container_tag}
+					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -541,7 +541,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var kamikaze_sources: Array[String] = []
 		for evt in out_events:
 			if evt.type == CombatEvent.Type.KAMIKAZE_ATTACK:
-				var src = evt.visual_payload.get("source_uuid", "")
+				var src = evt.visual_payload.source_uuid
 				if not src.is_empty():
 					kamikaze_sources.append(src)
 		

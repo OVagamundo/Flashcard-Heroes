@@ -82,8 +82,16 @@ scripts/
 │   ├── BattleSetup.gd.uid
 │   ├── BattleState.gd
 │   ├── BattleState.gd.uid
+│   ├── CombatPayload.gd
+│   ├── CombatPayload.gd.uid
+│   ├── CombatProjectile.gd
+│   ├── CombatProjectile.gd.uid
 │   ├── CombatSimulator.gd
 │   ├── CombatSimulator.gd.uid
+│   ├── CombatSpikesData.gd
+│   ├── CombatSpikesData.gd.uid
+│   ├── CombatTrinketActivation.gd
+│   ├── CombatTrinketActivation.gd.uid
 │   ├── DeathProcessor.gd
 │   ├── DeathProcessor.gd.uid
 │   ├── EffectHandlers.gd
@@ -108,6 +116,8 @@ scripts/
 │   ├── EffectAweInspiringTotem.gd.uid
 │   ├── EffectBenchGrowth.gd
 │   ├── EffectBenchGrowth.gd.uid
+│   ├── EffectBurnyCounter.gd
+│   ├── EffectBurnyCounter.gd.uid
 │   ├── EffectDopplegangerScaling.gd
 │   ├── EffectDopplegangerScaling.gd.uid
 │   ├── EffectDuplicateToGacha.gd
@@ -173,6 +183,10 @@ scripts/
 │   ├── StatScaling.gd
 │   └── StatScaling.gd.uid
 ├── vfx
+│   ├── BuffNumberProjectile.gd
+│   ├── BuffNumberProjectile.gd.uid
+│   ├── CannonballProjectile.gd
+│   ├── CannonballProjectile.gd.uid
 │   ├── FloatingDamageNumber.gd
 │   ├── FloatingDamageNumber.gd.uid
 │   ├── GoldCoinVFX.gd
@@ -183,8 +197,6 @@ scripts/
 │   ├── MinigameAuraVFX.gd.uid
 │   ├── RejectionFeedback.gd
 │   ├── RejectionFeedback.gd.uid
-│   ├── StatProjectile.gd
-│   ├── StatProjectile.gd.uid
 │   ├── TokenPopVFX.gd
 │   ├── TokenPopVFX.gd.uid
 │   ├── TokenSpendVFX.gd
@@ -447,6 +459,7 @@ scripts/
 ├── debug_database.gd.uid
 ├── debug_korean_deck.gd
 ├── debug_korean_deck.gd.uid
+├── generate_content_docs.py
 ├── test_prio.gd
 └── test_prio.gd.uid
 ```
@@ -471,10 +484,11 @@ scenes/
 │   ├── ShopSystem.md
 │   └── WindowManager.md
 ├── vfx
+│   ├── BuffNumberProjectile.tscn
+│   ├── CannonballProjectile.tscn
 │   ├── FloatingDamageNumber.tscn
 │   ├── ItemPopup.tscn
 │   ├── MinigameAuraVFX.tscn
-│   ├── StatProjectile.tscn
 │   ├── TokenPopVFX.tscn
 │   └── TokenSpendVFX.tscn
 ├── BackgroundBlocker.tscn
@@ -641,14 +655,17 @@ This section shows which `.gd` scripts are attached to nodes in the `.tscn` scen
 ### scenes/vfx/MinigameAuraVFX.tscn
   - Node `MinigameAuraVFX` -> `scripts/vfx/MinigameAuraVFX.gd`
 
-### scenes/vfx/StatProjectile.tscn
-  - Node `StatProjectile` -> `scripts/vfx/StatProjectile.gd`
+### scenes/vfx/BuffNumberProjectile.tscn
+  - Node `BuffNumberProjectile` -> `scripts/vfx/BuffNumberProjectile.gd`
 
 ### scenes/vfx/TokenSpendVFX.tscn
   - Node `TokenSpendVFX` -> `scripts/vfx/TokenSpendVFX.gd`
 
 ### scenes/vfx/FloatingDamageNumber.tscn
   - Node `FloatingDamageNumber` -> `scripts/vfx/FloatingDamageNumber.gd`
+
+### scenes/vfx/CannonballProjectile.tscn
+  - Node `CannonballProjectile` -> `scripts/vfx/CannonballProjectile.gd`
 
 ### scenes/vfx/ItemPopup.tscn
   - Node `ItemPopup` -> `scripts/vfx/ItemPopup.gd`
@@ -1696,19 +1713,60 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if heal_amount <= 0:
 		return result
 		
-	var multiplier: float = parameters.get("multiplier", 1.0)
+	var extra_bounces: int = parameters.get("extra_bounces", 0)
 	
 	if OS.is_debug_build():
-		print("[EffectScald] execute: heal_amount=", heal_amount, ", multiplier=", multiplier, ", computed_dmg=", int(floor(heal_amount * multiplier)))
+		print("[EffectScald] execute: heal_amount=", heal_amount, ", extra_bounces=", extra_bounces)
 	
-	# Apply damage to all targets (usually just FRONT_ENEMY)
-	if not targets.is_empty():
-		result.damage_request = {
-			"stat": "hp",
-			"amount": - int(floor(heal_amount * multiplier)),
-			"targets": targets
-		}
+	var is_player_team = (container_tag == &"PlayerLineup")
+	var enemy_container = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	
+	var current_source_uuid = source_uuid
+	var current_target_uuid = ""
+	
+	# Initial random target
+	var initial_enemies = battle_manager.get_instances_in_container(enemy_container).filter(func(u): return u.current_hp > 0)
+	if initial_enemies.is_empty():
+		return result
+	current_target_uuid = initial_enemies[randi() % initial_enemies.size()].ball_uuid
+	
+	var current_burn_amount = heal_amount
+	
+	for bounce_index in range(extra_bounces + 1):
+		var target_inst = battle_manager.get_instance_by_uuid(current_target_uuid)
+		if not is_instance_valid(target_inst) or target_inst.current_hp <= 0:
+			break # Stop bouncing if target is somehow invalid
+			
+		var old_burn = target_inst.get_status_effect_amount(&"burn")
+		var new_burn = battle_manager.apply_stat_delta(target_inst, "burn_stacks", current_burn_amount)
 		
+		var burn_event = CombatEvent.new(
+			CombatEvent.Type.STATUS_EFFECT,
+			{
+				"target_uuids": [current_target_uuid],
+				"is_simulation": context.get("is_simulation", false),
+				"visual_payload": CombatPayload.status_change(current_source_uuid, current_burn_amount, "burn_stacks", [old_burn], [new_burn], Color.ORANGE_RED)
+			}
+		)
+		result.events.append(burn_event)
+		
+		# Prepare next bounce
+		if bounce_index < extra_bounces:
+			current_source_uuid = current_target_uuid
+			current_burn_amount = max(1, int(floor(current_burn_amount / 2.0)))
+			
+			var enemies = battle_manager.get_instances_in_container(enemy_container).filter(func(u): return u.current_hp > 0)
+			if enemies.is_empty():
+				break
+				
+			var possible_next_targets = enemies.filter(func(u): return u.ball_uuid != current_target_uuid)
+			if possible_next_targets.is_empty():
+				# Bounce back to same target if no one else is alive
+				possible_next_targets = enemies
+				
+			var next_enemy = possible_next_targets[randi() % possible_next_targets.size()]
+			current_target_uuid = next_enemy.ball_uuid
+			
 	return result
 ```
 
@@ -1757,7 +1815,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Burny (T1B)",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
-		"effect": "Attack the attacker for PWR damage",
+		"effect": "Apply 1 Burn stack to the attacker",
 		"execute_on_lethal": true,
 		"notes": "Counter-attacks even when taking lethal damage",
 	},
@@ -2214,6 +2272,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Unit must be alive and on the opposite team
 			return unit.current_hp > 0 and unit_team != "" and unit_team != summoned_team
 		
+		&"on_board_enter":
+			# Only the unit that just entered the board responds
+			return unit_uuid == context.get("entered_uuid", "")
+		
 		&"on_ally_summon":
 			# Only units on the SAME team as the summoned unit respond
 			var summoned_team = context.get("summoned_team", "")
@@ -2296,16 +2358,6 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			if unit_uuid == source_uuid:
 				return false
 			
-			# Ping-Pong Prevention: Do not respond if the source is the SAME TYPE of unit
-			# This prevents two Shadow Cloners from echoing each other infinitely
-			if not source_uuid.is_empty():
-				var source_inst = battle_manager.get_instance_by_uuid(source_uuid)
-				if is_instance_valid(source_inst):
-					var source_def = source_inst.get_definition()
-					var unit_def = unit.get_definition()
-					if is_instance_valid(source_def) and is_instance_valid(unit_def):
-						if source_def.id == unit_def.id:
-							return false
 
 			# Must be alive
 			if unit.current_hp <= 0:
@@ -2587,27 +2639,17 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		if ability.id.contains("counter"):
 			effect_context["is_counter"] = true
 		
-		if ability.trigger == &"on_board_changed":
-			# ALWAYS execute passive stat scaling instantly and synchronously
-			# to ensure real-time mathematical correctness in all combat states.
-			if is_instance_valid(effect):
-				var sim_ctx = effect_context.duplicate(true)
-				var is_sim = context.get("is_simulation", false) or (battle_manager.get_current_phase() == BattleManager.Phases.COMBAT)
-				sim_ctx["is_simulation"] = is_sim
-				sim_ctx["ability_id"] = ability.id
-				effect.execute(source_uuid, resolved_targets, battle_manager, sim_ctx)
-		else:
-			var effect_request = EffectRequest.new(
-				source_uuid,
-				ability.id,
-				effect,
-				resolved_targets,
-				effect_context,
-				ability.priority # Pass priority from ability definition
-			)
-			
-			# Enqueue the request
-			battle_manager.enqueue_effect_request(effect_request)
+		var effect_request = EffectRequest.new(
+			source_uuid,
+			ability.id,
+			effect,
+			resolved_targets,
+			effect_context,
+			ability.priority # Pass priority from ability definition
+		)
+		
+		# Enqueue the request
+		battle_manager.enqueue_effect_request(effect_request)
 
 	# If ability successfully activated (found targets) AND it replaces basic attack, set flag
 	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)
@@ -2912,8 +2954,8 @@ extends RefCounted
 # Execute the animation.
 # animator: The BattleAnimator instance (provides context like visual_registry, tree, etc.)
 # targets: Array of target UUIDs
-# payload: The visual_payload dictionary from the CombatEvent
-func execute(_animator: Node, _targets: Array[String], _payload: Dictionary) -> void:
+# payload: The typed visual payload from the CombatEvent
+func execute(_animator: Node, _targets: Array[String], _payload: CombatPayload) -> void:
 	push_warning("BattleAnimation.execute() not implemented")
 	pass
 ```
@@ -2928,10 +2970,10 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var stat = String(payload.get("stat", "pwr"))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var stat = payload.stat if not payload.stat.is_empty() else "pwr"
 	
 	
 	# Ensure coroutine
@@ -2942,7 +2984,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	var color_hint = "green" if stat == "hp" else "blue"
 	
 	for target_uuid in targets:
-		var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), stat, color_hint)
+		var proj = _launch_projectile(animator, source_uuid, target_uuid, amount, stat, color_hint)
 		if proj: projectiles.append(proj)
 		
 	# Wait for impact
@@ -2955,8 +2997,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 				
 	# 2. Apply Stat Buff (HP or PWR only)
 	var final_target_uuid = ""
-	var pwr_values = payload.get("targets_new_pwr", [])
-	var hp_values = payload.get("targets_new_hp", [])
+	var pwr_values = payload.targets_new_pwr
+	var hp_values = payload.targets_new_hp
 	
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
@@ -2970,16 +3012,19 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			if not hp_values.is_empty() and i < hp_values.size():
 				new_hp = int(hp_values[i])
 			else:
-				new_hp = int(payload.get("new_hp", 0)) # Fallback
+				new_hp = payload.new_hp
 			
 			animator.apply_hp_delta(target_uuid, amount, new_hp)
 			
-			# Composable Effects: Color flash + hop deform + hop move
+			# Composable Effects: Color flash + deform + move
+			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
+			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
+			var move_type = &"HOP"
 			if SignalBus.has_signal("unit_color_flash"):
-				SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 			if SignalBus.has_signal("unit_deform"):
-				SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
-			if SignalBus.has_signal("unit_move"):
+				SignalBus.emit_signal("unit_deform", target_uuid, deform_type)
+			if SignalBus.has_signal("unit_move") and amount >= 0:
 				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
 		
 		elif stat == "pwr":
@@ -2987,24 +3032,50 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			if not pwr_values.is_empty() and i < pwr_values.size():
 				new_pwr = int(pwr_values[i])
 			else:
-				new_pwr = int(payload.get("new_pwr", 0)) # Fallback
+				new_pwr = payload.new_pwr
 				
+			if amount < 0:
+				_spawn_floating_pwr_damage(animator, target_uuid, abs(amount))
+			
 			animator.apply_pwr_delta(target_uuid, amount, new_pwr)
 			
-			# Composable Effects: Color flash + hop deform + hop move
+			# Composable Effects: Color flash + deform + move
+			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
+			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
+			var move_type = &"HOP"
 			if SignalBus.has_signal("unit_color_flash"):
-				SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 			if SignalBus.has_signal("unit_deform"):
-				SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
-			if SignalBus.has_signal("unit_move"):
+				SignalBus.emit_signal("unit_deform", target_uuid, deform_type)
+			if SignalBus.has_signal("unit_move") and amount >= 0:
 				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
 
 	# Wait for hop animation completion
-	if final_target_uuid != "":
+	if final_target_uuid != "" and amount >= 0:
 		await animator.wait_for_animation_completion("move", final_target_uuid)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
+
+## Helper to spawn floating PWR damage number (Black)
+func _spawn_floating_pwr_damage(animator: Node, target_uuid: String, amount: int) -> void:
+	var target_view = animator._visual_registry.get(target_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
+	
+	if is_instance_valid(target_view) and target_view.is_inside_tree():
+		spawn_pos = target_view.global_position + (target_view.size * Vector2(0.5, 0.3))
+		found_pos = true
+	else:
+		var tgt_snap = animator.get_snapshot_position(target_uuid)
+		if not tgt_snap.is_empty():
+			spawn_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y + tgt_snap.size.y * 0.3)
+			found_pos = true
+			
+	if found_pos:
+		# Use status effect style for PWR loss (size 32, black)
+		var color = Color(0.0, 0.0, 0.0) # Pure Black
+		VFXFactory.spawn_stat_number_on_layer(amount, spawn_pos, color)
 ```
 
 ### File: `scripts/animations/DamageAnimation.gd`
@@ -3015,22 +3086,22 @@ extends BattleAnimation
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 # NOTE: Animation timing constants are in AnimationConstants.gd
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var skip_bump = bool(payload.get("skip_bump", false))
-	var apply_burn = bool(payload.get("apply_burn", false))
-	var is_burn_damage = bool(payload.get("is_burn_damage", false))
-	var attack_type = String(payload.get("attack_type", "melee")) # Default to melee
-	var main_target_uuid = String(payload.get("main_target_uuid", "")) # For multi-target attacks
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var skip_bump = payload.skip_bump
+	var apply_burn = payload.apply_burn
+	var is_burn_damage = payload.is_burn_damage
+	var attack_type = payload.attack_type
+	var main_target_uuid = payload.main_target_uuid
 	
-	var _raw_wind = payload.get("windup_events", [])
+	var _raw_wind = payload.windup_events
 	var windup_events: Array[CombatEvent] = []
 	for e in _raw_wind: windup_events.append(e as CombatEvent)
-	var _raw_pre = payload.get("pre_impact_events", [])
+	var _raw_pre = payload.pre_impact_events
 	var pre_impact_events: Array[CombatEvent] = []
 	for e in _raw_pre: pre_impact_events.append(e as CombatEvent)
-	var _raw_imp = payload.get("impact_events", [])
+	var _raw_imp = payload.impact_events
 	var impact_events: Array[CombatEvent] = []
 	for e in _raw_imp: impact_events.append(e as CombatEvent)
 	
@@ -3047,8 +3118,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Determine main target (first target if not specified)
 	# GUARDIAN SENTINEL FIX: When Guardian intercepts, use original target position for melee lunge
 	# This way the attacker still lunges to where the original target was, and Guardian leaps there
-	var original_target_uuids = payload.get("original_target_uuids", [])
-	var original_target_uuid = payload.get("original_target_uuid", "") # Single target (cascade damage)
+	var original_target_uuids = payload.original_target_uuids
+	var original_target_uuid = payload.original_target_uuid
 	
 	if main_target_uuid.is_empty():
 		# Priority: original_target_uuids > original_target_uuid > targets[0]
@@ -3128,7 +3199,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			animator.play_trinket_activation(source_uuid)
 			
 		# 2. Launch projectile from trinket position to target(s)
-		var p_stat = String(payload.get("stat", "hp"))
+		var p_stat = payload.stat if not payload.stat.is_empty() else "hp"
 		var p_amount = amount
 		var projectiles = []
 		for target_uuid in targets:
@@ -3159,17 +3230,17 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		# Trigger Bump (if applicable)
 		var should_bump = (not skip_bump) and (not source_uuid.is_empty())
 		if should_bump:
-			var bump_dir = payload.get("bump_direction", Vector2.ZERO)
+			var bump_dir = payload.bump_direction
 			if bump_dir != Vector2.ZERO:
 				SignalBus.emit_signal("unit_bump_attack", source_uuid, bump_dir)
 		
 		# Launch Projectile (Parallel)
-		var proj_data = payload.get("projectile_data", {})
+		var proj_data = payload.projectile
 		var projectiles = []
-		if not proj_data.is_empty():
-			var p_stat = String(proj_data.get("stat", "hp"))
-			var p_amount = int(proj_data.get("amount", 0))
-			var p_color = String(proj_data.get("color", "red"))
+		if proj_data != null:
+			var p_stat = proj_data.stat
+			var p_amount = proj_data.amount
+			var p_color = proj_data.color
 			
 			for target_uuid in targets:
 				var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
@@ -3207,27 +3278,14 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	if not impact_events.is_empty():
 		await animator._animate_events(impact_events)
 
-func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dictionary, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
-	var targets_new_hp = payload.get("targets_new_hp", [])
-	var targets_new_burn = payload.get("targets_new_burn", [])
-	var armor_consumed_list = payload.get("armor_consumed", [])
-	var targets_new_armor = payload.get("targets_new_armor", [])
-	var targets_new_pwr = payload.get("targets_new_pwr", []) # Support for PWR damage
-	var stat = String(payload.get("stat", "hp")) # Identify stat type
-	var spikes_data_list = payload.get("spikes_data_list", []) # Spikes reflection data
-	
-	# Play any trinket activations associated with this damage impact
-	if payload.has("trinket_activations"):
-		var raw_activations = payload.get("trinket_activations", [])
-		if raw_activations is Array:
-			for raw_activation in raw_activations:
-				if raw_activation is Dictionary:
-					var visual_uuid = String(raw_activation.get("visual_uuid", ""))
-					var def_id = StringName(raw_activation.get("definition_id", &""))
-					var is_enemy = bool(raw_activation.get("is_enemy", false))
-					if animator.has_method("play_trinket_activation"):
-						animator.play_trinket_activation(visual_uuid, def_id, is_enemy)
-						await AnimationConstants.create_pausable_timer(animator.get_tree(), 0.25).timeout
+func _apply_damage_effects(animator: Node, targets: Array[String], payload: CombatPayload, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
+	var targets_new_hp = payload.targets_new_hp
+	var targets_new_burn = payload.targets_new_burn
+	var armor_consumed_list = payload.armor_consumed
+	var targets_new_armor = payload.targets_new_armor
+	var targets_new_pwr = payload.targets_new_pwr
+	var stat = payload.stat if not payload.stat.is_empty() else "hp"
+	var spikes_data_list = payload.spikes_data_list
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
@@ -3312,14 +3370,14 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	# SPIKES DAMAGE: Apply reflection damage to attacker(s) at the same moment
 	# This happens while the attacker is at the lunge peak (touching the target)
 	for spikes_data in spikes_data_list:
-		var attacker_uuid = String(spikes_data.get("attacker_uuid", ""))
-		var spikes_damage = int(spikes_data.get("spikes_damage", 0))
-		var attacker_new_hp = int(spikes_data.get("attacker_new_hp", 0))
-		var _old_spikes = int(spikes_data.get("old_spikes", 0))
-		var new_spikes = int(spikes_data.get("new_spikes", 0))
-		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
-		var armor_consumed = int(spikes_data.get("armor_consumed", 0))
-		var new_armor = int(spikes_data.get("new_armor", 0))
+		var attacker_uuid = spikes_data.attacker_uuid
+		var spikes_damage = spikes_data.spikes_damage
+		var attacker_new_hp = spikes_data.attacker_new_hp
+		var _old_spikes = spikes_data.old_spikes
+		var new_spikes = spikes_data.new_spikes
+		var defender_uuid = spikes_data.defender_uuid
+		var armor_consumed = spikes_data.armor_consumed
+		var new_armor = spikes_data.new_armor
 		
 		if attacker_uuid.is_empty() or spikes_damage <= 0:
 			continue
@@ -3443,7 +3501,7 @@ func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount:
 	_spawn_floating_damage(_animator, target_uuid, amount)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
-	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat, true)
 ```
 
 ### File: `scripts/animations/DeathAnimation.gd`
@@ -3451,7 +3509,7 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 class_name DeathAnimation
 extends BattleAnimation
 
-func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], _payload: CombatPayload) -> void:
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
@@ -3475,9 +3533,9 @@ extends BattleAnimation
 ## Guardian leaps to the target's position to shield them.
 ## After damage is dealt, the guardian returns (handled by DamageAnimation's post-damage logic).
 
-func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> void:
-	var guardian_uuid: String = String(payload.get("guardian_uuid", ""))
-	var original_target_uuid: String = String(payload.get("original_target_uuid", ""))
+func execute(animator: Node, _targets: Array[String], payload: CombatPayload) -> void:
+	var guardian_uuid: String = payload.guardian_uuid
+	var original_target_uuid: String = payload.original_target_uuid
 	
 	if guardian_uuid.is_empty() or original_target_uuid.is_empty():
 		return
@@ -3515,10 +3573,10 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var targets_new_hp = payload.get("targets_new_hp", [])
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var targets_new_hp = payload.targets_new_hp
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -3575,9 +3633,9 @@ extends BattleAnimation
 
 const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 
-func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var item_name = String(payload.get("item_name", "Item"))
+func execute(animator: Node, _targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var item_name = payload.item_name
 	# var icon_path = String(payload.get("icon_path", "")) 
 	
 	# Ensure coroutine
@@ -3611,9 +3669,9 @@ extends BattleAnimation
 ## Kamikaze Attack Animation for Death's Bargain item
 ## Flow: Dying unit lunges to target → applies damage → dies at target position (no return)
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
@@ -3668,12 +3726,12 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	if animator._visual_registry.has(source_uuid):
 		animator._visual_registry.erase(source_uuid)
 
-func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: Dictionary) -> void:
-	var targets_new_hp = payload.get("targets_new_hp", [])
-	var _targets_old_hp = payload.get("targets_old_hp", [])
-	var armor_consumed_list = payload.get("armor_consumed", [])
-	var targets_new_armor = payload.get("targets_new_armor", [])
-	var spikes_data_list = payload.get("spikes_data_list", [])
+func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: CombatPayload) -> void:
+	var targets_new_hp = payload.targets_new_hp
+	var _targets_old_hp = payload.targets_old_hp
+	var armor_consumed_list = payload.armor_consumed
+	var targets_new_armor = payload.targets_new_armor
+	var spikes_data_list = payload.spikes_data_list
 	
 	var new_hp = targets_new_hp[0] if not targets_new_hp.is_empty() else 0
 	var armor_consumed = armor_consumed_list[0] if not armor_consumed_list.is_empty() else 0
@@ -3723,8 +3781,8 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 	
 	# SPIKES: When target has Spikes, decay stacks (attacker is dead so no damage shown)
 	for spikes_data in spikes_data_list:
-		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
-		var new_spikes = int(spikes_data.get("new_spikes", 0))
+		var defender_uuid = spikes_data.defender_uuid
+		var new_spikes = spikes_data.new_spikes
 		
 		# Update defender's Spikes stacks (attacker is dead, no HP update for them)
 		if not defender_uuid.is_empty():
@@ -3741,12 +3799,12 @@ extends BattleAnimation
 ## Animation for Aegis Charm preventing lethal damage.
 ## Unit floats up with golden glow, then lands back, surviving at 1 HP.
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
 	if targets.is_empty():
 		return
 	
 	var saved_uuid: String = targets[0]
-	var heal_amount: int = int(payload.get("heal_amount", 1))
+	var heal_amount: int = payload.heal_amount
 	
 	# Ensure this is a coroutine
 	await animator.get_tree().process_frame
@@ -3771,16 +3829,16 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var stat = String(payload.get("stat", "hp"))
-	var amount = int(payload.get("amount", 0))
-	var _color_hint = String(payload.get("color", "red"))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var stat = payload.stat if not payload.stat.is_empty() else "hp"
+	var amount = payload.amount
+	var _color_hint = payload.projectile.color if payload.projectile != null else "red"
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
 	# Get visual registry from animator
-	var source_uuid = String(payload.get("source_uuid", "")) # Passed in payload or context
+	var source_uuid = payload.source_uuid
 	
 	# DECOUPLING FIX: Use position snapshots instead of visual_registry
 	# Determine start position from snapshot
@@ -3825,9 +3883,9 @@ extends BattleAnimation
 ## NO projectiles - just immediate effect application.
 ## Handles: burn_stacks, armor_stacks, and generic *_stacks
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var amount = int(payload.get("amount", 0))
-	var stat = String(payload.get("stat", ""))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var amount = payload.amount
+	var stat = payload.stat
 	
 	
 	# Ensure coroutine
@@ -3835,7 +3893,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	
 	# 1. Launch Projectiles (if source is provided)
 	var projectiles = []
-	var source_uuid = String(payload.get("source_uuid", ""))
+	var source_uuid = payload.source_uuid
 	
 	# Only use projectiles for positive "buff" style effects when a source exists
 	var use_projectiles = not source_uuid.is_empty() and amount > 0
@@ -3859,7 +3917,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.4)).timeout
 
 	# 2. Apply Stat Buff / Status Effect
-	var stack_values = payload.get("targets_new_val", [])
+	var stack_values = payload.targets_new_val
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		
@@ -3872,7 +3930,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if not stack_values.is_empty() and i < stack_values.size():
 			new_val = int(stack_values[i])
 		else:
-			new_val = int(payload.get("new_val", 0)) # Fallback
+			new_val = payload.new_val
 		
 		# Determine color and effect based on stat type
 		var flash_color: Color
@@ -3918,7 +3976,8 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	elif stat == "burn_stacks": projectile_stat = "burn"
 	elif stat == "spikes_stacks" or stat == "spikes": projectile_stat = "spikes"
 	
-	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat)
+	var is_attack = (projectile_stat == "burn")
+	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, projectile_stat, is_attack)
 
 func _spawn_floating_status(animator: Node, target_uuid: String, amount: int, type: String) -> void:
 	var view = animator._visual_registry.get(target_uuid)
@@ -3945,12 +4004,12 @@ extends BattleAnimation
 
 const AC = preload("res://scripts/animations/AnimationConstants.gd")
 
-func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], _payload: CombatPayload) -> void:
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
 	# Units are already registered and visible - just trigger fade-in animation
-	var style = _payload.get("visual_style", "")
+	var style = _payload.visual_style
 	
 	for target_uuid in targets:
 		if style == "yellow_flash":
@@ -3996,7 +4055,7 @@ extends BattleAnimation
 
 const AC = preload("res://scripts/animations/AnimationConstants.gd")
 
-func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], _payload: CombatPayload) -> void:
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
@@ -4279,7 +4338,9 @@ func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void
 			_view.top_level = false
 			_view.position = Vector2.ZERO
 		else:
+			var gp = _view.global_position
 			_view.top_level = true
+			_view.global_position = gp
 	_reset_sprite_scale()
 	
 	var original_position: Vector2 = _view.position
@@ -5282,18 +5343,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_instance_valid(source_instance):
 		is_player_source = battle_manager._is_player_unit(source_instance)
 	
-	var burn_amount := 0
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
 	
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		
-	if fire_level >= 3:
-		if is_instance_valid(source_instance) and battle_manager._has_trait_soul(source_instance, "FIRE"):
-			burn_amount += 1
-			if fire_level >= 5:
-				burn_amount += 1
+	var burn_amount := 0
+	if is_instance_valid(source_instance):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source_instance)
 	
 	var should_apply_burn = burn_amount > 0
 	
@@ -5305,7 +5360,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				damage += burn_count
 				
 	# Guardian Sentinel Intercept
-	var would_be_lethal = target_instance.current_hp - damage <= 0
+	var target_armor = target_instance.get_status_effect_amount(&"armor")
+	var hp_damage = max(0, damage - target_armor)
+	var would_be_lethal = target_instance.current_hp - hp_damage <= 0
 	var tgt_is_player_unit = battle_manager._is_player_unit(target_instance)
 	var is_ally_damage = (tgt_is_player_unit != is_player_source)
 	
@@ -5318,11 +5375,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 				"source_uuid": guardian.ball_uuid,
 				"target_uuids": [final_target_uuid],
-				"visual_payload": {
-					"guardian_uuid": guardian.ball_uuid,
-					"original_target_uuid": final_target_uuid,
-					"damage": damage
-				}
+				"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, final_target_uuid)
 			}))
 			final_target_uuid = guardian.ball_uuid
 			final_target = guardian
@@ -5345,18 +5398,29 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var old_armor = final_target.get_status_effect_amount(&"armor")
 	var old_burn = final_target.get_status_effect_amount(&"burn")
 	
-	var damage_result = battle_manager.apply_stat_delta(final_target, "hp", -damage, false, attacker_uuid)
+	var attack_type = parameters.get("attack_type", "melee")
 	
-	var new_hp = damage_result.get("new_hp", final_target.current_hp) if damage_result is Dictionary else final_target.current_hp
-	var armor_consumed = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-	var new_armor = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+	# Sniper Aim override
+	if is_instance_valid(source_instance):
+		for item_uuid in source_instance.equipped_item_uuids:
+			if not item_uuid.is_empty():
+				var item = battle_manager.get_instance_by_uuid(item_uuid)
+				if is_instance_valid(item) and item.definition_id == &"item_t3_g":
+					attack_type = "ranged"
+					break
+	var damage_type = C.DamageType.MELEE if attack_type == "melee" else C.DamageType.RANGED
+	var damage_result = battle_manager.apply_damage(final_target, damage, damage_type, attacker_uuid)
+	
+	var new_hp = damage_result.get("new_hp", final_target.current_hp) if not damage_result.is_empty() else final_target.current_hp
+	var armor_consumed = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+	var new_armor = damage_result.get("new_armor", old_armor) if not damage_result.is_empty() else old_armor
 	
 	var burn_val = old_burn
 	if should_apply_burn:
 		burn_val = battle_manager.apply_stat_delta(final_target, "burn_stacks", burn_amount)
 	
 	var spikes_data_list: Array[Dictionary] = []
-	if damage_result is Dictionary and damage_result.has("spikes_data"):
+	if not damage_result.is_empty() and damage_result.has("spikes_data"):
 		spikes_data_list.append(damage_result["spikes_data"])
 		
 	var impact_start: int = battle_manager.get_pending_reactions_size()
@@ -5369,25 +5433,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_simulation:
 		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
 		
-	# PACKAGE EVENTS INTO PAYLOAD
-	var visual_payload: Dictionary = {
-		"source_uuid": attacker_uuid,
-		"amount": damage,
-		"targets_old_hp": [old_hp],
-		"targets_new_hp": [new_hp],
-		"targets_old_armor": [old_armor],
-		"targets_new_armor": [new_armor],
-		"targets_old_burn": [old_burn],
-		"targets_new_burn": [burn_val],
-		"apply_burn": should_apply_burn,
-		"armor_consumed": [armor_consumed],
-		"attack_type": "melee",
-		"original_target_uuids": [target_instance.ball_uuid], # The original target the attack aimed for
-		"spikes_data_list": spikes_data_list,
-		"windup_events": windup_events,
-		"pre_impact_events": pre_impact_events,
-		"impact_events": impact_events
-	}
+	var visual_payload := CombatPayload.damage(attacker_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+	visual_payload.targets_old_burn = [old_burn]
+	visual_payload.targets_new_burn = [burn_val]
+	visual_payload.apply_burn = should_apply_burn
+	visual_payload.attack_type = attack_type
+	visual_payload.projectile = CombatProjectile.new("hp", abs(damage), "red") if attack_type == "ranged" else null
+	visual_payload.original_target_uuids = [target_instance.ball_uuid]
+	visual_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+	visual_payload.windup_events = windup_events
+	visual_payload.pre_impact_events = pre_impact_events
+	visual_payload.impact_events = impact_events
 	
 	var damage_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": attacker_uuid,
@@ -5402,6 +5458,23 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		SignalBus.battle_inventory_changed.emit()
 
 	return effect_result
+
+func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
+	return result
 ```
 
 ### File: `scripts/battle/BattleHelpers.gd`
@@ -6373,6 +6446,226 @@ func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 	return true
 ```
 
+### File: `scripts/battle/CombatPayload.gd`
+```gdscript
+class_name CombatPayload
+extends RefCounted
+
+## Typed, presentation-only data carried by a CombatEvent.
+##
+## Every field below corresponds to a former visual_payload dictionary key.  A
+## payload is intentionally sparse: a DAMAGE event only fills damage fields,
+## while a SUMMON event only fills summon fields.  This preserves the old
+## optional-field behaviour without allowing misspelled dynamic keys.
+
+# Shared stat / damage fields.
+var source_uuid: String = ""
+var amount: int = 0
+var stat: String = ""
+var skip_bump: bool = false
+var bump_direction: Vector2 = Vector2.ZERO
+var apply_burn: bool = false
+var is_burn_damage: bool = false
+var attack_type: String = "melee"
+var main_target_uuid: String = ""
+var original_target_uuid: String = ""
+var original_target_uuids: Array[String] = []
+var projectile: CombatProjectile
+
+var targets_old_hp: Array[int] = []
+var targets_new_hp: Array[int] = []
+var targets_max_hp: Array[int] = []
+var targets_old_pwr: Array[int] = []
+var targets_new_pwr: Array[int] = []
+var targets_old_burn: Array[int] = []
+var targets_new_burn: Array[int] = []
+var targets_old_armor: Array[int] = []
+var targets_new_armor: Array[int] = []
+var armor_consumed: Array[int] = []
+var targets_old_val: Array[int] = []
+var targets_new_val: Array[int] = []
+var new_hp: int = 0
+var new_pwr: int = 0
+var new_val: int = 0
+var old_hp: int = 0
+var old_pwr: int = 0
+var status_color: Color = Color.WHITE
+var is_status_damage: bool = false
+var old_value: int = 0
+var new_value: int = 0
+var spikes_data_list: Array[CombatSpikesData] = []
+
+# Nested animation event phases.
+var windup_events: Array[CombatEvent] = []
+var pre_impact_events: Array[CombatEvent] = []
+var impact_events: Array[CombatEvent] = []
+
+# Summon, transform, and draw fields.  new_unit_snapshot remains a Dictionary
+# because VisualDataAdapter and the view layer intentionally share that schema.
+var old_unit_uuid: String = ""
+var new_unit_uuid: String = ""
+var old_unit_location: LocationIdentifier
+var new_unit_snapshot: Dictionary = {}
+var spawn_source_uuid: String = ""
+var unit_tier: int = 1
+var visual_style: String = ""
+var draw_result = null # InventoryOperations.DrawResult is an inner class.
+
+# Other one-off presentation fields.
+var saved_uuid: String = ""
+var heal_amount: int = 1
+var guardian_uuid: String = ""
+var origin_uuid: String = ""
+var target_gold_amount: int = -1
+var container_tag: StringName = &""
+var slot_index: int = -1
+var is_player: bool = false
+var from_effect: StringName = &""
+var to_effect: StringName = &""
+var item_uuid: String = ""
+var item_icon_path: String = ""
+var item_name: String = "Item"
+var message: String = ""
+
+static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_max_hp: Array[int] = []) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.amount = p_amount
+	payload.stat = "hp"
+	payload.targets_old_hp = p_targets_old_hp
+	payload.targets_new_hp = p_targets_new_hp
+	payload.targets_max_hp = p_targets_max_hp
+	payload.new_hp = p_targets_new_hp[0] if not p_targets_new_hp.is_empty() else 0
+	return payload
+
+static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array[int] = [], p_targets_new_pwr: Array[int] = []) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.amount = p_amount
+	payload.stat = "pwr"
+	payload.targets_old_pwr = p_targets_old_pwr
+	payload.targets_new_pwr = p_targets_new_pwr
+	payload.new_pwr = p_targets_new_pwr[0] if not p_targets_new_pwr.is_empty() else 0
+	return payload
+
+static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array[int] = [], p_targets_new_val: Array[int] = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.amount = p_amount
+	payload.stat = p_stat
+	payload.targets_old_val = p_targets_old_val
+	payload.targets_new_val = p_targets_new_val
+	payload.new_val = p_targets_new_val[0] if not p_targets_new_val.is_empty() else 0
+	payload.status_color = p_status_color
+	return payload
+
+static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_old_armor: Array[int] = [], p_targets_new_armor: Array[int] = [], p_armor_consumed: Array[int] = []) -> CombatPayload:
+	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
+	payload.targets_old_armor = p_targets_old_armor
+	payload.targets_new_armor = p_targets_new_armor
+	payload.armor_consumed = p_armor_consumed
+	return payload
+
+static func guardian_intercept(p_guardian_uuid: String, p_original_target_uuid: String) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.guardian_uuid = p_guardian_uuid
+	payload.original_target_uuid = p_original_target_uuid
+	return payload
+
+static func container_payload(p_container_tag: StringName) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.container_tag = p_container_tag
+	return payload
+
+func deep_clone() -> CombatPayload:
+	var copy := CombatPayload.new()
+	copy.source_uuid = source_uuid
+	copy.amount = amount
+	copy.stat = stat
+	copy.skip_bump = skip_bump
+	copy.bump_direction = bump_direction
+	copy.apply_burn = apply_burn
+	copy.is_burn_damage = is_burn_damage
+	copy.attack_type = attack_type
+	copy.main_target_uuid = main_target_uuid
+	copy.original_target_uuid = original_target_uuid
+	copy.original_target_uuids = original_target_uuids.duplicate()
+	copy.projectile = projectile.deep_clone() if projectile != null else null
+	copy.targets_old_hp = targets_old_hp.duplicate()
+	copy.targets_new_hp = targets_new_hp.duplicate()
+	copy.targets_max_hp = targets_max_hp.duplicate()
+	copy.targets_old_pwr = targets_old_pwr.duplicate()
+	copy.targets_new_pwr = targets_new_pwr.duplicate()
+	copy.targets_old_burn = targets_old_burn.duplicate()
+	copy.targets_new_burn = targets_new_burn.duplicate()
+	copy.targets_old_armor = targets_old_armor.duplicate()
+	copy.targets_new_armor = targets_new_armor.duplicate()
+	copy.armor_consumed = armor_consumed.duplicate()
+	copy.targets_old_val = targets_old_val.duplicate()
+	copy.targets_new_val = targets_new_val.duplicate()
+	copy.new_hp = new_hp
+	copy.new_pwr = new_pwr
+	copy.new_val = new_val
+	copy.old_hp = old_hp
+	copy.old_pwr = old_pwr
+	copy.status_color = status_color
+	copy.is_status_damage = is_status_damage
+	copy.old_value = old_value
+	copy.new_value = new_value
+	for spikes_data in spikes_data_list:
+		copy.spikes_data_list.append(spikes_data.deep_clone())
+	for event in windup_events:
+		copy.windup_events.append(event.deep_clone())
+	for event in pre_impact_events:
+		copy.pre_impact_events.append(event.deep_clone())
+	for event in impact_events:
+		copy.impact_events.append(event.deep_clone())
+	copy.old_unit_uuid = old_unit_uuid
+	copy.new_unit_uuid = new_unit_uuid
+	copy.old_unit_location = old_unit_location
+	copy.new_unit_snapshot = new_unit_snapshot.duplicate(true)
+	copy.spawn_source_uuid = spawn_source_uuid
+	copy.unit_tier = unit_tier
+	copy.visual_style = visual_style
+	copy.draw_result = draw_result
+	copy.saved_uuid = saved_uuid
+	copy.heal_amount = heal_amount
+	copy.guardian_uuid = guardian_uuid
+	copy.origin_uuid = origin_uuid
+	copy.target_gold_amount = target_gold_amount
+	copy.container_tag = container_tag
+	copy.slot_index = slot_index
+	copy.is_player = is_player
+	copy.from_effect = from_effect
+	copy.to_effect = to_effect
+	copy.item_uuid = item_uuid
+	copy.item_icon_path = item_icon_path
+	copy.item_name = item_name
+	copy.message = message
+	return copy
+```
+
+### File: `scripts/battle/CombatProjectile.gd`
+```gdscript
+class_name CombatProjectile
+extends RefCounted
+
+## Presentation data for a ranged combat projectile.
+## Kept separate from CombatPayload so its contract is also type checked.
+
+var stat: String = "hp"
+var amount: int = 0
+var color: String = "red"
+
+func _init(p_stat: String = "hp", p_amount: int = 0, p_color: String = "red") -> void:
+	stat = p_stat
+	amount = p_amount
+	color = p_color
+
+func deep_clone() -> CombatProjectile:
+	return CombatProjectile.new(stat, amount, color)
+```
+
 ### File: `scripts/battle/CombatSimulator.gd`
 ```gdscript
 # res://scripts/battle/CombatSimulator.gd
@@ -6828,13 +7121,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			# Handle delegated damage requests (from EffectModifyStat negative HP)
 			# This routes through the proper damage pipeline with armor/burn/guardian handling
-			if not effect_result.damage_request.is_empty():
-				var dmg_data: Dictionary = effect_result.damage_request
-				var stat: String = dmg_data.get("stat", "")
-				var amount: int = dmg_data.get("amount", 0)
-				var targets: Array = dmg_data.get("targets", [])
+			if effect_result.damage_request != null:
+				var dmg_req: EffectResult.DamageRequest = effect_result.damage_request
+				var amount: int = dmg_req.amount
+				var targets: Array = dmg_req.targets
 				
-				if stat == "hp" and amount < 0 and not targets.is_empty():
+				if amount > 0 and not targets.is_empty():
 					var dmg_source: GachaBallInstance = bm.get_instance_by_uuid(request.source_uuid)
 					var resolved_targets: Array[String] = []
 					var target_display_names: Array[String] = []
@@ -6872,7 +7164,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					out_events.append_array(before_damage_evts)
 					
 					var damage_result := EffectHandlers.handle_damage_effect(
-						request, resolved_targets, dmg_source, source_name, target_display_names, amount, false, bm
+						request, dmg_req, dmg_source, source_name, target_display_names, bm
 					)
 					out_events.append_array(damage_result.events)
 					
@@ -6882,7 +7174,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					# Trigger on_hurt for damaged units
 					var on_hurt_start_index = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
-						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, dmg_req.cause)
 					
 					# Drain on_hurt reactions
 					drain_reactions_inline(on_hurt_start_index, bm)
@@ -6932,11 +7224,11 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			# TWO-PHASE PROCESSING for visual "wave" effect:
 			# Phase 1: Apply all damage + DAMAGE events in sequence
 			# Phase 2: Process all reactions (counter-attacks, on_kill) one target at a time
-			if not effect_result.cascade_request.is_empty():
-				var cascade_list = effect_result.cascade_request
+			if effect_result.cascade_request != null:
+				var cascade_req = effect_result.cascade_request
 				
 				# Phase 1: Apply all damage via EffectHandlers
-				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_list, source, bm)
+				var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_req, source, bm)
 				out_events.append_array(cascade_result.events)
 				
 				# Phase 2: Process reactions one target at a time (after all damage shown)
@@ -6947,7 +7239,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					# Trigger on_hurt for counter-attacks
 					var cascade_hurt_start = _pending_reactions.size()
-					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 					
 					# Drain on_hurt reactions for THIS target
 					drain_reactions_inline(cascade_hurt_start, bm)
@@ -6964,11 +7256,12 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			
 			# Handle kamikaze attack request (from EffectDeathDamageHighestEnemy)
 			# Creates KAMIKAZE_ATTACK event for animation + applies damage
-			if not effect_result.kamikaze_request.is_empty():
+			if effect_result.kamikaze_request != null:
 				var kamikaze_data = effect_result.kamikaze_request
-				var source_uuid: String = kamikaze_data.get("source_uuid", "")
-				var target_uuid: String = kamikaze_data.get("target_uuid", "")
-				var damage: int = kamikaze_data.get("damage", 0)
+				var source_uuid: String = kamikaze_data.source_uuid
+				var target_uuid: String = kamikaze_data.target_uuid
+				var damage: int = kamikaze_data.damage
+				var damage_type: int = kamikaze_data.damage_type
 				
 				if not target_uuid.is_empty() and damage > 0:
 					var target_inst = bm.get_instance_by_uuid(target_uuid)
@@ -6977,17 +7270,16 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						var old_armor = target_inst.get_status_effect_amount(&"armor")
 						var _old_spikes = target_inst.get_status_effect_amount(&"spikes")
 						
-						# Use apply_stat_delta to trigger Spikes (even though attacker is dead)
-						# The Spikes damage won't affect dead attacker, but stacks will decay properly
-						var damage_result = bm.apply_stat_delta(target_inst, "hp", -damage, false, source_uuid)
+						# apply_damage triggered Spikes (even though attacker is dead)
+						var damage_result = bm.apply_damage(target_inst, damage, damage_type, source_uuid)
 						
-						var new_hp: int = damage_result.get("new_hp", target_inst.current_hp) if damage_result is Dictionary else target_inst.current_hp
-						var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-						var new_armor: int = damage_result.get("new_armor", old_armor) if damage_result is Dictionary else old_armor
+						var new_hp: int = damage_result.get("new_hp", target_inst.current_hp) if not damage_result.is_empty() else target_inst.current_hp
+						var armor_consumed: int = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+						var new_armor: int = damage_result.get("new_armor", old_armor) if not damage_result.is_empty() else old_armor
 						
 						# Extract Spikes data for animation (will be shown at impact)
 						var spikes_data_list: Array[Dictionary] = []
-						if damage_result is Dictionary and damage_result.has("spikes_data"):
+						if not damage_result.is_empty() and damage_result.has("spikes_data"):
 							var spikes = damage_result["spikes_data"]
 							spikes_data_list.append({
 								"attacker_uuid": spikes["attacker_uuid"],
@@ -7008,31 +7300,23 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 								out_events.remove_at(i)
 								break
 						
-						# Create KAMIKAZE_ATTACK event for animation
+						var kamikaze_payload := CombatPayload.damage(source_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+						kamikaze_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
 						out_events.append(CombatEvent.new(CombatEvent.Type.KAMIKAZE_ATTACK, {
 							"source_uuid": source_uuid,
 							"target_uuids": [target_uuid],
-							"visual_payload": {
-								"source_uuid": source_uuid,
-								"amount": damage,
-								"targets_old_hp": [old_hp],
-								"targets_new_hp": [new_hp],
-								"targets_old_armor": [old_armor],
-								"targets_new_armor": [new_armor],
-								"armor_consumed": [armor_consumed],
-								"spikes_data_list": spikes_data_list
-							}
+							"visual_payload": kamikaze_payload
 						}))
 						
 						# Fire on_hurt trigger
-						bm.trigger_on_hurt(target_uuid, damage, source_uuid)
+						bm.trigger_on_hurt(target_uuid, damage, source_uuid, C.CAUSE_ABILITY)
 						
 						# Check for kills
 						if new_hp <= 0:
 							bm.trigger_on_kill(source_uuid, target_uuid)
 				
 				bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
-				return
+				# Removed early return here so custom events can be processed alongside damage_request
 			
 			out_events.append_array(effect_result.events)
 			
@@ -7040,8 +7324,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			if not effect_result.damaged_uuids.is_empty():
 				var result_hurt_start = _pending_reactions.size()
 				for damaged_uuid in effect_result.damaged_uuids:
-					var damage_amount: int = effect_result.events[0].visual_payload.get("amount", 0) if not effect_result.events.is_empty() else 0
-					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid)
+					var damage_amount: int = effect_result.events[0].visual_payload.amount if not effect_result.events.is_empty() else 0
+					bm.trigger_on_hurt(damaged_uuid, abs(damage_amount), request.source_uuid, C.CAUSE_ABILITY)
 				
 				drain_reactions_inline(result_hurt_start, bm)
 				var hurt_inline_evts = collect_and_clear_inline_events()
@@ -7100,7 +7384,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					
 					# Trigger on_hurt for counter-attacks
 					var cascade_hurt_start = _pending_reactions.size()
-					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid)
+					bm.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 					
 					# Drain on_hurt reactions for THIS target
 					drain_reactions_inline(cascade_hurt_start, bm)
@@ -7151,8 +7435,14 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 						var tgt = bm.get_instance_by_uuid(t)
 						target_display_names.append(BattleHelpers.get_instance_display_name(tgt))
 					
+					var fallback_dmg_type = C.DamageType.MAGIC
+					if is_instance_valid(dmg_source) and is_instance_valid(dmg_source.get_definition()):
+						if dmg_source.get_definition().category != &"TRINKET":
+							fallback_dmg_type = C.DamageType.RANGED # Default to ranged for unit-based legacy effects
+					
+					var dmg_req = EffectResult.DamageRequest.new(abs(amount), fallback_dmg_type, resolved_targets, skip_bump)
 					var damage_result := EffectHandlers.handle_damage_effect(
-						request, resolved_targets, dmg_source, source_name, target_display_names, amount, skip_bump, bm
+						request, dmg_req, dmg_source, source_name, target_display_names, bm
 					)
 					out_events.append_array(damage_result.events)
 					
@@ -7162,7 +7452,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 					# CRITICAL: Trigger on_hurt AFTER apply_stat_delta so condition checks see post-damage HP
 					var single_hurt_start = _pending_reactions.size()
 					for tgt_uuid in damage_result.damaged_uuids:
-						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid)
+						bm.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, dmg_req.cause)
 					
 					# AEGIS FIX: Drain on_hurt effects BEFORE death check
 					drain_reactions_inline(single_hurt_start, bm)
@@ -7337,6 +7627,9 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
+		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
+		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+		
 		# Drain reactions immediately so summon abilities execute before the summoned unit acts
 		while not _pending_reactions.is_empty():
 			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
@@ -7379,21 +7672,87 @@ func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm,
 		if event.ability_holder_uuid != request.source_uuid:
 			continue
 			
-		event.trinket_activations.append({
-			"visual_uuid": visual_uuid,
-			"definition_id": source.definition_id,
-			"is_enemy": is_enemy_trinket
-		})
+		event.trinket_activations.append(CombatTrinketActivation.new(source.definition_id, is_enemy_trinket, visual_uuid))
 
 # ============================================================================
 # CLEANUP
 # ============================================================================
+
+func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
+	return result
 
 func clear() -> void:
 	_actor_queue.clear()
 	_pending_reactions.clear()
 	_inline_events.clear()
 	_is_processing_effect = false
+```
+
+### File: `scripts/battle/CombatSpikesData.gd`
+```gdscript
+class_name CombatSpikesData
+extends RefCounted
+
+## A single Spikes reflection resolved by the simulator and displayed at impact.
+
+var attacker_uuid: String = ""
+var defender_uuid: String = ""
+var spikes_damage: int = 0
+var attacker_old_hp: int = 0
+var attacker_new_hp: int = 0
+var attacker_max_hp: int = 0
+var old_spikes: int = 0
+var new_spikes: int = 0
+var armor_consumed: int = 0
+var new_armor: int = 0
+
+func deep_clone() -> CombatSpikesData:
+	var copy := CombatSpikesData.new()
+	copy.attacker_uuid = attacker_uuid
+	copy.defender_uuid = defender_uuid
+	copy.spikes_damage = spikes_damage
+	copy.attacker_old_hp = attacker_old_hp
+	copy.attacker_new_hp = attacker_new_hp
+	copy.attacker_max_hp = attacker_max_hp
+	copy.old_spikes = old_spikes
+	copy.new_spikes = new_spikes
+	copy.armor_consumed = armor_consumed
+	copy.new_armor = new_armor
+	return copy
+```
+
+### File: `scripts/battle/CombatTrinketActivation.gd`
+```gdscript
+class_name CombatTrinketActivation
+extends RefCounted
+
+## Identifies one trinket activation to be shown alongside a CombatEvent.
+
+var visual_uuid: String = ""
+var definition_id: StringName = &""
+var is_enemy: bool = false
+
+func _init(p_definition_id: StringName = &"", p_is_enemy: bool = false, p_visual_uuid: String = "") -> void:
+	definition_id = p_definition_id
+	is_enemy = p_is_enemy
+	visual_uuid = p_visual_uuid
+
+func deep_clone() -> CombatTrinketActivation:
+	return CombatTrinketActivation.new(definition_id, is_enemy, visual_uuid)
 ```
 
 ### File: `scripts/battle/DeathProcessor.gd`
@@ -7517,7 +7876,7 @@ static func create_death_event_if_needed(unit_uuid: String, death_tracking: Dict
 	death_tracking[unit_uuid] = true
 	return CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {"container_tag": container_tag}
+		"visual_payload": CombatPayload.container_payload(container_tag)
 	})
 
 # ============================================================================
@@ -7644,6 +8003,9 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
+			
+			# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		else:
 			# Still has pending counter-attacks, keep deferred
 			remaining_deferred.append(uuid)
@@ -7676,7 +8038,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {"container_tag": unit.location_container_tag}
+					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -7711,7 +8073,7 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {"container_tag": unit.location_container_tag}
+					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -7922,7 +8284,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var insert_index = cascade_evts.size()
 		for i in range(cascade_evts.size()):
 			var type = cascade_evts[i].type
-			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM or type == CombatEvent.Type.ITEM_TRANSFER:
+			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM:
 				insert_index = i
 				break
 				
@@ -7938,7 +8300,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var kamikaze_sources: Array[String] = []
 		for evt in out_events:
 			if evt.type == CombatEvent.Type.KAMIKAZE_ATTACK:
-				var src = evt.visual_payload.get("source_uuid", "")
+				var src = evt.visual_payload.source_uuid
 				if not src.is_empty():
 					kamikaze_sources.append(src)
 		
@@ -8106,12 +8468,12 @@ static func find_empty_slot_in_container(container: DataContainer) -> int:
 
 ## Create a summon event
 static func create_summon_event(unit_uuid: String, slot_index: int, is_player: bool) -> CombatEvent:
+	var payload := CombatPayload.new()
+	payload.slot_index = slot_index
+	payload.is_player = is_player
 	return CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {
-			"slot_index": slot_index,
-			"is_player": is_player
-		}
+		"visual_payload": payload
 	})
 
 ## UNIFIED SLOT FINDER
@@ -8203,13 +8565,7 @@ static func handle_burn_stacks(
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "burn_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(request.source_uuid, amount, "burn_stacks", targets_old_val, targets_new_val)
 	})
 
 # ============================================================================
@@ -8235,15 +8591,17 @@ class DamageResult:
 ## Returns DamageResult with events and damaged_uuids for trigger callbacks
 static func handle_damage_effect(
 	request: EffectRequest,
-	resolved_targets: Array[String],
+	damage_req: EffectResult.DamageRequest,
 	source: GachaBallInstance,
 	source_name: String,
 	target_names: Array[String],
-	amount: int,
-	skip_bump: bool,
 	battle_manager: Node
 ) -> DamageResult:
 	var result := DamageResult.new()
+	var amount = damage_req.amount
+	var skip_bump = damage_req.skip_bump
+	var resolved_targets = damage_req.targets
+	var damage_type = damage_req.damage_type
 	
 	# Log message
 	# Log message moved inside loop to report actual damage (varying per target)
@@ -8254,30 +8612,18 @@ static func handle_damage_effect(
 	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
-	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	elif request.trigger_context.has("team"):
 		is_player_source = (String(request.trigger_context.get("team")) == "PLAYER")
 	
-	# 1. Trinket: Burn Vial (Team-wide)
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		burn_from_trinket = true
-		
-	# 2. Fire Trait Logic
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
+	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
 	
-		# Fire 3: Apply Burn
-	if fire_level >= 3:
-		# Check if source is a Fire unit
-		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-			burn_amount += 1
-			# Fire 5: Extra Burn Stack (Total 2)
-			if fire_level >= 5:
-				burn_amount += 1
+	if is_instance_valid(source):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
 			
 	var should_apply_burn = burn_amount > 0
 	
@@ -8339,21 +8685,24 @@ static func handle_damage_effect(
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var original_tgt_uuid = tgt_uuid
 		var actual_damage = abs(damage_to_apply)
-		var would_be_lethal = tgt.current_hp - actual_damage <= 0
+		var predicted_hp_damage = actual_damage
+		if damage_type != C.DamageType.BURN:
+			var target_armor = tgt.get_status_effect_amount(&"armor")
+			predicted_hp_damage = max(0, actual_damage - target_armor)
+			
+		var would_be_lethal = tgt.current_hp - predicted_hp_damage <= 0
 		var tgt_is_player_unit = battle_manager._is_player_unit(tgt)
 		var is_ally_damage = (tgt_is_player_unit != is_player_source)
 		
-		if would_be_lethal and is_ally_damage:
+		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
+		
+		if would_be_lethal and is_ally_damage and can_intercept:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
 			if is_instance_valid(guardian):
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [tgt_uuid],
-					"visual_payload": {
-						"guardian_uuid": guardian.ball_uuid,
-						"original_target_uuid": tgt_uuid,
-						"damage": actual_damage
-					}
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, tgt_uuid)
 				}))
 				tgt_uuid = guardian.ball_uuid
 				tgt = guardian
@@ -8389,13 +8738,13 @@ static func handle_damage_effect(
 			else:
 				attacker_uuid_for_spikes = source.ball_uuid
 		
-		# CENTRALIZED ARMOR: apply_stat_delta now handles armor mitigation automatically
+		# CENTRALIZED ARMOR: apply_damage now handles armor mitigation automatically
 		# It returns a dictionary with armor data for animations
 		# Also handles Spikes reflection if attacker_uuid is provided
-		var damage_result = battle_manager.apply_stat_delta(tgt, "hp", damage_to_apply, false, attacker_uuid_for_spikes)
+		var damage_result = battle_manager.apply_damage(tgt, abs(damage_to_apply), damage_type, attacker_uuid_for_spikes)
 		
 		# Skip if target was already dead
-		if damage_result == null:
+		if damage_result.is_empty():
 			continue
 		
 		# Extract data from the damage result dictionary
@@ -8486,47 +8835,35 @@ static func handle_damage_effect(
 			bump_dir = Vector2(-1, 0)
 			
 	var attack_type := "trinket" if is_trinket else "melee"
+	if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+		attack_type = "ranged"
 	
-	var t_acts = []
+	var t_acts: Array[CombatTrinketActivation] = []
 	if burn_from_trinket:
-		t_acts.append({
-			"definition_id": &"trinket_burn_vial",
-			"is_enemy": not is_player_source
-		})
+		t_acts.append(CombatTrinketActivation.new(&"trinket_burn_vial", not is_player_source))
 		
 	# Add DAMAGE event with ARMOR data included for unified animation
-	result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+	var damage_payload := CombatPayload.damage(animation_source_uuid, amount, targets_old_hp, targets_new_hp, targets_old_armor, targets_new_armor, armor_consumed_list)
+	damage_payload.targets_max_hp = targets_max_hp
+	damage_payload.targets_old_burn = targets_old_burn
+	damage_payload.targets_new_burn = targets_new_burn
+	damage_payload.apply_burn = should_apply_burn
+	damage_payload.skip_bump = skip_bump
+	damage_payload.bump_direction = bump_dir
+	damage_payload.attack_type = attack_type
+	damage_payload.original_target_uuids = original_target_uuids
+	damage_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+	damage_payload.projectile = CombatProjectile.new("hp", amount, "red")
+	var damage_event := CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": result.damaged_uuids,
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": animation_source_uuid,
-			"amount": amount,
-			"stat": "hp",
-			"skip_bump": skip_bump,
-			"bump_direction": bump_dir,
-			"apply_burn": should_apply_burn,
-			"targets_old_hp": targets_old_hp,
-			"targets_new_hp": targets_new_hp,
-			"targets_max_hp": targets_max_hp,
-			"targets_old_burn": targets_old_burn,
-			"targets_new_burn": targets_new_burn,
-			"targets_old_armor": targets_old_armor,
-			"targets_new_armor": targets_new_armor,
-			"armor_consumed": armor_consumed_list,
-			"attack_type": attack_type,
-			"original_target_uuids": original_target_uuids,
-			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
-			"projectile_data": {
-				"stat": "hp",
-				"amount": amount,
-				"color": "red"
-			},
-			"trinket_activations": t_acts
-		}
-	}))
+		"visual_payload": damage_payload
+	})
+	damage_event.trinket_activations = t_acts
+	result.events.append(damage_event)
 	
 	return result
 
@@ -8551,46 +8888,38 @@ class CascadeResult:
 ## Returns CascadeResult with events and hit_targets for Phase 2 callbacks
 static func handle_cascade_damage(
 	request: EffectRequest,
-	cascade_list: Array,
+	cascade_req: EffectResult.CascadeRequest,
 	source: GachaBallInstance,
 	battle_manager: Node
 ) -> CascadeResult:
 	var result := CascadeResult.new()
+	var damage_type = cascade_req.damage_type
+	var cascade_list = cascade_req.items
 	
 	# Check if burn should be applied
-	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
 	var burn_amount := 0
-	var burn_from_trinket := false
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	
-	# 1. Trinket: Burn Vial (Team-wide)
-	if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-		burn_amount += 1
-		burn_from_trinket = true
-		
-	# 2. Fire Trait: 3+ Souls -> Fire units apply Burn
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	var fire_level = active_traits.get("FIRE", 0)
-	if fire_level >= 3:
-		if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-			burn_amount += 1
-			# Fire 5: Extra Burn Stack (Total 2)
-			if fire_level >= 5:
-				burn_amount += 1
+	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
+	
+	if is_instance_valid(source):
+		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
 			
 	var should_apply_burn = burn_amount > 0
 	
 	# Process each cascade target
 	for cascade_item in cascade_list:
-		var cascade_target_uuid := String(cascade_item.get("target", ""))
-		var cascade_amount := int(cascade_item.get("amount", 0))
-		var cascade_skip_bump := bool(cascade_item.get("skip_bump", false))
+		var cascade_target_uuid: String = cascade_item.target
+		var cascade_amount: int = cascade_item.amount
+		var cascade_skip_bump: bool = cascade_item.skip_bump
 		
 		# Store original target for animation (in case Guardian redirects)
-		var original_target_uuid := cascade_target_uuid
+		var original_target_uuid: String = cascade_target_uuid
 		
 		var cascade_tgt: GachaBallInstance = battle_manager.get_instance_by_uuid(cascade_target_uuid)
 		if not is_instance_valid(cascade_tgt):
@@ -8611,21 +8940,24 @@ static func handle_cascade_damage(
 					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
-		var would_be_lethal: bool = cascade_tgt.current_hp - cascade_amount <= 0
+		var predicted_hp_damage = cascade_amount
+		if damage_type != C.DamageType.BURN:
+			var target_armor = cascade_tgt.get_status_effect_amount(&"armor")
+			predicted_hp_damage = max(0, cascade_amount - target_armor)
+			
+		var would_be_lethal: bool = cascade_tgt.current_hp - predicted_hp_damage <= 0
 		var tgt_is_player_unit: bool = battle_manager._is_player_unit(cascade_tgt)
 		var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
 		
-		if would_be_lethal and is_ally_damage:
+		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
+		
+		if would_be_lethal and is_ally_damage and can_intercept:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
 			if is_instance_valid(guardian):
 				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 					"source_uuid": guardian.ball_uuid,
 					"target_uuids": [cascade_target_uuid],
-					"visual_payload": {
-						"guardian_uuid": guardian.ball_uuid,
-						"original_target_uuid": cascade_target_uuid,
-						"damage": cascade_amount
-					}
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, cascade_target_uuid)
 				}))
 				cascade_target_uuid = guardian.ball_uuid
 				cascade_tgt = guardian
@@ -8642,12 +8974,12 @@ static func handle_cascade_damage(
 			else:
 				attacker_uuid_for_spikes = source.ball_uuid
 		
-		# apply_stat_delta now returns a dictionary with armor mitigation data
+		# apply_damage now returns a dictionary with armor mitigation data
 		# Also handles Spikes reflection if attacker_uuid is provided
-		var damage_result = battle_manager.apply_stat_delta(cascade_tgt, "hp", -cascade_amount, false, attacker_uuid_for_spikes)
+		var damage_result = battle_manager.apply_damage(cascade_tgt, cascade_amount, damage_type, attacker_uuid_for_spikes)
 		
-		# Skip if target was already dead (apply_stat_delta returns null)
-		if damage_result == null:
+		# Skip if target was already dead (apply_damage returns empty dict)
+		if damage_result.is_empty():
 			continue
 		
 		# Extract data from the damage result dictionary
@@ -8722,48 +9054,35 @@ static func handle_cascade_damage(
 				bump_dir = Vector2(-1, 0)
 		
 		var attack_type := "trinket" if is_trinket else "melee"
+		if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+			attack_type = "ranged"
 		
-		var t_acts = []
+		var t_acts: Array[CombatTrinketActivation] = []
 		if burn_from_trinket:
-			t_acts.append({
-				"definition_id": &"trinket_burn_vial",
-				"is_enemy": not is_player_source
-			})
+			t_acts.append(CombatTrinketActivation.new(&"trinket_burn_vial", not is_player_source))
 			
-		var payload = {
-			"source_uuid": animation_source_uuid,
-			"amount": - cascade_amount,
-			"stat": "hp",
-			"skip_bump": cascade_skip_bump,
-			"bump_direction": bump_dir,
-			"apply_burn": should_apply_burn,
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [max_hp],
-			"targets_old_burn": [old_burn],
-			"targets_new_burn": [burn_val],
-			"targets_old_armor": [old_armor],
-			"targets_new_armor": [new_armor],
-			"armor_consumed": [armor_consumed],
-			"attack_type": attack_type,
-			"original_target_uuid": original_target_uuid,
-			"spikes_data_list": spikes_data_list, # Spikes damage applied at impact moment
-			"projectile_data": {
-				"stat": "hp",
-				"amount": - cascade_amount,
-				"color": "red"
-			},
-			"trinket_activations": t_acts
-		}
+		var payload := CombatPayload.damage(animation_source_uuid, -cascade_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+		payload.targets_max_hp = [max_hp]
+		payload.targets_old_burn = [old_burn]
+		payload.targets_new_burn = [burn_val]
+		payload.apply_burn = should_apply_burn
+		payload.skip_bump = cascade_skip_bump
+		payload.bump_direction = bump_dir
+		payload.attack_type = attack_type
+		payload.original_target_uuid = original_target_uuid
+		payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+		payload.projectile = CombatProjectile.new("hp", -cascade_amount, "red")
 		
-		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+		var cascade_event := CombatEvent.new(CombatEvent.Type.DAMAGE, {
 			"source_uuid": request.source_uuid,
 			"target_uuids": [cascade_target_uuid],
 			"ability_id": request.ability_id,
 			"trigger_type": "cascade_damage",
 			"ability_holder_uuid": request.source_uuid,
 			"visual_payload": payload
-		}))
+		})
+		cascade_event.trinket_activations = t_acts
+		result.events.append(cascade_event)
 		
 		# Track for Phase 2 reactions
 		result.hit_targets.append({
@@ -8841,9 +9160,19 @@ static func handle_summon_unit(
 		return result
 	
 	# Create new instance
-	var new_inst := GachaBallInstance.new()
-	new_inst.initialize(unit_def)
-	new_inst.reset_battle_stats_silent()
+	var new_inst: GachaBallInstance = null
+	
+	if effect_data.has("copy_from_uuid"):
+		var copy_source = battle_manager.get_instance_by_uuid(effect_data.get("copy_from_uuid"))
+		if is_instance_valid(copy_source):
+			new_inst = copy_source.create_battle_copy(battle_manager.get_all_instances())
+			new_inst.equipped_item_uuids.fill("") # Clones should not steal the original's items
+			new_inst.reset_battle_stats_silent() # Restores HP/PWR to max base + persistent modifiers
+
+	if not is_instance_valid(new_inst):
+		new_inst = GachaBallInstance.new()
+		new_inst.initialize(unit_def)
+		new_inst.reset_battle_stats_silent()
 	
 	# 2. Add to result for BattleManager to register
 	result.new_instances.append(new_inst)
@@ -8935,20 +9264,14 @@ static func handle_summon_unit(
 	if final_location.container != holder_location.container or final_location.index != holder_location.index:
 		final_old_uuid = ""
 		
+	var summon_payload := _make_summon_payload(final_old_uuid, new_inst.ball_uuid, final_location, snapshot, String(effect_data.get("spawn_source_uuid", "")), int(effect_data.get("unit_tier", 1)))
 	result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": [new_inst.ball_uuid],
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"old_unit_uuid": final_old_uuid,
-			"new_unit_uuid": new_inst.ball_uuid,
-			"old_unit_location": final_location,
-			"new_unit_snapshot": snapshot,
-			"spawn_source_uuid": effect_data.get("spawn_source_uuid", ""),
-			"unit_tier": effect_data.get("unit_tier", 1)
-		}
+		"visual_payload": summon_payload
 	}))
 	
 	return result
@@ -9041,18 +9364,14 @@ static func handle_summon_units(
 		
 		# Create SUMMON event
 		var snapshot := create_unit_snapshot(new_unit, unit_def)
+		var boss_summon_payload := _make_summon_payload("", new_unit.ball_uuid, summon_loc, snapshot)
 		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 			"source_uuid": request.source_uuid,
 			"target_uuids": [new_unit.ball_uuid],
 			"ability_id": request.ability_id,
 			"trigger_type": request.trigger_context.get("trigger_type", ""),
 			"ability_holder_uuid": request.source_uuid,
-			"visual_payload": {
-				"old_unit_uuid": "", # No old unit for boss summons
-				"new_unit_uuid": new_unit.ball_uuid,
-				"old_unit_location": summon_loc,
-				"new_unit_snapshot": snapshot
-			}
+			"visual_payload": boss_summon_payload
 		}))
 	
 	return result
@@ -9091,9 +9410,7 @@ static func handle_mirror_transform(
 	# 2. Visual Event (Transform: Hop & Vanish)
 	result.events.append(CombatEvent.new(CombatEvent.Type.TRANSFORM, {
 		"target_uuids": [self_uuid],
-		"visual_payload": {
-			"style": "yellow_flash"
-		}
+		"visual_payload": _make_transform_payload()
 	}))
 	
 	# 3. State Mutation: Preserve items for the new unit
@@ -9149,12 +9466,8 @@ static func handle_mirror_transform(
 		var is_player = battle_manager._is_player_unit(new_unit)
 		
 		# Construct robust SUMMON event with visual style
-		var summon_payload = {
-			"visual_style": "yellow_flash",
-			"new_unit_uuid": new_unit.ball_uuid,
-			"old_unit_location": my_loc, # Used by Animator to find the slot
-			"new_unit_snapshot": VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances())
-		}
+		var summon_payload := _make_summon_payload("", new_unit.ball_uuid, my_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
+		summon_payload.visual_style = "yellow_flash"
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 			"target_uuids": [new_unit.ball_uuid],
@@ -9164,6 +9477,38 @@ static func handle_mirror_transform(
 			"text": "%s appeared!" % [BattleHelpers.get_definition_display_name(new_def)]
 		}))
 			
+	return result
+
+static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.old_unit_uuid = old_unit_uuid
+	payload.new_unit_uuid = new_unit_uuid
+	payload.old_unit_location = old_unit_location
+	payload.new_unit_snapshot = new_unit_snapshot
+	payload.spawn_source_uuid = spawn_source_uuid
+	payload.unit_tier = unit_tier
+	return payload
+
+static func _make_transform_payload() -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.visual_style = "yellow_flash"
+	return payload
+
+static func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
 	return result
 ```
 
@@ -9198,6 +9543,56 @@ var killed_uuids: Array[String] = []
 var healed_events: Array[Dictionary] = []
 
 # ============================================================================
+# DTO CLASSES
+# ============================================================================
+
+class DamageRequest extends RefCounted:
+	var amount: int
+	var damage_type: int
+	var targets: Array[String]
+	var skip_bump: bool
+	var cause: StringName
+	
+	func _init(p_amount: int, p_damage_type: int, p_targets: Array[String], p_skip_bump: bool = false, p_cause: StringName = &"CAUSE_ATTACK"):
+		amount = p_amount
+		damage_type = p_damage_type
+		targets = p_targets
+		skip_bump = p_skip_bump
+		cause = p_cause
+
+class CascadeRequestItem extends RefCounted:
+	var target: String
+	var amount: int
+	var skip_bump: bool
+	
+	func _init(p_target: String, p_amount: int, p_skip_bump: bool = false):
+		target = p_target
+		amount = p_amount
+		skip_bump = p_skip_bump
+
+class CascadeRequest extends RefCounted:
+	var damage_type: int
+	var items: Array[CascadeRequestItem]
+	
+	func _init(p_damage_type: int, p_items: Array[CascadeRequestItem]):
+		damage_type = p_damage_type
+		items = p_items
+
+class KamikazeRequest extends RefCounted:
+	var source_uuid: String
+	var target_uuid: String
+	var damage: int
+	var damage_type: int
+	var dying_max_hp: int
+	
+	func _init(p_source_uuid: String, p_target_uuid: String, p_damage: int, p_damage_type: int, p_dying_max_hp: int):
+		source_uuid = p_source_uuid
+		target_uuid = p_target_uuid
+		damage = p_damage
+		damage_type = p_damage_type
+		dying_max_hp = p_dying_max_hp
+
+# ============================================================================
 # STATE FLAGS
 # ============================================================================
 
@@ -9210,8 +9605,7 @@ var skip_death_check: bool = false
 
 ## Delegated damage data for CombatSimulator to process via EffectHandlers.
 ## When set, CombatSimulator should call handle_damage_effect with this data.
-## Format: {stat: "hp", amount: negative_int, targets: Array[String]}
-var damage_request: Dictionary = {}
+var damage_request: DamageRequest = null
 
 ## Summon request data for CombatSimulator to process via EffectHandlers.
 ## Format: {summon_unit_id: StringName, holder_uuid: String, holder_location: LocationIdentifier, ...}
@@ -9225,12 +9619,10 @@ var summon_units_request: Array = []
 var summon_team: String = ""
 
 ## Cascade damage request for AOE effects like Shockwave.
-## Format: [{target: uuid, amount: int, skip_bump: bool}, ...]
-var cascade_request: Array = []
+var cascade_request: CascadeRequest = null
 
 ## Kamikaze attack request for Death's Bargain on-death effect.
-## Format: {source_uuid: String, target_uuid: String, damage: int, dying_max_hp: int}
-var kamikaze_request: Dictionary = {}
+var kamikaze_request: KamikazeRequest = null
 
 ## Transform request for Mimic effect.
 ## Format: {self_uuid: String, target_unit_id: StringName}
@@ -10469,22 +10861,18 @@ static func process_burn_damage(state: BattleState, get_display_name_callback: C
 			events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_burn_damage": true,
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp],
-					"targets_old_armor": [old_armor],
-					"targets_new_armor": [new_armor],
-					"armor_consumed": [armor_consumed]
-				}
+				"visual_payload": _make_burn_payload(damage, old_hp, new_hp, max_hp, old_armor, new_armor, armor_consumed)
 			}))
 
 	
 	return events
+
+static func _make_burn_payload(damage: int, old_hp: int, new_hp: int, max_hp: int, old_armor: int, new_armor: int, armor_consumed: int) -> CombatPayload:
+	var payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+	payload.skip_bump = true
+	payload.is_burn_damage = true
+	payload.targets_max_hp = [max_hp]
+	return payload
 
 # ============================================================================
 # TURN END ABILITIES
@@ -10520,14 +10908,15 @@ static func trigger_on_damage_dealt(actual_attacker_uuid: String, victim_uuid: S
 ## @param victim_team: String - "PLAYER" or "ENEMY"
 ## @param victim_current_hp: int - The victim's current HP after damage
 ## @param cause: StringName - The cause of damage (C.CAUSE_ATTACK, etc.)
-static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName) -> void:
+static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName, status_id: StringName = &"") -> void:
 	var hurt_context: Dictionary = {
 		"victim_uuid": victim_uuid,
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid,
 		"victim_team": victim_team,
 		"victim_current_hp": victim_current_hp,
-		"trigger_cause": cause
+		"trigger_cause": cause,
+		"status_id": status_id
 	}
 	AbilityResolver.process_trigger(&"on_hurt", hurt_context)
 
@@ -10618,6 +11007,7 @@ static func trigger_on_healed(healed_uuid: String, heal_amount: int, healer_uuid
 extends Node
 
 signal turn_animation_finished
+signal all_chains_finished
 
 const ANIM_TIMEOUT_DURATION = 1.1
 const BUMP_DURATION = 0.5
@@ -10671,9 +11061,11 @@ func play_async_chain(chain_events: Array[CombatEvent], snapshot: Dictionary = {
 	await _animate_events(chain_events)
 	
 	_active_async_chains -= 1
-	if _active_async_chains == 0 and not _is_playing_sequence:
-		_visual_registry.clear()
-		_position_snapshot.clear()
+	if _active_async_chains == 0:
+		emit_signal("all_chains_finished")
+		if not _is_playing_sequence:
+			_visual_registry.clear()
+			_position_snapshot.clear()
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	_is_playing_sequence = true
@@ -10695,7 +11087,7 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	for event in turn_log:
 		if event.type == CombatEvent.Type.TOKEN_GAIN:
 			var payload = event.visual_payload
-			total_tokens_gained_in_log += int(payload.get("amount", 0))
+			total_tokens_gained_in_log += payload.amount
 	_visual_gacha_tokens = final_tokens - total_tokens_gained_in_log
 	
 	_register_all_puppets(start_snapshot)
@@ -10744,6 +11136,8 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 							var gacha_view: GachaBallView = null
 							var fallback_view: GachaBallView = null
 							for child in slot_view.get_children():
+								if child.is_queued_for_deletion():
+									continue
 								if child is GachaBallView:
 									var candidate: GachaBallView = child
 									if not is_instance_valid(fallback_view):
@@ -10835,7 +11229,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		
 		_play_trinket_activations_for_event(event)
 		if event.type == CombatEvent.Type.LOG_MESSAGE:
-			var has_trinket = event.trinket_activations.size() > 0 or event.visual_payload.has("trinket_activations")
+			var has_trinket = event.trinket_activations.size() > 0
 			if has_trinket:
 				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
 				await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
@@ -10856,7 +11250,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.DRAW:
 				var payload = event.visual_payload
-				var draw_result = payload.get("draw_result")
+				var draw_result = payload.draw_result
 				if draw_result:
 					SignalBus.emit_signal("gacha_draw_animated", draw_result)
 					await AnimationConstants.create_pausable_timer(get_tree(), 0.45 / AnimationConstants.speed_factor).timeout
@@ -10889,7 +11283,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 										child.queue_free()
 							
 							slot_view.add_child(new_view)
-							var new_snapshot = payload.get("new_unit_snapshot", {})
+							var new_snapshot = payload.new_unit_snapshot
 							if not new_snapshot.is_empty():
 								var new_location = LocationIdentifier.new(container_tag, index)
 								new_view.populate(new_location, new_snapshot, false)
@@ -10963,10 +11357,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.SUMMON:
 				var payload = event.visual_payload
-				var new_unit_uuid = payload.get("new_unit_uuid", "")
-				var old_location = payload.get("old_unit_location")
-				var spawn_source_uuid = payload.get("spawn_source_uuid", "")
-				var unit_tier = int(payload.get("unit_tier", 1))
+				var new_unit_uuid = payload.new_unit_uuid
+				var old_location = payload.old_unit_location
+				var spawn_source_uuid = payload.spawn_source_uuid
+				var unit_tier = payload.unit_tier
 				
 				var container_tag = old_location.container if old_location else &""
 				var index = old_location.index if old_location else -1
@@ -10990,7 +11384,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						anim_capsule.anchors_preset = Control.PRESET_TOP_LEFT
 						anim_capsule.set_size_scale(1.0)
 						anim_capsule.force_inventory_mode = true
-						var new_snapshot = payload.get("new_unit_snapshot", {})
+						var new_snapshot = payload.new_unit_snapshot
 						anim_capsule.populate(null, new_snapshot)
 						
 						var initial_scale := 0.3
@@ -11017,8 +11411,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						await tween.finished
 						anim_capsule.queue_free()
 						Audio.play_sfx("coin_land")
-						if main_node.has_method("trigger_machine_bounce"):
-							main_node.trigger_machine_bounce(unit_tier)
+						if main_node.has_method("animate_machine_inventory_change"):
+							main_node.animate_machine_inventory_change(unit_tier, 1)
 						arc_completed = true
 
 				if not is_inventory_summon and is_instance_valid(battle_view):
@@ -11033,7 +11427,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						var new_view = preload("res://scenes/GachaBallView.tscn").instantiate()
 						
 						var has_existing_unit := false
-						var old_unit_uuid = payload.get("old_unit_uuid", "")
+						var old_unit_uuid = payload.old_unit_uuid
 						for child in slot_view.get_children():
 							if child.is_queued_for_deletion():
 								continue
@@ -11051,7 +11445,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 									child.queue_free()
 									
 						slot_view.add_child(new_view)
-						var new_snapshot = payload.get("new_unit_snapshot", {})
+						var new_snapshot = payload.new_unit_snapshot
 						if not new_snapshot.is_empty():
 							var new_location = LocationIdentifier.new(container_tag, index)
 							new_view.populate(new_location, new_snapshot, false)
@@ -11107,16 +11501,16 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.GOLD_GAIN:
 				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				var origin_uuid = payload.get("origin_uuid", "")
-				var target_gold_amount = payload.get("target_gold_amount", -1)
+				var amount = payload.amount
+				var origin_uuid = payload.origin_uuid
+				var target_gold_amount = payload.target_gold_amount
 				if has_method("_animate_gold_gain"):
 					await _animate_gold_gain(origin_uuid, amount, target_gold_amount)
 
 			CombatEvent.Type.TOKEN_GAIN:
 				var payload = event.visual_payload
-				var amount = int(payload.get("amount", 0))
-				var origin_uuid = payload.get("origin_uuid", "")
+				var amount = payload.amount
+				var origin_uuid = payload.origin_uuid
 				if has_method("_animate_token_gain"):
 					await _animate_token_gain(origin_uuid, amount)
 
@@ -11130,9 +11524,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 			CombatEvent.Type.SLOT_EFFECT_CHANGE:
 				var payload = event.visual_payload
-				var container_tag: StringName = payload.get("container_tag", &"")
-				var slot_index: int = int(payload.get("slot_index", -1))
-				var to_effect: StringName = payload.get("to_effect", &"")
+				var container_tag: StringName = payload.container_tag
+				var slot_index: int = payload.slot_index
+				var to_effect: StringName = payload.to_effect
 				if has_method("_get_slot_view"):
 					var slot_view = _get_slot_view(container_tag, slot_index)
 					if is_instance_valid(slot_view) and slot_view.has_method("animate_slot_effect_change"):
@@ -11195,6 +11589,17 @@ func get_snapshot_position(uuid: String) -> Dictionary:
 		
 	return {}
 
+func get_live_position(uuid: String) -> Dictionary:
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.is_inside_tree():
+		var rect = view.get_global_rect()
+		return {
+			"position": rect.position,
+			"size": rect.size,
+			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+		}
+	return get_snapshot_position(uuid)
+
 func register_dynamic_position(uuid: String, view) -> void:
 	if is_instance_valid(view):
 		var rect = view.get_global_rect()
@@ -11206,39 +11611,35 @@ func register_dynamic_position(uuid: String, view) -> void:
 		_visual_registry[uuid] = view
 
 func _play_trinket_activations_for_event(event: CombatEvent) -> void:
-	var activations: Array = []
-	
-	# Primary: new strongly typed array
-	if event.trinket_activations.size() > 0:
-		for act in event.trinket_activations:
-			activations.append(act)
-	
-	# Fallback: legacy visual payload keys
-	var payload: Dictionary = event.visual_payload
-	if payload.has("trinket_activations"):
-		var raw_activations = payload.get("trinket_activations", [])
-		if raw_activations is Array:
-			for raw_activation in raw_activations:
-				if raw_activation is Dictionary:
-					activations.append(raw_activation)
-	elif payload.has("trinket_visual_uuid") or payload.has("trinket_definition_id"):
-		activations.append({
-			"visual_uuid": String(payload.get("trinket_visual_uuid", "")),
-			"definition_id": StringName(payload.get("trinket_definition_id", &"")),
-			"is_enemy": bool(payload.get("trinket_is_enemy", false))
-		})
-	
-	for activation in activations:
+	for activation in event.trinket_activations:
+		var act_visual_uuid := activation.visual_uuid
 		play_trinket_activation(
-			String(activation.get("visual_uuid", "")),
-			StringName(activation.get("definition_id", &"")),
-			bool(activation.get("is_enemy", false))
+			act_visual_uuid,
+			activation.definition_id,
+			activation.is_enemy
 		)
+		# The trinket activation registers the view under visual_uuid (origin UUID).
+		# The BUFF/DAMAGE event's visual_payload.source_uuid may be the combat UUID,
+		# which is different. Register the same view under that UUID too so the
+		# projectile in BuffAnimation can locate its source.
+		var event_source_uuid := event.visual_payload.source_uuid
+		if not event_source_uuid.is_empty() and event_source_uuid != act_visual_uuid:
+			var snap = get_snapshot_position(act_visual_uuid)
+			if not snap.is_empty():
+				_position_snapshot[event_source_uuid] = snap
+				# Also copy the visual registry entry
+				var view_ref = _visual_registry.get(act_visual_uuid)
+				if is_instance_valid(view_ref):
+					_visual_registry[event_source_uuid] = view_ref
 		# No await timer here to allow concurrent playback
 
 func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
 	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
 	if is_instance_valid(view):
+		# Register the trinket view in the position snapshot so subsequent
+		# BuffAnimation / DamageAnimation projectiles can locate it as a source.
+		if not visual_uuid.is_empty():
+			register_dynamic_position(visual_uuid, view)
 		if view.has_method("play_trinket_activation_bounce"):
 			view.play_trinket_activation_bounce()
 		elif view.has_method("play_landing_bounce"):
@@ -11253,8 +11654,10 @@ func _find_trinket_view(visual_uuid: String, trinket_definition_id: StringName, 
 	var trinket_views := _get_trinket_views_from_tree()
 	if not visual_uuid.is_empty():
 		for view in trinket_views:
-			if is_instance_valid(view) and view.get_instance_uuid() == visual_uuid:
-				return view
+			if is_instance_valid(view):
+				var v_uuid = view.get_instance_uuid()
+				if v_uuid == visual_uuid or visual_uuid.begins_with(v_uuid + "_"):
+					return view
 	if trinket_definition_id != &"":
 		for view in trinket_views:
 			if is_instance_valid(view):
@@ -11348,25 +11751,25 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 	
 	match event.type:
 		CombatEvent.Type.DAMAGE:
-			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			var amount = abs(event.visual_payload.amount)
 			info["description"] = "Deals %d damage" % amount
 		CombatEvent.Type.HEAL:
-			var amount = int(event.visual_payload.get("amount", 0))
+			var amount = event.visual_payload.amount
 			info["description"] = "Heals for %d" % amount
 		CombatEvent.Type.BUFF:
-			var stat = String(event.visual_payload.get("stat", ""))
-			var amount = int(event.visual_payload.get("amount", 0))
+			var stat = event.visual_payload.stat
+			var amount = event.visual_payload.amount
 			info["description"] = "+%d %s" % [amount, stat.to_upper()]
 		CombatEvent.Type.DEATH:
 			info["description"] = "Dies"
 		CombatEvent.Type.SUMMON:
 			info["description"] = "Summoned"
 		CombatEvent.Type.KAMIKAZE_ATTACK:
-			var amount = abs(int(event.visual_payload.get("amount", 0)))
+			var amount = abs(event.visual_payload.amount)
 			info["description"] = "Kamikaze for %d damage" % amount
 		CombatEvent.Type.STATUS_EFFECT:
-			var stat = String(event.visual_payload.get("stat", ""))
-			var amount = int(event.visual_payload.get("amount", 0))
+			var stat = event.visual_payload.stat
+			var amount = event.visual_payload.amount
 			info["description"] = "%s %d" % [stat.trim_suffix("_stacks").to_upper(), amount]
 		CombatEvent.Type.LETHAL_SAVE:
 			info["description"] = "Saved from lethal damage"
@@ -11375,8 +11778,8 @@ func _build_step_info(event: CombatEvent) -> Dictionary:
 		CombatEvent.Type.TRANSFORM:
 			info["description"] = "Transforms"
 		CombatEvent.Type.SLOT_EFFECT_CHANGE:
-			var to_effect: String = String(event.visual_payload.get("to_effect", ""))
-			var slot_index: int = int(event.visual_payload.get("slot_index", -1))
+			var to_effect: String = String(event.visual_payload.to_effect)
+			var slot_index: int = event.visual_payload.slot_index
 			info["description"] = "Slot %d becomes %s" % [slot_index + 1, to_effect]
 		_:
 			info["description"] = event.get_type_name()
@@ -11522,17 +11925,17 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 	var total_wait_token = 0.5 + (tokens_to_spawn * stagger_delay)
 	await AnimationConstants.create_pausable_timer(get_tree(), total_wait_token).timeout
 
-func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: Dictionary) -> void:
+func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: CombatPayload) -> void:
 	var source_view = _visual_registry.get(source_uuid)
 	var target_view = _visual_registry.get(target_uuid)
 	
-	var item_icon_path = payload.get("item_icon_path", "")
+	var item_icon_path = payload.item_icon_path
 	
 	# Extract chronological stats from the payload so we do not query the "future" simulated state
-	var old_hp = int(payload.get("old_hp", 0))
-	var new_hp = int(payload.get("new_hp", 0))
-	var old_pwr = int(payload.get("old_pwr", 0))
-	var new_pwr = int(payload.get("new_pwr", 0))
+	var old_hp = payload.old_hp
+	var new_hp = payload.new_hp
+	var old_pwr = payload.old_pwr
+	var new_pwr = payload.new_pwr
 	
 	var hp_diff = new_hp - old_hp
 	var pwr_diff = new_pwr - old_pwr
@@ -12279,11 +12682,11 @@ func _on_animation_event(event: CombatEvent) -> void:
 		CombatEvent.Type.DAMAGE:
 			var payload = event.visual_payload
 			# HP values are stored in arrays (targets_old_hp, targets_new_hp)
-			var old_hp_arr = payload.get("targets_old_hp", [])
-			var new_hp_arr = payload.get("targets_new_hp", [])
+			var old_hp_arr = payload.targets_old_hp
+			var new_hp_arr = payload.targets_new_hp
 			var old_hp = int(old_hp_arr[0]) if old_hp_arr.size() > 0 else 0
 			var new_hp = int(new_hp_arr[0]) if new_hp_arr.size() > 0 else 0
-			var damage = abs(int(payload.get("amount", 0)))
+			var damage = abs(payload.amount)
 			if damage == 0:
 				damage = abs(old_hp - new_hp)
 			log_attack(source_name, primary_target, damage, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
@@ -12291,19 +12694,19 @@ func _on_animation_event(event: CombatEvent) -> void:
 		CombatEvent.Type.HEAL:
 			var payload = event.visual_payload
 			# HP values are stored in arrays
-			var old_hp_arr = payload.get("targets_old_hp", [])
-			var new_hp_arr = payload.get("targets_new_hp", [])
+			var old_hp_arr = payload.targets_old_hp
+			var new_hp_arr = payload.targets_new_hp
 			var old_hp = int(old_hp_arr[0]) if old_hp_arr.size() > 0 else 0
 			var new_hp = int(new_hp_arr[0]) if new_hp_arr.size() > 0 else 0
-			var amount = int(payload.get("amount", 0))
+			var amount = payload.amount
 			if amount == 0:
 				amount = abs(new_hp - old_hp)
 			log_heal(source_name, primary_target, amount, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.BUFF:
 			var payload = event.visual_payload
-			var stat = String(payload.get("stat", "stat"))
-			var amount = int(payload.get("amount", event.amount))
+			var stat = payload.stat if not payload.stat.is_empty() else "stat"
+			var amount = payload.amount if payload.amount != 0 else event.amount
 			var is_debuff = amount < 0
 			log_buff(source_name, primary_target, stat, abs(amount), is_debuff, String(event.ability_id), String(event.trigger_type))
 		
@@ -12312,7 +12715,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 		
 		CombatEvent.Type.SUMMON:
 			var payload = event.visual_payload
-			var new_snapshot = payload.get("new_unit_snapshot", {})
+			var new_snapshot = payload.new_unit_snapshot
 			var summoned_name = "New Unit"
 			if new_snapshot.has("display_name"):
 				summoned_name = str(new_snapshot.get("display_name"))
@@ -12324,7 +12727,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 		
 		CombatEvent.Type.TOKEN_GAIN:
 			var payload = event.visual_payload
-			var amount = int(payload.get("amount", 0))
+			var amount = payload.amount
 			log_system("Gained %d tokens!" % amount)
 
 
@@ -12337,8 +12740,8 @@ func _get_source_name(event: CombatEvent) -> String:
 		return get_unit_name(event.source_uuid)
 	# Check payload for source info
 	var payload = event.visual_payload
-	if payload.has("source_uuid"):
-		return get_unit_name(String(payload.get("source_uuid")))
+	if not payload.source_uuid.is_empty():
+		return get_unit_name(payload.source_uuid)
 	return "System"
 
 func _get_target_names(event: CombatEvent) -> Array[String]:
@@ -12744,15 +13147,19 @@ func _emit_battle_inventory_changed() -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	
 	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
-		# Instantly resolve these updates silently so that stats are computed in real time.
-		# This ensures active units and equipped items update their stats instantly.
-		_combat.process_reaction_queue(self, {})
+		# Process passive updates (e.g. Twin Charm scaling) and capture generated events
+		var events = _combat.process_reaction_queue(self, {})
 		
 		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
 		_flush_deferred_enemy_erasures()
 		
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
+		
+		# If any passive abilities generated events (like PWR buffs/debuffs), animate them!
+		if not events.is_empty():
+			_resolve_animator()
+			_animator.play_async_chain(events, get_board_snapshot())
 	else:
 		_pending_inventory_refresh = true
 
@@ -13059,12 +13466,8 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if has_bargain and not bargain_used:
 		_bargain_charm_uses[tier] = true
 		if cost < base_cost:
-			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "",
-				"visual_payload": {
-					"trinket_activations": [{"definition_id": &"trinket_bargain_charm", "is_enemy": false}]
-				}
-			})
+			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": ""})
+			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_bargain_charm", false))
 			_animate_bargain_charm_async(event)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
@@ -13079,10 +13482,10 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
 		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
 		
-	draw_event.visual_payload = {
-		"draw_result": draw_result,
-		"new_unit_snapshot": new_unit_snapshot
-	}
+	var draw_payload := CombatPayload.new()
+	draw_payload.draw_result = draw_result
+	draw_payload.new_unit_snapshot = new_unit_snapshot
+	draw_event.visual_payload = draw_payload
 	chain_events.append(draw_event)
 	
 	# Trigger passive updates (like Trinkets) so they enter the reaction queue
@@ -13094,6 +13497,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		"tokens_spent": tier # Tier equals tokens spent
 	}
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
 	AbilityResolver.process_trigger(&"on_draw", context)
 	AbilityResolver.process_trigger(&"on_token_spent", context)
 	
@@ -13253,6 +13657,9 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		
 		# Update instance location
 		_update_instance_location(uuid, container_tag, slot)
+		
+		# Fire on_board_enter for the newly placed unit
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": uuid})
 	
 	# 4. Handle queue replacements (single unit summons replace holder in queue)
 	var replaced_new_uuids: Dictionary = {}
@@ -13342,6 +13749,14 @@ func get_board_snapshot() -> Dictionary:
 func _resolve_combat_phase() -> void:
 	if _is_processing_effect: return
 	_resolve_animator()
+	
+	# Wait for any in-flight management-phase async animation chains to finish.
+	# Without this, a management Twin Charm buff projectile could still be in flight
+	# when play_turn_sequence clears the visual registry, causing apply_pwr_delta
+	# to find a null view for the management chain's targets.
+	if _animator.is_playing_sequence():
+		await _animator.all_chains_finished
+	
 	_populate_actor_queue()
 	
 	# CRITICAL: Enforce global "Puppet Mode" block before capturing snapshot and running simulation.
@@ -13486,7 +13901,7 @@ func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_t
 	death_tracking[unit_uuid] = true
 	out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {}
+		"visual_payload": CombatPayload.new()
 	}))
 
 ## Check if any deferred counter-attack units have completed their abilities and should now die
@@ -13763,139 +14178,193 @@ func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) 
 ## @param stat_type: The stat to modify ("hp", "pwr", "burn_stacks", etc.)
 ## @param delta: The amount to add (negative for damage)
 ## @param bypass_armor: If true, damage bypasses armor (for future armor-piercing abilities)
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, bypass_armor: bool = false, attacker_uuid: String = "") -> Variant:
+
+# ============================================================================
+# DAMAGE & STAT DELTAS
+# ============================================================================
+
+func get_bonus_burn_stacks_for_attack(source: GachaBallInstance) -> int:
+	if not is_instance_valid(source): return 0
+	var is_player = _is_player_unit(source)
+	var burn = 0
+	
+	if _has_team_trinket(is_player, &"trinket_burn_vial"):
+		burn += 1
+		
+	var active_traits = get_active_traits("PLAYER" if is_player else "ENEMY")
+	var fire_level = active_traits.get("FIRE", 0)
+	
+	if fire_level >= 3 and _has_trait_soul(source, "FIRE"):
+		burn += 1
+		if fire_level >= 5:
+			burn += 1
+			
+	return burn
+
+func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, attacker_uuid: String = "") -> Dictionary:
+	assert(is_instance_valid(instance), "apply_damage: instance is null")
+	
+	if instance.current_hp <= 0 or amount <= 0:
+		return {}
+		
+	var actual_damage = amount
+	var armor_consumed = 0
+	var old_armor = 0
+	var new_armor = 0
+	
+	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless BURN)
+	if damage_type != C.DamageType.BURN:
+		old_armor = instance.get_status_effect_amount(&"armor")
+		if old_armor > 0:
+			armor_consumed = mini(old_armor, actual_damage)
+			var hp_damage = actual_damage - armor_consumed
+			actual_damage = hp_damage if hp_damage > 0 else 0
+			# Consume armor stacks
+			instance.add_status_effect_silent(&"armor", -armor_consumed)
+			new_armor = instance.get_status_effect_amount(&"armor")
+			
+	var new_hp = instance.current_hp - actual_damage
+	
+	if actual_damage > 0:
+		var comp = StatComponent.new()
+		comp.id = &"battle_damage"
+		comp.category = &"COMBAT_STATE"
+		comp.modifiers = {"hp": -actual_damage}
+		instance.battle_components.append(comp)
+		
+	instance.set_current_hp_silent(new_hp)
+	
+	# SPIKES REFLECTION
+	var spikes_data: Dictionary = {}
+	if damage_type == C.DamageType.MELEE and not attacker_uuid.is_empty():
+		var old_spikes = instance.get_status_effect_amount(&"spikes")
+		if old_spikes > 0:
+			var attacker = get_instance_by_uuid(attacker_uuid)
+			if is_instance_valid(attacker) and attacker.current_hp > 0:
+				var spikes_damage = old_spikes
+				var attacker_old_hp = attacker.current_hp
+				
+				var damage_result = apply_damage(attacker, spikes_damage, C.DamageType.SPIKES, "")
+				
+				var attacker_new_hp = attacker.current_hp
+				var spikes_armor_consumed = 0
+				var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
+				
+				if not damage_result.is_empty():
+					attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
+					spikes_armor_consumed = damage_result.get("armor_consumed", 0)
+					spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
+				
+				# Decay spikes by 1 stack
+				instance.add_status_effect_silent(&"spikes", -1)
+				var new_spikes = instance.get_status_effect_amount(&"spikes")
+				
+				spikes_data = {
+					"spikes_triggered": true,
+					"spikes_damage": spikes_damage,
+					"armor_consumed": spikes_armor_consumed,
+					"new_armor": spikes_new_armor,
+					"attacker_uuid": attacker_uuid,
+					"attacker_old_hp": attacker_old_hp,
+					"attacker_new_hp": attacker_new_hp,
+					"defender_uuid": instance.ball_uuid,
+					"old_spikes": old_spikes,
+					"new_spikes": new_spikes
+				}
+				
+	var result = {
+		"new_hp": new_hp,
+		"armor_consumed": armor_consumed,
+		"old_armor": old_armor,
+		"new_armor": new_armor,
+		"hp_damage": actual_damage
+	}
+	if not spikes_data.is_empty():
+		result["spikes_data"] = spikes_data
+		
+	if actual_damage != 0 and not _is_applying_static_damage:
+		_trigger_static_consumption(instance)
+		
+	return result
+
+func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_id: String) -> Variant:
+	assert(is_instance_valid(instance), "apply_permanent_stat_delta: instance is null")
+	
+	if delta == 0:
+		return instance.current_hp if stat_type == "hp" else instance.current_pwr
+		
+	var hp_delta = delta if stat_type == "hp" else 0
+	var pwr_delta = delta if stat_type == "pwr" else 0
+	
+	instance.add_or_update_stat_component(
+		StringName(source_id + "_permanent"),
+		&"PERMANENT_BUFF",
+		source_id,
+		hp_delta,
+		pwr_delta,
+		false,
+		"Permanent Buff",
+		"Permanent stat increase"
+	)
+	
+	return apply_stat_delta(instance, stat_type, delta)
+
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
-	# CRITICAL: Reject damage to already-dead units
-	# This is the "Validate Before Apply" pattern - ensures ghost attacks are impossible
-	# Heals and buffs still apply normally (they won't resurrect without explicit resurrection logic)
-	if stat_type == "hp" and delta < 0 and instance.current_hp <= 0:
-		return null # Signal to caller: operation skipped - target already dead
-	
-	# CRITICAL: Use SILENT methods during simulation to prevent UI coupling
-	# The BattleAnimator handles all visual updates during COMBAT phase
 	match stat_type:
 		"hp":
-			var actual_delta = delta
-			var armor_consumed = 0
-			var old_armor = 0
-			var new_armor = 0
+			if delta < 0:
+				push_error("apply_stat_delta called for HP damage. Use apply_damage instead!")
+				return 0
+				
+			var new_hp = instance.current_hp + delta
 			
-			# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first
-			# Unless bypass_armor is true (for future armor-piercing abilities)
-			if delta < 0 and not bypass_armor:
-				old_armor = instance.get_status_effect_amount(&"armor")
-				if old_armor > 0:
-					var incoming_damage = abs(delta)
-					armor_consumed = mini(old_armor, incoming_damage)
-					var hp_damage = incoming_damage - armor_consumed
-					actual_delta = - hp_damage if hp_damage > 0 else 0
-					# Consume armor stacks
-					instance.add_status_effect_silent(&"armor", -armor_consumed)
-					new_armor = instance.get_status_effect_amount(&"armor")
+			var comp = StatComponent.new()
+			comp.id = &"battle_heal"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": delta}
+			instance.battle_components.append(comp)
 			
-			# Apply remaining damage (or full heal) to HP
-			var new_hp = instance.current_hp + actual_delta
 			instance.set_current_hp_silent(new_hp)
 			
-			# SPIKES REFLECTION: Handle Spikes status effect for HP damage
-			# Spikes deals current stacks as damage to attacker, then decays by 1
-			var spikes_data: Dictionary = {}
-			if delta < 0 and not attacker_uuid.is_empty():
-				var old_spikes = instance.get_status_effect_amount(&"spikes")
-				if old_spikes > 0:
-					var attacker = get_instance_by_uuid(attacker_uuid)
-					if is_instance_valid(attacker) and attacker.current_hp > 0:
-						# Deal spikes damage to attacker (respects armor)
-						var spikes_damage = old_spikes
-						var attacker_old_hp = attacker.current_hp
-						
-						var damage_result = apply_stat_delta(attacker, "hp", -spikes_damage, false, "")
-						
-						var attacker_new_hp = attacker.current_hp
-						var spikes_armor_consumed = 0
-						var spikes_new_armor = attacker.get_status_effect_amount(&"armor")
-						
-						if damage_result is Dictionary:
-							attacker_new_hp = damage_result.get("new_hp", attacker_new_hp)
-							spikes_armor_consumed = damage_result.get("armor_consumed", 0)
-							spikes_new_armor = damage_result.get("new_armor", spikes_new_armor)
-						
-						# Decay spikes by 1 stack
-						instance.add_status_effect_silent(&"spikes", -1)
-						var new_spikes = instance.get_status_effect_amount(&"spikes")
-						
-						# Collect spikes data for presentation layer (does NOT emit events here!)
-						spikes_data = {
-							"spikes_triggered": true,
-							"spikes_damage": spikes_damage,
-							"armor_consumed": spikes_armor_consumed,
-							"new_armor": spikes_new_armor,
-							"attacker_uuid": attacker_uuid,
-							"attacker_old_hp": attacker_old_hp,
-							"attacker_new_hp": attacker_new_hp,
-							"defender_uuid": instance.ball_uuid,
-							"old_spikes": old_spikes,
-							"new_spikes": new_spikes
-						}
-			
-			# For damage, return full mitigation data for animations
-			# For heals, just return new_hp for backwards compatibility
-			if delta < 0:
-				var result = {
-					"new_hp": new_hp,
-					"armor_consumed": armor_consumed,
-					"old_armor": old_armor,
-					"new_armor": new_armor,
-					"hp_damage": abs(actual_delta)
-				}
-				if not spikes_data.is_empty():
-					result["spikes_data"] = spikes_data
-				if actual_delta != 0 and not _is_applying_static_damage:
+			if delta > 0:
+				AbilityResolver.process_trigger(&"on_stat_increased", {
+					"unit_uuid": instance.ball_uuid,
+					"triggering_uuid": instance.ball_uuid,
+					"stat": "hp",
+					"amount": delta,
+					"source_uuid": source_uuid
+				})
+				TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, "")
+				
+				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
-				return result
-			else:
-				if delta > 0:
-					# Trigger on_stat_increased for healing
-					AbilityResolver.process_trigger(&"on_stat_increased", {
-						"unit_uuid": instance.ball_uuid,
-						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
-						"stat": "hp",
-						"amount": delta,
-						"source_uuid": attacker_uuid
-					})
 					
-					# Trigger on_healed event
-					TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, attacker_uuid)
-					if not _is_applying_static_damage:
-						_trigger_static_consumption(instance)
-				return new_hp
+			return new_hp
 		"pwr":
 			var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
 			
 			if delta != 0:
 				if delta > 0:
-					# Trigger on_stat_increased for PWR buff
 					AbilityResolver.process_trigger(&"on_stat_increased", {
 						"unit_uuid": instance.ball_uuid,
-						"triggering_uuid": instance.ball_uuid, # Required for TARGET_TRIGGERING_ENTITY
+						"triggering_uuid": instance.ball_uuid,
 						"stat": "pwr",
 						"amount": delta,
-						"source_uuid": attacker_uuid
+						"source_uuid": source_uuid
 					})
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
 			
 			return new_pwr
 		"burn_stacks":
-			# Status effects use add_status_effect_silent internally
-			instance.add_status_effect_silent(&"burn", delta) # Silent during simulation
+			instance.add_status_effect_silent(&"burn", delta)
 			return instance.status_effects.get(&"burn", 0)
 		_:
-			# Generic status effect pattern: "effect_name_stacks"
 			if stat_type.ends_with("_stacks"):
 				var effect_name = stat_type.trim_suffix("_stacks")
-				instance.add_status_effect_silent(StringName(effect_name), delta) # Silent
+				instance.add_status_effect_silent(StringName(effect_name), delta)
 				return instance.status_effects.get(StringName(effect_name), 0)
 			else:
 				push_error("Unknown stat type: %s" % stat_type)
@@ -13907,17 +14376,13 @@ func _trigger_static_consumption(instance: GachaBallInstance) -> void:
 		instance.add_status_effect_silent(&"static", -1)
 		var new_static = static_stacks - 1
 		
+		var static_payload := CombatPayload.status_change("", -1, "static_stacks", [], [new_static])
+		static_payload.new_value = new_static
+		static_payload.old_value = static_stacks
 		var static_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 			"source_uuid": "SYSTEM",
 			"target_uuids": [instance.ball_uuid],
-			"visual_payload": {
-				"stat": "static_stacks",
-				"amount": -1,
-				"new_val": new_static,
-				"targets_new_val": [new_static],
-				"new_value": new_static,
-				"old_value": static_stacks
-			}
+			"visual_payload": static_payload
 		})
 		_combat.add_inline_event(static_event)
 		
@@ -13932,7 +14397,7 @@ func _trigger_static_consumption(instance: GachaBallInstance) -> void:
 		)
 		_pending_reactions.append(request)
 
-func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK) -> void:
+func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"") -> void:
 	# Get target instance data for context (effects should not query instances directly)
 	var target_instance = get_instance_by_uuid(target_uuid)
 	var victim_team := ""
@@ -13958,7 +14423,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		TurnAbilities.trigger_on_damage_dealt(actual_attacker_uuid, target_uuid, damage_amount, victim_current_hp)
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
-	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause)
+	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id)
 	
 	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
 	var victim_loc = get_location_for_uuid(target_uuid)
@@ -13974,6 +14439,12 @@ func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
+	# First, fire on_board_enter for all units currently on the board
+	var all_units = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
+	for unit in all_units:
+		if is_instance_valid(unit) and unit.current_hp > 0:
+			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": unit.ball_uuid})
+			
 	TurnAbilities.trigger_battle_start_abilities(_state)
 	# Trigger passive scaling right after battle start abilities
 	AbilityResolver.process_trigger(&"on_board_changed", {})
@@ -14121,14 +14592,12 @@ func _advance_team_death_slots(slot_effects: Array[StringName], active_death_slo
 		
 		slot_effects[slot_index] = DEATH_SLOT_EFFECT
 		var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {
-			"visual_payload": {
-				"container_tag": container_tag,
-				"slot_index": slot_index,
-				"from_effect": previous_effect,
-				"to_effect": DEATH_SLOT_EFFECT
-			}
-		}))
+		var slot_payload := CombatPayload.new()
+		slot_payload.container_tag = container_tag
+		slot_payload.slot_index = slot_index
+		slot_payload.from_effect = previous_effect
+		slot_payload.to_effect = DEATH_SLOT_EFFECT
+		events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {"visual_payload": slot_payload}))
 	return events
 
 
@@ -14411,13 +14880,14 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			var old_hp: int = unit.current_hp
 			var old_armor: int = unit.get_status_effect_amount(&"armor")
 			
-			# apply_stat_delta now returns dictionary for damage with armor mitigation data
-			var damage_result = apply_stat_delta(unit, "hp", -damage, status_def.id == &"burn")
+			# apply_damage now returns dictionary for damage with armor mitigation data
+			var damage_type = C.DamageType.BURN if status_def.id == &"burn" else C.DamageType.MAGIC
+			var damage_result = apply_damage(unit, damage, damage_type)
 			
 			# Extract data from dictionary return
-			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if damage_result is Dictionary else unit.current_hp
-			var armor_consumed: int = damage_result.get("armor_consumed", 0) if damage_result is Dictionary else 0
-			var new_armor: int = damage_result.get("new_armor", 0) if damage_result is Dictionary else 0
+			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if not damage_result.is_empty() else unit.current_hp
+			var armor_consumed: int = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
+			var new_armor: int = damage_result.get("new_armor", 0) if not damage_result.is_empty() else 0
 			
 			var max_hp: int = 0
 			var unit_def = unit.get_definition()
@@ -14427,23 +14897,18 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 				"text": "%s takes %d %s dmg" % [unit_name, damage, status_name]
 			}))
+			var status_damage_payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+			status_damage_payload.skip_bump = true
+			status_damage_payload.is_status_damage = true
+			status_damage_payload.status_color = status_def.color
+			status_damage_payload.targets_max_hp = [max_hp]
 			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_status_damage": true,
-					"status_color": status_def.color,
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp],
-					"targets_old_armor": [old_armor],
-					"targets_new_armor": [new_armor],
-					"armor_consumed": [armor_consumed]
-				}
+				"visual_payload": status_damage_payload
 			}))
+			
+			trigger_on_hurt(unit.ball_uuid, damage, "", C.CAUSE_STATUS_EFFECT, status_def.id)
 
 		elif status_def.turn_effect == "HEAL":
 			var heal: int = int(stacks * status_def.turn_effect_multiplier)
@@ -14460,13 +14925,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			all_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": heal,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change("", heal, [old_hp], [new_hp], [max_hp])
 			}))
 		
 		# Apply decay
@@ -14508,20 +14967,14 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 						new_stacks = 0
 			
 			if armor_decay_prevented_by_polished:
-				all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+				var polished_payload := CombatPayload.status_change("", 0, "armor_stacks", [], [new_stacks], status_def.color)
+				var polished_event := CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": "",
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {
-						"amount": 0,
-						"stat": "armor_stacks",
-						"new_val": new_stacks,
-						"status_color": status_def.color,
-						"trinket_activations": [{
-							"definition_id": &"trinket_polished_plate",
-							"is_enemy": not _is_player_unit(unit)
-						}]
-					}
-				}))
+					"visual_payload": polished_payload
+				})
+				polished_event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_polished_plate", not _is_player_unit(unit)))
+				all_events.append(polished_event)
 		
 		if new_stacks != old_stacks:
 			if new_stacks <= 0:
@@ -14532,15 +14985,11 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				apply_stat_delta(unit, String(status_def.id) + "_stacks", decay_delta)
 			
 			# Emit STATUS_EFFECT event for status decay so animator updates the visual
+			var decay_payload := CombatPayload.status_change("", new_stacks - old_stacks, String(status_def.id) + "_stacks", [], [new_stacks], status_def.color)
 			all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": new_stacks - old_stacks,
-					"stat": String(status_def.id) + "_stacks",
-					"new_val": new_stacks,
-					"status_color": status_def.color
-				}
+				"visual_payload": decay_payload
 			}))
 		
 		# Handle death from status damage
@@ -14575,13 +15024,7 @@ func handle_armor_stacks(request: EffectRequest, resolved_targets: Array[String]
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "armor_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(request.source_uuid, amount, "armor_stacks", targets_old_val, targets_new_val)
 	})
 
 
@@ -14861,12 +15304,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 							"source_uuid": "",
 							"target_uuids": [unit.ball_uuid],
 							"ability_id": &"trait_earth_spikes",
-							"visual_payload": {
-								"amount": spikes_value,
-								"stat": "spikes_stacks",
-								"targets_old_val": [old_spikes],
-								"targets_new_val": [new_spikes]
-							}
+							"visual_payload": CombatPayload.status_change("", spikes_value, "spikes_stacks", [old_spikes], [new_spikes])
 						})
 						total_events.append(spikes_event)
 		
@@ -14889,12 +15327,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						"source_uuid": "", # Trait effect has no single unit source
 						"target_uuids": [unit.ball_uuid],
 						"ability_id": &"trait_fire_burn",
-						"visual_payload": {
-							"amount": amount,
-							"stat": "burn_stacks",
-							"targets_old_val": [old_val],
-							"targets_new_val": [new_val]
-						}
+						"visual_payload": CombatPayload.status_change("", amount, "burn_stacks", [old_val], [new_val])
 					})
 					total_events.append(event)
 		
@@ -14928,15 +15361,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 							"source_uuid": unit.ball_uuid,
 							"target_uuids": [ally.ball_uuid],
 							"ability_id": &"trait_water_heal",
-							"visual_payload": {
-								"source_uuid": unit.ball_uuid,
-								"amount": 1,
-								"stat": "hp",
-								"skip_bump": false,
-								"targets_old_hp": [old_hp],
-								"targets_new_hp": [new_hp],
-								"targets_max_hp": [max_hp]
-							}
+						"visual_payload": CombatPayload.hp_change(unit.ball_uuid, 1, [old_hp], [new_hp], [max_hp])
 						})
 						total_events.append(event)
 						
@@ -15023,13 +15448,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
 					"target_uuids": [enemy.ball_uuid],
 					"ability_id": &"trait_air_steal",
-					"visual_payload": {
-						"source_uuid": enemy.ball_uuid,
-						"stat": "pwr",
-						"amount": - 1,
-						"targets_old_pwr": [enemy_old_pwr],
-						"targets_new_pwr": [enemy_new_pwr]
-					}
+					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
 				})
 				total_events.append(debuff_event)
 				
@@ -15038,13 +15457,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					"source_uuid": enemy.ball_uuid, # Projectile originates FROM enemy
 					"target_uuids": [unit.ball_uuid], # Travels TO Air unit
 					"ability_id": &"trait_air_steal",
-					"visual_payload": {
-						"source_uuid": enemy.ball_uuid, # From enemy
-						"stat": "pwr",
-						"amount": 1,
-						"targets_old_pwr": [unit_old_pwr],
-						"targets_new_pwr": [unit_new_pwr]
-					}
+					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
 				})
 				total_events.append(buff_event)
 
@@ -15907,9 +16320,9 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	else:
 		start_pos = get_viewport_rect().get_center() # Fallback
 	
-	# Trigger machine bounce when ball pops out
-	if main_node.has_method("trigger_machine_bounce"):
-		main_node.trigger_machine_bounce(tier)
+	# Trigger machine bounce when ball pops out and decrement count visually
+	if main_node.has_method("animate_machine_inventory_change"):
+		main_node.animate_machine_inventory_change(tier, -1)
 	
 	# Determine End Position
 	var end_pos: Vector2
@@ -16839,13 +17252,12 @@ var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_bloodlust"
 var trigger_type: StringName = &"" # e.g., "on_kill", "on_hurt", "on_turn_start", ""
 var ability_holder_uuid: String = "" # UUID of unit/item that owns the ability
 
-# Strong typed array for trinket animations to play with this event
-var trinket_activations: Array[Dictionary] = []
+# Strong typed array for trinket animations to play with this event.
+var trinket_activations: Array[CombatTrinketActivation] = []
 
-# The Absolute Truth Payload
-# MANDATORY KEYS for DAMAGE/HEAL: { "new_hp": int, "amount": int, "is_crit": bool }
-# MANDATORY KEYS for SUMMON: { "snapshot": Dictionary }
-var visual_payload: Dictionary = {}
+# The Absolute Truth Payload.  Sparse typed fields replace untyped dictionary
+# keys; see CombatPayload for the event-family contracts.
+var visual_payload: CombatPayload = CombatPayload.new()
 
 # Legacy fields for backward compatibility during refactor (marked for removal)
 var text: String = ""
@@ -16881,7 +17293,9 @@ func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	self.ability_holder_uuid = String(p_context.get("ability_holder_uuid", ""))
 		
 	# Visual Payload (The new standard)
-	self.visual_payload = p_context.get("visual_payload", {})
+	var supplied_payload = p_context.get("visual_payload", null)
+	if supplied_payload is CombatPayload:
+		self.visual_payload = supplied_payload
 	
 	# Legacy field population for compatibility
 	self.text = String(p_context.get("text", ""))
@@ -16921,7 +17335,8 @@ func deep_clone() -> CombatEvent:
 	copy.ability_id = self.ability_id
 	copy.trigger_type = self.trigger_type
 	copy.ability_holder_uuid = self.ability_holder_uuid
-	copy.trinket_activations = self.trinket_activations.duplicate(true)
+	for activation in trinket_activations:
+		copy.trinket_activations.append(activation.deep_clone())
 	copy.text = self.text
 	copy.amount = self.amount
 	copy.stat = self.stat
@@ -16930,19 +17345,8 @@ func deep_clone() -> CombatEvent:
 	copy.target_names = self.target_names.duplicate()
 	copy.apply_burn = self.apply_burn
 	
-	var new_payload = self.visual_payload.duplicate()
-	# Recursively clone nested events
-	for key in ["windup_events", "pre_impact_events", "impact_events"]:
-		if new_payload.has(key):
-			var nested_copies: Array[CombatEvent] = []
-			for nested in new_payload[key]:
-				if is_instance_valid(nested) and nested.has_method("deep_clone"):
-					nested_copies.append(nested.deep_clone())
-			new_payload[key] = nested_copies
-			
-	copy.visual_payload = new_payload
+	copy.visual_payload = visual_payload.deep_clone()
 	return copy
-
 ```
 
 ### File: `scripts/ConditionDefinition.gd`
@@ -17032,6 +17436,15 @@ const CONTAINER_DISCARD_PILE = &"DiscardPile"
 const CONTAINER_REWARDS = &"Rewards"
 const CONTAINER_SHOP = &"Shop"
 
+# --- Combat & Damage ---
+enum DamageType {
+	MELEE,   # Mitigated by Armor, Triggers Spikes, Triggers on_hurt
+	RANGED,  # Mitigated by Armor, NO Spikes, Triggers on_hurt
+	MAGIC,   # Mitigated by Armor, NO Spikes, Triggers on_hurt
+	BURN,    # NO Armor, NO Spikes, Triggers on_hurt (Requires CAUSE_STATUS_EFFECT)
+	SPIKES   # Mitigated by Armor, NO Spikes, Triggers on_hurt
+}
+
 # --- Entity & Category Types ---
 const CATEGORY_UNIT = &"UNIT"
 const CATEGORY_ITEM = &"ITEM"
@@ -17081,6 +17494,7 @@ const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
 const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
 const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
 const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
+const TRIGGER_ON_BOARD_ENTER = &"on_board_enter" # When this specific unit enters the board (drawn, summoned, merged, or battle start)
 const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
 const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
 const TRIGGER_ON_MERGE = &"on_merge" # Any merge completed on the battle board (lineup/bench, unit/item)
@@ -17152,6 +17566,7 @@ const ENEMY_TRINKET_CAP: int = 5
 #[-100] EXTRA_ACTION: E.g., granting an extra turn. Must be lowest priority.
 
 const PRIORITY_GUARDIAN_INTERCEPT = 300
+const PRIORITY_ITEM_TRANSFER = 220
 const PRIORITY_DEATH_DAMAGE = 215
 const PRIORITY_TRINKET_SUMMON = 210
 const PRIORITY_UNIT_SUMMON = 205
@@ -17975,11 +18390,12 @@ func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_man
 	
 	# Return damage request for CombatSimulator to process
 	# This routes through the proper damage pipeline with armor/burn/guardian handling
-	result.damage_request = {
-		"stat": "hp",
-		"amount": - damage_amount,
-		"targets": [summoned_uuid]
-	}
+	result.damage_request = EffectResult.DamageRequest.new(
+		damage_amount,
+		C.DamageType.MELEE,
+		[summoned_uuid],
+		false
+	)
 	
 	return result
 ```
@@ -18024,15 +18440,7 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 			CombatEvent.Type.STATUS_EFFECT,
 			{
 				"target_uuids": [target_uuid],
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": amount,
-					"stat": stat_name,
-					"targets_old_val": [old_val],
-					"targets_new_val": [new_val],
-					# Default colors (can be enhanced via StatusEffectRegistry later if needed)
-					"status_color": Color.WHITE
-				}
+				"visual_payload": CombatPayload.status_change(_source_uuid, amount, stat_name, [old_val], [new_val])
 			}
 		))
 	
@@ -18122,7 +18530,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_simulation:
 		var old_pwr: int = target.current_pwr
 		# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
-		var new_pwr: int = battle_manager.apply_stat_delta(target, "pwr", buff_amount, false, source_uuid)
+		var new_pwr: int = battle_manager.apply_stat_delta(target, "pwr", buff_amount)
 		
 		var result := EffectResult.new()
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -18130,13 +18538,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_uuids": [target_uuid],
 			"ability_id": context.get("ability_id", &"empathic_link"),
 			"ability_holder_uuid": source_uuid,
-			"visual_payload": {
-				"source_uuid": source_uuid,
-				"stat": "pwr",
-				"amount": buff_amount,
-				"targets_old_pwr": [old_pwr],
-				"targets_new_pwr": [new_pwr]
-			}
+			"visual_payload": CombatPayload.pwr_change(source_uuid, buff_amount, [old_pwr], [new_pwr])
 		}))
 		return result
 	
@@ -18238,7 +18640,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -18246,7 +18648,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -18276,14 +18678,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": &"ability_trinket_royal_insignia",
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": hp_amount,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 			}))
 			
 			# PWR BUFF event
@@ -18293,20 +18688,14 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": &"ability_trinket_royal_insignia",
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": pwr_amount,
-					"stat": "pwr",
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 			}))
 			state_applied_any = true
 			
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
 	if is_simulation:
@@ -18443,14 +18832,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": {
-				"source_uuid": _source_uuid,
-				"amount": hp_amount,
-				"stat": "hp",
-				"targets_old_hp": [old_hp],
-				"targets_new_hp": [new_hp],
-				"targets_max_hp": [max_hp]
-			}
+			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 		}))
 		
 		# PWR BUFF event
@@ -18460,13 +18842,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": {
-				"source_uuid": _source_uuid,
-				"amount": pwr_amount,
-				"stat": "pwr",
-				"targets_old_pwr": [old_pwr],
-				"targets_new_pwr": [new_pwr]
-			}
+			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 		}))
 		state_applied_any = true
 	else:
@@ -18616,14 +18992,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": &"ability_trinket_veteran_insignia",
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": hp_amount,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 			}))
 			
 			# PWR BUFF event
@@ -18633,13 +19002,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": &"ability_trinket_veteran_insignia",
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": pwr_amount,
-					"stat": "pwr",
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 			}))
 			state_applied_any = true
 			
@@ -18737,18 +19100,16 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"text": "%s grants %s +%d %s" % [holder_name, target_name, buff_amount, stat_label]
 			}))
 			
-			# Build visual_payload with correct key names
-			var visual_payload := {
-				"source_uuid": holder_uuid,
-				"amount": buff_amount,
-				"stat": buff_stat
-			}
+			var visual_payload := CombatPayload.new()
+			visual_payload.source_uuid = holder_uuid
+			visual_payload.amount = buff_amount
+			visual_payload.stat = buff_stat
 			if buff_stat == "pwr":
-				visual_payload["targets_old_pwr"] = [old_val]
-				visual_payload["targets_new_pwr"] = [new_val]
+				visual_payload.targets_old_pwr = [old_val]
+				visual_payload.targets_new_pwr = [new_val]
 			else:
-				visual_payload["targets_old_val"] = [old_val]
-				visual_payload["targets_new_val"] = [new_val]
+				visual_payload.targets_old_val = [old_val]
+				visual_payload.targets_new_val = [new_val]
 			
 			# BUFF event
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -18833,7 +19194,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Step 2: Calculate damage for frontmost slot + cascade_depth slots behind
 	# on_before_damage is triggered for each target in the loop below.
 	# on_hurt is triggered by CombatSimulator after applying damage from cascade_request.
-	var damage_data: Array = []
+	var damage_data: Array[EffectResult.CascadeRequestItem] = []
 	var current_damage = base_damage
 	var damage_index: int = 0 # For skip_bump logic
 	
@@ -18878,11 +19239,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		battle_manager.drain_pending_reactions_inline(0)
 		
 		# Add to damage data - CombatSimulator will handle applying damage and triggering on_hurt
-		damage_data.append({
-			"target": target.ball_uuid,
-			"amount": damage_amount,
-			"skip_bump": (damage_index > 0) # Only bump for the first actual hit
-		})
+		damage_data.append(EffectResult.CascadeRequestItem.new(
+			target.ball_uuid,
+			damage_amount,
+			(damage_index > 0) # Only bump for the first actual hit
+		))
 		
 		damage_index += 1
 		current_damage = current_damage * falloff
@@ -18892,7 +19253,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	# Return EffectResult with cascade_request for CombatSimulator to process
 	var result := EffectResult.new()
-	result.cascade_request = damage_data
+	var damage_type = parameters.get("damage_type", C.DamageType.MELEE)
+	result.cascade_request = EffectResult.CascadeRequest.new(
+		damage_type,
+		damage_data
+	)
 	return result
 ```
 
@@ -18901,6 +19266,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 @tool
 class_name EffectDeathDamageHighestEnemy
 extends EffectDefinition
+
+const C = preload("res://scripts/Constants.gd")
 
 ## Death's Bargain effect: When holder dies, deal damage equal to half of the
 ## highest HP enemy's HP to that enemy with a kamikaze attack animation.
@@ -18943,12 +19310,13 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return result
 	
 	# Create kamikaze request for CombatSimulator to handle
-	result.kamikaze_request = {
-		"source_uuid": dying_uuid, # The dying unit is the source of the kamikaze
-		"target_uuid": target_uuid,
-		"damage": damage,
-		"dying_location": dying_location
-	}
+	result.kamikaze_request = EffectResult.KamikazeRequest.new(
+		dying_uuid,
+		target_uuid,
+		damage,
+		C.DamageType.RANGED,
+		target_inst.current_hp # dying_max_hp? It's just a dummy value or target HP
+	)
 	
 	return result
 ```
@@ -19004,10 +19372,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"ability_holder_uuid": _source_uuid,
 			"ability_id": "ability_trinket_token_return_charm",
 			"amount": tier,
-			"visual_payload": {
-				"amount": tier,
-				"origin_uuid": dying_uuid
-			}
+			"visual_payload": _make_token_payload(tier, dying_uuid)
 		}))
 
 		result.state_applied = true
@@ -19016,6 +19381,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Non-simulation (live/direct call fallback): add tokens directly to live state
 	battle_manager.add_gacha_token(tier)
 	return tier
+
+func _make_token_payload(amount: int, origin_uuid: String) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = amount
+	payload.origin_uuid = origin_uuid
+	return payload
 ```
 
 ### File: `scripts/EffectDefinition.gd`
@@ -19081,20 +19452,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		if is_simulation:
 			var old_pwr: int = current_target.current_pwr
 			# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
-			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff, false, source_uuid)
+			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff)
 			
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": source_uuid,
 				"target_uuids": [current_target.ball_uuid],
 				"ability_id": context.get("ability_id", &"empathic_link"),
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": source_uuid,
-					"stat": "pwr",
-					"amount": apply_buff,
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(source_uuid, apply_buff, [old_pwr], [new_pwr])
 			}))
 			
 		current_target = battle_manager._get_ally_behind(current_target)
@@ -19139,11 +19504,7 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 			"source_uuid": source_uuid,
 			"target_uuids": targets,
 			"amount": amount,
-			"visual_payload": {
-				"amount": amount,
-				"origin_uuid": origin_uuid,
-				"target_gold_amount": target_gold_amount
-			}
+		"visual_payload": _make_gold_payload(amount, origin_uuid, target_gold_amount)
 		}))
 		
 		result.state_applied = true
@@ -19154,6 +19515,13 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 		GameManager.run_state.add_gold(amount)
 	
 	return amount
+
+func _make_gold_payload(amount: int, origin_uuid: String, target_gold_amount: int) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = amount
+	payload.origin_uuid = origin_uuid
+	payload.target_gold_amount = target_gold_amount
+	return payload
 ```
 
 ### File: `scripts/EffectGrantExtraAction.gd`
@@ -19271,14 +19639,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": total_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [max_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, total_amount, [old_hp], [new_hp], [max_hp])
 	}))
 	result.mark_healed(source_uuid, total_amount)
 	
@@ -19289,13 +19650,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": total_amount,
-			"stat": "pwr",
-			"targets_old_pwr": [old_pwr],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change(source_uuid, total_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true
@@ -19678,11 +20033,29 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# The on_hurt/on_kill trigger logic is handled by CombatSimulator via EffectHandlers
 		if stat == "hp" and amount < 0:
 			var damage_result := EffectResult.new()
-			damage_result.damage_request = {
-				"stat": stat,
-				"amount": amount,
-				"targets": valid_targets
-			}
+			var damage_type = parameters.get("damage_type", -1)
+			if damage_type == -1:
+				var src_inst = battle_manager.get_instance_by_uuid(_source_uuid) if _source_uuid != "" else null
+				if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
+					var src_cat = src_inst.get_definition().category
+					if src_cat == &"TRINKET":
+						damage_type = C.DamageType.MAGIC
+					else:
+						# Unit or Item on a Unit
+						if self.target_type == C.TARGET_FRONTMOST_ENEMY:
+							damage_type = C.DamageType.MELEE
+						else:
+							damage_type = C.DamageType.RANGED
+				else:
+					damage_type = C.DamageType.MAGIC
+			
+			damage_result.damage_request = EffectResult.DamageRequest.new(
+				abs(amount),
+				damage_type,
+				valid_targets,
+				false,
+				C.CAUSE_ABILITY
+			)
 			return damage_result
 		
 		# HEALS (positive HP) and BUFFS (positive PWR) use new EffectResult path
@@ -19739,19 +20112,13 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": conv_log}))
 					
 					# HEAL Event
+					var conversion_payload := CombatPayload.hp_change(visual_source_uuid, tgt_amount, [old_hp], [new_hp], [max_hp])
 					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": _source_uuid,
 						"target_uuids": [target_uuid],
 						"ability_id": context.get("ability_id", &"modify_stat"),
 						"trigger_type": context.get("trigger_type", ""),
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": tgt_amount,
-							"stat": "hp",
-							"targets_old_hp": [old_hp],
-							"targets_new_hp": [new_hp],
-							"targets_max_hp": [max_hp]
-						}
+						"visual_payload": conversion_payload
 					}))
 					result.mark_healed(target_uuid, tgt_amount)
 					continue # Skip adding to batched list
@@ -19791,21 +20158,15 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+					var heal_payload := CombatPayload.hp_change(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
+					heal_payload.skip_bump = parameters.get("skip_bump", false)
 					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": _source_uuid,
 						"target_uuids": all_target_uuids,
 						"ability_id": aid,
 						"trigger_type": context.get("trigger_type", ""),
 						"ability_holder_uuid": _source_uuid,
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": amount,
-							"stat": stat,
-							"skip_bump": parameters.get("skip_bump", false),
-							"targets_old_hp": all_old_vals,
-							"targets_new_hp": all_new_vals,
-							"targets_max_hp": all_max_hp
-						}
+						"visual_payload": heal_payload
 					}))
 				else:
 					# DAMAGE
@@ -19817,22 +20178,19 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), " and ".join(target_names)]
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+					var damage_payload := CombatPayload.damage(visual_source_uuid, amount, all_old_vals, all_new_vals)
+					damage_payload.stat = stat
+					damage_payload.attack_type = parameters.get("attack_type", "ranged")
+					damage_payload.skip_bump = parameters.get("skip_bump", true)
+					var projectile_data: Dictionary = parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"})
+					damage_payload.projectile = CombatProjectile.new(String(projectile_data.get("stat", "hp")), int(projectile_data.get("amount", abs(amount))), String(projectile_data.get("color", "red")))
 					result.add_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 						"source_uuid": _source_uuid,
 						"target_uuids": all_target_uuids,
 						"ability_id": aid,
 						"trigger_type": context.get("trigger_type", ""),
 						"ability_holder_uuid": _source_uuid,
-						"visual_payload": {
-							"source_uuid": visual_source_uuid,
-							"amount": amount,
-							"stat": stat,
-							"attack_type": parameters.get("attack_type", "ranged"), # Default ranged for effect damage
-							"skip_bump": parameters.get("skip_bump", true), # Default skip bump for effect damage
-							"projectile_data": parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"}),
-							"targets_old_hp": all_old_vals,
-							"targets_new_hp": all_new_vals
-						}
+						"visual_payload": damage_payload
 					}))
 			elif stat == "pwr":
 				# Log message with all target names
@@ -19850,19 +20208,14 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
 
 				# Single BUFF event with all targets batched
+				var pwr_payload := CombatPayload.pwr_change(visual_source_uuid, amount, all_old_vals, all_new_vals)
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"targets_old_pwr": all_old_vals,
-						"targets_new_pwr": all_new_vals
-					}
+					"visual_payload": pwr_payload
 				}))
 			else:
 				# Generic Stat / Status Effect (e.g. armor_stacks)
@@ -19880,20 +20233,15 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
 
 				# STATUS_EFFECT event
+				var status_payload := CombatPayload.status_change(visual_source_uuid, amount, stat, all_old_vals, all_new_vals)
+				status_payload.new_val = all_new_vals[0] if not all_new_vals.is_empty() else 0
 				result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
 					"ability_holder_uuid": _source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"amount": amount,
-						"stat": stat,
-						"targets_old_val": all_old_vals,
-						"targets_new_val": all_new_vals,
-						"new_val": all_new_vals[0] if not all_new_vals.is_empty() else 0
-					}
+					"visual_payload": status_payload
 				}))
 		
 		result.state_applied = true
@@ -19904,7 +20252,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			battle_manager.apply_stat_delta(inst, stat, amount, false, _source_uuid)
+			battle_manager.apply_stat_delta(inst, stat, amount)
 	# Non-simulation return (legacy compatibility)
 	return amount
 ```
@@ -19996,10 +20344,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"source_uuid": _source_uuid,
 			"target_uuids": [victim_uuid],
 			"ability_id": context.get("ability_id", &"aegis_charm"),
-			"visual_payload": {
-				"saved_uuid": victim_uuid,
-				"heal_amount": heal_amount
-			}
+			"visual_payload": _make_lethal_save_payload(victim_uuid, heal_amount)
 		}))
 		
 		result.mark_healed(victim_uuid, heal_amount)
@@ -20013,6 +20358,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"targets": [victim_uuid],
 			"prevented_lethal": true
 		}
+
+func _make_lethal_save_payload(saved_uuid: String, heal_amount: int) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.saved_uuid = saved_uuid
+	payload.heal_amount = heal_amount
+	return payload
 ```
 
 ### File: `scripts/EffectRequest.gd`
@@ -20290,7 +20641,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -20298,7 +20649,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -20330,14 +20681,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": hp_amount,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 			}))
 			
 			# PWR BUFF event
@@ -20347,19 +20691,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": pwr_amount,
-					"stat": "pwr",
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 			}))
 			state_applied_any = true
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			target_instance.add_status_effect(status_key, 1)
 			state_applied_any = true
 
@@ -20409,14 +20747,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
 	
-	var hp_res = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount)
+	var hp_res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", hp_amount, source_uuid)
 	var new_hp = old_hp + hp_amount
 	if hp_res is Dictionary:
 		new_hp = hp_res.get("new_hp", old_hp + hp_amount)
 	elif hp_res != null:
 		new_hp = int(hp_res)
 
-	var pwr_res = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount)
+	var pwr_res = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", pwr_amount, source_uuid)
 	var new_pwr = old_pwr + pwr_amount
 	if pwr_res is Dictionary:
 		new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)
@@ -20437,13 +20775,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": hp_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp])
 	}))
 	
 	# Event 2: PWR Gain (Buff visual)
@@ -20453,16 +20785,146 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": pwr_amount,
-			"stat": "pwr",
-			"targets_old_pwr": [old_pwr],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change(source_uuid, pwr_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true
+	return result
+```
+
+### File: `scripts/effects/EffectBurnyCounter.gd`
+```gdscript
+@tool
+class_name EffectBurnyCounter
+extends EffectDefinition
+
+## Burny's retaliation ability.
+## Level 1: Ranged projectile to attacker with PWR damage.
+## Level 2: + 1 burn projectile to random enemy (applying PWR as burn).
+## Level 3: + 2 burn projectiles to random enemies.
+
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+	var result := EffectResult.new()
+	var source_instance: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(source_instance):
+		return result
+		
+	# Attacker UUID should be available in context (from on_hurt trigger)
+	var attacker_uuid: String = context.get("attacker_uuid", "")
+	if attacker_uuid.is_empty():
+		attacker_uuid = context.get("trigger_context", {}).get("attacker_uuid", "")
+		
+	# Zero-Instance-Query Compliant: Use context data for source stats if possible
+	var pwr: int = context.get("source_pwr", source_instance.current_pwr)
+	
+	if attacker_uuid.is_empty() or pwr <= 0:
+		return result
+		
+	var is_player = battle_manager._is_player_unit(source_instance)
+	var target_container = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	
+	var extra_bounces: int = parameters.get("extra_bounces", 0)
+	var current_source_uuid = source_uuid
+	var current_target_uuid = attacker_uuid
+	var current_damage = pwr
+	
+	for bounce_index in range(1 + extra_bounces):
+		var target_inst = battle_manager.get_instance_by_uuid(current_target_uuid)
+		if not is_instance_valid(target_inst) or target_inst.current_hp <= 0:
+			# If the target died or is invalid, try to find another one
+			var valid_targets = []
+			for u in battle_manager.get_instances_in_container(target_container):
+				if u.current_hp > 0:
+					valid_targets.append(u)
+			
+			if valid_targets.is_empty():
+				break # No one left to bounce to
+			else:
+				target_inst = valid_targets.pick_random()
+				current_target_uuid = target_inst.ball_uuid
+				
+		var old_hp = target_inst.current_hp
+		var old_armor = target_inst.get_status_effect_amount(&"armor")
+		
+		# GUARDIAN SENTINEL INTERCEPT CHECK
+		var hp_damage = max(0, current_damage - old_armor)
+		var would_be_lethal: bool = target_inst.current_hp - hp_damage <= 0
+		var tgt_is_player_unit: bool = battle_manager._is_player_unit(target_inst)
+		var is_ally_damage: bool = (tgt_is_player_unit != is_player)
+		
+		if would_be_lethal and is_ally_damage:
+			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, current_target_uuid)
+			if is_instance_valid(guardian):
+				result.add_event(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+					"source_uuid": guardian.ball_uuid,
+					"target_uuids": [current_target_uuid],
+					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, current_target_uuid)
+				}))
+				current_target_uuid = guardian.ball_uuid
+				target_inst = guardian
+				old_hp = target_inst.current_hp
+				old_armor = target_inst.get_status_effect_amount(&"armor")
+		
+		# 1. Apply Damage Manually to respect Armor
+		var dmg_res = battle_manager.apply_damage(target_inst, current_damage, C.DamageType.RANGED, source_uuid)
+		var new_hp = dmg_res["new_hp"]
+		var new_armor = dmg_res["new_armor"]
+		var armor_consumed = dmg_res["armor_consumed"]
+		
+		# 1b. Apply Bonus Burn Stacks (Trinket/Trait)
+		var bonus_burn = battle_manager.get_bonus_burn_stacks_for_attack(source_instance)
+		var old_burn = 0
+		var new_burn = 0
+		var should_apply_burn = false
+		if bonus_burn > 0:
+			old_burn = target_inst.get_status_effect_amount(&"burn")
+			new_burn = battle_manager.apply_stat_delta(target_inst, "burn_stacks", bonus_burn)
+			should_apply_burn = true
+		
+		# 2. Add Visual Event
+		var dmg_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {
+			"source_uuid": current_source_uuid,
+			"target_uuids": [current_target_uuid],
+			"is_simulation": context.get("is_simulation", false)
+		})
+		var damage_payload := CombatPayload.damage(current_source_uuid, current_damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+		damage_payload.attack_type = "ranged"
+		damage_payload.skip_bump = true
+		damage_payload.projectile = CombatProjectile.new("hp", current_damage, "red")
+		damage_payload.targets_old_burn = [old_burn] if should_apply_burn else []
+		damage_payload.targets_new_burn = [new_burn] if should_apply_burn else []
+		damage_payload.apply_burn = should_apply_burn
+		dmg_event.visual_payload = damage_payload
+		result.events.append(dmg_event)
+		
+		# 3. Trigger Reactions
+		battle_manager.trigger_on_hurt(current_target_uuid, dmg_res["hp_damage"], source_uuid, C.CAUSE_ABILITY)
+		if new_hp <= 0:
+			battle_manager.trigger_on_kill(source_uuid, current_target_uuid)
+		
+		# 4. Prepare next bounce
+		if bounce_index < extra_bounces:
+			current_source_uuid = current_target_uuid
+			current_damage = max(1, floor(current_damage / 2))
+			
+			# Find next target
+			var valid_targets = []
+			for u in battle_manager.get_instances_in_container(target_container):
+				if u.current_hp > 0:
+					valid_targets.append(u)
+			
+			if valid_targets.is_empty():
+				break
+			elif valid_targets.size() == 1:
+				current_target_uuid = valid_targets[0].ball_uuid
+			else:
+				# Pick random that is NOT the current target if possible
+				var next_targets = valid_targets.filter(func(u): return u.ball_uuid != current_target_uuid)
+				if not next_targets.is_empty():
+					current_target_uuid = next_targets.pick_random().ball_uuid
+				else:
+					current_target_uuid = valid_targets[0].ball_uuid
+					
 	return result
 ```
 
@@ -20474,12 +20936,12 @@ extends EffectDefinition
 
 ## Grants +3 PWR for every OTHER Doppleganger in the Battle Pool.
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
-	var is_simulation = context.get("is_simulation", false)
+	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
 	
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source):
+	if not is_instance_valid(source) or battle_manager.is_dead_this_turn(source_uuid):
 		return EffectResult.empty() if is_simulation else null
 		
 	var source_is_player = _is_player_unit_team(source, battle_manager)
@@ -20488,6 +20950,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if uuid == source_uuid: 
 			continue
 		var inst = all_instances[uuid]
+		if not is_instance_valid(inst):
+			continue
 		if inst.definition_id == &"unit_t3_i": 
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
@@ -20507,11 +20971,22 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if bonus_pwr > 0: 
 		source.add_status_effect_silent(status_key, bonus_pwr)
 		
-	# Apply standard PWR modification (dispatches unit_stat_changed signals to UI)
+	# Apply standard PWR modification
 	source.apply_pwr_delta(delta, {"silent": is_simulation})
 
-	if is_simulation:
-		var result = EffectResult.new()
+	if is_simulation and _is_on_board(source):
+		var result := EffectResult.new()
+		var event_type = CombatEvent.Type.BUFF
+
+		# Since this is a self-buff from a unit, the visual source should be the combat instance's UUID
+		# so that it maps correctly to the position snapshot, and the projectile originates from itself.
+		result.add_event(CombatEvent.new(event_type, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.pwr_change(source_uuid, delta, [], [source.current_pwr])
+		}))
+		
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
 		}))
@@ -20524,6 +20999,12 @@ func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool
 	if not is_instance_valid(inst):
 		return false
 	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)
+
+func _is_on_board(inst: GachaBallInstance) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	var container: StringName = inst.location_container_tag
+	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"
 ```
 
 ### File: `scripts/effects/EffectDuplicateToGacha.gd`
@@ -20571,7 +21052,8 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 		"summon_unit_id": dup_def_id,
 		"holder_location": LocationIdentifier.new(target_tag, target_index),
 		"spawn_source_uuid": dying_uuid, # Feeds into the Bezier Arc spawn animation towards the Gacha Machine UI
-		"unit_tier": dup_tier
+		"unit_tier": dup_tier,
+		"copy_from_uuid": dying_uuid
 	}
 	return result
 ```
@@ -20734,7 +21216,7 @@ extends EffectDefinition
 
 ## Grants +2 PWR to the holder for every OTHER Echoing Orb in the Battle Pool.
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
-	var is_simulation = context.get("is_simulation", false)
+	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
 	
@@ -20778,6 +21260,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if uuid == source_uuid:
 			continue
 			
+		if not is_instance_valid(inst) or battle_manager.is_dead_this_turn(uuid):
+			continue
+			
 		if uuid == active_holder_uuid:
 			# This is the current holder, apply the target scaling
 			holder_delta = bonus_pwr - inst_last_scaling
@@ -20798,6 +21283,20 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	if is_simulation:
 		var result = EffectResult.new()
+		
+		# Generate visual event for the holder if they were updated
+		if holder_updated and active_holder_uuid != "":
+			var holder_inst = all_instances.get(active_holder_uuid)
+			if is_instance_valid(holder_inst) and not holder_inst.has_meta("skip_initial_scaling_anim"):
+				var event_type = CombatEvent.Type.BUFF if holder_delta > 0 else CombatEvent.Type.DAMAGE
+				var visual_source_uuid = active_holder_uuid if active_holder_uuid != "" else source_uuid
+				result.add_event(CombatEvent.new(event_type, {
+					"source_uuid": source_uuid,
+					"target_uuids": [active_holder_uuid],
+					"ability_holder_uuid": source_uuid,
+					"visual_payload": CombatPayload.pwr_change(visual_source_uuid, abs(holder_delta), [], [holder_inst.current_pwr])
+				}))
+				
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Echoing Orb (%s) scaled by %+d PWR (%d copies)" % [source_uuid, item_delta, copy_count]
 		}))
@@ -20873,7 +21372,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		
 	var new_hp = source_unit.current_hp + amount
 	if not is_simulation:
-		new_hp = battle_manager.apply_stat_delta(source_unit, "hp", amount)
+		new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
 		
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"hero_starter_ally_death_absorb")
@@ -20887,11 +21386,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": {
-			"stat": "hp",
-			"amount": amount,
-			"new_hp": new_hp
-		}
+		"visual_payload": CombatPayload.hp_change("", amount, [], [new_hp])
 	}))
 	
 	result.state_applied = true
@@ -20943,8 +21438,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var _old_hp = source_unit.current_hp
 	var _old_pwr = source_unit.current_pwr
 	
-	var new_hp = battle_manager.apply_stat_delta(source_unit, "hp", amount)
-	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", amount)
+	var new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	var new_pwr = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", amount, source_uuid)
 	
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"storm_herald_scaling")
@@ -20956,16 +21451,19 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": {
-			"stat": "both",
-			"amount": amount,
-			"new_hp": new_hp,
-			"new_pwr": new_pwr
-		}
+		"visual_payload": _make_both_stat_payload(amount, new_hp, new_pwr)
 	}))
 	
 	result.state_applied = true
 	return result
+
+func _make_both_stat_payload(amount: int, new_hp: int, new_pwr: int) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.stat = "both"
+	payload.amount = amount
+	payload.new_hp = new_hp
+	payload.new_pwr = new_pwr
+	return payload
 ```
 
 ### File: `scripts/effects/EffectMirrorTransform.gd`
@@ -21093,14 +21591,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
 	
-	var hp_res = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount)
+	var hp_res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", hp_amount, source_uuid)
 	var new_hp = old_hp + hp_amount
 	if hp_res is Dictionary:
 		new_hp = hp_res.get("new_hp", old_hp + hp_amount)
 	elif hp_res != null:
 		new_hp = int(hp_res)
 
-	var pwr_res = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount)
+	var pwr_res = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", pwr_amount, source_uuid)
 	var new_pwr = old_pwr + pwr_amount
 	if pwr_res is Dictionary:
 		new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)
@@ -21126,13 +21624,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": hp_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp])
 	}))
 	
 	# Event 2: PWR Gain (Buff visual)
@@ -21142,13 +21634,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": pwr_amount,
-			"stat": "pwr",
-			"targets_old_pwr": [old_pwr],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change(source_uuid, pwr_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true
@@ -21160,79 +21646,72 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 @tool
 extends EffectDefinition
 
-## At turn start, heals units with negative status effects for 1 HP.
+## On hurt by a negative status effect, removes all remaining stacks of that status effect.
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
 	var is_simulation: bool = context.get("is_simulation", false)
+	
+	var cause = context.get("trigger_cause", "")
+	if cause != "status_effect":
+		return EffectResult.empty() if is_simulation else null
+		
+	var status_id = context.get("status_id", &"")
+	if status_id == &"":
+		return EffectResult.empty() if is_simulation else null
+		
+	var def = StatusEffectRegistry.get_definition(status_id)
+	if not is_instance_valid(def) or not def.is_negative:
+		return EffectResult.empty() if is_simulation else null
+	
+	# Determine team
 	var team: String = String(context.get("team", ""))
 	if team.is_empty():
 		var source_inst_fallback = battle_manager.get_instance_by_uuid(source_uuid)
 		if is_instance_valid(source_inst_fallback):
 			team = "PLAYER" if source_inst_fallback.location_container_tag == &"PlayerTrinkets" else "ENEMY"
+			
+	var victim_team = context.get("victim_team", "")
+	if team != victim_team:
+		return EffectResult.empty() if is_simulation else null
+		
+	var victim_uuid = context.get("victim_uuid", "")
+	var victim_inst = battle_manager.get_instance_by_uuid(victim_uuid)
+	if not is_instance_valid(victim_inst) or victim_inst.current_hp <= 0:
+		return EffectResult.empty() if is_simulation else null
+		
+	var stacks = victim_inst.get_status_effect_amount(status_id)
+	if stacks <= 0:
+		return EffectResult.empty() if is_simulation else null
+		
+	# Apply negative stacks to clear it
+	var stat_name = String(status_id) + "_stacks"
+	var old_val = stacks
+	var new_val = battle_manager.apply_stat_delta(victim_inst, stat_name, -stacks)
 	
-	var lineup_tag: StringName = &"PlayerLineup" if team == "PLAYER" else &"EnemyLineup"
-	
-	var valid_targets: Array[String] = []
-	var target_names: Array[String] = []
-	var targets_old_hp: Array[int] = []
-	var targets_new_hp: Array[int] = []
-	
+	if not is_simulation:
+		return null
+		
+	var result = EffectResult.new()
 	var source_name := String(context.get("ability_id", "Purifying Pendant"))
 	var source_inst = battle_manager.get_instance_by_uuid(source_uuid)
 	if is_instance_valid(source_inst):
 		var display_name = BattleHelpers.get_instance_display_name(source_inst)
 		if not display_name.is_empty():
 			source_name = display_name
-	
-	for unit in battle_manager.get_instances_in_container(lineup_tag):
-		if not is_instance_valid(unit) or unit.current_hp <= 0:
-			continue
 			
-		var has_negative = false
-		for effect_id in unit.status_effects.keys():
-			if unit.status_effects[effect_id] > 0:
-				var def = StatusEffectRegistry.get_definition(effect_id)
-				if is_instance_valid(def) and def.is_negative:
-					has_negative = true
-					break
-		
-		if has_negative:
-			var old_hp = unit.current_hp
-			var hp_res = battle_manager.apply_stat_delta(unit, "hp", 1)
-			var new_hp = old_hp + 1
-			if hp_res is Dictionary:
-				new_hp = hp_res.get("new_hp", old_hp + 1)
-			elif hp_res != null:
-				new_hp = int(hp_res)
-				
-			valid_targets.append(unit.ball_uuid)
-			target_names.append(BattleHelpers.get_instance_display_name(unit))
-			targets_old_hp.append(old_hp)
-			targets_new_hp.append(new_hp)
-	
-	if valid_targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
-		
-	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"ability_trinket_purifying_pendant")
-	
+	var victim_name = BattleHelpers.get_instance_display_name(victim_inst)
+	var status_name = tr(def.display_name_key) if not def.display_name_key.is_empty() else String(def.id)
+			
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-		"text": "%s purifies %s (+1 HP)" % [source_name, " and ".join(target_names)]
+		"text": "%s purifies %s, clearing %s!" % [source_name, victim_name, status_name]
 	}))
 	
-	result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-		"source_uuid": source_uuid,
-		"target_uuids": valid_targets,
-		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
-		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": 1,
-			"stat": "hp",
-			"targets_old_hp": targets_old_hp,
-			"targets_new_hp": targets_new_hp
+	result.add_event(CombatEvent.new(
+		CombatEvent.Type.STATUS_EFFECT,
+		{
+			"target_uuids": [victim_uuid],
+			"visual_payload": CombatPayload.status_change(source_uuid, -stacks, stat_name, [old_val], [new_val], def.color)
 		}
-	}))
+	))
 	
 	result.state_applied = true
 	return result
@@ -21294,7 +21773,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			
 			# Apply the echo buff
 			# Pass source_uuid to prevent infinite loops (though AbilityResolver should filter it too)
-			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, false, source_uuid)
+			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid)
 			# Handle case where apply_stat_delta returns null (e.g. target already dead)
 			if new_val == null:
 				new_val = old_val
@@ -21315,36 +21794,25 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var log_text = "%s echoes buff! Grants +%d %s to adjacent ally." % [source_name, amount, stat_str]
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
+		var visual_source_uuid = context.get("source_holder_uuid", source_uuid)
+
 		if stat == "hp":
 			result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-				"source_uuid": source_uuid,
+				"source_uuid": visual_source_uuid,
 				"target_uuids": all_target_uuids,
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": source_uuid,
-					"amount": amount,
-					"stat": "hp",
-					"targets_old_hp": all_old_vals,
-					"targets_new_hp": all_new_vals,
-					"targets_max_hp": all_max_hp
-				}
+				"visual_payload": CombatPayload.hp_change(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
 			}))
 		elif stat == "pwr":
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": source_uuid,
+				"source_uuid": visual_source_uuid,
 				"target_uuids": all_target_uuids,
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": source_uuid,
-					"amount": amount,
-					"stat": "pwr",
-					"targets_old_pwr": all_old_vals,
-					"targets_new_pwr": all_new_vals
-				}
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, amount, all_old_vals, all_new_vals)
 			}))
 			
 		result.state_applied = true
@@ -21354,7 +21822,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		for target_uuid in targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
-				battle_manager.apply_stat_delta(tgt, stat, amount, false, source_uuid)
+				battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid)
 		return null
 ```
 
@@ -21431,7 +21899,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -21439,7 +21907,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -21468,14 +21936,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": hp_amount,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 			}))
 			
 			# PWR BUFF event
@@ -21485,19 +21946,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": _source_uuid,
-				"visual_payload": {
-					"source_uuid": _source_uuid,
-					"amount": pwr_amount,
-					"stat": "pwr",
-					"targets_old_pwr": [old_pwr],
-					"targets_new_pwr": [new_pwr]
-				}
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 			}))
 			state_applied_any = true
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
 	if is_simulation:
@@ -21642,7 +22097,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Set re-entrancy guard in battle_manager to avoid infinite loops
 	battle_manager._is_applying_static_damage = true
-	var hp_res = battle_manager.apply_stat_delta(target_unit, "hp", -1, true, source_uuid)
+	var hp_res = battle_manager.apply_damage(target_unit, 1, C.DamageType.RANGED, source_uuid)
 	battle_manager._is_applying_static_damage = false
 	
 	var new_hp = target_unit.current_hp
@@ -21669,15 +22124,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": 1,
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_old_armor": [old_armor],
-			"targets_new_armor": [new_armor],
-			"armor_consumed": [armor_consumed]
-		}
+		"visual_payload": CombatPayload.damage(source_uuid, 1, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	}))
 	
 	result.state_applied = true
@@ -21728,10 +22175,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 							"ability_holder_uuid": _source_uuid,
 							"ability_id": "ability_trinket_trinity_charm_draw",
 							"amount": 1,
-							"visual_payload": {
-								"amount": 1,
-								"origin_uuid": _source_uuid
-							}
+							"visual_payload": _make_token_payload(_source_uuid)
 						}))
 						result.state_applied = true
 						return result
@@ -21745,8 +22189,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		trinket.status_effects.erase(&"trinity_t2_drawn")
 		trinket.status_effects.erase(&"trinity_t3_drawn")
 		trinket.status_effects.erase(&"trinity_rewarded_this_cycle")
-		
-		# Return a valid result so simulation succeeds but does nothing visual
+
+			# Return a valid result so simulation succeeds but does nothing visual
 		if is_simulation:
 			var result := EffectResult.new()
 			result.state_applied = true
@@ -21754,6 +22198,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		return true
 
 	return EffectResult.empty()
+
+func _make_token_payload(source_uuid: String) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.amount = 1
+	payload.origin_uuid = source_uuid
+	return payload
 ```
 
 ### File: `scripts/effects/EffectTwinCharmScaling.gd`
@@ -21765,7 +22215,7 @@ extends EffectDefinition
 ## Grants allied units +1 PWR for each pair of that unit
 ## in the allied battle pool (lineup, bench, gacha trays, discard).
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
-	var is_simulation := bool(context.get("is_simulation", false))
+	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
@@ -21776,16 +22226,21 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var copy_counts: Dictionary = {}
 	var changed_units := 0
 	var total_delta := 0
+	
+	var buff_groups: Dictionary = {} # delta -> { "targets": [], "new_pwrs": [] }
+	var debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "new_pwrs": [] }
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
+		if not is_instance_valid(inst):
+			continue
 		if not _is_valid_count_target(inst, team, battle_manager):
 			continue
 		copy_counts[inst.definition_id] = int(copy_counts.get(inst.definition_id, 0)) + 1
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
-		if not is_instance_valid(inst):
+		if not is_instance_valid(inst) or battle_manager.is_dead_this_turn(uuid):
 			continue
 
 		var last_bonus: int = inst.get_status_effect_amount(status_key)
@@ -21794,6 +22249,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				_clear_scaling(inst, status_key, last_bonus, is_simulation)
 				changed_units += 1
 				total_delta -= last_bonus
+				
+				if is_simulation and _is_on_board(inst):
+					if not debuff_groups.has(last_bonus):
+						debuff_groups[last_bonus] = {"targets": [], "new_pwrs": []}
+					debuff_groups[last_bonus]["targets"].append(uuid)
+					debuff_groups[last_bonus]["new_pwrs"].append(inst.current_pwr)
 			continue
 
 		var total_copies: int = int(copy_counts.get(inst.definition_id, 0))
@@ -21806,11 +22267,42 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		changed_units += 1
 		total_delta += delta
 
+		if is_simulation and _is_on_board(inst) and not inst.has_meta("skip_initial_scaling_anim"):
+			if delta > 0:
+				if not buff_groups.has(delta):
+					buff_groups[delta] = {"targets": [], "new_pwrs": []}
+				buff_groups[delta]["targets"].append(uuid)
+				buff_groups[delta]["new_pwrs"].append(inst.current_pwr)
+			else:
+				var abs_delta = abs(delta)
+				if not debuff_groups.has(abs_delta):
+					debuff_groups[abs_delta] = {"targets": [], "new_pwrs": []}
+				debuff_groups[abs_delta]["targets"].append(uuid)
+				debuff_groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
+
 	if changed_units == 0:
 		return EffectResult.empty() if is_simulation else null
 
 	if is_simulation:
 		var result := EffectResult.new()
+		var visual_source_uuid = source.equipped_on_uuid if source.get("equipped_on_uuid") and not source.equipped_on_uuid.is_empty() else source_uuid
+
+		for d in buff_groups:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": visual_source_uuid,
+				"target_uuids": buff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, [], buff_groups[d]["new_pwrs"])
+			}))
+			
+		for d in debuff_groups:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": visual_source_uuid,
+				"target_uuids": debuff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, -d, [], debuff_groups[d]["new_pwrs"])
+			}))
+			
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Twin Charm updated %d units (%+d total PWR)" % [changed_units, total_delta]
 		}))
@@ -21857,6 +22349,12 @@ func _get_team_for_instance(inst: GachaBallInstance, battle_manager: Node) -> St
 		return "ENEMY"
 
 	return ""
+
+func _is_on_board(inst: GachaBallInstance) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	var container: StringName = inst.location_container_tag
+	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"
 ```
 
 ### File: `scripts/effects/EffectUnderdogArmor.gd`
@@ -21930,13 +22428,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_id": context.get("ability_id", &"ability_trinket_underdog_emblem"),
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": amount,
-			"stat": "armor_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(source_uuid, amount, "armor_stacks", targets_old_val, targets_new_val)
 	}))
 	result.state_applied = true
 	return result
@@ -21991,13 +22483,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
-		"visual_payload": {
-			"stat": "hp",
-			"amount": delta,
-			"targets_old_hp": [current_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [source.get_definition().base_hp] # Approx
-		}
+		"visual_payload": CombatPayload.hp_change("", delta, [current_hp], [new_hp], [source.get_definition().base_hp])
 	})
 	
 	var result = EffectResult.new()
@@ -22024,11 +22510,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var trigger = context.get("trigger_type", "")
 	var drawn_uuid = context.get("drawn_uuid", "")
 	
-	# Logic check: If this is an 'on_draw' trigger, only proceed if we are the ones being drawn.
-	# This prevents enemy/lineup Merchants from scaling every time the player draws (intended for boss_1 only).
-	if trigger == "on_draw" and source_uuid != drawn_uuid:
-		return EffectResult.new()
-
+	# The on_board_enter trigger handles filtering the target, so we don't need a guard clause here.
 	var gold = 0
 	if is_instance_valid(GameManager.run_state):
 		var multiplier: float = self.parameters.get("multiplier", 1.0)
@@ -22135,14 +22617,7 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 		"ability_id": context.get("ability_id", &"summon_blessing"),
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": hp_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [max_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 	}))
 	
 	result.mark_healed(summoned_uuid, hp_amount)
@@ -22188,10 +22663,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# EffectHandlers will handle collision resolution (checking if slot occupied by non-holder)
 	# and find an alternative slot if needed using the Unified Summon Slot Finder.
 
-	# 4. Pick a random Tier 1 Unit
+	# 4. Pick a random Tier 1 Unit (exclude heroes and dust/elite enemies)
 	var tier_1_units = []
 	for unit_def in Database.units.values():
-		if unit_def.tier == 1 and unit_def.category == &"UNIT" and not unit_def.is_hero:
+		var unit_id = String(unit_def.id).to_lower()
+		if unit_def.tier == 1 and unit_def.category == &"UNIT" and not unit_def.is_hero and not "dust" in unit_id and not "elite" in unit_id:
 			tier_1_units.append(unit_def)
 	
 	if tier_1_units.is_empty():
@@ -22304,16 +22780,39 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var pass_count = self.parameters.get("pass_count", 1)
 		
 		# Find units behind
-		var current_unit = source
 		var units_behind: Array[GachaBallInstance] = []
 		
-		for i in range(pass_count):
-			var ally_behind = battle_manager._get_ally_behind(current_unit)
-			if is_instance_valid(ally_behind):
-				units_behind.append(ally_behind)
-				current_unit = ally_behind
-			else:
-				break
+		var current_location: LocationIdentifier = context.get("dying_location")
+		var is_player_team: bool = context.get("dying_team", "PLAYER") == "PLAYER"
+		
+		var current_container_tag = current_location.container
+		var current_index = current_location.index
+		
+		if current_index != -1 and not current_container_tag.is_empty():
+			for i in range(pass_count):
+				var container = battle_manager.get_container(current_container_tag)
+				if not is_instance_valid(container):
+					break
+					
+				var behind_index: int
+				if is_player_team:
+					behind_index = current_index - 1
+				else:
+					behind_index = current_index + 1
+					
+				if behind_index < 0 or behind_index >= container.get_size():
+					break
+					
+				var behind_uuid = container.get_uuid(behind_index)
+				if behind_uuid.is_empty():
+					break
+					
+				var ally_behind = battle_manager.get_instance_by_uuid(behind_uuid)
+				if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+					units_behind.append(ally_behind)
+					current_index = behind_index
+				else:
+					break
 				
 		var item_def = item.get_definition()
 		var item_icon_path: String = ""
@@ -22345,23 +22844,23 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var source_name = BattleHelpers.get_instance_display_name(source)
 			var item_name = tr(item_def.display_name_key) if item_def else "Item"
 			
+			var message_payload := CombatPayload.new()
+			message_payload.message = tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
 			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"visual_payload": {
-					"message": tr("ui.transfer_item_msg") % [source_name, item_name, target_name]
-				}
+				"visual_payload": message_payload
 			}))
 			
+			var transfer_payload := CombatPayload.new()
+			transfer_payload.item_uuid = item_uuid if i == 0 else ""
+			transfer_payload.item_icon_path = item_icon_path
+			transfer_payload.old_pwr = old_pwr
+			transfer_payload.new_pwr = new_pwr
+			transfer_payload.old_hp = old_hp
+			transfer_payload.new_hp = new_hp
 			result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
 				"source_uuid": source_uuid,
 				"target_uuids": [tgt_uuid],
-				"visual_payload": {
-					"item_uuid": item_uuid if i == 0 else "", # visual doesn't strictly matter for copy
-					"item_icon_path": item_icon_path,
-					"old_pwr": old_pwr,
-					"new_pwr": new_pwr,
-					"old_hp": old_hp,
-					"new_hp": new_hp
-				}
+				"visual_payload": transfer_payload
 			}))
 		
 		return result
@@ -22407,12 +22906,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
-		"visual_payload": {
-			"stat": "pwr",
-			"amount": delta,
-			"targets_old_pwr": [source.current_pwr - delta],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change("", delta, [source.current_pwr - delta], [new_pwr])
 	})
 	
 	var result = EffectResult.new()
@@ -25050,11 +25544,26 @@ func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 		var debt_added = abs(amount) - actual_drop
 		_hp_debt += debt_added
 		current_hp -= actual_drop
+		
+		if actual_drop > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_hp_loss"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": -actual_drop}
+			battle_components.append(comp)
+			
 	elif amount > 0:
 		var debt_paid = min(amount, _hp_debt)
 		_hp_debt -= debt_paid
 		var actual_gain = amount - debt_paid
 		current_hp += actual_gain
+		
+		if actual_gain > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_hp_gain"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"hp": actual_gain}
+			battle_components.append(comp)
 		
 	if not bool(context.get("silent", false)) and old_hp != current_hp:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
@@ -25069,11 +25578,26 @@ func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 		var debt_added = abs(amount) - actual_drop
 		_pwr_debt += debt_added
 		current_pwr -= actual_drop
+		
+		if actual_drop > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_pwr_loss"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"pwr": -actual_drop}
+			battle_components.append(comp)
+			
 	elif amount > 0:
 		var debt_paid = min(amount, _pwr_debt)
 		_pwr_debt -= debt_paid
 		var actual_gain = amount - debt_paid
 		current_pwr += actual_gain
+		
+		if actual_gain > 0:
+			var comp = StatComponent.new()
+			comp.id = &"battle_pwr_gain"
+			comp.category = &"COMBAT_STATE"
+			comp.modifiers = {"pwr": actual_gain}
+			battle_components.append(comp)
 		
 	if not bool(context.get("silent", false)) and old_pwr != current_pwr:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
@@ -30088,11 +30612,26 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
 		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
 
+	var data_owner = _get_data_owner()
+	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
+	
+	if is_instance_valid(bm):
+		bm.block_ui_updates()
+
 	match choice:
 		&"MERGE":
 			_merge(source_loc, target_loc, recipe_id)
 		&"SWAP":
 			_swap(source_loc, target_loc)
+
+	if is_instance_valid(bm):
+		bm.unblock_ui_updates()
+		
+		# Clear the skip meta from all units now that initial scaling is processed
+		for uuid in data_owner.get_all_instances():
+			var inst = data_owner.get_all_instances()[uuid]
+			if inst.has_meta("skip_initial_scaling_anim"):
+				inst.remove_meta("skip_initial_scaling_anim")
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
 	var def = consumable_instance.get_definition()
@@ -30283,6 +30822,11 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		return
 
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
+	
+	# Flag the new instance so that its initial passive scaling (Twin Charm, Doppleganger, etc.) 
+	# applies silently rather than popping up floating buff numbers over a freshly spawned unit.
+	new_instance.set_meta("skip_initial_scaling_anim", true)
+	
 	var result_def = new_instance.get_definition()
 	if not is_instance_valid(result_def): return
 
@@ -32003,6 +32547,8 @@ var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
 var _confirm_drop_zone_visible: bool = false
 var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
 
+var _visual_machine_counts: Dictionary = {1: 0, 2: 0, 3: 0}
+
 # Black Market split drop zones (Remove / Transform)
 var _split_action_drop_zone_container: PanelContainer = null
 var _action_zone_2: PanelContainer = null
@@ -32103,8 +32649,8 @@ func _ready() -> void:
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
 	
-	# Update machine counts after battle manager is ready
-	call_deferred("_update_machine_counts")
+	# Initial sync of machine counts based on model data
+	call_deferred("sync_visual_machine_counts_with_model")
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
@@ -32210,6 +32756,8 @@ func _sync_scene_background(scene_instance: Node) -> void:
 
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	load_content(BATTLE_SCENE)
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	# Use call_deferred to ensure the BattleManager is ready before calling it
 	call_deferred("_start_battle_with_encounter", encounter_def)
 
@@ -32217,6 +32765,9 @@ func _on_path_choice_scene_requested() -> void:
 	load_content(PATH_CHOICE_SCENE)
 	# AUDIO HOOK: Menu BGM (Returning from battle or shop)
 	Audio.play_music(SoundRegistry.BGM_MENU)
+	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
@@ -32239,6 +32790,9 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	scene_slot.add_child(instance)
 	
 	_sync_scene_background(instance)
+	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
@@ -32363,9 +32917,12 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	
 	_play_machine_bounce(machine)
 
-## Public function to trigger machine bounce animation from external scripts
-## Used when gachballs arrive at or depart from a machine
-func trigger_machine_bounce(tier: int) -> void:
+## Public function to trigger machine bounce and update inventory counts visually
+## Used when gachballs visually arrive at or depart from a machine
+func animate_machine_inventory_change(tier: int, amount: int) -> void:
+	_visual_machine_counts[tier] = max(0, _visual_machine_counts[tier] + amount)
+	_update_machine_count_labels()
+	
 	var target_machine: Control = null
 	match tier:
 		1: target_machine = gacha_machine_1
@@ -32413,9 +32970,6 @@ func _on_battle_inventory_changed() -> void:
 
 	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
 	_populate_player_trinkets()
-	
-	# Update machine inventory counts
-	_update_machine_counts()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	# The gacha machines are always visible in the permanent HUD.
@@ -32429,8 +32983,8 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 		if is_instance_valid(tokens_label):
 			tokens_label.text = "0"
 	else:
-		# Entering battle - update machine counts
-		_update_machine_counts()
+		# Entering battle - snap visual counters to model state
+		call_deferred("sync_visual_machine_counts_with_model")
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
@@ -32540,6 +33094,9 @@ func _on_shop_scene_requested(context: Dictionary) -> void:
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
 	
+	# Snap visuals to model on screen transition
+	call_deferred("sync_visual_machine_counts_with_model")
+	
 	if instance.has_method("populate"):
 		instance.populate(context)
 
@@ -32553,7 +33110,6 @@ func _on_run_data_changed() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
-		_update_machine_counts()
 
 func _populate_player_trinkets() -> void:
 	if not is_instance_valid(GameManager.run_state):
@@ -32664,8 +33220,8 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	else:
 		pass
 
-## Update the inventory count labels on all three gacha machines
-func _update_machine_counts() -> void:
+## Hard-sync visual counts to current model data (only during screen transitions or loading)
+func sync_visual_machine_counts_with_model() -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	
 	for tier in [1, 2, 3]:
@@ -32674,15 +33230,19 @@ func _update_machine_counts() -> void:
 			count = bm.get_inventory_tier_instances(tier).size()
 		elif is_instance_valid(GameManager.run_state):
 			count = GameManager.run_state.get_inventory_tier_instances(tier).size()
-			
-		var label = null
-		match tier:
-			1: label = machine_1_count_label
-			2: label = machine_2_count_label
-			3: label = machine_3_count_label
-			
-		if is_instance_valid(label):
-			label.text = "x%d" % count
+		
+		_visual_machine_counts[tier] = count
+	
+	_update_machine_count_labels()
+
+## Update the inventory count labels on all three gacha machines from visual variables
+func _update_machine_count_labels() -> void:
+	if is_instance_valid(machine_1_count_label):
+		machine_1_count_label.text = "x%d" % _visual_machine_counts[1]
+	if is_instance_valid(machine_2_count_label):
+		machine_2_count_label.text = "x%d" % _visual_machine_counts[2]
+	if is_instance_valid(machine_3_count_label):
+		machine_3_count_label.text = "x%d" % _visual_machine_counts[3]
 
 # =============================================================================
 # CONFIRM DROP ZONE OVERLAY
@@ -33458,7 +34018,9 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 			if bm.has_method("block_ui_updates"):
 				bm.block_ui_updates()
 				
+			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
 			AbilityResolver.process_trigger(&"on_merge", merge_context)
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 			
 			var pending_count: int = 0
 			if bm.has_method("get_pending_reactions_size"):
@@ -33720,23 +34282,17 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Determine if this is a "Level Up" (Self-Merge with same result) or a "Tier Evolution"
 	var is_level_up: bool = recipe.is_self_merge and recipe.result_id == instance_a.definition_id
 	
-	# Initial combined stats (excluding items, handled below)
-	var total_hp: int = instance_a.current_hp + instance_b.current_hp
-	var total_pwr: int = instance_a.current_pwr + instance_b.current_pwr
+	# Calculate initial combined stats using ONLY permanent stats.
+	# This ensures temporary battle buffs (like Doppleganger scaling) and item bonuses
+	# are NOT permanently baked into the merged unit's base stats.
+	var total_hp: int = instance_a.get_definition_base_hp() + instance_a.get_persistent_hp_modifier() + \
+						instance_b.get_definition_base_hp() + instance_b.get_persistent_hp_modifier()
+	var total_pwr: int = instance_a.get_definition_base_pwr() + instance_a.get_persistent_pwr_modifier() + \
+						 instance_b.get_definition_base_pwr() + instance_b.get_persistent_pwr_modifier()
 	
-	# Subtract bonuses from all parent items to avoid double-dipping.
-	# We want the inherent stats (Base + Inherent Extra), and then items will be re-applied.
+	# Determine items to transfer (items will be re-equipped and their stats re-applied later)
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
 	var target_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_b, all_instances_db)
-	var all_parent_items: Array[GachaBallInstance] = []
-	all_parent_items.append_array(source_items)
-	all_parent_items.append_array(target_items)
-
-	for item in all_parent_items:
-		var item_def = item.get_definition()
-		if is_instance_valid(item_def):
-			total_hp -= item_def.bonus_hp
-			total_pwr -= item_def.bonus_pwr
 
 	# Apply New Stat Logic
 	var final_hp: int
@@ -33766,12 +34322,19 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
 	
-	# Merge status effects: sum up stacks of each status effect
+	# Merge status effects: sum up stacks of each status effect.
+	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
+	# These are used to calculate dynamic deltas. Summing them creates artificially massive trackers 
+	# that cause catastrophic negative deltas (debuffs) when the board re-evaluates the unit.
 	for status_id in instance_a.status_effects:
+		if String(status_id).contains("scaling"):
+			continue
 		var amount = instance_a.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 	for status_id in instance_b.status_effects:
+		if String(status_id).contains("scaling"):
+			continue
 		var amount = instance_b.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
@@ -36768,8 +37331,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	await tween.finished
 	Audio.play_sfx("coin_land")
 	anim_ball.queue_free()
-	if main_node.has_method("trigger_machine_bounce"):
-		main_node.trigger_machine_bounce(tier)
+	if main_node.has_method("animate_machine_inventory_change"):
+		main_node.animate_machine_inventory_change(tier, 1)
 
 func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int, instance_uuid: String) -> void:
 	var main_node = GameManager._active_main_node
@@ -39194,8 +39757,8 @@ func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vect
 	tween.tween_callback(func():
 		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
-		if is_instance_valid(main_node) and main_node.has_method("trigger_machine_bounce"):
-			main_node.trigger_machine_bounce(tier)
+		if is_instance_valid(main_node) and main_node.has_method("animate_machine_inventory_change"):
+			main_node.animate_machine_inventory_change(tier, 1)
 	)
 
 func _on_leave_pressed() -> void:
@@ -43668,6 +44231,252 @@ static func generate_uuid(prefix: StringName) -> String:
 	return "%s_%d_%d_%05d" % [prefix, timestamp, _counter, random_suffix]
 ```
 
+### File: `scripts/vfx/BuffNumberProjectile.gd`
+```gdscript
+class_name BuffNumberProjectile
+extends Node2D
+
+signal impact
+
+@onready var label: Label = $Label
+@onready var icon: Sprite2D = $Icon
+
+var _velocity: Vector2
+var _gravity: float
+var _duration: float
+var _time: float = 0.0
+var _is_moving: bool = false
+
+func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
+	# Visual setup
+	if value >= 0:
+		label.text = "+%d" % value
+	else:
+		label.text = "%d" % value  # Negative sign included automatically
+	icon.visible = false # Buff numbers never show an icon
+	label.visible = true
+	
+	# Handle specific stat visuals
+	if stat == "hp":
+		label.add_theme_color_override("font_color", Color.RED)
+	elif stat == "pwr":
+		label.add_theme_color_override("font_color", Color.BLACK)
+	elif stat == "burn":
+		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
+	elif stat == "spikes":
+		label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.0)) # Green
+	elif stat == "armor":
+		label.add_theme_color_override("font_color", Color(0.0, 0.6, 1.0)) # Blue
+	
+	# Apply Black font and matching outline to unit stat labels
+	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	label.add_theme_constant_override("outline_size", 8)
+	label.add_theme_color_override("font_outline_color", Color.WHITE)
+	
+	# Apply 1.5x scale for battle presence
+	self.scale = Vector2(1.5, 1.5)
+	
+	position = start_pos
+	visible = true
+	
+	# Physics Setup
+	# We want to reach end_pos in _duration seconds with a parabolic arc.
+	# We define an arc height relative to the highest point.
+	var arc_height = 150.0
+	if is_self_cast:
+		arc_height = 200.0
+		
+	# Calculate peak Y (remember Y is down, so peak is lower value)
+	var min_y = min(start_pos.y, end_pos.y)
+	var peak_y = min_y - arc_height
+	
+	# H is the vertical distance from start to peak
+	var h = start_pos.y - peak_y
+	# DeltaY is the vertical distance from start to end
+	var delta_y = end_pos.y - start_pos.y
+	
+	# Default duration if not set
+	if _duration <= 0:
+		_duration = AnimationConstants.scaled(0.6)
+		
+	# Solve for Gravity (g)
+	# Formula derived from projectile motion equations constrained by T, H, and DeltaY
+	# g = ( (sqrt(2*H) + sqrt(2*H + 2*DeltaY)) / T )^2
+	var term1 = sqrt(2 * h)
+	var term2 = sqrt(2 * h + 2 * delta_y) # 2*h + 2*dy = 2*(start-peak) + 2*(end-start) = 2*(end-peak). Since peak < end, this is positive.
+	var sqrt_g = (term1 + term2) / _duration
+	_gravity = sqrt_g * sqrt_g
+	
+	# Solve for Initial Vertical Velocity (Vy)
+	# Vy = -sqrt(2 * g * H) (Negative because Up is Negative Y)
+	var vy = - sqrt(2 * _gravity * h)
+	
+	# Solve for Horizontal Velocity (Vx)
+	# Vx = (End.x - Start.x) / T
+	var vx = (end_pos.x - start_pos.x) / _duration
+	
+	_velocity = Vector2(vx, vy)
+
+func launch(custom_duration: float = 0.0) -> void:
+	if custom_duration > 0.0:
+		_duration = custom_duration
+	elif _duration <= 0.0:
+		_duration = AnimationConstants.scaled(0.6)
+		
+	_time = 0.0
+	_is_moving = true
+	
+	# Recalculate physics if setup was called before launch with a different duration assumption
+	# But setup() does the calculation. If launch provides a new duration, we should ideally recalc.
+	# For simplicity, we assume launch duration matches what we want, or we recalc here.
+	# Let's just re-run the physics calc part of setup if needed, but setup needs args.
+	# Instead, let's assume setup is called with the intent, and launch just starts it.
+	# If we want to support variable duration in launch, we'd need to store the target pos.
+	pass
+
+func _process(delta: float) -> void:
+	if not _is_moving:
+		return
+		
+	_time += delta
+	
+	# Explicit Euler Integration
+	position += _velocity * delta
+	_velocity.y += _gravity * delta
+	
+	# Rotate to face direction of travel (only if using an icon like the fireball)
+	if icon.visible:
+		rotation = _velocity.angle()
+	else:
+		rotation = 0.0
+	
+	# Check for completion
+	if _time >= _duration:
+		_is_moving = false
+		impact.emit()
+		queue_free()
+```
+
+### File: `scripts/vfx/CannonballProjectile.gd`
+```gdscript
+class_name CannonballProjectile
+extends Node2D
+
+signal impact
+
+@onready var label: Label = $Label
+@onready var icon: Sprite2D = $Icon
+
+var _velocity: Vector2
+var _gravity: float
+var _duration: float
+var _time: float = 0.0
+var _is_moving: bool = false
+
+func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
+	# Visual setup
+	label.visible = false # Never show text for attack projectiles
+	icon.visible = true
+	
+	if stat == "burn":
+		var fireball_tex = load("res://assets/Realistic/ui/textures/FireBall.png")
+		if fireball_tex:
+			icon.texture = fireball_tex
+	else:
+		# Default to CannonBall for hp/damage
+		var cannonball_tex = load("res://assets/Realistic/ui/textures/CannonBall.png")
+		if cannonball_tex:
+			icon.texture = cannonball_tex
+	
+	# Apply Black font and matching outline to unit stat labels
+	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
+	label.add_theme_constant_override("outline_size", 8)
+	label.add_theme_color_override("font_outline_color", Color.WHITE)
+	
+	# Apply 1.5x scale for battle presence
+	self.scale = Vector2(1.5, 1.5)
+	
+	position = start_pos
+	visible = true
+	
+	# Physics Setup
+	# We want to reach end_pos in _duration seconds with a parabolic arc.
+	# We define an arc height relative to the highest point.
+	var arc_height = 150.0
+	if is_self_cast:
+		arc_height = 200.0
+		
+	# Calculate peak Y (remember Y is down, so peak is lower value)
+	var min_y = min(start_pos.y, end_pos.y)
+	var peak_y = min_y - arc_height
+	
+	# H is the vertical distance from start to peak
+	var h = start_pos.y - peak_y
+	# DeltaY is the vertical distance from start to end
+	var delta_y = end_pos.y - start_pos.y
+	
+	# Default duration if not set
+	if _duration <= 0:
+		_duration = AnimationConstants.scaled(0.6)
+		
+	# Solve for Gravity (g)
+	# Formula derived from projectile motion equations constrained by T, H, and DeltaY
+	# g = ( (sqrt(2*H) + sqrt(2*H + 2*DeltaY)) / T )^2
+	var term1 = sqrt(2 * h)
+	var term2 = sqrt(2 * h + 2 * delta_y) # 2*h + 2*dy = 2*(start-peak) + 2*(end-start) = 2*(end-peak). Since peak < end, this is positive.
+	var sqrt_g = (term1 + term2) / _duration
+	_gravity = sqrt_g * sqrt_g
+	
+	# Solve for Initial Vertical Velocity (Vy)
+	# Vy = -sqrt(2 * g * H) (Negative because Up is Negative Y)
+	var vy = - sqrt(2 * _gravity * h)
+	
+	# Solve for Horizontal Velocity (Vx)
+	# Vx = (End.x - Start.x) / T
+	var vx = (end_pos.x - start_pos.x) / _duration
+	
+	_velocity = Vector2(vx, vy)
+
+func launch(custom_duration: float = 0.0) -> void:
+	if custom_duration > 0.0:
+		_duration = custom_duration
+	elif _duration <= 0.0:
+		_duration = AnimationConstants.scaled(0.6)
+		
+	_time = 0.0
+	_is_moving = true
+	
+	# Recalculate physics if setup was called before launch with a different duration assumption
+	# But setup() does the calculation. If launch provides a new duration, we should ideally recalc.
+	# For simplicity, we assume launch duration matches what we want, or we recalc here.
+	# Let's just re-run the physics calc part of setup if needed, but setup needs args.
+	# Instead, let's assume setup is called with the intent, and launch just starts it.
+	# If we want to support variable duration in launch, we'd need to store the target pos.
+	pass
+
+func _process(delta: float) -> void:
+	if not _is_moving:
+		return
+		
+	_time += delta
+	
+	# Explicit Euler Integration
+	position += _velocity * delta
+	_velocity.y += _gravity * delta
+	
+	# Rotate to face direction of travel (only if using an icon like the fireball)
+	if icon.visible:
+		rotation = _velocity.angle()
+	else:
+		rotation = 0.0
+	
+	# Check for completion
+	if _time >= _duration:
+		_is_moving = false
+		impact.emit()
+		queue_free()
+```
+
 ### File: `scripts/vfx/FloatingDamageNumber.gd`
 ```gdscript
 class_name FloatingDamageNumber
@@ -44106,135 +44915,6 @@ static func _add_shake_keyframes(tween: Tween, target: Control, original_rotatio
 	tween.tween_property(target, "rotation", original_rotation, shake_time * 0.5).set_delay(SHAKE_DURATION)
 ```
 
-### File: `scripts/vfx/StatProjectile.gd`
-```gdscript
-class_name StatProjectile
-extends Node2D
-
-signal impact
-
-@onready var label: Label = $Label
-@onready var icon: Sprite2D = $Icon
-
-var _velocity: Vector2
-var _gravity: float
-var _duration: float
-var _time: float = 0.0
-var _is_moving: bool = false
-
-func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
-	# Visual setup
-	label.text = "%d" % value
-	icon.visible = false # Hide icon by default
-	label.visible = true # Show label by default
-	
-	# Handle specific stat visuals
-	if stat == "hp":
-		label.add_theme_color_override("font_color", Color.RED)
-	elif stat == "pwr":
-		label.add_theme_color_override("font_color", Color.BLACK)
-	elif stat == "burn":
-		label.add_theme_color_override("font_color", Color(1.0, 0.5, 0.0)) # Orange
-		# Use FireBall texture for burn projectiles
-		var fireball_tex = load("res://assets/Realistic/ui/textures/FireBall.png")
-		if fireball_tex:
-			icon.texture = fireball_tex
-			icon.visible = true
-			label.visible = false # Hide number if using fireball texture as requested
-	elif stat == "spikes":
-		label.add_theme_color_override("font_color", Color(0.0, 1.0, 0.0)) # Green
-	elif stat == "armor":
-		label.add_theme_color_override("font_color", Color(0.0, 0.6, 1.0)) # Blue
-	
-	# Apply Black font and matching outline to unit stat labels
-	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	label.add_theme_constant_override("outline_size", 8)
-	label.add_theme_color_override("font_outline_color", Color.WHITE)
-	
-	# Apply 1.5x scale for battle presence
-	self.scale = Vector2(1.5, 1.5)
-	
-	position = start_pos
-	visible = true
-	
-	# Physics Setup
-	# We want to reach end_pos in _duration seconds with a parabolic arc.
-	# We define an arc height relative to the highest point.
-	var arc_height = 150.0
-	if is_self_cast:
-		arc_height = 200.0
-		
-	# Calculate peak Y (remember Y is down, so peak is lower value)
-	var min_y = min(start_pos.y, end_pos.y)
-	var peak_y = min_y - arc_height
-	
-	# H is the vertical distance from start to peak
-	var h = start_pos.y - peak_y
-	# DeltaY is the vertical distance from start to end
-	var delta_y = end_pos.y - start_pos.y
-	
-	# Default duration if not set
-	if _duration <= 0:
-		_duration = AnimationConstants.scaled(0.6)
-		
-	# Solve for Gravity (g)
-	# Formula derived from projectile motion equations constrained by T, H, and DeltaY
-	# g = ( (sqrt(2*H) + sqrt(2*H + 2*DeltaY)) / T )^2
-	var term1 = sqrt(2 * h)
-	var term2 = sqrt(2 * h + 2 * delta_y) # 2*h + 2*dy = 2*(start-peak) + 2*(end-start) = 2*(end-peak). Since peak < end, this is positive.
-	var sqrt_g = (term1 + term2) / _duration
-	_gravity = sqrt_g * sqrt_g
-	
-	# Solve for Initial Vertical Velocity (Vy)
-	# Vy = -sqrt(2 * g * H) (Negative because Up is Negative Y)
-	var vy = - sqrt(2 * _gravity * h)
-	
-	# Solve for Horizontal Velocity (Vx)
-	# Vx = (End.x - Start.x) / T
-	var vx = (end_pos.x - start_pos.x) / _duration
-	
-	_velocity = Vector2(vx, vy)
-
-func launch(custom_duration: float = 0.0) -> void:
-	if custom_duration > 0.0:
-		_duration = custom_duration
-	elif _duration <= 0.0:
-		_duration = AnimationConstants.scaled(0.6)
-		
-	_time = 0.0
-	_is_moving = true
-	
-	# Recalculate physics if setup was called before launch with a different duration assumption
-	# But setup() does the calculation. If launch provides a new duration, we should ideally recalc.
-	# For simplicity, we assume launch duration matches what we want, or we recalc here.
-	# Let's just re-run the physics calc part of setup if needed, but setup needs args.
-	# Instead, let's assume setup is called with the intent, and launch just starts it.
-	# If we want to support variable duration in launch, we'd need to store the target pos.
-	pass
-
-func _process(delta: float) -> void:
-	if not _is_moving:
-		return
-		
-	_time += delta
-	
-	# Explicit Euler Integration
-	position += _velocity * delta
-	_velocity.y += _gravity * delta
-	
-	# Rotate to face direction of travel (only if using an icon like the fireball)
-	if icon.visible:
-		rotation = _velocity.angle()
-	else:
-		rotation = 0.0
-	
-	# Check for completion
-	if _time >= _duration:
-		_is_moving = false
-		impact.emit()
-		queue_free()
-```
-
 ### File: `scripts/vfx/TokenPopVFX.gd`
 ```gdscript
 # res://scripts/vfx/TokenPopVFX.gd
@@ -44577,7 +45257,8 @@ extends Node
 ## Provides factory methods for creating VFX nodes with proper layer placement.
 
 # Preloaded VFX scenes
-const StatProjectileScene = preload("res://scenes/vfx/StatProjectile.tscn")
+const CannonballProjectileScene = preload("res://scenes/vfx/CannonballProjectile.tscn")
+const BuffNumberProjectileScene = preload("res://scenes/vfx/BuffNumberProjectile.tscn")
 const FloatingDamageNumberScene = preload("res://scenes/vfx/FloatingDamageNumber.tscn")
 const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 
@@ -44586,8 +45267,10 @@ const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 # -----------------------------------------------------------------------------
 
 ## Create a stat projectile (damage/heal/buff)
-func create_projectile() -> Node:
-	return StatProjectileScene.instantiate()
+func create_projectile(is_attack_projectile: bool = false) -> Node:
+	if is_attack_projectile:
+		return CannonballProjectileScene.instantiate()
+	return BuffNumberProjectileScene.instantiate()
 
 ## Create a floating damage number
 func create_damage_number() -> Node:
@@ -44631,8 +45314,8 @@ func get_viewport_offset() -> Vector2:
 
 ## Spawn a projectile on the effects layer with proper positioning
 ## Returns the projectile node (caller must call setup() and launch())
-func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool) -> Node:
-	var projectile = create_projectile()
+func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool, is_attack_projectile: bool = false) -> Node:
+	var projectile = create_projectile(is_attack_projectile)
 	var effects_layer = get_effects_layer()
 	
 	if is_instance_valid(effects_layer):
@@ -44744,29 +45427,31 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 ## Launch a projectile from source to target using animator position snapshots.
 ## Handles position resolution, self-cast detection, and projectile spawning.
 ## Returns the projectile node for awaiting impact, or null if positions invalid.
-func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String) -> Node:
-	# Get target position from animator snapshot
-	var tgt_snap = animator.get_snapshot_position(target_uuid)
+func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, is_attack_projectile: bool = false) -> Node:
+	# Get target position from animator live view (fallback to snapshot)
+	var tgt_snap = animator.get_live_position(target_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(target_uuid)
 	if tgt_snap.is_empty():
 		return null
 	
 	# Get source position (optional - may be self-cast)
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
-	var src_snap = animator.get_snapshot_position(source_uuid)
-	if not src_snap.is_empty():
+	if not source_uuid.is_empty():
+		var src_snap = animator.get_live_position(source_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(source_uuid)
+		# No defensive code! If a source was specified, its visual must exist.
+		assert(not src_snap.is_empty(), "CRITICAL: Missing valid source view in snapshot for uuid: " + source_uuid)
 		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)
 		is_source_valid = true
 	
 	# Calculate end position
 	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 	
-	# Detect self-cast (no valid source or source == target)
+	# Detect self-cast (no source or source == target)
 	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
 	var launch_pos = end_pos if is_self_cast else start_pos
 	
 	# Spawn and launch projectile
-	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast)
+	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast, is_attack_projectile)
 	if projectile:
 		projectile.launch()
 	return projectile
@@ -46700,6 +47385,14 @@ func _init():
 		else:
 			print("Material is not ShaderMaterial")
 	quit()
+```
+
+### File: `test_script.gd`
+```gdscript
+extends SceneTree
+func _init():
+    print("Hello from Godot!")
+    quit()
 ```
 
 ### File: `test_trinket.gd`

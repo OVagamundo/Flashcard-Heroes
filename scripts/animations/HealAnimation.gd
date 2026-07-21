@@ -3,10 +3,10 @@ extends BattleAnimation
 
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var targets_new_hp = payload.get("targets_new_hp", [])
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var targets_new_hp = payload.targets_new_hp
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame

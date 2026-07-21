@@ -7,7 +7,7 @@ extends RefCounted
 # Execute the animation.
 # animator: The BattleAnimator instance (provides context like visual_registry, tree, etc.)
 # targets: Array of target UUIDs
-# payload: The visual_payload dictionary from the CombatEvent
-func execute(_animator: Node, _targets: Array[String], _payload: Dictionary) -> void:
+# payload: The typed visual payload from the CombatEvent
+func execute(_animator: Node, _targets: Array[String], _payload: CombatPayload) -> void:
 	push_warning("BattleAnimation.execute() not implemented")
 	pass

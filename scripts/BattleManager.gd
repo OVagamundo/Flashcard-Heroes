@@ -475,12 +475,8 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if has_bargain and not bargain_used:
 		_bargain_charm_uses[tier] = true
 		if cost < base_cost:
-			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "",
-				"visual_payload": {
-					"trinket_activations": [{"definition_id": &"trinket_bargain_charm", "is_enemy": false}]
-				}
-			})
+			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": ""})
+			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_bargain_charm", false))
 			_animate_bargain_charm_async(event)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
@@ -495,10 +491,10 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
 		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
 		
-	draw_event.visual_payload = {
-		"draw_result": draw_result,
-		"new_unit_snapshot": new_unit_snapshot
-	}
+	var draw_payload := CombatPayload.new()
+	draw_payload.draw_result = draw_result
+	draw_payload.new_unit_snapshot = new_unit_snapshot
+	draw_event.visual_payload = draw_payload
 	chain_events.append(draw_event)
 	
 	# Trigger passive updates (like Trinkets) so they enter the reaction queue
@@ -914,7 +910,7 @@ func _create_death_event_if_needed(unit_uuid: String, out_events: Array, death_t
 	death_tracking[unit_uuid] = true
 	out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": {}
+		"visual_payload": CombatPayload.new()
 	}))
 
 ## Check if any deferred counter-attack units have completed their abilities and should now die
@@ -1389,17 +1385,13 @@ func _trigger_static_consumption(instance: GachaBallInstance) -> void:
 		instance.add_status_effect_silent(&"static", -1)
 		var new_static = static_stacks - 1
 		
+		var static_payload := CombatPayload.status_change("", -1, "static_stacks", [], [new_static])
+		static_payload.new_value = new_static
+		static_payload.old_value = static_stacks
 		var static_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 			"source_uuid": "SYSTEM",
 			"target_uuids": [instance.ball_uuid],
-			"visual_payload": {
-				"stat": "static_stacks",
-				"amount": -1,
-				"new_val": new_static,
-				"targets_new_val": [new_static],
-				"new_value": new_static,
-				"old_value": static_stacks
-			}
+			"visual_payload": static_payload
 		})
 		_combat.add_inline_event(static_event)
 		
@@ -1609,14 +1601,12 @@ func _advance_team_death_slots(slot_effects: Array[StringName], active_death_slo
 		
 		slot_effects[slot_index] = DEATH_SLOT_EFFECT
 		var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {
-			"visual_payload": {
-				"container_tag": container_tag,
-				"slot_index": slot_index,
-				"from_effect": previous_effect,
-				"to_effect": DEATH_SLOT_EFFECT
-			}
-		}))
+		var slot_payload := CombatPayload.new()
+		slot_payload.container_tag = container_tag
+		slot_payload.slot_index = slot_index
+		slot_payload.from_effect = previous_effect
+		slot_payload.to_effect = DEATH_SLOT_EFFECT
+		events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {"visual_payload": slot_payload}))
 	return events
 
 
@@ -1916,22 +1906,15 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 				"text": "%s takes %d %s dmg" % [unit_name, damage, status_name]
 			}))
+			var status_damage_payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+			status_damage_payload.skip_bump = true
+			status_damage_payload.is_status_damage = true
+			status_damage_payload.status_color = status_def.color
+			status_damage_payload.targets_max_hp = [max_hp]
 			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_status_damage": true,
-					"status_color": status_def.color,
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp],
-					"targets_old_armor": [old_armor],
-					"targets_new_armor": [new_armor],
-					"armor_consumed": [armor_consumed]
-				}
+				"visual_payload": status_damage_payload
 			}))
 			
 			trigger_on_hurt(unit.ball_uuid, damage, "", C.CAUSE_STATUS_EFFECT, status_def.id)
@@ -1951,13 +1934,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			all_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": heal,
-					"stat": "hp",
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp]
-				}
+				"visual_payload": CombatPayload.hp_change("", heal, [old_hp], [new_hp], [max_hp])
 			}))
 		
 		# Apply decay
@@ -1999,20 +1976,14 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 						new_stacks = 0
 			
 			if armor_decay_prevented_by_polished:
-				all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+				var polished_payload := CombatPayload.status_change("", 0, "armor_stacks", [], [new_stacks], status_def.color)
+				var polished_event := CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": "",
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": {
-						"amount": 0,
-						"stat": "armor_stacks",
-						"new_val": new_stacks,
-						"status_color": status_def.color,
-						"trinket_activations": [{
-							"definition_id": &"trinket_polished_plate",
-							"is_enemy": not _is_player_unit(unit)
-						}]
-					}
-				}))
+					"visual_payload": polished_payload
+				})
+				polished_event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_polished_plate", not _is_player_unit(unit)))
+				all_events.append(polished_event)
 		
 		if new_stacks != old_stacks:
 			if new_stacks <= 0:
@@ -2023,15 +1994,11 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				apply_stat_delta(unit, String(status_def.id) + "_stacks", decay_delta)
 			
 			# Emit STATUS_EFFECT event for status decay so animator updates the visual
+			var decay_payload := CombatPayload.status_change("", new_stacks - old_stacks, String(status_def.id) + "_stacks", [], [new_stacks], status_def.color)
 			all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": new_stacks - old_stacks,
-					"stat": String(status_def.id) + "_stacks",
-					"new_val": new_stacks,
-					"status_color": status_def.color
-				}
+				"visual_payload": decay_payload
 			}))
 		
 		# Handle death from status damage
@@ -2066,13 +2033,7 @@ func handle_armor_stacks(request: EffectRequest, resolved_targets: Array[String]
 		"ability_id": request.ability_id,
 		"trigger_type": request.trigger_context.get("trigger_type", ""),
 		"ability_holder_uuid": request.source_uuid,
-		"visual_payload": {
-			"source_uuid": request.source_uuid,
-			"amount": amount,
-			"stat": "armor_stacks",
-			"targets_old_val": targets_old_val,
-			"targets_new_val": targets_new_val
-		}
+		"visual_payload": CombatPayload.status_change(request.source_uuid, amount, "armor_stacks", targets_old_val, targets_new_val)
 	})
 
 
@@ -2352,12 +2313,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 							"source_uuid": "",
 							"target_uuids": [unit.ball_uuid],
 							"ability_id": &"trait_earth_spikes",
-							"visual_payload": {
-								"amount": spikes_value,
-								"stat": "spikes_stacks",
-								"targets_old_val": [old_spikes],
-								"targets_new_val": [new_spikes]
-							}
+							"visual_payload": CombatPayload.status_change("", spikes_value, "spikes_stacks", [old_spikes], [new_spikes])
 						})
 						total_events.append(spikes_event)
 		
@@ -2380,12 +2336,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						"source_uuid": "", # Trait effect has no single unit source
 						"target_uuids": [unit.ball_uuid],
 						"ability_id": &"trait_fire_burn",
-						"visual_payload": {
-							"amount": amount,
-							"stat": "burn_stacks",
-							"targets_old_val": [old_val],
-							"targets_new_val": [new_val]
-						}
+						"visual_payload": CombatPayload.status_change("", amount, "burn_stacks", [old_val], [new_val])
 					})
 					total_events.append(event)
 		
@@ -2419,15 +2370,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 							"source_uuid": unit.ball_uuid,
 							"target_uuids": [ally.ball_uuid],
 							"ability_id": &"trait_water_heal",
-							"visual_payload": {
-								"source_uuid": unit.ball_uuid,
-								"amount": 1,
-								"stat": "hp",
-								"skip_bump": false,
-								"targets_old_hp": [old_hp],
-								"targets_new_hp": [new_hp],
-								"targets_max_hp": [max_hp]
-							}
+						"visual_payload": CombatPayload.hp_change(unit.ball_uuid, 1, [old_hp], [new_hp], [max_hp])
 						})
 						total_events.append(event)
 						
@@ -2514,13 +2457,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
 					"target_uuids": [enemy.ball_uuid],
 					"ability_id": &"trait_air_steal",
-					"visual_payload": {
-						"source_uuid": enemy.ball_uuid,
-						"stat": "pwr",
-						"amount": - 1,
-						"targets_old_pwr": [enemy_old_pwr],
-						"targets_new_pwr": [enemy_new_pwr]
-					}
+					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
 				})
 				total_events.append(debuff_event)
 				
@@ -2529,13 +2466,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					"source_uuid": enemy.ball_uuid, # Projectile originates FROM enemy
 					"target_uuids": [unit.ball_uuid], # Travels TO Air unit
 					"ability_id": &"trait_air_steal",
-					"visual_payload": {
-						"source_uuid": enemy.ball_uuid, # From enemy
-						"stat": "pwr",
-						"amount": 1,
-						"targets_old_pwr": [unit_old_pwr],
-						"targets_new_pwr": [unit_new_pwr]
-					}
+					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
 				})
 				total_events.append(buff_event)
 

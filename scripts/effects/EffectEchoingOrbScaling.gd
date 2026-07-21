@@ -82,12 +82,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					"source_uuid": source_uuid,
 					"target_uuids": [active_holder_uuid],
 					"ability_holder_uuid": source_uuid,
-					"visual_payload": {
-						"source_uuid": visual_source_uuid,
-						"stat": "pwr",
-						"amount": abs(holder_delta),
-						"targets_new_pwr": [holder_inst.current_pwr]
-					}
+					"visual_payload": CombatPayload.pwr_change(visual_source_uuid, abs(holder_delta), [], [holder_inst.current_pwr])
 				}))
 				
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

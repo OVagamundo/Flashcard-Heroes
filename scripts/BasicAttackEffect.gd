@@ -112,11 +112,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 				"source_uuid": guardian.ball_uuid,
 				"target_uuids": [final_target_uuid],
-				"visual_payload": {
-					"guardian_uuid": guardian.ball_uuid,
-					"original_target_uuid": final_target_uuid,
-					"damage": damage
-				}
+				"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, final_target_uuid)
 			}))
 			final_target_uuid = guardian.ball_uuid
 			final_target = guardian
@@ -174,26 +170,17 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_simulation:
 		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
 		
-	# PACKAGE EVENTS INTO PAYLOAD
-	var visual_payload: Dictionary = {
-		"source_uuid": attacker_uuid,
-		"amount": damage,
-		"targets_old_hp": [old_hp],
-		"targets_new_hp": [new_hp],
-		"targets_old_armor": [old_armor],
-		"targets_new_armor": [new_armor],
-		"targets_old_burn": [old_burn],
-		"targets_new_burn": [burn_val],
-		"apply_burn": should_apply_burn,
-		"armor_consumed": [armor_consumed],
-		"attack_type": attack_type,
-		"projectile_data": {"stat": "hp", "amount": abs(damage), "color": "red"} if attack_type == "ranged" else {},
-		"original_target_uuids": [target_instance.ball_uuid], # The original target the attack aimed for
-		"spikes_data_list": spikes_data_list,
-		"windup_events": windup_events,
-		"pre_impact_events": pre_impact_events,
-		"impact_events": impact_events
-	}
+	var visual_payload := CombatPayload.damage(attacker_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+	visual_payload.targets_old_burn = [old_burn]
+	visual_payload.targets_new_burn = [burn_val]
+	visual_payload.apply_burn = should_apply_burn
+	visual_payload.attack_type = attack_type
+	visual_payload.projectile = CombatProjectile.new("hp", abs(damage), "red") if attack_type == "ranged" else null
+	visual_payload.original_target_uuids = [target_instance.ball_uuid]
+	visual_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+	visual_payload.windup_events = windup_events
+	visual_payload.pre_impact_events = pre_impact_events
+	visual_payload.impact_events = impact_events
 	
 	var damage_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {
 		"source_uuid": attacker_uuid,
@@ -208,3 +195,20 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		SignalBus.battle_inventory_changed.emit()
 
 	return effect_result
+
+func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSpikesData]:
+	var result: Array[CombatSpikesData] = []
+	for raw_data in raw_spikes_data:
+		var spikes_data := CombatSpikesData.new()
+		spikes_data.attacker_uuid = String(raw_data.get("attacker_uuid", ""))
+		spikes_data.defender_uuid = String(raw_data.get("defender_uuid", ""))
+		spikes_data.spikes_damage = int(raw_data.get("spikes_damage", 0))
+		spikes_data.attacker_old_hp = int(raw_data.get("attacker_old_hp", 0))
+		spikes_data.attacker_new_hp = int(raw_data.get("attacker_new_hp", 0))
+		spikes_data.attacker_max_hp = int(raw_data.get("attacker_max_hp", 0))
+		spikes_data.old_spikes = int(raw_data.get("old_spikes", 0))
+		spikes_data.new_spikes = int(raw_data.get("new_spikes", 0))
+		spikes_data.armor_consumed = int(raw_data.get("armor_consumed", 0))
+		spikes_data.new_armor = int(raw_data.get("new_armor", 0))
+		result.append(spikes_data)
+	return result

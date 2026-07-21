@@ -83,10 +83,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"source_uuid": _source_uuid,
 			"target_uuids": [victim_uuid],
 			"ability_id": context.get("ability_id", &"aegis_charm"),
-			"visual_payload": {
-				"saved_uuid": victim_uuid,
-				"heal_amount": heal_amount
-			}
+			"visual_payload": _make_lethal_save_payload(victim_uuid, heal_amount)
 		}))
 		
 		result.mark_healed(victim_uuid, heal_amount)
@@ -100,3 +97,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"targets": [victim_uuid],
 			"prevented_lethal": true
 		}
+
+func _make_lethal_save_payload(saved_uuid: String, heal_amount: int) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.saved_uuid = saved_uuid
+	payload.heal_amount = heal_amount
+	return payload

@@ -34,12 +34,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
-		"visual_payload": {
-			"stat": "pwr",
-			"amount": delta,
-			"targets_old_pwr": [source.current_pwr - delta],
-			"targets_new_pwr": [new_pwr]
-		}
+		"visual_payload": CombatPayload.pwr_change("", delta, [source.current_pwr - delta], [new_pwr])
 	})
 	
 	var result = EffectResult.new()

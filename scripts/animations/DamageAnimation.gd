@@ -4,22 +4,22 @@ extends BattleAnimation
 # NOTE: VFX scene preloads moved to VFXFactory autoload
 # NOTE: Animation timing constants are in AnimationConstants.gd
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var source_uuid = String(payload.get("source_uuid", ""))
-	var amount = int(payload.get("amount", 0))
-	var skip_bump = bool(payload.get("skip_bump", false))
-	var apply_burn = bool(payload.get("apply_burn", false))
-	var is_burn_damage = bool(payload.get("is_burn_damage", false))
-	var attack_type = String(payload.get("attack_type", "melee")) # Default to melee
-	var main_target_uuid = String(payload.get("main_target_uuid", "")) # For multi-target attacks
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var source_uuid = payload.source_uuid
+	var amount = payload.amount
+	var skip_bump = payload.skip_bump
+	var apply_burn = payload.apply_burn
+	var is_burn_damage = payload.is_burn_damage
+	var attack_type = payload.attack_type
+	var main_target_uuid = payload.main_target_uuid
 	
-	var _raw_wind = payload.get("windup_events", [])
+	var _raw_wind = payload.windup_events
 	var windup_events: Array[CombatEvent] = []
 	for e in _raw_wind: windup_events.append(e as CombatEvent)
-	var _raw_pre = payload.get("pre_impact_events", [])
+	var _raw_pre = payload.pre_impact_events
 	var pre_impact_events: Array[CombatEvent] = []
 	for e in _raw_pre: pre_impact_events.append(e as CombatEvent)
-	var _raw_imp = payload.get("impact_events", [])
+	var _raw_imp = payload.impact_events
 	var impact_events: Array[CombatEvent] = []
 	for e in _raw_imp: impact_events.append(e as CombatEvent)
 	
@@ -36,8 +36,8 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	# Determine main target (first target if not specified)
 	# GUARDIAN SENTINEL FIX: When Guardian intercepts, use original target position for melee lunge
 	# This way the attacker still lunges to where the original target was, and Guardian leaps there
-	var original_target_uuids = payload.get("original_target_uuids", [])
-	var original_target_uuid = payload.get("original_target_uuid", "") # Single target (cascade damage)
+	var original_target_uuids = payload.original_target_uuids
+	var original_target_uuid = payload.original_target_uuid
 	
 	if main_target_uuid.is_empty():
 		# Priority: original_target_uuids > original_target_uuid > targets[0]
@@ -117,7 +117,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 			animator.play_trinket_activation(source_uuid)
 			
 		# 2. Launch projectile from trinket position to target(s)
-		var p_stat = String(payload.get("stat", "hp"))
+		var p_stat = payload.stat if not payload.stat.is_empty() else "hp"
 		var p_amount = amount
 		var projectiles = []
 		for target_uuid in targets:
@@ -148,17 +148,17 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		# Trigger Bump (if applicable)
 		var should_bump = (not skip_bump) and (not source_uuid.is_empty())
 		if should_bump:
-			var bump_dir = payload.get("bump_direction", Vector2.ZERO)
+			var bump_dir = payload.bump_direction
 			if bump_dir != Vector2.ZERO:
 				SignalBus.emit_signal("unit_bump_attack", source_uuid, bump_dir)
 		
 		# Launch Projectile (Parallel)
-		var proj_data = payload.get("projectile_data", {})
+		var proj_data = payload.projectile
 		var projectiles = []
-		if not proj_data.is_empty():
-			var p_stat = String(proj_data.get("stat", "hp"))
-			var p_amount = int(proj_data.get("amount", 0))
-			var p_color = String(proj_data.get("color", "red"))
+		if proj_data != null:
+			var p_stat = proj_data.stat
+			var p_amount = proj_data.amount
+			var p_color = proj_data.color
 			
 			for target_uuid in targets:
 				var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(p_amount), p_stat, p_color)
@@ -196,14 +196,14 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	if not impact_events.is_empty():
 		await animator._animate_events(impact_events)
 
-func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dictionary, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
-	var targets_new_hp = payload.get("targets_new_hp", [])
-	var targets_new_burn = payload.get("targets_new_burn", [])
-	var armor_consumed_list = payload.get("armor_consumed", [])
-	var targets_new_armor = payload.get("targets_new_armor", [])
-	var targets_new_pwr = payload.get("targets_new_pwr", []) # Support for PWR damage
-	var stat = String(payload.get("stat", "hp")) # Identify stat type
-	var spikes_data_list = payload.get("spikes_data_list", []) # Spikes reflection data
+func _apply_damage_effects(animator: Node, targets: Array[String], payload: CombatPayload, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
+	var targets_new_hp = payload.targets_new_hp
+	var targets_new_burn = payload.targets_new_burn
+	var armor_consumed_list = payload.armor_consumed
+	var targets_new_armor = payload.targets_new_armor
+	var targets_new_pwr = payload.targets_new_pwr
+	var stat = payload.stat if not payload.stat.is_empty() else "hp"
+	var spikes_data_list = payload.spikes_data_list
 	
 	# Trigger screen shake based on total damage dealt
 	# Intensity scales from 0.0 to 1.0, where 5+ damage = max shake
@@ -288,14 +288,14 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Dict
 	# SPIKES DAMAGE: Apply reflection damage to attacker(s) at the same moment
 	# This happens while the attacker is at the lunge peak (touching the target)
 	for spikes_data in spikes_data_list:
-		var attacker_uuid = String(spikes_data.get("attacker_uuid", ""))
-		var spikes_damage = int(spikes_data.get("spikes_damage", 0))
-		var attacker_new_hp = int(spikes_data.get("attacker_new_hp", 0))
-		var _old_spikes = int(spikes_data.get("old_spikes", 0))
-		var new_spikes = int(spikes_data.get("new_spikes", 0))
-		var defender_uuid = String(spikes_data.get("defender_uuid", ""))
-		var armor_consumed = int(spikes_data.get("armor_consumed", 0))
-		var new_armor = int(spikes_data.get("new_armor", 0))
+		var attacker_uuid = spikes_data.attacker_uuid
+		var spikes_damage = spikes_data.spikes_damage
+		var attacker_new_hp = spikes_data.attacker_new_hp
+		var _old_spikes = spikes_data.old_spikes
+		var new_spikes = spikes_data.new_spikes
+		var defender_uuid = spikes_data.defender_uuid
+		var armor_consumed = spikes_data.armor_consumed
+		var new_armor = spikes_data.new_armor
 		
 		if attacker_uuid.is_empty() or spikes_damage <= 0:
 			continue

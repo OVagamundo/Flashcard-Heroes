@@ -82,14 +82,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": visual_source_uuid,
-					"amount": amount,
-					"stat": "hp",
-					"targets_old_hp": all_old_vals,
-					"targets_new_hp": all_new_vals,
-					"targets_max_hp": all_max_hp
-				}
+				"visual_payload": CombatPayload.hp_change(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
 			}))
 		elif stat == "pwr":
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -98,13 +91,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				"ability_id": "unit_t2_g_buff_echo",
 				"trigger_type": "on_stat_increased",
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": {
-					"source_uuid": visual_source_uuid,
-					"amount": amount,
-					"stat": "pwr",
-					"targets_old_pwr": all_old_vals,
-					"targets_new_pwr": all_new_vals
-				}
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, amount, all_old_vals, all_new_vals)
 			}))
 			
 		result.state_applied = true

@@ -62,14 +62,7 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 		"ability_id": context.get("ability_id", &"summon_blessing"),
 		"trigger_type": context.get("trigger_type", ""),
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": {
-			"source_uuid": source_uuid,
-			"amount": hp_amount,
-			"stat": "hp",
-			"targets_old_hp": [old_hp],
-			"targets_new_hp": [new_hp],
-			"targets_max_hp": [max_hp]
-		}
+		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 	}))
 	
 	result.mark_healed(summoned_uuid, hp_amount)

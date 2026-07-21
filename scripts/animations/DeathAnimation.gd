@@ -1,7 +1,7 @@
 class_name DeathAnimation
 extends BattleAnimation
 
-func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], _payload: CombatPayload) -> void:
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	

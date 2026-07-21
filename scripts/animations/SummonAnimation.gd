@@ -3,12 +3,12 @@ extends BattleAnimation
 
 const AC = preload("res://scripts/animations/AnimationConstants.gd")
 
-func execute(animator: Node, targets: Array[String], _payload: Dictionary) -> void:
+func execute(animator: Node, targets: Array[String], _payload: CombatPayload) -> void:
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
 	# Units are already registered and visible - just trigger fade-in animation
-	var style = _payload.get("visual_style", "")
+	var style = _payload.visual_style
 	
 	for target_uuid in targets:
 		if style == "yellow_flash":

@@ -5,9 +5,9 @@ extends BattleAnimation
 ## Guardian leaps to the target's position to shield them.
 ## After damage is dealt, the guardian returns (handled by DamageAnimation's post-damage logic).
 
-func execute(animator: Node, _targets: Array[String], payload: Dictionary) -> void:
-	var guardian_uuid: String = String(payload.get("guardian_uuid", ""))
-	var original_target_uuid: String = String(payload.get("original_target_uuid", ""))
+func execute(animator: Node, _targets: Array[String], payload: CombatPayload) -> void:
+	var guardian_uuid: String = payload.guardian_uuid
+	var original_target_uuid: String = payload.original_target_uuid
 	
 	if guardian_uuid.is_empty() or original_target_uuid.is_empty():
 		return

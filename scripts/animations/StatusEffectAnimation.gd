@@ -6,9 +6,9 @@ extends BattleAnimation
 ## NO projectiles - just immediate effect application.
 ## Handles: burn_stacks, armor_stacks, and generic *_stacks
 
-func execute(animator: Node, targets: Array[String], payload: Dictionary) -> void:
-	var amount = int(payload.get("amount", 0))
-	var stat = String(payload.get("stat", ""))
+func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> void:
+	var amount = payload.amount
+	var stat = payload.stat
 	
 	
 	# Ensure coroutine
@@ -16,7 +16,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 	
 	# 1. Launch Projectiles (if source is provided)
 	var projectiles = []
-	var source_uuid = String(payload.get("source_uuid", ""))
+	var source_uuid = payload.source_uuid
 	
 	# Only use projectiles for positive "buff" style effects when a source exists
 	var use_projectiles = not source_uuid.is_empty() and amount > 0
@@ -40,7 +40,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.4)).timeout
 
 	# 2. Apply Stat Buff / Status Effect
-	var stack_values = payload.get("targets_new_val", [])
+	var stack_values = payload.targets_new_val
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
 		
@@ -53,7 +53,7 @@ func execute(animator: Node, targets: Array[String], payload: Dictionary) -> voi
 		if not stack_values.is_empty() and i < stack_values.size():
 			new_val = int(stack_values[i])
 		else:
-			new_val = int(payload.get("new_val", 0)) # Fallback
+			new_val = payload.new_val
 		
 		# Determine color and effect based on stat type
 		var flash_color: Color

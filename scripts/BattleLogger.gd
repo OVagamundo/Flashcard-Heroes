@@ -143,11 +143,11 @@ func _on_animation_event(event: CombatEvent) -> void:
 		CombatEvent.Type.DAMAGE:
 			var payload = event.visual_payload
 			# HP values are stored in arrays (targets_old_hp, targets_new_hp)
-			var old_hp_arr = payload.get("targets_old_hp", [])
-			var new_hp_arr = payload.get("targets_new_hp", [])
+			var old_hp_arr = payload.targets_old_hp
+			var new_hp_arr = payload.targets_new_hp
 			var old_hp = int(old_hp_arr[0]) if old_hp_arr.size() > 0 else 0
 			var new_hp = int(new_hp_arr[0]) if new_hp_arr.size() > 0 else 0
-			var damage = abs(int(payload.get("amount", 0)))
+			var damage = abs(payload.amount)
 			if damage == 0:
 				damage = abs(old_hp - new_hp)
 			log_attack(source_name, primary_target, damage, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
@@ -155,19 +155,19 @@ func _on_animation_event(event: CombatEvent) -> void:
 		CombatEvent.Type.HEAL:
 			var payload = event.visual_payload
 			# HP values are stored in arrays
-			var old_hp_arr = payload.get("targets_old_hp", [])
-			var new_hp_arr = payload.get("targets_new_hp", [])
+			var old_hp_arr = payload.targets_old_hp
+			var new_hp_arr = payload.targets_new_hp
 			var old_hp = int(old_hp_arr[0]) if old_hp_arr.size() > 0 else 0
 			var new_hp = int(new_hp_arr[0]) if new_hp_arr.size() > 0 else 0
-			var amount = int(payload.get("amount", 0))
+			var amount = payload.amount
 			if amount == 0:
 				amount = abs(new_hp - old_hp)
 			log_heal(source_name, primary_target, amount, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.BUFF:
 			var payload = event.visual_payload
-			var stat = String(payload.get("stat", "stat"))
-			var amount = int(payload.get("amount", event.amount))
+			var stat = payload.stat if not payload.stat.is_empty() else "stat"
+			var amount = payload.amount if payload.amount != 0 else event.amount
 			var is_debuff = amount < 0
 			log_buff(source_name, primary_target, stat, abs(amount), is_debuff, String(event.ability_id), String(event.trigger_type))
 		
@@ -176,7 +176,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 		
 		CombatEvent.Type.SUMMON:
 			var payload = event.visual_payload
-			var new_snapshot = payload.get("new_unit_snapshot", {})
+			var new_snapshot = payload.new_unit_snapshot
 			var summoned_name = "New Unit"
 			if new_snapshot.has("display_name"):
 				summoned_name = str(new_snapshot.get("display_name"))
@@ -188,7 +188,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 		
 		CombatEvent.Type.TOKEN_GAIN:
 			var payload = event.visual_payload
-			var amount = int(payload.get("amount", 0))
+			var amount = payload.amount
 			log_system("Gained %d tokens!" % amount)
 
 
@@ -201,8 +201,8 @@ func _get_source_name(event: CombatEvent) -> String:
 		return get_unit_name(event.source_uuid)
 	# Check payload for source info
 	var payload = event.visual_payload
-	if payload.has("source_uuid"):
-		return get_unit_name(String(payload.get("source_uuid")))
+	if not payload.source_uuid.is_empty():
+		return get_unit_name(payload.source_uuid)
 	return "System"
 
 func _get_target_names(event: CombatEvent) -> Array[String]:

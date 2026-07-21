@@ -76,22 +76,18 @@ static func process_burn_damage(state: BattleState, get_display_name_callback: C
 			events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": {
-					"amount": - damage,
-					"stat": "hp",
-					"skip_bump": true,
-					"is_burn_damage": true,
-					"targets_old_hp": [old_hp],
-					"targets_new_hp": [new_hp],
-					"targets_max_hp": [max_hp],
-					"targets_old_armor": [old_armor],
-					"targets_new_armor": [new_armor],
-					"armor_consumed": [armor_consumed]
-				}
+				"visual_payload": _make_burn_payload(damage, old_hp, new_hp, max_hp, old_armor, new_armor, armor_consumed)
 			}))
 
 	
 	return events
+
+static func _make_burn_payload(damage: int, old_hp: int, new_hp: int, max_hp: int, old_armor: int, new_armor: int, armor_consumed: int) -> CombatPayload:
+	var payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+	payload.skip_bump = true
+	payload.is_burn_damage = true
+	payload.targets_max_hp = [max_hp]
+	return payload
 
 # ============================================================================
 # TURN END ABILITIES
