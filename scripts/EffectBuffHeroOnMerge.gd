@@ -7,22 +7,22 @@ extends EffectDefinition
 ##   - hp_amount: int (default 1) - HP buff amount
 ##   - pwr_amount: int (default 1) - PWR buff amount  
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Determine the merged unit
 	var merged_uuid: String = context.get("merged_uuid", "")
 	if merged_uuid.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var merged_instance = battle_manager.get_instance(merged_uuid)
 	if not is_instance_valid(merged_instance):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	# Check if the merged unit is on the player's team (since this is a player exclusive trinket)
 	var source_team = _get_team_from_container(merged_instance.location_container_tag)
 	if source_team != "PLAYER":
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var hero_uuid = ""
 	for c_name in [&"PlayerLineup"]:
@@ -55,11 +55,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			break
 			
 	if hero_uuid.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var hero_instance = battle_manager.get_instance(hero_uuid)
 	if not is_instance_valid(hero_instance):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var result := EffectResult.new()
 	var state_applied_any := false
@@ -134,11 +134,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		battle_manager.apply_stat_delta(hero_instance, "pwr", pwr_amount)
 		state_applied_any = true
 
-	if is_simulation:
-		result.state_applied = true
-		return result
-	else:
-		return 1 if state_applied_any else 0
+	result.state_applied = true
+	return result
 
 func _get_team_from_container(container: StringName) -> String:
 	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":

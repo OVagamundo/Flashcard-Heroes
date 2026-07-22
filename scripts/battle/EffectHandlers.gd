@@ -696,9 +696,9 @@ static func handle_cascade_damage(
 			t_acts.append(CombatTrinketActivation.new(&"trinket_burn_vial", not is_player_source))
 			
 		var payload := CombatPayload.damage(animation_source_uuid, -cascade_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
-		payload.targets_max_hp = [max_hp]
-		payload.targets_old_burn = [old_burn]
-		payload.targets_new_burn = [burn_val]
+		payload.targets_max_hp = [max_hp] as Array[int]
+		payload.targets_old_burn = [old_burn] as Array[int]
+		payload.targets_new_burn = [burn_val] as Array[int]
 		payload.apply_burn = should_apply_burn
 		payload.skip_bump = cascade_skip_bump
 		payload.bump_direction = bump_dir

@@ -2,20 +2,20 @@
 extends EffectDefinition
 
 ## On hurt by a negative status effect, removes all remaining stacks of that status effect.
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	var cause = context.get("trigger_cause", "")
 	if cause != "status_effect":
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var status_id = context.get("status_id", &"")
 	if status_id == &"":
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var def = StatusEffectRegistry.get_definition(status_id)
 	if not is_instance_valid(def) or not def.is_negative:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# Determine team
 	var team: String = String(context.get("team", ""))
@@ -26,16 +26,16 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			
 	var victim_team = context.get("victim_team", "")
 	if team != victim_team:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var victim_uuid = context.get("victim_uuid", "")
 	var victim_inst = battle_manager.get_instance_by_uuid(victim_uuid)
 	if not is_instance_valid(victim_inst) or victim_inst.current_hp <= 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var stacks = victim_inst.get_status_effect_amount(status_id)
 	if stacks <= 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	# Apply negative stacks to clear it
 	var stat_name = String(status_id) + "_stacks"
@@ -43,8 +43,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var new_val = battle_manager.apply_stat_delta(victim_inst, stat_name, -stacks)
 	
 	if not is_simulation:
-		return null
-		
+		return EffectResult.empty()
 	var result = EffectResult.new()
 	var source_name := String(context.get("ability_id", "Purifying Pendant"))
 	var source_inst = battle_manager.get_instance_by_uuid(source_uuid)

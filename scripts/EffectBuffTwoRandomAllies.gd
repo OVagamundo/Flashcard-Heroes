@@ -8,7 +8,7 @@ const C = preload("res://scripts/Constants.gd")
 ## The animation source is the item holder (equipped_on_uuid), not the item itself.
 ## Used by Power Amulet (T3 Item B) on_attack trigger.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Get the buff amount and stat from parameters
@@ -21,12 +21,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var holder_uuid: String = context.get("source_holder_uuid", "")
 	if holder_uuid.is_empty():
 		push_warning("[EffectBuffTwoRandomAllies] source_holder_uuid missing from context")
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# We still need holder instance for team detection
 	var holder = battle_manager.get_instance_by_uuid(holder_uuid)
 	if not is_instance_valid(holder):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# Determine which team the holder is on
 	var holder_is_player: bool = battle_manager._is_player_unit(holder)
@@ -36,7 +36,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var allies = battle_manager.get_instances_in_container(lineup_tag).filter(func(u): return u.current_hp > 0)
 	
 	if allies.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# Select random targets independently for each buff
 	var buff_targets: Array[String] = []
@@ -74,11 +74,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			visual_payload.amount = buff_amount
 			visual_payload.stat = buff_stat
 			if buff_stat == "pwr":
-				visual_payload.targets_old_pwr = [old_val]
-				visual_payload.targets_new_pwr = [new_val]
+				visual_payload.targets_old_pwr = [old_val] as Array[int]
+				visual_payload.targets_new_pwr = [new_val] as Array[int]
 			else:
-				visual_payload.targets_old_val = [old_val]
-				visual_payload.targets_new_val = [new_val]
+				visual_payload.targets_old_val = [old_val] as Array[int]
+				visual_payload.targets_new_val = [new_val] as Array[int]
 			
 			# BUFF event
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -98,4 +98,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
 				battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
-		return buff_amount
+		var non_sim_result := EffectResult.new()
+		non_sim_result.state_applied = true
+		return non_sim_result

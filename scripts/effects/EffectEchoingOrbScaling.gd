@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Grants +2 PWR to the holder for every OTHER Echoing Orb in the Battle Pool.
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
@@ -11,7 +11,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Find the Echoing Orb item instance
 	var source_item = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_item):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var source_is_player = _is_player_item(source_item, battle_manager)
 
@@ -67,11 +67,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			inst.apply_pwr_delta(-inst_last_scaling, {"silent": is_simulation})
 	
 	if item_delta == 0 and not holder_updated: 
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
+	var result = EffectResult.new()
 	if is_simulation:
-		var result = EffectResult.new()
-		
 		# Generate visual event for the holder if they were updated
 		if holder_updated and active_holder_uuid != "":
 			var holder_inst = all_instances.get(active_holder_uuid)
@@ -88,10 +87,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Echoing Orb (%s) scaled by %+d PWR (%d copies)" % [source_uuid, item_delta, copy_count]
 		}))
-		result.state_applied = true
-		return result
-		
-	return item_delta
+	
+	result.state_applied = true
+	return result
 
 func _is_player_item(inst: GachaBallInstance, battle_manager: Node) -> bool:
 	if not is_instance_valid(inst):

@@ -77,43 +77,43 @@ var item_icon_path: String = ""
 var item_name: String = "Item"
 var message: String = ""
 
-static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_max_hp: Array[int] = []) -> CombatPayload:
+static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = "hp"
-	payload.targets_old_hp = p_targets_old_hp
-	payload.targets_new_hp = p_targets_new_hp
-	payload.targets_max_hp = p_targets_max_hp
-	payload.new_hp = p_targets_new_hp[0] if not p_targets_new_hp.is_empty() else 0
+	payload.targets_old_hp.assign(p_targets_old_hp)
+	payload.targets_new_hp.assign(p_targets_new_hp)
+	payload.targets_max_hp.assign(p_targets_max_hp)
+	payload.new_hp = payload.targets_new_hp[0] if not payload.targets_new_hp.is_empty() else 0
 	return payload
 
-static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array[int] = [], p_targets_new_pwr: Array[int] = []) -> CombatPayload:
+static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = "pwr"
-	payload.targets_old_pwr = p_targets_old_pwr
-	payload.targets_new_pwr = p_targets_new_pwr
-	payload.new_pwr = p_targets_new_pwr[0] if not p_targets_new_pwr.is_empty() else 0
+	payload.targets_old_pwr.assign(p_targets_old_pwr)
+	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
 	return payload
 
-static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array[int] = [], p_targets_new_val: Array[int] = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
+static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array = [], p_targets_new_val: Array = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = p_stat
-	payload.targets_old_val = p_targets_old_val
-	payload.targets_new_val = p_targets_new_val
-	payload.new_val = p_targets_new_val[0] if not p_targets_new_val.is_empty() else 0
+	payload.targets_old_val.assign(p_targets_old_val)
+	payload.targets_new_val.assign(p_targets_new_val)
+	payload.new_val = payload.targets_new_val[0] if not payload.targets_new_val.is_empty() else 0
 	payload.status_color = p_status_color
 	return payload
 
-static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_old_armor: Array[int] = [], p_targets_new_armor: Array[int] = [], p_armor_consumed: Array[int] = []) -> CombatPayload:
+static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_armor: Array = [], p_targets_new_armor: Array = [], p_armor_consumed: Array = []) -> CombatPayload:
 	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
-	payload.targets_old_armor = p_targets_old_armor
-	payload.targets_new_armor = p_targets_new_armor
-	payload.armor_consumed = p_armor_consumed
+	payload.targets_old_armor.assign(p_targets_old_armor)
+	payload.targets_new_armor.assign(p_targets_new_armor)
+	payload.armor_consumed.assign(p_armor_consumed)
 	return payload
 
 static func guardian_intercept(p_guardian_uuid: String, p_original_target_uuid: String) -> CombatPayload:

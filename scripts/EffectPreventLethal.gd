@@ -9,7 +9,7 @@ extends EffectDefinition
 ## DOCUMENTATION COMPLIANT: Uses context keys only (ZERO-INSTANCE-QUERY RULE)
 ## Required context keys: victim_uuid, victim_team, victim_current_hp, team
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# 1. Get data from context (ZERO-INSTANCE-QUERY compliant)
@@ -23,31 +23,38 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Validate required context keys
 	if victim_uuid.is_empty():
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	if victim_team.is_empty():
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	if trinket_team.is_empty():
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# 2. Check victim is on same team as trinket
 	if victim_team != trinket_team:
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
+	# 2.5 Check victim is a valid UNIT (not a trinket)
+	var victim_def_id = context.get("victim_def_id", "")
+	var victim_def = Database.get_definition(victim_def_id)
+	if not is_instance_valid(victim_def) or victim_def.category != &"UNIT":
+		pass
+		return EffectResult.empty()
+		
 	# 3. Check if damage was lethal (HP <= 0)
 	if victim_current_hp > 0:
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# 4. Check once-per-turn flag
 	var aegis_flag_key := "aegis_prevented_" + trinket_team
 	if battle_manager._turn_metadata.get(aegis_flag_key, false):
 		pass
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# 5. Calculate heal amount to bring HP to 1
 	# current_hp is negative or 0, so we need to heal by (1 - current_hp)
@@ -90,13 +97,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		result.state_applied = true
 		return result
 	else:
-		# Legacy execution mode
-		return {
-			"stat": "hp",
-			"amount": heal_amount,
-			"targets": [victim_uuid],
-			"prevented_lethal": true
-		}
+		# Non-simulation: apply heal directly
+		var victim = battle_manager.get_instance_by_uuid(victim_uuid)
+		if is_instance_valid(victim):
+			battle_manager.apply_stat_delta(victim, "hp", heal_amount)
+		var non_sim_result := EffectResult.new()
+		non_sim_result.state_applied = true
+		return non_sim_result
 
 func _make_lethal_save_payload(saved_uuid: String, heal_amount: int) -> CombatPayload:
 	var payload := CombatPayload.new()

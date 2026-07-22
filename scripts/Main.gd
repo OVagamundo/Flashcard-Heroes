@@ -16,9 +16,9 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var bottom_area: PanelContainer = %BottomArea
 
 # Knob buttons for drawing
-@onready var knob_button_1: TextureButton = %GachaMachine1.get_node("KnobButton")
-@onready var knob_button_2: TextureButton = %GachaMachine2.get_node("KnobButton")
-@onready var knob_button_3: TextureButton = %GachaMachine3.get_node("KnobButton")
+@onready var knob_button_1: TextureButton = %GachaMachine1.get_knob_button() if %GachaMachine1.has_method("get_knob_button") else %GachaMachine1.get_node_or_null("KnobButton")
+@onready var knob_button_2: TextureButton = %GachaMachine2.get_knob_button() if %GachaMachine2.has_method("get_knob_button") else %GachaMachine2.get_node_or_null("KnobButton")
+@onready var knob_button_3: TextureButton = %GachaMachine3.get_knob_button() if %GachaMachine3.has_method("get_knob_button") else %GachaMachine3.get_node_or_null("KnobButton")
 
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
@@ -28,9 +28,9 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
 # Machine inventory count labels
-@onready var machine_1_count_label: Label = %GachaMachine1.get_node("CountLabel")
-@onready var machine_2_count_label: Label = %GachaMachine2.get_node("CountLabel")
-@onready var machine_3_count_label: Label = %GachaMachine3.get_node("CountLabel")
+@onready var machine_1_count_label: Label = %GachaMachine1.get_count_label() if %GachaMachine1.has_method("get_count_label") else %GachaMachine1.get_node_or_null("CountLabel")
+@onready var machine_2_count_label: Label = %GachaMachine2.get_count_label() if %GachaMachine2.has_method("get_count_label") else %GachaMachine2.get_node_or_null("CountLabel")
+@onready var machine_3_count_label: Label = %GachaMachine3.get_count_label() if %GachaMachine3.has_method("get_count_label") else %GachaMachine3.get_node_or_null("CountLabel")
 
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")

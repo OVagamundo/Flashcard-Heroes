@@ -439,7 +439,7 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# Contextual/discovery buttons should be disabled only during COMBAT
 	discard_pile_button.disabled = is_combat
 	
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node): return
 	
 	var draw_buttons_parent = main_node.get_node_or_null("VBoxContainer/BottomArea/HBoxContainer")
@@ -469,7 +469,7 @@ func _show_battle_management_tutorial() -> void:
 	
 	_waiting_for_management_tutorial = false
 		
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node): return
 	
 	# Identify all elements we want to point to
@@ -763,7 +763,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		_pending_animated_uuids.append(draw_result.drawn_uuid)
 	
 	# Attempt to find the Gacha Machine (Start Position)
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node):
 		_force_refresh_after_anim()
 		return

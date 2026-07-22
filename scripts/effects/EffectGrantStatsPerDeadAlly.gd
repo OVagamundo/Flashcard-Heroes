@@ -4,11 +4,10 @@ extends EffectDefinition
 ## Grants +PWR and +HP to the source unit for each ally that died this combat.
 ## User requested for Storm Herald: "+1 HP and +1 PWR per dead ally".
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	if not is_simulation:
-		return null
-		
+		return EffectResult.empty()
 	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_unit):
 		return EffectResult.empty()

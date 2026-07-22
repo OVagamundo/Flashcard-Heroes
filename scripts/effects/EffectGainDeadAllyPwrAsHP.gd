@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Only triggers once per turn per team for the first unit to die.
 ## Resolves targets independently.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Determine team from context - the fainting ally's team is our team

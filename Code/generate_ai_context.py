@@ -133,7 +133,7 @@ def main():
         
         all_gd_files = []
         for p in Path.cwd().rglob("*.gd"):
-            if "addons" in p.parts or ".godot" in p.parts or "brain" in p.parts or "scratch" in p.parts:
+            if "addons" in p.parts or ".godot" in p.parts or "brain" in p.parts or "scratch" in p.parts or "tools_and_archive" in p.parts:
                 continue
             all_gd_files.append(p)
             

@@ -7,7 +7,7 @@ extends EffectDefinition
 ## lower tier AND lower level (tier < 3 and level < 3), excluding the Hero.
 ## Used by Awe Inspiring Totem trinket.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	
@@ -19,7 +19,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			trinket_team = _get_team_from_container(trinket_instance.location_container_tag)
 			
 	if trinket_team.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var lineup_container: StringName = &"PlayerLineup" if trinket_team == "PLAYER" else &"EnemyLineup"
 
@@ -44,7 +44,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			break
 
 	if not has_mentor:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var result := EffectResult.new()
 	var state_applied_any := false
@@ -142,11 +142,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			target_instance.add_status_effect(status_key, 1)
 			state_applied_any = true
 
-	if is_simulation:
-		result.state_applied = true
-		return result
-	else:
-		return 1 if state_applied_any else 0
+	result.state_applied = true
+	return result
 
 # Helper to determine team from container tag
 func _get_team_from_container(container: StringName) -> String:

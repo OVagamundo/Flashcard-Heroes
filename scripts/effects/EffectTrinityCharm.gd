@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Effect for Trinity Charm: Tracks drawn tiers in a turn/encounter. 
 ## If all 3 tiers are drawn, grants 1 token. Resets on turn end or battle start.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var trinket: GachaBallInstance = battle_manager.get_instance_by_uuid(_source_uuid)
 	if not is_instance_valid(trinket):
 		return EffectResult.empty()
@@ -46,7 +46,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 						return result
 					else:
 						battle_manager.add_gacha_token(1)
-						return 1
+						var non_sim_result := EffectResult.new()
+						non_sim_result.state_applied = true
+						return non_sim_result
 
 	elif trigger == &"on_turn_end" or trigger == &"on_battle_start":
 		# Reset all tracking
@@ -60,7 +62,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var result := EffectResult.new()
 			result.state_applied = true
 			return result
-		return true
+		var non_sim_result := EffectResult.new()
+		non_sim_result.state_applied = true
+		return non_sim_result
 
 	return EffectResult.empty()
 

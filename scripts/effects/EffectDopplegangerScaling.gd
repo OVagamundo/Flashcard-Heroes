@@ -3,14 +3,14 @@
 extends EffectDefinition
 
 ## Grants +3 PWR for every OTHER Doppleganger in the Battle Pool.
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
 	
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source) or battle_manager.is_dead_this_turn(source_uuid):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var source_is_player = _is_player_unit_team(source, battle_manager)
 	
@@ -31,7 +31,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var delta = bonus_pwr - last_scaling
 	
 	if delta == 0: 
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	# Sync status effect amount silently
 	if last_scaling > 0: 
@@ -42,11 +42,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Apply standard PWR modification
 	source.apply_pwr_delta(delta, {"silent": is_simulation})
 
-	if is_simulation and _is_on_board(source):
-		var result := EffectResult.new()
-		var event_type = CombatEvent.Type.BUFF
-
-		# Since this is a self-buff from a unit, the visual source should be the combat instance's UUID
+	var result := EffectResult.new()
+	if is_simulation:
+		var event_type = CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DAMAGE
+		# Target self for the visual event, but use the source_uuid as the ability_holder_uuid
 		# so that it maps correctly to the position snapshot, and the projectile originates from itself.
 		result.add_event(CombatEvent.new(event_type, {
 			"source_uuid": source_uuid,
@@ -58,10 +57,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
 		}))
-		result.state_applied = true
-		return result
-		
-	return delta
+	
+	result.state_applied = true
+	return result
 
 func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool:
 	if not is_instance_valid(inst):

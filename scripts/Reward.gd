@@ -23,9 +23,9 @@ const COST_TIER3: int = 3
 @onready var tier1_machine: Control = %Tier1Machine
 @onready var tier2_machine: Control = %Tier2Machine
 @onready var tier3_machine: Control = %Tier3Machine
-@onready var tier1_draw_button: Button = %Tier1Machine.get_node("DrawButton")
-@onready var tier2_draw_button: Button = %Tier2Machine.get_node("DrawButton")
-@onready var tier3_draw_button: Button = %Tier3Machine.get_node("DrawButton")
+@onready var tier1_draw_button: Button = %Tier1Machine.get_draw_button() if %Tier1Machine.has_method("get_draw_button") else %Tier1Machine.get_node_or_null("DrawButton")
+@onready var tier2_draw_button: Button = %Tier2Machine.get_draw_button() if %Tier2Machine.has_method("get_draw_button") else %Tier2Machine.get_node_or_null("DrawButton")
+@onready var tier3_draw_button: Button = %Tier3Machine.get_draw_button() if %Tier3Machine.has_method("get_draw_button") else %Tier3Machine.get_node_or_null("DrawButton")
 
 var _tokens: int = 0
 var _prizes: Array[GachaBallInstance] = [null, null, null, null, null]
@@ -197,8 +197,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		return
 	
 	_action_in_progress = true
-	var button = machine.get_node("DrawButton")
-	button.disabled = true
+	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	if is_instance_valid(button):
+		button.disabled = true
 	
 	# Animate Bargain Charm if it is providing a discount
 	if GameManager.is_bargain_charm_active(tier):
@@ -341,7 +342,8 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
 
 func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallInstance) -> void:
-	var start_pos = machine.get_node("DrawButton").get_global_rect().get_center()
+	var draw_btn: Control = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	var start_pos: Vector2 = draw_btn.get_global_rect().get_center() if is_instance_valid(draw_btn) else machine.get_global_rect().get_center()
 	var target_slot = prize_lineup.get_child(slot_index)
 	var end_pos = target_slot.get_global_rect().get_center()
 	

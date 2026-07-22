@@ -5,16 +5,16 @@ extends EffectDefinition
 ## Grants +1 PWR to the target (ally behind the source unit).
 ## Used by the Windy unit's Empathic Link ability.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	var target_uuid: String = targets[0]
 	var target = battle_manager.get_instance_by_uuid(target_uuid)
 	if not is_instance_valid(target):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# ROBUSTNESS: Use snapshotted source PWR from context if available (captured at moment of death)
 	# Fallback to current PWR if context is missing (though AbilityResolver should provide it)
@@ -35,4 +35,4 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		}))
 		return result
 	
-	return null
+	return EffectResult.empty()

@@ -362,7 +362,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var is_inventory_summon = String(container_tag).begins_with("BattleInventoryT")
 				
 				var battle_view = get_tree().get_first_node_in_group("battle_view")
-				var main_node = get_tree().get_root().find_child("Main", true, false)
+				var main_node = GameManager.get_main_node()
 				
 				var arc_completed = false
 				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
@@ -537,31 +537,38 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	view.animate_stat_change(new_hp, amount, "hp")
+	if is_instance_valid(view) and view.has_method("animate_stat_change"):
+		view.animate_stat_change(new_hp, amount, "hp")
 
 func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	view.animate_stat_change(new_pwr, amount, "pwr")
+	if is_instance_valid(view) and view.has_method("animate_stat_change"):
+		view.animate_stat_change(new_pwr, amount, "pwr")
 
 func apply_burn_stack(uuid: String, new_stacks: int) -> void:
-	var view = _visual_registry[uuid]
-	view.animate_burn_change(new_stacks)
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.has_method("animate_burn_change"):
+		view.animate_burn_change(new_stacks)
 
 func apply_armor_stack(uuid: String, new_stacks: int) -> void:
-	var view = _visual_registry[uuid]
-	view.animate_armor_change(new_stacks)
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.has_method("animate_armor_change"):
+		view.animate_armor_change(new_stacks)
 
 func apply_armor_delta(target_uuid: String, armor_consumed: int, new_armor: int) -> void:
 	var view = _visual_registry.get(target_uuid)
-	view.animate_armor_stat_change(new_armor, armor_consumed)
+	if is_instance_valid(view) and view.has_method("animate_armor_stat_change"):
+		view.animate_armor_stat_change(new_armor, armor_consumed)
 
 func apply_status_stack(uuid: String, status_id: StringName, new_stacks: int) -> void:
-	var view = _visual_registry[uuid]
-	view.animate_status_change(status_id, new_stacks)
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.has_method("animate_status_change"):
+		view.animate_status_change(status_id, new_stacks)
 
 func apply_spikes_stack(uuid: String, new_stacks: int) -> void:
-	var view = _visual_registry[uuid]
-	view.animate_status_change(&"spikes", new_stacks)
+	var view = _visual_registry.get(uuid)
+	if is_instance_valid(view) and view.has_method("animate_status_change"):
+		view.animate_status_change(&"spikes", new_stacks)
 
 func _emit_bump(_attacker_uuid: String) -> void:
 	pass

@@ -6,16 +6,14 @@ const C = preload("res://scripts/Constants.gd")
 
 ## Execute the stealing effect.
 ## Returns EffectResult on success, or null if no item could be stolen.
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
+func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	if targets.is_empty():
-		return null
-	
+		return EffectResult.empty()
 	var target_uuid = targets[0]
 	var target_unit = battle_manager.get_instance(target_uuid)
 	
 	if not is_instance_valid(target_unit):
-		return null
-	
+		return EffectResult.empty()
 	# 1. Find Stealable Items
 	var stealable_items: Array[GachaBallInstance] = []
 	for item_uuid in target_unit.equipped_item_uuids:
@@ -27,8 +25,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	
 	# Condition: Target must have at least one item
 	if stealable_items.is_empty():
-		return null
-		
+		return EffectResult.empty()
 	# 2. Select Random Item
 	var stolen_item = stealable_items.pick_random()
 	var stolen_def = stolen_item.get_definition()
@@ -91,8 +88,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		# Let's try to move to discard if inventory is full
 		# BUT standard behavior is usually "fail if no room".
 		# Let's return null if no room.
-		return null
-		
+		return EffectResult.empty()
 	var source_loc = stolen_item.get_location()
 	var dest_loc = LocationIdentifier.new(dest_container_tag, dest_index)
 	
@@ -100,8 +96,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	var success = battle_manager.bm_move_instance(source_loc, dest_loc)
 	
 	if not success:
-		return null
-		
+		return EffectResult.empty()
 	# 4. Construct Result
 	var result := EffectResult.new()
 	

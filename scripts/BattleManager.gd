@@ -1910,7 +1910,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			status_damage_payload.skip_bump = true
 			status_damage_payload.is_status_damage = true
 			status_damage_payload.status_color = status_def.color
-			status_damage_payload.targets_max_hp = [max_hp]
+			status_damage_payload.targets_max_hp = [max_hp] as Array[int]
 			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],

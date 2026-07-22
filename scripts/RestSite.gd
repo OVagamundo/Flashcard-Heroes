@@ -20,9 +20,9 @@ enum SiteType { HP, PWR, GOLD }
 @onready var tier2_machine: Control = %Tier2Machine
 @onready var tier3_machine: Control = %Tier3Machine
 
-@onready var tier1_draw_button: Button = tier1_machine.get_node("DrawButton")
-@onready var tier2_draw_button: Button = tier2_machine.get_node("DrawButton")
-@onready var tier3_draw_button: Button = tier3_machine.get_node("DrawButton")
+@onready var tier1_draw_button: Button = tier1_machine.get_draw_button() if tier1_machine.has_method("get_draw_button") else tier1_machine.get_node_or_null("DrawButton")
+@onready var tier2_draw_button: Button = tier2_machine.get_draw_button() if tier2_machine.has_method("get_draw_button") else tier2_machine.get_node_or_null("DrawButton")
+@onready var tier3_draw_button: Button = tier3_machine.get_draw_button() if tier3_machine.has_method("get_draw_button") else tier3_machine.get_node_or_null("DrawButton")
 
 # UI references
 @onready var study_button: Button = %StudyButton
@@ -120,12 +120,14 @@ func _setup_machine_visuals() -> void:
 	
 	for i in range(machines.size()):
 		var machine = machines[i]
-		var label = machine.get_node("StatLabel")
-		var button = machine.get_node("DrawButton")
+		var label: Label = machine.get_stat_label() if machine.has_method("get_stat_label") else machine.get_node_or_null("StatLabel")
+		var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
 		
-		label.text = stat_label_text
-		label.add_theme_color_override("font_color", stat_color)
-		button.text = "%d Tokens" % costs[i]
+		if is_instance_valid(label):
+			label.text = stat_label_text
+			label.add_theme_color_override("font_color", stat_color)
+		if is_instance_valid(button):
+			button.text = "%d Tokens" % costs[i]
 
 func _populate_hero_slot() -> void:
 	"""Display the hero in the first slot with entry animation"""
@@ -217,8 +219,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
 		return
 	
-	var button = machine.get_node("DrawButton")
-	button.disabled = true
+	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	if is_instance_valid(button):
+		button.disabled = true
 	
 	# Animate token spend
 	await _animate_token_spend(machine, cost, token_group)
@@ -304,7 +307,8 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
 
 func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictionary) -> void:
-	var start_pos = machine.get_node("DrawButton").get_global_rect().get_center()
+	var draw_btn: Control = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	var start_pos: Vector2 = draw_btn.get_global_rect().get_center() if is_instance_valid(draw_btn) else machine.get_global_rect().get_center()
 	var target_slot = prize_lineup.get_child(slot_index + 1)
 	var end_pos = target_slot.get_global_rect().get_center()
 	

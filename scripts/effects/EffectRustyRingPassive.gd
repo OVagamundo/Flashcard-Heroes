@@ -8,7 +8,7 @@ extends EffectDefinition
 ## - Restores buff (+1 HP, +1 PWR) if unit unequips all items.
 ## - Normalizes stacks and stats from 2 to 1 if two buffed units merge.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation := bool(context.get("is_simulation", false))
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	
@@ -20,7 +20,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			trinket_team = _get_team_from_container(trinket_instance.location_container_tag)
 			
 	if trinket_team.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var buff_tag := &"rusty_ring_buffed"
 	var debuff_tag := &"rusty_ring_debuffed"
@@ -71,17 +71,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			total_pwr_delta += delta
 
 	if changed_units == 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
-	if is_simulation:
-		var result := EffectResult.new()
-		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "Rusty Ring updated %d units (%+d HP, %+d PWR)" % [changed_units, total_hp_delta, total_pwr_delta]
-		}))
-		result.state_applied = true
-		return result
-
-	return changed_units
+	var result := EffectResult.new()
+	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+		"text": "Rusty Ring updated %d units (%+d HP, %+d PWR)" % [changed_units, total_hp_delta, total_pwr_delta]
+	}))
+	result.state_applied = true
+	return result
 
 
 

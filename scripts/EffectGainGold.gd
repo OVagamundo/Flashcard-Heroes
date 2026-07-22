@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Effect that grants gold to the player when triggered.
 ## Primarily used for gold-on-kill abilities.
 
-func execute(source_uuid: String, targets: Array[String], _battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], _battle_manager: Node, context: Dictionary) -> EffectResult:
 	var amount: int = int(parameters.get("amount", 1))
 	var is_simulation: bool = context.get("is_simulation", false)
 	
@@ -42,7 +42,9 @@ func execute(source_uuid: String, targets: Array[String], _battle_manager: Node,
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.add_gold(amount)
 	
-	return amount
+	var non_sim_result := EffectResult.new()
+	non_sim_result.state_applied = true
+	return non_sim_result
 
 func _make_gold_payload(amount: int, origin_uuid: String, target_gold_amount: int) -> CombatPayload:
 	var payload := CombatPayload.new()

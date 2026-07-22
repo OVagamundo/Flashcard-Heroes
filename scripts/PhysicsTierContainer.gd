@@ -334,3 +334,15 @@ func finish_open() -> void:
 	_bounce_tween.tween_property(mat, "bounce", 0.15, 5.0)\
 			.set_trans(Tween.TRANS_CUBIC)\
 			.set_ease(Tween.EASE_OUT)
+
+func get_draw_button() -> Button:
+	return get_node_or_null("DrawButton") as Button
+
+func get_stat_label() -> Label:
+	return get_node_or_null("StatLabel") as Label
+
+func get_knob_button() -> TextureButton:
+	return get_node_or_null("KnobButton") as TextureButton
+
+func get_count_label() -> Label:
+	return get_node_or_null("CountLabel") as Label

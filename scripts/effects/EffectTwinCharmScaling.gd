@@ -4,12 +4,12 @@ extends EffectDefinition
 
 ## Grants allied units +1 PWR for each pair of that unit
 ## in the allied battle pool (lineup, bench, gacha trays, discard).
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var team: String = String(context.get("team", _get_team_for_instance(source, battle_manager)))
 	var status_key := StringName("twin_charm_scaling_" + source_uuid)
@@ -60,18 +60,18 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if is_simulation and _is_on_board(inst) and not inst.has_meta("skip_initial_scaling_anim"):
 			if delta > 0:
 				if not buff_groups.has(delta):
-					buff_groups[delta] = {"targets": [], "new_pwrs": []}
+					buff_groups[delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
 				buff_groups[delta]["targets"].append(uuid)
 				buff_groups[delta]["new_pwrs"].append(inst.current_pwr)
 			else:
 				var abs_delta = abs(delta)
 				if not debuff_groups.has(abs_delta):
-					debuff_groups[abs_delta] = {"targets": [], "new_pwrs": []}
+					debuff_groups[abs_delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
 				debuff_groups[abs_delta]["targets"].append(uuid)
 				debuff_groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
 
 	if changed_units == 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	if is_simulation:
 		var result := EffectResult.new()
@@ -99,7 +99,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		result.state_applied = true
 		return result
 
-	return changed_units
+	var non_sim_result := EffectResult.new()
+	non_sim_result.state_applied = true
+	return non_sim_result
 
 func _set_scaling(unit: GachaBallInstance, status_key: StringName, last_bonus: int, new_bonus: int, delta: int, is_simulation: bool) -> void:
 	if last_bonus > 0:

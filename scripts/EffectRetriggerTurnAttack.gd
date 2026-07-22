@@ -9,14 +9,14 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	var is_simulation: bool = _context.get("is_simulation", false)
 	
 	# --- NON-STACKING CHECK ---
 	# If Double Strike already executed this turn, skip
 	if _context.get("double_strike_executed", false):
 		# Skipping - already executed this turn (non-stacking)
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	_context["double_strike_executed"] = true
 	
 	# Determine attacker (for items, use the holder)
@@ -29,20 +29,20 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	var attacker = battle_manager.get_instance_by_uuid(attacker_uuid)
 	if not is_instance_valid(attacker):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# --- FIND FRESH TARGET ---
 	var is_player = battle_manager._is_player_unit(attacker)
 	var target = battle_manager._get_frontmost_target(is_player)
 	if not is_instance_valid(target):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	# LOGIC CHECK: Only trigger if target has more HP or PWR (Tiger Spirit's defining trait)
 	var target_has_more_hp = target.current_hp > attacker.current_hp
 	var target_has_more_pwr = target.current_pwr > attacker.current_pwr
 	
 	if not (target_has_more_hp or target_has_more_pwr):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	# --- BUILD CONTEXT FOR FRESH TURN ACTION ---
 	# Use CAUSE_ABILITY_RETRIGGER to prevent Tiger's Spirit from self-triggering
@@ -63,7 +63,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	# Check if an ability replaced the basic attack
 	if double_strike_context.get("attack_replaced", false):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# Mark that on_attack was already triggered
 	double_strike_context["on_attack_already_triggered"] = true
@@ -79,4 +79,4 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	# NEW: Return EffectResult.empty() in simulation mode
 	# This effect works by queueing attacks, no direct events needed
-	return EffectResult.empty() if is_simulation else null
+	return EffectResult.empty()

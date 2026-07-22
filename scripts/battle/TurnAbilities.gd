@@ -86,7 +86,7 @@ static func _make_burn_payload(damage: int, old_hp: int, new_hp: int, max_hp: in
 	var payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	payload.skip_bump = true
 	payload.is_burn_damage = true
-	payload.targets_max_hp = [max_hp]
+	payload.targets_max_hp = [max_hp] as Array[int]
 	return payload
 
 # ============================================================================
