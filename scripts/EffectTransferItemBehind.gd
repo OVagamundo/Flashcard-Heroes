@@ -5,33 +5,33 @@ extends EffectDefinition
 ## Transfers the equipped item of the dying unit to the ally behind it.
 ## Used by the Standard Bearer's Standard's Legacy ability.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	var target_uuid: String = targets[0]
 	var target = battle_manager.get_instance_by_uuid(target_uuid)
 	if not is_instance_valid(target):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	var equipped_items: Array = context.get("equipped_items", [])
 	if equipped_items.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var item_to_transfer = equipped_items[0]
 	var item_uuid: String = item_to_transfer.get("uuid", "")
 	if item_uuid.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var item = battle_manager.get_instance_by_uuid(item_uuid)
 	if not is_instance_valid(item):
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	if is_simulation:
 		var result := EffectResult.new()
@@ -124,4 +124,4 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		
 		return result
 		
-	return null
+	return EffectResult.empty()

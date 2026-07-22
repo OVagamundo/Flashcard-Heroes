@@ -3,7 +3,7 @@ extends EffectDefinition
 
 ## At turn start, if the trinket's team has fewer living lineup units than the enemy,
 ## grant all living allied lineup units 2 Armor per unit difference.
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = bool(context.get("is_simulation", false))
 	var team: String = String(context.get("team", ""))
 	if team.is_empty():
@@ -26,11 +26,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	var difference: int = enemy_count - ally_count
 	if difference <= 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var amount: int = difference * 2
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var source_name := String(context.get("ability_id", "effect"))
 	var source_inst: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
@@ -55,7 +55,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		targets_new_val.append(battle_manager.apply_stat_delta(target_inst, "armor_stacks", amount))
 
 	if valid_targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	var result := EffectResult.new()
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

@@ -7,7 +7,7 @@ extends EffectDefinition
 ## - status_id: StringName - The ID of the status effect (e.g., "burn", "armor", "spikes").
 ## - amount: int - The number of stacks to apply.
 
-func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node, _context: Dictionary) -> Variant:
+func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node, _context: Dictionary) -> EffectResult:
 	var result := EffectResult.new()
 	
 	var status_id_str = parameters.get("status_id", "")

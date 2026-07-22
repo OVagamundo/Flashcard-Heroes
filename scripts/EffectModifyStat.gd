@@ -5,16 +5,16 @@ extends EffectDefinition
 ## A generic stat modification effect. 
 ## For Healing Amulet we use { stat: "hp", base_value: 2 }.
 ## For PWR-based healing we use { stat: "hp", use_source_pwr: true }.
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	if not parameters is Dictionary:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	var stat: String = String(parameters.get("stat", ""))
 	if stat == "":
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# Mapping: Normalize stat names
 	if stat == "hp" or stat == "health" or stat == "current_hp":
@@ -28,7 +28,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	# Supports: base_value, pwr_multiplier, hp_multiplier, use_source_pwr, context_multiplier_key
 	var amount: int = StatScaling.calculate(parameters, context, "EffectModifyStat")
 	if amount == 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	# During simulation, validate targets and return EffectResult
 	if is_simulation:
@@ -258,12 +258,14 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		
 		result.state_applied = true
 		return result
-	# Non-simulation: apply stat changes silenty in battle, loudly in shop
+	# Non-simulation: apply stat changes silently in battle, loudly in shop
 	else:
 		for t in targets:
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
 			battle_manager.apply_stat_delta(inst, stat, amount)
-	# Non-simulation return (legacy compatibility)
-	return amount
+	var non_sim_result := EffectResult.new()
+	non_sim_result.state_applied = true
+	return non_sim_result
+

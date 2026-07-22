@@ -26,6 +26,7 @@ var _tokens: int = 0
 # Popup references (built programmatically)
 var _popup_root: CenterContainer = null
 var _popup_panel: PanelContainer = null
+var _popup_unit_slot: Control = null
 var _popup_ball_view: GachaBallView = null
 var _popup_btn_1: Button = null
 var _popup_btn_2: Button = null
@@ -252,6 +253,7 @@ func _build_training_popup() -> void:
 	unit_slot.custom_minimum_size = Vector2(192, 192)
 	unit_center.add_child(unit_slot)
 	unit_slot.name = "UnitSlot"
+	_popup_unit_slot = unit_slot
 
 	# Spacer between unit and buttons
 	var spacer = Control.new()
@@ -306,7 +308,7 @@ func _show_training_popup() -> void:
 		return
 
 	# Populate the unit display using a SlotView wrapper (same as BattleView)
-	var unit_slot = _popup_panel.find_child("UnitSlot", true, false)
+	var unit_slot = _popup_unit_slot
 
 	if is_instance_valid(unit_slot):
 		# Clear previous

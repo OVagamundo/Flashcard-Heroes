@@ -5,13 +5,12 @@ extends EffectDefinition
 ## Grants +HP and +PWR to the source unit equal to (Current PWR * Empty Slots in Lineup).
 ## Triggered on_pre_combat.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Only meaningful in simulation
 	if not is_simulation:
-		return null
-		
+		return EffectResult.empty()
 	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_unit):
 		# If source is dead or invalid, nothing happens

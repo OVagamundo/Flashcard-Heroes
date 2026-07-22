@@ -9,7 +9,7 @@ extends EffectDefinition
 ##   - pwr_amount: int (default 1) - PWR buff amount  
 ##   - tier_filter: int (default 1) - Only buff units of this tier (0 = any)
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Get the target unit UUID from context
@@ -31,7 +31,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			targets_to_process.append(ctx_uuid)
 	
 	if targets_to_process.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	var result := EffectResult.new()
 	var state_applied_any := false
@@ -149,11 +149,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
-	if is_simulation:
-		result.state_applied = true
-		return result
-	else:
-		return 1 if state_applied_any else 0
+	result.state_applied = true
+	return result
 
 # Helper to determine team from container
 func _get_team_from_container(container: StringName) -> String:

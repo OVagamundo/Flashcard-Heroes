@@ -7,7 +7,7 @@ class_name EffectRepeatAdjacentBuff
 ## This acts as an "echo" of the original buff.
 ## The source of THIS new buff is the unit owning this effect (e.g., Unit G).
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Extract the original buff details from context
@@ -15,14 +15,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var amount = context.get("amount", 0)
 	
 	if stat == null or amount <= 0:
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 		
 	var multiplier = parameters.get("effectiveness", 1.0)
 	amount = int(floor(amount * multiplier))
 		
 	# Validate targets
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 
 	if is_simulation:
 		var result := EffectResult.new()
@@ -73,7 +73,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var log_text = "%s echoes buff! Grants +%d %s to adjacent ally." % [source_name, amount, stat_str]
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 
-		var visual_source_uuid = context.get("source_holder_uuid", source_uuid)
+		var visual_source_uuid = source_uuid
 
 		if stat == "hp":
 			result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
@@ -102,4 +102,4 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
 				battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid)
-		return null
+		return EffectResult.empty()

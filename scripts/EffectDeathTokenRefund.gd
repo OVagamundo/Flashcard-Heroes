@@ -5,7 +5,7 @@ extends EffectDefinition
 ## Effect: Returns tokens equivalent to the first dying unit's tier (1 for T1, 2 for T2, 3 for T3).
 ## Only triggers for the first unit to die that round/turn.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	# Check if this effect has already triggered this turn/round
 	if battle_manager._turn_metadata.get("death_token_refund_done", false):
 		return EffectResult.empty()
@@ -55,7 +55,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 	# Non-simulation (live/direct call fallback): add tokens directly to live state
 	battle_manager.add_gacha_token(tier)
-	return tier
+	var non_sim_result := EffectResult.new()
+	non_sim_result.state_applied = true
+	return non_sim_result
 
 func _make_token_payload(amount: int, origin_uuid: String) -> CombatPayload:
 	var payload := CombatPayload.new()

@@ -162,12 +162,13 @@ func _update_fixed_price_tags() -> void:
 		# This ensures they stay put even when balls are dragged
 		tag.global_position = slot.global_position + Vector2(slot.size.x - TAG_W, 0)
 		
-		var lbl = tag.get_node("PriceLabel")
-		if is_instance_valid(inst):
-			var price = GameManager.get_item_cost(inst.get_definition())
-			lbl.text = tr("ui.gold_price") % price
-		else:
-			lbl.text = "Sold!"
+		var lbl: Label = tag.get_node_or_null("PriceLabel") as Label
+		if is_instance_valid(lbl):
+			if is_instance_valid(inst):
+				var price = GameManager.get_item_cost(inst.get_definition())
+				lbl.text = tr("ui.gold_price") % price
+			else:
+				lbl.text = "Sold!"
 
 func _create_price_tag_node(w: float, h: float) -> Control:
 	var tag_wrapper = Control.new()

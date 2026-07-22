@@ -4,13 +4,12 @@ extends EffectDefinition
 ## Deals 1 damage to a unit due to Static discharge.
 ## Triggered when a unit with Static suffers a stat change.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Only execute logic in simulation
 	if not is_simulation:
-		return null
-		
+		return EffectResult.empty()
 	if targets.is_empty():
 		return EffectResult.empty()
 		

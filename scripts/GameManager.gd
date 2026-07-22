@@ -69,6 +69,12 @@ func register_main_node(node: Node) -> void:
 func unregister_main_node() -> void:
 	_active_main_node = null
 
+func get_main_node() -> Node:
+	return _active_main_node
+
+func get_battle_manager() -> Node:
+	return _active_battle_manager
+
 func get_pending_rewards() -> Dictionary:
 	return {
 		"reward_instances": _temporary_reward_master_dict.values(),

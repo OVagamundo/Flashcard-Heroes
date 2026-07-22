@@ -525,15 +525,31 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var insert_index = cascade_evts.size()
 		for i in range(cascade_evts.size()):
 			var type = cascade_evts[i].type
-			if type == CombatEvent.Type.SUMMON or type == CombatEvent.Type.TRANSFORM:
+			var is_gacha_summon = false
+			if type == CombatEvent.Type.SUMMON and cascade_evts[i].visual_payload != null and cascade_evts[i].visual_payload.old_unit_location != null:
+				if String(cascade_evts[i].visual_payload.old_unit_location.container).begins_with("BattleInventoryT"):
+					is_gacha_summon = true
+					
+			if (type == CombatEvent.Type.SUMMON and not is_gacha_summon) or type == CombatEvent.Type.TRANSFORM:
 				insert_index = i
 				break
 				
+		var pre_death_slice = cascade_evts.slice(0, insert_index)
+		var post_death_slice = cascade_evts.slice(insert_index, cascade_evts.size())
+		
+		# Ensure Gacha Machine duplication summons always happen BEFORE the death animation
+		for i in range(post_death_slice.size() - 1, -1, -1):
+			var evt = post_death_slice[i]
+			if evt.type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null:
+				if String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"):
+					pre_death_slice.append(evt)
+					post_death_slice.remove_at(i)
+				
 		# Insert DEATH events between VFX reactions (like BUFF/HEAL) and physical replacements (SUMMON/TRANSFORM)
 		# This ensures the Animator plays the dying unit's buffs BEFORE the fade-out, but plays summons AFTER the fade-out.
-		out_events.append_array(cascade_evts.slice(0, insert_index))
+		out_events.append_array(pre_death_slice)
 		out_events.append_array(pending_death_events)
-		out_events.append_array(cascade_evts.slice(insert_index, cascade_evts.size()))
+		out_events.append_array(post_death_slice)
 		pending_death_events.clear()
 		
 		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events

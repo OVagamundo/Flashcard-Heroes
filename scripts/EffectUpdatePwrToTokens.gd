@@ -6,7 +6,7 @@ extends EffectDefinition
 ## Sets the source unit's PWR equal to the current Gacha Token count.
 ## Used for the Tier 2 unit "Templar".
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
 		return EffectResult.new()

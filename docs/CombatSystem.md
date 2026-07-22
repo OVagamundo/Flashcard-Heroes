@@ -43,8 +43,9 @@ graph TD
 | Helper File | Responsibility |
 |-------------|----------------|
 | Constants | Centralized tags, prioritization constants, and enumerations |
-| CombatSimulator | Combat loop, actor queue, reaction processing, EffectResult handling (damage, summons, cascade) |
-| EffectHandlers | Damage application, burn processing, summon creation, cascade damage handling |
+| CombatSimulator | Combat loop, actor queue, reaction processing, and command pipeline execution |
+| commands/ | `CombatCommand` subclasses (e.g. `DamageCommand`, `SummonCommand`) that execute `EffectResult` DTOs |
+| EffectHandlers | Helper functions for raw stat/summon execution (invoked by commands) |
 | InventoryOperations | **Exclusive** handler for ALL inventory mutations (move, swap, equip, remove, discard) |
 | BattleState | Instance storage, container management |
 | DeathProcessor | Death cleanup logic (delegates inventory moves to InventoryOperations) |
@@ -212,6 +213,7 @@ During the presentation phase:
 
 > [!IMPORTANT]
 > **Zero-Tolerance Rule**: During COMBAT phase, presentation code must make **ZERO** queries to simulation data. Any `get_instance()` call is a violation.
+
 
 ### The Inspection Window Exception
 The **ONLY** exception to this rule is the **Inspection Window**, which actively queries simulation data to display real-time status (like current HP, applied statuses, and dynamic components).

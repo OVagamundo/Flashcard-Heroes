@@ -4,13 +4,12 @@ extends EffectDefinition
 ## Grants +3 HP and +3 PWR if the unit is on the Player Bench.
 ## Triggered on_turn_start.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	# Only execute logic in simulation
 	if not is_simulation:
-		return null
-		
+		return EffectResult.empty()
 	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_unit):
 		return EffectResult.empty()

@@ -36,10 +36,11 @@ The Simulation Layer is **BLIND**.
 *   ✅ **ALWAYS** return data (`CombatEvent`, `EffectResult`) for the UI to consume later.
 *   ✅ **ALWAYS** use `is_simulation: true` when you need detailed events (even in Battle). Legacy `int` returns are banned.
 
-### 2.2 The Zero-Mutation Rule (`is_simulation`)
-Every ability/effect receives an `is_simulation` flag.
-*   **If `true`:** You **MUST** return an `EffectResult` describing what *would* happen. You **CANNOT** change `current_hp` or any other state.
-*   **If `false`:** You may mutate state directly.
+### 2.2 Strict EffectResult Typing & The `is_simulation` Flag
+Every ability/effect `execute()` function **MUST** strictly return an `EffectResult` object. Returning primitive types (like `int` or `bool`) is legacy behavior and will crash the Command Pipeline.
+The `execute()` method receives an `is_simulation` flag in its context:
+*   **If `true`:** You **MUST** return an `EffectResult` filled with DTOs (e.g. `DamageRequest`, `SummonRequest`) describing what *would* happen. You **CANNOT** change `current_hp` or any other state directly.
+*   **If `false`:** You may mutate state directly (or use helper functions), and return a finalized `EffectResult` containing the visual `CombatEvent`s to be appended to the VCR TurnLog.
 
 ### 2.3 The Context Contract
 Abilities are isolated functions. They know **only** what is passed in their `context` dictionary.

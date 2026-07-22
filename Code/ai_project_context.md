@@ -392,8 +392,6 @@ scripts/
 ├── RestSite.gd.uid
 ├── ResultsPopup.gd
 ├── ResultsPopup.gd.uid
-├── Reward.bak.gd
-├── Reward.bak.gd.uid
 ├── Reward.gd
 ├── Reward.gd.uid
 ├── RewardDefinition.gd
@@ -453,15 +451,7 @@ scripts/
 ├── VisualDataAdapter.gd.uid
 ├── WindowManager.gd
 ├── WindowManager.gd.uid
-├── debug_compile.gd
-├── debug_compile.gd.uid
-├── debug_database.gd
-├── debug_database.gd.uid
-├── debug_korean_deck.gd
-├── debug_korean_deck.gd.uid
-├── generate_content_docs.py
-├── test_prio.gd
-└── test_prio.gd.uid
+└── generate_content_docs.py
 ```
 
 ### `scenes/`
@@ -673,1021 +663,6 @@ This section shows which `.gd` scripts are attached to nodes in the `.tscn` scen
 ## 4. Source Code (`.gd` files)
 
 All GDScript source code files are included below.
-
-### File: `generate_assets_v2.gd`
-```gdscript
-@tool
-extends SceneTree
-
-# Configuration for colors (Slate/Silver & Beige/Wood theme)
-const COLOR_PANEL_BG = Color("3c465a") # Slate Blue
-const COLOR_PANEL_BORDER = Color("b4b4b4") # Light Grey
-const COLOR_PANEL_BORDER_DARK = Color("2b2116") # Dark Outline
-
-const COLOR_BTN_NORMAL = Color("e2cfa4") # Beige
-const COLOR_BTN_HOVER = Color("ebdcb8") # Light Beige
-const COLOR_BTN_PRESSED = Color("c4a474") # Dark Beige
-const COLOR_BTN_DISABLED = Color("7a7a7a") # Grey
-
-const COLOR_INPUT_BG = Color("252525") # Dark Field
-const COLOR_ACCENT = Color("ffd700") # Gold
-
-func _init():
-	print("Starting asset generation...")
-	var dir = DirAccess.open("res://assets/Realistic/ui/textures")
-	if not dir:
-		print("Creating directory...")
-		DirAccess.make_dir_recursive_absolute("res://assets/Realistic/ui/textures")
-	
-	# 1. Panels
-	generate_9slice_rect("panel_32x32.png", 32, 32, COLOR_PANEL_BG, COLOR_PANEL_BORDER, 2)
-	
-	# 2. Buttons
-	generate_button("button_normal_32x32.png", COLOR_BTN_NORMAL)
-	generate_button("button_hover_32x32.png", COLOR_BTN_HOVER)
-	generate_button("button_pressed_32x32.png", COLOR_BTN_PRESSED)
-	generate_button("button_disabled_32x32.png", COLOR_BTN_DISABLED)
-	
-	# 3. Sliders (Grabber & Track)
-	generate_slider_grabber("slider_grabber_16x16.png")
-	generate_slider_track("slider_track_32x8.png")
-	
-	# 4. Progress Bars
-	generate_flat_rect("progress_fill.png", 32, 8, Color("44ff44"), Color("114411"))
-	generate_flat_rect("progress_bg.png", 32, 8, Color("222222"), Color("000000"))
-	
-	# 5. LineEdit
-	generate_9slice_rect("line_edit.png", 32, 32, COLOR_INPUT_BG, Color("555555"), 2, true) # Recessed
-	
-	# 6. Tabs
-	generate_tab("tab_active.png", COLOR_PANEL_BG)
-	generate_tab("tab_inactive.png", COLOR_PANEL_BG.darkened(0.3))
-	
-	# 7. Checkbox
-	generate_checkbox("checkbox_checked.png", true)
-	generate_checkbox("checkbox_unchecked.png", false)
-	
-	print("Asset generation complete.")
-	quit()
-
-func generate_9slice_rect(filename, w, h, bg, border, border_width, recessed = false):
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	for x in range(w):
-		for y in range(h):
-			if x < border_width or x >= w - border_width or y < border_width or y >= h - border_width:
-				img.set_pixel(x, y, border)
-			else:
-				img.set_pixel(x, y, bg)
-	
-	# Highlights/Shadows
-	var light = border.lightened(0.3)
-	var dark = border.darkened(0.3)
-	
-	if recessed:
-		var temp = light
-		light = dark
-		dark = temp
-		
-	# Top line highlight
-	for x in range(1, w - 1):
-		img.set_pixel(x, 0, light)
-		img.set_pixel(x, 1, light) # thick
-		
-	# Left line highlight
-	for y in range(1, h - 1):
-		img.set_pixel(0, y, light)
-		img.set_pixel(1, y, light)
-		
-	# Bottom shadow
-	for x in range(1, w - 1):
-		img.set_pixel(x, h - 1, dark)
-		img.set_pixel(x, h - 2, dark)
-		
-	# Right shadow
-	for y in range(1, h - 1):
-		img.set_pixel(w - 1, y, dark)
-		img.set_pixel(w - 2, y, dark)
-
-	save_image(img, filename)
-
-func generate_flat_rect(filename, w, h, bg, border):
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(bg)
-	# Simple border
-	for x in range(w):
-		img.set_pixel(x, 0, border)
-		img.set_pixel(x, h - 1, border)
-	for y in range(h):
-		img.set_pixel(0, y, border)
-		img.set_pixel(w - 1, y, border)
-	save_image(img, filename)
-
-func generate_button(filename, base_color):
-	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var outline = Color("2b2116")
-	
-	# Fill base
-	for x in range(2, 30):
-		for y in range(2, 30):
-			img.set_pixel(x, y, base_color)
-			
-	# Heavy Outline
-	for x in range(32):
-		for y in range(32):
-			if x < 2 or x >= 30 or y < 2 or y >= 30:
-				# Corners transparent? No, blocky corners
-				if (x < 2 and y < 2) or (x >= 30 and y < 2) or (x < 2 and y >= 30) or (x >= 30 and y >= 30):
-					# Transparent corners for rounded look? Reference was blocky.
-					# Let's keep corners black for sturdy look
-					pass
-				img.set_pixel(x, y, outline)
-				
-	# Inner Bevel
-	var light = base_color.lightened(0.2)
-	var dark = base_color.darkened(0.2)
-	
-	for i in range(2, 30):
-		img.set_pixel(i, 2, light)
-		img.set_pixel(i, 3, light)
-		img.set_pixel(2, i, light)
-		img.set_pixel(3, i, light)
-		
-		img.set_pixel(i, 28, dark)
-		img.set_pixel(i, 29, dark)
-		img.set_pixel(28, i, dark)
-		img.set_pixel(29, i, dark)
-		
-	save_image(img, filename)
-
-func generate_slider_grabber(filename):
-	var img = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var color = Image.create(16, 16, false, Image.FORMAT_RGBA8)
-	# Draw a circle-ish shape or block
-	for x in range(16):
-		for y in range(16):
-			if x > 2 and x < 13 and y > 2 and y < 13:
-				img.set_pixel(x, y, COLOR_BTN_NORMAL)
-			else:
-				if x > 4 and x < 11 and y > 0 and y < 16: # vertical bar look
-					img.set_pixel(x, y, COLOR_PANEL_BORDER_DARK)
-	save_image(img, filename)
-
-func generate_slider_track(filename):
-	# Thin line with border
-	var img = Image.create(32, 8, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	for x in range(32):
-		for y in range(2, 6):
-			img.set_pixel(x, y, Color("111111"))
-	save_image(img, filename)
-
-func generate_tab(filename, color):
-	# Like a panel but open bottom
-	var img = Image.create(32, 32, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	var border = COLOR_PANEL_BORDER
-	
-	for x in range(32):
-		for y in range(32):
-			if x < 2 or x >= 30 or y < 2: # No bottom border
-				img.set_pixel(x, y, border)
-			else:
-				img.set_pixel(x, y, color)
-	save_image(img, filename)
-
-func generate_checkbox(filename, checked):
-	var img = Image.create(24, 24, false, Image.FORMAT_RGBA8)
-	img.fill(COLOR_INPUT_BG)
-	var border = Color("888888")
-	
-	# Border
-	for x in range(24):
-		img.set_pixel(x, 0, border)
-		img.set_pixel(x, 1, border)
-		img.set_pixel(x, 22, border)
-		img.set_pixel(x, 23, border)
-	for y in range(24):
-		img.set_pixel(0, y, border)
-		img.set_pixel(1, y, border)
-		img.set_pixel(22, y, border)
-		img.set_pixel(23, y, border)
-		
-	if checked:
-		var mark_color = Color("44cc44")
-		# Draw X or Check
-		for i in range(4, 20):
-			img.set_pixel(i, i, mark_color)
-			img.set_pixel(i, 23 - i, mark_color)
-			
-	save_image(img, filename)
-
-func save_image(img: Image, filename: String):
-	var path = "res://assets/Realistic/ui/textures/" + filename
-	img.save_png(path)
-	print("Generated: " + path)
-```
-
-### File: `generate_assets_v3.gd`
-```gdscript
-@tool
-extends SceneTree
-
-# Palette: Wood & Gold RPG Style
-const C_WOOD_DARK = Color("3e2723") # Darkest frame outline
-const C_WOOD_MID = Color("5d4037") # Frame body
-const C_WOOD_LIT = Color("8d6e63") # Frame highlight
-
-const C_PARCHMENT = Color("d7ccc8") # Panel background (paper-like)
-const C_GOLD = Color("ffb300") # Accents/Borders
-const C_GOLD_LIT = Color("ffca28")
-const C_GOLD_DARK = Color("c6a700")
-
-const C_BTN_NORMAL = Color("6d4c41") # Standard wood button
-const C_BTN_HOVER = Color("795548") # Lighter
-const C_BTN_PRESSED = Color("4e342e") # Darker
-const C_BTN_DISABLED = Color("555555")
-
-const C_INPUT_BG = Color("3e2723") # Dark recessed wood
-
-func _init():
-	print("Starting V3 Asset Generation (Wood & Gold)...")
-	var path = "res://assets/Realistic/ui/textures/"
-	var dir = DirAccess.open(path)
-	if not dir:
-		DirAccess.make_dir_recursive_absolute(path)
-
-	# 1. Main Panel (Wood Frame + Parchment Body)
-	generate_panel_v3("panel_wood.png")
-
-	# 2. Buttons (Wood Block + Gold Border)
-	generate_button_v3("button_wood_normal.png", C_BTN_NORMAL)
-	generate_button_v3("button_wood_hover.png", C_BTN_HOVER, true) # brighter gold
-	generate_button_v3("button_wood_pressed.png", C_BTN_PRESSED)
-	generate_button_v3("button_wood_disabled.png", C_BTN_DISABLED, false, true)
-
-	# 3. Sliders
-	generate_slider_track_v3("slider_wood_track.png")
-	generate_slider_grabber_v3("slider_gold_grabber.png")
-
-	# 4. Progress Bars (Health & Power)
-	# Health: Red w/ Gold Border
-	generate_bar_fill_v3("bar_health_fill.png", Color("d32f2f"), Color("b71c1c"))
-	generate_bar_bg_v3("bar_bg.png") # Generic dark wood bg
-	# Power: Blue w/ Silver/Gold Border
-	generate_bar_fill_v3("bar_power_fill.png", Color("1976d2"), Color("0d47a1"))
-
-	# 5. Input / LineEdit
-	generate_input_v3("input_wood.png")
-
-	# 6. Tabs
-	generate_tab_v3("tab_wood_active.png", C_BTN_NORMAL)
-	generate_tab_v3("tab_wood_inactive.png", C_BTN_PRESSED)
-
-	# 7. Checkbox
-	generate_checkbox_v3("checkbox_wood_checked.png", true)
-	generate_checkbox_v3("checkbox_wood_unchecked.png", false)
-
-	print("V3 Asset Generation Complete.")
-	quit()
-
-# --- Drawing Functions ---
-
-func generate_panel_v3(filename):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	# Parchment Fill (inset 2px)
-	for x in range(2, 30):
-		for y in range(2, 30):
-			img.set_pixel(x, y, C_PARCHMENT)
-			# Add slight noise/texture to parchment? Keep simple for pixel art check 
-			if (x + y) % 5 == 0: img.set_pixel(x, y, C_PARCHMENT.darkened(0.05))
-
-	# Wood Frame (Border 4px visual, 9-slice)
-	draw_frame(img, 0, 0, w, h, 4, C_WOOD_MID, C_WOOD_LIT, C_WOOD_DARK)
-	
-	# Gold Corner Accents (1px dot)
-	img.set_pixel(1, 1, C_GOLD)
-	img.set_pixel(w - 2, 1, C_GOLD)
-	img.set_pixel(1, h - 2, C_GOLD)
-	img.set_pixel(w - 2, h - 2, C_GOLD)
-
-	save_image(img, filename)
-
-func generate_button_v3(filename, base_col, highlight = false, grayscale = false):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	var border_col = C_GOLD if not grayscale else Color("555555")
-	if highlight: border_col = C_GOLD_LIT
-
-	# Fill body
-	for x in range(2, 30):
-		for y in range(2, 30):
-			img.set_pixel(x, y, base_col)
-
-	# Main Border (Gold/Frame)
-	# Outer dark outline
-	draw_rect_outline(img, 0, 0, w, h, C_WOOD_DARK)
-	# Inner gold/metallic frame
-	draw_rect_outline(img, 1, 1, w - 2, h - 2, border_col)
-	
-	# Bevel highlight on body
-	draw_rect_outline(img, 2, 2, w - 4, h - 4, base_col.lightened(0.1))
-
-	# 9-slice corners? No, buttons usually stretch mid. 
-	# Let's add "nails" or bolts in corners
-	var bolt = C_WOOD_DARK
-	img.set_pixel(3, 3, bolt); img.set_pixel(w - 4, 3, bolt)
-	img.set_pixel(3, h - 4, bolt); img.set_pixel(w - 4, h - 4, bolt)
-
-	save_image(img, filename)
-
-func generate_slider_track_v3(filename):
-	var w = 32; var h = 10
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	# Dark wood trough
-	for x in range(w):
-		for y in range(2, 8):
-			img.set_pixel(x, y, C_WOOD_DARK)
-	
-	# Light bottom edge
-	for x in range(w):
-		img.set_pixel(x, 7, C_WOOD_LIT)
-
-	save_image(img, filename)
-
-func generate_slider_grabber_v3(filename):
-	var w = 14; var h = 20 # Tall chunky grabber
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	# Shield/Block shape
-	for x in range(2, w - 2):
-		for y in range(2, h - 2):
-			img.set_pixel(x, y, C_GOLD)
-	
-	# Outline
-	draw_rect_outline(img, 1, 1, w - 2, h - 2, C_WOOD_DARK)
-	img.set_pixel(w / 2, h / 2, C_WOOD_DARK) # Center dot
-
-	save_image(img, filename)
-
-func generate_bar_bg_v3(filename):
-	var w = 32; var h = 12
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(C_WOOD_DARK.darkened(0.3))
-	# Frame
-	draw_rect_outline(img, 0, 0, w, h, C_WOOD_MID)
-	save_image(img, filename)
-
-func generate_bar_fill_v3(filename, col_mid, col_dark):
-	var w = 32; var h = 12
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	# Inset fill
-	for x in range(1, w - 1):
-		for y in range(1, h - 1):
-			if y < h / 2: img.set_pixel(x, y, col_mid)
-			else: img.set_pixel(x, y, col_dark) # Gradient effect
-			
-	# Top highlight
-	for x in range(1, w - 1):
-		img.set_pixel(x, 2, col_mid.lightened(0.3))
-
-	save_image(img, filename)
-
-func generate_input_v3(filename):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(C_INPUT_BG)
-	
-	# Sunken Frame
-	draw_frame(img, 0, 0, w, h, 2, C_WOOD_DARK, C_WOOD_DARK, C_WOOD_LIT) # Inverted light/dark for sunk
-	save_image(img, filename)
-
-func generate_tab_v3(filename, base_col):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(Color(0, 0, 0, 0))
-	
-	# Fill rounded top
-	for x in range(2, 30):
-		for y in range(2, 32):
-			img.set_pixel(x, y, base_col)
-			
-	# Border (No bottom)
-	for x in range(32):
-		img.set_pixel(x, 1, C_WOOD_DARK)
-		img.set_pixel(x, 2, C_GOLD) # Gold highlight on top
-	for y in range(1, 32):
-		img.set_pixel(1, y, C_WOOD_DARK)
-		img.set_pixel(w - 2, y, C_WOOD_DARK)
-
-	save_image(img, filename)
-
-func generate_checkbox_v3(filename, checked):
-	var w = 24; var h = 24
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	img.fill(C_INPUT_BG)
-	
-	draw_rect_outline(img, 0, 0, w, h, C_GOLD)
-	
-	if checked:
-		# Draw Gold X
-		for i in range(4, 20):
-			img.set_pixel(i, i, C_GOLD_LIT)
-			img.set_pixel(i, 23 - i, C_GOLD_LIT)
-	
-	save_image(img, filename)
-
-# Utilities
-func draw_rect_outline(img, x, y, w, h, col):
-	for i in range(x, x + w):
-		img.set_pixel(i, y, col)
-		img.set_pixel(i, y + h - 1, col)
-	for j in range(y, y + h):
-		img.set_pixel(x, j, col)
-		img.set_pixel(x + w - 1, j, col)
-
-func draw_frame(img, x, y, w, h, thick, col_base, col_light, col_dark):
-	# Simple beveled frame loop
-	for t in range(thick):
-		var rect_x = x + t
-		var rect_y = y + t
-		var rect_w = w - (t * 2)
-		var rect_h = h - (t * 2)
-		
-		# Top/Left Light
-		for i in range(rect_w): img.set_pixel(rect_x + i, rect_y, col_light)
-		for j in range(rect_h): img.set_pixel(rect_x, rect_y + j, col_light)
-		
-		# Bottom/Right Dark
-		for i in range(rect_w): img.set_pixel(rect_x + i, rect_y + rect_h - 1, col_dark)
-		for j in range(rect_h): img.set_pixel(rect_x + rect_w - 1, rect_y + j, col_dark)
-
-func save_image(img: Image, filename: String):
-	var path = "res://assets/Realistic/ui/textures/" + filename
-	img.save_png(path)
-	print("Generated: " + path)
-```
-
-### File: `generate_assets_v4.gd`
-```gdscript
-@tool
-extends SceneTree
-
-# Palette: "Antique RPG" (Desaturated, Cohesive)
-# Wood
-const C_WOOD_BASE = Color("5d4037")
-const C_WOOD_SHADOW = Color("3e2723")
-const C_WOOD_LIGHT = Color("8d6e63")
-const C_WOOD_GRAIN = Color("4e342e") # For texture
-
-# Parchment
-const C_PAPER_BASE = Color("d7ccc8")
-const C_PAPER_SHADOW = Color("a1887f")
-const C_PAPER_NOISE = Color("bcaaa4")
-
-# Gold / Brass
-const C_GOLD_BASE = Color("ffb300")
-const C_GOLD_SHADOW = Color("c6a700")
-const C_GOLD_LIGHT = Color("ffca28")
-
-# Bars
-const C_RED_BASE = Color("c62828")
-const C_RED_DARK = Color("8e0000")
-const C_BLUE_BASE = Color("1565c0")
-const C_BLUE_DARK = Color("003c8f")
-
-# Input
-const C_INPUT_BG = Color("2d2420") # Very dark wood
-
-func _init():
-	print("Starting V4 Asset Generation (High Fidelity)...")
-	var path = "res://assets/Realistic/ui/textures/"
-	var dir = DirAccess.open(path)
-	if not dir:
-		DirAccess.make_dir_recursive_absolute(path)
-
-	# 1. Main Panel (Chamfered Wood Frame + Parchment Body)
-	generate_panel_v4("panel_v4.png")
-
-	# 2. Buttons (Chamfered Inputs)
-	generate_button_v4("button_v4_normal.png", C_WOOD_BASE, C_GOLD_SHADOW)
-	generate_button_v4("button_v4_hover.png", C_WOOD_LIGHT, C_GOLD_BASE)
-	generate_button_v4("button_v4_pressed.png", C_WOOD_SHADOW, C_GOLD_SHADOW, true)
-	generate_button_v4("button_v4_disabled.png", Color("555555"), Color("333333"))
-
-	# 3. Sliders
-	generate_track_v4("slider_v4_track.png")
-	generate_grabber_v4("slider_v4_grabber.png")
-
-	# 4. Progress Bars
-	generate_bar_frame_v4("bar_v4_bg.png")
-	generate_bar_fill_v4("bar_v4_health.png", C_RED_BASE, C_RED_DARK)
-	generate_bar_fill_v4("bar_v4_power.png", C_BLUE_BASE, C_BLUE_DARK)
-
-	# 5. Input
-	generate_input_v4("input_v4.png")
-
-	# 6. Tabs
-	generate_tab_v4("tab_v4_active.png", C_WOOD_BASE)
-	generate_tab_v4("tab_v4_inactive.png", C_WOOD_SHADOW)
-
-	# 7. Checkbox
-	generate_chk_v4("checkbox_v4_checked.png", true)
-	generate_chk_v4("checkbox_v4_unchecked.png", false)
-
-	print("V4 Asset Generation Complete.")
-	quit()
-
-# --- Core Generators ---
-
-func generate_panel_v4(filename):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# 1. Draw Chamfered Frame
-	draw_chamfered_rect(img, 0, 0, w, h, C_WOOD_BASE)
-	
-	# 2. Add Wood Grain Texture to Frame
-	apply_noise(img, C_WOOD_GRAIN, 0.15)
-	
-	# 3. Inner Parchment Area (Inset 4px)
-	draw_chamfered_rect(img, 4, 4, w - 8, h - 8, C_PAPER_BASE)
-	# Parchment noise
-	apply_noise_region(img, 4, 4, w - 8, h - 8, C_PAPER_NOISE, 0.1)
-
-	# 4. Bevel Lighting on Frame
-	draw_chamfered_bevel(img, 0, 0, w, h, C_WOOD_LIGHT, C_WOOD_SHADOW)
-	
-	# 5. Inner Shadow on Parchment
-	draw_inner_shadow(img, 4, 4, w - 8, h - 8, C_PAPER_SHADOW)
-
-	# 6. Gold Corner Brackets
-	draw_corner_bracket(img, 0, 0) # TL
-	draw_corner_bracket(img, w - 4, 0) # TR
-	draw_corner_bracket(img, 0, h - 4) # BL
-	draw_corner_bracket(img, w - 4, h - 4) # BR
-
-	save_image(img, filename)
-
-func generate_button_v4(filename, base_col, border_col, pressed = false):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Chamfered Body
-	draw_chamfered_rect(img, 0, 0, w, h, base_col)
-	
-	# Texture matches wood usually
-	if base_col == C_WOOD_BASE or base_col == C_WOOD_LIGHT or base_col == C_WOOD_SHADOW:
-		apply_noise(img, base_col.darkened(0.2), 0.1)
-
-	# Border
-	draw_chamfered_outline(img, 0, 0, w, h, border_col)
-	
-	# Bevel
-	if pressed:
-		# Inset look: Dark top/left, Light bottom/right
-		draw_chamfered_bevel(img, 0, 0, w, h, base_col.darkened(0.3), base_col.lightened(0.1))
-	else:
-		# Pop look: Light top/left, Dark bottom/right
-		draw_chamfered_bevel(img, 0, 0, w, h, base_col.lightened(0.2), base_col.darkened(0.3))
-
-	save_image(img, filename)
-
-func generate_track_v4(filename):
-	var w = 32; var h = 10
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Dark recessed track
-	draw_chamfered_rect(img, 0, 2, w, 6, C_INPUT_BG)
-	draw_chamfered_outline(img, 0, 2, w, 6, C_WOOD_SHADOW)
-	save_image(img, filename)
-
-func generate_grabber_v4(filename):
-	var w = 14; var h = 18
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Gold block
-	draw_chamfered_rect(img, 1, 1, w - 2, h - 2, C_GOLD_BASE)
-	draw_chamfered_bevel(img, 1, 1, w - 2, h - 2, C_GOLD_LIGHT, C_GOLD_SHADOW)
-	draw_chamfered_outline(img, 1, 1, w - 2, h - 2, C_WOOD_SHADOW) # Dark outline
-	
-	# Grip lines
-	img.set_pixel(w / 2, h / 2 - 2, C_GOLD_SHADOW)
-	img.set_pixel(w / 2, h / 2, C_GOLD_SHADOW)
-	img.set_pixel(w / 2, h / 2 + 2, C_GOLD_SHADOW)
-	
-	save_image(img, filename)
-
-func generate_bar_frame_v4(filename):
-	var w = 32; var h = 12
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	draw_chamfered_rect(img, 0, 0, w, h, C_INPUT_BG)
-	draw_chamfered_outline(img, 0, 0, w, h, C_WOOD_LIGHT)
-	save_image(img, filename)
-
-func generate_bar_fill_v4(filename, col_base, col_dark):
-	var w = 32; var h = 12
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Fill with inset
-	for x in range(1, w - 1):
-		for y in range(1, h - 1):
-			if y < h / 2: img.set_pixel(x, y, col_base)
-			else: img.set_pixel(x, y, col_dark)
-			
-	# Shine
-	for x in range(2, w - 2):
-		img.set_pixel(x, 2, col_base.lightened(0.4))
-		
-	save_image(img, filename)
-
-func generate_input_v4(filename):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	draw_chamfered_rect(img, 0, 0, w, h, C_INPUT_BG)
-	draw_chamfered_outline(img, 0, 0, w, h, C_WOOD_SHADOW)
-	# Inner shadow
-	draw_inner_shadow(img, 1, 1, w - 2, h - 2, Color(0, 0, 0, 0.5))
-	
-	save_image(img, filename)
-
-func generate_tab_v4(filename, col):
-	var w = 32; var h = 32
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Chamfered top only
-	for x in range(w):
-		for y in range(h):
-			if (x < 3 and y < 3) or (x > w - 4 and y < 3): continue # Chamfer top corners
-			if x == 0 or x == w - 1 or y == 0: # Border
-				img.set_pixel(x, y, C_WOOD_SHADOW)
-			else:
-				img.set_pixel(x, y, col)
-	
-	# Highlight top
-	for x in range(1, w - 1):
-		if img.get_pixel(x, 1) == col: img.set_pixel(x, 1, C_WOOD_LIGHT)
-		
-	save_image(img, filename)
-
-func generate_chk_v4(filename, checked):
-	var w = 24; var h = 24
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	draw_chamfered_rect(img, 0, 0, w, h, C_INPUT_BG)
-	draw_chamfered_outline(img, 0, 0, w, h, C_GOLD_BASE)
-	
-	if checked:
-		# Gold Check
-		for i in range(4, 20):
-			img.set_pixel(i, i, C_GOLD_LIGHT)
-			img.set_pixel(i, 23 - i, C_GOLD_LIGHT)
-			
-	save_image(img, filename)
-
-# --- Drawing Primitives ---
-
-func draw_chamfered_rect(img, x, y, w, h, col):
-	for i in range(w):
-		for j in range(h):
-			if is_corner(i, j, w, h): continue
-			img.set_pixel(x + i, y + j, col)
-
-func draw_chamfered_outline(img, x, y, w, h, col):
-	for i in range(w):
-		for j in range(h):
-			if is_corner(i, j, w, h): continue
-			# If border pixel
-			if is_border(i, j, w, h):
-				img.set_pixel(x + i, y + j, col)
-
-func draw_chamfered_bevel(img, x, y, w, h, col_light, col_dark):
-	# Top/Left lines
-	for i in range(1, w - 1):
-		if not is_corner(i, 0, w, h): img.set_pixel(x + i, y, col_light)
-	for j in range(1, h - 1):
-		if not is_corner(0, j, w, h): img.set_pixel(x, y + j, col_light)
-		
-	# Bottom/Right lines
-	for i in range(1, w - 1):
-		if not is_corner(i, h - 1, w, h): img.set_pixel(x + i, y + h - 1, col_dark)
-	for j in range(1, h - 1):
-		if not is_corner(w - 1, j, w, h): img.set_pixel(x + w - 1, y + j, col_dark)
-
-func draw_inner_shadow(img, x, y, w, h, col):
-	for i in range(w): img.set_pixel(x + i, y, col)
-	for j in range(h): img.set_pixel(x, y + j, col)
-
-func draw_corner_bracket(img, x, y):
-	# 4x4 gold L-shape
-	img.set_pixel(x + 0, y + 0, C_WOOD_SHADOW) # Dark anchor
-	img.set_pixel(x + 1, y + 0, C_GOLD_BASE)
-	img.set_pixel(x + 2, y + 0, C_GOLD_BASE)
-	img.set_pixel(x + 0, y + 1, C_GOLD_BASE)
-	img.set_pixel(x + 0, y + 2, C_GOLD_BASE)
-	img.set_pixel(x + 1, y + 1, C_GOLD_LIGHT)
-
-func apply_noise(img, col, factor):
-	# Horizontal streaks for wood
-	var w = img.get_width()
-	var h = img.get_height()
-	var rng = RandomNumberGenerator.new()
-	rng.seed = 12345
-	for j in range(h):
-		if rng.randf() < 0.3: # 30% chance of grain line
-			for i in range(w):
-				if img.get_pixel(i, j).a > 0:
-					var c = img.get_pixel(i, j)
-					img.set_pixel(i, j, c.lerp(col, factor))
-		else:
-			# Random pixel noise
-			for i in range(w):
-				if img.get_pixel(i, j).a > 0 and rng.randf() < 0.05:
-					var c = img.get_pixel(i, j)
-					img.set_pixel(i, j, c.lerp(col, factor))
-
-func apply_noise_region(img, x, y, w, h, col, factor):
-	var rng = RandomNumberGenerator.new()
-	for i in range(w):
-		for j in range(h):
-			if rng.randf() < 0.2:
-				var c = img.get_pixel(x + i, y + j)
-				img.set_pixel(x + i, y + j, c.lerp(col, factor))
-
-func is_corner(x, y, w, h) -> bool:
-	# Chamfer size 3
-	var c = 3
-	if (x + y < c): return true # TL
-	if ((w - 1 - x) + y < c): return true # TR
-	if (x + (h - 1 - y) < c): return true # BL
-	if ((w - 1 - x) + (h - 1 - y) < c): return true # BR
-	return false
-
-func is_border(x, y, w, h) -> bool:
-	if x == 0 or y == 0 or x == w - 1 or y == h - 1: return true
-	# Also check chamfer diagonal edges
-	# This is basic, for advanced we would check diagonals too but rect outline covers most
-	return false
-
-func save_image(img: Image, filename: String):
-	var path = "res://assets/Realistic/ui/textures/" + filename
-	img.save_png(path)
-	print("Generated: " + path)
-```
-
-### File: `generate_icons.gd`
-```gdscript
-@tool
-extends SceneTree
-
-# Palette
-const C_HEART_FILL = Color("e53935") # Red
-const C_HEART_SHADE = Color("b71c1c")
-const C_HEART_OUTLINE = Color("4b0000")
-
-const C_POWER_FILL = Color("1e88e5") # Blue
-const C_POWER_SHADE = Color("0d47a1")
-const C_POWER_OUTLINE = Color("002171")
-
-func _init():
-	print("Starting Icon Generation V6 (Balanced)...")
-	var path = "res://assets/Realistic/ui/textures/"
-	
-	# 1. Wide Heart (64x64) - Tuned to hold "99"
-	generate_heart("icon_heart_bg.png")
-
-	# 2. Wide Shield (64x64) - Tuned to match Heart size
-	generate_shield("icon_power_bg.png")
-	
-	print("Icon Generation Complete.")
-	quit()
-
-func generate_heart(filename):
-	var w = 64; var h = 64
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Simple chunky pixel heart
-	# Draw broad strokes
-	var center_x = 32
-	var center_y = 32
-	
-	# Fill logic: Union of two circles and a triangle, basically
-	for x in range(w):
-		for y in range(h):
-			var dx = (x - center_x) / 32.0
-			var dy = - (y - 36) / 32.0 # Higher center
-			# Heart Equation
-			var val = pow(dx * dx + dy * dy - 1.0, 3) - dx * dx * pow(dy, 3)
-			if val <= 0.0:
-				img.set_pixel(x, y, C_HEART_FILL)
-
-	# Expand slightly to be chunky
-	var img2 = expand_shape(img, C_HEART_FILL)
-	process_pixel_art(img2, C_HEART_FILL, C_HEART_SHADE, C_HEART_OUTLINE)
-	save_image(img2, filename)
-
-func generate_shield(filename):
-	var w = 64; var h = 64
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Chunky Shield (Heater Shield shape)
-	# Rect top, Curve bottom
-	for x in range(w):
-		for y in range(h):
-			var in_shield = false
-			# Main box 
-			if x >= 8 and x <= 56:
-				if y >= 8 and y <= 32: in_shield = true
-				if y > 32:
-					# Elliptic curve to bottom point
-					var dy = (y - 32)
-					var dx = abs(x - 32)
-					# x^2/a^2 + y^2/b^2 <= 1
-					# a = 24, b = 28
-					if (pow(dx, 2) / pow(24, 2) + pow(dy, 2) / pow(24, 2)) <= 1.0:
-						in_shield = true
-			if in_shield:
-				img.set_pixel(x, y, C_POWER_FILL)
-
-	# Expand to match heart weight
-	var img2 = expand_shape(img, C_POWER_FILL)
-	process_pixel_art(img2, C_POWER_FILL, C_POWER_SHADE, C_POWER_OUTLINE)
-	save_image(img2, filename)
-
-func expand_shape(src: Image, col):
-	var dst = src.duplicate()
-	var w = src.get_width()
-	var h = src.get_height()
-	for x in range(1, w - 1):
-		for y in range(1, h - 1):
-			if src.get_pixel(x, y).a > 0:
-				dst.set_pixel(x + 1, y, col)
-				dst.set_pixel(x - 1, y, col)
-				dst.set_pixel(x, y + 1, col)
-				dst.set_pixel(x, y - 1, col)
-	return dst
-
-func process_pixel_art(img: Image, fill_col, shade_col, outline_col):
-	var w = img.get_width()
-	var h = img.get_height()
-	
-	# 1. Shading (Inset)
-	for x in range(w):
-		for y in range(h):
-			if img.get_pixel(x, y).a > 0:
-				# Distance from bottom-right
-				if x > 32 or y > 32:
-					img.set_pixel(x, y, shade_col)
-	
-	# Restore Fill (Center)
-	for x in range(4, w - 4):
-		for y in range(4, h - 4):
-			if img.get_pixel(x, y).a > 0:
-				if x < 40 and y < 40:
-					img.set_pixel(x, y, fill_col)
-					
-	# 2. Outline
-	var temp = img.duplicate()
-	for x in range(w):
-		for y in range(h):
-			if temp.get_pixel(x, y).a == 0:
-				var has_neighbor = false
-				for dx in [-1, 0, 1]:
-					for dy in [-1, 0, 1]:
-						if x + dx >= 0 and x + dx < w and y + dy >= 0 and y + dy < h:
-							if temp.get_pixel(x + dx, y + dy).a > 0:
-								has_neighbor = true
-				if has_neighbor:
-					img.set_pixel(x, y, outline_col)
-
-	# 3. Highlight
-	for x in range(10, 30):
-		for y in range(10, 30):
-			if img.get_pixel(x, y) == fill_col:
-				if (x + y) % 4 == 0:
-					img.set_pixel(x, y, fill_col.lightened(0.4))
-
-func save_image(img: Image, filename: String):
-	var path = "res://assets/Realistic/ui/textures/" + filename
-	img.save_png(path)
-	print("Generated: " + path)
-```
-
-### File: `generate_simple_icons.gd`
-```gdscript
-@tool
-extends SceneTree
-
-# One flat color per icon, as requested.
-const C_HEART = Color("e53935") # Red
-const C_FIST = Color("212121") # Black/Dark Grey
-const C_FLAME = Color("ff5722") # Orange/Red
-
-func _init():
-	print("Generating 1-bit Flat Color Icons (64x64)...")
-	
-	# Defined as 16x16 bitmaps to be scaled by 4
-	var heart_map = [
-		"................",
-		"................",
-		"..XXX.....XXX...",
-		".XXXXX...XXXXX..",
-		"XXXXXXX.XXXXXXX.",
-		"XXXXXXXXXXXXXXX.",
-		"XXXXXXXXXXXXXXX.",
-		"XXXXXXXXXXXXXXX.",
-		".XXXXXXXXXXXXX..",
-		"..XXXXXXXXXXX...",
-		"...XXXXXXXXX....",
-		"....XXXXXXX.....",
-		".....XXXXX......",
-		"......XXX.......",
-		".......X........",
-		"................",
-	]
-	
-	# Side view fist / gauntlet
-	var fist_map = [
-		"................",
-		"....XXXXXX......",
-		"...XXXXXXXX.....",
-		"..XXXXXXXXXX....",
-		"..XXXXXXXXXX....",
-		"..XXXXXXXXXX....",
-		"..XXXXXXXXXX....",
-		"..XXXXXXXXXXX...",
-		"..XXXXXXXXXXX...",
-		"...XXXXXXXXXX...",
-		"....XXXXXXXX....",
-		"....XXXXXXXX....",
-		"....XXXXXXXX....",
-		"....XXXXXXX.....",
-		".....XXXXX......",
-		"................"
-	]
-	
-	# Simple flame
-	var flame_map = [
-		"................",
-		".......X........",
-		"......XXX.......",
-		".....XXXXX......",
-		"....XXXXXXX.....",
-		"....XXXXXXX.....",
-		"...XXXXXXXXX....",
-		"..XXXXXXXXXXX...",
-		"..XXXXXXXXXXX...",
-		".XXXXXXXXXXXXX..",
-		".XXXXXXXXXXXXX..",
-		".XXXXXXXXXXXXX..",
-		"..XXXXXXXXXXX...",
-		"..XXXXXXXXXXX...",
-		"...XXXXXXXXX....",
-		"....XXXXXXX....."
-	]
-
-	generate_icon("icon_heart_pixel.png", heart_map, C_HEART)
-	generate_icon("icon_fist_pixel.png", fist_map, C_FIST)
-	generate_icon("icon_burn_pixel.png", flame_map, C_FLAME)
-	
-	print("Done.")
-	quit()
-
-func generate_icon(filename, bitmap, color):
-	var w = 64
-	var h = 64
-	var img = Image.create(w, h, false, Image.FORMAT_RGBA8)
-	
-	# Map is 16x16. We scale by 4 to get 64x64.
-	var scale = 4
-	
-	for y in range(16):
-		var row = bitmap[y]
-		for x in range(16):
-			if row[x] == "X":
-				# Fill the 4x4 block
-				for dy in range(scale):
-					for dx in range(scale):
-						img.set_pixel(x * scale + dx, y * scale + dy, color)
-						
-	var path = "res://assets/Realistic/ui/textures/" + filename
-	img.save_png(path)
-	print("Saved: " + path)
-```
 
 ### File: `scripts/abilities/EffectScald.gd`
 ```gdscript
@@ -6527,43 +5502,43 @@ var item_icon_path: String = ""
 var item_name: String = "Item"
 var message: String = ""
 
-static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_max_hp: Array[int] = []) -> CombatPayload:
+static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = "hp"
-	payload.targets_old_hp = p_targets_old_hp
-	payload.targets_new_hp = p_targets_new_hp
-	payload.targets_max_hp = p_targets_max_hp
-	payload.new_hp = p_targets_new_hp[0] if not p_targets_new_hp.is_empty() else 0
+	payload.targets_old_hp.assign(p_targets_old_hp)
+	payload.targets_new_hp.assign(p_targets_new_hp)
+	payload.targets_max_hp.assign(p_targets_max_hp)
+	payload.new_hp = payload.targets_new_hp[0] if not payload.targets_new_hp.is_empty() else 0
 	return payload
 
-static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array[int] = [], p_targets_new_pwr: Array[int] = []) -> CombatPayload:
+static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = "pwr"
-	payload.targets_old_pwr = p_targets_old_pwr
-	payload.targets_new_pwr = p_targets_new_pwr
-	payload.new_pwr = p_targets_new_pwr[0] if not p_targets_new_pwr.is_empty() else 0
+	payload.targets_old_pwr.assign(p_targets_old_pwr)
+	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
 	return payload
 
-static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array[int] = [], p_targets_new_val: Array[int] = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
+static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array = [], p_targets_new_val: Array = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_amount
 	payload.stat = p_stat
-	payload.targets_old_val = p_targets_old_val
-	payload.targets_new_val = p_targets_new_val
-	payload.new_val = p_targets_new_val[0] if not p_targets_new_val.is_empty() else 0
+	payload.targets_old_val.assign(p_targets_old_val)
+	payload.targets_new_val.assign(p_targets_new_val)
+	payload.new_val = payload.targets_new_val[0] if not payload.targets_new_val.is_empty() else 0
 	payload.status_color = p_status_color
 	return payload
 
-static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array[int] = [], p_targets_new_hp: Array[int] = [], p_targets_old_armor: Array[int] = [], p_targets_new_armor: Array[int] = [], p_armor_consumed: Array[int] = []) -> CombatPayload:
+static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_armor: Array = [], p_targets_new_armor: Array = [], p_armor_consumed: Array = []) -> CombatPayload:
 	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
-	payload.targets_old_armor = p_targets_old_armor
-	payload.targets_new_armor = p_targets_new_armor
-	payload.armor_consumed = p_armor_consumed
+	payload.targets_old_armor.assign(p_targets_old_armor)
+	payload.targets_new_armor.assign(p_targets_new_armor)
+	payload.armor_consumed.assign(p_armor_consumed)
 	return payload
 
 static func guardian_intercept(p_guardian_uuid: String, p_original_target_uuid: String) -> CombatPayload:
@@ -11367,7 +10342,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var is_inventory_summon = String(container_tag).begins_with("BattleInventoryT")
 				
 				var battle_view = get_tree().get_first_node_in_group("battle_view")
-				var main_node = get_tree().get_root().find_child("Main", true, false)
+				var main_node = GameManager.get_main_node()
 				
 				var arc_completed = false
 				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
@@ -15975,7 +14950,7 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# Contextual/discovery buttons should be disabled only during COMBAT
 	discard_pile_button.disabled = is_combat
 	
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node): return
 	
 	var draw_buttons_parent = main_node.get_node_or_null("VBoxContainer/BottomArea/HBoxContainer")
@@ -16005,7 +14980,7 @@ func _show_battle_management_tutorial() -> void:
 	
 	_waiting_for_management_tutorial = false
 		
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node): return
 	
 	# Identify all elements we want to point to
@@ -16299,7 +15274,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		_pending_animated_uuids.append(draw_result.drawn_uuid)
 	
 	# Attempt to find the Gacha Machine (Start Position)
-	var main_node = get_tree().get_root().find_child("Main", true, false)
+	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node):
 		_force_refresh_after_anim()
 		return
@@ -18073,135 +17048,6 @@ func get_all_non_empty_uuids() -> Array[String]:
 func get_all_uuids() -> Array[String]:
 	push_error("DataContainer.get_all_uuids() must be overridden")
 	return []
-```
-
-### File: `scripts/debug_compile.gd`
-```gdscript
-# res://scripts/debug_compile.gd
-extends SceneTree
-
-func _init():
-	print("--- CHECKING COMPILATION ---")
-	var scripts = [
-		"res://scripts/Database.gd",
-		"res://scripts/EncounterGenerator.gd",
-		"res://scripts/battle/BattleSetup.gd",
-		"res://scripts/effects/EffectDustEliteSpawn.gd"
-	]
-	
-	for s in scripts:
-		print("Checking: ", s)
-		var res = load(s)
-		if res == null:
-			print("  FAILURE: Could not load ", s)
-		elif not res.can_instantiate() and res is GDScript:
-			# Not always true for static-only scripts, but usually works
-			pass
-		print("  Result: ", res)
-		
-	quit()
-```
-
-### File: `scripts/debug_database.gd`
-```gdscript
-# res://scripts/debug_database.gd
-extends SceneTree
-
-func _init():
-	# Wait for database autoload to be ready if needed, 
-	# but in a script run via --script it might not be.
-	# However, we can just load the file and call its load functions.
-	var db = load("res://scripts/Database.gd").new()
-	db._ready()
-	
-	print("--- DATABASE UNITS ---")
-	for id in db.units.keys():
-		print("ID: ", id)
-	
-	if db.units.has(&"unit_dust_elite_t3"):
-		print("SUCCESS: unit_dust_elite_t3 found!")
-		var def = db.units[&"unit_dust_elite_t3"]
-		print("  - Display Name Key: ", def.display_name_key)
-		print("  - Tier: ", def.tier)
-		print("  - Abilities count: ", def.ability_definitions.size())
-	else:
-		print("FAILURE: unit_dust_elite_t3 NOT FOUND in units dictionary.")
-		
-	quit()
-```
-
-### File: `scripts/debug_korean_deck.gd`
-```gdscript
-# res://scripts/debug_korean_deck.gd
-extends SceneTree
-
-func _init():
-	print("--- STARTING KOREAN HANGUL DECK VERIFICATION ---")
-	
-	# Load Database
-	var db = load("res://scripts/Database.gd").new()
-	db._ready()
-	
-	# Check if deck definition is present
-	var deck_id = &"korean_hangul_main"
-	if not db.deck_definitions.has(deck_id):
-		print("FAILURE: Deck 'korean_hangul_main' not found in database definitions.")
-		quit(1)
-		return
-		
-	var deck = db.deck_definitions[deck_id]
-	print("SUCCESS: Korean deck found!")
-	print("  - Display Name (raw): ", deck.display_name)
-	print("  - Description (raw): ", deck.description)
-	print("  - Card Count: ", deck.card_ids.size())
-	
-	# Validate card count
-	if deck.card_ids.size() != 103:
-		print("FAILURE: Expected 103 cards, but found ", deck.card_ids.size())
-		quit(1)
-		return
-		
-	# Verify all cards have definitions and audio files
-	var missing_audio = 0
-	var missing_defs = 0
-	
-	for c_id in deck.card_ids:
-		var card_data = db.get_flashcard_definition(c_id)
-		if card_data.is_empty():
-			print("FAILURE: Card definition for ", c_id, " is empty!")
-			missing_defs += 1
-			continue
-			
-		# Check audio file existence
-		var audio_path = "res://assets/audio/sfx/pronunciation/" + String(c_id) + ".mp3"
-		if not FileAccess.file_exists(audio_path):
-			print("FAILURE: Audio file for ", c_id, " not found at: ", audio_path)
-			missing_audio += 1
-			
-	if missing_defs > 0 or missing_audio > 0:
-		print("VERIFICATION FAILED: ", missing_defs, " missing definitions, ", missing_audio, " missing audio files.")
-		quit(1)
-		return
-		
-	print("SUCCESS: All 103 card definitions and audio files are present!")
-	
-	# Verify Localization keys
-	TranslationServer.set_locale("en")
-	var en_desc = tr("deck.korean_hangul.desc")
-	print("  - English Description: ", en_desc)
-	
-	TranslationServer.set_locale("pt")
-	var pt_desc = tr("deck.korean_hangul.desc")
-	print("  - Portuguese Description: ", pt_desc)
-	
-	if en_desc == "deck.korean_hangul.desc" or pt_desc == "deck.korean_hangul.desc":
-		print("FAILURE: Localization key 'deck.korean_hangul.desc' did not translate successfully!")
-		quit(1)
-		return
-		
-	print("SUCCESS: Localization translations resolved successfully!")
-	print("--- VERIFICATION SUCCEEDED ---")
-	quit(0)
 ```
 
 ### File: `scripts/DeckSelectButton.gd`
@@ -22270,13 +21116,13 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if is_simulation and _is_on_board(inst) and not inst.has_meta("skip_initial_scaling_anim"):
 			if delta > 0:
 				if not buff_groups.has(delta):
-					buff_groups[delta] = {"targets": [], "new_pwrs": []}
+					buff_groups[delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
 				buff_groups[delta]["targets"].append(uuid)
 				buff_groups[delta]["new_pwrs"].append(inst.current_pwr)
 			else:
 				var abs_delta = abs(delta)
 				if not debuff_groups.has(abs_delta):
-					debuff_groups[abs_delta] = {"targets": [], "new_pwrs": []}
+					debuff_groups[abs_delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
 				debuff_groups[abs_delta]["targets"].append(uuid)
 				debuff_groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
 
@@ -28340,6 +27186,12 @@ func register_main_node(node: Node) -> void:
 func unregister_main_node() -> void:
 	_active_main_node = null
 
+func get_main_node() -> Node:
+	return _active_main_node
+
+func get_battle_manager() -> Node:
+	return _active_battle_manager
+
 func get_pending_rewards() -> Dictionary:
 	return {
 		"reward_instances": _temporary_reward_master_dict.values(),
@@ -32504,9 +31356,9 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var bottom_area: PanelContainer = %BottomArea
 
 # Knob buttons for drawing
-@onready var knob_button_1: TextureButton = %GachaMachine1.get_node("KnobButton")
-@onready var knob_button_2: TextureButton = %GachaMachine2.get_node("KnobButton")
-@onready var knob_button_3: TextureButton = %GachaMachine3.get_node("KnobButton")
+@onready var knob_button_1: TextureButton = %GachaMachine1.get_knob_button() if %GachaMachine1.has_method("get_knob_button") else %GachaMachine1.get_node_or_null("KnobButton")
+@onready var knob_button_2: TextureButton = %GachaMachine2.get_knob_button() if %GachaMachine2.has_method("get_knob_button") else %GachaMachine2.get_node_or_null("KnobButton")
+@onready var knob_button_3: TextureButton = %GachaMachine3.get_knob_button() if %GachaMachine3.has_method("get_knob_button") else %GachaMachine3.get_node_or_null("KnobButton")
 
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
@@ -32516,9 +31368,9 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
 # Machine inventory count labels
-@onready var machine_1_count_label: Label = %GachaMachine1.get_node("CountLabel")
-@onready var machine_2_count_label: Label = %GachaMachine2.get_node("CountLabel")
-@onready var machine_3_count_label: Label = %GachaMachine3.get_node("CountLabel")
+@onready var machine_1_count_label: Label = %GachaMachine1.get_count_label() if %GachaMachine1.has_method("get_count_label") else %GachaMachine1.get_node_or_null("CountLabel")
+@onready var machine_2_count_label: Label = %GachaMachine2.get_count_label() if %GachaMachine2.has_method("get_count_label") else %GachaMachine2.get_node_or_null("CountLabel")
+@onready var machine_3_count_label: Label = %GachaMachine3.get_count_label() if %GachaMachine3.has_method("get_count_label") else %GachaMachine3.get_node_or_null("CountLabel")
 
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
@@ -35902,6 +34754,18 @@ func finish_open() -> void:
 	_bounce_tween.tween_property(mat, "bounce", 0.15, 5.0)\
 			.set_trans(Tween.TRANS_CUBIC)\
 			.set_ease(Tween.EASE_OUT)
+
+func get_draw_button() -> Button:
+	return get_node_or_null("DrawButton") as Button
+
+func get_stat_label() -> Label:
+	return get_node_or_null("StatLabel") as Label
+
+func get_knob_button() -> TextureButton:
+	return get_node_or_null("KnobButton") as TextureButton
+
+func get_count_label() -> Label:
+	return get_node_or_null("CountLabel") as Label
 ```
 
 ### File: `scripts/resources/AbilityComponent.gd`
@@ -36186,9 +35050,9 @@ enum SiteType { HP, PWR, GOLD }
 @onready var tier2_machine: Control = %Tier2Machine
 @onready var tier3_machine: Control = %Tier3Machine
 
-@onready var tier1_draw_button: Button = tier1_machine.get_node("DrawButton")
-@onready var tier2_draw_button: Button = tier2_machine.get_node("DrawButton")
-@onready var tier3_draw_button: Button = tier3_machine.get_node("DrawButton")
+@onready var tier1_draw_button: Button = tier1_machine.get_draw_button() if tier1_machine.has_method("get_draw_button") else tier1_machine.get_node_or_null("DrawButton")
+@onready var tier2_draw_button: Button = tier2_machine.get_draw_button() if tier2_machine.has_method("get_draw_button") else tier2_machine.get_node_or_null("DrawButton")
+@onready var tier3_draw_button: Button = tier3_machine.get_draw_button() if tier3_machine.has_method("get_draw_button") else tier3_machine.get_node_or_null("DrawButton")
 
 # UI references
 @onready var study_button: Button = %StudyButton
@@ -36286,12 +35150,14 @@ func _setup_machine_visuals() -> void:
 	
 	for i in range(machines.size()):
 		var machine = machines[i]
-		var label = machine.get_node("StatLabel")
-		var button = machine.get_node("DrawButton")
+		var label: Label = machine.get_stat_label() if machine.has_method("get_stat_label") else machine.get_node_or_null("StatLabel")
+		var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
 		
-		label.text = stat_label_text
-		label.add_theme_color_override("font_color", stat_color)
-		button.text = "%d Tokens" % costs[i]
+		if is_instance_valid(label):
+			label.text = stat_label_text
+			label.add_theme_color_override("font_color", stat_color)
+		if is_instance_valid(button):
+			button.text = "%d Tokens" % costs[i]
 
 func _populate_hero_slot() -> void:
 	"""Display the hero in the first slot with entry animation"""
@@ -36383,8 +35249,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
 		return
 	
-	var button = machine.get_node("DrawButton")
-	button.disabled = true
+	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	if is_instance_valid(button):
+		button.disabled = true
 	
 	# Animate token spend
 	await _animate_token_spend(machine, cost, token_group)
@@ -36470,7 +35337,8 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
 
 func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictionary) -> void:
-	var start_pos = machine.get_node("DrawButton").get_global_rect().get_center()
+	var draw_btn: Control = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	var start_pos: Vector2 = draw_btn.get_global_rect().get_center() if is_instance_valid(draw_btn) else machine.get_global_rect().get_center()
 	var target_slot = prize_lineup.get_child(slot_index + 1)
 	var end_pos = target_slot.get_global_rect().get_center()
 	
@@ -36774,9 +35642,9 @@ const COST_TIER3: int = 3
 @onready var tier1_machine: Control = %Tier1Machine
 @onready var tier2_machine: Control = %Tier2Machine
 @onready var tier3_machine: Control = %Tier3Machine
-@onready var tier1_draw_button: Button = %Tier1Machine.get_node("DrawButton")
-@onready var tier2_draw_button: Button = %Tier2Machine.get_node("DrawButton")
-@onready var tier3_draw_button: Button = %Tier3Machine.get_node("DrawButton")
+@onready var tier1_draw_button: Button = %Tier1Machine.get_draw_button() if %Tier1Machine.has_method("get_draw_button") else %Tier1Machine.get_node_or_null("DrawButton")
+@onready var tier2_draw_button: Button = %Tier2Machine.get_draw_button() if %Tier2Machine.has_method("get_draw_button") else %Tier2Machine.get_node_or_null("DrawButton")
+@onready var tier3_draw_button: Button = %Tier3Machine.get_draw_button() if %Tier3Machine.has_method("get_draw_button") else %Tier3Machine.get_node_or_null("DrawButton")
 
 var _tokens: int = 0
 var _prizes: Array[GachaBallInstance] = [null, null, null, null, null]
@@ -36948,8 +35816,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		return
 	
 	_action_in_progress = true
-	var button = machine.get_node("DrawButton")
-	button.disabled = true
+	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	if is_instance_valid(button):
+		button.disabled = true
 	
 	# Animate Bargain Charm if it is providing a discount
 	if GameManager.is_bargain_charm_active(tier):
@@ -37092,7 +35961,8 @@ func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
 
 func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallInstance) -> void:
-	var start_pos = machine.get_node("DrawButton").get_global_rect().get_center()
+	var draw_btn: Control = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	var start_pos: Vector2 = draw_btn.get_global_rect().get_center() if is_instance_valid(draw_btn) else machine.get_global_rect().get_center()
 	var target_slot = prize_lineup.get_child(slot_index)
 	var end_pos = target_slot.get_global_rect().get_center()
 	
@@ -39459,12 +38329,13 @@ func _update_fixed_price_tags() -> void:
 		# This ensures they stay put even when balls are dragged
 		tag.global_position = slot.global_position + Vector2(slot.size.x - TAG_W, 0)
 		
-		var lbl = tag.get_node("PriceLabel")
-		if is_instance_valid(inst):
-			var price = GameManager.get_item_cost(inst.get_definition())
-			lbl.text = tr("ui.gold_price") % price
-		else:
-			lbl.text = "Sold!"
+		var lbl: Label = tag.get_node_or_null("PriceLabel") as Label
+		if is_instance_valid(lbl):
+			if is_instance_valid(inst):
+				var price = GameManager.get_item_cost(inst.get_definition())
+				lbl.text = tr("ui.gold_price") % price
+			else:
+				lbl.text = "Sold!"
 
 func _create_price_tag_node(w: float, h: float) -> Control:
 	var tag_wrapper = Control.new()
@@ -41565,32 +40436,6 @@ func draw_unique_items(raw_pool: Array, current_state, count: int) -> Array:
     return drawn_items
 ```
 
-### File: `scripts/test_prio.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-	var sim = load("res://scripts/battle/CombatSimulator.gd").new()
-	var req_high = load("res://scripts/EffectRequest.gd").new("src", "high", null, [], {}, 0)
-	var req_low = load("res://scripts/EffectRequest.gd").new("src", "low", null, [], {}, -50)
-	
-	sim.enqueue_reaction(req_high)
-	sim.enqueue_reaction(req_low)
-	
-	print("Pending reactions: ", sim._pending_reactions.size())
-	
-	# Manually sort (simulating execution loop)
-	sim._pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
-	
-	var first = sim._pending_reactions[0]
-	var second = sim._pending_reactions[1]
-	
-	print("First (High 0): ", first.ability_id, " Prio: ", first.priority)
-	print("Second (Low -50): ", second.ability_id, " Prio: ", second.priority)
-	
-	quit()
-```
-
 ### File: `scripts/TestEnvironmentManager.gd`
 ```gdscript
 class_name TestEnvironmentManager
@@ -43444,6 +42289,7 @@ var _tokens: int = 0
 # Popup references (built programmatically)
 var _popup_root: CenterContainer = null
 var _popup_panel: PanelContainer = null
+var _popup_unit_slot: Control = null
 var _popup_ball_view: GachaBallView = null
 var _popup_btn_1: Button = null
 var _popup_btn_2: Button = null
@@ -43670,6 +42516,7 @@ func _build_training_popup() -> void:
 	unit_slot.custom_minimum_size = Vector2(192, 192)
 	unit_center.add_child(unit_slot)
 	unit_slot.name = "UnitSlot"
+	_popup_unit_slot = unit_slot
 
 	# Spacer between unit and buttons
 	var spacer = Control.new()
@@ -43724,7 +42571,7 @@ func _show_training_popup() -> void:
 		return
 
 	# Populate the unit display using a SlotView wrapper (same as BattleView)
-	var unit_slot = _popup_panel.find_child("UnitSlot", true, false)
+	var unit_slot = _popup_unit_slot
 
 	if is_instance_valid(unit_slot):
 		# Clear previous
@@ -47117,301 +45964,5 @@ func _animate_window_open(window: Control) -> void:
 	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
 	tween.tween_property(window, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(window, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-```
-
-### File: `sim_test.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-	var db = load("res://scripts/Database.gd").new()
-	var gen = load("res://scripts/EncounterGenerator.gd").new()
-	
-	# Mock Database manually since it's a singleton in game
-	gen.Database = db
-	
-	# Populate DB with some fake data if needed or try to use real data
-	# Headless loading of resources might fail if we don't have the folders
-	# Let's just mock the pools directly in EncounterGenerator for this test
-	
-	print("--- Day 1 Elite Simulation (Budget 6) ---")
-	_run_sim(gen, 6)
-	
-	print("\n--- Day 3 Elite Simulation (Budget 14) ---")
-	_run_sim(gen, 14)
-	
-	quit()
-
-func _run_sim(gen, budget):
-	# Mocking _create_resource_pools to be predictable
-	var unit_t1 = {"id": "unit_t1", "cost": 1, "item_slot_count": 1, "category": "UNIT"}
-	var unit_t2 = {"id": "unit_t2", "cost": 2, "item_slot_count": 2, "category": "UNIT"}
-	var item_t1 = {"id": "item_t1", "cost": 1, "category": "ITEM"}
-	var item_t2 = {"id": "item_t2", "cost": 2, "category": "ITEM"}
-	
-	var pools = {
-		"units": [unit_t1, unit_t2],
-		"items": [item_t1, item_t2],
-		"trinkets": []
-	}
-	
-	var build = gen._build_encounter_with_full_spend(budget, pools, 4, 5)
-	print("Result: Spent %d/%d, Units %d, Items %d" % [build.spent, budget, build.units.size(), build.items.size()])
-```
-
-### File: `test.gd`
-```gdscript
-extends SceneTree
-
-func _init() -> void:
-	var rs = preload("res://scripts/RunState.gd").new()
-	rs.initialize_run("hero_timekeeper", "korean_hangul_main")
-	print("Deck ID: ", rs.deck_def_id)
-	print("Ordered pool size: ", rs.ordered_deck_pool.size())
-	rs.check_deck_expansion()
-	print("Active deck size: ", rs.active_deck_ids.size())
-	if rs.active_deck_ids.size() > 0:
-		print("First card: ", rs.active_deck_ids[0])
-	quit()
-```
-
-### File: `test2.gd`
-```gdscript
-extends MainLoop
-
-func _process(delta: float) -> bool:
-	print("Hello from MainLoop!")
-	
-	var db_script = load("res://scripts/Database.gd")
-	if db_script == null:
-		print("Failed to load Database.gd")
-		return true
-		
-	var db = db_script.new()
-	db._load_flashcard_definitions()
-	print("Flashcards loaded: ", db.flashcard_definitions.size())
-	
-	var rs_script = load("res://scripts/RunState.gd")
-	if rs_script:
-		var rs = rs_script.new()
-		rs.deck_def_id = "korean_hangul_main"
-		rs.ordered_deck_pool = ["KOR_067", "KOR_066", "KOR_065"]
-		rs.active_deck_ids = ["KOR_067"]
-		print("Has KOR_067? ", db.flashcard_definitions.has("KOR_067"))
-	
-	return true
-```
-
-### File: `test_array.gd`
-```gdscript
-extends SceneTree
-func _init():
-	var a = [{'foo': 1}] if true else Array()
-	var b = [{'foo': 1}] if true else Array()
-	print('is same? ', a == b)
-	quit()
-
-```
-
-### File: `test_charm.gd`
-```gdscript
-﻿extends SceneTree
-func _init():
-    var gm = load("res://scripts/GameManager.gd").new()
-    gm._ready()
-    gm._on_start_run_requested(&"hero_timekeeper", &"deck_test")
-    var has_charm = gm.has_trinket(&"trinket_beginners_charm")
-    var db = load("res://scripts/Database.gd").new()
-    db._ready()
-    print("DB loaded trinkets: ", db.trinkets.keys())
-    print("Has Charm: ", has_charm)
-    var uids = []
-    if gm.run_state:
-        var cont = gm.run_state.get_container(gm.run_state.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-        if cont:
-            for uid in cont.get_all_non_empty_uuids():
-                var inst = gm.run_state.get_instance_by_uuid(uid)
-                if inst:
-                    var def = inst.get_definition()
-                    if def:
-                        uids.append(def.id)
-    print("RunState trinkets: ", uids)
-    quit()
-```
-
-### File: `test_colors.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-	_check_image("res://assets/Realistic/ui/textures/token_100yen.png")
-	_check_image("res://assets/Realistic/ui/textures/gachaball.png")
-	quit()
-
-func _check_image(path: String):
-	print("\n--- Image: ", path, " ---")
-	var img = Image.new()
-	var err = img.load(path)
-	if err != OK:
-		print("Failed to load: ", err)
-		return
-	var w = img.get_width()
-	var h = img.get_height()
-	var bright_colors = {}
-	for y in range(h):
-		for x in range(w):
-			var c = img.get_pixel(x, y)
-			if c.a > 0.1 and c.r > 0.8: # Only bright things
-				var hex = c.to_html(false)
-				if not bright_colors.has(hex):
-					bright_colors[hex] = c
-	
-	print("Bright colors found:")
-	for hex in bright_colors:
-		var c = bright_colors[hex]
-		var dist = abs(c.r - 1.0) + abs(c.g - 0.945098) + abs(c.b - 0.909804)
-		print("- #", hex, " (Dist to target: ", dist, ") -> ", c)
-
-```
-
-### File: `test_db.gd`
-```gdscript
-extends SceneTree
-
-func _init() -> void:
-	var db = load("res://scripts/Database.gd").new()
-	db._load_flashcard_definitions()
-	
-	var rs = load("res://scripts/RunState.gd").new()
-	var err = rs.load_run_data()
-	if err != OK:
-		print("Failed to load save: ", err)
-		quit()
-		
-	var active = rs.active_deck_ids
-	print("Active deck size: ", active.size())
-	for c in active:
-		if not db.flashcard_definitions.has(c):
-			print("MISSING CARD: ", c)
-		else:
-			pass
-	print("Check done.")
-	quit()
-```
-
-### File: `test_eq.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-    var a = &"TRINKET"
-    var b = "TRINKET"
-    print("Test 1: ", a == b)
-    var d = {"category": &"TRINKET"}
-    print("Test 2: ", d.get("category", "") == "TRINKET")
-    print("Test 3: ", str(d.get("category", "")) == "TRINKET")
-    quit()
-```
-
-### File: `test_int_null.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-	print("Running test...")
-	var test_val = null
-	var result = int(test_val)
-	print("Result: ", result)
-	quit()
-```
-
-### File: `test_order.gd`
-```gdscript
-# Verification script for Death/Summon event ordering
-extends SceneTree
-
-func _init():
-	print("--- VERIFYING DEATH/SUMMON EVENT ORDERING ---")
-	
-	# We want to check if DeathProcessor.check_for_deaths_with_counter_delay
-	# correctly appends DEATH events before reactions (like SUMMON).
-	
-	# Since full BattleManager initialization is complex, we can mock the behavior
-	# or just analyze the code. I've already analyzed the code and applied the fix.
-	
-	# Logical check:
-	# Before my fix:
-	# 1. Fire on_death triggers (queues summon)
-	# 2. Drain reactions (appends SUMMON to out_events)
-	# 3. Append DEATH to out_events
-	# Result: [SUMMON, DEATH] -> WRONG
-	
-	# After my fix:
-	# 1. Fire on_death triggers (queues summon)
-	# 2. Append DEATH to out_events
-	# 3. Drain reactions (appends SUMMON to out_events)
-	# Result: [DEATH, SUMMON] -> CORRECT
-	
-	print("DEATH events now added BEFORE draining reactions in DeathProcessor.gd.")
-	print("BattleAnimator.gd aggressive clearing removed.")
-	print("Verification complete (Logical analysis confirmed fix).")
-	
-	quit()
-```
-
-### File: `test_rect.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-	var scene = load("res://scenes/Main.tscn").instantiate()
-	var layer = scene.get_node_or_null("PostProcessLayer")
-	print("PostProcessLayer exists: ", layer != null)
-	var rect = scene.get_node_or_null("PostProcessLayer/ColorGlowRect")
-	print("ColorGlowRect exists: ", rect != null)
-	if rect:
-		print("Rect visible: ", rect.visible)
-		print("Rect size: ", rect.size)
-		if rect.size == Vector2.ZERO:
-			print("WARNING: Rect size is ZERO!")
-		var mat = rect.material
-		print("Material exists: ", mat != null)
-		if mat is ShaderMaterial:
-			print("Mat is ShaderMaterial")
-			if mat.shader:
-				print("Shader is valid")
-			else:
-				print("Shader is null!")
-		else:
-			print("Material is not ShaderMaterial")
-	quit()
-```
-
-### File: `test_script.gd`
-```gdscript
-extends SceneTree
-func _init():
-    print("Hello from Godot!")
-    quit()
-```
-
-### File: `test_trinket.gd`
-```gdscript
-extends SceneTree
-
-func _init():
-    var db = load("res://scripts/Database.gd").new()
-    db._init()
-    
-    var view = load("res://scripts/GachaBallView.gd").new()
-    var visual_data = {
-        "uuid": "test-uuid",
-        "definition_id": "trinket_trait_fire",
-        "category": "TRINKET"
-    }
-    view.populate(null, visual_data)
-    print("Is trait trinket: ", view._is_trait_trinket)
-    print("Trait name: ", view._trait_name)
-    quit()
 ```
 

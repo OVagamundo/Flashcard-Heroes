@@ -6,11 +6,11 @@ extends EffectDefinition
 ## Gives PWR to the unit behind it, then halves it for the next, and so on.
 ## Minimum PWR given is 1.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
 	if targets.is_empty():
-		return EffectResult.empty() if is_simulation else null
+		return EffectResult.empty()
 	
 	var depth: int = parameters.get("depth", 1)
 	
@@ -45,4 +45,5 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		current_target = battle_manager._get_ally_behind(current_target)
 		current_buff /= 2.0
 		
-	return result if is_simulation else null
+	result.state_applied = true
+	return result

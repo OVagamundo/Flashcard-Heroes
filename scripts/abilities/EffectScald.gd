@@ -2,7 +2,7 @@
 class_name EffectScald
 extends EffectDefinition
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> Variant:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var result := EffectResult.new()
 	
 	# Only trigger if the unit is in the lineup (Player or Enemy)
