@@ -19,6 +19,14 @@ var flashcard_mastery: float = 0.0
 var unlock_percentage: float = 0.0
 var unlocked_recipes: Array[String] = []
 var encountered_bosses: Array[String] = []
+var excluded_entity_ids: Array[StringName] = []
 
 func has_unlocked_recipe(recipe_id: String) -> bool:
     return unlocked_recipes.has(recipe_id)
+
+func clear_exclusions() -> void:
+    excluded_entity_ids.clear()
+
+func exclude_entity(id: StringName) -> void:
+    if not excluded_entity_ids.has(id):
+        excluded_entity_ids.append(id)

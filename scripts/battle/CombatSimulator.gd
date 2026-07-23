@@ -253,6 +253,25 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		_current_turn_slot_index = current_actor.location_slot_index
 		_current_turn_is_player = battle_manager._is_player_unit(current_actor)
 		
+		# 1. Fire on_before_turn_action trigger (e.g. for Mimic transformation)
+		AbilityResolver.process_trigger(&"on_before_turn_action", {"actor_uuid": current_actor.ball_uuid})
+		turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
+		
+		# 2. In case the unit was replaced (e.g. by Mimic), update current_actor
+		var container_tag = current_actor.location_container_tag
+		var slot_index = current_actor.location_slot_index
+		var container = battle_manager.get_container(container_tag)
+		if is_instance_valid(container):
+			var new_uuid = container.get_uuid(slot_index)
+			if not new_uuid.is_empty():
+				var new_actor = battle_manager.get_instance_by_uuid(new_uuid)
+				if is_instance_valid(new_actor) and new_actor != current_actor:
+					current_actor = new_actor
+					_current_acting_unit = current_actor
+					
+		if not is_instance_valid(current_actor) or current_actor.current_hp <= 0:
+			continue
+			
 		# Enqueue attack for this actor
 		battle_manager._enqueue_attack_for(current_actor)
 		

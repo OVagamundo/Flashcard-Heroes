@@ -12,3 +12,9 @@ extends WeightableEntity
 @export var linked_trait_id: StringName = &""
 @export var ability_definitions: Array[AbilityDefinition]
 @export var cost: int = 10 # Budget cost for encounter generation
+
+func meets_prerequisites(run_state) -> bool:
+    if run_state is DirectorRunState:
+        if run_state.excluded_entity_ids.has(id):
+            return false
+    return super(run_state)

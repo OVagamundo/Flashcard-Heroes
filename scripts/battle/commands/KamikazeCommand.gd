@@ -17,8 +17,9 @@ func _init(p_request: EffectRequest, p_combat_sim: CombatSimulator, p_bm: Node, 
 func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
 	var damage_amount: int = kamikaze_request.damage
 	var target_uuid: String = kamikaze_request.target_uuid
+	var attacker_uuid: String = kamikaze_request.source_uuid
 	
-	var src_inst = battle_manager.get_instance_by_uuid(request.source_uuid)
+	var src_inst = battle_manager.get_instance_by_uuid(attacker_uuid)
 	var tgt_inst = battle_manager.get_instance_by_uuid(target_uuid)
 	
 	if not is_instance_valid(src_inst) or not is_instance_valid(tgt_inst):
@@ -29,7 +30,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	# Actually apply the damage
 	var damage_type = C.DamageType.MAGIC
-	var dmg_res = battle_manager.apply_damage(tgt_inst, damage_amount, damage_type, request.source_uuid)
+	var dmg_res = battle_manager.apply_damage(tgt_inst, damage_amount, damage_type, attacker_uuid)
 	
 	var new_hp = tgt_inst.current_hp
 	var new_armor = tgt_inst.get_status_effect_amount(&"armor")
@@ -38,9 +39,9 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	# Death's Bargain already registered source death in its definition,
 	# but we need to ensure the standard DEATH event is suppressed
 	# because the KAMIKAZE_ATTACK animation includes the unit disappearing.
-	death_tracking[request.source_uuid] = true
+	death_tracking[attacker_uuid] = true
 	
-	var payload := CombatPayload.damage(request.source_uuid, damage_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+	var payload := CombatPayload.damage(attacker_uuid, damage_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	payload.attack_type = "kamikaze"
 	
 	# Add spikes data if any

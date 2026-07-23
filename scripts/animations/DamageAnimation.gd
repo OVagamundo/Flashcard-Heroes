@@ -68,14 +68,16 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			
 			# Calculate target position from snapshot
 			var head_y = tgt_snap.position.y # Top of sprite (head area)
-			var gap := -10.0 # Negative gap to overlap/touch target
+			var tgt_width = tgt_snap.size.x
 			
 			if is_attacking_right:
-				# Attacker coming from left: stop at target's left edge
-				target_position = Vector2(tgt_snap.position.x - src_width - gap, head_y)
+				# Attacker coming from left (Player to Enemy):
+				# Align attacker's 3/4 point (between center and right edge) with target's 1/4 point (between left edge and center)
+				target_position = Vector2(tgt_snap.position.x + (0.25 * tgt_width) - (0.75 * src_width), head_y)
 			else:
-				# Attacker coming from right: stop at target's right edge
-				target_position = Vector2(tgt_snap.position.x + tgt_snap.size.x + gap, head_y)
+				# Attacker coming from right (Enemy to Player):
+				# Align attacker's 1/4 point (between left edge and center) with target's 3/4 point (between center and right edge)
+				target_position = Vector2(tgt_snap.position.x + (0.75 * tgt_width) - (0.25 * src_width), head_y)
 		
 		# KEYFRAME 1: WIND-UP
 		# Execute windup events before lunge

@@ -520,7 +520,8 @@ func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
 	if not is_instance_valid(bm): 
 		return
 		
-	var team = "ENEMY" if is_enemy else "PLAYER"
+	var is_enemy_team = is_enemy or (is_instance_valid(_location) and _location.container == &"EnemyTrinkets")
+	var team = "ENEMY" if is_enemy_team else "PLAYER"
 	var active_traits = bm.get_active_traits(team)
 	var current_souls = active_traits.get(_trait_name, 0)
 	

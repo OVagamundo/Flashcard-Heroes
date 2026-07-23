@@ -13,7 +13,6 @@ var _visual_registry: Dictionary = {} # UUID -> GachaBallView (for puppet mode)
 var _position_snapshot: Dictionary = {} # UUID -> {position: Vector2, size: Vector2} - captured at animation start
 var _pending_guardian_return: String = "" # UUID of Guardian needing to return after damage
 var _tracker: AnimationCompletionTracker # Animation completion tracking
-var _visual_gacha_tokens: int = 0
 
 var _is_playing_sequence: bool = false
 var _active_async_chains: int = 0
@@ -50,6 +49,9 @@ func _ready() -> void:
 
 func play_async_chain(chain_events: Array[CombatEvent], snapshot: Dictionary = {}) -> void:
 	_active_async_chains += 1
+	
+	# Visual gacha tokens are now handled by BattleManager.
+
 	if not snapshot.is_empty():
 		_register_all_puppets(snapshot)
 		
@@ -72,18 +74,7 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 		if data is Dictionary and data.has("hp"):
 			hp_only_snapshot[uuid] = data["hp"]
 	
-	# Initialize visual gacha tokens tracking for playback
-	var final_tokens = 0
-	var bm = GameManager._active_battle_manager
-	if is_instance_valid(bm):
-		final_tokens = bm.get_gacha_tokens()
-	
-	var total_tokens_gained_in_log = 0
-	for event in turn_log:
-		if event.type == CombatEvent.Type.TOKEN_GAIN:
-			var payload = event.visual_payload
-			total_tokens_gained_in_log += payload.amount
-	_visual_gacha_tokens = final_tokens - total_tokens_gained_in_log
+	# Visual gacha tokens are now handled by BattleManager.
 	
 	_register_all_puppets(start_snapshot)
 	
@@ -906,8 +897,9 @@ func _animate_token_gain(origin_uuid: String, amount: int) -> void:
 		token_vfx.animation_finished.connect(func():
 			Audio.play_sfx("coin_land")
 			total_coins_landed += 1
-			_visual_gacha_tokens += 1
-			SignalBus.emit_signal("gacha_tokens_changed", _visual_gacha_tokens)
+			var bm = GameManager._active_battle_manager
+			if is_instance_valid(bm) and bm.has_method("add_visual_gacha_token"):
+				bm.add_visual_gacha_token(1)
 			
 			if is_instance_valid(token_group):
 				var tween = token_group.create_tween()
