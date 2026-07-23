@@ -33,15 +33,15 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	
 	# Calculate lunge target position (same logic as DamageAnimation melee)
 	var src_width = src_snap.size.x
+	var tgt_width = tgt_snap.size.x
 	var is_attacking_right = src_snap.position.x < tgt_snap.position.x
 	var target_position = Vector2.ZERO
 	var head_y = tgt_snap.position.y
-	var gap := -10.0 # Overlap slightly
 	
 	if is_attacking_right:
-		target_position = Vector2(tgt_snap.position.x - src_width - gap, head_y)
+		target_position = Vector2(tgt_snap.position.x + (0.25 * tgt_width) - (0.75 * src_width), head_y)
 	else:
-		target_position = Vector2(tgt_snap.position.x + tgt_snap.size.x + gap, head_y)
+		target_position = Vector2(tgt_snap.position.x + (0.75 * tgt_width) - (0.25 * src_width), head_y)
 	
 	# 1. LUNGE TO TARGET
 	if target_position != Vector2.ZERO:

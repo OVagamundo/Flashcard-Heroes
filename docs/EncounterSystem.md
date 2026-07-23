@@ -101,7 +101,8 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
 
 - **Units:** 5 max
 - **Items:** Based on unit item slot counts
-- **Trinkets:** 5 max per encounter
+- **Trinkets:** 5 max per encounter. Trinkets are strictly unique per team; the Generator guarantees the enemy encounter will never be assigned duplicate trinkets.
+
 
 ## EncounterDefinition Schema
 

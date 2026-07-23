@@ -973,6 +973,8 @@ func _on_token_landed() -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
 		bm.add_gacha_token(1)
+		if bm.has_method("add_visual_gacha_token"):
+			bm.add_visual_gacha_token(1)
 	else:
 		# Non-battle context (Rest Site, etc.): emit signal directly
 		SignalBus.emit_signal("flashcard_token_earned", 1)

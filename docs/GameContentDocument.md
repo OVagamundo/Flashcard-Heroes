@@ -102,6 +102,7 @@
 
 
 ## Trinkets
+
 | ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
 | `trinket_polished_plate` | **Polished Plate**<br>_A perfectly polished piece of armor._ | 0 HP / 0 PWR |  |  |

@@ -158,6 +158,16 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 	for r_id in run_state.unlocked_recipes.keys():
 		if run_state.unlocked_recipes[r_id]:
 			director_run_state.unlocked_recipes.append(String(r_id))
+			
+	director_run_state.clear_exclusions()
+	var trinket_container = run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+	if is_instance_valid(trinket_container):
+		for uuid in trinket_container.get_all_non_empty_uuids():
+			var inst = run_state.get_instance_by_uuid(uuid)
+			if is_instance_valid(inst):
+				var def = inst.get_definition()
+				if is_instance_valid(def):
+					director_run_state.exclude_entity(def.id)
 
 func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 	pass

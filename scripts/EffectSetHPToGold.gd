@@ -39,6 +39,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		new_hp = hp_result.get("new_hp", current_hp)
 	elif hp_result != null:
 		new_hp = int(hp_result)
+		
+	var result = EffectResult.new()
+	if delta > 0:
+		result.mark_healed(source_uuid, delta)
 	
 	# Create visual event
 	var event = CombatEvent.new(CombatEvent.Type.HEAL if delta > 0 else CombatEvent.Type.DAMAGE, {
@@ -48,7 +52,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"visual_payload": CombatPayload.hp_change("", delta, [current_hp], [new_hp], [source.get_definition().base_hp])
 	})
 	
-	var result = EffectResult.new()
 	result.add_event(event) # Fix: use add_event
 	result.state_applied = true
 	return result

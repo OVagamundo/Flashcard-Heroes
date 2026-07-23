@@ -217,12 +217,15 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 		spent += _get_cost(item)
 		
 	# 3. Buy trinkets using Director
+	director_run_state.clear_exclusions()
+
 	while spent < budget and purchased_trinkets.size() < max_trinkets:
 		var affordable_trinkets = pools.trinkets.filter(func(x): return _get_cost(x) <= budget - spent)
 		if affordable_trinkets.is_empty(): break
 		var t = director.draw_item(affordable_trinkets, director_run_state)
 		if t == null: break
 		purchased_trinkets.append(t)
+		director_run_state.exclude_entity(t.id)
 		spent += _get_cost(t)
 		
 	# 4. Upgrade logic using Director

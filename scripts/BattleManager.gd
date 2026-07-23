@@ -12,6 +12,7 @@ var _current_battle_phase: Phases
 # Internal delegates - encapsulate battle data and combat simulation
 var _state = BattleStateClass.new()
 var _combat = CombatSimulatorClass.new()
+var _visual_gacha_tokens: int = 0
 
 # Combat variables - forward to _combat for backwards compatibility
 var _actor_queue: Array[GachaBallInstance]:
@@ -194,6 +195,7 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	# AUDIO HOOK: Battle BGM
 	Audio.play_music(SoundRegistry.BGM_BATTLE)
 	
+	sync_visual_gacha_tokens()
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Emit unit_stat_changed for all units that have equipped items after UI is populated
@@ -442,16 +444,38 @@ func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
 	# Automatic reshuffle feature has been removed.
 	return false
 
-func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
-	var chain_events: Array[CombatEvent] = []
-	var base_cost := tier
-	var cost := base_cost
-	
-	# Apply Bargain Charm cost reduction
+func get_gacha_draw_cost(tier: int) -> int:
+	var cost := tier
 	var has_bargain = _has_team_trinket(true, &"trinket_bargain_charm")
 	var bargain_used = _bargain_charm_uses.get(tier, false)
 	if has_bargain and not bargain_used:
 		cost = maxi(1, cost - 1)
+	return cost
+
+func can_draw_gacha_instance(tier: int, pending_cost: int = 0) -> bool:
+	if _current_battle_phase != Phases.MANAGEMENT:
+		return false
+		
+	if _is_processing_effect or _is_animating_management_queue:
+		return false
+		
+	var cost := get_gacha_draw_cost(tier)
+	if _gacha_tokens - pending_cost < cost:
+		return false
+		
+	var container_tag: StringName = "BattleInventoryT%d" % tier
+	var tier_pool := get_instances_in_container(container_tag)
+	if tier_pool.is_empty():
+		return false
+		
+	return true
+
+func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
+	var chain_events: Array[CombatEvent] = []
+	var base_cost := tier
+	var cost := get_gacha_draw_cost(tier)
+	var has_bargain = _has_team_trinket(true, &"trinket_bargain_charm")
+	var bargain_used = _bargain_charm_uses.get(tier, false)
 		
 	if _gacha_tokens < cost:
 		return chain_events
@@ -532,12 +556,28 @@ func _bm_validate_state_consistency() -> bool:
 func get_gacha_tokens() -> int:
 	return _gacha_tokens
 
+func get_visual_gacha_tokens() -> int:
+	return _visual_gacha_tokens
+
 func add_gacha_token(amount: int = 1) -> void:
-	"""Add gacha tokens and emit signal for UI update. Used for live token updates."""
+	add_gacha_tokens(amount)
+
+func add_gacha_tokens(amount: int) -> void:
+	"""Add logical gacha tokens and emit logical signal. Does not update UI visual signal."""
 	_gacha_tokens += amount
 	if amount > 0 and is_instance_valid(GameManager.run_state):
 		GameManager.run_state.total_tokens_earned += amount
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+
+func add_visual_gacha_token(amount: int) -> void:
+	"""Add visual gacha tokens and emit visual signal to update the UI."""
+	_visual_gacha_tokens += amount
+	SignalBus.emit_signal("gacha_tokens_visual_changed", _visual_gacha_tokens)
+
+func sync_visual_gacha_tokens() -> void:
+	"""Synchronize the visual token count to match the current logical token count."""
+	_visual_gacha_tokens = _gacha_tokens
+	SignalBus.emit_signal("gacha_tokens_visual_changed", _visual_gacha_tokens)
 
 func get_current_phase_name() -> StringName:
 	var phase_name: StringName
@@ -567,17 +607,24 @@ func get_discard_pile_inventory() -> Array[GachaBallInstance]:
 func _change_phase(new_phase: Phases) -> void:
 	_current_battle_phase = new_phase
 	SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
+	
+	# Auto-sync visual tokens to logical tokens when entering key resting phases
+	if new_phase == Phases.MANAGEMENT or new_phase == Phases.PRE_COMBAT or new_phase == Phases.BATTLE_OVER:
+		sync_visual_gacha_tokens()
+		
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
 			# Increment turn counter and reset turn start flag
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
 			_bargain_charm_uses.clear()
+			_locked_ready_traits.clear()
 			
 			# Timekeeper hero bonus: +5 tokens for easy testing
 			if _is_timekeeper_hero():
 				_gacha_tokens += 5
 			
+			sync_visual_gacha_tokens()
 			SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 			
 			# The flashcard mini-game is the first event of the turn.
@@ -587,6 +634,7 @@ func _change_phase(new_phase: Phases) -> void:
 				# In test mode, skip minigame
 				# Grant massive tokens for testing
 				_gacha_tokens += 999
+				sync_visual_gacha_tokens()
 				SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 				# Transition to results acknowledged (which triggers turn start abilities)
 				call_deferred("_on_results_acknowledged")
@@ -667,6 +715,12 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 		# Update instance location
 		_update_instance_location(uuid, container_tag, slot)
 		
+		# Unlock the recipe if a player summoned this unit
+		if _is_in_player_container_tag(container_tag) and is_instance_valid(GameManager.run_state):
+			var inst = get_instance_by_uuid(uuid)
+			if is_instance_valid(inst):
+				GameManager.run_state.unlock_recipe_for_result(inst.definition_id)
+		
 		# Fire on_board_enter for the newly placed unit
 		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": uuid})
 	
@@ -699,6 +753,7 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 			
 	# Trigger on_board_changed to dynamically update passive effects (like Doppleganger/Echoing Orb)
 	AbilityResolver.process_trigger(&"on_board_changed", {})
+	_emit_battle_inventory_changed()
 
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
@@ -1345,7 +1400,6 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					"amount": delta,
 					"source_uuid": source_uuid
 				})
-				TurnAbilities.trigger_on_healed(instance.ball_uuid, delta, "")
 				
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
@@ -1936,6 +1990,9 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				"target_uuids": [unit.ball_uuid],
 				"visual_payload": CombatPayload.hp_change("", heal, [old_hp], [new_hp], [max_hp])
 			}))
+			
+			if new_hp > old_hp:
+				TurnAbilities.trigger_on_healed(unit.ball_uuid, new_hp - old_hp, "")
 		
 		# Apply decay
 		var old_stacks: int = stacks
@@ -2235,6 +2292,7 @@ func _calculate_active_traits(team: String) -> Dictionary:
 func _lock_traits() -> void:
 	_locked_ready_traits["PLAYER"] = _calculate_active_traits("PLAYER")
 	_locked_ready_traits["ENEMY"] = _calculate_active_traits("ENEMY")
+	_emit_battle_inventory_changed()
 
 ## Check if a unit contributes to a specific Soul trait.
 func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:

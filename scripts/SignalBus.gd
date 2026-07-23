@@ -249,9 +249,13 @@ signal draw_gacha_requested(tier: int)
 ## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
 signal gacha_draw_animated(draw_result)
 
-## Emitted when gacha tokens change
+## Emitted when gacha tokens change logically (used for capability checks and triggers)
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
+
+## Emitted when the visual gacha token display should update (used by UI only)
+## @param new_amount: int - The new visual token amount
+signal gacha_tokens_visual_changed(new_amount: int)
 
 ## Emitted when the black market receives a user action (remove or transform)
 ## @param payload: Dictionary containing 'type', 'instance_uuid', etc.

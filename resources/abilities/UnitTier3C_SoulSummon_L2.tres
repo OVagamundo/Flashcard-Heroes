@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="EffectSummonT2OnDeath_2"]
 script = ExtResource("2_effect")
 parameters = { "level": 2 }
-target_type = &"SELF"
+target_type = &"NONE"
 
 [resource]
 script = ExtResource("1_script")

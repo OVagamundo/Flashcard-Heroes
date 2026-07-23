@@ -29,6 +29,12 @@ Players may spend gold to refresh the available rewards. Note: Rerolling reward 
 - **Cost**: Starts at **1 Gold**. Increases by **+1 Gold** for each subsequent reroll within the same session.
 - **Reset**: The cost resets to 1 Gold at the start of next reward session.
 - **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the pool.
+- **Uniqueness**: The `WeightedPoolDirector` ensures that players are never offered trinkets they already own as rewards, meaning all trinkets are unique.
+
+### Recipe Unlocking (Run-Bound)
+During a single run, players discover and unlock recipes dynamically. These unlocks persist only for the duration of the current run.
+- **Merge Discovery**: Successfully performing a merge unlocks the recipe for future reference in that run.
+- **Summon Discovery**: If a player's ability or item summons a unit whose recipe is not yet unlocked, that unit's recipe is automatically unlocked for the remainder of the run. This allows players to organically learn recipes through combat effects.
 
 3. Meta-Progression: Achievements & The Codex
 Meta-progression provides long-term goals that persist between runs. This system is centered around completing in-game Achievements.

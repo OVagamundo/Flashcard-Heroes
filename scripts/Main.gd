@@ -134,7 +134,7 @@ func _ready() -> void:
 		tokens_label.gui_input.connect(_on_ui_overlay_gui_input)
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
-	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
+	SignalBus.gacha_tokens_visual_changed.connect(_on_gacha_tokens_changed)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
@@ -312,10 +312,21 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
-		var current_tokens: int = bm.get_gacha_tokens()
-		if current_tokens - _pending_tokens_spent < tier:
-			# Insufficient tokens - play rejection feedback on machine and token counter
+	var effective_cost := tier
+	if is_instance_valid(bm):
+		if bm.has_method("get_gacha_draw_cost"):
+			effective_cost = bm.get_gacha_draw_cost(tier)
+		
+		var can_draw = true
+		if bm.has_method("can_draw_gacha_instance"):
+			can_draw = bm.can_draw_gacha_instance(tier, _pending_tokens_spent)
+		elif bm.has_method("get_gacha_tokens"):
+			var current_tokens: int = bm.get_gacha_tokens()
+			if current_tokens - _pending_tokens_spent < effective_cost:
+				can_draw = false
+				
+		if not can_draw:
+			# Insufficient tokens or invalid state - play rejection feedback on machine and token counter
 			var target_machine: Control = null
 			match tier:
 				1: target_machine = gacha_machine_1
@@ -335,8 +346,8 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
 	
-	# We've committed to this draw. Increment pending tokens.
-	_pending_tokens_spent += tier
+	# We've committed to this draw. Increment pending tokens by effective cost.
+	_pending_tokens_spent += effective_cost
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -349,9 +360,9 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	SignalBus.emit_signal("interaction_context_received", context)
 	
 	# Animate tokens flying from counter to machine, then proceed with draw
-	_animate_token_spend(tier, button)
+	_animate_token_spend(tier, effective_cost, button)
 
-func _animate_token_spend(tier: int, _button: BaseButton) -> void:
+func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	"""Animate tokens flying from counter to gacha machine before drawing"""
 	const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
 	
@@ -375,7 +386,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	
 	if not is_instance_valid(target_machine):
 		SignalBus.emit_signal("draw_gacha_requested", tier)
-		_pending_tokens_spent -= tier
+		_pending_tokens_spent -= cost
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -385,7 +396,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	)
 	
 	# Spawn tokens with stagger - each one triggers machine reaction on landing
-	var tokens_to_spawn = tier
+	var tokens_to_spawn = cost
 	var stagger_delay = 0.12 # Increased delay for more dramatic sequential tosses
 	
 	for i in range(tokens_to_spawn):
@@ -414,7 +425,7 @@ func _animate_token_spend(tier: int, _button: BaseButton) -> void:
 	SignalBus.emit_signal("draw_gacha_requested", tier)
 	
 	# Decrement pending tokens since the draw is now officially requested
-	_pending_tokens_spent -= tier
+	_pending_tokens_spent -= cost
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
@@ -428,6 +439,10 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	var _unused = target_pos
 	
 	_play_machine_bounce(machine)
+	
+	var bm = GameManager._active_battle_manager
+	if is_instance_valid(bm) and bm.has_method("add_visual_gacha_token"):
+		bm.add_visual_gacha_token(-1)
 
 ## Public function to trigger machine bounce and update inventory counts visually
 ## Used when gachballs visually arrive at or depart from a machine

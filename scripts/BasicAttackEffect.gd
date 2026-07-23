@@ -170,8 +170,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
 		
 	var visual_payload := CombatPayload.damage(attacker_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
-	visual_payload.targets_old_burn = [old_burn] as Array[int]
-	visual_payload.targets_new_burn = [burn_val] as Array[int]
+	visual_payload.targets_old_burn.assign([old_burn])
+	visual_payload.targets_new_burn.assign([burn_val])
 	visual_payload.apply_burn = should_apply_burn
 	visual_payload.attack_type = attack_type
 	visual_payload.projectile = CombatProjectile.new("hp", abs(damage), "red") if attack_type == "ranged" else null

@@ -95,8 +95,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		damage_payload.attack_type = "ranged"
 		damage_payload.skip_bump = true
 		damage_payload.projectile = CombatProjectile.new("hp", current_damage, "red")
-		damage_payload.targets_old_burn = ([old_burn] if should_apply_burn else []) as Array[int]
-		damage_payload.targets_new_burn = ([new_burn] if should_apply_burn else []) as Array[int]
+		damage_payload.targets_old_burn.assign([old_burn] if should_apply_burn else [])
+		damage_payload.targets_new_burn.assign([new_burn] if should_apply_burn else [])
 		damage_payload.apply_burn = should_apply_burn
 		dmg_event.visual_payload = damage_payload
 		result.events.append(dmg_event)
