@@ -168,6 +168,7 @@ func _on_flashcard_completed(_results: Dictionary) -> void:
 
 func _update_token_display() -> void:
 	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
+	SignalBus.emit_signal("gacha_tokens_visual_changed", _tokens)
 
 # --- Draw Logic ---
 
@@ -726,6 +727,7 @@ func _on_leave_pressed() -> void:
 				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
+	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 

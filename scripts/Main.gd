@@ -135,6 +135,7 @@ func _ready() -> void:
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
 	SignalBus.gacha_tokens_visual_changed.connect(_on_gacha_tokens_changed)
+	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_logical_changed)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
@@ -560,6 +561,11 @@ func _animate_gold_counter_pop() -> void:
 	var flash_color = Color(1.0, 0.85, 0.3, 1.0) # Gold flash
 	pop_tween.tween_property(gold_label, "modulate", flash_color, 0.05)
 	pop_tween.tween_property(gold_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
+
+func _on_gacha_tokens_logical_changed(new_amount: int) -> void:
+	# Outside of battle, token changes apply to the UI in real-time
+	if not is_instance_valid(GameManager._active_battle_manager):
+		_on_gacha_tokens_changed(new_amount)
 
 func _on_gacha_tokens_changed(new_amount: int) -> void:
 	if is_instance_valid(tokens_label):

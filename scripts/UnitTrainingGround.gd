@@ -171,7 +171,7 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 
 	# Reset local tokens
 	_tokens = 0
-	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
+	_update_token_display()
 
 	# Animate gold spend then start minigame
 	_animate_gold_spend(TRAIN_COST_GOLD, interaction_pos, func():
@@ -193,9 +193,13 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 
 # --- Token tracking ---
 
+func _update_token_display(val: int = _tokens) -> void:
+	SignalBus.emit_signal("gacha_tokens_changed", val)
+	SignalBus.emit_signal("gacha_tokens_visual_changed", val)
+
 func _on_live_token_earned(amount: int) -> void:
 	_tokens += amount
-	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
+	_update_token_display()
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	# Show the training popup directly since the inventory remains open
@@ -361,7 +365,7 @@ func _on_popup_train_3() -> void:
 func _spend_tokens_and_train(cost: int) -> void:
 	if _tokens < cost: return
 	_tokens -= cost
-	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
+	_update_token_display()
 	_update_popup_buttons()
 
 	# Roll: cost+1 possible outcomes (0..cost), uniform distribution
@@ -483,7 +487,7 @@ func _on_popup_done() -> void:
 	_training_unit_data = {}
 	_training_unit_location = null
 	_training_stat = ""
-	SignalBus.emit_signal("gacha_tokens_changed", 0)
+	_update_token_display(0)
 
 # --- Animation helpers (reused from BlackMarket pattern) ---
 
@@ -595,7 +599,7 @@ func _on_leave_pressed() -> void:
 			main_node.hide_action_instruction()
 		if main_node.has_method("hide_split_action_drop_zones"):
 			main_node.hide_split_action_drop_zones()
-	SignalBus.emit_signal("gacha_tokens_changed", 0)
+	_update_token_display(0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
