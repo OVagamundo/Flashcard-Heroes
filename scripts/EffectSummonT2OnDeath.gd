@@ -29,7 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	# 3. Pick a random Tier 2 Unit
 	var tier_2_units = []
 	for unit_def in Database.units.values():
-		if unit_def.tier == 2 and unit_def.category == &"UNIT" and not unit_def.is_hero:
+		var unit_id = String(unit_def.id).to_lower()
+		if unit_def.tier == 2 and unit_def.category == &"UNIT" and not unit_def.is_hero and not "dust" in unit_id and not "elite" in unit_id:
 			tier_2_units.append(unit_def)
 	
 	if tier_2_units.is_empty():

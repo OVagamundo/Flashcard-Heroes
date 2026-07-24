@@ -635,6 +635,9 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
+		# Suppress visual buff pop for the newly summoned unit's initial stats
+		new_inst.set_meta("skip_initial_scaling_anim", true)
+		
 		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		
@@ -651,6 +654,16 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			var inline_evts = collect_and_clear_inline_events()
 			out_events.append_array(inline_evts)
 			out_events.append_array(reaction_events)
+			
+		# Clean up suppression flag
+		new_inst.remove_meta("skip_initial_scaling_anim")
+		
+		# UPDATE THE SNAPSHOT in the previously generated SUMMON event so the spawn animation uses the final stats!
+		for event in out_events:
+			if event.type == CombatEvent.Type.SUMMON and is_instance_valid(event.visual_payload):
+				if event.visual_payload.new_unit_uuid == new_inst.ball_uuid:
+					var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
+					event.visual_payload.new_unit_snapshot = VisualDataAdapter.create_visual_data(new_inst, bm.get_all_instances())
 
 func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
 	if request.source_uuid.is_empty():

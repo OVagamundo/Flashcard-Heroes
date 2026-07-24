@@ -12,6 +12,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(source):
 		return EffectResult.empty()
 		
+	# Only trigger if the acting unit is this unit
+	var actor_uuid = _context.get("actor_uuid", "")
+	if not actor_uuid.is_empty() and actor_uuid != source_uuid:
+		return EffectResult.empty()
+		
 	# 1. Identify Mirror Slot Target
 	
 	var my_loc = source.get_location()

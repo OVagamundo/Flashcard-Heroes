@@ -74,14 +74,18 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		# Generate visual event for the holder if they were updated
 		if holder_updated and active_holder_uuid != "":
 			var holder_inst = all_instances.get(active_holder_uuid)
-			if is_instance_valid(holder_inst) and not holder_inst.has_meta("skip_initial_scaling_anim"):
-				var event_type = CombatEvent.Type.BUFF if holder_delta > 0 else CombatEvent.Type.DAMAGE
-				var visual_source_uuid = active_holder_uuid if active_holder_uuid != "" else source_uuid
-				result.add_event(CombatEvent.new(event_type, {
-					"source_uuid": source_uuid,
+			if is_instance_valid(holder_inst):
+				var skip_anim = holder_inst.has_meta("skip_initial_scaling_anim")
+				# Use BUFF for both positive and negative stat changes to avoid attack/damage animations
+				var visual_source_uuid = "" # Omit source_uuid to prevent self-projectile
+				var payload = CombatPayload.pwr_change(visual_source_uuid, holder_delta, [], [holder_inst.current_pwr])
+				payload.skip_bump = skip_anim # Silently update the UI without hopping or flashing
+				
+				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": visual_source_uuid,
 					"target_uuids": [active_holder_uuid],
 					"ability_holder_uuid": source_uuid,
-					"visual_payload": CombatPayload.pwr_change(visual_source_uuid, abs(holder_delta), [], [holder_inst.current_pwr])
+					"visual_payload": payload
 				}))
 				
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

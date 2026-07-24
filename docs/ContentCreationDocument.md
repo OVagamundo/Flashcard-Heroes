@@ -112,6 +112,14 @@ All constants are in `scripts/Constants.gd`.
 > [!TIP]
 > **Summon Logic:** High priority summons (Trinkets) claim slots first. If `Soul Echo` resurrects a unit into its own slot, `Last Wish` (lower priority) will look for a *different* open slot.
 
+#### 4.1 Summon Restrictions
+
+To maintain balance and logical consistency in encounters and summons, the following strict rules apply:
+- **Dust Units and Elites Restriction**: Dust units and Dust elites CANNOT be summoned randomly by any standard units or items.
+- **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket, which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die that turn and the team holds this trinket.
+- **Boss Summoning**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls.
+- **Dust Elite Summoning**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
+
 ### 5. The Context Contract & Triggers
 
 Abilities receive a `context` dictionary. **This is your ONLY link to the world state regarding the event.**
@@ -131,6 +139,7 @@ Abilities receive a `context` dictionary. **This is your ONLY link to the world 
 | `on_kill` | `attacker_uuid`, `killed_uuid`, `is_simulation` |
 | `on_death` | `dying_uuid`, `dying_team`, `dying_location`, `equipped_items` |
 | `on_ally_death` | `fainting_ally_uuid`, `fainting_ally_location`, `fainting_ally_team` (Trinket Critical!) |
+| `on_before_turn_action` | `actor_uuid` |
 | `on_turn_start/end` | `turn_number` |
 | `on_draw` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |
 | `on_token_spent` | `drawn_uuid`, `dest_container`, `dest_slot`, `tier`, `tokens_spent` |

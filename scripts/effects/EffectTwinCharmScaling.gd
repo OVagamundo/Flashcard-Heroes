@@ -18,7 +18,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var total_delta := 0
 	
 	var buff_groups: Dictionary = {} # delta -> { "targets": [], "new_pwrs": [] }
-	var debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "new_pwrs": [] }
+	var debuff_groups: Dictionary = {}
+	var silent_buff_groups: Dictionary = {}
+	var silent_debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "new_pwrs": [] }
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
@@ -57,18 +59,21 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		changed_units += 1
 		total_delta += delta
 
-		if is_simulation and _is_on_board(inst) and not inst.has_meta("skip_initial_scaling_anim"):
+		if is_simulation and _is_on_board(inst):
+			var is_silent = inst.has_meta("skip_initial_scaling_anim")
 			if delta > 0:
-				if not buff_groups.has(delta):
-					buff_groups[delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
-				buff_groups[delta]["targets"].append(uuid)
-				buff_groups[delta]["new_pwrs"].append(inst.current_pwr)
+				var groups = silent_buff_groups if is_silent else buff_groups
+				if not groups.has(delta):
+					groups[delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
+				groups[delta]["targets"].append(uuid)
+				groups[delta]["new_pwrs"].append(inst.current_pwr)
 			else:
+				var groups = silent_debuff_groups if is_silent else debuff_groups
 				var abs_delta = abs(delta)
-				if not debuff_groups.has(abs_delta):
-					debuff_groups[abs_delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
-				debuff_groups[abs_delta]["targets"].append(uuid)
-				debuff_groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
+				if not groups.has(abs_delta):
+					groups[abs_delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
+				groups[abs_delta]["targets"].append(uuid)
+				groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
 
 	if changed_units == 0:
 		return EffectResult.empty()
@@ -85,12 +90,32 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, [], buff_groups[d]["new_pwrs"])
 			}))
 			
+		for d in silent_buff_groups:
+			var payload = CombatPayload.pwr_change("", d, [], silent_buff_groups[d]["new_pwrs"])
+			payload.skip_bump = true
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": "",
+				"target_uuids": silent_buff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": payload
+			}))
+			
 		for d in debuff_groups:
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": visual_source_uuid,
 				"target_uuids": debuff_groups[d]["targets"],
 				"ability_holder_uuid": source_uuid,
 				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, -d, [], debuff_groups[d]["new_pwrs"])
+			}))
+			
+		for d in silent_debuff_groups:
+			var payload = CombatPayload.pwr_change("", -d, [], silent_debuff_groups[d]["new_pwrs"])
+			payload.skip_bump = true
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": "",
+				"target_uuids": silent_debuff_groups[d]["targets"],
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": payload
 			}))
 			
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

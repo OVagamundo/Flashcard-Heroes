@@ -11,6 +11,19 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	var amount = payload.amount
 	var stat = payload.stat if not payload.stat.is_empty() else "pwr"
 	
+	if payload.skip_bump:
+		# Silent immediate update without projectiles or animations
+		var pwr_values = payload.targets_new_pwr
+		var hp_values = payload.targets_new_hp
+		for i in range(targets.size()):
+			var target_uuid = targets[i]
+			if stat == "hp":
+				var new_hp = int(hp_values[i]) if not hp_values.is_empty() and i < hp_values.size() else payload.new_hp
+				animator.apply_hp_delta(target_uuid, amount, new_hp)
+			elif stat == "pwr":
+				var new_pwr = int(pwr_values[i]) if not pwr_values.is_empty() and i < pwr_values.size() else payload.new_pwr
+				animator.apply_pwr_delta(target_uuid, amount, new_pwr)
+		return
 	
 	# Ensure coroutine
 	await animator.get_tree().process_frame

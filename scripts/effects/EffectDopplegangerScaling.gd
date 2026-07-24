@@ -44,19 +44,23 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var result := EffectResult.new()
 	if is_simulation:
-		var event_type = CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DAMAGE
-		# Target self for the visual event, but use the source_uuid as the ability_holder_uuid
-		# so that it maps correctly to the position snapshot, and the projectile originates from itself.
-		result.add_event(CombatEvent.new(event_type, {
-			"source_uuid": source_uuid,
+		var skip_anim = source.has_meta("skip_initial_scaling_anim")
+		# Use BUFF for both positive and negative stat changes to avoid attack/damage animations
+		var visual_source_uuid = "" # Omit source_uuid to prevent self-projectile
+		var payload = CombatPayload.pwr_change(visual_source_uuid, delta, [], [source.current_pwr])
+		payload.skip_bump = skip_anim # Silently update the UI without hopping or flashing
+		
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": visual_source_uuid,
 			"target_uuids": [source_uuid],
 			"ability_holder_uuid": source_uuid,
-			"visual_payload": CombatPayload.pwr_change(source_uuid, delta, [], [source.current_pwr])
+			"visual_payload": payload
 		}))
 		
-		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
-		}))
+		if not skip_anim:
+			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
+			}))
 	
 	result.state_applied = true
 	return result

@@ -64,15 +64,15 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit_uuid == context.get("defender_uuid", "")
 		
 		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
-			# All living units respond
-			return unit.current_hp > 0
+			# All living units ON THE BATTLE BOARD respond
+			return unit.current_hp > 0 and _is_on_battle_board(unit)
 		
 		&"on_enemy_summon":
 			# Only units on the OPPOSING team of the summoned unit respond
 			var summoned_team = context.get("summoned_team", "")
 			var unit_team = _get_instance_team(unit, battle_manager)
-			# Unit must be alive and on the opposite team
-			return unit.current_hp > 0 and unit_team != "" and unit_team != summoned_team
+			# Unit must be alive, on the board, and on the opposite team
+			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team != "" and unit_team != summoned_team
 		
 		&"on_board_enter":
 			# Only the unit that just entered the board responds
@@ -82,23 +82,13 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only units on the SAME team as the summoned unit respond
 			var summoned_team = context.get("summoned_team", "")
 			var unit_team = _get_instance_team(unit, battle_manager)
-			# Unit must be alive, on the same team, and NOT the summoned unit itself
+			# Unit must be alive, on the board, on the same team, and NOT the summoned unit itself
 			var summoned_uuid = context.get("summoned_uuid", "")
-			return unit.current_hp > 0 and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
+			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 
 		&"on_merge":
 			# Only living units already on battle board (lineup/bench) can respond.
-			if unit.current_hp <= 0:
-				return false
-
-			var unit_container: StringName = unit.location_container_tag
-			var on_battle_board := (
-				unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-				or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-				or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-				or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
-			)
-			if not on_battle_board:
+			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
 
 			# If merge context has a team, only that side responds (Knight-style team scoping).
@@ -106,6 +96,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			if merged_team.is_empty():
 				return true
 
+			var unit_container: StringName = unit.location_container_tag
 			var unit_team_on_board: String = ""
 			if unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 				unit_team_on_board = "PLAYER"
@@ -122,12 +113,12 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			if unit_uuid == drawn_uuid:
 				return true # Self-trigger
 				
-			return unit.current_hp > 0 and unit_team == "ENEMY"
+			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team == "ENEMY"
 		
 		&"on_token_spent":
 			# Only enemy units respond to player token spending
 			var unit_team = _get_instance_team(unit, battle_manager)
-			return unit.current_hp > 0 and unit_team == "ENEMY"
+			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team == "ENEMY"
 		
 		&"on_ally_hurt":
 			# Teammates of the hurt unit respond (not the hurt unit itself)
@@ -144,11 +135,11 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 		
 		&"on_gacha_tokens_changed":
 			# All living units respond to token changes
-			return unit.current_hp > 0
+			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
 		&"on_unit_death":
 			# All living units respond to any unit death
-			return unit.current_hp > 0
+			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
 		&"on_stat_increased":
 			# Units respond if they are adjacent to the unit that received the stat increase
@@ -160,9 +151,8 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			if unit_uuid == source_uuid:
 				return false
 			
-
 			# Must be alive
-			if unit.current_hp <= 0:
+			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
 				
 			# Check adjacency
@@ -183,6 +173,18 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 	
 	# Default: respond (for any new triggers)
 	return true
+
+## Determine if a unit is on the battle board (lineup or bench)
+func _is_on_battle_board(unit: GachaBallInstance) -> bool:
+	if not is_instance_valid(unit):
+		return false
+	var container: StringName = unit.location_container_tag
+	return (
+		container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		or container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+	)
 
 ## Unified filter: Should this equipped item respond to this trigger?
 ## @param trigger: The trigger type being processed
