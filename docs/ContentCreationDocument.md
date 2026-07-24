@@ -114,11 +114,11 @@ All constants are in `scripts/Constants.gd`.
 
 #### 4.1 Summon Restrictions
 
-To maintain balance and logical consistency in encounters and summons, the following strict rules apply:
-- **Dust Units and Elites Restriction**: Dust units and Dust elites CANNOT be summoned randomly by any standard units or items.
-- **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket, which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die that turn and the team holds this trinket.
-- **Boss Summoning**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls.
-- **Dust Elite Summoning**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
+To maintain balance and logical consistency in encounters and summons, the following strict rules apply across the entire combat system:
+- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (such as the `Soul Caller` unit) or item abilities (such as the `Summoning Scroll` item).
+- **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
+- **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (e.g. `EffectBossSummon`).
+- **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`); they can NEVER summon other Dust elites.
 
 ### 5. The Context Contract & Triggers
 

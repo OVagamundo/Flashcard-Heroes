@@ -472,6 +472,12 @@ Reserved for specific "Minion Summons" that bypass the standard battlefield econ
 - **Direct Entry**: Units are spawned directly into a `BattleInventoryT*` tray.
 - **Logic**: Targets the first available slot in the physics drawer corresponding to the unit's tier.
 
+#### 7. Summon Restrictions (Dust Units & Elites)
+- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (e.g. `Soul Caller` / `unit_t3_c`) or item abilities (e.g. `Summoning Scroll` / `item_t2_a`).
+- **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
+- **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (`EffectBossSummon`).
+- **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
+
 ### Mid-Turn Summon Actions
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.
 - **Rule**: "One Action Per Slot Per Turn".
