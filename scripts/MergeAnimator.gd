@@ -42,6 +42,20 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	# Hide the real result unit so we can animate the VFX ball
 	_set_unit_view_visible(final_view, false)
 
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	var snapshot: Dictionary = {}
+	if should_trigger_on_merge and is_instance_valid(bm):
+		# Capture snapshot BEFORE stats are modified, so the VCR can play from this base state
+		snapshot = bm.get_board_snapshot()
+		if bm.has_method("block_ui_updates"):
+			bm.block_ui_updates()
+			
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
+		AbilityResolver.process_trigger(&"on_merge", merge_context)
+		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+		
+		# new_instance now has its fully calculated passive stats!
+
 	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
 	if is_instance_valid(vfx_ball):
 		vfx_ball.play_landing_bounce()
@@ -61,28 +75,20 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		# Use call_deferred to be safe
 		SignalBus.emit_signal.call_deferred("inventory_action_completed", [merged_uuid])
 
-	# Trigger on_merge AFTER the animation completes
-	if should_trigger_on_merge:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm):
-			# Let queue_free/redraw settle so animator registers the latest merged views.
-			await get_tree().process_frame
-			var snapshot: Dictionary = bm.get_board_snapshot()
-			if bm.has_method("block_ui_updates"):
-				bm.block_ui_updates()
-				
-			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
-			AbilityResolver.process_trigger(&"on_merge", merge_context)
-			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	# Play VCR reactions AFTER the animation completes
+	if should_trigger_on_merge and is_instance_valid(bm):
+		# Let queue_free/redraw settle so animator registers the latest merged views.
+		await get_tree().process_frame
+		
+		var pending_count: int = 0
+		if bm.has_method("get_pending_reactions_size"):
+			pending_count = int(bm.get_pending_reactions_size())
+		else:
+			pending_count = int(bm._pending_reactions.size())
+			await bm.resolve_management_effects_and_animate(snapshot)
 			
-			var pending_count: int = 0
-			if bm.has_method("get_pending_reactions_size"):
-				pending_count = int(bm.get_pending_reactions_size())
-			else:
-				pending_count = int(bm._pending_reactions.size())
-				
-			if pending_count > 0:
-				await bm.resolve_management_effects_and_animate(snapshot)
+		if bm.has_method("unblock_ui_updates"):
+			bm.unblock_ui_updates()
 				
 			if bm.has_method("unblock_ui_updates"):
 				bm.unblock_ui_updates()

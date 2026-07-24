@@ -501,6 +501,11 @@ Effects receive ALL data via the `context` parameter:
     "fainting_ally_slot": 2,
     "fainting_ally_team": "PLAYER"
 }
+
+# Context for on_before_turn_action trigger
+{
+    "actor_uuid": "unit_abc",              # The unit that is about to act
+}
 ```
 
 > [!CAUTION]

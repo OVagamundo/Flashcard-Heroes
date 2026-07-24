@@ -508,9 +508,33 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if OS.is_debug_build():
 		_bm_validate_state_consistency()
 	
+	# Trigger passive updates (like Trinkets) so they enter the reaction queue FIRST
+	# This ensures the drawn unit's stats are updated before the snapshot is taken
+	var context := {
+		"drawn_uuid": draw_result.drawn_uuid,
+		"dest_container": draw_result.dest_container,
+		"dest_slot": draw_result.dest_slot,
+		"tier": tier,
+		"tokens_spent": tier # Tier equals tokens spent
+	}
+	var drawn_instance = get_instance(draw_result.drawn_uuid)
+	if is_instance_valid(drawn_instance):
+		drawn_instance.set_meta("skip_initial_scaling_anim", true)
+		
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
+	AbilityResolver.process_trigger(&"on_draw", context)
+	AbilityResolver.process_trigger(&"on_token_spent", context)
+	
+	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
+	var reaction_events = _combat.process_reaction_queue(self, {})
+	
+	if is_instance_valid(drawn_instance):
+		drawn_instance.remove_meta("skip_initial_scaling_anim")
+		
+	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
 	var new_unit_snapshot = {}
-	var drawn_instance = get_instance(draw_result.drawn_uuid)
 	if is_instance_valid(drawn_instance):
 		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
 		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
@@ -519,23 +543,9 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	draw_payload.draw_result = draw_result
 	draw_payload.new_unit_snapshot = new_unit_snapshot
 	draw_event.visual_payload = draw_payload
+	
+	# Append the draw event first, then any resulting reactions
 	chain_events.append(draw_event)
-	
-	# Trigger passive updates (like Trinkets) so they enter the reaction queue
-	var context := {
-		"drawn_uuid": draw_result.drawn_uuid,
-		"dest_container": draw_result.dest_container,
-		"dest_slot": draw_result.dest_slot,
-		"tier": tier,
-		"tokens_spent": tier # Tier equals tokens spent
-	}
-	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
-	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
-	AbilityResolver.process_trigger(&"on_draw", context)
-	AbilityResolver.process_trigger(&"on_token_spent", context)
-	
-	# Process any resulting reactions (e.g. On-draw buffs)
-	var reaction_events = _combat.process_reaction_queue(self, {})
 	chain_events.append_array(reaction_events)
 	
 	# If pool emptied, trigger reshuffle for next draw
