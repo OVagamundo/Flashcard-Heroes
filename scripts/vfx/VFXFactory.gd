@@ -176,7 +176,7 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 ## Launch a projectile from source to target using animator position snapshots.
 ## Handles position resolution, self-cast detection, and projectile spawning.
 ## Returns the projectile node for awaiting impact, or null if positions invalid.
-func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, is_attack_projectile: bool = false) -> Node:
+func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, is_attack_projectile: bool = false, custom_duration: float = 0.0) -> Node:
 	# Get target position from animator live view (fallback to snapshot)
 	var tgt_snap = animator.get_live_position(target_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(target_uuid)
 	if tgt_snap.is_empty():
@@ -199,8 +199,9 @@ func launch_projectile_between(animator: Node, source_uuid: String, target_uuid:
 	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
 	var launch_pos = end_pos if is_self_cast else start_pos
 	
-	# Spawn and launch projectile
+	# Spawn and launch projectile with uniform duration
 	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast, is_attack_projectile)
 	if projectile:
-		projectile.launch()
+		var duration = custom_duration if custom_duration > 0.0 else AnimationConstants.scaled(0.6)
+		projectile.launch(duration)
 	return projectile

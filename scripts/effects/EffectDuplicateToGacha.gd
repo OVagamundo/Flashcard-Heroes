@@ -42,6 +42,6 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 		"holder_location": LocationIdentifier.new(target_tag, target_index),
 		"spawn_source_uuid": dying_uuid, # Feeds into the Bezier Arc spawn animation towards the Gacha Machine UI
 		"unit_tier": dup_tier,
-		"copy_from_uuid": dying_uuid
+		"copy_from_uuid": source_uuid
 	}
 	return result

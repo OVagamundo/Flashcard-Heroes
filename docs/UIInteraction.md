@@ -25,8 +25,20 @@ Main.tscn (Shell)
 │   └── Inspection Windows, Popups, Tutorials
 ├── EffectsLayer (CanvasLayer - Layer 90)
 ├── GlobalVFXLayer (CanvasLayer - Layer 150)
-└── CursorLayer (Software Overlay - Layer 1024)
+├── CursorLayer (Software Overlay - CursorManager - Layer 1024)
+│   ├── _cursor_sprite (Sprite2D - Raw Input Mouse Sync)
+│   └── _waiting_control (Node2D - Rendered on top of cursor sprite)
 ```
+
+### High-Performance Software Cursor & Waiting Indicator (`CursorManager.gd`)
+The game implements a dedicated software cursor manager operating on CanvasLayer 1024 (`CursorManager.gd`):
+- **Raw Input Tracking**: Position updates occur inside `_input(event)` on `InputEventMouseMotion` with `Input.use_accumulated_input = false`. This guarantees raw 1000Hz OS polling without software cursor "floatiness" or 1-frame lag.
+- **Instant Click State Swap**: Mouse press/release swaps textures directly inside `_input` on `InputEventMouseButton`.
+- **Waiting Indicator Animation**:
+  - `_waiting_control` is added to the CanvasLayer *after* `_cursor_sprite` so dots render on top of the cursor layer (Z-axis).
+  - Positioned at vertical offset `Vector2(12 + i * 11, 52)` relative to the cursor position so dots animate clearly *below the hand/cursor graphic vertically*.
+  - When `set_waiting_indicator(true)` is invoked, `_on_waiting_draw` draws a looping 3-step sequence of white circles with a black outline (`.` $\rightarrow$ `..` $\rightarrow$ `...`).
+  - Activated dynamically by `Main._process` when the player hovers over draw mechanics (`gacha_machine_1/2/3` or `knob_button_1/2/3`) while VCR animations or token spending are active (`bm.is_animations_playing()` or `_is_drawing_token`). Automatically deactivates the frame VCR playback completes.
 
 | Element | Size | Notes |
 |---------|------|-------|

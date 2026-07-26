@@ -196,7 +196,44 @@ func enqueue_reaction(request: EffectRequest) -> void:
 	_pending_reactions.append(request)
 
 func sort_reactions_by_priority() -> void:
-	_pending_reactions.sort_custom(func(a, b): return a.priority < b.priority)
+	_pending_reactions.sort_custom(_compare_reactions)
+
+func _compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
+	# Layer 1: Category Pass (UNIT -> ITEM -> TRINKET)
+	var rank_a := _get_category_rank(a.category)
+	var rank_b := _get_category_rank(b.category)
+	if rank_a != rank_b:
+		return rank_a < rank_b
+		
+	# Layer 2: Execution Priority (Descending integer priority)
+	if a.priority != b.priority:
+		return a.priority > b.priority
+		
+	# Layer 3: Visual Direction / The Mirror Rule (Left-to-Right)
+	if a.is_player != b.is_player:
+		return a.is_player # Player (left side) before Enemy (right side)
+		
+	if a.is_player:
+		# Player team: Left-to-Right is slot 4 down to slot 0
+		if a.slot_index != b.slot_index:
+			return a.slot_index > b.slot_index
+	else:
+		# Enemy team: Left-to-Right is slot 0 up to slot 4
+		if a.slot_index != b.slot_index:
+			return a.slot_index < b.slot_index
+			
+	# Tie-breaker for multiple items/trinkets on same unit/slot
+	if a.sub_index != b.sub_index:
+		return a.sub_index < b.sub_index
+		
+	return String(a.ability_id) < String(b.ability_id)
+
+func _get_category_rank(cat: StringName) -> int:
+	match cat:
+		&"UNIT": return 1
+		&"ITEM": return 2
+		&"TRINKET": return 3
+		_: return 4
 
 func pop_next_reaction() -> EffectRequest:
 	if _pending_reactions.is_empty():
@@ -302,7 +339,7 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 	
 	while not _pending_reactions.is_empty():
 		# Always re-sort as new reactions might have been added (e.g. on_death triggers)
-		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+		_pending_reactions.sort_custom(_compare_reactions)
 		var current_reaction = _pending_reactions.pop_front()
 		
 		var reaction_events: Array[CombatEvent] = []
@@ -518,7 +555,7 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 	_pending_reactions.resize(start_index)
 	
 	# Sort by priority before processing
-	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	reactions_to_process.sort_custom(_compare_reactions)
 	
 	for request in reactions_to_process:
 		# DEBUG: Trace priority execution
@@ -548,7 +585,7 @@ func drain_and_capture_reactions_inline(start_index: int, bm) -> Array[CombatEve
 		reactions_to_process.append(_pending_reactions[i])
 	
 	_pending_reactions.resize(start_index)
-	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	reactions_to_process.sort_custom(_compare_reactions)
 	
 	for request in reactions_to_process:
 		var inline_start_index := captured_events.size()
@@ -576,7 +613,7 @@ func drain_lethal_reactions(start_index: int, bm) -> void:
 	_pending_reactions.resize(start_index)
 	
 	# Sort by priority
-	reactions_to_process.sort_custom(func(a, b): return a.priority > b.priority)
+	reactions_to_process.sort_custom(_compare_reactions)
 	
 	# Process ONLY these reactions - do NOT recursively drain new ones
 	for request in reactions_to_process:
@@ -643,7 +680,7 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		
 		# Drain reactions immediately so summon abilities execute before the summoned unit acts
 		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+			_pending_reactions.sort_custom(_compare_reactions)
 			var reaction = _pending_reactions.pop_front()
 			
 			var reaction_events: Array[CombatEvent] = []

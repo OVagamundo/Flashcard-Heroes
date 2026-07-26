@@ -20,6 +20,10 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 	var status_id = StringName(status_id_str)
 	var stat_name = status_id_str + "_stacks"
 	
+	var all_target_uuids: Array[String] = []
+	var all_old_vals: Array = []
+	var all_new_vals: Array = []
+	
 	for target_uuid in targets:
 		# 1. LOGIC: Actually apply the status effect
 		var target_inst = _battle_manager.get_instance_by_uuid(target_uuid)
@@ -30,13 +34,23 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 			old_val = target_inst.get_status_effect_amount(status_id)
 			# Use BattleManager's centralized API
 			new_val = _battle_manager.apply_stat_delta(target_inst, stat_name, amount)
+			
+			all_target_uuids.append(target_uuid)
+			all_old_vals.append(old_val)
+			all_new_vals.append(new_val)
 		
-		# 2. VISUALS: Create correct combat event
+	# 2. VISUALS: Create single consolidated combat event for all targets
+	if not all_target_uuids.is_empty():
+		var status_payload := CombatPayload.status_change(_source_uuid, amount, stat_name, all_old_vals, all_new_vals)
+		status_payload.new_val = all_new_vals[0] if not all_new_vals.is_empty() else 0
 		result.add_event(CombatEvent.new(
 			CombatEvent.Type.STATUS_EFFECT,
 			{
-				"target_uuids": [target_uuid],
-				"visual_payload": CombatPayload.status_change(_source_uuid, amount, stat_name, [old_val], [new_val])
+				"source_uuid": _source_uuid,
+				"target_uuids": all_target_uuids,
+				"ability_id": _context.get("ability_id", &"apply_status"),
+				"trigger_type": _context.get("trigger_type", ""),
+				"visual_payload": status_payload
 			}
 		))
 	

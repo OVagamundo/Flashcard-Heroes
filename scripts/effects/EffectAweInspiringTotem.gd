@@ -54,9 +54,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var status_key := &"awe_inspiring_totem_stacks"
 	
 	# Second pass: buff lower tier/level units
+	var batched_target_uuids: Array[String] = []
+	var batched_target_names: Array[String] = []
+	var batched_old_hp: Array[int] = []
+	var batched_new_hp: Array[int] = []
+	var batched_max_hp: Array[int] = []
+	var batched_old_pwr: Array[int] = []
+	var batched_new_pwr: Array[int] = []
+
 	for target_uuid in all_instances:
-		var target_instance: GachaBallInstance = all_instances[target_uuid]
-		if not is_instance_valid(target_instance):
+		var target_instance = battle_manager.get_instance(target_uuid)
+		if not is_instance_valid(target_instance) or target_instance.current_hp <= 0:
 			continue
 			
 		# Must be in the lineup
@@ -100,47 +108,53 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			# Increment status stacks silently
 			target_instance.add_status_effect_silent(status_key, 1)
 			
-			# Get display names for log
-			var trinket_name := "Awe Inspiring Totem"
-			var trinket_instance = battle_manager.get_instance(_source_uuid)
-			if is_instance_valid(trinket_instance):
-				var trinket_def = trinket_instance.get_definition()
-				if is_instance_valid(trinket_def):
-					trinket_name = tr(trinket_def.name_key)
-			
-			var unit_name := BattleHelpers.get_instance_display_name(target_instance)
-			
-			# Add log message
-			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, unit_name, hp_amount, pwr_amount]
-			}))
-			
-			# HP BUFF event
-			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": _source_uuid,
-				"target_uuids": [target_uuid],
-				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
-				"trigger_type": context.get("trigger_type", ""),
-				"ability_holder_uuid": _source_uuid,
-				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
-			}))
-			
-			# PWR BUFF event
-			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": _source_uuid,
-				"target_uuids": [target_uuid],
-				"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
-				"trigger_type": context.get("trigger_type", ""),
-				"ability_holder_uuid": _source_uuid,
-				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
-			}))
+			batched_target_uuids.append(target_uuid)
+			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
+			batched_old_hp.append(old_hp)
+			batched_new_hp.append(new_hp)
+			batched_max_hp.append(max_hp)
+			batched_old_pwr.append(old_pwr)
+			batched_new_pwr.append(new_pwr)
 			state_applied_any = true
 		else:
 			# Non-simulation: apply immediately
 			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
-			target_instance.add_status_effect(status_key, 1)
+			target_instance.add_status_effect_silent(status_key, 1)
 			state_applied_any = true
+
+	if is_simulation and not batched_target_uuids.is_empty():
+		var trinket_name := "Awe Inspiring Totem"
+		var trinket_instance = battle_manager.get_instance(_source_uuid)
+		if is_instance_valid(trinket_instance):
+			var trinket_def = trinket_instance.get_definition()
+			if is_instance_valid(trinket_def):
+				trinket_name = tr(trinket_def.name_key)
+
+		# Single Log message for all targets
+		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
+		}))
+		
+		# Batched HP BUFF event (all projectiles launched simultaneously)
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": _source_uuid,
+			"target_uuids": batched_target_uuids,
+			"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
+			"trigger_type": context.get("trigger_type", ""),
+			"ability_holder_uuid": _source_uuid,
+			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+		}))
+		
+		# Batched PWR BUFF event (all projectiles launched simultaneously)
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": _source_uuid,
+			"target_uuids": batched_target_uuids,
+			"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
+			"trigger_type": context.get("trigger_type", ""),
+			"ability_holder_uuid": _source_uuid,
+			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+		}))
 
 	result.state_applied = true
 	return result

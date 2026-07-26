@@ -223,49 +223,61 @@ Because the simulation finishes before the visual VCR playback:
 
 ---
 
-## 1.2 Phase-Based UI Blocking
+## 1.2 Phase-Based & VCR Animation Locking
 
-The game uses **phase-based blocking** to prevent UI updates from interfering with animations.
+The game uses **systemic animation blocking** to prevent user input and UI rebuilds from interfering with VCR playback.
 
-### Animation Phases
-These phases represent active animation playback:
-- `COMBAT`: Main turn animations
-- `START_OF_TURN`: Turn-start ability animations
-- `END_OF_TURN`: Poison/status effect animations
+### VCR Playback State (`BattleManager.is_animations_playing()`)
+To determine if animations or effect resolution are active, `BattleManager` exposes `is_animations_playing() -> bool`:
+```gdscript
+func is_animations_playing() -> bool:
+	if _is_processing_effect or _is_animating_management_queue:
+		return true
+	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+		return true
+	return false
+```
+When `is_animations_playing()` is `true`:
+- **Gacha Machine Drawing**: `can_draw_gacha_instance()` returns `false`, preventing draws and token spending animations.
+- **Draw Buttons**: `Main._on_draw_button_pressed` and `_on_machine_gui_input` return early without starting token spend animations or playing rejection sound/shake feedback.
+- **Cursor Feedback**: Hovering over the draw mechanic (`gacha_machine_1/2/3` or `knob_button_1/2/3`) triggers a looping waiting cursor animation (`.` $\rightarrow$ `..` $\rightarrow$ `...`) rendered below the cursor icon until VCR playback completes.
 
-### Interaction Phase
-- `MANAGEMENT`: Player can interact with UI
-
-### Blocking Mechanisms
-**BattleView**:
+### UI Rebuild Guard
 ```gdscript
 func _redraw_board() -> void:
     var current_phase = battle_manager.get_current_phase()
     if current_phase == Phases.COMBAT or \
        current_phase == Phases.START_OF_TURN or \
        current_phase == Phases.END_OF_TURN:
-        return  # Block rebuild during animations
+        return  # Block rebuild during combat/turn animations
 ```
-
-**Why?** If `_redraw_board()` runs during COMBAT, it destroys and recreates `SlotView` nodes, invalidating the `BattleAnimator`'s `_visual_registry`. This breaks all animations mid-playback.
 
 ---
 
-## 1.3 Parallel vs. Sequential Animations
+## 1.3 Strict Linear Playback & VCR Serialization
 
-A massive architectural distinction exists between how animations are played during Combat versus the Management phase.
+All visual animation execution in the game—across both Combat and Management phases—is strictly linear and serialized. Legacy asynchronous parallel chains (`play_async_chain`) have been completely eliminated.
 
-### Sequential Combat Playback (VCR)
-During the `COMBAT` phase, `CombatSimulator` generates a monolithic `TurnLog` array containing hundreds of events. 
-`BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**. Each event is awaited (`await _animate_events`) before the next event can begin, preserving the precise causal history of the simulation (e.g., Damage → Death → Summon).
+### Monolithic Combat Playback
+During the `COMBAT` phase, `CombatSimulator` generates a linear `TurnLog` array (`Array[CombatEvent]`). `BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**, executing one `CombatEvent` at a time. Each event is fully awaited before the next begins, preserving exact causal history (e.g., Damage $\rightarrow$ Reaction Buffs $\rightarrow$ Death $\rightarrow$ Ally Triggers $\rightarrow$ Summon).
 
-### Parallel Management Phase Playback
-During the `MANAGEMENT` phase, interactive commands (like **Drawing** units or **Merging**) do NOT use the VCR's `TurnLog`. Instead, they use a specialized decoupled execution path:
-- The UI triggers an action (`bm_draw_gacha_instance`).
-- `BattleManager` executes the action instantly and returns a localized array of `chain_events`.
-- `BattleManager` calls `animator.play_async_chain(chain_events)`.
-- **Parallel Execution:** Because `play_async_chain` is dispatched asynchronously without blocking the main interaction thread, clicking a button multiple times rapidly (e.g., spam-clicking the Draw button) fires off multiple asynchronous chains simultaneously.
-- This allows visual animations (like units flying out of a gacha pipe) to **overlap and play in parallel** rather than being queued up and played one at a time.
+### Sequential Management Animation Queue (`_management_animation_queue`)
+During the `MANAGEMENT` phase, committing interactions (such as **Gacha Draws**, **Merging Units**, or **Equipping Items**) resolve their logical state instantly and emit `CombatEvent` sequences:
+- All management-phase event sequences are funneled into `BattleManager.enqueue_management_animation(snapshot, events)`.
+- `BattleManager` processes them via a sequential FIFO queue (`_management_animation_queue`).
+- **Zero Parallel Overlaps:** If multiple events are triggered in rapid succession, they are appended to the queue and played back sequentially by `BattleAnimator.play_turn_sequence()` without overlapping or interrupting active animations.
+
+### The 3-Layer Reaction Sorting Hierarchy
+When multiple reaction triggers fire simultaneously during simulation, `CombatSimulator.gd` sorts reaction requests using a strict 3-layer hierarchy before emitting combat events:
+1. **Layer 1: Category Pass**: Units (Rank 1) $\rightarrow$ Items (Rank 2) $\rightarrow$ Trinkets (Rank 3).
+2. **Layer 2: Execution Priority**: Descending integer priority defined in `AbilityDefinition` (e.g. Intercepts at 300, Summons at 210, Default at 0).
+3. **Layer 3: Visual Direction (The Mirror Rule)**: Priority ties resolve Left-to-Right visually on screen.
+   - **Player Team**: Evaluated Left-to-Right (Slot 4 down to Slot 0).
+   - **Enemy Team**: Evaluated Right-to-Left visually (Slot 0 up to Slot 4).
+   - Multiple items on the same unit break ties via `equipped_slot_index`.
+
+### Source-Based Consolidation (Multi-Target Batching)
+Multi-target status applications (e.g. a trinket or ability applying Burn or Armor to all allies/enemies) emit a **single consolidated `STATUS_EFFECT` combat event** containing all target UUIDs and stat deltas. The VCR launches all projectiles for all targets simultaneously from the source and awaits their landing before applying visual stat changes and floating numbers.
 
 ### Event Ordering and Deferred Deaths
 

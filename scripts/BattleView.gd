@@ -33,7 +33,6 @@ const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 @onready var speed_label: Label = %SpeedLabel
 @onready var pause_btn: Button = %PauseBtn
 @onready var speed_1x_btn: Button = %Speed1xBtn
-@onready var speed_2x_btn: Button = %Speed2xBtn
 @onready var speed_3x_btn: Button = %Speed3xBtn
 @onready var step_button: Button = %StepButton
 @onready var step_desc_label: Label = %StepDescLabel
@@ -144,10 +143,9 @@ func _ready() -> void:
 	# Initialize combat controls styling/connections
 	_resolve_battle_animator()
 	
-	_speed_buttons = [pause_btn, speed_1x_btn, speed_2x_btn, speed_3x_btn]
+	_speed_buttons = [pause_btn, speed_1x_btn, speed_3x_btn]
 	if is_instance_valid(pause_btn): pause_btn.pressed.connect(_on_pause_button_pressed)
 	if is_instance_valid(speed_1x_btn): speed_1x_btn.pressed.connect(func(): _on_speed_button_pressed(1.0))
-	if is_instance_valid(speed_2x_btn): speed_2x_btn.pressed.connect(func(): _on_speed_button_pressed(2.0))
 	if is_instance_valid(speed_3x_btn): speed_3x_btn.pressed.connect(func(): _on_speed_button_pressed(3.0))
 	if is_instance_valid(step_button): step_button.pressed.connect(_on_step_button_pressed)
 	
@@ -988,7 +986,7 @@ func _on_speed_button_pressed(speed: float) -> void:
 	_update_speed_button_styles(speed)
 
 func _update_speed_button_styles(active_speed: float) -> void:
-	var speeds := [-1.0, 1.0, 2.0, 3.0]
+	var speeds := [-1.0, 1.0, 3.0]
 	for i in range(mini(_speed_buttons.size(), speeds.size())):
 		var btn = _speed_buttons[i]
 		if not is_instance_valid(btn): continue

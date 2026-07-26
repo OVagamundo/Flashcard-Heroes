@@ -2,7 +2,6 @@
 extends Node
 
 signal turn_animation_finished
-signal all_chains_finished
 
 const ANIM_TIMEOUT_DURATION = 1.1
 const BUMP_DURATION = 0.5
@@ -15,10 +14,9 @@ var _pending_guardian_return: String = "" # UUID of Guardian needing to return a
 var _tracker: AnimationCompletionTracker # Animation completion tracking
 
 var _is_playing_sequence: bool = false
-var _active_async_chains: int = 0
 
 func is_playing_sequence() -> bool:
-	return _is_playing_sequence or _active_async_chains > 0
+	return _is_playing_sequence
 
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
 const TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
@@ -47,23 +45,6 @@ func _ready() -> void:
 	if SignalBus.has_signal("trait_threshold_reached"):
 		SignalBus.connect("trait_threshold_reached", _on_trait_threshold_reached)
 
-func play_async_chain(chain_events: Array[CombatEvent], snapshot: Dictionary = {}) -> void:
-	_active_async_chains += 1
-	
-	# Visual gacha tokens are now handled by BattleManager.
-
-	if not snapshot.is_empty():
-		_register_all_puppets(snapshot)
-		
-	await _animate_events(chain_events)
-	
-	_active_async_chains -= 1
-	if _active_async_chains == 0:
-		emit_signal("all_chains_finished")
-		if not _is_playing_sequence:
-			_visual_registry.clear()
-			_position_snapshot.clear()
-
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
 	_is_playing_sequence = true
 	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
@@ -79,6 +60,8 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 	_register_all_puppets(start_snapshot)
 	
 	await play_turn(turn_log)
+	_visual_registry.clear()
+	_position_snapshot.clear()
 	_is_playing_sequence = false
 	emit_signal("turn_animation_finished")
 
@@ -201,13 +184,93 @@ func play_turn(events: Array[CombatEvent]) -> void:
 	
 	_dead_units.clear()
 	
-	# DECOUPLED: No instance rewinding needed
-	# Views are initialized from snapshot in play_turn_sequence()
-	# Events contain absolute values (old_hp,  new_hp) so views animate correctly
-	# This is true presentation-only mode - no simulation mutation
-	
-	await _animate_events(events)
+	# SYSTEMIC CONSOLIDATION: Merge consecutive stat/status events from same source
+	var consolidated_events = _consolidate_consecutive_events(events)
+	await _animate_events(consolidated_events)
 
+## Systemically consolidates consecutive visual events originating from the same source
+func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[CombatEvent]:
+	if raw_events.size() <= 1:
+		return raw_events
+		
+	var consolidated: Array[CombatEvent] = []
+	var i = 0
+	while i < raw_events.size():
+		var current = raw_events[i]
+		
+		# Check if current is a visual stat event (BUFF, HEAL, STATUS_EFFECT)
+		if current.type in [CombatEvent.Type.BUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
+			var merged_event = current.deep_clone()
+			var merged_payload = merged_event.visual_payload
+			var source_uuid = merged_event.source_uuid
+			var ability_id = merged_event.ability_id
+			
+			var j = i + 1
+			while j < raw_events.size():
+				var next_ev = raw_events[j]
+				if next_ev.type == CombatEvent.Type.LOG_MESSAGE and not next_ev.trinket_activations.is_empty():
+					break
+				elif next_ev.type in [CombatEvent.Type.BUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
+					var next_payload = next_ev.visual_payload
+					
+					# Match Rule: Same source_uuid, OR same ability_id, OR both are passive scaling (empty source_uuid)
+					var is_same_source = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
+					var is_same_ability = (next_ev.ability_id == ability_id and not String(ability_id).is_empty())
+					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty())
+					
+					if is_same_source or is_same_ability or is_both_passive:
+						_merge_event_payloads(merged_event, next_ev)
+						j += 1
+						continue
+					else:
+						break
+				elif next_ev.type == CombatEvent.Type.LOG_MESSAGE:
+					j += 1
+					continue
+				else:
+					break
+			
+			consolidated.append(merged_event)
+			i = j
+		else:
+			consolidated.append(current)
+			i += 1
+			
+	return consolidated
+
+
+func _merge_event_payloads(merged_event: CombatEvent, next_ev: CombatEvent) -> void:
+	var merged_payload = merged_event.visual_payload
+	var next_payload = next_ev.visual_payload
+	
+	for t_idx in range(next_ev.target_uuids.size()):
+		var t_uuid = next_ev.target_uuids[t_idx]
+		var existing_idx = merged_event.target_uuids.find(t_uuid)
+		
+		if existing_idx >= 0:
+			# Target is already in merged_event: update its NEW values in-place (net accumulation)
+			if t_idx < next_payload.targets_new_pwr.size() and existing_idx < merged_payload.targets_new_pwr.size():
+				merged_payload.targets_new_pwr[existing_idx] = next_payload.targets_new_pwr[t_idx]
+			if t_idx < next_payload.targets_new_hp.size() and existing_idx < merged_payload.targets_new_hp.size():
+				merged_payload.targets_new_hp[existing_idx] = next_payload.targets_new_hp[t_idx]
+			if t_idx < next_payload.targets_max_hp.size() and existing_idx < merged_payload.targets_max_hp.size():
+				merged_payload.targets_max_hp[existing_idx] = next_payload.targets_max_hp[t_idx]
+			if t_idx < next_payload.targets_new_val.size() and existing_idx < merged_payload.targets_new_val.size():
+				merged_payload.targets_new_val[existing_idx] = next_payload.targets_new_val[t_idx]
+		else:
+			# Target is new: append target_uuid and its old/new payloads
+			merged_event.target_uuids.append(t_uuid)
+			if t_idx < next_payload.targets_old_hp.size():
+				merged_payload.targets_old_hp.append(next_payload.targets_old_hp[t_idx])
+				merged_payload.targets_new_hp.append(next_payload.targets_new_hp[t_idx])
+			if t_idx < next_payload.targets_max_hp.size():
+				merged_payload.targets_max_hp.append(next_payload.targets_max_hp[t_idx])
+			if t_idx < next_payload.targets_old_pwr.size():
+				merged_payload.targets_old_pwr.append(next_payload.targets_old_pwr[t_idx])
+				merged_payload.targets_new_pwr.append(next_payload.targets_new_pwr[t_idx])
+			if t_idx < next_payload.targets_old_val.size():
+				merged_payload.targets_old_val.append(next_payload.targets_old_val[t_idx])
+				merged_payload.targets_new_val.append(next_payload.targets_new_val[t_idx])
 
 func _animate_events(events: Array[CombatEvent]) -> void:
 	for event in events:
@@ -731,6 +794,7 @@ func play_continuous(speed: float) -> void:
 func request_step() -> void:
 	_is_paused = true
 	_step_advance_requested = true
+	set_combat_speed(1.0) # Step always processes at 1x speed
 
 ## Build human-readable step info from a CombatEvent for UI display
 func _build_step_info(event: CombatEvent) -> Dictionary:
