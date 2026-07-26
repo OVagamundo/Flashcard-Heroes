@@ -28,15 +28,24 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	# Ensure coroutine
 	await animator.get_tree().process_frame
 	
-	# 1. Launch Projectiles
+	# 1. Launch Projectiles (Simultaneous multi-stat launching)
 	var projectiles = []
-	var color_hint = "green" if stat == "hp" else "blue"
+	var has_hp = not payload.targets_new_hp.is_empty() or stat == "hp"
+	var has_pwr = not payload.targets_new_pwr.is_empty() or stat == "pwr"
 	
-	for target_uuid in targets:
-		var proj = _launch_projectile(animator, source_uuid, target_uuid, amount, stat, color_hint)
-		if proj: projectiles.append(proj)
+	if has_hp:
+		for target_uuid in targets:
+			var hp_amount = payload.amount
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, hp_amount, "hp", "green")
+			if proj: projectiles.append(proj)
+			
+	if has_pwr:
+		for target_uuid in targets:
+			var pwr_amount = payload.amount
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, pwr_amount, "pwr", "blue")
+			if proj: projectiles.append(proj)
 		
-	# Wait for impact
+	# Wait for impact of all projectiles simultaneously
 	if projectiles.is_empty():
 		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 	else:
@@ -44,31 +53,31 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			if is_instance_valid(proj):
 				await proj.impact
 				
-	# 2. Apply Stat Buff (HP or PWR only)
+	# 2. Apply Stat Buffs (HP and/or PWR)
 	var final_target_uuid = ""
 	var pwr_values = payload.targets_new_pwr
 	var hp_values = payload.targets_new_hp
 	
 	for i in range(targets.size()):
 		var target_uuid = targets[i]
-		
-		# In parallel mode, the target might not be in the visual registry initially.
-		# The animator's apply_hp_delta / apply_pwr_delta will safely handle missing views.
 		final_target_uuid = target_uuid
 		
-		if stat == "hp":
-			var new_hp = 0
-			if not hp_values.is_empty() and i < hp_values.size():
-				new_hp = int(hp_values[i])
-			else:
-				new_hp = payload.new_hp
-			
+		# Apply HP if present
+		if not hp_values.is_empty() and i < hp_values.size():
+			var new_hp = int(hp_values[i])
 			animator.apply_hp_delta(target_uuid, amount, new_hp)
-			
-			# Composable Effects: Color flash + deform + move
 			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
 			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
-			var move_type = &"HOP"
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, deform_type)
+			if SignalBus.has_signal("unit_move") and amount >= 0:
+				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
+		elif stat == "hp":
+			animator.apply_hp_delta(target_uuid, amount, payload.new_hp)
+			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
+			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
 			if SignalBus.has_signal("unit_color_flash"):
 				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 			if SignalBus.has_signal("unit_deform"):
@@ -76,22 +85,26 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			if SignalBus.has_signal("unit_move") and amount >= 0:
 				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
 		
-		elif stat == "pwr":
-			var new_pwr = 0
-			if not pwr_values.is_empty() and i < pwr_values.size():
-				new_pwr = int(pwr_values[i])
-			else:
-				new_pwr = payload.new_pwr
-				
+		# Apply PWR if present
+		if not pwr_values.is_empty() and i < pwr_values.size():
+			var new_pwr = int(pwr_values[i])
 			if amount < 0:
 				_spawn_floating_pwr_damage(animator, target_uuid, abs(amount))
-			
 			animator.apply_pwr_delta(target_uuid, amount, new_pwr)
-			
-			# Composable Effects: Color flash + deform + move
 			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
 			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
-			var move_type = &"HOP"
+			if SignalBus.has_signal("unit_color_flash"):
+				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
+			if SignalBus.has_signal("unit_deform"):
+				SignalBus.emit_signal("unit_deform", target_uuid, deform_type)
+			if SignalBus.has_signal("unit_move") and amount >= 0:
+				SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
+		elif stat == "pwr":
+			if amount < 0:
+				_spawn_floating_pwr_damage(animator, target_uuid, abs(amount))
+			animator.apply_pwr_delta(target_uuid, amount, payload.new_pwr)
+			var flash_color = Color.RED if amount < 0 else AnimationConstants.COLOR_HEAL_BUFF
+			var deform_type = &"HIT_IMPACT" if amount < 0 else &"HOP_DEFORM"
 			if SignalBus.has_signal("unit_color_flash"):
 				SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 			if SignalBus.has_signal("unit_deform"):

@@ -404,10 +404,11 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
 func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
+	var source = null
 	# Check if source is dead and ability doesn't allow lethal execution
 	# ONLY for UNITS - items and trinkets don't have HP
 	if not source_uuid.is_empty():
-		var source = battle_manager.get_instance_by_uuid(source_uuid)
+		source = battle_manager.get_instance_by_uuid(source_uuid)
 		if is_instance_valid(source):
 			var source_def = source.get_definition()
 			# Only check HP for UNIT category - items/trinkets don't have meaningful HP
@@ -422,6 +423,29 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		var condition_result = battle_manager.check_condition(ability.condition, source_uuid, context)
 		if not condition_result:
 			return # Condition failed, skip this ability
+	
+	var category: StringName = &""
+	var is_player: bool = false
+	var slot_index: int = -1
+	var sub_index: int = 0
+	if is_instance_valid(source):
+		var source_def = source.get_definition()
+		if is_instance_valid(source_def) and ("category" in source_def):
+			category = source_def.category
+		if battle_manager.has_method("_is_player_owned"):
+			is_player = battle_manager._is_player_owned(source)
+		elif battle_manager.has_method("_is_player_unit"):
+			is_player = battle_manager._is_player_unit(source)
+		
+		if not source.equipped_on_uuid.is_empty():
+			var holder = battle_manager.get_instance_by_uuid(source.equipped_on_uuid)
+			if is_instance_valid(holder):
+				slot_index = holder.location_slot_index
+				if battle_manager.has_method("_is_player_owned"):
+					is_player = battle_manager._is_player_owned(holder)
+			sub_index = source.equipped_slot_index
+		else:
+			slot_index = source.location_slot_index
 	
 	var ability_activated := false
 	
@@ -449,7 +473,11 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			effect,
 			resolved_targets,
 			effect_context,
-			ability.priority # Pass priority from ability definition
+			ability.priority,
+			category,
+			is_player,
+			slot_index,
+			sub_index
 		)
 		
 		# Enqueue the request

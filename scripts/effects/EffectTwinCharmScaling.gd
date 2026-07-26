@@ -12,7 +12,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 
 	var team: String = String(context.get("team", _get_team_for_instance(source, battle_manager)))
-	var status_key := StringName("twin_charm_scaling_" + source_uuid)
+	var status_key := StringName("twin_charm_scaling_" + team)
 	var copy_counts: Dictionary = {}
 	var changed_units := 0
 	var total_delta := 0

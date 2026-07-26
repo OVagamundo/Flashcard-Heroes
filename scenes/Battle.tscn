@@ -286,12 +286,6 @@ custom_minimum_size = Vector2(72, 54)
 layout_mode = 2
 text = "1x"
 
-[node name="Speed2xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 54)
-layout_mode = 2
-text = "2x"
-
 [node name="Speed3xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(72, 54)

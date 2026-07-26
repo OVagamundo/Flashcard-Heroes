@@ -45,8 +45,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		buff_targets.append(random_ally.ball_uuid)
 	
 	if is_simulation:
-		# NEW: Return EffectResult with BUFF events
 		var result := EffectResult.new()
+		var batched_target_uuids: Array[String] = []
+		var batched_target_names: Array[String] = []
+		var batched_old_vals: Array[int] = []
+		var batched_new_vals: Array[int] = []
+		var batched_max_hp: Array[int] = []
 		
 		for target_uuid in buff_targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
@@ -55,18 +59,24 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 			# Capture old stat for animation
 			var old_val: int = tgt.current_pwr if buff_stat == "pwr" else tgt.current_hp
+			var tgt_max_hp: int = tgt.get_definition().base_hp if is_instance_valid(tgt.get_definition()) else tgt.current_hp
 			
 			# Apply buff to model
 			var new_val = battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
 			
-			# Get display names
+			batched_target_uuids.append(target_uuid)
+			batched_target_names.append(BattleHelpers.get_instance_display_name(tgt))
+			batched_old_vals.append(old_val)
+			batched_new_vals.append(new_val)
+			batched_max_hp.append(tgt_max_hp)
+		
+		if not batched_target_uuids.is_empty():
 			var holder_name: String = BattleHelpers.get_instance_display_name(holder)
-			var target_name: String = BattleHelpers.get_instance_display_name(tgt)
 			var stat_label: String = "PWR" if buff_stat == "pwr" else "HP"
 			
-			# Log message
+			# Single Log message for all targets
 			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "%s grants %s +%d %s" % [holder_name, target_name, buff_amount, stat_label]
+				"text": "%s grants %s +%d %s" % [holder_name, " and ".join(batched_target_names), buff_amount, stat_label]
 			}))
 			
 			var visual_payload := CombatPayload.new()
@@ -74,16 +84,18 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			visual_payload.amount = buff_amount
 			visual_payload.stat = buff_stat
 			if buff_stat == "pwr":
-				visual_payload.targets_old_pwr = [old_val] as Array[int]
-				visual_payload.targets_new_pwr = [new_val] as Array[int]
+				visual_payload.targets_old_pwr = batched_old_vals
+				visual_payload.targets_new_pwr = batched_new_vals
 			else:
-				visual_payload.targets_old_val = [old_val] as Array[int]
-				visual_payload.targets_new_val = [new_val] as Array[int]
+				visual_payload.targets_old_val = batched_old_vals
+				visual_payload.targets_new_val = batched_new_vals
+				visual_payload.targets_max_hp = batched_max_hp
 			
-			# BUFF event
-			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			# Single batched BUFF event for all targets simultaneously
+			var event_type = CombatEvent.Type.HEAL if buff_stat == "hp" else CombatEvent.Type.BUFF
+			result.add_event(CombatEvent.new(event_type, {
 				"source_uuid": _source_uuid,
-				"target_uuids": [target_uuid],
+				"target_uuids": batched_target_uuids,
 				"ability_id": context.get("ability_id", &"buff_two_random"),
 				"trigger_type": context.get("trigger_type", ""),
 				"ability_holder_uuid": holder_uuid,

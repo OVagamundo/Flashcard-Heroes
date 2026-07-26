@@ -84,6 +84,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": visual_source_uuid,
 					"target_uuids": [active_holder_uuid],
+					"ability_id": context.get("ability_id", &"echoing_orb_scaling"),
 					"ability_holder_uuid": source_uuid,
 					"visual_payload": payload
 				}))

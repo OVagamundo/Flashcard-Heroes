@@ -107,6 +107,7 @@ func _ready() -> void:
 	gacha_machine_1.gui_input.connect(func(event): _on_machine_gui_input(event))
 	gacha_machine_2.gui_input.connect(func(event): _on_machine_gui_input(event))
 	gacha_machine_3.gui_input.connect(func(event): _on_machine_gui_input(event))
+	
 
 	
 	SignalBus.battle_start_requested.connect(_on_battle_start_requested)
@@ -214,6 +215,13 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 			WindowManager.close_all_inspection_windows()
 			# Don't open inventory - the close action was the intent
 		else:
+			var bm = get_tree().get_first_node_in_group("battle_manager")
+			var is_anim = _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing())
+			if is_anim:
+				get_viewport().set_input_as_handled()
+				if InputUtils.is_touch_pointer_event(event):
+					accept_event()
+				return
 			# No windows open - open inventory
 			SignalBus.emit_signal("inspect_inventory_requested")
 		get_viewport().set_input_as_handled()
@@ -236,6 +244,28 @@ func _on_knob_hover_exit(button: TextureButton) -> void:
 	tween.set_ease(Tween.EASE_OUT)
 	tween.set_trans(Tween.TRANS_QUAD)
 	tween.tween_property(button, "scale", Vector2(1.0, 1.0), 0.1)
+
+var _is_drawing_token: bool = false
+
+func _is_mouse_over_draw_mechanic() -> bool:
+	var mouse_pos = get_viewport().get_mouse_position()
+	var draw_controls = [gacha_machine_1, gacha_machine_2, gacha_machine_3, knob_button_1, knob_button_2, knob_button_3]
+	for ctrl in draw_controls:
+		if is_instance_valid(ctrl) and ctrl.is_visible_in_tree():
+			if ctrl.get_global_rect().has_point(mouse_pos):
+				return true
+	return false
+
+func _process(_delta: float) -> void:
+	if not CursorManager.has_method("set_waiting_indicator"):
+		return
+	var should_show_waiting := false
+	if _is_mouse_over_draw_mechanic():
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		var is_anim = _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing())
+		if is_anim:
+			should_show_waiting = true
+	CursorManager.set_waiting_indicator(should_show_waiting)
 
 func clear_content_area() -> void:
 	if is_instance_valid(_current_content_node):
@@ -313,6 +343,8 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
 	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		return
 	var effective_cost := tier
 	if is_instance_valid(bm):
 		if bm.has_method("get_gacha_draw_cost"):
@@ -320,10 +352,10 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 		
 		var can_draw = true
 		if bm.has_method("can_draw_gacha_instance"):
-			can_draw = bm.can_draw_gacha_instance(tier, _pending_tokens_spent)
+			can_draw = bm.can_draw_gacha_instance(tier)
 		elif bm.has_method("get_gacha_tokens"):
 			var current_tokens: int = bm.get_gacha_tokens()
-			if current_tokens - _pending_tokens_spent < effective_cost:
+			if current_tokens < effective_cost:
 				can_draw = false
 				
 		if not can_draw:
@@ -347,8 +379,8 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
 	
-	# We've committed to this draw. Increment pending tokens by effective cost.
-	_pending_tokens_spent += effective_cost
+	# We've committed to this draw. Set _is_drawing_token to true.
+	_is_drawing_token = true
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -387,7 +419,7 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	
 	if not is_instance_valid(target_machine):
 		SignalBus.emit_signal("draw_gacha_requested", tier)
-		_pending_tokens_spent -= cost
+		_is_drawing_token = false
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -424,9 +456,7 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	
 	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
-	
-	# Decrement pending tokens since the draw is now officially requested
-	_pending_tokens_spent -= cost
+	_is_drawing_token = false
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""

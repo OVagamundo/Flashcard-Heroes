@@ -801,6 +801,8 @@ static func handle_summon_unit(
 		if is_instance_valid(copy_source):
 			new_inst = copy_source.create_battle_copy(battle_manager.get_all_instances())
 			new_inst.equipped_item_uuids.fill("") # Clones should not steal the original's items
+			new_inst.equipped_on_uuid = "" # Clones in inventories/gacha machines must be unequipped
+			new_inst.equipped_slot_index = -1
 			new_inst.reset_battle_stats_silent() # Restores HP/PWR to max base + persistent modifiers
 
 	if not is_instance_valid(new_inst):

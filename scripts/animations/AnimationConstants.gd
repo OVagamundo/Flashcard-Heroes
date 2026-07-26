@@ -4,7 +4,7 @@ extends RefCounted
 
 # --- PLAYBACK SPEED ---
 # SAP-style speed factor. All animation durations are divided by this.
-# 1.0 = normal, 2.0 = 2x speed, 4.0 = 4x speed
+# 1.0 = normal, 3.0 = 3x speed
 static var speed_factor: float = 1.0
 
 ## Get a duration scaled by the current speed factor.

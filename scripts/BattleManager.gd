@@ -157,19 +157,14 @@ func _emit_battle_inventory_changed() -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	
 	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
-		# Process passive updates (e.g. Twin Charm scaling) and capture generated events
-		var events = _combat.process_reaction_queue(self, {})
+		# Process passive updates (e.g. Twin Charm scaling) immediately in the data layer without queuing VCR animations
+		_combat.process_reaction_queue(self, {})
 		
 		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
 		_flush_deferred_enemy_erasures()
 		
 		SignalBus.emit_signal("battle_inventory_changed")
 		_pending_inventory_refresh = false
-		
-		# If any passive abilities generated events (like PWR buffs/debuffs), animate them!
-		if not events.is_empty():
-			_resolve_animator()
-			_animator.play_async_chain(events, get_board_snapshot())
 	else:
 		_pending_inventory_refresh = true
 
@@ -452,11 +447,18 @@ func get_gacha_draw_cost(tier: int) -> int:
 		cost = maxi(1, cost - 1)
 	return cost
 
+func is_animations_playing() -> bool:
+	if _is_processing_effect or _is_animating_management_queue:
+		return true
+	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+		return true
+	return false
+
 func can_draw_gacha_instance(tier: int, pending_cost: int = 0) -> bool:
 	if _current_battle_phase != Phases.MANAGEMENT:
 		return false
 		
-	if _is_processing_effect or _is_animating_management_queue:
+	if is_animations_playing():
 		return false
 		
 	var cost := get_gacha_draw_cost(tier)
@@ -501,7 +503,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		if cost < base_cost:
 			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": ""})
 			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_bargain_charm", false))
-			_animate_bargain_charm_async(event)
+			chain_events.append(event)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Validate and emit
@@ -829,7 +831,7 @@ func _resolve_combat_phase() -> void:
 	# when play_turn_sequence clears the visual registry, causing apply_pwr_delta
 	# to find a null view for the management chain's targets.
 	if _animator.is_playing_sequence():
-		await _animator.all_chains_finished
+		await _animator.turn_animation_finished
 	
 	_populate_actor_queue()
 	
@@ -1707,7 +1709,6 @@ func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> v
 	# _flush_deferred_enemy_erasures()
 	
 	if not all_events_for_animator.is_empty():
-		_is_processing_effect = false # Wait, let animator emit finished
 		_animator.play_turn_sequence(start_snapshot, all_events_for_animator)
 	else:
 		_is_processing_effect = false
@@ -1729,6 +1730,17 @@ func unblock_ui_updates() -> void:
 ## Called from BattleView after gacha draw animation completes.
 ## @param snapshot: Dictionary - Board snapshot captured BEFORE effects were triggered
 
+
+func enqueue_management_animation(snapshot: Dictionary, events: Array[CombatEvent]) -> void:
+	if events.is_empty():
+		return
+	_resolve_animator()
+	_management_animation_queue.append({
+		"snapshot": snapshot,
+		"events": events
+	})
+	if not _is_animating_management_queue:
+		_process_management_animation_queue()
 
 func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	if _pending_reactions.is_empty():
@@ -1752,17 +1764,7 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	# Since is_simulation=true for VCR, cleanup is deferred until now
 	_finalize_deaths()
 	
-	if events.is_empty():
-		return
-		
-	# Queue the presentation
-	_management_animation_queue.append({
-		"snapshot": snapshot,
-		"events": events
-	})
-	
-	if not _is_animating_management_queue:
-		_process_management_animation_queue()
+	enqueue_management_animation(snapshot, events)
 
 func _process_management_animation_queue() -> void:
 	_is_animating_management_queue = true
@@ -2142,14 +2144,12 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 
 func _on_draw_gacha_requested(tier: int) -> void:
 	# Delegate to atomic composite; preserves legacy signal order
-	# Ignore draw intents during COMBAT to enforce strict input blocking.
-	if _current_battle_phase != Phases.MANAGEMENT:
+	# Ignore draw intents during COMBAT or when animations are playing to enforce strict input blocking.
+	if not can_draw_gacha_instance(tier):
 		return
 	var chain_events = bm_draw_gacha_instance(tier)
 	if not chain_events.is_empty():
-		var animator = get_tree().get_first_node_in_group("battle_animator")
-		if is_instance_valid(animator) and animator.has_method("play_async_chain"):
-			animator.play_async_chain(chain_events, get_board_snapshot())
+		enqueue_management_animation(get_board_snapshot(), chain_events)
 
 
 # Helper function to equip an item on a unit
@@ -2356,57 +2356,76 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 				armor_value = 1
 				spikes_value = 0
 				
+			var armor_target_uuids: Array[String] = []
+			var armor_old_vals: Array[int] = []
+			var armor_new_vals: Array[int] = []
+			
+			var spikes_target_uuids: Array[String] = []
+			var spikes_old_vals: Array[int] = []
+			var spikes_new_vals: Array[int] = []
+				
 			for unit in units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
 					var is_earth = _has_trait_soul(unit, "EARTH")
 					var armor_to_apply = armor_value
-					
 					if is_earth:
 						armor_to_apply *= 2
 						
 					if armor_to_apply > 0:
-						# Create a request-like structure for the event creation
-						var mock_request = EffectRequest.new(unit.ball_uuid, &"trait_earth_armor", null, [unit.ball_uuid], {}, 0)
-						
-						# Reuse handle_armor_stacks logic or apply manually
-						var event = handle_armor_stacks(mock_request, [unit.ball_uuid], armor_to_apply)
-						total_events.append(event)
+						var old_armor = unit.get_status_effect_amount(&"armor")
+						var new_armor = apply_stat_delta(unit, "armor_stacks", armor_to_apply)
+						armor_target_uuids.append(unit.ball_uuid)
+						armor_old_vals.append(old_armor)
+						armor_new_vals.append(new_armor)
 					
-					# Apply Spikes to ALL team units (not doubled for Earth units)
 					if spikes_value > 0:
 						var old_spikes = unit.get_status_effect_amount(&"spikes")
 						var new_spikes = apply_stat_delta(unit, "spikes_stacks", spikes_value)
-						
-						var spikes_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-							"source_uuid": "",
-							"target_uuids": [unit.ball_uuid],
-							"ability_id": &"trait_earth_spikes",
-							"visual_payload": CombatPayload.status_change("", spikes_value, "spikes_stacks", [old_spikes], [new_spikes])
-						})
-						total_events.append(spikes_event)
+						spikes_target_uuids.append(unit.ball_uuid)
+						spikes_old_vals.append(old_spikes)
+						spikes_new_vals.append(new_spikes)
+			
+			if not armor_target_uuids.is_empty():
+				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": "",
+					"target_uuids": armor_target_uuids,
+					"ability_id": &"trait_earth_armor",
+					"visual_payload": CombatPayload.status_change("", armor_value, "armor_stacks", armor_old_vals, armor_new_vals)
+				}))
+			
+			if not spikes_target_uuids.is_empty():
+				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": "",
+					"target_uuids": spikes_target_uuids,
+					"ability_id": &"trait_earth_spikes",
+					"visual_payload": CombatPayload.status_change("", spikes_value, "spikes_stacks", spikes_old_vals, spikes_new_vals)
+				}))
 		
 		# FIRE TRAIT: 7+ Souls -> Opposing team gets 2 Burn stacks
 		var fire_souls = traits.get("FIRE", 0)
 		if fire_souls >= 7:
 			var opposing_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 			var opposing_units = get_instances_in_container(opposing_container_tag)
+			var fire_target_uuids: Array[String] = []
+			var fire_old_vals: Array[int] = []
+			var fire_new_vals: Array[int] = []
 			
-			# Reuse EffectHandlers logic if possible, or implement burn application directly
 			for unit in opposing_units:
 				if is_instance_valid(unit) and unit.current_hp > 0:
-					# Apply 2 burn stacks
 					var amount = 2
 					var old_val = unit.get_status_effect_amount(&"burn")
-					# Silent update for simulation state
 					var new_val = apply_stat_delta(unit, "burn_stacks", amount)
-					
-					var event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-						"source_uuid": "", # Trait effect has no single unit source
-						"target_uuids": [unit.ball_uuid],
-						"ability_id": &"trait_fire_burn",
-						"visual_payload": CombatPayload.status_change("", amount, "burn_stacks", [old_val], [new_val])
-					})
-					total_events.append(event)
+					fire_target_uuids.append(unit.ball_uuid)
+					fire_old_vals.append(old_val)
+					fire_new_vals.append(new_val)
+			
+			if not fire_target_uuids.is_empty():
+				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": "",
+					"target_uuids": fire_target_uuids,
+					"ability_id": &"trait_fire_burn",
+					"visual_payload": CombatPayload.status_change("", 2, "burn_stacks", fire_old_vals, fire_new_vals)
+				}))
 		
 		# WATER TRAIT: 2+ Souls -> Water units heal adjacent allies 1 HP at start of turn
 		var water_souls = traits.get("WATER", 0)
@@ -2417,12 +2436,15 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 			for unit in units:
 				if not is_instance_valid(unit) or unit.current_hp <= 0:
 					continue
-				# Only Water units trigger this
 				if not _has_trait_soul(unit, "WATER"):
 					continue
 				
-				# Get adjacent allies (using existing helper)
 				var adjacent_allies = _get_adjacent_allies(unit)
+				var water_target_uuids: Array[String] = []
+				var water_old_hp: Array[int] = []
+				var water_new_hp: Array[int] = []
+				var water_max_hp: Array[int] = []
+				
 				for ally in adjacent_allies:
 					if not is_instance_valid(ally) or ally.current_hp <= 0:
 						continue
@@ -2433,17 +2455,21 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 					if new_hp > old_hp:
 						var ally_def = ally.get_definition()
 						var max_hp = ally_def.base_hp if is_instance_valid(ally_def) else 0
-						
-						var event = CombatEvent.new(CombatEvent.Type.HEAL, {
-							"source_uuid": unit.ball_uuid,
-							"target_uuids": [ally.ball_uuid],
-							"ability_id": &"trait_water_heal",
-						"visual_payload": CombatPayload.hp_change(unit.ball_uuid, 1, [old_hp], [new_hp], [max_hp])
-						})
-						total_events.append(event)
+						water_target_uuids.append(ally.ball_uuid)
+						water_old_hp.append(old_hp)
+						water_new_hp.append(new_hp)
+						water_max_hp.append(max_hp)
 						
 						# Trigger on_healed for reactions (e.g. Tier 1 Air units)
 						TurnAbilities.trigger_on_healed(ally.ball_uuid, 1, unit.ball_uuid)
+				
+				if not water_target_uuids.is_empty():
+					total_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
+						"source_uuid": unit.ball_uuid,
+						"target_uuids": water_target_uuids,
+						"ability_id": &"trait_water_heal",
+						"visual_payload": CombatPayload.hp_change(unit.ball_uuid, 1, water_old_hp, water_new_hp, water_max_hp)
+					}))
 		
 		# AIR TRAIT: 2+ Souls -> Air units steal 1 PWR from the opposite enemy
 		var air_souls = traits.get("AIR", 0)
@@ -2458,25 +2484,20 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 			for unit in units:
 				if not is_instance_valid(unit) or unit.current_hp <= 0:
 					continue
-				# Only Air units trigger this
 				if not _has_trait_soul(unit, "AIR"):
 					continue
 				
-				# Get unit's slot index
 				var source_slot = source_container.get_index_of_uuid(unit.ball_uuid)
 				if source_slot == -1:
 					continue
 				
-				# Calculate mirror slot (opposite position)
 				var source_uuids = source_container.get_all_uuids()
 				var source_lineup_size = source_uuids.size()
 				var mirror_slot = (source_lineup_size - 1) - source_slot
 				
-				# Find enemy at mirror slot
 				var enemy_uuids = enemy_container.get_all_uuids()
 				var enemy: GachaBallInstance = null
 				
-				# Try mirror slot first
 				if mirror_slot >= 0 and mirror_slot < enemy_uuids.size():
 					var enemy_uuid = enemy_uuids[mirror_slot]
 					if not enemy_uuid.is_empty():
@@ -2484,24 +2505,19 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						if is_instance_valid(potential) and potential.current_hp > 0:
 							enemy = potential
 				
-				# Fallback: target the backmost enemy if mirror slot is empty
 				if enemy == null:
 					if is_player_team:
-						# Backmost enemy for player = HIGHEST slot index
 						for slot_index in range(enemy_uuids.size() - 1, -1, -1):
 							var uuid = enemy_uuids[slot_index]
-							if uuid.is_empty():
-								continue
+							if uuid.is_empty(): continue
 							var potential = get_instance_by_uuid(uuid)
 							if is_instance_valid(potential) and potential.current_hp > 0:
 								enemy = potential
 								break
 					else:
-						# Backmost enemy for enemy team = LOWEST slot index
 						for slot_index in range(enemy_uuids.size()):
 							var uuid = enemy_uuids[slot_index]
-							if uuid.is_empty():
-								continue
+							if uuid.is_empty(): continue
 							var potential = get_instance_by_uuid(uuid)
 							if is_instance_valid(potential) and potential.current_hp > 0:
 								enemy = potential
@@ -2510,33 +2526,24 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 				if enemy == null:
 					continue
 				
-				# Steal 1 PWR from enemy (will be clamped to 1 systemically)
 				var enemy_old_pwr = enemy.current_pwr
-				
-				# Always gain 1 PWR
 				var unit_old_pwr = unit.current_pwr
 				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1)
-				
-				# Reduce enemy PWR
 				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
 				
-				# Create debuff event for enemy
-				var debuff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": enemy.ball_uuid, # Source is enemy (where PWR is being taken from)
+				total_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": enemy.ball_uuid,
 					"target_uuids": [enemy.ball_uuid],
 					"ability_id": &"trait_air_steal",
 					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
-				})
-				total_events.append(debuff_event)
+				}))
 				
-				# Create buff event for unit - projectile FROM enemy TO Air unit
-				var buff_event = CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": enemy.ball_uuid, # Projectile originates FROM enemy
-					"target_uuids": [unit.ball_uuid], # Travels TO Air unit
+				total_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": enemy.ball_uuid,
+					"target_uuids": [unit.ball_uuid],
 					"ability_id": &"trait_air_steal",
 					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
-				})
-				total_events.append(buff_event)
+				}))
 
 	return total_events
 
@@ -2597,13 +2604,3 @@ func _on_battle_inventory_penalty(uuid: String) -> void:
 		
 		if Engine.has_singleton("BattleLogger"):
 			BattleLogger.log_message("[color=red]OVERFLOW PENALTY:[/color] %s was moved to discard pile." % name_str)
-
-func _animate_bargain_charm_async(event: CombatEvent) -> void:
-	_resolve_animator()
-	_is_processing_effect = true
-	var snapshot = get_board_snapshot()
-	var events: Array[CombatEvent] = [event]
-	await _animator.play_turn_sequence(snapshot, events)
-	_is_processing_effect = false
-	if _pending_inventory_refresh:
-		_emit_battle_inventory_changed()
