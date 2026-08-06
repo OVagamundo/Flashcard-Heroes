@@ -127,25 +127,34 @@ def main():
         else:
             out.write("*No script attachments found or scenes folder missing.*\n\n")
             
-        # 4. Source Code
-        out.write("## 4. Source Code (`.gd` files)\n\n")
-        out.write("All GDScript source code files are included below.\n\n")
+        # 4. Source Code and Data
+        out.write("## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`)\n\n")
+        out.write("All GDScript source code files and relevant data resources are included below.\n\n")
         
-        all_gd_files = []
-        for p in Path.cwd().rglob("*.gd"):
-            if "addons" in p.parts or ".godot" in p.parts or "brain" in p.parts or "scratch" in p.parts or "tools_and_archive" in p.parts:
-                continue
-            all_gd_files.append(p)
+        all_data_files = []
+        for ext in ["*.gd", "*.tres", "*.csv"]:
+            for p in Path.cwd().rglob(ext):
+                if "addons" in p.parts or ".godot" in p.parts or "brain" in p.parts or "scratch" in p.parts or "tools_and_archive" in p.parts:
+                    continue
+                all_data_files.append(p)
             
-        all_gd_files.sort(key=lambda x: str(x).lower())
+        all_data_files.sort(key=lambda x: str(x).lower())
         
-        for p in all_gd_files:
+        for p in all_data_files:
             try:
                 rel_path = p.relative_to(Path.cwd())
                 with open(p, 'r', encoding='utf-8') as f:
                     content = f.read()
                 out.write(f"### File: `{rel_path}`\n")
-                out.write("```gdscript\n")
+                
+                # Determine syntax highlighting language
+                lang = "gdscript"
+                if p.suffix == ".tres":
+                    lang = "ini"
+                elif p.suffix == ".csv":
+                    lang = "csv"
+                    
+                out.write(f"```{lang}\n")
                 out.write(content)
                 if not content.endswith("\n"):
                     out.write("\n")

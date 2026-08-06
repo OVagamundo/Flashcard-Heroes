@@ -28,8 +28,8 @@ As players progress along the path, they will encounter special "Study Session" 
 Players may spend gold to refresh the available rewards. Note: Rerolling reward screens is intended to be a feature unlocked by acquiring the **Reroll Trinket** (Future Content). It is currently enabled by default for testing purposes.
 - **Cost**: Starts at **1 Gold**. Increases by **+1 Gold** for each subsequent reroll within the same session.
 - **Reset**: The cost resets to 1 Gold at the start of next reward session.
-- **Behavior**: Validates funds, plays `GoldCoinVFX`, clears current choices, and regenerates the pool.
-- **Uniqueness**: The `WeightedPoolDirector` ensures that players are never offered trinkets they already own as rewards, meaning all trinkets are unique.
+- **Behavior**: Validates funds, executes `ShopRerollAction` via `ActionQueue`, plays `GoldCoinVFX`, clears current choices, and regenerates the pool using `RNGManager.reward_rng`.
+- **Uniqueness**: The `WeightedPoolDirector` ensures that players are never offered trinkets they already own as rewards, using `reward_rng` for weighted selection.
 
 ### Recipe Unlocking (Run-Bound)
 During a single run, players discover and unlock recipes dynamically. These unlocks persist only for the duration of the current run.

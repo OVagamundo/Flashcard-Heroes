@@ -374,7 +374,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 			t.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
 			t.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
 		)
-		coin.play(start_pos + Vector2(randf_range(-15, 15), randf_range(-8, 8)), target_pos, i * 0.08)
+		coin.play(start_pos + Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8)), target_pos, i * 0.08)
 	await AnimationConstants.create_pausable_timer(get_tree(), (coins - 1) * 0.08 + 0.55).timeout
 
 func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:

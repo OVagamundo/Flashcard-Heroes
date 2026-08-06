@@ -1,9 +1,10 @@
 # Flashcard Heroes - Game Design Document
 **Flashcard Heroes** is a single-player roguelike deckbuilder, auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system as resource generation mechanic. Players build a collection of **GachaBalls** (Units and Items) to survive encounters and defeat bosses.
 
-2. Core Gameplay Loop
+22. Core Gameplay Architecture & Loop
+The game operates on a **deterministic, event-driven command pipeline** (*Slay the Spire 2* architecture) with no continuous core game loop. The game state advances purely as discrete reactions to validated player input commands (`GameAction` enqueued to `ActionQueue`).
 1. **Loadout**: Select a Hero, a Flashcard Deck, and the Deck Size ("Full" for a complete run or "Quick/Half" for a shorter, faster run).
-2. **Encounter Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others).
+2. **Encounter Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others) generated via seeded PRNG (`RNGManager.map_rng`).
 3. **Resolution**: Resolve the encounter and advance the **Day** (Difficulty scaling).
 4. **Conclusion**: Victory (Final Boss defeated) or Permadeath (Hero HP = 0).
 

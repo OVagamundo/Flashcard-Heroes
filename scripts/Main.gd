@@ -88,6 +88,7 @@ var _action_zone_1_text: String = "" # Left zone custom text
 var _action_zone_2_text: String = "" # Right zone custom text
 
 func _ready() -> void:
+	add_to_group("main")
 	GameManager.register_main_node(self) # Register self with GameManager
 	
 	# Connect knob buttons to draw functionality
@@ -446,7 +447,7 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
 		
 		# Slight random offset to start position for natural feel
-		var offset = Vector2(randf_range(-20, 20), randf_range(-10, 10))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-20, 20), RNGManager.cosmetic_rng.randf_range(-10, 10))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
 	# Wait for all animations to complete, then trigger draw
@@ -1085,6 +1086,22 @@ func get_confirm_drop_zone_rect() -> Rect2:
 	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
 		return _confirm_drop_zone.get_global_rect()
 	return Rect2()
+
+## Public API: Check if a given screen point is inside any active drop zone
+func is_point_inside_active_drop_zone(pos: Vector2) -> bool:
+	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
+		if _confirm_drop_zone.get_global_rect().has_point(pos):
+			return true
+			
+	if _reward_drop_zones_visible:
+		if is_instance_valid(_reward_collect_zone) and _reward_collect_zone.get_global_rect().has_point(pos): return true
+		if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.get_global_rect().has_point(pos): return true
+		
+	if _split_action_drop_zones_visible:
+		if is_instance_valid(_action_zone_1) and _action_zone_1.get_global_rect().has_point(pos): return true
+		if is_instance_valid(_action_zone_2) and _action_zone_2.get_global_rect().has_point(pos): return true
+		
+	return false
 
 # =============================================================================
 # BLACK MARKET SPLIT DROP ZONES (Remove / Transform)

@@ -469,7 +469,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 			# No target control reaction here anymore as we might be targeting a point in space
 		)
 		
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 

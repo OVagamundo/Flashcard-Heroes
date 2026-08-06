@@ -85,13 +85,12 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 			pending_count = int(bm.get_pending_reactions_size())
 		else:
 			pending_count = int(bm._pending_reactions.size())
+			
+		if pending_count > 0:
 			await bm.resolve_management_effects_and_animate(snapshot)
 			
 		if bm.has_method("unblock_ui_updates"):
 			bm.unblock_ui_updates()
-				
-			if bm.has_method("unblock_ui_updates"):
-				bm.unblock_ui_updates()
 
 func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
 	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
@@ -225,7 +224,7 @@ func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
 			if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
 				Audio.play_sfx("coin_land")
 		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
 		if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
 			Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))

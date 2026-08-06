@@ -108,13 +108,13 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 		C.TARGET_RANDOM_ENEMY:
 			var enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not enemies.is_empty():
-				var random_enemy = enemies[randi() % enemies.size()]
+				var random_enemy = RNGManager.combat_rng.pick_random(enemies)
 				return [random_enemy.ball_uuid]
 			return []
 		C.TARGET_RANDOM_ALLY:
 			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not allies.is_empty():
-				var random_ally = allies[randi() % allies.size()]
+				var random_ally = RNGManager.combat_rng.pick_random(allies)
 				return [random_ally.ball_uuid]
 			return []
 		C.TARGET_ALLY_BEHIND:

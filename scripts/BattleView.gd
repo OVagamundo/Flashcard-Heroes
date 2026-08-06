@@ -904,6 +904,12 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		return
 	
+	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
+	await get_tree().process_frame
+	
+	# Wait a second frame to ensure layout containers (HBoxContainer) have fully updated child positions
+	await get_tree().process_frame
+	
 	# Show first draw tutorial (2 pages) - only on first successful draw
 	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
 	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
@@ -921,9 +927,6 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 			"anchor_path": end_turn_button.get_path()
 		}
 	])
-	
-	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
-	await get_tree().process_frame
 	
 	# Find the target slot
 	var target_ui_container: HBoxContainer = null

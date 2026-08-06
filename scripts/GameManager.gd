@@ -88,6 +88,7 @@ func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_
 	if TutorialManager:
 		TutorialManager.reset_all_tutorials()
 		
+	RNGManager.initialize()
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	reset_gacha_discounts()
@@ -453,7 +454,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 					inst.setup_site()
 		"SURPRISE":
 			if is_instance_valid(_active_main_node):
-				var roll = randi() % 3
+				var roll = RNGManager.map_rng.randi_range(0, 2)
 				if roll == 0:
 					var inst = _active_main_node.load_content(REST_SITE_SCENE)
 					if inst is ResourceSite:
@@ -641,7 +642,7 @@ func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDe
 
 	if eligible.is_empty():
 		return null
-	return eligible[randi() % eligible.size()]
+	return RNGManager.gacha_rng.pick_random(eligible)
 
 func _on_black_market_action_requested(payload: Dictionary) -> void:
 	if not is_instance_valid(run_state):

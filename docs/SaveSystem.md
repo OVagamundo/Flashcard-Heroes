@@ -14,12 +14,14 @@ The `SaveManager` is a globally accessible autoload singleton responsible for fi
 The `RunState` resource serves as the single source of truth for a run's data. It implements `to_save_dict()` and `from_save_dict()` methods to handle serialization.
 
 **Serialized Data:**
-- **Run Progress**: `day`, `gold`, `bosses_defeated`, `current_boss_level`.
+- **Run Seed & Seeded PRNG**: `run_seed` (32-bit master seed) and `rng_state` (capturing individual stream states for `map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`). Restores 100% deterministic session continuation.
+- **Run Progress**: `day`, `gold`, `tokens`, `bosses_defeated`, `current_boss_level`.
 - **Statistics**: `total_enemies_defeated`, `total_gold_earned`.
 - **Deck State**: `deck_def_id`, `active_deck_ids`, `cards_presented_count`.
 - **Flashcard Progress**: Full history of card mastery (`mastery_level`, `times_reviewed`, `last_review_day`).
 - **Instances**: All `GachaBallInstance` objects (Units, Items, Trinkets) including their stats, equipment, and modifiers.
 - **Containers**: The layout of all inventories (`PlayerLineup`, `PlayerBench`, `RunInventory`, etc.).
+- **Action Queue Log**: Option to serialize `ActionQueue.get_history()` (`_history` array containing `to_dict()` outputs of all processed `GameAction` commands) for VCR session replayability.
 
 ### 2.3. GachaBallInstance Serialization
 Each game entity (unit, item) is serialized via `to_save_dict()`, capturing:

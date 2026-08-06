@@ -156,9 +156,10 @@ Starting at day 1, slots with special effects can be generated on player and ene
   * Enemy slot effects increase the enemy's generation budget.
   * The net change (`enemy_bonus - player_cost`) is applied to the final enemy lineup generation budget to maintain combat equilibrium.
 
-## Encounter Selection RNG (Choices)
+## Encounter Selection RNG (Seeded PRNG)
 
-When the player selects their next encounter, a weighted RNG system determines which encounters are offered.
+When the player selects their next encounter, a weighted RNG system driven by `RNGManager.map_rng` determines which encounters are offered.
+- **Stream Isolation**: Map and encounter generation operate strictly on `map_rng` derived from `RunState.run_seed`.
 - **Regular Battles** have the highest priority (base weight 100).
 - **Elite Battles** are rare early on (base weight 20 before Day 5) but become more common later (base weight 80 from Day 5 onward).
 - **Other Encounters** (Shop, Black Market, Merge, Unit Training, Surprise) have a standard base weight (50).

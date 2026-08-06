@@ -59,7 +59,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 		return result
 	
 	# Pick one at random
-	var drawn_instance: GachaBallInstance = tier_pool.pick_random()
+	var drawn_instance: GachaBallInstance = RNGManager.gacha_rng.pick_random(tier_pool)
 	if not is_instance_valid(drawn_instance):
 		return result
 	

@@ -8,7 +8,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# 1. Select the dust unit FIRST to know its tier
 	# Tier 3 Elite spawns random of T1 or T2 Dust units
 	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2", &"unit_dust_t3"]
-	var selected_dust = dust_pool[randi() % dust_pool.size()]
+	var selected_dust = RNGManager.combat_rng.pick_random(dust_pool)
 	
 	# Determine target container based on tier
 	var tier := 1

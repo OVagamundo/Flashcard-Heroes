@@ -1,7 +1,7 @@
 # UI Architecture & Interaction System
 
 > [!IMPORTANT]
-> **Core Principle:** Simulation and Presentation are completely independent. The TurnLog is their ONLY connection. **GIR (Global Interaction Router)** interprets all input. **WindowManager** executes commands. Views only emit `InteractionContext`.
+> **Core Principle:** Simulation and Presentation are completely independent. The TurnLog is their ONLY connection. **GIR (GlobalInteractionRouter)** interprets all input as a **Command Factory**, instantiating `GameAction` objects (`InventoryDragAction`, `ChoiceAction`, etc.) and delegating execution to the **ActionQueue**. **WindowManager** executes UI window lifecycle. Views only emit `InteractionContext`. Presentation strictly reacts to emitted signal events.
 
 ---
 

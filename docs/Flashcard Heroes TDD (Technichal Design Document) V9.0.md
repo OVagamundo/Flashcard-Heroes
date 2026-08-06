@@ -57,6 +57,10 @@ Core logic is partitioned to ensure Single Responsibility:
 
 ### 3.2 Interactions & UI Flow
 Centralized interpretation of user intent to decouple Views from Logic:
+-   **Command Pipeline (`ActionQueue` & `GameAction`):** Out-of-combat UI inputs (drags, choices, purchases) construct validated `GameAction` commands. `ActionQueue` executes them sequentially (`is_valid() -> execute()`) and logs serialized action histories (`to_dict()`) for session replayability.
+-   **Global Interaction Router (Command Factory):** Validates UI context, constructs `InventoryDragAction` or `ChoiceAction`, and pushes them to `ActionQueue`.
+-   **Seeded PRNG Streams (`RNGManager` & `SeededRNG`):** Stream isolation across game systems (`map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`) seeded from `RunState.run_seed`.
+-   **Global Engine Time Scale:** Engine-level playback acceleration (`Engine.time_scale`) via `AnimationConstants.speed_factor` scales all tweens, timers, particle systems, and token animations uniformly.
 
 -   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
     -   (See `docs/UIInteraction.md` for selection/interaction rules)

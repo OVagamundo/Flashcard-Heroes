@@ -10,6 +10,10 @@ These are the global singletons defined in `project.godot`. They manage global s
 ArtStyleManager="*res://scripts/ArtStyleManager.gd"
 SignalBus="*res://scripts/SignalBus.gd"
 C="*res://scripts/Constants.gd"
+RNGManager="*res://scripts/systems/RNGManager.gd"
+ActionQueue="*res://scripts/actions/ActionQueue.gd"
+ReplayRecorder="*res://scripts/replay/ReplayRecorder.gd"
+ReplayManager="*res://scripts/replay/ReplayManager.gd"
 UUIDUtils="*res://scripts/UUIDUtils.gd"
 Database="*res://scripts/Database.gd"
 GameManager="*res://scripts/GameManager.gd"
@@ -40,6 +44,66 @@ scripts/
 ├── abilities
 │   ├── EffectScald.gd
 │   └── EffectScald.gd.uid
+├── actions
+│   ├── commands
+│   │   ├── BattleStartAction.gd
+│   │   ├── BattleStartAction.gd.uid
+│   │   ├── BattleVictoryAction.gd
+│   │   ├── BattleVictoryAction.gd.uid
+│   │   ├── BlackMarketAction.gd
+│   │   ├── BlackMarketAction.gd.uid
+│   │   ├── ChoiceAction.gd
+│   │   ├── ChoiceAction.gd.uid
+│   │   ├── ClearSelectionAction.gd
+│   │   ├── ClearSelectionAction.gd.uid
+│   │   ├── CombatSpeedAction.gd
+│   │   ├── CombatSpeedAction.gd.uid
+│   │   ├── EndTurnAction.gd
+│   │   ├── EndTurnAction.gd.uid
+│   │   ├── FlashcardAnswerAction.gd
+│   │   ├── FlashcardAnswerAction.gd.uid
+│   │   ├── FlashcardIntroDismissAction.gd
+│   │   ├── FlashcardIntroDismissAction.gd.uid
+│   │   ├── GachaDrawAction.gd
+│   │   ├── GachaDrawAction.gd.uid
+│   │   ├── InspectAction.gd
+│   │   ├── InspectAction.gd.uid
+│   │   ├── InventoryDragAction.gd
+│   │   ├── InventoryDragAction.gd.uid
+│   │   ├── PathSelectionAction.gd
+│   │   ├── PathSelectionAction.gd.uid
+│   │   ├── RestSiteApplyAction.gd
+│   │   ├── RestSiteApplyAction.gd.uid
+│   │   ├── RestSiteDrawAction.gd
+│   │   ├── RestSiteDrawAction.gd.uid
+│   │   ├── ReturnToPathChoiceAction.gd
+│   │   ├── ReturnToPathChoiceAction.gd.uid
+│   │   ├── RewardDrawAction.gd
+│   │   ├── RewardDrawAction.gd.uid
+│   │   ├── RewardSelectionAction.gd
+│   │   ├── RewardSelectionAction.gd.uid
+│   │   ├── RunTerminationAction.gd
+│   │   ├── RunTerminationAction.gd.uid
+│   │   ├── ShopPurchaseAction.gd
+│   │   ├── ShopPurchaseAction.gd.uid
+│   │   ├── ShopRerollAction.gd
+│   │   ├── ShopRerollAction.gd.uid
+│   │   ├── ToggleWindowAction.gd
+│   │   ├── ToggleWindowAction.gd.uid
+│   │   ├── TutorialAction.gd
+│   │   ├── TutorialAction.gd.uid
+│   │   ├── UnitTrainingAction.gd
+│   │   ├── UnitTrainingAction.gd.uid
+│   │   ├── UnitTrainingDoneAction.gd
+│   │   ├── UnitTrainingDoneAction.gd.uid
+│   │   ├── UnitTrainingStartAction.gd
+│   │   └── UnitTrainingStartAction.gd.uid
+│   ├── ActionFactory.gd
+│   ├── ActionFactory.gd.uid
+│   ├── ActionQueue.gd
+│   ├── ActionQueue.gd.uid
+│   ├── GameAction.gd
+│   └── GameAction.gd.uid
 ├── animations
 │   ├── AnimationCompletionTracker.gd
 │   ├── AnimationCompletionTracker.gd.uid
@@ -172,6 +236,11 @@ scripts/
 │   ├── EffectUnderdogArmor.gd
 │   ├── EffectUnderdogArmor.gd.uid
 │   └── EffectUpdatePwrToTokens.gd.uid
+├── replay
+│   ├── ReplayManager.gd
+│   ├── ReplayManager.gd.uid
+│   ├── ReplayRecorder.gd
+│   └── ReplayRecorder.gd.uid
 ├── resources
 │   ├── AbilityComponent.gd
 │   ├── AbilityComponent.gd.uid
@@ -184,13 +253,17 @@ scripts/
 │   ├── VisualComponent.gd
 │   └── VisualComponent.gd.uid
 ├── systems
-│   └── director
-│       ├── DirectorRunState.gd
-│       ├── DirectorRunState.gd.uid
-│       ├── WeightableEntity.gd
-│       ├── WeightableEntity.gd.uid
-│       ├── WeightedPoolDirector.gd
-│       └── WeightedPoolDirector.gd.uid
+│   ├── director
+│   │   ├── DirectorRunState.gd
+│   │   ├── DirectorRunState.gd.uid
+│   │   ├── WeightableEntity.gd
+│   │   ├── WeightableEntity.gd.uid
+│   │   ├── WeightedPoolDirector.gd
+│   │   └── WeightedPoolDirector.gd.uid
+│   ├── RNGManager.gd
+│   ├── RNGManager.gd.uid
+│   ├── SeededRNG.gd
+│   └── SeededRNG.gd.uid
 ├── utils
 │   ├── DamageCalculator.gd.uid
 │   ├── DescriptionParser.gd
@@ -677,9 +750,8775 @@ This section shows which `.gd` scripts are attached to nodes in the `.tscn` scen
 ### scenes/vfx/ItemPopup.tscn
   - Node `ItemPopup` -> `scripts/vfx/ItemPopup.gd`
 
-## 4. Source Code (`.gd` files)
+## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`)
 
-All GDScript source code files are included below.
+All GDScript source code files and relevant data resources are included below.
+
+### File: `assets/fonts/font_body.tres`
+```ini
+[gd_resource type="FontFile" format=3]
+
+[resource]
+fallbacks = []
+path = "res://assets/fonts/pixel_operator/PixelOperator.ttf"
+antialiasing = 0
+generate_mipmaps = false
+multichannel_signed_distance_field = false
+```
+
+### File: `assets/fonts/font_label.tres`
+```ini
+[gd_resource type="FontFile" format=3]
+
+[resource]
+fallbacks = []
+path = "res://assets/fonts/Press_Start_2P/PressStart2P-Regular.ttf"
+antialiasing = 0
+generate_mipmaps = false
+multichannel_signed_distance_field = false
+```
+
+### File: `assets/fonts/font_stat.tres`
+```ini
+[gd_resource type="FontFile" format=3]
+
+[resource]
+fallbacks = []
+path = "res://assets/fonts/pixel_operator/PixelOperator-Bold.ttf"
+antialiasing = 0
+generate_mipmaps = false
+multichannel_signed_distance_field = false
+```
+
+### File: `assets/fonts/font_title.tres`
+```ini
+[gd_resource type="FontFile" format=3]
+
+[resource]
+fallbacks = []
+path = "res://assets/fonts/karmatic-arcade/ka1.ttf"
+antialiasing = 0
+generate_mipmaps = false
+multichannel_signed_distance_field = false
+```
+
+### File: `assets/fonts/noto_sans_black_composite.tres`
+```ini
+[gd_resource type="FontFile" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans/NotoSans-Black.ttf" id="1_latin"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_jp"]
+
+[resource]
+fallbacks = Array[Font]([ExtResource("2_jp")])
+cache/0/16/0/antialiasing = 1
+cache/0/16/0/generate_mipmaps = false
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = 0.0
+```
+
+### File: `assets/fonts/noto_sans_bold_composite.tres`
+```ini
+[gd_resource type="FontFile" load_steps=3 format=3]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans/NotoSans-Bold.ttf" id="1_latin"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Bold.ttf" id="2_jp"]
+
+[resource]
+fallbacks = Array[Font]([ExtResource("2_jp")])
+cache/0/16/0/antialiasing = 1
+cache/0/16/0/generate_mipmaps = false
+cache/0/16/0/ascent = 0.0
+cache/0/16/0/descent = 0.0
+cache/0/16/0/underline_position = 0.0
+cache/0/16/0/underline_thickness = 0.0
+cache/0/16/0/scale = 1.0
+cache/0/16/0/kerning_overrides/16/0 = 0.0
+```
+
+### File: `assets/styles/button_hover_style.tres`
+```ini
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_hover_32x32.png" id="1_btn_hover"]
+
+[resource]
+texture = ExtResource("1_btn_hover")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+```
+
+### File: `assets/styles/button_normal_style.tres`
+```ini
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_normal_32x32.png" id="1_btn_normal"]
+
+[resource]
+texture = ExtResource("1_btn_normal")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+```
+
+### File: `assets/styles/button_pressed_style.tres`
+```ini
+[gd_resource type="StyleBoxTexture" load_steps=2 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_pressed_32x32.png" id="1_btn_pressed"]
+
+[resource]
+texture = ExtResource("1_btn_pressed")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+```
+
+### File: `assets/styles/game_theme.tres`
+```ini
+[gd_resource type="Theme" format=3 uid="uid://bvuqtb8gv6two"]
+
+[ext_resource type="FontFile" path="res://assets/fonts/noto_sans_black_composite.tres" id="5_title"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_v4_disabled.png" id="btn_disabled_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_v4_hover.png" id="btn_hover_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_v4_normal.png" id="btn_normal_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/button_v4_pressed.png" id="btn_pressed_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/checkbox_v4_unchecked.png" id="check_off_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/checkbox_v4_checked.png" id="check_on_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/input_v4.png" id="line_edit_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/panel_v4.png" id="panel_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/bar_v4_bg.png" id="prog_bg_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/slider_v4_grabber.png" id="slider_grabber_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/slider_v4_track.png" id="slider_track_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/tab_v4_active.png" id="tab_active_tex"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/tab_v4_inactive.png" id="tab_inactive_tex"]
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_panel"]
+content_margin_left = 12.0
+content_margin_top = 12.0
+content_margin_right = 12.0
+content_margin_bottom = 12.0
+texture = ExtResource("panel_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_disabled"]
+texture = ExtResource("btn_disabled_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_hover"]
+texture = ExtResource("btn_hover_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_normal"]
+texture = ExtResource("btn_normal_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_btn_pressed"]
+texture = ExtResource("btn_pressed_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_slider_track"]
+texture = ExtResource("slider_track_tex")
+texture_margin_left = 16.0
+texture_margin_top = 16.0
+texture_margin_right = 16.0
+texture_margin_bottom = 16.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_line_edit"]
+content_margin_left = 8.0
+texture = ExtResource("line_edit_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_bg"]
+texture = ExtResource("prog_bg_tex")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_prog_fill"]
+texture = ExtResource("prog_bg_tex")
+texture_margin_left = 3.0
+texture_margin_top = 3.0
+texture_margin_right = 3.0
+texture_margin_bottom = 3.0
+modulate_color = Color(0.8, 0.2, 0.2, 1)
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_active"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+texture = ExtResource("tab_active_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 8.0
+
+[sub_resource type="StyleBoxTexture" id="StyleBoxTexture_tab_inactive"]
+content_margin_left = 10.0
+content_margin_right = 10.0
+texture = ExtResource("tab_inactive_tex")
+texture_margin_left = 20.0
+texture_margin_top = 20.0
+texture_margin_right = 20.0
+texture_margin_bottom = 8.0
+modulate_color = Color(0.8, 0.8, 0.8, 1)
+
+[resource]
+default_font = ExtResource("5_title")
+default_font_size = 22
+AcceptDialog/styles/panel = SubResource("StyleBoxTexture_panel")
+Button/colors/font_color = Color(0.15, 0.1, 0.08, 1)
+Button/colors/font_disabled_color = Color(0.5, 0.5, 0.5, 1)
+Button/colors/font_hover_color = Color(0.2, 0.12, 0.1, 1)
+Button/colors/font_outline_color = Color(0, 0, 0, 0)
+Button/colors/font_pressed_color = Color(0.15, 0.1, 0.08, 1)
+Button/constants/outline_size = 0
+Button/font_sizes/font_size = 36
+Button/fonts/font = ExtResource("5_title")
+Button/styles/disabled = SubResource("StyleBoxTexture_btn_disabled")
+Button/styles/focus = SubResource("StyleBoxTexture_btn_hover")
+Button/styles/hover = SubResource("StyleBoxTexture_btn_hover")
+Button/styles/normal = SubResource("StyleBoxTexture_btn_normal")
+Button/styles/pressed = SubResource("StyleBoxTexture_btn_pressed")
+CheckBox/icons/checked = ExtResource("check_on_tex")
+CheckBox/icons/unchecked = ExtResource("check_off_tex")
+HSlider/icons/grabber = ExtResource("slider_grabber_tex")
+HSlider/icons/grabber_highlight = ExtResource("slider_grabber_tex")
+HSlider/styles/grabber_area = SubResource("StyleBoxTexture_slider_track")
+HSlider/styles/grabber_area_highlight = SubResource("StyleBoxTexture_slider_track")
+HSlider/styles/slider = SubResource("StyleBoxTexture_slider_track")
+HUDLabel/base_type = &"Label"
+HUDLabel/font_sizes/font_size = 48
+HUDLabel/fonts/font = ExtResource("5_title")
+HeaderLabel/base_type = &"Label"
+HeaderLabel/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+HeaderLabel/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+HeaderLabel/constants/outline_size = 4
+HeaderLabel/font_sizes/font_size = 64
+HeaderLabel/fonts/font = ExtResource("5_title")
+Label/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+Label/colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+Label/constants/line_spacing = -4
+Label/constants/outline_size = 4
+Label/font_sizes/font_size = 28
+Label/fonts/font = ExtResource("5_title")
+LineEdit/colors/font_color = Color(0.98, 0.96, 0.92, 1)
+LineEdit/font_sizes/font_size = 28
+LineEdit/fonts/font = ExtResource("5_title")
+LineEdit/styles/focus = SubResource("StyleBoxTexture_line_edit")
+LineEdit/styles/normal = SubResource("StyleBoxTexture_line_edit")
+OptionButton/colors/font_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/colors/font_disabled_color = Color(0.5, 0.5, 0.5, 1)
+OptionButton/colors/font_focus_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/colors/font_hover_color = Color(0.2, 0.22, 0.27, 1)
+OptionButton/colors/font_pressed_color = Color(0.15, 0.17, 0.22, 1)
+OptionButton/styles/disabled = SubResource("StyleBoxTexture_btn_disabled")
+OptionButton/styles/focus = SubResource("StyleBoxTexture_btn_hover")
+OptionButton/styles/hover = SubResource("StyleBoxTexture_btn_hover")
+OptionButton/styles/normal = SubResource("StyleBoxTexture_btn_normal")
+OptionButton/styles/pressed = SubResource("StyleBoxTexture_btn_pressed")
+Panel/styles/panel = SubResource("StyleBoxTexture_panel")
+PanelContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+PopupMenu/colors/font_color = Color(0.15, 0.17, 0.22, 1)
+PopupMenu/colors/font_hover_color = Color(0.2, 0.22, 0.27, 1)
+PopupMenu/styles/panel = SubResource("StyleBoxTexture_panel")
+ProgressBar/styles/background = SubResource("StyleBoxTexture_prog_bg")
+ProgressBar/styles/fill = SubResource("StyleBoxTexture_prog_fill")
+RichTextLabel/colors/default_color = Color(0.1, 0.1, 0.1, 1)
+RichTextLabel/constants/line_separation = -4
+RichTextLabel/constants/p_separation = 0
+RichTextLabel/font_sizes/normal_font_size = 26
+RichTextLabel/fonts/bold_font = ExtResource("5_title")
+RichTextLabel/fonts/bold_italics_font = ExtResource("5_title")
+RichTextLabel/fonts/italics_font = ExtResource("5_title")
+RichTextLabel/fonts/mono_font = ExtResource("5_title")
+RichTextLabel/fonts/normal_font = ExtResource("5_title")
+TabContainer/colors/font_selected_color = Color(0.98, 0.96, 0.92, 1)
+TabContainer/colors/font_unselected_color = Color(0.6, 0.58, 0.55, 1)
+TabContainer/styles/panel = SubResource("StyleBoxTexture_panel")
+TabContainer/styles/tab_selected = SubResource("StyleBoxTexture_tab_active")
+TabContainer/styles/tab_unselected = SubResource("StyleBoxTexture_tab_inactive")
+Window/styles/embedded_border = SubResource("StyleBoxTexture_panel")
+```
+
+### File: `assets/styles/panel_style.tres`
+```ini
+[gd_resource type="StyleBoxTexture" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/panel_32x32.png" id="1_panel"]
+
+[resource]
+texture = ExtResource("1_panel")
+texture_margin_left = 8.0
+texture_margin_top = 8.0
+texture_margin_right = 8.0
+texture_margin_bottom = 8.0
+axis_stretch_horizontal = 1
+axis_stretch_vertical = 1
+```
+
+### File: `default_bus_layout.tres`
+```ini
+[gd_resource type="AudioBusLayout" format=3 uid="uid://cx60j1b3k378s"]
+
+[resource]
+bus/1/name = &"SFX"
+bus/1/solo = false
+bus/1/mute = false
+bus/1/bypass_fx = false
+bus/1/volume_db = 0.0
+bus/1/send = &"Master"
+bus/2/name = &"Music"
+bus/2/solo = false
+bus/2/mute = false
+bus/2/bypass_fx = false
+bus/2/volume_db = 0.0
+bus/2/send = &"Master"
+```
+
+### File: `docs/Ankidecks/thai_reading_phonics_matrix.csv`
+```csv
+id,tier,thai,element,transliteration,tone,type,position,letter_name,class,sound_initial,sound_final,notes
+1,Tier 1: Vowels,กะ,ะ,ka,Mid,Short Vowel,Right,Sra A,Mid,k-,-,Short standard 'a' sound. Forces dead syllable if no final consonant.
+2,Tier 1: Vowels,กา,า,kaa,Mid,Long Vowel,Right,Sra Aa,Mid,k-,-,Long standard 'aa' sound. Creates live syllable.
+3,Tier 1: Vowels,กิ,ิ,ki,Mid,Short Vowel,Above,Sra I,Mid,k-,-,Short 'i' sound placed directly above the consonant.
+4,Tier 1: Vowels,กี,ี,kee,Mid,Long Vowel,Above,Sra Ee,Mid,k-,-,Long 'ee' sound placed directly above the consonant.
+5,Tier 1: Vowels,กึ,ึ,kue,Mid,Short Vowel,Above,Sra Ue (Short),Mid,k-,-,Short unrounded back vowel (close back unrounded).
+6,Tier 1: Vowels,กือ,ื / อ,kuee,Mid,Long Vowel,Above & Right,Sra Ue (Long),Mid,k-,-,Long unrounded back vowel. Requires trailing อ if no final consonant.
+7,Tier 1: Vowels,กุ,ุ,ku,Mid,Short Vowel,Below,Sra U,Mid,k-,-,Short 'u' sound (like oo in foot) placed below.
+8,Tier 1: Vowels,กู,ู,koo,Mid,Long Vowel,Below,Sra Oo,Mid,k-,-,Long 'oo' sound (like oo in boot) placed below.
+9,Tier 1: Vowels,เกะ,เ—ะ,ke,Mid,Short Vowel,Wrap-around,Sra E (Short),Mid,k-,-,Short 'e' sound. Vowel wraps around the consonant.
+10,Tier 1: Vowels,เก,เ,kay,Mid,Long Vowel,Left,Sra E (Long),Mid,k-,-,Long 'ay' sound placed to the left of the consonant.
+11,Tier 1: Vowels,แกะ,แ—ะ,kae,Mid,Short Vowel,Wrap-around,Sra Ae (Short),Mid,k-,-,Short 'ae' sound (like 'a' in cat). Wrap-around structure.
+12,Tier 1: Vowels,แก,แ,kaee,Mid,Long Vowel,Left,Sra Ae (Long),Mid,k-,-,Long 'ae' sound (like 'a' in bad) placed to the left.
+13,Tier 1: Vowels,โกะ,โ—ะ,ko,Mid,Short Vowel,Wrap-around,Sra O (Short),Mid,k-,-,Short 'o' sound. Disappears completely when final consonant is added.
+14,Tier 1: Vowels,โก,โ,koh,Mid,Long Vowel,Left,Sra O (Long),Mid,k-,-,Long 'oh' sound placed to the left of the consonant.
+15,Tier 1: Vowels,เกาะ,เ—าะ,kaw,Mid,Short Vowel,Wrap-around,Sra Aw (Short),Mid,k-,-,Short open 'o' sound (like 'aw' in law). Wrap-around.
+16,Tier 1: Vowels,กอ,อ,kaww,Mid,Long Vowel,Right,Sra Aw (Long),Mid,k-,-,Long open 'o' sound. The letter 'อ' functions purely as a vowel here.
+17,Tier 1: Vowels,เกิอะ,เ—ิอะ,koer,Mid,Short Vowel,Wrap-around,Sra Oe (Short),Mid,k-,-,Short central vowel (like 'er' in British 'her'). Very rare.
+18,Tier 1: Vowels,เกอ,เ—อ,koerr,Mid,Long Vowel,Wrap-around,Sra Oe (Long),Mid,k-,-,Long central vowel. Changes form to เ—ิ when final consonant attached.
+19,Tier 1: Vowels,เกียะ,เ—ียะ,kia,Mid,Short Diphthong,Wrap-around,Sra Ia (Short),Mid,k-,-,Short diphthong 'i-a'. Rare modern usage.
+20,Tier 1: Vowels,เกีย,เ—ีย,keea,Mid,Long Diphthong,Wrap-around,Sra Ia (Long),Mid,k-,-,Long diphthong moving from 'ee' to 'ah' smoothly.
+21,Tier 1: Vowels,เกือะ,เ—ือะ,kuea,Mid,Short Diphthong,Wrap-around,Sra Uea (Short),Mid,k-,-,Short diphthong combining unrounded back vowel + 'a'.
+22,Tier 1: Vowels,เกือ,เ—ือ,kueaa,Mid,Long Diphthong,Wrap-around,Sra Uea (Long),Mid,k-,-,Long diphthong combining unrounded back vowel + 'ah'.
+23,Tier 1: Vowels,กัวะ,—ัวะ,kua,Mid,Short Diphthong,Wrap-around,Sra Ua (Short),Mid,k-,-,Short diphthong combining 'u' + 'a' with final glottal stop.
+24,Tier 1: Vowels,กัว,—ัว,kuaa,Mid,Long Diphthong,Above & Right,Sra Ua (Long),Mid,k-,-,Long diphthong 'oo-ah'. Drops the upper symbol when final consonant attached.
+25,Tier 1: Vowels,กำ,ำ,kam,Mid,Special Vowel,Above & Right,Sra Am,Mid,k-,-,Combines short 'a' sound with a final '-m' closing sound.
+26,Tier 1: Vowels,ไก,ไ,kai,Mid,Special Vowel,Left,Sra Ai Mai-Malai,Mid,k-,-,Short 'ai' sound. Most common 'ai' vowel layout.
+27,Tier 1: Vowels,ใก,ใ,kai,Mid,Special Vowel,Left,Sra Ai Mai-Muan,Mid,k-,-,Short 'ai' sound. Restricted to exactly 20 grammar words in Thai.
+28,Tier 1: Vowels,เกา,เ—า,kao,Mid,Special Vowel,Wrap-around,Sra Ao,Mid,k-,-,Short/Medium 'ao' sound like 'ow' in cow.
+29,Tier 2: Consonants,กา,ก,koaa,Mid,Consonant Anchor,Left,กอ ไก่,Mid,k-,-k,Meaning: Chicken. Mid Class + Long Vowel = Mid Tone.
+30,Tier 2: Consonants,จา,จ,choaa,Mid,Consonant Anchor,Left,จอ จาน,Mid,ch-,-t,Meaning: Plate. Mid Class + Long Vowel = Mid Tone.
+31,Tier 2: Consonants,ฎา,ฎ,doaa,Mid,Consonant Anchor,Left,ฎา ชฎา,Mid,d-,-t,Meaning: Headdress (Rarely used). Mid Class + Long Vowel = Mid Tone.
+32,Tier 2: Consonants,ฏา,ฏ,toaa,Mid,Consonant Anchor,Left,ฏฏ ปฏัก,Mid,t-,-t,Meaning: Goad/Javelin (Rarely used). Mid Class + Long Vowel = Mid Tone.
+33,Tier 2: Consonants,ดา,ด,doaa,Mid,Consonant Anchor,Left,ดอ เด็ก,Mid,d-,-t,Meaning: Child. Mid Class + Long Vowel = Mid Tone.
+34,Tier 2: Consonants,ตา,ต,toaa,Mid,Consonant Anchor,Left,ตอ เต่า,Mid,t-,-t,Meaning: Turtle. Mid Class + Long Vowel = Mid Tone.
+35,Tier 2: Consonants,บา,บ,boaa,Mid,Consonant Anchor,Left,บอ ใบไม้,Mid,b-,-p,Meaning: Leaf. Mid Class + Long Vowel = Mid Tone.
+36,Tier 2: Consonants,ปา,ป,poaa,Mid,Consonant Anchor,Left,ปอ ปลา,Mid,p-,-p,Meaning: Fish. Mid Class + Long Vowel = Mid Tone.
+37,Tier 2: Consonants,อา,อ,oaa,Mid,Consonant Anchor,Left,ออ อ่าง,Mid,y-/-,-,Meaning: Basin / Vowel Placeholder. Mid Class + Long Vowel = Mid Tone.
+38,Tier 2: Consonants,ขา,ข,khoaa,Rising,Consonant Anchor,Left,ขอ ไข่,High,kh-,-k,Meaning: Egg. High Class + Long Vowel = Rising Tone without markers.
+39,Tier 2: Consonants,ฉา,ฉ,choaa,Rising,Consonant Anchor,Left,ฉอ ฉิ่ง,High,ch-,-,Meaning: Cymbals (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+40,Tier 2: Consonants,ฐา,ฐ,thoaa,Rising,Consonant Anchor,Left,ฐอ ฐาน,High,th-,-t,Meaning: Pedestal. High Class + Long Vowel = Rising Tone without markers.
+41,Tier 2: Consonants,ถา,ถ,thoaa,Rising,Consonant Anchor,Left,ถอ ถุง,High,th-,-t,Meaning: Bag. High Class + Long Vowel = Rising Tone without markers.
+42,Tier 2: Consonants,ผา,ผ,phoaa,Rising,Consonant Anchor,Left,ผอ ผึ้ง,High,ph-,-,Meaning: Bee (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+43,Tier 2: Consonants,ฝา,ฝ,foaa,Rising,Consonant Anchor,Left,ฝอ ฝา,High,f-,-,Meaning: Lid (No final sound standard). High Class + Long Vowel = Rising Tone without markers.
+44,Tier 2: Consonants,ศา,ศ,soaa,Rising,Consonant Anchor,Left,ศอ ศาลา,High,s-,-t,Meaning: Pavilion. High Class + Long Vowel = Rising Tone without markers.
+45,Tier 2: Consonants,ษา,ษ,soaa,Rising,Consonant Anchor,Left,ษอ ฤาษี,High,s-,-t,Meaning: Hermit. High Class + Long Vowel = Rising Tone without markers.
+46,Tier 2: Consonants,สา,ส,soaa,Rising,Consonant Anchor,Left,สอ เสือ,High,s-,-t,Meaning: Tiger. High Class + Long Vowel = Rising Tone without markers.
+47,Tier 2: Consonants,หา,ห,hoaa,Rising,Consonant Anchor,Left,หอ หีบ,High,h-,-,Meaning: Chest/Box / High Tone Lead. High Class + Long Vowel = Rising Tone without markers.
+48,Tier 2: Consonants,คา,ค,khoaa,Mid,Consonant Anchor,Left,คอ ควาย,Low,kh-,-k,Meaning: Buffalo. Low Class + Long Vowel = Mid Tone.
+49,Tier 2: Consonants,ฆา,ฆ,khoaa,Mid,Consonant Anchor,Left,ฆอ ระฆัง,Low,kh-,-k,Meaning: Bell. Low Class + Long Vowel = Mid Tone.
+50,Tier 2: Consonants,งา,ง,ngoaa,Mid,Consonant Anchor,Left,งอ งู,Low,ng-,-ng,Meaning: Snake (Nasal sound). Low Class + Long Vowel = Mid Tone.
+51,Tier 2: Consonants,ชา,ช,choaa,Mid,Consonant Anchor,Left,ชอ ช้าง,Low,ch-,-t,Meaning: Elephant. Low Class + Long Vowel = Mid Tone.
+52,Tier 2: Consonants,ซา,ซ,soaa,Mid,Consonant Anchor,Left,ซอ โซ่,Low,s-,-t,Meaning: Chain. Low Class + Long Vowel = Mid Tone.
+53,Tier 2: Consonants,ฌา,ฌ,choaa,Mid,Consonant Anchor,Left,ฌอ เฌอ,Low,ch-,-,Meaning: Tree (Rare). Low Class + Long Vowel = Mid Tone.
+54,Tier 2: Consonants,ญา,ญ,yoaa,Mid,Consonant Anchor,Left,ญอ หญิง,Low,y-,-n,Meaning: Woman. Low Class + Long Vowel = Mid Tone.
+55,Tier 2: Consonants,ฑา,ฑ,thoaa,Mid,Consonant Anchor,Left,ฑอ มณโฑ,Low,th-,-t,Meaning: Ramayana Character. Low Class + Long Vowel = Mid Tone.
+56,Tier 2: Consonants,ฒา,ฒ,thoaa,Mid,Consonant Anchor,Left,ฒอ ผู้เฒ่า,Low,th-,-t,Meaning: Elderly Person. Low Class + Long Vowel = Mid Tone.
+57,Tier 2: Consonants,ณา,ณ,noaa,Mid,Consonant Anchor,Left,ณอ เณร,Low,n-,-n,Meaning: Novice Monk. Low Class + Long Vowel = Mid Tone.
+58,Tier 2: Consonants,ทา,ท,thoaa,Mid,Consonant Anchor,Left,ทอ ทหาร,Low,th-,-t,Meaning: Soldier. Low Class + Long Vowel = Mid Tone.
+59,Tier 2: Consonants,ธา,ธ,thoaa,Mid,Consonant Anchor,Left,ธอ ธง,Low,th-,-t,Meaning: Flag. Low Class + Long Vowel = Mid Tone.
+60,Tier 2: Consonants,นา,น,noaa,Mid,Consonant Anchor,Left,นอ หนู,Low,n-,-n,Meaning: Mouse / No. Low Class + Long Vowel = Mid Tone.
+61,Tier 2: Consonants,พา,พ,phoaa,Mid,Consonant Anchor,Left,พอ พาน,Low,ph-,-p,Meaning: Tray. Low Class + Long Vowel = Mid Tone.
+62,Tier 2: Consonants,ฟา,ฟ,foaa,Mid,Consonant Anchor,Left,ฟอ ฟัน,Low,f-,-p,Meaning: Teeth. Low Class + Long Vowel = Mid Tone.
+63,Tier 2: Consonants,ภา,ภ,phoaa,Mid,Consonant Anchor,Left,ภอ สำเภา,Low,ph-,-p,Meaning: Sailing Ship. Low Class + Long Vowel = Mid Tone.
+64,Tier 2: Consonants,มา,ม,moaa,Mid,Consonant Anchor,Left,มอ ม้า,Low,m-,-m,Meaning: Horse. Low Class + Long Vowel = Mid Tone.
+65,Tier 2: Consonants,ยา,ย,yoaa,Mid,Consonant Anchor,Left,ยอ ยักษ์,Low,y-,- (Diphthong),Meaning: Giant / Ogre. Low Class + Long Vowel = Mid Tone.
+66,Tier 2: Consonants,รา,ร,roaa,Mid,Consonant Anchor,Left,รอ เรือ,Low,r/l-,-n,Meaning: Boat (Trill/Flap). Low Class + Long Vowel = Mid Tone.
+67,Tier 2: Consonants,ลา,ล,loaa,Mid,Consonant Anchor,Left,ลอ ลิง,Low,l-,-n,Meaning: Monkey. Low Class + Long Vowel = Mid Tone.
+68,Tier 2: Consonants,วา,ว,woaa,Mid,Consonant Anchor,Left,วอ แหวน,Low,w-,- (Diphthong),Meaning: Ring. Low Class + Long Vowel = Mid Tone.
+69,Tier 2: Consonants,ฬา,ฬ,loaa,Mid,Consonant Anchor,Left,ฬอ จุฬา,Low,l-,-n,Meaning: Kite. Low Class + Long Vowel = Mid Tone.
+70,Tier 2: Consonants,ฮา,ฮ,hoaa,Mid,Consonant Anchor,Left,ฮอ นกฮูก,Low,h-,-,Meaning: Owl. Low Class + Long Vowel = Mid Tone.
+71,Tier 3: Operations,คน,"ค, น",khon,Mid,Word (Hidden Vowel),Internal,Hidden Sra O,Low,kh-,-n,Hidden short 'o' vowel (โกะ pattern) triggers when two consonants sit with no visible vowel.
+72,Tier 3: Operations,มา,"ม, า",maa,Mid,Word (Standard),Right,None,Low,m-,-,High frequency word meaning 'to come'. Low class + long vowel = mid tone.
+73,Tier 3: Operations,กิน,"ก, ิ, น",kin,Mid,Word (Standard),Above,None,Mid,k-,-n,High frequency word meaning 'to eat'. Mid class + short vowel + live ending = mid tone.
+74,Tier 3: Operations,นอน,"น, อ, น",naawn,Mid,Word (Standard),Right,None,Low,n-,-n,Means 'to sleep'. Uses อ as the long aww vowel block with a live final n.
+75,Tier 3: Operations,รัก,"ร, ั, ก",rak,High,Word (Dead Syllable),Above,None,Low,r-,-k,Means 'to love'. Short vowel + dead ending (k) on a Low Class consonant shifts tone to HIGH.
+76,Tier 3: Operations,เรียน,"เ, ร, ี, ย, น",reean,Mid,Word (Diphthong),Wrap-around,None,Low,r-,-n,Means 'to study'. Demonstrates the full long diphthong เ—ีย structure ending in live -n.
+77,Tier 3: Operations,ไป,"ไ, ป",pai,Mid,Word (Special Vowel),Left,None,Mid,p-,-,Means 'to go'. Left-side vowel ไ structure. Mid class + special vowel = mid tone.
+78,Tier 3: Operations,บ้าน,"บ, า, น, ้",baan,Falling,Word (Tone Marker),Above,Mai Tho,Mid,b-,-n,Means 'house/home'. Mid class + live ending + Mai Tho marker = FALLING tone.
+79,Tier 3: Operations,ไม่,"ม, ่, ใ",mai,Falling,Word (Tone Marker),Left & Above,Mai Ek,Low,m-,-,Means 'no/not'. Low class + Mai Ek marker shifts the rule strictly to a FALLING tone.
+80,Tier 3: Operations,น่ะ,"น, ่, ะ",na,Falling,Word (Tone Marker),Above & Right,Mai Ek,Low,n-,-,Grammar particle. Low class + short vowel + Mai Ek = FALLING tone.
+81,Tier 3: Operations,กวน,"ก, ว, น",kuan,Mid,Word (Diphthong Shift),Internal,None,Mid,k-,-n,Means 'to agitate/stir'. Notice the upper component of —ัว is dropped when a final consonant (น) joins.
+82,Tier 3: Operations,การ,"ก, า, ร",kaan,Mid,Word (Final Shift),Right,None,Mid,k-,-n (written r),Prefix for making verbs nouns. Letter ร (r) shifts strictly to an 'n' final sound in Thai.
+83,Tier 3: Operations,พูด,"พ, ู, ด",phoot,Falling,Word (Dead Syllable),Below,None,Low,ph-,-t,Means 'to speak'. Low class consonant + long vowel + dead ending (t) shifts tone to FALLING.
+```
+
+### File: `docs/items.csv`
+```csv
+ID,Name,Description,Tier,Cost,Base HP,Base PWR,Ability 1 Name,Ability 1 Desc,Ability 2 Name,Ability 2 Desc,Ability 3 Name,Ability 3 Desc
+item_t1_a,Koi's Blessing,A gentle remedy infused with the spirit of koi.,1,1,0,0,Restoration,"At the start of the turn, Heal the holder for 2 HP. [Target: HOLDER]",,,,
+item_t1_b,Tiger's Spirit,A fierce elixir that awakens inner strength.,1,1,0,0,Extra Attack,"When attacking, if target has more HP than holder then perform an extra attack. [Target: ATTACK_TARGET] [Trigger: CAUSE_TURN]",,,,
+item_t2_a,Summoning Scroll,A scroll containing a summoning spell.,2,2,0,0,Summon,A scroll containing a summoning spell.,,,,
+item_t2_b,Bloodlust Edge,A blade thirsty for blood.,2,2,0,0,Bloodlust,"When the holder defeats an enemy, they act again immediately. [Target: HOLDER]",,,,
+item_t2_c,Phoenix Elixir,A restorative brew that renews body and spirit.,2,2,0,0,Regeneration,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR. [Target: HOLDER]",,,,
+item_t2_d,Echoing Orb,A resonant orb that amplifies the power of others.,2,2,0,0,Resonance,Grants the holder +2 PWR for each other Echoing Orb in battle.,Echo Split,Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,,
+item_t3_a,Heart Stone,A stone pulsating with life.,3,4,0,0,Vital Link,"When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each. [Target: RANDOM_ALLY]",,,,
+item_t3_b,Power Amulet,An ancient amulet of power.,3,4,0,0,Battle Cry,"When the holder attacks, grant +2 PWR to two random allies. [Target: NONE]",,,,
+item_t3_c,Lifesteal Ring,A ring that feeds on the living.,3,4,0,0,Vampiric Strike,"On attack, heal the holder for 20% of damage dealt (min 1 HP). [Target: HOLDER]",,,,
+item_t3_d,Vengeful Thorn,A thorny charm that strikes back at those who harm its bearer.,3,4,0,0,Retaliation,"When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy. [Target: RANDOM_ENEMY] [Trigger: CAUSE_ATTACK]",,,,
+item_t3_e,Death's Bargain,A cursed bargain with death.,3,4,0,0,Final Strike,When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.,,,,
+item_t3_f,Soul Siphon,A dark siphon of souls.,3,4,0,0,Power Drain,After dealing damage steal half of target's PWR (min 1). [Target: DEFENDER],,,,
+item_t3_g,Sniper Aim,A scope for precise targeting.,3,4,0,0,,,,,,
+consumable_potion_plunder,Potion of Plunder,Steals a random item from the target.,3,0,0,0,Plunder,Steals a random item from the target.,,,,
+item_emblem_air,Air Emblem,"When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies.",3,3,0,0,,,,,,
+item_emblem_earth,Earth Emblem,"When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies.",3,3,0,0,,,,,,
+item_emblem_fire,Fire Emblem,"When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies.",3,3,0,0,,,,,,
+item_emblem_water,Water Emblem,"When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies.",3,3,0,0,,,,,,
+item_potion_t1,Minor Healing Potion,Restores 4 HP to a target unit.,1,2,0,0,Drink,Restores 4 HP.,,,,
+```
+
+### File: `docs/status_effects.csv`
+```csv
+Status,Description
+Burn,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.
+Armor,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.
+Spikes,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.
+Static,Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.
+```
+
+### File: `docs/trinkets.csv`
+```csv
+ID,Name,Description,Tier,Cost,Base HP,Base PWR,Ability 1 Name,Ability 1 Desc,Ability 2 Name,Ability 2 Desc,Ability 3 Name,Ability 3 Desc
+trinket_polished_plate,Polished Plate,A perfectly polished piece of armor.,0,0,0,0,,,,,,
+ability_trinket_aegis,Aegis Charm,"Once per turn: When an ally would die, they survive with 1 HP instead.",0,0,0,0,,,,,,
+trinket_armor_aura,Armor Aura,An aura that hardens the resolve of allies.,0,0,0,0,Armor Aura,"At turn start, all allies gain 3 Armor.",,,,
+trinket_awe_inspiring_totem,Awe Inspiring Totem,"At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.",0,10,0,0,,,,,,
+trinket_bargain_charm,Bargain Charm,A charm that haggles for a better price.,0,0,0,0,Bargain Charm,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.",,,,
+trinket_beginners_charm,Beginner's Charm,Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard).,0,0,0,0,,,,,,
+trinket_burn_vial,Burn Vial,ability.burn_vial.desc,0,0,0,0,,,,,,
+trinket_hero_catalyst,Hero's Catalyst,"Whenever an ally merges, grants +1 HP and +1 PWR to your Hero.",3,0,0,0,Hero's Catalyst,Grants the Hero +1 HP and +1 PWR on any merge.,,,,
+trinket_merge_damage_charm,Fusion Spark,A charm that weaponizes fusion.,0,0,0,0,Fusion Spark,"Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.",,,,
+trinket_purifying_pendant,Purifying Pendant,"When an ally takes damage from a negative status effect, removes all remaining stacks of that effect.",0,10,0,0,,,,,,
+trinket_royal_insignia,Royal Insignia,A medal signifying royal favor.,0,0,0,0,Royal Blessing,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.",,,,
+trinket_rusty_ring,Rusty Ring,Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.,0,10,0,0,Rusty Ring,Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.,,,,
+trinket_soul_echo,Soul Echo,A mystical gem that echoes the souls of the fallen.,0,0,0,0,Soul Echo,"When an ally dies, resurrect the first non-hero unit that died this turn.",,,,
+trinket_spiked_armor,Spiked Armor,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].",2,0,0,0,Spiked Armor,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].",,,,
+trinket_time_sprint_charm,Sprint Charm,A charm that bends time.,0,0,0,0,Time Sprint,Minigame timer gets a flat 2-second increase in battle.,,,,
+trinket_token_return_charm,Token Return Charm,A charm that reclaims spent potential.,0,0,0,0,Token Return,The first unit to die each round returns tokens equivalent to its tier.,,,,
+trinket_trait_air,Air Trait,Enables the Air trait whenever your team has enough Air souls.,0,0,0,0,,,,,,
+trinket_trait_earth,Earth Trait,Enables the Earth trait whenever your team has enough Earth souls.,0,0,0,0,,,,,,
+trinket_trait_fire,Fire Trait,Enables the Fire trait whenever your team has enough Fire souls.,0,0,0,0,,,,,,
+trinket_trait_water,Water Trait,Enables the Water trait whenever your team has enough Water souls.,0,0,0,0,,,,,,
+trinket_trinity_charm,Trinity Charm,"If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.",0,10,0,0,Trinity Charm,"If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.",,,,
+trinket_twin_charm,Twin Charm,A mirrored charm that reflects its surroundings.,0,0,0,0,Shared Reflection,Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.,,,,
+trinket_underdog_emblem,Underdog Emblem,An emblem that protects the outnumbered.,0,0,0,0,Outnumbered Bulwark,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.",,,,
+ability_trinket_vengeance,Vengeance Charm,"When an ally dies, grant +1 HP and +1 PWR to a random ally.",0,0,0,0,,,,,,
+trinket_veteran_insignia,Veteran Insignia,A badge of honor for seasoned warriors.,0,0,0,0,Veteran Blessing,"When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.",,,,
+```
+
+### File: `docs/units.csv`
+```csv
+ID,Name,Description,Tier,Cost,Base HP,Base PWR,Ability 1 Name,Ability 1 Desc,Ability 2 Name,Ability 2 Desc,Ability 3 Name,Ability 3 Desc
+boss_1,The Awakened Guardian,A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.,3,5,6,6,,,,,,
+boss_2,The Shadow Warden,Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.,3,10,8,8,,,,,,
+boss_3,The Storm Herald,Grows stronger as allies fall around it. Commands reinforcements to join its ranks.,3,15,10,10,,,,,,
+boss_4,The Ancient Titan,An ancient being that summons warriors from ages past.,3,20,12,12,,,,,,
+boss_5,The Final Arbiter,The ultimate challenge. Defeat it to complete your run.,3,25,15,15,,,,,,
+enemy_hero,Enemy Hero,The enemy's champion.,0,0,10,2,,,,,,
+hero_avenger,Avenger,A fierce warrior who strikes when allies fall.,0,0,6,2,Leap Attack,"When an ally dies, leap and attack the frontmost enemy. [Target: FRONTMOST_ENEMY]",,,,
+hero_bastion,Bastion,A steadfast defender who grows stronger as allies fall.,0,0,10,2,Fortify,"When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. [Target: SELF]",,,,
+hero_pyro,Pyromancer,A fiery mage who incinerates enemies instead of striking them.,0,0,8,2,Incinerate,"On attack, instead of dealing damage, apply Burn stacks equal to your Power. [Target: ATTACK_TARGET]",,,,
+hero_starter,Starter,A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.,0,0,10,2,Soul Harvest,"When an ally dies, gain HP equal to their PWR. [Target: SELF]",,,,
+hero_timekeeper,Timekeeper,A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.,0,0,50,2,Time Warp,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.",Temporal Aura,"At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind. [Target: ALLIES_IN_FRONT]",,
+unit_dust_elite_t1,Dust Guard (T1),"A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.",1,3,3,3,Call Reinforcements,"At end of turn, summon units to fill empty team slots. [Target: SELF]",Dust Pulse (Death T1),Spawns a T1 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY],Dust Growth,"Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]"
+unit_dust_t1,Dust Minion (T1),A fragile construct. Stays in the fight.,1,1,1,1,Basic Attack,Deal (PWR) damage to the frontmost enemy.,,,,
+unit_dust_elite_t2,Dust Sentinel (T2),A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit.,2,4,4,4,Call Reinforcements,"At end of turn, summon units to fill empty team slots. [Target: SELF]",Dust Pulse (Death T1/T2),Spawns a random T1 or T2 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY],Dust Growth,"Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]"
+unit_dust_t2,Dust Minion (T2),A construct. Stays in the fight.,2,2,2,2,Basic Attack,Deal (PWR) damage to the frontmost enemy.,,,,
+unit_dust_elite_t3,Dust Overlord (T3),"An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.",3,5,5,5,Call Reinforcements,"At end of turn, summon units to fill empty team slots. [Target: SELF]",Universal Dust Pulse (Death),Spawns a random T1 [Target: TRIGGERING_ENTITY],Dust Growth,"Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]"
+unit_dust_t3,Dust Minion (T3),A heavy construct. Stays in the fight.,3,3,3,3,Basic Attack,Deal (PWR) damage to the frontmost enemy.,,,,
+unit_t1_a,Rocky,Novice unit.,1,1,2,1,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Resilience,"When hurt BY AN ATTACK, Heal this unit by 1 HP. [Target: HOLDER]",Resilience,"When hurt BY AN ATTACK, Heal this unit by 2 HP. [Target: HOLDER]"
+unit_t1_b,Burny,Loyal squire.,1,1,1,2,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Retaliation,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]",Retaliation,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]"
+unit_t1_c,Dewey,Steadfast guardian.,1,1,1,1,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Guardian's Grace,"When the ally directly in front takes damage, heal them for 1 HP. [Target: ALLY_SLOT_AHEAD]",Guardian's Grace,"When the ally directly in front takes damage, heal them for 2 HP. [Target: ALLY_SLOT_AHEAD]"
+unit_t1_d,Windy,Sensitive soul.,1,1,1,1,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Empathic Link,"When this unit dies, grant its current PWR to the ally behind. [Target: ALLY_BEHIND]",Empathic Link,"When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally. [Target: ALLY_BEHIND]"
+unit_t2_c,Knight,Valiant knight.,2,2,3,3,,,,,,
+unit_t2_d,Templar,A devout templar.,2,2,2,3,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Token Power,PWR equals 100% of Tokens (Min 1). PWR buffs become HP. [Target: SELF],Token Power,PWR equals 100% of Tokens (Min 1). PWR buffs become HP. [Target: SELF]
+unit_t2_f,Merchant,Traveling merchant.,2,2,3,2,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Gold Investments,Initial PWR equals your current Gold multiplied by 50% when drawn or spawned. [Target: SELF],Gold Investments,Initial PWR equals your current Gold multiplied by 100% when drawn or spawned. [Target: SELF]
+unit_t2_h,Hermit,Solitary warrior.,2,2,2,2,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Solitary Strength,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team. [Target: SELF]",Solitary Strength,"At start of combat, gain +2 HP and +2 PWR for each empty slot in your team. [Target: SELF]"
+unit_t2_i,Mud Wretch,Mud creature.,2,2,3,2,Mud Coating,"When healed, gain 1 Armor and 1 Spikes.",Mud Coating,"When healed, gain 2 Armor and 2 Spikes.",Mud Coating,"When healed, gain 3 Armor and 3 Spikes."
+unit_t2_j,Steam Wisp,Scalding spirit.,2,2,2,3,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Scald,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.",Scald,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied."
+unit_t3_a,Shadow Striker,Master of precise strikes.,3,4,5,5,Mirror Strike,Attacks enemy in opposite mirror slot for 100% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN],Mirror Strike,Attacks enemy in opposite mirror slot for 150% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN],Mirror Strike,Attacks enemy in opposite mirror slot for 200% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN]
+unit_t3_b,Guardian Sentinel,Stalwart protector.,3,4,5,5,Guardian Sacrifice,Leaps to intercept lethal damage on allies. [Target: SELF],Guardian Sacrifice,Leaps to intercept lethal damage on allies and gains 1 Armor. [Target: SELF],Guardian Sacrifice,Leaps to intercept lethal damage on allies and gains 2 Armor. [Target: SELF]
+unit_t3_berserker,Berserker,Powerful warrior.,3,4,5,6,Shockwave,Deals 100% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN],Shockwave,Deals 150% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN],Shockwave,Deals 200% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]
+unit_t3_c,Soul Caller,Mystical unit.,3,4,5,5,Soul Summon,Summons a random Level 1 Tier 2 unit on death. [Target: SELF],Soul Summon,Summons a random Level 2 Tier 2 unit on death. [Target: SELF],Soul Summon,Summons a random Level 3 Tier 2 unit on death. [Target: SELF]
+unit_t3_d,Sakura Spirit,A powerful spirit guarding the cherry blossoms.,3,4,6,5,Resilient Aura,Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES],Resilient Aura,Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES],Resilient Aura,Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]
+unit_t3_e,Dreadnought,A terrifying predator that strikes down newly summoned enemies.,3,4,6,5,Ambush Predator,Deals damage to enemies equal to 100% of PWR when they are summoned. [Target: TRIGGERING_ENTITY],Ambush Predator,Deals damage to enemies equal to 150% of PWR when they are summoned. [Target: TRIGGERING_ENTITY],Ambush Predator,Deals damage to enemies equal to 200% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]
+unit_t3_f,Warden,A protective guardian that empowers newly summoned allies.,3,4,5,5,Summon Blessing,Grants +3 HP to newly summoned allies. [Target: TRIGGERING_ENTITY],Summon Blessing,Grants +5 HP to newly summoned allies. [Target: TRIGGERING_ENTITY],Summon Blessing,Grants +7 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]
+unit_t3_g,Phantom Wayfarer,Mysterious traveler.,3,4,4,5,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Quiet Meditation,"If on the player bench at start of turn, gain +3 HP and PWR. [Target: SELF]",Quiet Meditation,"If on the player bench at start of turn, gain +5 HP and PWR. [Target: SELF]"
+unit_t3_h,Fusion Warden,Volatile hybrid.,3,4,5,5,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Convergence Surge,"Whenever a merge happens on the battle board, gain +2 HP and PWR. [Target: SELF]",Convergence Surge,"Whenever a merge happens on the battle board, gain +3 HP and PWR. [Target: SELF]"
+unit_t3_i,Doppleganger,Volatile clone.,3,4,5,4,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Mirrored Might,Gains +3 PWR for each other Doppleganger in battle. [Target: NONE],Mirrored Might,Gains +4 PWR for each other Doppleganger in battle. [Target: NONE]
+unit_t3_j,Standard Bearer,Valiant commander.,3,4,5,5,Standard's Legacy,"On death, transfers its equipped item to the ally directly behind it. [Target: ALLY_BEHIND]",Standard's Legacy,"On death, transfers its equipped item to the ally behind and 1 copy behind them. [Target: ALLY_BEHIND]",Standard's Legacy,"On death, transfers its equipped item to the ally behind and 2 copies behind them. [Target: ALLY_BEHIND]"
+unit_t3_l,Golden Hermit,A solitary sage of wealth.,3,4,5,4,Basic Attack,Deal (PWR) damage to the frontmost enemy.,Wealth Accumulation,"At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have. [Target: SELF]",Wealth Accumulation,"At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have. [Target: SELF]"
+unit_t3_mimic,Mimic,Mysterious entity.,3,4,6,4,Mirror Image,Transforms into the enemy unit in the mirror slot (+0 Level). [Target: NONE],Mirror Image,Transforms into the enemy unit in the mirror slot (+1 Level). [Target: NONE],Mirror Image,Transforms into the enemy unit in the mirror slot (Level 3 MAX). [Target: NONE]
+unit_t3_paladin,Paladin,Heavily armored tank.,3,4,5,6,Defensive Stance,Gain +2 HP before taking damage. [Target: SELF],Defensive Stance,Gain +4 HP before taking damage. [Target: SELF],Defensive Stance,Gain +6 HP before taking damage. [Target: SELF]
+unit_t3_shadow,Shadow Cloner,Ethereal unit.,3,4,4,5,Buff Echo,Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness. [Target: TRIGGERING_ENTITY],Buff Echo,Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness. [Target: TRIGGERING_ENTITY],Buff Echo,Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness. [Target: TRIGGERING_ENTITY]
+hero_bounty_hunter,Bounty Hunter,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.",0,0,10,2,Bounty Hunter,Gain 1 gold when this hero kills an enemy. [Target: SELF],Scavenger's Resolve,"When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF]",,
+```
+
+### File: `fix_test.gd`
+```gdscript
+extends SceneTree
+
+func _init():
+	print("Test complete.")
+	quit()
+```
+
+### File: `localization.csv`
+```csv
+key,en
+ability.basic_attack.name,"Basic Attack"
+ability.basic_attack.desc,"Attacks the frontmost enemy for {pwr} damage."
+```
+
+### File: `localization/game.csv`
+```csv
+keys,en,pt_BR
+hero.name,Bounty Hunter,CaÃ§ador de Recompensas
+hero.desc,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.","Um caÃ§ador habilidoso que lucra com cada morte e fica mais forte com perdas. Ganha ouro por cada inimigo morto, e ganha +1 HP e +1 PWR quando aliados morrem."
+enemy_hero.name,Enemy Hero,HerÃ³i Inimigo
+enemy_hero.desc,The enemy's champion.,O campeÃ£o do inimigo.
+unit_t1_a.name,Rocky,Pedrita
+unit_t1_a.desc,Novice unit.,Unidade novata. Passiva: [ResiliÃªncia]
+unit_t1_b.name,Burny,Chaminho
+unit_t1_b.desc,Loyal squire.,Escudeiro leal. Passiva: [RetaliaÃ§Ã£o]
+unit_t2_d.name,Templar,Templar
+unit_t2_d.desc,A devout templar.,Um templÃ¡rio devoto.
+ability.unit_t2_d_power.name,Token Power,Poder das Fichas
+ability.unit_t2_d_power_l1.desc,"PWR equals 100% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 100% das Fichas (Mín 1). Buffs de PWR viram HP."
+ability.unit_t2_d_power_l2.desc,"PWR equals 150% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 150% das Fichas (Mín 1). Buffs de PWR viram HP."
+ability.unit_t2_d_power_l3.desc,"PWR equals 200% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 200% das Fichas (Mín 1). Buffs de PWR viram HP."
+unit_t2_f.name,Merchant,Merchant
+unit_t2_f.desc,Traveling merchant.,Mercador viajante. Passiva: [Investimentos em Ouro]
+ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
+ability.unit_t2_f_gold_pwr_l1.desc,"Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
+ability.unit_t2_f_gold_pwr_l2.desc,"Initial PWR equals your current Gold multiplied by 100% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado."
+ability.unit_t2_f_gold_pwr_l3.desc,"Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.","O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
+unit_t1_c.name,Dewey,Dewey
+unit_t1_c.desc,Steadfast guardian.,GuardiÃ£o firme. Passiva: [GraÃ§a do GuardiÃ£o]
+ability.unit_t1_c_ally_shield.name,Guardian's Grace,GraÃ§a do GuardiÃ£o
+ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage, heal them for 1 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 1 HP."
+ability.unit_t1_c_ally_shield_l2.desc,"When the ally directly in front takes damage, heal them for 2 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 2 HP."
+ability.unit_t1_c_ally_shield_l3.desc,"When the ally directly in front takes damage, heal them for 3 HP.","Quando o aliado diretamente Ã  frente recebe dano, cura-o por 3 HP."
+unit_t1_d.name,Windy,Ventania
+unit_t1_d.desc,Sensitive soul.,Alma sensÃ­vel. Passiva: [VÃ­nculo EmpÃ¡tico]
+ability.unit_t1_d_empathic_link.name,Empathic Link,VÃ­nculo EmpÃ¡tico
+ability.unit_t1_d_empathic_link.desc,"When this unit dies, grant its current PWR to the ally behind.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s."
+ability.unit_t1_d_empathic_link_l2.desc,"When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s, e metade disso ao prÃ³ximo aliado."
+ability.unit_t1_d_empathic_link_l3.desc,"When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next.","Quando esta unidade morre, concede seu PWR atual ao aliado atrÃ¡s, metade ao prÃ³ximo, e metade ao prÃ³ximo."
+ability.unit_tier1a_passive_heal.name,Resilience,ResiliÃªncia
+ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
+ability.unit_tier1a_passive_heal_l2.desc,"When hurt BY AN ATTACK, Heal this unit by 2 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 2 de HP."
+ability.unit_tier1a_passive_heal_l3.desc,"When hurt BY AN ATTACK, Heal this unit by 3 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 3 de HP."
+ability.unit_tier1b_counter_on_hurt.name,Retaliation,RetaliaÃ§Ã£o
+ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
+ability.unit_tier1b_counter_on_hurt_l2.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para outro inimigo aleatório, causando metade do dano."
+ability.unit_tier1b_counter_on_hurt_l3.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para 2 inimigos aleatórios, causando metade do dano por salto."
+unit_t2_c.name,Knight,Cavaleiro
+unit_t2_c.desc,Valiant knight.,Cavaleiro valente. Passiva: [Impulso de Moral]
+item_t1_a.name,Koi's Blessing,BÃªnÃ§Ã£o da Carpa
+item_t1_a.desc,A gentle remedy infused with the spirit of koi.,Um remÃ©dio suave infundido com o espÃ­rito da carpa.
+item_t1_b.name,Tiger's Spirit,EspÃ­rito do Tigre
+item_t1_b.desc,A fierce elixir that awakens inner strength.,Um elixir feroz que desperta a forÃ§a interior.
+item_t2_c.name,Phoenix Elixir,Elixir da FÃªnix
+item_t2_c.desc,A restorative brew that renews body and spirit.,Uma poÃ§Ã£o restauradora que renova corpo e espÃ­rito.
+ability.basic_attack.name,Basic Attack,Ataque BÃ¡sico
+ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
+ability.item_tier1b_extra_attack.name,Extra Attack,Ataque Extra
+ability.item_tier1b_extra_attack.desc,"When attacking, if target has more HP than holder then perform an extra attack.","Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
+item.effect.hp,Add (HP) HP to the unit.,Adiciona (HP) HP Ã  unidade.
+item.effect.pwr,Add (PWR) PWR to the unit.,Adiciona (PWR) PWR Ã  unidade.
+item.effect.both,Add (HP) HP and (PWR) PWR to the unit.,Adiciona (HP) HP e (PWR) PWR Ã  unidade.
+trinket.polished_plate.name,Polished Plate,Placa Polida
+trinket.polished_plate.desc,A perfectly polished piece of armor.,Uma peÃ§a de armadura perfeitamente polida.
+ability.polished_plate.name,Reinforced Armor,Armadura ReforÃ§ada
+ability.polished_plate.desc,"At the start of the turn, gain 2 Armor.","No inÃ­cio do turno, ganha 2 de Armadura."
+options.audio.master,Master Volume,Volume Geral
+options.audio.music,Music Volume,Volume da MÃºsica
+options.audio.sfx,SFX Volume,Volume de Efeitos
+options.language,Language,Idioma
+options.reset_data,Reset Progress,Resetar Progresso
+tutorial.btn.next,Next,PrÃ³ximo
+tutorial.btn.got_it,Got it!,Entendi!
+battle.speed.label,Speed:,Velocidade:
+ability.item_tier2c_passive_heal.name,Regeneration,RegeneraÃ§Ã£o
+ability.item_tier2c_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
+ability.item_tier1a_turn_start_heal.name,Restoration,RestauraÃ§Ã£o
+ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No inÃ­cio do turno, cura o portador em 2 HP."
+ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
+ability.unit_tier2c_ally_death_buff_l1.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
+ability.unit_tier2c_ally_death_buff_l2.desc,"When an ally is defeated, gain +2 HP and +1 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +1 de PWR."
+ability.unit_tier2c_ally_death_buff_l3.desc,"When an ally is defeated, gain +2 HP and +2 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +2 de PWR."
+ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,DeterminaÃ§Ã£o do Saqueador
+ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado Ã© derrotado, ganha +1 HP e +1 PWR."
+ability.item_tier3d_retaliate.name,Retaliation,RetaliaÃ§Ã£o
+ability.item_tier3d_retaliate.desc,"When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatÃ³rio."
+ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
+ability.unit_tier3d_resilient_aura.desc,"When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido POR UM ATAQUE, concede +1 HP e +1 PWR aos aliados adjacentes."
+item_t2_a.name,Summoning Scroll,Pergaminho de InvocaÃ§Ã£o
+item_t2_a.desc,A scroll containing a summoning spell.,Um pergaminho contendo um feitiÃ§o de invocaÃ§Ã£o.
+item_t3_e.name,Death's Bargain,Barganha da Morte
+item_t3_e.desc,A cursed bargain with death.,Uma barganha amaldiÃ§oada com a morte.
+item_t3_f.name,Soul Siphon,SifÃ£o de Almas
+item_t3_f.desc,A dark siphon of souls.,Um sifÃ£o sombrio de almas.
+item_t3_g.name,Sniper Aim,Mira de PrecisÃ£o
+item_t3_g.desc,A scope for precise targeting.,Uma mira para precisÃ£o extrema.
+ability.item_t3e_death_damage.name,Final Strike,Golpe Final
+ability.item_t3f_power_drain.name,Power Drain,Dreno de Poder
+ability.item_t3f_power_drain.desc,After dealing damage steal half of target's PWR (min 1).,ApÃ³s causar dano rouba metade do PWR do alvo (mÃ­n. 1).
+ability.item_t3e_death_damage.desc,When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.,Quando o portador morre causa dano igual Ã  metade do HP do inimigo com mais HP.
+ability.item_t2_c_summon.name,Summon,InvocaÃ§Ã£o
+ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place.","Quando o portador morre, invoca uma unidade NÃ­vel 1 aleatÃ³ria no lugar."
+unit_t3_paladin.name,Paladin,Paladino
+unit_t3_paladin.desc,Heavily armored tank.,Tanque pesadamente blindado. Passiva: [Postura Defensiva]
+unit_t3_berserker.name,Berserker,Berserker
+unit_t3_berserker.desc,Powerful warrior.,Guerreiro poderoso. Passiva: [Onda de Choque]
+ability.unit_tier2a_defensive_stance.name,Defensive Stance,Postura Defensiva
+ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal [2 / 4 / 6] HP before taking damage.","Ao ser alvo de um ataque, cura [2 / 4 / 6] HP antes de receber dano."
+ability.unit_tier2b_shockwave.name,Shockwave,Onda de Choque
+ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: [100% / 150% / 200%] to front, 50% to the unit behind, 25% to the one behind that.","O ataque causa dano em cascata: [100% / 150% / 200%] Ã  frente, 50% Ã  unidade atrÃ¡s, 25% Ã  prÃ³xima."
+item_t2_b.name,Bloodlust Edge,LÃ¢mina SanguinÃ¡ria
+item_t2_b.desc,A blade thirsty for blood.,Uma lÃ¢mina sedenta por sangue.
+ability.item_tier2b_bloodlust.name,Bloodlust,Sede de Sangue
+ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately.","Quando o portador derrota um inimigo, ele age novamente imediatamente."
+hero_timekeeper.name,Timekeeper,GuardiÃ£o do Tempo
+hero_timekeeper.desc,A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.,Um mago estudioso que concede +2 HP Ã s unidades da frente e +2 PWR Ã s unidades de trÃ¡s no inÃ­cio do turno. Domina o tempo para estender o cronÃ´metro do minigame.
+ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter,CaÃ§ador de Recompensas
+ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herÃ³i mata um inimigo.
+ability.hero_timekeeper_time_warp.name,Time Warp,DistorÃ§Ã£o Temporal
+ability.hero_timekeeper_time_warp.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.","Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
+ability.hero_timekeeper_temporal_aura.name,Temporal Aura,Aura Temporal
+ability.hero_timekeeper_temporal_aura.desc,"At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","No inÃ­cio de cada turno, concede +2 HP Ã s unidades na frente e +2 PWR Ã s unidades atrÃ¡s."
+unit_t3_d.name,Sakura Spirit,EspÃ­rito Sakura
+unit_t3_d.desc,A powerful spirit guarding the cherry blossoms.,Um espÃ­rito poderoso guardando as cerejeiras. Passiva: [Aura Resiliente]
+boss_1.name,The Awakened Guardian,O GuardiÃ£o Desperto
+boss_1.desc,A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.,Um guardiÃ£o poderoso que invoca aliados e fica mais forte conforme vocÃª saca das mÃ¡quinas gacha.
+boss_2.name,The Shadow Warden,O GuardiÃ£o das Sombras
+boss_2.desc,Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.,Drena poder de cada ficha que vocÃª gasta. Convoca criaturas das sombras para lutar ao seu lado.
+boss_3.name,The Storm Herald,O Arauto da Tempestade
+boss_3.desc,Grows stronger as allies fall around it. Commands reinforcements to join its ranks.,Fica mais forte conforme aliados caem ao seu redor. Comanda reforÃ§os para suas fileiras.
+boss_4.name,The Ancient Titan,O TitÃ£ Ancestral
+boss_4.desc,An ancient being that summons warriors from ages past.,Um ser ancestral que invoca guerreiros de eras passadas.
+boss_5.name,The Final Arbiter,O Ãrbitro Final
+boss_5.desc,The ultimate challenge. Defeat it to complete your run.,O desafio final. Derrote-o para completar sua jogatina.
+ability.boss_summon.name,Call Reinforcements,Chamar ReforÃ§os
+ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaÃ§os vazios."
+ability.boss_1_draw_drain.name,Draining Presence,PresenÃ§a Drenante
+ability.boss_1_draw_drain.desc,"Every time you draw a gachaball, this boss gains +1 HP.","Toda vez que vocÃª saca um gachaball, este chefe ganha +1 HP."
+ability.boss_2_token_drain.name,Token Hunger,Fome de Fichas
+ability.boss_2_token_drain.desc,"Every time you spend a token, this boss gains +1 HP.","Toda vez que vocÃª gasta uma ficha, este chefe ganha +1 HP."
+ability.boss_3_ally_growth.name,Vengeance Growth,Crescimento Vingativo
+ability.boss_3_ally_growth.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado Ã© derrotado, ganha +1 HP e +1 PWR."
+trinket.soul_echo.name,Soul Echo,Eco da Alma
+trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mÃ­stica que ecoa as almas dos caÃ­dos.
+ability.soul_echo.name,Soul Echo,Eco da Alma
+ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn.","Quando um aliado morre, ressuscita a primeira unidade nÃ£o-herÃ³i que morreu neste turno."
+trinket.vengeance.name,Vengeance Charm,Amuleto de VinganÃ§a
+trinket.vengeance.desc,Channel the fury of fallen allies.,Canaliza a fÃºria dos aliados caÃ­dos.
+ability.vengeance.name,Vengeance,VinganÃ§a
+ability.vengeance.desc,"When an ally dies, grant +1 HP and +1 PWR to a random ally.","Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatÃ³rio."
+trinket.aegis.name,Aegis Charm,Amuleto Ã‰gide
+trinket.aegis.desc,A protective charm that shields allies from fatal blows.,Um amuleto protetor que escuda aliados de golpes fatais.
+ability.aegis.name,Last Stand,Ãšltimo Suspiro
+ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead.","Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
+trinket.twin_charm.name,Twin Charm,Amuleto GÃªmeo
+trinket.twin_charm.desc,A mirrored charm that reflects its surroundings.,Um amuleto espelhado que reflete os seus arredores.
+ability.twin_charm_scale.name,Shared Reflection,Reflexo Compartilhado
+ability.twin_charm_scale.desc,Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.,Suas unidades ganham +1 de PWR para cada 2 cÃ³pias dessa mesma unidade no seu conjunto de batalha.
+unit_t3_a.name,Shadow Striker,Atacante das Sombras
+unit_t3_a.desc,Master of precise strikes.,Mestre em ataques precisos. Passiva: [Aura Espelhada]
+ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
+ability.unit_tier3a_mirror_strike.desc,"Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy.","Ataca o inimigo na posiÃ§Ã£o oposta, causando [100% / 150% / 200%] de dano. Se vazio, ataca o inimigo do fundo."
+unit_t3_b.name,Guardian Sentinel,Sentinela GuardiÃ£o
+unit_t3_b.desc,Stalwart protector.,Protetor inabalÃ¡vel. Passiva: [SacrifÃ­cio do GuardiÃ£o]
+ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,SacrifÃ­cio do GuardiÃ£o
+ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead.","Quando um aliado receberia dano letal, intercepta e recebe [100% / 75% / 50%] do dano no lugar."
+unit_t3_c.name,Soul Caller,Invocador de Almas
+unit_t3_c.desc,Mystical unit.,Unidade mÃ­stica. Passiva: [InvocaÃ§Ã£o de Alma]
+ability.unit_tier3c_soul_summon.name,Soul Summon,InvocaÃ§Ã£o de Alma
+ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit with [+0 / +2 / +4] HP and PWR.","Quando esta unidade morre, invoca uma unidade NÃ­vel 2 aleatÃ³ria com [+0 / +2 / +4] de HP e PWR."
+item_t3_a.name,Heart Stone,Pedra do CoraÃ§Ã£o
+item_t3_a.desc,A stone pulsating with life.,Uma pedra pulsando com vida.
+ability.item_t3a_on_hurt_heal.name,Vital Link,VÃ­nculo Vital
+ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.","Quando o portador Ã© ferido POR UM ATAQUE, cura dois aliados aleatÃ³rios em 2 HP cada."
+item_t3_b.name,Power Amulet,Amuleto de Poder
+item_t3_b.desc,An ancient amulet of power.,Um amuleto antigo de poder.
+ability.item_t3b_on_attack_buff.name,Battle Cry,Grito de Guerra
+ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies.","Quando o portador ataca, concede +2 PWR a dois aliados aleatÃ³rios."
+item_t3_c.name,Lifesteal Ring,Anel de Roubo de Vida
+item_t3_c.desc,A ring that feeds on the living.,Um anel que se alimenta dos vivos.
+ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike,Golpe VampÃ­rico
+ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP).","Ao atacar, cura o portador em 20% do dano causado (mÃ­n 1 HP)."
+item_t3_d.name,Vengeful Thorn,Espinho Vingativo
+item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.,Um amuleto espinhoso que revida aqueles que ferem seu portador.
+ui.title,FLASHCARD HEROES,FLASHCARD HEROES
+ui.loadout_selection,Loadout Selection,SeleÃ§Ã£o de Loadout
+ui.start_run,Play,Jogar
+ui.options,Options,OpÃ§Ãµes
+ui.choose_hero,Choose Hero,Escolher HerÃ³i
+ui.choose_deck,Choose Deck,Escolher Deck
+ui.test_mode,Test Mode,Modo Teste
+ui.victory,VICTORY,VITÃ“RIA
+ui.defeat,DEFEAT,DERROTA
+ui.continue,Continue,Continuar
+ui.return_to_path,Return to Path,Voltar ao Caminho
+ui.shop,Shop,Loja
+ui.buy,Buy,Comprar
+ui.reroll,Reroll (1 Gold),Novas OpÃ§Ãµes (1 Ouro)
+ui.back_to_path,Back to the Path,Voltar ao Caminho
+ui.end_turn,Battle!,Lutar!
+ui.discard_pile,Discard Pile,Pilha de Descarte
+ui.tokens,Tokens,Fichas
+ui.inventory,Inventory,InventÃ¡rio
+ui.tier,Tier,NÃ­vel
+ui.rest_site,Rest Site,Local de Descanso
+ui.train_hp,Train HP,Treinar HP
+ui.train_pwr,Train PWR,Treinar PWR
+ui.leave,Leave,Sair
+ui.choose_reward,Choose Your Reward,Escolha Sua Recompensa
+ui.confirm_selection,Confirm Selection,Confirmar SeleÃ§Ã£o
+ui.take_gold,Take Gold Instead,Pegar Ouro
+ui.run_complete,RUN COMPLETE!,JOGATINA COMPLETA!
+ui.congratulations,Congratulations!,ParabÃ©ns!
+ui.return_to_title,Return to Title,Voltar ao InÃ­cio
+ui.exit_game,Exit Game,Sair do Jogo
+ui.battle_log,Battle Log,Registro de Batalha
+ui.hide,Hide,Esconder
+ui.clear,Clear,Limpar
+ui.language,Language,Idioma
+ui.english,English,InglÃªs
+ui.portuguese,Portuguese,PortuguÃªs
+ui.equipped_items,Equipped Items:,Itens Equipados:
+ui.results,Results,Resultados
+ui.confirm,Confirm,Confirmar
+ui.got_it,Got it!,Entendi!
+ui.choose_action,Choose an action to perform.,Escolha uma aÃ§Ã£o para realizar.
+ui.training_complete,Training Complete!,Treinamento Completo!
+ui.no_gains,No gains this time.,Nenhum ganho desta vez.
+ui.hero_gained,Your Hero gained +%d %s.,Seu HerÃ³i ganhou +%d %s.
+ui.buy_gold,Buy (%d Gold),Comprar (%d Ouro)
+ui.reroll_gold,Reroll (%d Gold),Novas OpÃ§Ãµes (%d Ouro)
+ui.gold_price,%d Gold,%d Ouro
+ui.tier_1,Tier 1,NÃ­vel 1
+ui.tier_2,Tier 2,NÃ­vel 2
+ui.tier_3,Tier 3,NÃ­vel 3
+ui.show,Show,Mostrar
+ui.run_complete_message,You have defeated all %d bosses and completed your run!,VocÃª derrotou todos os %d chefes e completou sua jogatina!
+ui.final_statistics,Final Statistics,EstatÃ­sticas Finais
+ui.days_survived,Days Survived,Dias Sobrevividos
+ui.bosses_defeated,Bosses Defeated,Chefes Derrotados
+ui.elites_defeated,Elites Defeated,Elites Derrotados
+ui.enemies_slain,Enemies Slain,Inimigos Derrotados
+ui.gold_earned,Gold Earned,Ouro Ganho
+ui.tokens_earned,Tokens Earned,Fichas Ganhas
+ui.flashcards_mastered,Flashcards Mastered,Flashcards Dominados
+ui.mastery_breakdown,Mastery Breakdown,NÃ­veis de DomÃ­nio
+ui.mastery_level_2,Mastery 2 (Hard),DomÃ­nio 2 (DifÃ­cil)
+ui.mastery_level_3,Mastery 3 (Medium),DomÃ­nio 3 (MÃ©dio)
+ui.mastery_level_4,Mastery 4 (Easy),DomÃ­nio 4 (FÃ¡cil)
+ui.mastery_level_5,Mastery 5 (Very Easy),DomÃ­nio 5 (Muito FÃ¡cil)
+ui.take_gold_amount,Take %d Gold instead,Prefiro %d de Ouro
+ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
+ui.tokens_count,Tokens: %d,Fichas: %d
+ui.day,Day %d,Dia %d
+ui.boss,Boss %d,Chefe %d
+ui.battle_node,Battle,Batalha
+ui.elite_battle_node,Elite Battle,Batalha de Elite
+ui.shop_node,Shop,Loja
+ui.black_market_node,Black Market,Mercado Negro
+ui.rest_node,Rest Site,Local de Descanso
+ui.training_grounds_node,Training Grounds,Campus de Treinamento
+ui.gambling_den_node,Gambling Den,Canto das Apostas
+ui.training_grounds,Training Grounds,Campus de Treinamento
+ui.gambling_den,Gambling Den,Canto das Apostas
+ui.black_market_title,Black Market,Mercado Negro
+ui.black_market_open_inventory,REMOVE OR TRANSFORM,REMOVER OU TRANSFORMAR
+ui.black_market_prompt,What would you like to do with %s?,O que vocÃª quer fazer com %s?
+ui.black_market_instructions,Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it.,Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro).
+ui.remove_cost,Remove (%d Gold),Remover (%d Ouro)
+ui.transform_cost,Transform (%d Gold),Transformar (%d Ouro)
+tutorial.black_market_intro.title,Removing and Transforming,Removendo e Transformando
+tutorial.black_market_intro,The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase.,O Mercado Negro permite ajustar sua ColeÃ§Ã£o de CÃ¡psulas durante a partida.\n\nRemover uma cÃ¡psula a retira da sua coleÃ§Ã£o atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cÃ¡psula a converte em outra cÃ¡psula aleatÃ³ria do mesmo nÃ­vel.\nTransformar sempre custa 5 de ouro e nÃ£o aumenta por ativaÃ§Ã£o.
+tutorial.training_grounds,A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.,Um lugar para aprimorar o poder do seu herÃ³i. Ganhe fichas no minigame para gastar nestas mÃ¡quinas em upgrades permanentes de Poder.
+tutorial.gambling_den,Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.,Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas mÃ¡quinas em recompensas imediatas de ouro.
+ui.effects,Effects,Efeitos
+ui.no_effects,This unit has no special effects.,Esta unidade nÃ£o possui efeitos especiais.
+ui.no_effect_details,No details available for this effect.,Nenhum detalhe disponÃ­vel para este efeito.
+ui.score,Score: %d,PontuaÃ§Ã£o: %d
+ui.answer,Answer: %s,Resposta: %s
+ui.explanation,Explanation: %s,ExplicaÃ§Ã£o: %s
+ui.no_explanation,No explanation available,Nenhuma explicaÃ§Ã£o disponÃ­vel
+ui.study,"Get Tokens!","Ganhar Fichas!"
+ui.stat_prize,Stat Prize,PrÃªmio de Atributo
+ui.show_tutorials,Show Tutorials & Tooltips,Mostrar Tutoriais e Dicas
+ui.review_title,Get Tokens!,Ganhar Fichas!
+ui.skip,SKIP,PULAR
+ui.priority_cards,Priority Cards (click to preview):,Cartas de Prioridade (clique para prÃ©via):
+ui.ready,Ready!,Pronto!
+ui.intro_new_card,New Card Introduction,IntroduÃ§Ã£o de Nova Carta
+ui.play,Play,Jogar
+tutorial.loadout,Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.,Escolha seu herÃ³i e deck de flashcards. HerÃ³is tÃªm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck Ã© o baralho de flashcards que serÃ¡ usado por toda a jogatina.
+tutorial.path_choice_intro.title,Path choice,Escolha do caminho
+tutorial.path_choice_1,Choose your next encounter! Every encounter counts as one day and enemies get stronger each day. Make it count!,Escolha sua proxima parada! Cada parada conta como um dia e seus adversarios ficam mais fortes a cada dia. Escolha bem!
+tutorial.gacha_inspect_run.title,Gacha Collection,ColeÃ§Ã£o Gacha
+tutorial.gacha_inspect_run.mouse,"This is your current collection. Hover over or click a GachaBall to inspect it. You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just click or drag one onto another. You unlock GachaBall recipes by getting them during the game.","Esta é a sua coleção atual. Passe o cursor ou clique em uma GachaBall para inspecioná-la. Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta clicar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
+tutorial.gacha_inspect_run.touch,"This is your current collection. Tap or tap and hold a GachaBall to inspect it. You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just tap or drag one onto another. You unlock GachaBall recipes by getting them during the game.","Esta é a sua coleção atual. Toque ou toque e segure uma GachaBall para inspecioná-la. Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta tocar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
+tutorial.gacha_inspect_battle,Merging or destroying gachaballs in battle only affects the current encounter. Your permanent collection remains unchanged. Each battle resets your gachaballs to their base state.,Fundir ou destruir gachaballs em batalha afeta apenas o encontro atual. Sua coleÃ§Ã£o permanente permanece inalterada. Cada batalha redefine seus gachaballs para seu estado base.
+tutorial.shop,"Spend Gold to expand your collection. Reroll the stock if you're looking for something specific, but be warned: the price rises with every roll!","Gaste Ouro para expandir sua coleÃ§Ã£o. Rerole o estoque se estiver procurando algo especÃ­fico, mas cuidado: o preÃ§o sobe a cada rolagem!"
+tutorial.rest_site,"A moment of respite. Master the flashcard minigame to earn tokens, then spend them on these machines for permanent Hero upgrades.",Um momento de descanso. Domine o minigame de flashcards para ganhar fichas e use-as nestas mÃ¡quinas para upgrades permanentes do HerÃ³i.
+tutorial.new_card_intro.title,New Card and Review time!,Novo Flashcard e RevisÃ£o!
+tutorial.new_card_intro,"This is when new flashcards are added to your Mastery Deck.\n\nA new one will be added every mini game session.\n\nYou start with 6 flashcards already unlocked, so try to remember at least a few before starting the mini-game.\n\nYour battle resources depend on it!",Aqui Ã© onde novos flashcards sÃ£o adicionados ao seu Deck de DomÃ­nio.\n\nUm novo serÃ¡ adicionado a cada mini game.\n\nVocÃª comeÃ§a com 6 flashcards jÃ¡ desbloqueados.\n\nTente memorizar alguns antes de comeÃ§ar o mini-jogo.\n\nSeus recursos na batalha dependem disso.
+tutorial.battle_management_intro.title,Tokens and Gacha Machines,Fichas e MÃ¡quinas de Gacha
+tutorial.battle_management,Use your tokens to pull Units and Items from the Gacha Machines below!\n\nEach machine has a different cost. Spend your tokens wisely!,Use suas fichas nas MÃ¡quinas de Gacha abaixo para obter unidades e itens!\n\nCada mÃ¡quina tem um custo diferente. Gaste suas fichas com sabedoria!
+tutorial.first_draw.title,Building your team,Montando sua equipe
+tutorial.first_draw_1,"New capsules are sent to your Bench.\n\nFrom there, you can deploy units to your Battle Lineup, or equip and use items on your units.\n\nIf your Bench is full, any new capsules you pull will be sent directly to the Discard Pile.","Novas cÃ¡psulas sÃ£o enviadas para a sua Reserva.\n\nDe lÃ¡, vocÃª pode posicionar unidades na FormaÃ§Ã£o de Batalha ou equipar itens nas suas unidades, ou usÃ¡-los.\n\nSe a Reserva estiver cheia, qualquer nova cÃ¡psula serÃ¡ enviada diretamente para o Descarte."
+tutorial.first_draw_combat.title,How Battle Works,Como a Batalha Funciona
+tutorial.first_draw_2,"Your team goes first, starting from the frontmost unit to the back. Then the enemy team will go in the same order.\n\nDefeat all enemy units to win. If your hero dies, you lose.\n\nIf neither side is defeated, a new turn begins.\n\nPress ""Battle!"" when you're happy with your team.","Sua equipe age primeiro, começando pela unidade da frente até a última. Em seguida, a equipe inimiga age na mesma ordem.\n\nDerrote todas as unidades inimigas para vencer. Se o seu herói morrer, você perde.\n\nSe nenhum dos lados for derrotado, um novo turno começa.\n\nPressione ""Lutar!"" quando estiver satisfeito com sua equipe."
+tutorial.equip,"Choose your equipment wisely. Units have limited slots, and once an item is equipped, it cannot be removed. Every choice counts!","Escolha seu equipamento com sabedoria. Unidades tÃªm espaÃ§os limitados e, uma vez equipado, um item nÃ£o pode ser removido. Cada escolha conta!"
+tutorial.merge_choice,"Choose Merge to combine two into a single, more powerful entity, or Swap to reorganize your ranks? The choice is yours.","Escolha Fundir para combinar dois em uma Ãºnica entidade mais poderosa, ou Trocar para reorganizar suas fileiras? A escolha Ã© sua."
+tutorial.gacha_inspect_battle.title,Battle Capsules,CÃ¡psulas de Batalha
+tooltip.gacha_t1,Tier 1 Machine - Draw cost: 1 token. Low-power but plentiful gachaballs.,MÃ¡quina NÃ­vel 1 - Custo: 1 ficha. Gachaballs fracos mas abundantes.
+tooltip.gacha_t2,Tier 2 Machine - Draw cost: 2 tokens. Balanced power and cost.,MÃ¡quina NÃ­vel 2 - Custo: 2 fichas. Poder e custo balanceados.
+tooltip.gacha_t3,Tier 3 Machine - Draw cost: 3 tokens. High-power high-risk draws.,MÃ¡quina NÃ­vel 3 - Custo: 3 fichas. Alta potÃªncia alto risco.
+tooltip.gold,Gold - Spend at shops to buy gachaballs and reroll stock.,Ouro - Gaste nas lojas para comprar gachaballs e rerolar estoque.
+tooltip.tokens,Tokens - Earn from flashcard minigame. Spend to draw gachaballs.,Fichas - Ganhe do minigame de flashcards. Gaste para sacar gachaballs.
+tooltip.day,Day - Enemies grow stronger each day. How long can you survive?,Dia - Inimigos ficam mais fortes a cada dia. Quanto tempo vocÃª sobrevive?
+tooltip.hero_hp,Hero Health - If this reaches zero your run ends.,Vida do HerÃ³i - Se chegar a zero sua jogatina termina.
+tooltip.end_turn,End your management phase and start combat.,Finalize sua fase de gerenciamento e inicie o combate.
+tooltip.discard_pile,View defeated units and discarded items.,Veja unidades derrotadas e itens descartados.
+tooltip.inventory,Inspect your gachaball collection across all tiers.,Inspecione sua coleÃ§Ã£o de gachaballs em todos os nÃ­veis.
+tooltip.bench_slot,Reserve slot - Units and items here wait to be deployed or equipped.,EspaÃ§o reserva - Unidades e itens aqui esperam para serem implantados ou equipados.
+tooltip.lineup_slot,Battle slot - Units here fight in combat.,EspaÃ§o de batalha - Unidades aqui lutam no combate.
+tooltip.item_slot,Equipped item slot - Items equipped on this unit provide bonuses.,EspaÃ§o de item equipado - Itens equipados nesta unidade fornecem bÃ´nus.
+tooltip.trinket_slot,Trinket - Provides passive bonuses for your entire run.,Trinket - Fornece bÃ´nus passivos para toda sua jogatina.
+tooltip.reroll,Refresh shop stock. Cost increases each reroll.,Atualiza estoque da loja. Custo aumenta a cada rerolar.
+tooltip.train_hp,Spend tokens from the minigame to permanently increase hero HP.,Gaste fichas do minigame para aumentar permanentemente o HP do herÃ³i.
+tooltip.train_pwr,Spend tokens from the minigame to permanently increase hero PWR.,Gaste fichas do minigame para aumentar permanentemente o PWR do herÃ³i.
+ui.choose_your_hero,Choose Your Hero,Escolha Seu HerÃ³i
+ui.choose_your_deck,Choose Your Deck,Escolha Seu Deck
+ui.locked_hero,Locked,Bloqueado
+ui.cards,cards,cartas
+ui.ability,Ability,Habilidade
+ui.hp,HP,HP
+ui.pwr,PWR,PWR
+hero.flavor,A survivor who learned that every kill counts. Low stats but gold flows freely.,Um sobrevivente que aprendeu que cada morte conta. Stats baixos mas ouro flui livremente.
+hero_timekeeper.flavor,"Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer.","Mestre da magia temporal, o GuardiÃ£o do Tempo dobra o prÃ³prio tempo para estender o cronÃ´metro do minigame."
+deck.katakana.desc,Learn the angular Japanese syllabary used for foreign words and loanwords.,Aprenda o silabÃ¡rio japonÃªs angular usado para palavras estrangeiras e emprÃ©stimos.
+deck.hiragana.desc,Master the flowing Japanese syllabary for native words and grammar.,Domine o silabÃ¡rio japonÃªs fluido para palavras nativas e gramÃ¡tica.
+deck.kanji_100.desc,Challenge yourself with 100 essential Chinese characters used in Japanese writing.,Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa.
+deck.german_100.desc,Build your German vocabulary with 100 common and essential words.,Construa seu vocabulÃ¡rio alemÃ£o com 100 palavras comuns e essenciais.
+deck.portuguese_100.desc,Expand your Portuguese vocabulary with 100 essential everyday words.,Expanda seu vocabulÃ¡rio portuguÃªs com 100 palavras essenciais do dia a dia.
+deck.korean_hangul.desc,Learn Korean Hangul alphabet and pronunciation rules,Aprenda o alfabeto coreano Hangul e as regras de pronÃºncia
+unit_t3_e.name,Dreadnought,Dreadnought
+unit_t3_e.desc,A terrifying predator that strikes down newly summoned enemies.,Um predador aterrorizante que abate inimigos recÃ©m-invocados.
+ability.unit_tier3e_ambush_predator.name,Ambush Predator,Predador de Emboscada
+ability.unit_tier3e_ambush_predator.desc,"When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR.","Quando uma unidade inimiga Ã© invocada, ataca-a causando [50% / 75% / 100%] do PWR desta unidade."
+unit_t3_f.name,Warden,GuardiÃ£o Protetor
+unit_t3_f.desc,A protective guardian that empowers newly summoned allies.,Um guardiÃ£o protetor que fortalece aliados recÃ©m-invocados.
+ability.unit_tier3f_summon_blessing.name,Summon Blessing,BÃªnÃ§Ã£o de InvocaÃ§Ã£o
+ability.unit_tier3f_summon_blessing.desc,"When an ally unit is summoned, grant it [+3 / +5 / +7] HP.","Quando uma unidade aliada Ã© invocada, concede [+3 / +5 / +7] HP."
+STATUS_BURN,Burn,Chamas
+STATUS_BURN_DESC,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.,Causa dano igual ao valor de Chamas ao final do turno. ApÃ³s o dano o valor cai pela metade.
+STATUS_ARMOR,Armor,Armadura
+STATUS_ARMOR_DESC,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.,Armadura: Absorve uma quantidade de dano igual ao valor de Armadura. Desaparece ao final do turno.
+STATUS_SPIKES,Spikes,Espinhos
+STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativaÃ§Ã£o.
+STATUS_STATIC,Static,EstÃ¡tico
+STATUS_STATIC_DESC,Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.,Qualquer alteraÃ§Ã£o de atributo consome 1 acÃºmulo de estÃ¡tico e causa 1 de dano. AcÃºmulos consumidos causam 1 de dano ignorando armadura.
+trinket.royal_insignia.name,Royal Insignia,InsÃ­gnia Real
+trinket.royal_insignia.desc,A medal signifying royal favor.,Uma medalha significando favor real.
+ability.royal_insignia.name,Royal Blessing,BÃªnÃ§Ã£o Real
+ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.","Quando uma unidade NÃ­vel 1 Ã© sacada, concede +1 HP e +1 PWR."
+trinket.veteran_insignia.name,Veteran Insignia,InsÃ­gnia do Veterano
+trinket.veteran_insignia.desc,A badge of honor for seasoned warriors.,Um distintivo de honra para guerreiros experientes.
+ability.veteran_insignia.name,Veteran Blessing,BÃªnÃ§Ã£o do Veterano
+ability.veteran_insignia.desc,"When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.","Quando uma unidade nÃ­vel 2 ou 3 Ã© comprada, invocada ou fundida, concede +1 HP e +1 PWR."
+trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
+trinket.trait_fire.desc,Enables the Fire trait whenever your team has enough Fire souls.,Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes.
+trinket.trait_earth.name,Earth Trait,Sinergia de Terra
+trinket.trait_earth.desc,Enables the Earth trait whenever your team has enough Earth souls.,Ativa a sinergia de Terra sempre que sua equipe tiver almas de Terra suficientes.
+trinket.trait_water.name,Water Trait,Sinergia de Ãgua
+trinket.trait_water.desc,Enables the Water trait whenever your team has enough Water souls.,Ativa a sinergia de Ãgua sempre que sua equipe tiver almas de Ãgua suficientes.
+trinket.trait_air.name,Air Trait,Sinergia de Ar
+trinket.trait_air.desc,Enables the Air trait whenever your team has enough Air souls.,Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes.
+trait.fire.name,Fire,Fogo
+trait.fire.3,Apply 1 Burn on attack.,Aplica 1 de Chamas ao atacar.
+trait.fire.5,Apply +1 Extra Burn (Total 2).,Aplica +1 de Chamas Extra (Total 2).
+trait.fire.7,Start of Turn: Apply 2 Burn to ALL enemies.,InÃ­cio do Turno: Aplica 2 de Chamas a TODOS inimigos.
+trait.fire.9,Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.,Chama do Traidor: Ataques causam dano bÃ´nus igual Ã s pilhas de Chamas do alvo.
+trait.earth.name,Earth,Terra
+trait.earth.3,All Allies gain 1 Armor. Earth units gain 2 Armor.,Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura.
+trait.earth.5,All Allies gain 2 Armor. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura.
+trait.earth.7,All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura.
+trait.earth.9,All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura.
+item.emblem_fire.name,Fire Emblem,Emblema de Fogo
+item.emblem_fire.desc,"When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies.","Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
+item.emblem_earth.name,Earth Emblem,Emblema de Terra
+item.emblem_earth.desc,"When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies.","Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que a unidade se beneficie das sinergias do traço de Terra."
+trait.water.name,Water,Ãgua
+trait.water.2,Water units heal adjacent allies 1 HP at start of turn.,Unidades de Ãgua curam aliados adjacentes em 1 HP no inÃ­cio do turno.
+trait.air.name,Air,Ar
+trait.air.2,Air units steal 1 PWR from the opposite enemy at start of turn.,Unidades de Ar roubam 1 PWR do inimigo oposto no inÃ­cio do turno.
+item.emblem_water.name,Water Emblem,Emblema de Ãgua
+item.emblem_water.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
+item.emblem_air.name,Air Emblem,Emblema de Ar
+item.emblem_air.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
+item.potion_t1.name,Minor Healing Potion,PoÃ§Ã£o de Cura Menor
+item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
+ability.potion_t1.name,Drink,Beber
+ability.potion_t1.desc,Restores 4 HP.,Restaura 4 HP.
+item.potion_spikes.name,Thorn Potion,PoÃ§Ã£o de Espinhos
+item.potion_spikes.desc,Grants 4 Spikes to target. Spikes damage attackers then lose a stack.,Concede 4 Espinhos ao alvo. Espinhos causam dano a atacantes e perdem uma pilha.
+ability.grant_spikes.name,Thorn Skin,Pele de Espinhos
+ability.grant_spikes.desc,Grants 4 Spikes stacks,Concede 4 pilhas de Espinhos
+item.potion_heroism.name,Heroism Potion,PoÃ§Ã£o de HeroÃ­smo
+item.potion_heroism.desc,A potion that inspires heroism.,Uma poÃ§Ã£o que inspira heroÃ­smo.
+ability.grant_heroism.name,Heroism,HeroÃ­smo
+ability.grant_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
+item.potion_plunder.name,Potion of Plunder,PoÃ§Ã£o do Saqueador
+item.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatÃ³rio do alvo.
+ability.potion_plunder.name,Plunder,Saquear
+ability.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatÃ³rio do alvo.
+unit_t3_mimic.name,Mimic,MÃ­mico
+unit_t3_mimic.desc,Mysterious entity.,Entidade misteriosa. Passiva: [Imagem Espelhada]
+ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
+ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR.","No inÃ­cio do turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de HP e PWR."
+unit_t3_shadow.name,Shadow Cloner,Clone das Sombras
+unit_t3_shadow.desc,Ethereal unit.,Unidade etÃ©rea. Passiva: [Eco de Buff]
+ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
+ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them.","Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
+unit_t2_h.name,Hermit,Eremita
+unit_t2_h.desc,Solitary warrior.,Guerreiro solitÃ¡rio. Passiva: [ForÃ§a SolitÃ¡ria]
+ability.unit_t2_h.name,Solitary Strength,Força Solitária
+ability.unit_t2_h_l1.desc,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.","No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
+ability.unit_t2_h_l2.desc,"At start of combat, gain +2 HP and +2 PWR for each empty slot in your team.","No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazio no seu time."
+ability.unit_t2_h_l3.desc,"At start of combat, gain +3 HP and +3 PWR for each empty slot in your team.","No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
+unit_t2_i.name,Mud Wretch,MiserÃ¡vel de Lama
+unit_t2_i.desc,Mud creature.,Criatura de lama. Passiva: [Camada de Lama]
+ability.mud_coating.name,Mud Coating,Camada de Lama
+ability.mud_coating_l1.desc,"When healed, gain 1 Armor and 1 Spikes.","Quando curado, ganha 1 de Armadura e 1 de Espinhos."
+ability.mud_coating_l2.desc,"When healed, gain 2 Armor and 2 Spikes.","Quando curado, ganha 2 de Armadura e 2 de Espinhos."
+ability.mud_coating_l3.desc,"When healed, gain 3 Armor and 3 Spikes.","Quando curado, ganha 3 de Armadura e 3 de Espinhos."
+unit_t2_j.name,Steam Wisp,Fogo FÃ¡tuo
+unit_t2_j.desc,Scalding spirit.,EspÃ­rito fervilhante. Passiva: [Escaldar]
+ability.scald.name,Scald,Escaldar
+ability.scald_l1.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
+ability.scald_l2.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para 1 alvo extra, reduzindo pela metade os acúmulos aplicados."
+ability.scald_l3.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
+unit_t3_g.name,Phantom Wayfarer,Viajante Fantasma
+unit_t3_g.desc,Mysterious traveler.,Viajante misterioso. Passiva: [MeditaÃ§Ã£o Silenciosa]
+ability.unit_tier3g_bench_growth.name,Quiet Meditation,MeditaÃ§Ã£o Silenciosa
+
+unit_t3_h.name,Fusion Warden,GuardiÃ£o da FusÃ£o
+unit_t3_h.desc,Volatile hybrid.,HÃ­brido volÃ¡til. Passiva: [Surto de ConversÃ£o]
+ability.unit_t3_h.name,Convergence Surge,Surto de ConvergÃªncia
+ability.unit_t3_h.desc,"Whenever a merge happens on the battle board, if this unit is on the battle board, gain [**+2 / +3 / +4 HP and PWR**].","Sempre que uma fusÃ£o acontece no tabuleiro de batalha, se esta unidade estiver no tabuleiro de batalha, ganha [**+2 / +3 / +4 de HP e PWR**]."
+unit_dust_t2.name,Dust Minion (T2),Recruta de Poeira (T2)
+unit_dust_t2.desc,A construct. Stays in the fight.,Um construto.   
+unit_dust_t3.name,Dust Minion (T3),Recruta de Poeira (T3)
+unit_dust_t3.desc,A heavy construct. Stays in the fight.,Um construto pesado.
+unit_dust_elite_t1.name,Dust Guard (T1),Guarda de Poeira (T1)
+unit_dust_elite_t1.desc,"A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.","Um guarda. Invoca um Recruta de Poeira (T1) no InÃ­cio do Turno, ao Atacar ou na morte de aliado. Ganha HP e PWR com base no tier de unidade de Poeira morta."
+unit_dust_elite_t2.name,Dust Sentinel (T2),Sentinela de Poeira (T2)
+unit_dust_elite_t3.desc,"An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.","Um soberano. Invoca Recrutas de Poeira (T1, T2 ou T3) na morte de aliado. Ganha HP e PWR com base no tier de unidade de Poeira morta."
+ability_dust_elite_spawn.name,Dust Pulse,Pulso de Poeira
+ability_dust_elite_spawn.desc,Spawns a Dust unit in the player's inventory.,Invoca um Recruta de Poeira no inventÃ¡rio do jogador.
+unit_dust_t1.name,Dust Minion (T1),Recruta de Poeira (T1)
+unit_dust_t1.desc,A fragile construct. Stays in the fight.,Um construto frÃ¡gil.   
+unit_dust_elite_t3.name,Dust Overlord (T3),Soberano de Poeira (T3)
+ability_dust_elite_spawn_turn.name,Dust Pulse (Turn),Pulso de Poeira (Turno)
+ability_dust_elite_spawn_turn.desc,Spawns a Dust unit at Turn Start.,Invoca um Recruta de Poeira no inÃ­cio do turno.
+ability_dust_elite1_spawn_death.name,Dust Pulse (Death T1),Pulso de Poeira (Morte T1)
+ability_dust_elite1_spawn_death.desc,Spawns a T1 Dust unit when an Ally dies.,Invoca um Recruta de Poeira T1 quando um aliado morre.
+ability_dust_elite2_spawn_death.name,Dust Pulse (Death T1/T2),Pulso de Poeira (Morte T1/T2)
+ability_dust_elite2_spawn_death.desc,Spawns a random T1 or T2 Dust unit when an Ally dies.,Invoca um Recruta de Poeira T1 ou T2 aleatÃ³rio quando um aliado morre.
+ability_dust_elite_spawn_death.name,Universal Dust Pulse (Death),Pulso de Poeira Universal (Morte)
+ability_dust_elite_spawn_death.desc,Spawns a random T1, T2 or T3 Dust unit when an Ally dies.,Invoca um Recruta de Poeira T1, T2 ou T3 aleatÃ³rio quando um aliado morre.
+ability_dust_elite_spawn_hurt.name,Dust Pulse (Hurt),Pulso de Poeira (Dano)
+ability_dust_elite_spawn_hurt.desc,Spawns a Dust unit when Hurt.,Invoca um Recruta de Poeira ao sofrer dano.
+ability_dust_elite_spawn_attack.name,Dust Pulse (Attack),Pulso de Poeira (Ataque)
+ability_dust_elite_spawn_attack.desc,Spawns a Dust unit when Attacking.,Invoca um Recruta de Poeira ao atacar.
+unit_dust_elite_t2.desc,A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit.,Uma sentinela. Invoca Recrutas de Poeira (T1 ou T2) na morte de aliado ou ao sofrer dano. Ganha HP e PWR com base no tier de unidade de Poeira morta.
+ability.dust_growth.name,Dust Growth,Crescimento de Poeira
+ability.dust_growth.desc,"Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).","Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
+ui.drop_zone_get,Get,Pegar
+ui.drop_zone_buy,Buy,Comprar
+ui.drop_zone_remove,Remove,Remover
+ui.drop_zone_transform,Transform,Transformar
+ui.drop_zone_get_multi,Drag or click here to\n[font_size=72]GET[/font_size],Arraste ou clique aqui para\n[font_size=72]PEGAR[/font_size]
+ui.drop_zone_buy_multi,Drag or click here to\n[font_size=72]BUY[/font_size],Arraste ou clique aqui para\n[font_size=72]COMPRAR[/font_size]
+ui.drop_zone_remove_multi,Drag or click here to\n[font_size=72]REMOVE[/font_size],Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]
+ui.drop_zone_transform_multi,Drag or click here to\n[font_size=72]TRANSFORM[/font_size],Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]
+ui.drop_zone_sell_multi,Drag or click here to\n[font_size=72]SELL[/font_size],Arraste ou clique aqui para\n[font_size=72]VENDER[/font_size]
+ui.bm_instruction,Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.,Mova a gacha ball para cÃ¡ para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventÃ¡rio.
+ui.reward_instruction,Move the gacha ball here to: Get or Sell.\nClick anywhere to close the inventory.,Mova a gacha ball para cÃ¡ para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventÃ¡rio.
+ui.reward_elite_instruction,Move the Trinket here to: Get or Sell.\nClick anywhere to close the inventory.,Mova o Amuleto para cÃ¡ para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventÃ¡rio.
+ability_dust_elite_spawn_enemy_death.name,Dust Pulse (Enemy Death),Pulso de Poeira (Morte Inimiga)
+ability_dust_elite_spawn_enemy_death.desc,Spawns a Dust unit when an Enemy dies.,Invoca um Recruta de Poeira quando um Inimigo morre.
+trinket.armor_aura.name,Armor Aura,Aura de Armadura
+trinket.armor_aura.desc,An aura that hardens the resolve of allies.,Uma aura que endurece a determinaÃ§Ã£o dos aliados.
+ability.armor_aura.name,Armor Aura,Aura de Armadura
+ability.armor_aura.desc,"At turn start, all allies gain 3 Armor.","No inÃ­cio do turno, todos os aliados ganham 3 de Armadura."
+ui.audio_settings,Audio Settings,ConfiguraÃ§Ãµes de Ãudio
+ui.master_volume,Master Volume,Volume Geral
+ui.music_volume,Music Volume,Volume da MÃºsica
+ui.sfx_volume,SFX Volume,Volume de Efeitos
+ui.close,Close,Fechar
+ui.yes,Yes,Sim
+ui.no,No,NÃ£o
+ui.confirm_reset,Are you sure you want to reset all progress?,Tem certeza que deseja resetar todo o progresso?
+ui.crt_effect,CRT Effect,Efeito CRT
+ui.fullscreen,Fullscreen,Tela Cheia
+ui.glow_effect,Glow Effect,Efeito de Brilho
+ui.glow_debug,Glow Debug:,Debug de Brilho:
+ui.tutorial_title,Tutorial,Tutorial
+tutorial.traits.title,Traits,Sinergias
+tutorial.traits,Traits are special buffs and effects that happen according to how many souls or certain trait units of that trait you have on your battle lineup.\n\nInspect units to see what traits they have.,Sinergias sÃ£o efeitos e bÃ´nus especiais que sÃ£o ativados conforme o nÃºmero de Almas ou unidades de um mesmo tipo que vocÃª possui em seu time.\n\nToque nas unidades para conferir quais Sinergias elas possuem.
+hero_avenger.name,Avenger,Vingador
+hero_avenger.desc,A fierce warrior who strikes when allies fall.,Um guerreiro feroz que ataca quando aliados caem.
+ability.hero_avenger_ally_death_attack.name,Leap Attack,Ataque com Salto
+ability.hero_avenger_ally_death_attack.desc,"When an ally dies, leap and attack the frontmost enemy.","Quando um aliado morre, salta e ataca o inimigo da frente."
+hero_bastion.name,Bastion,BastiÃ£o
+hero_bastion.desc,A steadfast defender who grows stronger as allies fall.,Um defensor inabalÃ¡vel que fica mais forte conforme seus aliados caem.
+ability.hero_bastion_ally_death_spikes_armor.name,Fortify,Fortificar
+ability.hero_bastion_ally_death_spikes_armor.desc,"When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.","Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura nÃ£o decai no final do turno."
+hero_pyro.name,Pyromancer,Piromante
+hero_pyro.desc,A fiery mage who incinerates enemies instead of striking them.,Um mago ardente que incinera os inimigos em vez de atacÃ¡-los.
+ability.hero_pyro_attack_burn.name,Incinerate,Incinerar
+ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acÃºmulos de Chamas iguais ao seu Poder."
+options.art_style,Art Style,Estilo de Arte
+options.style.realistic,Realistic,Realista
+options.style.pixelart,Pixel Art,Pixel Art
+ui.surprise_node,Surprise Event,Evento Surpresa
+ui.utg_title,Unit Training Ground,Campo de Treinamento
+ui.utg_btn,TRAINING,TREINAMENTO
+ui.utg_instruction,Drag or select your unit to start your training.\nClick anywhere to close the inventory.,Arraste ou selecione uma unidade para iniciar o treinamento.\nClique em qualquer lugar para fechar o inventÃ¡rio.
+ui.utg_drop_hp,Drag or Click here to\n[font_size=72]TRAIN HP[/font_size]\n(cost: 5 gold),Arraste ou clique aqui para\n[font_size=72]TREINAR HP[/font_size]\n(custo: 5 ouro)
+ui.utg_drop_pwr,Drag or Click here to\n[font_size=72]TRAIN PWR[/font_size]\n(cost: 5 gold),Arraste ou clique aqui para\n[font_size=72]TREINAR PWR[/font_size]\n(custo: 5 ouro)
+ui.utg_popup_title,Use your Tokens to train!,Use suas Fichas para treinar!
+ui.utg_done,Done!,Pronto!
+ui.merge_encounter_title,Merge Encounter,Encontro de FusÃ£o
+ui.merge_encounter_open_inventory,CLICK HERE TO MERGE!,CLIQUE AQUI PARA FUNDIR!
+ui.merge_encounter_instruction,"Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)","Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
+unit_t3_i.name,Doppleganger,Doppleganger
+unit_t3_i.desc,Volatile clone.,Clone volÃ¡til.
+ability.doppleganger_scale.name,Mirrored Might,ForÃ§a Espelhada
+ability.doppleganger_scale.desc,Gains [**+3 / +4 / +5 PWR**] for each other Doppleganger in battle.,Ganha [**+3 / +4 / +5 de PWR**] para cada outro Doppleganger em batalha.
+ability.doppleganger_death.name,Clone Split,DivisÃ£o de Clone
+ability.doppleganger_death.desc,Spawns a Doppleganger into the Tier 3 Gacha Machine on death.,Gera um Doppleganger na MÃ¡quina Gacha de NÃ­vel 3 ao morrer.
+item_t2_d.name,Echoing Orb,Orbe Ressonante
+item_t2_d.desc,A resonant orb that amplifies the power of others.,Um orbe ressonante que amplifica o poder de outros.
+ability.echoing_orb_scale.name,Resonance,RessonÃ¢ncia
+ability.echoing_orb_scale.desc,Grants the holder +2 PWR for each other Echoing Orb in battle.,Concede ao portador +2 PWR para cada outro Orbe Ressonante em batalha.
+ability.echoing_orb_death.name,Echo Split,DivisÃ£o de Eco
+ability.echoing_orb_death.desc,Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,Gera um Orbe Ressonante na MÃ¡quina Gacha de NÃ­vel 2 ao morrer.
+unit_t3_j.name,Standard Bearer,Porta-Estandarte
+unit_t3_j.desc,Valiant commander.,Comandante valente. Morte: [Legado do Estandarte]
+ability.unit_t3_j_ability_l1.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l1.desc,"On death, transfers its equipped item to the ally directly behind it.","Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
+ability.unit_t3_j_ability_l2.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l2.desc,"On death, transfers its equipped item to the ally behind and 1 copy behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 1 cópia para trás deles."
+ability.unit_t3_j_ability_l3.name,Standard's Legacy,Legado do Estandarte
+ability.unit_t3_j_ability_l3.desc,"On death, transfers its equipped item to the ally behind and 2 copies behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias para trás deles."
+ui.transfer_item_msg,%s transfers %s to %s!,%s transfere %s para %s!
+unit_t3_l.name,Golden Hermit,Eremita Dourado
+unit_t3_l.desc,A solitary sage of wealth.,Um sÃ¡bio solitÃ¡rio da riqueza. Passiva: [AcÃºmulo de Riqueza]
+ability.unit_t3_l_l1.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l1.desc,"At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
+ability.unit_t3_l_l2.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l2.desc,"At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +4 HP e +4 PWR para cada 5 de Ouro que você possuir no momento."
+ability.unit_t3_l_l3.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_l_l3.desc,"At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +5 HP e +5 PWR para cada 5 de Ouro que você possuir no momento."
+options.audio.pronunciation,Card Pronunciation,PronÃºncia de Cartas
+trinket.underdog_emblem.name,Underdog Emblem,Emblema do AzarÃ£o
+trinket.underdog_emblem.desc,An emblem that protects the outnumbered.,Um emblema que protege aqueles em menor nÃºmero.
+ability.underdog_emblem.name,Outnumbered Bulwark,BastiÃ£o dos Superados
+ability.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No inÃ­cio do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferenÃ§a."
+trinket.bargain_charm.name,Bargain Charm,Charme de Barganha
+trinket.bargain_charm.desc,A charm that haggles for a better price.,Um amuleto que pechincha por um preÃ§o melhor.
+ability.bargain_charm.name,Bargain Charm,Charme de Barganha
+ability.bargain_charm.desc,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.","Sorteios Gacha custam 1 ficha a menos (mÃ­nimo 1) uma vez por mÃ¡quina, por turno. VÃ¡lido apenas para batalhas. Exclusivo para o jogador."
+trinket.token_return_charm.name,Token Return Charm,Amuleto de Retorno de Fichas
+trinket.token_return_charm.desc,A charm that reclaims spent potential.,Um amuleto que recupera potencial gasto.
+ability.token_return_charm.name,Token Return,Retorno de Fichas
+ability.token_return_charm.desc,The first unit to die each round returns tokens equivalent to its tier.,A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nÃ­vel.
+trinket.time_sprint_charm.name,Sprint Charm,Amuleto de Arrancada
+trinket.time_sprint_charm.desc,A charm that bends time.,Um amuleto que dobra o tempo.
+ability.time_sprint_charm.name,Time Sprint,Tempo de Arrancada
+ability.time_sprint_charm.desc,Minigame timer gets a flat 2-second increase in battle.,O cronÃ´metro do minigame ganha um aumento de 2 segundos em batalhas.
+trinket.merge_damage_charm.name,Fusion Spark,Centelha de FusÃ£o
+trinket.merge_damage_charm.desc,A charm that weaponizes fusion.,Um amuleto que transforma fusÃ£o em arma.
+ability.merge_damage_charm.name,Fusion Spark,Centelha de FusÃ£o
+ability.merge_damage_charm.desc,"Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.","Sempre que uma fusÃ£o for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatÃ³ria."
+hero_starter.name,Starter,Iniciante
+hero_starter.desc,A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.,Um herÃ³i de apoio que absorve o poder dos aliados caÃ­dos. Garante pelo menos 3 fichas em cada minijogo. Recomendado para experimentar um novo baralho.
+hero_starter.flavor,"A gentle soul who draws strength from loss, guiding newcomers through their first steps.","Uma alma gentil que tira forÃ§a da perda, guiando novatos em seus primeiros passos."
+ability.hero_starter_ally_death_absorb.name,Soul Harvest,Colheita de Almas
+ability.hero_starter_ally_death_absorb.desc,"When an ally dies, gain HP equal to their PWR.","Quando um aliado morre, ganha HP igual ao PWR dele."
+trinket.burn_vial.name,Burn Vial,Frasco de Chamas
+trinket.burn_vial.desc,A vial of eternal flame.,Um frasco de chama eterna.
+trinket.rusty_ring.name,Rusty Ring,Anel Enferrujado
+trinket.rusty_ring.desc,"Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.","Concede +1 HP e +1 PWR a todas as unidades sem equipamentos. Equipar um item cancela esse bÃ´nus."
+item.trinket_hero_catalyst.name,"Hero's Catalyst","Catalisador do Herói"
+item.trinket_hero_catalyst.desc,"Whenever an ally merges, grants +1 HP and +1 PWR to your Hero.","Sempre que um aliado se funde, concede +1 HP e +1 PWR ao seu Herói."
+ability.hero_catalyst.name,"Hero's Catalyst","Catalisador do Herói"
+ability.hero_catalyst.desc,"Grants the Hero +1 HP and +1 PWR on any merge.","Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
+trinket.purifying_pendant.name,"Purifying Pendant","Pingente Purificador"
+trinket.purifying_pendant.desc,"When an ally takes damage from a negative status effect, removes all remaining stacks of that effect.","Quando um aliado recebe dano de um efeito de status negativo, remove todas as pilhas restantes desse efeito."
+
+trinket.awe_inspiring_totem.name,"Awe Inspiring Totem","Totem Inspirador"
+trinket.awe_inspiring_totem.desc,"At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.","No inÃ­cio do turno, se houver uma unidade de NÃ­vel 3 ou Tier 3 na formaÃ§Ã£o, concede +1 HP e +1 PWR a todas as outras unidades de tier e nÃ­vel inferiores."
+trinket.beginners_charm.name,"Beginner's Charm","Amuleto do Iniciante"
+trinket.beginners_charm.desc,"Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard).","Minigames: Ganhe 1 ficha extra se o nÃ­vel de maestria do flashcard respondido for 1 (Muito DifÃ­cil)."
+trinket.trinity_charm.name,"Trinity Charm","Amuleto da Trindade"
+trinket.trinity_charm.desc,"If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.","Se vocÃª comprar pelo menos uma vez de cada mÃ¡quina de tier (1, 2 e 3) em um turno ou encontro, ganha 1 Ficha."
+trinket.spiked_armor.name,"Spiked Armor","Armadura de Espinhos"
+trinket.spiked_armor.desc,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].","No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
+ability.trinket_spiked_armor.name,"Spiked Armor","Armadura de Espinhos"
+ability.trinket_spiked_armor.desc,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].","No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
+
+
+ui.merge_encounter_description,"Merge or level up your Gachamons or Spirits permanently!
+({cost} Gold per action)","Fundir ou evoluir seus Gachamons ou Espíritos permanentemente!
+({cost} Ouro por ação)"
+ui.rest_site_desc,"Play to earn tokens, then spend them for permanent HP upgrades.","Jogue para ganhar fichas e gaste-as em melhorias permanentes de HP."
+ui.training_grounds_desc,"Play to earn tokens, then spend them for permanent Power upgrades.","Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder."
+ui.gambling_den_desc,"Play to earn tokens, then spend them for a chance to win big Gold payouts.","Jogue para ganhar fichas e gaste-as para ter a chance de ganhar muito Ouro."
+ui.btn_merge,"Merge","Fundir"
+ui.btn_merge_cost,"Merge ({cost} Gold)","Fundir ({cost} Ouro)"
+ui.btn_swap,"Swap","Trocar"
+ui.black_market_desc,"Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold.","Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
+ui.shop_desc,"Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!","Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
+ui.bm_drop_transform,"Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold)","Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
+ui.bm_drop_remove,"Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold)","Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
+ui.utg_desc,"Shape your units!\nOpen your inventory to drag a unit here,\nand train its HP or Power by spending tokens.","Molde suas unidades!\nAbra o inventário para arrastar uma unidade aqui,\ne treine seu HP ou Poder gastando fichas."
+ui.rest_study,"Get Tokens! (%d Gold)","Ganhar Fichas! (%d Ouro)"
+ui.reward_desc,"Get tokens to spend on prizes in the machines below!","Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
+ui.rewards_title,REWARDS,RECOMPENSAS
+ability.unit_tier3_berserker_shockwave.name,Shockwave,Onda de Choque
+ability.unit_tier3_berserker_shockwave_l1.desc,"Deals 100% cascade AOE damage to front enemy and units behind.","Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3_berserker_shockwave_l2.desc,"Deals 150% cascade AOE damage to front enemy and units behind.","Causa 150% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3_berserker_shockwave_l3.desc,"Deals 200% cascade AOE damage to front enemy and units behind.","Causa 200% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
+ability.unit_tier3d_resilient_aura_l1.desc,"Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.","Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3d_resilient_aura_l2.desc,"Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack.","Concede +2 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3d_resilient_aura_l3.desc,"Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack.","Concede +2 HP e +2 PWR aos aliados adjacentes quando ferido por um ataque."
+ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
+ability.unit_tier3a_mirror_strike_l1.desc,"Attacks enemy in opposite mirror slot for 100% damage.","Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
+ability.unit_tier3a_mirror_strike_l2.desc,"Attacks enemy in opposite mirror slot for 150% damage.","Ataca o inimigo no espaço espelhado oposto causando 150% de dano."
+ability.unit_tier3a_mirror_strike_l3.desc,"Attacks enemy in opposite mirror slot for 200% damage.","Ataca o inimigo no espaço espelhado oposto causando 200% de dano."
+ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
+ability.unit_tier3b_guardian_sacrifice_l1.desc,"Leaps to intercept lethal damage on allies.","Salta para interceptar dano letal em aliados."
+ability.unit_tier3b_guardian_sacrifice_l2.desc,"Leaps to intercept lethal damage on allies and gains 1 Armor.","Salta para interceptar dano letal em aliados e ganha 1 de Armadura."
+ability.unit_tier3b_guardian_sacrifice_l3.desc,"Leaps to intercept lethal damage on allies and gains 2 Armor.","Salta para interceptar dano letal em aliados e ganha 2 de Armadura."
+ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
+ability.unit_tier3c_soul_summon_l1.desc,"Summons a random Level 1 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
+ability.unit_tier3c_soul_summon_l2.desc,"Summons a random Level 2 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 2 ao morrer."
+ability.unit_tier3c_soul_summon_l3.desc,"Summons a random Level 3 Tier 2 unit on death.","Invoca uma unidade aleatória de Tier 2 no Nível 3 ao morrer."
+ability.unit_tier3e_ambush_predator_l1.desc,"Deals damage to enemies equal to 100% of PWR when they are summoned.","Causa dano aos inimigos igual a 100% do PWR quando eles são invocados."
+ability.unit_tier3e_ambush_predator_l2.desc,"Deals damage to enemies equal to 150% of PWR when they are summoned.","Causa dano aos inimigos igual a 150% do PWR quando eles são invocados."
+ability.unit_tier3e_ambush_predator_l3.desc,"Deals damage to enemies equal to 200% of PWR when they are summoned.","Causa dano aos inimigos igual a 200% do PWR quando eles são invocados."
+ability.unit_tier3f_summon_blessing_l1.desc,"Grants +3 HP to newly summoned allies.","Concede +3 de HP a aliados recém-invocados."
+ability.unit_tier3f_summon_blessing_l2.desc,"Grants +5 HP to newly summoned allies.","Concede +5 de HP a aliados recém-invocados."
+ability.unit_tier3f_summon_blessing_l3.desc,"Grants +7 HP to newly summoned allies.","Concede +7 de HP a aliados recém-invocados."
+ability.unit_tier3g_bench_growth_l1.desc,"If on the player bench at start of turn, gain +3 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
+ability.unit_tier3g_bench_growth_l2.desc,"If on the player bench at start of turn, gain +5 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +5 de HP e PWR."
+ability.unit_tier3g_bench_growth_l3.desc,"If on the player bench at start of turn, gain +7 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +7 de HP e PWR."
+ability.unit_tier3h_merge_growth_l1.desc,"Whenever a merge happens on the battle board, gain +2 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
+ability.unit_tier3h_merge_growth_l2.desc,"Whenever a merge happens on the battle board, gain +3 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +3 de HP e PWR."
+ability.unit_tier3h_merge_growth_l3.desc,"Whenever a merge happens on the battle board, gain +4 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +4 de HP e PWR."
+ability.doppleganger_scale_l1.desc,"Gains +3 PWR for each other Doppleganger in battle.","Ganha +3 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_scale_l2.desc,"Gains +4 PWR for each other Doppleganger in battle.","Ganha +4 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_scale_l3.desc,"Gains +5 PWR for each other Doppleganger in battle.","Ganha +5 de PWR para cada outro Doppleganger em batalha."
+ability.doppleganger_death_l1.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+ability.doppleganger_death_l2.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+ability.doppleganger_death_l3.desc,"Summons 1 copy of itself on death into the Gacha Machine.","Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+ability.unit_tier2a_defensive_stance_l1.desc,"Gain +2 HP before taking damage.","Ganha +2 de HP antes de receber dano."
+ability.unit_tier2a_defensive_stance_l2.desc,"Gain +4 HP before taking damage.","Ganha +4 de HP antes de receber dano."
+ability.unit_tier2a_defensive_stance_l3.desc,"Gain +6 HP before taking damage.","Ganha +6 de HP antes de receber dano."
+ability.unit_t3_mimic_l1.desc,"Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.","Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+ability.unit_t3_mimic_l2.desc,"Before its turn action, transforms into the enemy unit in the mirror slot (+1 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.","Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+1 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+ability.unit_t3_mimic_l3.desc,"Before its turn action, transforms into the enemy unit in the mirror slot (Level 3 MAX). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.","Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (Nível 3 MAX). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+ability.unit_t3_shadow_l1.desc,"Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
+ability.unit_t3_shadow_l2.desc,"Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 150% de eficácia."
+ability.unit_t3_shadow_l3.desc,"Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness.","Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 200% de eficácia."
+ability.unit_t3_l.name,Wealth Accumulation,Acúmulo de Riqueza
+ability.unit_t3_j_ability.name,Standard's Legacy,Legado do Estandarte
+```
+
+### File: `resources/abilities/ability_boss_1_passive_draw_drain.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectModifyStat"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "ability_boss_1_draw_drain",
+"base_value": 1,
+"log_format": "%s drains energy from your draw (+%d HP)",
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_1_draw_drain"
+name_key = "ability.boss_1_draw_drain.name"
+description_key = "ability.boss_1_draw_drain.desc"
+trigger = &"on_draw"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat")])
+```
+
+### File: `resources/abilities/ability_boss_1_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget5"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 5 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_1_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget5")])
+```
+
+### File: `resources/abilities/ability_boss_2_passive_token_drain.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectModifyStat"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "ability_boss_2_token_drain",
+"base_value": 1,
+"context_multiplier_key": "tokens_spent",
+"log_format": "%s feeds on your spent tokens (+%d HP)",
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_2_token_drain"
+name_key = "ability.boss_2_token_drain.name"
+description_key = "ability.boss_2_token_drain.desc"
+trigger = &"on_token_spent"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat")])
+```
+
+### File: `resources/abilities/ability_boss_2_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget10"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 10 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_2_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget10")])
+```
+
+### File: `resources/abilities/ability_boss_3_passive_ally_growth.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectModifyHP"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "ability_boss_3_ally_growth",
+"base_value": 1,
+"log_format": "%s absorbs the soul of a fallen ally (+%d HP)",
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyPWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "ability_boss_3_ally_growth",
+"base_value": 1,
+"log_format": "%s grows stronger from death (+%d PWR)",
+"stat": "pwr"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_3_ally_growth"
+name_key = "ability.boss_3_ally_growth.name"
+description_key = "ability.boss_3_ally_growth.desc"
+trigger = &"on_ally_death"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyHP"), SubResource("EffectModifyPWR")])
+```
+
+### File: `resources/abilities/ability_boss_3_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget15"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 15 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_3_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget15")])
+```
+
+### File: `resources/abilities/ability_boss_4_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget20"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 20 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_4_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget20")])
+```
+
+### File: `resources/abilities/ability_boss_5_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectBossSummon_Budget25"]
+script = ExtResource("2_effect_script")
+parameters = { "budget": 25 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_5_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([SubResource("EffectBossSummon_Budget25")])
+```
+
+### File: `resources/abilities/ability_boss_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_boss_summon.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_boss_summon"
+name_key = "ability.boss_summon.name"
+description_key = "ability.boss_summon.desc"
+trigger = &"on_turn_end"
+priority = -50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_consumable_potion_t1.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_consumable_potion_t1.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_consumable_potion_t1"
+name_key = "ability.potion_t1.name"
+description_key = "ability.potion_t1.desc"
+trigger = &"manual_activation"
+condition = null
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_consumable_steal.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_item_steal.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_consumable_steal"
+display_name_key = "ability.potion_plunder.name"
+description_key = "ability.potion_plunder.desc"
+trigger = &""
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_doppleganger_death.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDuplicateToGacha_1"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_death_l1"
+name_key = "ability.doppleganger_death.name"
+description_key = "ability.doppleganger_death_l1.desc"
+trigger = &"on_death"
+priority = 215
+effects = Array[Resource]([SubResource("EffectDuplicateToGacha_1")])
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/ability_doppleganger_death_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDuplicateToGacha_2"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_death_l2"
+name_key = "ability.doppleganger_death.name"
+description_key = "ability.doppleganger_death_l2.desc"
+trigger = &"on_death"
+priority = 215
+effects = Array[Resource]([SubResource("EffectDuplicateToGacha_2")])
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/ability_doppleganger_death_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDuplicateToGacha_3"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+
+
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_death_l3"
+name_key = "ability.doppleganger_death.name"
+description_key = "ability.doppleganger_death_l3.desc"
+trigger = &"on_death"
+priority = 215
+effects = Array[Resource]([SubResource("EffectDuplicateToGacha_3")])
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/ability_doppleganger_scale.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDopplegangerScaling.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDopplegangerScaling_1"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "scale_amount": 3 }
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_scale_l1"
+name_key = "ability.doppleganger_scale.name"
+description_key = "ability.doppleganger_scale_l1.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([SubResource("EffectDopplegangerScaling_1")])
+execute_on_lethal = false
+max_level = 1
+```
+
+### File: `resources/abilities/ability_doppleganger_scale_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDopplegangerScaling.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDopplegangerScaling_2"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "scale_amount": 4 }
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_scale_l2"
+name_key = "ability.doppleganger_scale.name"
+description_key = "ability.doppleganger_scale_l2.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([SubResource("EffectDopplegangerScaling_2")])
+execute_on_lethal = false
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/ability_doppleganger_scale_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDopplegangerScaling.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDopplegangerScaling_3"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "scale_amount": 5 }
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_doppleganger_scale_l3"
+name_key = "ability.doppleganger_scale.name"
+description_key = "ability.doppleganger_scale_l3.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([SubResource("EffectDopplegangerScaling_3")])
+execute_on_lethal = false
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/ability_dust_elite1_spawn_attack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn1.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn1_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite1_spawn_attack"
+name_key = "ability_dust_elite_spawn_attack.name"
+description_key = "ability_dust_elite_spawn_attack.desc"
+trigger = &"on_attack"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn1_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite1_spawn_death.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn1.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn1_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite1_spawn_death"
+name_key = "ability_dust_elite1_spawn_death.name"
+description_key = "ability_dust_elite1_spawn_death.desc"
+trigger = &"on_ally_death"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn1_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite1_spawn_turn.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn1.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn1_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite1_spawn_turn"
+name_key = "ability_dust_elite_spawn_turn.name"
+description_key = "ability_dust_elite_spawn_turn.desc"
+trigger = &"turn_start"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn1_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite2_spawn_attack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn2.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn2_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite2_spawn_attack"
+name_key = "ability_dust_elite_spawn.name"
+description_key = "ability_dust_elite_spawn.desc"
+trigger = &"on_attack"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn2_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite2_spawn_death.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn2.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn2_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite2_spawn_death"
+name_key = "ability_dust_elite2_spawn_death.name"
+description_key = "ability_dust_elite2_spawn_death.desc"
+trigger = &"on_ally_death"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn2_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite2_spawn_hurt.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn2.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn2_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite2_spawn_hurt"
+name_key = "ability_dust_elite_spawn.name"
+description_key = "ability_dust_elite_spawn.desc"
+trigger = &"on_hurt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn2_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite2_spawn_turn.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn2.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn2_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite2_spawn_turn"
+name_key = "ability_dust_elite_spawn.name"
+description_key = "ability_dust_elite_spawn.desc"
+trigger = &"turn_start"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn2_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite_growth.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/conditions/cond_dying_unit_is_dust.tres" id="3_cond"]
+
+[sub_resource type="Resource" id="EffectHP_Gain"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = {
+"base_value": 0,
+"scaling_context_key": "dying_tier",
+"scaling_context_multiplier": 1.0,
+"stat": "hp"
+}
+
+[sub_resource type="Resource" id="EffectPWR_Gain"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = {
+"base_value": 0,
+"scaling_context_key": "dying_tier",
+"scaling_context_multiplier": 1.0,
+"stat": "pwr"
+}
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_dust_elite_growth"
+name_key = "ability.dust_growth.name"
+description_key = "ability.dust_growth.desc"
+trigger = &"on_unit_death"
+condition = ExtResource("3_cond")
+effects = Array[Resource]([SubResource("EffectHP_Gain"), SubResource("EffectPWR_Gain")])
+priority = 0
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_dust_elite_spawn_attack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite_spawn_attack"
+name_key = "ability_dust_elite_spawn_attack.name"
+description_key = "ability_dust_elite_spawn_attack.desc"
+trigger = &"on_attack"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite_spawn_death.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite_spawn_death"
+name_key = "ability_dust_elite_spawn_death.name"
+description_key = "ability_dust_elite_spawn_death.desc"
+trigger = &"on_ally_death"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite_spawn_hurt.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite_spawn_hurt"
+name_key = "ability_dust_elite_spawn_hurt.name"
+description_key = "ability_dust_elite_spawn_hurt.desc"
+trigger = &"on_hurt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn_1")])
+```
+
+### File: `resources/abilities/ability_dust_elite_spawn_turn.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectDustEliteSpawn.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDustEliteSpawn_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_dust_elite_spawn_turn"
+name_key = "ability_dust_elite_spawn_turn.name"
+description_key = "ability_dust_elite_spawn_turn.desc"
+trigger = &"turn_start"
+priority = 0
+effects = Array[Resource]([SubResource("EffectDustEliteSpawn_1")])
+```
+
+### File: `resources/abilities/ability_echoing_orb_death.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_duplicate_to_gacha_echoing_orb.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_echoing_orb_death"
+name_key = "ability.echoing_orb_death.name"
+description_key = "ability.echoing_orb_death.desc"
+trigger = &"on_death"
+priority = 200
+effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = true
+```
+
+### File: `resources/abilities/ability_echoing_orb_scale.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_echoing_orb_scaling.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_echoing_orb_scale"
+name_key = "ability.echoing_orb_scale.name"
+description_key = "ability.echoing_orb_scale.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_item_t2_c_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_summon_t1_on_death.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = "ability_item_t2_c_summon"
+name_key = "ability.item_t2_c_summon.name"
+description_key = "item_t2_a.desc"
+trigger = &"on_death"
+priority = 200
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/Ability_MudCoating.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Armor.tres" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Spikes.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_mud_coating"
+name_key = "ability.mud_coating.name"
+description_key = "ability.mud_coating_l1.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
+priority = 0
+execute_on_lethal = false
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_MudCoating_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Armor2.tres" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Spikes2.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_mud_coating_l2"
+name_key = "ability.mud_coating.name"
+description_key = "ability.mud_coating_l2.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
+priority = 0
+execute_on_lethal = false
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_MudCoating_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Armor3.tres" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_MudCoating_Spikes3.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_mud_coating_l3"
+name_key = "ability.mud_coating.name"
+description_key = "ability.mud_coating_l3.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
+priority = 0
+execute_on_lethal = false
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/Ability_Scald.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_Scald.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_scald"
+name_key = "ability.scald.name"
+description_key = "ability.scald_l1.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+execute_on_lethal = false
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_Scald_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_Scald_L2.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_scald_l2"
+name_key = "ability.scald.name"
+description_key = "ability.scald_l2.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+execute_on_lethal = false
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_Scald_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/Effect_Scald_L3.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_scald_l3"
+name_key = "ability.scald.name"
+description_key = "ability.scald_l3.desc"
+trigger = &"on_healed"
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+execute_on_lethal = false
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power"
+name_key = "ability.unit_t2_d_power.name"
+description_key = "ability.unit_t2_d_power_l1.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power_Init.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power_init"
+name_key = "ability.unit_t2_d_power.name" # Share same name/desc
+description_key = "ability.unit_t2_d_power_l1.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power_Init_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power_init_l2"
+name_key = "ability.unit_t2_d_power.name" # Share same name/desc
+description_key = "ability.unit_t2_d_power_l2.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power_Init_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 2.0
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power_init_l3"
+name_key = "ability.unit_t2_d_power.name" # Share same name/desc
+description_key = "ability.unit_t2_d_power_l3.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power_l2"
+name_key = "ability.unit_t2_d_power.name"
+description_key = "ability.unit_t2_d_power_l2.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_Tier2D_Templar_Power_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectUpdatePwrToTokens.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 2.0
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_d_power_l3"
+name_key = "ability.unit_t2_d_power.name"
+description_key = "ability.unit_t2_d_power_l3.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 0.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_gold_pwr"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l1.desc"
+trigger = &"on_board_enter"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_GoldHP_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.0
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_gold_pwr_l2"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l2.desc"
+trigger = &"on_board_enter"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_GoldHP_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_gold_pwr_l3"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l3.desc"
+trigger = &"on_board_enter"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_Spawn_L1.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 0.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_spawn_pwr"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l1.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_Spawn_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.0
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_spawn_pwr_l2"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l2.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/Ability_Tier2F_Merchant_Spawn_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+parameters = {
+"multiplier": 1.5
+}
+target_type = "SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_unit_t2_f_spawn_pwr_l3"
+name_key = "ability.unit_t2_f_gold_pwr.name"
+description_key = "ability.unit_t2_f_gold_pwr_l3.desc"
+trigger = &"on_board_changed"
+effects = Array[Resource]([SubResource("Resource_effect")])
+priority = 100
+replaces_basic_attack = false
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/ability_trinket_armor_aura.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_grant_armor.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_armor_aura"
+name_key = "ability.armor_aura.name"
+description_key = "ability.armor_aura.desc"
+trigger = &"on_turn_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_awe_inspiring_totem.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_awe_inspiring_totem.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_awe_inspiring_totem"
+name_key = ""
+description_key = ""
+trigger = &"on_turn_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_bargain_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_bargain_charm"
+name_key = "ability.bargain_charm.name"
+description_key = "ability.bargain_charm.desc"
+trigger = &"gacha_draw_cost"
+priority = 50
+effects = Array[Resource]([])
+```
+
+### File: `resources/abilities/ability_trinket_beginners_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_beginners_charm"
+name_key = ""
+description_key = ""
+trigger = &"minigame_start"
+priority = 50
+effects = Array[Resource]([])
+```
+
+### File: `resources/abilities/ability_trinket_hero_catalyst.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_hero_on_merge.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_hero_catalyst"
+name_key = "ability.hero_catalyst.name"
+description_key = "ability.hero_catalyst.desc"
+trigger = &"on_merge"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_merge_damage_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_merge_damage.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_merge_damage_charm"
+name_key = "ability.merge_damage_charm.name"
+description_key = "ability.merge_damage_charm.desc"
+trigger = &"on_merge"
+priority = 0
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_purifying_pendant.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectPurifyHeal.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_effect"]
+script = ExtResource("2_effect")
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_purifying_pendant"
+trigger = &"on_hurt"
+effect = SubResource("Resource_effect")
+priority = 0
+```
+
+### File: `resources/abilities/ability_trinket_royal_insignia.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_drawn_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_royal_insignia"
+name_key = "ability.royal_insignia.name"
+description_key = "ability.royal_insignia.desc"
+trigger = &"on_draw"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_royal_insignia_battle_start.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_drawn_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_royal_insignia_battle_start"
+name_key = ""
+description_key = ""
+trigger = &"on_battle_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_royal_insignia_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_drawn_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_royal_insignia_summon"
+name_key = ""
+description_key = ""
+trigger = &"on_ally_summon"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_rusty_ring_battle_start.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_rusty_ring_buff.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_rusty_ring_battle_start"
+name_key = ""
+description_key = ""
+trigger = &"on_battle_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_rusty_ring_draw.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_rusty_ring_buff.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_rusty_ring_draw"
+name_key = "trinket.rusty_ring.name"
+description_key = "trinket.rusty_ring.desc"
+trigger = &"on_draw"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_rusty_ring_passive.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_rusty_ring_passive.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_rusty_ring_passive"
+name_key = ""
+description_key = ""
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_rusty_ring_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_rusty_ring_buff.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_rusty_ring_summon"
+name_key = ""
+description_key = ""
+trigger = &"on_ally_summon"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_soul_echo.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_resurrect_first_killed.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_soul_echo"
+name_key = "ability.soul_echo.name"
+description_key = "ability.soul_echo.desc"
+trigger = &"on_ally_death"
+priority = 210
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_spiked_armor.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_grant_armor_2.tres" id="2_effect"]
+[ext_resource type="Resource" path="res://resources/effects/effect_grant_spikes_2.tres" id="3_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_spiked_armor"
+name_key = "ability.trinket_spiked_armor.name"
+description_key = "ability.trinket_spiked_armor.desc"
+trigger = &"on_turn_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_time_sprint_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_time_sprint_charm"
+name_key = "ability.time_sprint_charm.name"
+description_key = "ability.time_sprint_charm.desc"
+trigger = &"minigame_start"
+priority = 50
+effects = Array[Resource]([])
+```
+
+### File: `resources/abilities/ability_trinket_token_return_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_death_token_refund.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_token_return_charm"
+name_key = "ability.token_return_charm.name"
+description_key = "ability.token_return_charm.desc"
+trigger = &"on_unit_death"
+priority = 220
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_trinity_charm_draw.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_trinity_charm.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_trinity_charm_draw"
+name_key = "trinket.trinity_charm.name"
+description_key = "trinket.trinity_charm.desc"
+trigger = &"on_draw"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_trinity_charm_reset.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_trinity_charm.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_trinity_charm_reset"
+name_key = ""
+description_key = ""
+trigger = &"on_turn_end"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_trinity_charm_reset2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_trinity_charm.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_trinity_charm_reset2"
+name_key = ""
+description_key = ""
+trigger = &"on_battle_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_twin_charm_scale.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_twin_charm_scaling.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_twin_charm_scale"
+name_key = "ability.twin_charm_scale.name"
+description_key = "ability.twin_charm_scale.desc"
+trigger = &"on_board_changed"
+priority = 100
+effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ability_trinket_underdog_emblem.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_underdog_armor.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_underdog_emblem"
+name_key = "ability.underdog_emblem.name"
+description_key = "ability.underdog_emblem.desc"
+trigger = &"on_turn_start"
+priority = 0
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_veteran_insignia_battle_start.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_high_level_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_veteran_insignia_battle_start"
+name_key = ""
+description_key = ""
+trigger = &"on_battle_start"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_veteran_insignia_draw.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_high_level_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_veteran_insignia_draw"
+name_key = "ability.veteran_insignia.name"
+description_key = "ability.veteran_insignia.desc"
+trigger = &"on_draw"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_veteran_insignia_merge.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_high_level_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_veteran_insignia_merge"
+name_key = ""
+description_key = ""
+trigger = &"on_merge"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/ability_trinket_veteran_insignia_summon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_buff_high_level_unit.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_trinket_veteran_insignia_summon"
+name_key = ""
+description_key = ""
+trigger = &"on_ally_summon"
+priority = 50
+effects = Array[Resource]([ExtResource("2_effect")])
+```
+
+### File: `resources/abilities/BasicAttack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="BasicAttackEffect_1"]
+script = ExtResource("2_effect")
+
+[resource]
+script = ExtResource("1_script")
+id = &"basic_attack"
+name_key = "ability.basic_attack.name"
+description_key = "ability.basic_attack.desc"
+effects = Array[Resource]([SubResource("BasicAttackEffect_1")])
+```
+
+### File: `resources/abilities/consumables/ability_grant_heroism.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_hp.tres" id="2_hp"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_pwr.tres" id="3_pwr"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_heroism_armor.tres" id="4_armor"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_grant_heroism"
+name_key = "ability.grant_heroism.name"
+description_key = "ability.grant_heroism.desc"
+trigger = &"manual_activation"
+effects = Array[Resource]([ExtResource("2_hp"), ExtResource("3_pwr"), ExtResource("4_armor")])
+priority = 0
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/consumables/ability_grant_spikes.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Resource" path="res://resources/effects/consumables/grant_spikes.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_ability")
+id = "ability_grant_spikes"
+name_key = "ability.grant_spikes.name"
+description_key = "ability.grant_spikes.desc"
+trigger = &""
+effects = Array[Resource]([ExtResource("2_effect")])
+priority = 0
+replaces_basic_attack = false
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/HeroAvenger_AllyDeathAttack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="BasicAttackEffect_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"FRONTMOST_ENEMY"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_avenger_ally_death_attack"
+name_key = "ability.hero_avenger_ally_death_attack.name"
+description_key = "ability.hero_avenger_ally_death_attack.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("BasicAttackEffect_1")])
+```
+
+### File: `resources/abilities/HeroBastion_AllyDeathSpikesArmor.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectApplyStatus_Armor"]
+script = ExtResource("2_effect")
+parameters = {"status_id": "armor", "amount": 1}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectApplyStatus_Spikes"]
+script = ExtResource("2_effect")
+parameters = {"status_id": "spikes", "amount": 1}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_bastion_ally_death_spikes_armor"
+name_key = "ability.hero_bastion_ally_death_spikes_armor.name"
+description_key = "ability.hero_bastion_ally_death_spikes_armor.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectApplyStatus_Armor"), SubResource("EffectApplyStatus_Spikes")])
+```
+
+### File: `resources/abilities/HeroBountyHunter_AllyDeathBuff.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_bounty_hunter_ally_death_buff"
+name_key = "ability.hero_bounty_hunter_ally_death_buff.name"
+description_key = "ability.hero_bounty_hunter_ally_death_buff.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+```
+
+### File: `resources/abilities/HeroPyro_AttackBurn.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectApplyStatus_Burn"]
+script = ExtResource("2_effect")
+parameters = {"amount": {"use_source_pwr": true}, "status_id": "burn"}
+target_type = &"ATTACK_TARGET"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_pyro_attack_burn"
+name_key = "ability.hero_pyro_attack_burn.name"
+description_key = "ability.hero_pyro_attack_burn.desc"
+trigger = &"on_attack"
+replaces_basic_attack = true
+execute_on_lethal = false
+effects = Array[Resource]([SubResource("EffectApplyStatus_Burn")])
+```
+
+### File: `resources/abilities/HeroStarter_AllyDeathAbsorb.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/effects/EffectGainDeadAllyPwrAsHP.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGainDeadAllyPwrAsHP_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_starter_ally_death_absorb"
+name_key = "ability.hero_starter_ally_death_absorb.name"
+description_key = "ability.hero_starter_ally_death_absorb.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectGainDeadAllyPwrAsHP_1")])
+```
+
+### File: `resources/abilities/HeroTimekeeper_GoldOnKill.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGainGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_GainGold_1"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = { "amount": 1 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_gold_on_kill"
+name_key = "ability.hero_timekeeper_gold_on_kill.name"
+description_key = "ability.hero_timekeeper_gold_on_kill.desc"
+trigger = &"on_kill"
+effects = Array[Resource]([SubResource("Effect_GainGold_1")])
+```
+
+### File: `resources/abilities/HeroTimekeeper_TemporalAura.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_TemporalAura_HP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"ALLIES_IN_FRONT"
+
+[sub_resource type="Resource" id="EffectModifyStat_TemporalAura_PWR_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 2 }
+target_type = &"ALLIES_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_temporal_aura"
+name_key = "ability.hero_timekeeper_temporal_aura.name"
+description_key = "ability.hero_timekeeper_temporal_aura.desc"
+trigger = &"on_turn_start"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat_TemporalAura_HP_1"), SubResource("EffectModifyStat_TemporalAura_PWR_2")])
+```
+
+### File: `resources/abilities/HeroTimekeeper_TimeWarp.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+id = &"hero_timekeeper_time_warp"
+name_key = "ability.hero_timekeeper_time_warp.name"
+description_key = "ability.hero_timekeeper_time_warp.desc"
+trigger = &"passive"
+effects = []
+```
+
+### File: `resources/abilities/ItemTier1A_TurnStartHeal.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_TurnStartHeal_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier1a_turn_start_heal"
+name_key = "ability.item_tier1a_turn_start_heal.name"
+description_key = "ability.item_tier1a_turn_start_heal.desc"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectModifyStat_TurnStartHeal_1")])
+```
+
+### File: `resources/abilities/ItemTier1B_ExtraAttack.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="2_condition"]
+[ext_resource type="Script" path="res://scripts/EffectRetriggerTurnAttack.gd" id="3_effect"]
+
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="4_context_cond"]
+[ext_resource type="Script" path="res://scripts/conditions/CompositeCondition.gd" id="5_composite_cond"]
+
+[sub_resource type="Resource" id="ContextCond_TurnOnly"]
+script = ExtResource("4_context_cond")
+id = &"context_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = {
+"allowed_causes": Array[StringName]([&"CAUSE_TURN"])
+}
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[sub_resource type="Resource" id="Condition_TargetHPGreaterThanSelf_1"]
+script = ExtResource("2_condition")
+id = &"hp_check"
+condition_type = &"TARGET_HP_GREATER_THAN_SELF_HP"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="Composite_TurnAndHP"]
+script = ExtResource("5_composite_cond")
+id = &"composite_extra_attack"
+condition_type = &"COMPOSITE"
+parameters = {}
+invert_result = false
+conditions = Array[Resource]([SubResource("ContextCond_TurnOnly"), SubResource("Condition_TargetHPGreaterThanSelf_1")])
+operator = 0
+
+[sub_resource type="Resource" id="Effect_BasicAttackAgain_1"]
+script = ExtResource("3_effect")
+target_type = &"ATTACK_TARGET"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier1b_extra_attack"
+name_key = "ability.item_tier1b_extra_attack.name"
+description_key = "ability.item_tier1b_extra_attack.desc"
+trigger = &"on_attack"
+priority = -100
+condition = SubResource("Composite_TurnAndHP")
+effects = Array[Resource]([SubResource("Effect_BasicAttackAgain_1")])
+```
+
+### File: `resources/abilities/ItemTier2B_Bloodlust.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGrantExtraAction.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_GrantExtraAction_1"]
+script = ExtResource("2_effect")
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier2b_bloodlust"
+name_key = "ability.item_tier2b_bloodlust.name"
+description_key = "ability.item_tier2b_bloodlust.desc"
+trigger = &"on_kill"
+effects = Array[Resource]([SubResource("Effect_GrantExtraAction_1")])
+```
+
+### File: `resources/abilities/ItemTier2C_PassiveHeal.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="ConditionDefinition_NonLethal_1"]
+script = ExtResource("3_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="EffectModifyStat_PassiveHeal_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"HOLDER"
+
+[sub_resource type="Resource" id="EffectModifyStat_PassivePwr_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier2c_passive_heal"
+name_key = "ability.item_tier2c_passive_heal.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_NonLethal_1")
+effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1"), SubResource("EffectModifyStat_PassivePwr_1")])
+description_key = "ability.item_tier2c_passive_heal.desc"
+```
+
+### File: `resources/abilities/ItemTier3A_OnHurtHealAllies.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectHealRandom1"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"RANDOM_ALLY"
+
+[sub_resource type="Resource" id="EffectHealRandom2"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"RANDOM_ALLY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3a_on_hurt_heal"
+name_key = "ability.item_t3a_on_hurt_heal.name"
+description_key = "ability.item_t3a_on_hurt_heal.desc"
+trigger = &"on_hurt"
+priority = 100
+effects = Array[Resource]([SubResource("EffectHealRandom1"), SubResource("EffectHealRandom2")])
+```
+
+### File: `resources/abilities/ItemTier3B_OnAttackBuffAllies.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectBuffTwoRandomAllies.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectBuffTwoRandomAllies_1"]
+script = ExtResource("2_effect")
+parameters = { "base_value": 2, "buff_count": 2, "stat": "pwr" }
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3b_on_attack_buff"
+name_key = "ability.item_t3b_on_attack_buff.name"
+description_key = "ability.item_t3b_on_attack_buff.desc"
+trigger = &"on_attack"
+priority = 100
+effects = Array[Resource]([SubResource("EffectBuffTwoRandomAllies_1")])
+
+```
+
+### File: `resources/abilities/ItemTier3C_OnAttackLifesteal.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectLifesteal"]
+script = ExtResource("2_effect")
+parameters = {
+"min_value": 1,
+"scaling_context_key": "damage_dealt",
+"scaling_context_multiplier": 0.2,
+"stat": "hp"
+}
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3c_on_attack_lifesteal"
+name_key = "ability.item_t3c_on_attack_lifesteal.name"
+description_key = "ability.item_t3c_on_attack_lifesteal.desc"
+trigger = &"on_damage_dealt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectLifesteal")])
+```
+
+### File: `resources/abilities/ItemTier3D_RetaliateRandom.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="4_context_cond"]
+[ext_resource type="Script" path="res://scripts/conditions/CompositeCondition.gd" id="5_composite_cond"]
+
+[sub_resource type="Resource" id="ContextCond_AttackOnly"]
+script = ExtResource("4_context_cond")
+id = &"context_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = {
+"allowed_causes": Array[StringName]([&"CAUSE_ATTACK"])
+}
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
+[sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
+script = ExtResource("3_condition")
+id = &"cond_damage_was_received"
+condition_type = &"DAMAGE_WAS_RECEIVED"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="Composite_AttackDamage"]
+script = ExtResource("5_composite_cond")
+id = &"composite_retaliate"
+condition_type = &"COMPOSITE"
+parameters = {}
+invert_result = false
+conditions = Array[Resource]([SubResource("ContextCond_AttackOnly"), SubResource("ConditionDefinition_DamageReceived_1")])
+operator = 0
+
+[sub_resource type="Resource" id="BasicAttackEffect_Retaliate_1"]
+script = ExtResource("2_effect")
+target_type = &"RANDOM_ENEMY"
+parameters = { "damage": { "pwr_multiplier": 0.5, "base_value": 0 } }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3d_retaliate_random"
+name_key = "ability.item_tier3d_retaliate.name"
+description_key = "ability.item_tier3d_retaliate.desc"
+trigger = &"on_hurt"
+condition = SubResource("Composite_AttackDamage")
+priority = 50
+effects = Array[Resource]([SubResource("BasicAttackEffect_Retaliate_1")])
+execute_on_lethal = true
+
+```
+
+### File: `resources/abilities/ItemTier3E_DeathDamage.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Resource" path="res://resources/effects/effect_death_damage_highest_enemy.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_t3e_death_damage"
+name_key = "ability.item_t3e_death_damage.name"
+description_key = "ability.item_t3e_death_damage.desc"
+trigger = &"on_death"
+priority = 215
+effects = Array[Resource]([ExtResource("2_effect")])
+execute_on_lethal = false
+```
+
+### File: `resources/abilities/ItemTier3F_PowerDrain.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectReduceEnemyPWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "item_t3f_power_drain",
+"base_value": -1,
+"log_format": "%s drains the target's power (-%d PWR)",
+"stat": "pwr"
+}
+target_type = &"DEFENDER"
+
+[sub_resource type="Resource" id="EffectIncreaseSourcePWR"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "item_t3f_power_drain",
+"base_value": 1,
+"log_format": "%s absorbs the stolen power (+%d PWR)",
+"stat": "pwr"
+}
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_t3f_power_drain"
+name_key = "ability.item_t3f_power_drain.name"
+description_key = "ability.item_t3f_power_drain.desc"
+trigger = &"on_damage_dealt"
+priority = 0
+effects = Array[Resource]([SubResource("EffectReduceEnemyPWR"), SubResource("EffectIncreaseSourcePWR")])
+execute_on_lethal = true
+```
+
+### File: `resources/abilities/UnitTier1A_PassiveHeal.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="ConditionDefinition_NonLethal_1"]
+script = ExtResource("3_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="EffectModifyStat_PassiveHeal_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1a_passive_heal"
+name_key = "ability.unit_tier1a_passive_heal.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_NonLethal_1")
+effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
+description_key = "ability.unit_tier1a_passive_heal.desc"
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier1A_PassiveHeal_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="ConditionDefinition_NonLethal_1"]
+script = ExtResource("3_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="EffectModifyStat_PassiveHeal_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1a_passive_heal_l2"
+name_key = "ability.unit_tier1a_passive_heal.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_NonLethal_1")
+effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
+description_key = "ability.unit_tier1a_passive_heal_l2.desc"
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier1A_PassiveHeal_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="ConditionDefinition_NonLethal_1"]
+script = ExtResource("3_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false
+
+[sub_resource type="Resource" id="EffectModifyStat_PassiveHeal_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 3 }
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1a_passive_heal_l3"
+name_key = "ability.unit_tier1a_passive_heal.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_NonLethal_1")
+effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
+description_key = "ability.unit_tier1a_passive_heal_l3.desc"
+required_level = 3
+```
+
+### File: `resources/abilities/UnitTier1B_CounterOnHurt.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBurnyCounter.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_cause_condition"]
+
+[sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
+script = ExtResource("3_cause_condition")
+id = &"cond_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_ATTACK"]) }
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
+
+[sub_resource type="Resource" id="EffectBurnyCounter_1"]
+script = ExtResource("2_effect")
+target_type = &"ATTACKER"
+parameters = { "extra_burns": 0 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1b_counter_on_hurt"
+name_key = "ability.unit_tier1b_counter_on_hurt.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_DamageReceived_1")
+effects = Array[Resource]([SubResource("EffectBurnyCounter_1")])
+description_key = "ability.unit_tier1b_counter_on_hurt.desc"
+execute_on_lethal = true
+
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier1B_CounterOnHurt_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBurnyCounter.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_cause_condition"]
+
+
+[sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
+script = ExtResource("3_cause_condition")
+id = &"cond_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_ATTACK"]) }
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
+
+[sub_resource type="Resource" id="EffectBurnyCounter_1"]
+script = ExtResource("2_effect")
+target_type = &"ATTACKER"
+parameters = { "extra_bounces": 1 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1b_counter_on_hurt_l2"
+name_key = "ability.unit_tier1b_counter_on_hurt.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_DamageReceived_1")
+effects = Array[Resource]([SubResource("EffectBurnyCounter_1")])
+description_key = "ability.unit_tier1b_counter_on_hurt_l2.desc"
+execute_on_lethal = true
+required_level = 2
+
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier1B_CounterOnHurt_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBurnyCounter.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_condition"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_cause_condition"]
+
+
+[sub_resource type="Resource" id="ConditionDefinition_DamageReceived_1"]
+script = ExtResource("3_cause_condition")
+id = &"cond_cause_attack"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_ATTACK"]) }
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
+
+[sub_resource type="Resource" id="EffectBurnyCounter_1"]
+script = ExtResource("2_effect")
+target_type = &"ATTACKER"
+parameters = { "extra_bounces": 2 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier1b_counter_on_hurt_l3"
+name_key = "ability.unit_tier1b_counter_on_hurt.name"
+trigger = &"on_hurt"
+condition = SubResource("ConditionDefinition_DamageReceived_1")
+effects = Array[Resource]([SubResource("EffectBurnyCounter_1")])
+description_key = "ability.unit_tier1b_counter_on_hurt_l3.desc"
+execute_on_lethal = true
+required_level = 3
+
+```
+
+### File: `resources/abilities/UnitTier1C_AllyShield.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectAllyShield"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t1_c_ally_shield",
+"log_format": "%s shields their ally (+%d HP)",
+"stat": "hp",
+"base_value": 1
+}
+target_type = &"ALLY_SLOT_AHEAD"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_c_ally_shield"
+name_key = "ability.unit_t1_c_ally_shield.name"
+trigger = &"on_ally_hurt"
+effects = Array[Resource]([SubResource("EffectAllyShield")])
+description_key = "ability.unit_t1_c_ally_shield.desc"
+priority = 100
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier1C_AllyShield_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectAllyShield"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t1_c_ally_shield",
+"log_format": "%s shields their ally (+%d HP)",
+"stat": "hp",
+"base_value": 2
+}
+target_type = &"ALLY_SLOT_AHEAD"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_c_ally_shield_l2"
+name_key = "ability.unit_t1_c_ally_shield.name"
+trigger = &"on_ally_hurt"
+effects = Array[Resource]([SubResource("EffectAllyShield")])
+description_key = "ability.unit_t1_c_ally_shield_l2.desc"
+priority = 100
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier1C_AllyShield_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectAllyShield"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t1_c_ally_shield",
+"log_format": "%s shields their ally (+%d HP)",
+"stat": "hp",
+"base_value": 3
+}
+target_type = &"ALLY_SLOT_AHEAD"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_c_ally_shield_l3"
+name_key = "ability.unit_t1_c_ally_shield.name"
+trigger = &"on_ally_hurt"
+effects = Array[Resource]([SubResource("EffectAllyShield")])
+description_key = "ability.unit_t1_c_ally_shield_l3.desc"
+priority = 100
+required_level = 3
+```
+
+### File: `resources/abilities/UnitTier1D_EmpathicLink.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectBuffAllyBehindPWR.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectBuffAllyBehindPWR_1"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_d_empathic_link"
+name_key = "ability.unit_t1_d_empathic_link.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_1")])
+description_key = "ability.unit_t1_d_empathic_link.desc"
+priority = 300
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier1D_EmpathicLink_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectEmpathicLink.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectBuffAllyBehindPWR_2"]
+script = ExtResource("2_effect")
+parameters = { "depth": 2 }
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_d_empathic_link_l2"
+name_key = "ability.unit_t1_d_empathic_link.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_2")])
+description_key = "ability.unit_t1_d_empathic_link_l2.desc"
+priority = 300
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier1D_EmpathicLink_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectEmpathicLink.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectBuffAllyBehindPWR_3"]
+script = ExtResource("2_effect")
+parameters = { "depth": 3 }
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t1_d_empathic_link_l3"
+name_key = "ability.unit_t1_d_empathic_link.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_3")])
+description_key = "ability.unit_t1_d_empathic_link_l3.desc"
+priority = 300
+execute_on_lethal = true
+required_level = 3
+```
+
+### File: `resources/abilities/UnitTier2A_DefensiveStance.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_DefensiveStance_1"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = { "stat": "hp", "base_value": 2 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2a_defensive_stance_l1"
+name_key = "ability.unit_tier2a_defensive_stance.name"
+trigger = &"on_before_damage"
+effects = Array[Resource]([SubResource("EffectModifyStat_DefensiveStance_1")])
+description_key = "ability.unit_tier2a_defensive_stance_l1.desc"
+priority = 10
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier2A_DefensiveStance_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_DefensiveStance_2"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = { "stat": "hp", "base_value": 4 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2a_defensive_stance_l2"
+name_key = "ability.unit_tier2a_defensive_stance.name"
+trigger = &"on_before_damage"
+effects = Array[Resource]([SubResource("EffectModifyStat_DefensiveStance_2")])
+description_key = "ability.unit_tier2a_defensive_stance_l2.desc"
+priority = 10
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier2A_DefensiveStance_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_DefensiveStance_3"]
+script = ExtResource("2_effect")
+target_type = &"SELF"
+parameters = { "stat": "hp", "base_value": 6 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2a_defensive_stance_l3"
+name_key = "ability.unit_tier2a_defensive_stance.name"
+trigger = &"on_before_damage"
+effects = Array[Resource]([SubResource("EffectModifyStat_DefensiveStance_3")])
+description_key = "ability.unit_tier2a_defensive_stance_l3.desc"
+priority = 10
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier2B_Shockwave.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectCascadeAOE.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectCascadeAOE_Shockwave_1"]
+script = ExtResource("2_effect")
+target_type = &"FRONTMOST_ENEMY"
+parameters = { "damage": { "pwr_multiplier": 1.0, "base_value": 0 }, "cascade_falloff": 0.5 }
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2b_shockwave"
+name_key = "ability.unit_tier2b_shockwave.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectCascadeAOE_Shockwave_1")])
+description_key = "ability.unit_tier2b_shockwave.desc"
+priority = 10
+replaces_basic_attack = true
+```
+
+### File: `resources/abilities/UnitTier2C_AllyDeathBuff.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2c_ally_death_buff"
+name_key = "ability.unit_tier2c_ally_death_buff.name"
+description_key = "ability.unit_tier2c_ally_death_buff_l1.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+priority = 0
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier2C_AllyDeathBuff_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 1,
+"stat": "pwr"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2c_ally_death_buff_l2"
+name_key = "ability.unit_tier2c_ally_death_buff.name"
+description_key = "ability.unit_tier2c_ally_death_buff_l2.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+priority = 0
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier2C_AllyDeathBuff_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = {
+"base_value": 2,
+"stat": "pwr"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier2c_ally_death_buff_l3"
+name_key = "ability.unit_tier2c_ally_death_buff.name"
+description_key = "ability.unit_tier2c_ally_death_buff_l3.desc"
+trigger = &"on_ally_death"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+priority = 0
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier2E_Mimic.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/effects/EffectMirrorTransform.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_custom_transform_1"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "level_delta": 0, "max_level": false }
+
+[resource]
+script = ExtResource("1_def")
+id = &"ability_unit_t3_mimic_l1"
+name_key = "ability.unit_t2_e_mimic.name"
+description_key = "ability.unit_t3_mimic_l1.desc"
+trigger = &"on_before_turn_action"
+effects = Array[Resource]([SubResource("Resource_custom_transform_1")])
+priority = 500
+execute_on_lethal = false
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier2E_Mimic_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/effects/EffectMirrorTransform.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_custom_transform_2"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "level_delta": 1, "max_level": false }
+
+[resource]
+script = ExtResource("1_def")
+id = &"ability_unit_t3_mimic_l2"
+name_key = "ability.unit_t2_e_mimic.name"
+description_key = "ability.unit_t3_mimic_l2.desc"
+trigger = &"on_before_turn_action"
+effects = Array[Resource]([SubResource("Resource_custom_transform_2")])
+priority = 500
+execute_on_lethal = false
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier2E_Mimic_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_def"]
+[ext_resource type="Script" path="res://scripts/effects/EffectMirrorTransform.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Resource_custom_transform_3"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+parameters = { "level_delta": 0, "max_level": true }
+
+[resource]
+script = ExtResource("1_def")
+id = &"ability_unit_t3_mimic_l3"
+name_key = "ability.unit_t2_e_mimic.name"
+description_key = "ability.unit_t3_mimic_l3.desc"
+trigger = &"on_before_turn_action"
+effects = Array[Resource]([SubResource("Resource_custom_transform_3")])
+priority = 500
+execute_on_lethal = false
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier2G_BuffEcho.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectRepeatAdjacentBuff.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectRepeatAdjacentBuff_1"]
+script = ExtResource("2_effect")
+parameters = { "effectiveness": 1.0 }
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_shadow_buff_echo_l1"
+name_key = "ability.unit_t2_g_buff_echo.name"
+description_key = "ability.unit_t3_shadow_l1.desc"
+trigger = &"on_stat_increased"
+priority = 0
+effects = Array[Resource]([SubResource("EffectRepeatAdjacentBuff_1")])
+execute_on_lethal = false
+replaces_basic_attack = false
+condition = null
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier2G_BuffEcho_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectRepeatAdjacentBuff.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectRepeatAdjacentBuff_2"]
+script = ExtResource("2_effect")
+parameters = { "effectiveness": 1.5 }
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_shadow_buff_echo_l2"
+name_key = "ability.unit_t2_g_buff_echo.name"
+description_key = "ability.unit_t3_shadow_l2.desc"
+trigger = &"on_stat_increased"
+priority = 0
+effects = Array[Resource]([SubResource("EffectRepeatAdjacentBuff_2")])
+execute_on_lethal = false
+replaces_basic_attack = false
+condition = null
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier2G_BuffEcho_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectRepeatAdjacentBuff.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectRepeatAdjacentBuff_3"]
+script = ExtResource("2_effect")
+parameters = { "effectiveness": 2.0 }
+target_type = &"TRIGGERING_ENTITY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_shadow_buff_echo_l3"
+name_key = "ability.unit_t2_g_buff_echo.name"
+description_key = "ability.unit_t3_shadow_l3.desc"
+trigger = &"on_stat_increased"
+priority = 0
+effects = Array[Resource]([SubResource("EffectRepeatAdjacentBuff_3")])
+execute_on_lethal = false
+replaces_basic_attack = false
+condition = null
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier2H_Ability.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGrantStatsPerEmptySlot.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectGrantStats"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t2_h_ability"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t2_h_ability"
+name_key = "ability.unit_t2_h.name"
+trigger = &"on_pre_combat"
+effects = Array[Resource]([SubResource("EffectGrantStats")])
+description_key = "ability.unit_t2_h_l1.desc"
+priority = 0
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier2H_Ability_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGrantStatsPerEmptySlot.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectGrantStats"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t2_h_ability_l2",
+"amount": 2
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t2_h_ability_l2"
+name_key = "ability.unit_t2_h.name"
+trigger = &"on_pre_combat"
+effects = Array[Resource]([SubResource("EffectGrantStats")])
+description_key = "ability.unit_t2_h_l2.desc"
+priority = 0
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier2H_Ability_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectGrantStatsPerEmptySlot.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectGrantStats"]
+script = ExtResource("2_effect_script")
+parameters = {
+"ability_id": "unit_t2_h_ability_l3",
+"amount": 3
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t2_h_ability_l3"
+name_key = "ability.unit_t2_h.name"
+trigger = &"on_pre_combat"
+effects = Array[Resource]([SubResource("EffectGrantStats")])
+description_key = "ability.unit_t2_h_l3.desc"
+priority = 0
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3A_MirrorStrike.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectMirrorStrike"]
+script = ExtResource("2_effect_script")
+parameters = {
+"stat": "hp",
+"pwr_multiplier": -1.0,
+"log_format": "%s strikes the space opposite to them (-%d HP)"
+}
+target_type = &"MIRROR_SLOT_ENEMY"
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3a_mirror_strike"
+name_key = "ability.unit_tier3a_mirror_strike.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectMirrorStrike")])
+description_key = "ability.unit_tier3a_mirror_strike_l1.desc"
+priority = 10
+replaces_basic_attack = true
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3A_MirrorStrike_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectMirrorStrike"]
+script = ExtResource("2_effect_script")
+parameters = {
+"log_format": "%s strikes the space opposite to them (-%d HP)",
+"pwr_multiplier": -1.5,
+"stat": "hp"
+}
+target_type = &"MIRROR_SLOT_ENEMY"
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3a_mirror_strike_l2"
+name_key = "ability.unit_tier3a_mirror_strike.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectMirrorStrike")])
+description_key = "ability.unit_tier3a_mirror_strike_l2.desc"
+priority = 10
+replaces_basic_attack = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3A_MirrorStrike_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectMirrorStrike"]
+script = ExtResource("2_effect_script")
+parameters = {
+"log_format": "%s strikes the space opposite to them (-%d HP)",
+"pwr_multiplier": -2.0,
+"stat": "hp"
+}
+target_type = &"MIRROR_SLOT_ENEMY"
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3a_mirror_strike_l3"
+name_key = "ability.unit_tier3a_mirror_strike.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectMirrorStrike")])
+description_key = "ability.unit_tier3a_mirror_strike_l3.desc"
+priority = 10
+replaces_basic_attack = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3B_GuardianSacrifice 2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3b_guardian_sacrifice"
+name_key = "ability.unit_tier3b_guardian_sacrifice.name"
+trigger = &"passive_intercept"
+description_key = "ability.unit_tier3b_guardian_sacrifice.desc"
+priority = 300
+```
+
+### File: `resources/abilities/UnitTier3B_GuardianSacrifice.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_Armor_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "armor", "base_value": 2 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3b_guardian_sacrifice"
+name_key = "ability.unit_tier3b_guardian_sacrifice.name"
+trigger = &"passive_intercept"
+description_key = "ability.unit_tier3b_guardian_sacrifice_l1.desc"
+priority = 300
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3B_GuardianSacrifice_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_Armor_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "armor", "base_value": 1 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3b_guardian_sacrifice_l2"
+name_key = "ability.unit_tier3b_guardian_sacrifice.name"
+trigger = &"passive_intercept"
+description_key = "ability.unit_tier3b_guardian_sacrifice_l2.desc"
+priority = 300
+effects = Array[Resource]([SubResource("EffectModifyStat_Armor_1")])
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3B_GuardianSacrifice_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_Armor_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "armor", "base_value": 2 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3b_guardian_sacrifice_l3"
+name_key = "ability.unit_tier3b_guardian_sacrifice.name"
+trigger = &"passive_intercept"
+description_key = "ability.unit_tier3b_guardian_sacrifice_l3.desc"
+priority = 300
+effects = Array[Resource]([SubResource("EffectModifyStat_Armor_2")])
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3Berserker_Shockwave_L1.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectCascadeAOE.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectCascadeAOE_Shockwave_1"]
+script = ExtResource("2_effect")
+target_type = &"FRONTMOST_ENEMY"
+parameters = { "damage": { "pwr_multiplier": 1.0, "base_value": 0 }, "cascade_falloff": 0.5 }
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3_berserker_shockwave"
+name_key = "ability.unit_tier3_berserker_shockwave.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectCascadeAOE_Shockwave_1")])
+description_key = "ability.unit_tier3_berserker_shockwave_l1.desc"
+priority = 10
+replaces_basic_attack = true
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3Berserker_Shockwave_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectCascadeAOE.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectCascadeAOE_Shockwave_2"]
+script = ExtResource("2_effect")
+target_type = &"FRONTMOST_ENEMY"
+parameters = { "damage": { "pwr_multiplier": 1.5, "base_value": 0 }, "cascade_falloff": 0.5 }
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3_berserker_shockwave_l2"
+name_key = "ability.unit_tier3_berserker_shockwave.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectCascadeAOE_Shockwave_2")])
+description_key = "ability.unit_tier3_berserker_shockwave_l2.desc"
+priority = 10
+replaces_basic_attack = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3Berserker_Shockwave_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectCascadeAOE.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="EffectCascadeAOE_Shockwave_3"]
+script = ExtResource("2_effect")
+target_type = &"FRONTMOST_ENEMY"
+parameters = { "damage": { "pwr_multiplier": 2.0, "base_value": 0 }, "cascade_falloff": 0.5 }
+
+[sub_resource type="Resource" id="ContextCauseCondition_TurnOnly"]
+script = ExtResource("3_condition")
+id = &"cond_cause_turn"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = { "allowed_causes": Array[StringName]([&"CAUSE_TURN"]) }
+allowed_causes = Array[StringName]([&"CAUSE_TURN"])
+invert_result = false
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3_berserker_shockwave_l3"
+name_key = "ability.unit_tier3_berserker_shockwave.name"
+trigger = &"on_attack"
+condition = SubResource("ContextCauseCondition_TurnOnly")
+effects = Array[Resource]([SubResource("EffectCascadeAOE_Shockwave_3")])
+description_key = "ability.unit_tier3_berserker_shockwave_l3.desc"
+priority = 10
+replaces_basic_attack = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3C_SoulSummon.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonT2OnDeath_1"]
+script = ExtResource("2_effect")
+parameters = { "level": 1 }
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_tier3c_soul_summon"
+name_key = "ability.unit_tier3c_soul_summon.name"
+description_key = "ability.unit_tier3c_soul_summon_l1.desc"
+trigger = &"on_death"
+priority = 205
+effects = Array[Resource]([SubResource("EffectSummonT2OnDeath_1")])
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3C_SoulSummon_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonT2OnDeath_2"]
+script = ExtResource("2_effect")
+parameters = { "level": 2 }
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_tier3c_soul_summon_l2"
+name_key = "ability.unit_tier3c_soul_summon.name"
+description_key = "ability.unit_tier3c_soul_summon_l2.desc"
+trigger = &"on_death"
+priority = 205
+effects = Array[Resource]([SubResource("EffectSummonT2OnDeath_2")])
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3C_SoulSummon_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonT2OnDeath_3"]
+script = ExtResource("2_effect")
+parameters = {
+"level": 3
+}
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_tier3c_soul_summon_l3"
+name_key = "ability.unit_tier3c_soul_summon.name"
+description_key = "ability.unit_tier3c_soul_summon_l3.desc"
+trigger = &"on_death"
+priority = 205
+effects = Array[Resource]([SubResource("EffectSummonT2OnDeath_3")])
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3D_ResilientAura.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffHP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"ADJACENT_ALLIES"
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffPWR_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"ADJACENT_ALLIES"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3d_resilient_aura"
+name_key = "ability.unit_tier3d_resilient_aura.name"
+description_key = "ability.unit_tier3d_resilient_aura_l1.desc"
+trigger = &"on_hurt"
+priority = 100
+effects = Array[Resource]([SubResource("EffectModifyStat_BuffHP_1"), SubResource("EffectModifyStat_BuffPWR_1")])
+execute_on_lethal = true
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3D_ResilientAura_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffHP_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"ADJACENT_ALLIES"
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffPWR_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"ADJACENT_ALLIES"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3d_resilient_aura_l2"
+name_key = "ability.unit_tier3d_resilient_aura.name"
+description_key = "ability.unit_tier3d_resilient_aura_l2.desc"
+trigger = &"on_hurt"
+priority = 100
+effects = Array[Resource]([SubResource("EffectModifyStat_BuffHP_2"), SubResource("EffectModifyStat_BuffPWR_2")])
+execute_on_lethal = true
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3D_ResilientAura_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffHP_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"ADJACENT_ALLIES"
+
+[sub_resource type="Resource" id="EffectModifyStat_BuffPWR_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 2 }
+target_type = &"ADJACENT_ALLIES"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3d_resilient_aura_l3"
+name_key = "ability.unit_tier3d_resilient_aura.name"
+description_key = "ability.unit_tier3d_resilient_aura_l3.desc"
+trigger = &"on_hurt"
+priority = 100
+effects = Array[Resource]([SubResource("EffectModifyStat_BuffHP_3"), SubResource("EffectModifyStat_BuffPWR_3")])
+execute_on_lethal = true
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3E_AmbushPredator.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectAmbushPredator.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectAmbushPredator_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "damage_ratio": 0.5 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3e_ambush_predator_l1"
+name_key = "ability.unit_tier3e_ambush_predator.name"
+description_key = "ability.unit_tier3e_ambush_predator_l1.desc"
+trigger = &"on_enemy_summon"
+priority = 100
+effects = Array[Resource]([SubResource("EffectAmbushPredator_1")])
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3E_AmbushPredator_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectAmbushPredator.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectAmbushPredator_2"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "damage_ratio": 0.75 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3e_ambush_predator_l2"
+name_key = "ability.unit_tier3e_ambush_predator.name"
+description_key = "ability.unit_tier3e_ambush_predator_l2.desc"
+trigger = &"on_enemy_summon"
+priority = 100
+effects = Array[Resource]([SubResource("EffectAmbushPredator_2")])
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3E_AmbushPredator_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectAmbushPredator.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectAmbushPredator_3"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "damage_ratio": 1.0 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3e_ambush_predator_l3"
+name_key = "ability.unit_tier3e_ambush_predator.name"
+description_key = "ability.unit_tier3e_ambush_predator_l3.desc"
+trigger = &"on_enemy_summon"
+priority = 100
+effects = Array[Resource]([SubResource("EffectAmbushPredator_3")])
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3F_SummonBlessing.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectSummonBlessing.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonBlessing_1"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "hp_amount": 3 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3f_summon_blessing_l1"
+name_key = "ability.unit_tier3f_summon_blessing.name"
+description_key = "ability.unit_tier3f_summon_blessing_l1.desc"
+trigger = &"on_ally_summon"
+priority = 110
+effects = Array[Resource]([SubResource("EffectSummonBlessing_1")])
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3F_SummonBlessing_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectSummonBlessing.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonBlessing_2"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "hp_amount": 5 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3f_summon_blessing_l2"
+name_key = "ability.unit_tier3f_summon_blessing.name"
+description_key = "ability.unit_tier3f_summon_blessing_l2.desc"
+trigger = &"on_ally_summon"
+priority = 110
+effects = Array[Resource]([SubResource("EffectSummonBlessing_2")])
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3F_SummonBlessing_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectSummonBlessing.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectSummonBlessing_3"]
+script = ExtResource("2_effect")
+target_type = &"TRIGGERING_ENTITY"
+parameters = { "hp_amount": 7 }
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3f_summon_blessing_l3"
+name_key = "ability.unit_tier3f_summon_blessing.name"
+description_key = "ability.unit_tier3f_summon_blessing_l3.desc"
+trigger = &"on_ally_summon"
+priority = 110
+effects = Array[Resource]([SubResource("EffectSummonBlessing_3")])
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3G_BenchGrowth.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBenchGrowth.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDeadAllyScaling_1"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_g_ability",
+"scale_amount": 3
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3g_bench_growth_l1"
+name_key = "ability.unit_tier3g_bench_growth.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectDeadAllyScaling_1")])
+description_key = "ability.unit_tier3g_bench_growth_l1.desc"
+priority = 0
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3G_BenchGrowth_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBenchGrowth.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDeadAllyScaling_2"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_g_ability",
+"scale_amount": 5
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3g_bench_growth_l2"
+name_key = "ability.unit_tier3g_bench_growth.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectDeadAllyScaling_2")])
+description_key = "ability.unit_tier3g_bench_growth_l2.desc"
+priority = 0
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3G_BenchGrowth_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectBenchGrowth.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectDeadAllyScaling_3"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_g_ability",
+"scale_amount": 7
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3g_bench_growth_l3"
+name_key = "ability.unit_tier3g_bench_growth.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectDeadAllyScaling_3")])
+description_key = "ability.unit_tier3g_bench_growth_l3.desc"
+priority = 0
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3H_MergeGrowth.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 2 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_1"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 2 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3h_merge_growth_l1"
+name_key = "ability.unit_t3_h.name"
+description_key = "ability.unit_tier3h_merge_growth_l1.desc"
+trigger = &"on_merge"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
+priority = 0
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3H_MergeGrowth_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 3 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_2"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 3 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3h_merge_growth_l2"
+name_key = "ability.unit_t3_h.name"
+description_key = "ability.unit_tier3h_merge_growth_l2.desc"
+trigger = &"on_merge"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_2"), SubResource("EffectModifyStat_GainPWR_2")])
+priority = 0
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3H_MergeGrowth_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_GainHP_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "hp", "base_value": 4 }
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="EffectModifyStat_GainPWR_3"]
+script = ExtResource("2_effect")
+parameters = { "stat": "pwr", "base_value": 4 }
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_tier3h_merge_growth_l3"
+name_key = "ability.unit_t3_h.name"
+description_key = "ability.unit_tier3h_merge_growth_l3.desc"
+trigger = &"on_merge"
+effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_3"), SubResource("EffectModifyStat_GainPWR_3")])
+priority = 0
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3J_Ability.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectTransferItemBehind.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectTransferItemBehind_1"]
+script = ExtResource("2_effect_script")
+parameters = { "pass_count": 1 }
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_j_ability_l1"
+name_key = "ability.unit_t3_j_ability.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectTransferItemBehind_1")])
+description_key = "ability.unit_t3_j_ability_l1.desc"
+priority = 220
+execute_on_lethal = true
+replaces_basic_attack = false
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3J_Ability_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectTransferItemBehind.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectTransferItemBehind_2"]
+script = ExtResource("2_effect_script")
+parameters = { "pass_count": 2 }
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_j_ability_l2"
+name_key = "ability.unit_t3_j_ability.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectTransferItemBehind_2")])
+description_key = "ability.unit_t3_j_ability_l2.desc"
+priority = 220
+execute_on_lethal = true
+replaces_basic_attack = false
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3J_Ability_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectTransferItemBehind.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectTransferItemBehind_3"]
+script = ExtResource("2_effect_script")
+parameters = { "pass_count": 3 }
+target_type = &"ALLY_BEHIND"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_j_ability_l3"
+name_key = "ability.unit_t3_j_ability.name"
+trigger = &"on_death"
+effects = Array[Resource]([SubResource("EffectTransferItemBehind_3")])
+description_key = "ability.unit_t3_j_ability_l3.desc"
+priority = 220
+execute_on_lethal = true
+replaces_basic_attack = false
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/abilities/UnitTier3L_Ability.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectModifyStatsByGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGoldScaling_1"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_l_ability",
+"hp_per_5_gold": 3,
+"pwr_per_5_gold": 3
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_l_ability_l1"
+name_key = "ability.unit_t3_l.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectGoldScaling_1")])
+description_key = "ability.unit_t3_l_l1.desc"
+priority = 0
+max_level = 1
+```
+
+### File: `resources/abilities/UnitTier3L_Ability_L2.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectModifyStatsByGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGoldScaling_2"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_l_ability",
+"hp_per_5_gold": 4,
+"pwr_per_5_gold": 4
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_l_ability_l2"
+name_key = "ability.unit_t3_l.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectGoldScaling_2")])
+description_key = "ability.unit_t3_l_l2.desc"
+priority = 0
+required_level = 2
+max_level = 2
+```
+
+### File: `resources/abilities/UnitTier3L_Ability_L3.tres`
+```ini
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectModifyStatsByGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectGoldScaling_3"]
+script = ExtResource("2_effect")
+parameters = {
+"ability_id": "unit_t3_l_ability",
+"hp_per_5_gold": 5,
+"pwr_per_5_gold": 5
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"unit_t3_l_ability_l3"
+name_key = "ability.unit_t3_l.name"
+trigger = &"on_turn_start"
+effects = Array[Resource]([SubResource("EffectGoldScaling_3")])
+description_key = "ability.unit_t3_l_l3.desc"
+priority = 0
+required_level = 3
+max_level = 3
+```
+
+### File: `resources/conditions/cond_dying_unit_is_dust.tres`
+```ini
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"cond_dying_unit_is_dust"
+condition_type = &"DYING_UNIT_IS_DUST"
+parameters = {}
+invert_result = false
+```
+
+### File: `resources/conditions/NonLethalDamageCondition.tres`
+```ini
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_condition"]
+
+[resource]
+script = ExtResource("1_condition")
+id = &"cond_damage_was_non_lethal"
+condition_type = &"DAMAGE_WAS_NON_LETHAL"
+parameters = {}
+invert_result = false
+```
+
+### File: `resources/conditions/TurnInitiatedAttackCondition.tres`
+```ini
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_condition"]
+
+[resource]
+script = ExtResource("1_condition")
+id = &"cond_is_turn_initiated_attack"
+condition_type = &"IS_TURN_INITIATED_ATTACK"
+parameters = {}
+invert_result = false
+```
+
+### File: `resources/effects/consumables/grant_heroism_armor.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_effect"]
+
+[resource]
+script = ExtResource("1_effect")
+parameters = {
+"base_value": 3,
+"stat": "armor"
+}
+```
+
+### File: `resources/effects/consumables/grant_heroism_hp.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"MANUAL"
+parameters = {
+"base_value": 3,
+"stat": "hp"
+}
+```
+
+### File: `resources/effects/consumables/grant_heroism_pwr.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"MANUAL"
+parameters = {
+"base_value": 3,
+"stat": "pwr"
+}
+```
+
+### File: `resources/effects/consumables/grant_spikes.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_effect"]
+
+[resource]
+script = ExtResource("1_effect")
+parameters = {
+"base_value": 4,
+"stat": "spikes"
+}
+```
+
+### File: `resources/effects/effect_awe_inspiring_totem.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectAweInspiringTotem.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+```
+
+### File: `resources/effects/effect_boss_summon.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectBossSummon.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = { "budget": 5 }
+target_type = &"SELF"
+```
+
+### File: `resources/effects/effect_buff_drawn_unit.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectBuffDrawnUnit.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"hp_amount": 1,
+"pwr_amount": 1,
+"tier_filter": 1
+}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_buff_hero_on_merge.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectBuffHeroOnMerge.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"hp_amount": 1,
+"pwr_amount": 1
+}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_buff_high_level_unit.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectBuffHighLevelUnit.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"hp_amount": 1,
+"pwr_amount": 1
+}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_consumable_potion_t1.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"MANUAL"
+parameters = {
+"base_value": 4,
+"stat": "hp"
+}
+```
+
+### File: `resources/effects/effect_death_damage_highest_enemy.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectDeathDamageHighestEnemy.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"HIGHEST_HP_ENEMY"
+```
+
+### File: `resources/effects/effect_death_token_refund.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectDeathTokenRefund.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_doppleganger_scaling.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectDopplegangerScaling.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+parameters = {}
+```
+
+### File: `resources/effects/effect_duplicate_to_gacha_doppleganger.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"unit_t3_i",
+"duplicate_type": "UNIT",
+"duplicate_tier": 3
+}
+```
+
+### File: `resources/effects/effect_duplicate_to_gacha_echoing_orb.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectDuplicateToGacha.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+parameters = {
+"duplicate_def_id": &"item_t2_d",
+"duplicate_type": "ITEM",
+"duplicate_tier": 2
+}
+```
+
+### File: `resources/effects/effect_echoing_orb_scaling.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectEchoingOrbScaling.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+parameters = {}
+```
+
+### File: `resources/effects/effect_grant_armor.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"ALL_ALLIES"
+parameters = {
+"stat": "armor_stacks",
+"base_value": 3
+}
+```
+
+### File: `resources/effects/effect_grant_armor_2.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"FRONTMOST_ALLY"
+parameters = {
+"stat": "armor_stacks",
+"base_value": 2
+}
+```
+
+### File: `resources/effects/effect_grant_spikes_2.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"FRONTMOST_ALLY"
+parameters = {
+"stat": "spikes_stacks",
+"base_value": 2
+}
+```
+
+### File: `resources/effects/effect_item_steal.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectItemSteal" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectItemSteal.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"TARGET_UNIT"
+parameters = {}
+```
+
+### File: `resources/effects/effect_merge_damage.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"base_value": -3,
+"stat": "hp"
+}
+target_type = &"RANDOM_ENEMY"
+```
+
+### File: `resources/effects/Effect_MudCoating_Armor.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 1,
+"status_id": "armor"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/Effect_MudCoating_Armor2.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 2,
+"status_id": "armor"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/Effect_MudCoating_Armor3.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 3,
+"status_id": "armor"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/Effect_MudCoating_Spikes.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 1,
+"status_id": "spikes"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/Effect_MudCoating_Spikes2.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 2,
+"status_id": "spikes"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/Effect_MudCoating_Spikes3.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"amount": 3,
+"status_id": "spikes"
+}
+target_type = &"SELF"
+```
+
+### File: `resources/effects/effect_resurrect_first_killed.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectResurrectFirstKilledUnit.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_rusty_ring_buff.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectRustyRingBuff.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_rusty_ring_passive.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectRustyRingPassive.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/Effect_Scald.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/EffectScald.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"extra_bounces": 0
+}
+target_type = &"RANDOM_ENEMY"
+```
+
+### File: `resources/effects/Effect_Scald_L2.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/EffectScald.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"extra_bounces": 1
+}
+target_type = &"RANDOM_ENEMY"
+```
+
+### File: `resources/effects/Effect_Scald_L3.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/abilities/EffectScald.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {
+"extra_bounces": 2
+}
+target_type = &"RANDOM_ENEMY"
+```
+
+### File: `resources/effects/effect_summon_t1_on_death.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectSummonOnDeath.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+```
+
+### File: `resources/effects/effect_summon_t2_on_death.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+```
+
+### File: `resources/effects/effect_trinity_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectTrinityCharm.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {}
+target_type = &"NONE"
+```
+
+### File: `resources/effects/effect_twin_charm_scaling.tres`
+```ini
+[gd_resource type="Resource" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectTwinCharmScaling.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+target_type = &"NONE"
+parameters = {}
+```
+
+### File: `resources/effects/effect_underdog_armor.tres`
+```ini
+[gd_resource type="Resource" script_class="EffectDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/effects/EffectUnderdogArmor.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+parameters = {}
+target_type = &"ALL_ALLIES"
+```
+
+### File: `resources/items/consumable_potion_plunder.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_consumable_steal.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3PotionA.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"consumable_potion_plunder"
+display_name_key = "item.potion_plunder.name"
+description_key = "item.potion_plunder.desc"
+category = &"CONSUMABLE"
+tier = 3
+icon = ExtResource("3_icon")
+tags = []
+is_hero = false
+base_hp = 0
+base_pwr = 0
+visual_scale = 1.0
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/items/consumables/item_potion_heroism.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2PotionB.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/consumables/ability_grant_heroism.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_item")
+id = "item_potion_heroism"
+display_name_key = "item.potion_heroism.name"
+description_key = "item.potion_heroism.desc"
+icon = ExtResource("2_icon")
+category = "CONSUMABLE"
+tier = 2
+base_hp = 0
+base_pwr = 0
+item_slot_count = 0
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+tags = Array[StringName]([&"TIER_2", &"POTION"])
+is_hero = false
+cost = 2
+```
+
+### File: `resources/items/consumables/item_potion_spikes.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2PotionA.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/consumables/ability_grant_spikes.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_item")
+id = "item_potion_spikes"
+display_name_key = "item.potion_spikes.name"
+description_key = "item.potion_spikes.desc"
+icon = ExtResource("2_icon")
+category = "CONSUMABLE"
+tier = 2
+base_hp = 0
+base_pwr = 0
+item_slot_count = 0
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+tags = Array[StringName]([&"TIER_2", &"POTION"])
+is_hero = false
+cost = 2
+```
+
+### File: `resources/items/item_emblem_air.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/AirEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_air"
+display_name_key = "item.emblem_air.name"
+description_key = "item.emblem_air.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_AIR"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 1
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/items/item_emblem_earth.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_earth_001"]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/EarthEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_earth"
+display_name_key = "item.emblem_earth.name"
+description_key = "item.emblem_earth.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_EARTH"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 4
+bonus_pwr = 0
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/items/item_emblem_fire.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3 uid="uid://item_emblem_fire_001"]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/FireEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_fire"
+display_name_key = "item.emblem_fire.name"
+description_key = "item.emblem_fire.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_FIRE"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 2
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/items/item_emblem_water.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/WaterEmblem.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_water"
+display_name_key = "item.emblem_water.name"
+description_key = "item.emblem_water.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"SOUL_WATER"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 1
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/items/item_potion_t1.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier1PotionA.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_consumable_potion_t1.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_potion_t1"
+display_name_key = "item.potion_t1.name"
+description_key = "item.potion_t1.desc"
+icon = ExtResource("2_icon")
+tags = [&"TIER_1", &"POTION"]
+is_hero = false
+tier = 1
+cost = 2
+category = &"CONSUMABLE"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier1A.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier1HPItem.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier1A_TurnStartHeal.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t1_a"
+display_name_key = "item_t1_a.name"
+description_key = "item_t1_a.desc"
+icon = ExtResource("2_icon")
+tier = 1
+cost = 1
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 1
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier1B.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier1PWRItem.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier1B_ExtraAttack.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t1_b"
+display_name_key = "item_t1_b.name"
+description_key = "item_t1_b.desc"
+icon = ExtResource("2_icon")
+tier = 1
+cost = 1
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 1
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier2A.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2ItemA.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_item_t2_c_summon.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t2_a"
+display_name_key = "item_t2_a.name"
+description_key = "item_t2_a.desc"
+icon = ExtResource("2_icon")
+tier = 2
+cost = 2
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier2B.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2ItemB.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier2B_Bloodlust.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t2_b"
+display_name_key = "item_t2_b.name"
+description_key = "item_t2_b.desc"
+icon = ExtResource("2_icon")
+tier = 2
+cost = 2
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 2
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier2C.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2ItemC.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier2C_PassiveHeal.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t2_c"
+display_name_key = "item_t2_c.name"
+description_key = "item_t2_c.desc"
+icon = ExtResource("2_icon")
+tier = 2
+cost = 2
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 1
+bonus_pwr = 1
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier2D.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier2ItemD.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_echoing_orb_scale.tres" id="3_scale"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_echoing_orb_death.tres" id="4_death"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t2_d"
+display_name_key = "item_t2_d.name"
+description_key = "item_t2_d.desc"
+icon = ExtResource("2_icon")
+tier = 2
+cost = 2
+category = &"ITEM"
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_scale"), ExtResource("4_death")])
+```
+
+### File: `resources/items/ItemTier3A.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemA.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3A_OnHurtHealAllies.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_a"
+display_name_key = "item_t3_a.name"
+description_key = "item_t3_a.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 4
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3B.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemB.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3B_OnAttackBuffAllies.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_b"
+display_name_key = "item_t3_b.name"
+description_key = "item_t3_b.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 4
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3C.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemC.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3C_OnAttackLifesteal.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_c"
+display_name_key = "item_t3_c.name"
+description_key = "item_t3_c.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 2
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3D.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemD.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3D_RetaliateRandom.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_d"
+display_name_key = "item_t3_d.name"
+description_key = "item_t3_d.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 2
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3E.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemE.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3E_DeathDamage.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_e"
+display_name_key = "item_t3_e.name"
+description_key = "item_t3_e.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 3
+bonus_pwr = 1
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3F.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemF.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ItemTier3F_PowerDrain.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_f"
+display_name_key = "item_t3_f.name"
+description_key = "item_t3_f.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 1
+bonus_pwr = 3
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/items/ItemTier3G.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/Tier3ItemG.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"item_t3_g"
+display_name_key = "item_t3_g.name"
+description_key = "item_t3_g.desc"
+icon = ExtResource("2_icon")
+tier = 3
+cost = 4
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 0
+bonus_pwr = 1
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/physics/GachaBallMaterial.tres`
+```ini
+[gd_resource type="PhysicsMaterial" format=3]
+
+[resource]
+friction = 0.05
+bounce = 0.15
+```
+
+### File: `resources/recipes/Merge_Item_A_A_to_C02.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_a_a_to_c02"
+ingredient_a_id = &"item_t1_a"
+ingredient_b_id = &"item_t1_a"
+result_id = &"item_t2_a"
+is_self_merge = true
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_A_B_to_C.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_a_b_to_c"
+ingredient_a_id = &"item_t1_a"
+ingredient_b_id = &"item_t1_b"
+result_id = &"item_t2_c"
+is_self_merge = false
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_B_B_to_B2.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_b_b_to_b2"
+ingredient_a_id = &"item_t1_b"
+ingredient_b_id = &"item_t1_b"
+result_id = &"item_t2_b"
+is_self_merge = true
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_C_C_to_D.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_c_c_to_d"
+ingredient_a_id = &"item_t2_c"
+ingredient_b_id = &"item_t2_c"
+result_id = &"item_t3_d"
+is_self_merge = true
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_T2A_T2A_to_T3A.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_t2a_t2a_to_t3a"
+ingredient_a_id = &"item_t2_a"
+ingredient_b_id = &"item_t2_a"
+result_id = &"item_t3_a"
+is_self_merge = true
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_T2A_T2C_to_T3E.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_t2a_t2c_to_t3e"
+ingredient_a_id = &"item_t2_a"
+ingredient_b_id = &"item_t2_c"
+result_id = &"item_t3_e"
+is_self_merge = false
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_T2B_T2B_to_T3B.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_t2b_t2b_to_t3b"
+ingredient_a_id = &"item_t2_b"
+ingredient_b_id = &"item_t2_b"
+result_id = &"item_t3_b"
+is_self_merge = true
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_T2B_T2C02_to_T3C.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_t2b_t2c02_to_t3c"
+ingredient_a_id = &"item_t2_b"
+ingredient_b_id = &"item_t2_a"
+result_id = &"item_t3_c"
+is_self_merge = false
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Item_T2B_T2C_to_T3G.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_item_t2b_t2c_to_t3g"
+ingredient_a_id = &"item_t2_b"
+ingredient_b_id = &"item_t2_c"
+result_id = &"item_t3_g"
+is_self_merge = false
+merge_type = &"ITEM"
+```
+
+### File: `resources/recipes/Merge_Unit_A_B_to_C.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_a_b_to_c"
+ingredient_a_id = &"unit_t1_a"
+ingredient_b_id = &"unit_t1_b"
+result_id = &"unit_t2_c"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T1A_T1C_to_T2I.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t1_a_t1_c_to_t2_i"
+ingredient_a_id = &"unit_t1_a"
+ingredient_b_id = &"unit_t1_c"
+result_id = &"unit_t2_i"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T1A_T1D_to_T2F.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t1_a_t1_d_to_t2_f"
+ingredient_a_id = &"unit_t1_a"
+ingredient_b_id = &"unit_t1_d"
+result_id = &"unit_t2_f"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T1B_T1D_to_T2D.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t1_b_t1_d_to_t2_d"
+ingredient_a_id = &"unit_t1_b"
+ingredient_b_id = &"unit_t1_d"
+result_id = &"unit_t2_d"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T1C_T1D_to_T2H.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t1c_t1d_to_t2h"
+ingredient_a_id = &"unit_t1_c"
+ingredient_b_id = &"unit_t1_d"
+result_id = &"unit_t2_h"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2C_T2D_to_T3Paladin.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2c_t2d_to_t3paladin"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_d"
+result_id = &"unit_t3_paladin"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2C_T2F_to_T3E.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2c_t2f_to_t3e"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_f"
+result_id = &"unit_t3_e"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2C_T2H_to_T3B.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2c_t2h_to_t3b"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_h"
+result_id = &"unit_t3_b"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2C_T2I_to_T3D.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2c_t2i_to_t3d"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_i"
+result_id = &"unit_t3_d"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2C_T2J_to_T3Berserker.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2c_t2j_to_t3berserker"
+ingredient_a_id = &"unit_t2_c"
+ingredient_b_id = &"unit_t2_j"
+result_id = &"unit_t3_berserker"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2D_T2H_to_T3G.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2d_t2h_to_t3g"
+ingredient_a_id = &"unit_t2_d"
+ingredient_b_id = &"unit_t2_h"
+result_id = &"unit_t3_g"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2F_T2D_to_T3C.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2f_t2d_to_t3c"
+ingredient_a_id = &"unit_t2_f"
+ingredient_b_id = &"unit_t2_d"
+result_id = &"unit_t3_c"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2F_T2H_to_T3L.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2f_t2h_to_t3l"
+ingredient_a_id = &"unit_t2_f"
+ingredient_b_id = &"unit_t2_h"
+result_id = &"unit_t3_l"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2F_T2J_to_T3A.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2f_t2j_to_t3a"
+ingredient_a_id = &"unit_t2_f"
+ingredient_b_id = &"unit_t2_j"
+result_id = &"unit_t3_a"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2I_T2D_to_T3F.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2i_t2d_to_t3f"
+ingredient_a_id = &"unit_t2_i"
+ingredient_b_id = &"unit_t2_d"
+result_id = &"unit_t3_f"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2I_T2F_to_T3Mimic.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2i_t2f_to_t3mimic"
+ingredient_a_id = &"unit_t2_i"
+ingredient_b_id = &"unit_t2_f"
+result_id = &"unit_t3_mimic"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2I_T2H_to_T3I.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2i_t2h_to_t3i"
+ingredient_a_id = &"unit_t2_i"
+ingredient_b_id = &"unit_t2_h"
+result_id = &"unit_t3_i"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2I_T2J_to_T3H.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2i_t2j_to_t3h"
+ingredient_a_id = &"unit_t2_i"
+ingredient_b_id = &"unit_t2_j"
+result_id = &"unit_t3_h"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2J_T2D_to_T3J.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2j_t2d_to_t3j"
+ingredient_a_id = &"unit_t2_j"
+ingredient_b_id = &"unit_t2_d"
+result_id = &"unit_t3_j"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Merge_Unit_T2J_T2H_to_T3Shadow.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t2j_t2h_to_t3shadow"
+ingredient_a_id = &"unit_t2_j"
+ingredient_b_id = &"unit_t2_h"
+result_id = &"unit_t3_shadow"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/recipes/Recipe_UnitT2J.tres`
+```ini
+[gd_resource type="Resource" script_class="MergeRecipe" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/MergeRecipe.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"merge_unit_t1_b_t1_c_to_t2_j"
+ingredient_a_id = &"unit_t1_b"
+ingredient_b_id = &"unit_t1_c"
+result_id = &"unit_t2_j"
+is_self_merge = false
+merge_type = &"UNIT"
+```
+
+### File: `resources/status_effects/armor.tres`
+```ini
+[gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_armor_pixel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"armor"
+display_name_key = "STATUS_ARMOR"
+description_key = "STATUS_ARMOR_DESC"
+icon = ExtResource("2_icon")
+color = Color(0.6, 0.6, 0.6, 1)
+turn_phase = "END_OF_TURN"
+turn_effect = "NONE"
+turn_effect_multiplier = 1.0
+decay_mode = "CLEAR"
+decay_amount = 1
+```
+
+### File: `resources/status_effects/burn.tres`
+```ini
+[gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_burn_pixel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"burn"
+display_name_key = "STATUS_BURN"
+description_key = "STATUS_BURN_DESC"
+icon = ExtResource("2_icon")
+color = Color(1, 0.3, 0, 1)
+turn_phase = "END_OF_TURN"
+turn_effect = "DAMAGE"
+turn_effect_multiplier = 1.0
+decay_mode = "HALVE"
+decay_amount = 1
+is_negative = true
+```
+
+### File: `resources/status_effects/spikes.tres`
+```ini
+[gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_spike_pixel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"spikes"
+display_name_key = "STATUS_SPIKES"
+description_key = "STATUS_SPIKES_DESC"
+icon = ExtResource("2_icon")
+color = Color(1, 1, 1, 1)
+turn_phase = "NONE"
+turn_effect = "NONE"
+turn_effect_multiplier = 1.0
+decay_mode = "NONE"
+decay_amount = 1
+```
+
+### File: `resources/status_effects/static.tres`
+```ini
+[gd_resource type="Resource" script_class="StatusEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/StatusEffectDefinition.gd" id="1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_static_pixel.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1")
+id = &"static"
+display_name_key = "STATUS_STATIC"
+description_key = "STATUS_STATIC_DESC"
+icon = ExtResource("2_icon")
+color = Color(1, 0.85, 0.1, 1)
+turn_phase = "NONE"
+turn_effect = "NONE"
+turn_effect_multiplier = 1.0
+decay_mode = "NONE"
+decay_amount = 1
+is_negative = true
+```
+
+### File: `resources/trinkets/PolishedPlate.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket1A.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_polished_plate"
+name_key = "trinket.polished_plate.name"
+description_key = "trinket.polished_plate.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/trinkets/trinket_aegis.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket4A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" path="res://scripts/EffectPreventLethal.gd" id="4_effect"]
+
+[sub_resource type="Resource" id="Effect_Aegis_1"]
+script = ExtResource("4_effect")
+parameters = {}
+target_type = &"NONE"
+
+[sub_resource type="Resource" id="Ability_Aegis_1"]
+script = ExtResource("3_ability")
+id = &"ability_trinket_aegis"
+trigger = &"on_hurt"
+description_key = "ability.aegis.desc"
+priority = 250
+effects = Array[Resource]([SubResource("Effect_Aegis_1")])
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_aegis"
+name_key = "trinket.aegis.name"
+description_key = "trinket.aegis.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_Aegis_1")])
+```
+
+### File: `resources/trinkets/trinket_armor_aura.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket6A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_armor_aura.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_armor_aura"
+name_key = "trinket.armor_aura.name"
+description_key = "trinket.armor_aura.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_awe_inspiring_totem.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_awe_inspiring_totem.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket18A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_awe_inspiring_totem"
+name_key = "trinket.awe_inspiring_totem.name"
+description_key = "trinket.awe_inspiring_totem.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+cost = 10
+```
+
+### File: `resources/trinkets/trinket_bargain_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_bargain_charm.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket11A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_bargain_charm"
+name_key = "trinket.bargain_charm.name"
+description_key = "trinket.bargain_charm.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/trinkets/trinket_beginners_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_beginners_charm.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket19A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_beginners_charm"
+name_key = "trinket.beginners_charm.name"
+description_key = "trinket.beginners_charm.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/trinkets/trinket_burn_vial.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket7A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+
+[sub_resource type="Resource" id="Ability_BurnVial"]
+script = ExtResource("3_ability")
+trigger = &"on_passive"
+description_key = "ability.burn_vial.desc"
+effects = Array[Resource]([])
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_burn_vial"
+name_key = "trinket.burn_vial.name"
+description_key = "trinket.burn_vial.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_BurnVial")])
+```
+
+### File: `resources/trinkets/trinket_hero_catalyst.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_hero_catalyst.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket16A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_hero_catalyst"
+name_key = "item.trinket_hero_catalyst.name"
+description_key = "item.trinket_hero_catalyst.desc"
+icon = ExtResource("3_icon")
+tier = 3
+category = &"TRINKET"
+is_player_exclusive = true
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/trinkets/trinket_merge_damage_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket14A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_merge_damage_charm.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_merge_damage_charm"
+name_key = "trinket.merge_damage_charm.name"
+description_key = "trinket.merge_damage_charm.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+is_enemy_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_purifying_pendant.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_purifying_pendant.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket17A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_purifying_pendant"
+name_key = "trinket.purifying_pendant.name"
+description_key = "trinket.purifying_pendant.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+cost = 10
+```
+
+### File: `resources/trinkets/trinket_royal_insignia.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia_summon.tres" id="3_ability_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_royal_insignia_battle_start.tres" id="4_ability_battle_start"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket5A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_royal_insignia"
+name_key = "trinket.royal_insignia.name"
+description_key = "trinket.royal_insignia.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_summon"), ExtResource("4_ability_battle_start")])
+```
+
+### File: `resources/trinkets/trinket_rusty_ring.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_draw.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_summon.tres" id="3_ability_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_battle_start.tres" id="4_ability_battle_start"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_passive.tres" id="5_ability_passive"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket15A.png" id="6_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_rusty_ring"
+name_key = "trinket.rusty_ring.name"
+description_key = "trinket.rusty_ring.desc"
+icon = ExtResource("6_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_summon"), ExtResource("4_ability_battle_start"), ExtResource("5_ability_passive")])
+cost = 10
+```
+
+### File: `resources/trinkets/trinket_soul_echo.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket3A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_soul_echo.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_soul_echo"
+name_key = "trinket.soul_echo.name"
+description_key = "trinket.soul_echo.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_spiked_armor.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket21A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_spiked_armor.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_spiked_armor"
+tier = 2
+name_key = "trinket.spiked_armor.name"
+description_key = "trinket.spiked_armor.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_time_sprint_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_time_sprint_charm.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket13A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_time_sprint_charm"
+name_key = "trinket.time_sprint_charm.name"
+description_key = "trinket.time_sprint_charm.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/trinkets/trinket_token_return_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_token_return_charm.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket12A.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_token_return_charm"
+name_key = "trinket.token_return_charm.name"
+description_key = "trinket.token_return_charm.desc"
+icon = ExtResource("3_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability")])
+```
+
+### File: `resources/trinkets/trinket_trait_air.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/AirEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_air"
+name_key = "trinket.trait_air.name"
+description_key = "trinket.trait_air.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"AIR"
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/trinkets/trinket_trait_earth.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/EarthEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_earth"
+name_key = "trinket.trait_earth.name"
+description_key = "trinket.trait_earth.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"EARTH"
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/trinkets/trinket_trait_fire.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/FireEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_fire"
+name_key = "trinket.trait_fire.name"
+description_key = "trinket.trait_fire.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"FIRE"
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/trinkets/trinket_trait_water.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/items/WaterEmblem.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_water"
+name_key = "trinket.trait_water.name"
+description_key = "trinket.trait_water.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = true
+linked_trait_id = &"WATER"
+ability_definitions = Array[Resource]([])
+```
+
+### File: `resources/trinkets/trinket_trinity_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_draw.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_reset.tres" id="3_ability_reset"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_trinity_charm_reset2.tres" id="4_ability_reset2"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket20A.png" id="5_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trinity_charm"
+name_key = "trinket.trinity_charm.name"
+description_key = "trinket.trinity_charm.desc"
+icon = ExtResource("5_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+is_enemy_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_reset"), ExtResource("4_ability_reset2")])
+cost = 10
+```
+
+### File: `resources/trinkets/trinket_twin_charm.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket8A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_twin_charm_scale.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_twin_charm"
+name_key = "trinket.twin_charm.name"
+description_key = "trinket.twin_charm.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_underdog_emblem.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket9A.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_underdog_emblem.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_underdog_emblem"
+name_key = "trinket.underdog_emblem.name"
+description_key = "trinket.underdog_emblem.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/trinkets/trinket_vengeance.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_def"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket2A.png" id="2_icon"]
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="3_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="4_effect"]
+
+[sub_resource type="Resource" id="EffectModifyStat_Vengeance_1"]
+script = ExtResource("4_effect")
+parameters = { "stat": "pwr", "base_value": 1 }
+target_type = &"RANDOM_ALLY"
+
+
+[sub_resource type="Resource" id="EffectModifyStat_Vengeance_HP"]
+script = ExtResource("4_effect")
+parameters = { "stat": "hp", "base_value": 1 }
+target_type = &"RANDOM_ALLY"
+
+[sub_resource type="Resource" id="Ability_Vengeance_1"]
+script = ExtResource("3_ability")
+id = &"ability_trinket_vengeance"
+trigger = &"on_ally_death"
+description_key = "ability.vengeance.desc"
+priority = 0
+effects = Array[Resource]([SubResource("EffectModifyStat_Vengeance_1"), SubResource("EffectModifyStat_Vengeance_HP")])
+
+[resource]
+script = ExtResource("1_def")
+id = &"trinket_vengeance"
+name_key = "trinket.vengeance.name"
+description_key = "trinket.vengeance.desc"
+icon = ExtResource("2_icon")
+is_player_exclusive = false
+ability_definitions = Array[Resource]([SubResource("Ability_Vengeance_1")])
+```
+
+### File: `resources/trinkets/trinket_veteran_insignia.tres`
+```ini
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_draw.tres" id="2_ability_draw"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_summon.tres" id="3_ability_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_merge.tres" id="4_ability_merge"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_battle_start.tres" id="5_ability_battle_start"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket10A.png" id="6_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_veteran_insignia"
+name_key = "trinket.veteran_insignia.name"
+description_key = "trinket.veteran_insignia.desc"
+icon = ExtResource("6_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("2_ability_draw"), ExtResource("3_ability_summon"), ExtResource("4_ability_merge"), ExtResource("5_ability_battle_start")])
+```
+
+### File: `resources/units/Boss1.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/boss01.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_passive_draw_drain.tres" id="4_passive"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_1"
+display_name_key = "boss_1.name"
+description_key = "boss_1.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 5
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 6
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability"), ExtResource("4_passive")]
+```
+
+### File: `resources/units/Boss2.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/boss02.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_2_summon.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_2_passive_token_drain.tres" id="4_passive"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_2"
+display_name_key = "boss_2.name"
+description_key = "boss_2.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 10
+category = &"UNIT"
+
+base_hp = 8
+base_pwr = 8
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability"), ExtResource("4_passive")]
+```
+
+### File: `resources/units/Boss3.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/boss03.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_3_summon.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_3_passive_ally_growth.tres" id="4_passive"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_3"
+display_name_key = "boss_3.name"
+description_key = "boss_3.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 15
+category = &"UNIT"
+
+base_hp = 10
+base_pwr = 10
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability"), ExtResource("4_passive")]
+```
+
+### File: `resources/units/Boss4.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/boss04.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_4_summon.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_4"
+display_name_key = "boss_4.name"
+description_key = "boss_4.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 20
+category = &"UNIT"
+
+base_hp = 12
+base_pwr = 12
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability")]
+```
+
+### File: `resources/units/Boss5.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/boss05.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_5_summon.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_5"
+display_name_key = "boss_5.name"
+description_key = "boss_5.desc"
+icon = ExtResource("2_icon")
+tags = [&"BOSS"]
+is_hero = false
+tier = 3
+cost = 25
+category = &"UNIT"
+
+base_hp = 15
+base_pwr = 15
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability")]
+```
+
+### File: `resources/units/EnemyHero.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero.png" id="2_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"enemy_hero"
+display_name_key = "enemy_hero.name"
+description_key = "enemy_hero.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+
+base_hp = 10
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = []
+```
+
+### File: `resources/units/hero.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroTimekeeper_GoldOnKill.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroBountyHunter_AllyDeathBuff.tres" id="4_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_bounty_hunter"
+display_name_key = "hero.name"
+description_key = "hero.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+
+base_hp = 10
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_ability")])
+```
+
+### File: `resources/units/HeroAvenger.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero02.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroAvenger_AllyDeathAttack.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_avenger"
+display_name_key = "hero_avenger.name"
+description_key = "hero_avenger.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+base_hp = 6
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/units/HeroBastion.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero03.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroBastion_AllyDeathSpikesArmor.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_bastion"
+display_name_key = "hero_bastion.name"
+description_key = "hero_bastion.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+base_hp = 10
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/units/HeroPyro.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero04.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroPyro_AttackBurn.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_pyro"
+display_name_key = "hero_pyro.name"
+description_key = "hero_pyro.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+base_hp = 8
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/units/HeroStarter.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/StartingHero.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroStarter_AllyDeathAbsorb.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_starter"
+display_name_key = "hero_starter.name"
+description_key = "hero_starter.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+base_hp = 10
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability")])
+```
+
+### File: `resources/units/HeroTimekeeper.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/hero01.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroTimekeeper_TimeWarp.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/HeroTimekeeper_TemporalAura.tres" id="4_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"hero_timekeeper"
+display_name_key = "hero_timekeeper.name"
+description_key = "hero_timekeeper.desc"
+icon = ExtResource("2_icon")
+tier = 0
+cost = 0
+category = &"UNIT"
+is_hero = true
+
+base_hp = 50
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_ability")])
+```
+
+### File: `resources/units/Tier1DustEliteUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1DustEliteUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite1_spawn_death.tres" id="4_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_growth.tres" id="5_growth"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite1_spawn_turn.tres" id="6_turn"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite1_spawn_attack.tres" id="7_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_elite_t1"
+display_name_key = "unit_dust_elite_t1.name"
+description_key = "unit_dust_elite_t1.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 1
+cost = 3
+category = &"UNIT"
+
+base_hp = 3
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("4_death"), ExtResource("5_growth"), ExtResource("6_turn"), ExtResource("7_attack")])
+```
+
+### File: `resources/units/Tier1DustUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1DustUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_t1"
+display_name_key = "unit_dust_t1.name"
+description_key = "unit_dust_t1.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"HIDDEN"])
+is_hero = false
+tier = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_attack")])
+```
+
+### File: `resources/units/Tier2DustEliteUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2DustEliteUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_death.tres" id="4_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_growth.tres" id="5_growth"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite2_spawn_hurt.tres" id="6_hurt"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_elite_t2"
+display_name_key = "unit_dust_elite_t2.name"
+description_key = "unit_dust_elite_t2.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 2
+cost = 4
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 4
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("4_death"), ExtResource("5_growth"), ExtResource("6_hurt")])
+```
+
+### File: `resources/units/Tier2DustUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2DustUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_t2"
+display_name_key = "unit_dust_t2.name"
+description_key = "unit_dust_t2.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"HIDDEN"])
+is_hero = false
+tier = 2
+cost = 2
+category = &"UNIT"
+
+base_hp = 2
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_attack")])
+```
+
+### File: `resources/units/Tier3DustEliteUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3DustEliteUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_boss_1_summon.tres" id="3_summon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_spawn_death.tres" id="4_death"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dust_elite_growth.tres" id="5_growth"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_elite_t3"
+display_name_key = "unit_dust_elite_t3.name"
+description_key = "unit_dust_elite_t3.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 3
+cost = 5
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_summon"), ExtResource("4_death"), ExtResource("5_growth")])
+```
+
+### File: `resources/units/Tier3DustUnit.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3DustUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_dust_t3"
+display_name_key = "unit_dust_t3.name"
+description_key = "unit_dust_t3.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"HIDDEN"])
+is_hero = false
+tier = 3
+cost = 3
+category = &"UNIT"
+
+base_hp = 3
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_attack")])
+```
+
+### File: `resources/units/UnitTier1A.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1EarthUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal.tres" id="4_passive_heal"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1A_PassiveHeal_L3.tres" id="6_l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t1_a"
+display_name_key = "unit_t1_a.name"
+description_key = "unit_t1_a.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_EARTH"])
+tier = 1
+level = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 2
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_passive_heal"), ExtResource("5_l2"), ExtResource("6_l3")])
+```
+
+### File: `resources/units/UnitTier1B.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1FireUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt.tres" id="4_counter_attack"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1B_CounterOnHurt_L3.tres" id="6_l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t1_b"
+display_name_key = "unit_t1_b.name"
+description_key = "unit_t1_b.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE"])
+tier = 1
+level = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_counter_attack"), ExtResource("5_l2"), ExtResource("6_l3")])
+```
+
+### File: `resources/units/UnitTier1C.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1WaterUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1C_AllyShield.tres" id="4_ally_shield"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1C_AllyShield_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1C_AllyShield_L3.tres" id="6_l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t1_c"
+display_name_key = "unit_t1_c.name"
+description_key = "unit_t1_c.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_WATER"])
+tier = 1
+level = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ally_shield"), ExtResource("5_l2"), ExtResource("6_l3")])
+```
+
+### File: `resources/units/UnitTier1D.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1AirUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink.tres" id="4_empathic_link"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink_L3.tres" id="6_l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t1_d"
+display_name_key = "unit_t1_d.name"
+description_key = "unit_t1_d.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_AIR"])
+tier = 1
+level = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_empathic_link"), ExtResource("5_l2"), ExtResource("6_l3")])
+```
+
+### File: `resources/units/UnitTier2C.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitC.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2C_AllyDeathBuff_L3.tres" id="l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_c"
+display_name_key = "unit_t2_c.name"
+description_key = "unit_t2_c.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_EARTH"])
+tier = 2
+level = 1
+cost = 2
+category = &"UNIT"
+
+base_hp = 3
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = [ExtResource("3_ability"), ExtResource("l2"), ExtResource("l3")]
+```
+
+### File: `resources/units/UnitTier2D.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitD.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power.tres" id="4_ability_power"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init.tres" id="5_ability_init"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_L2.tres" id="pwr2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init_L2.tres" id="init2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_L3.tres" id="pwr3"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2D_Templar_Power_Init_L3.tres" id="init3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_d"
+display_name_key = "unit_t2_d.name"
+description_key = "unit_t2_d.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_WATER", &"SOUL_AIR"])
+tier = 2
+level = 1
+cost = 2
+category = &"UNIT"
+
+base_hp = 2
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability_power"), ExtResource("5_ability_init"), ExtResource("pwr2"), ExtResource("init2"), ExtResource("pwr3"), ExtResource("init3")])
+```
+
+### File: `resources/units/UnitTier2F.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script_ability"]
+[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect_script"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="3_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitF.png" id="4_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="5_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="6_ability_gold"]
+
+
+
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L1.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L2.tres" id="102_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L2.tres" id="103_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L3.tres" id="104_ability"]
+
+[resource]
+script = ExtResource("3_script")
+id = &"unit_t2_f"
+display_name_key = "unit_t2_f.name"
+description_key = "unit_t2_f.desc"
+icon = ExtResource("4_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_AIR"])
+tier = 2
+level = 1
+cost = 2
+category = &"UNIT"
+
+base_hp = 3
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("5_basic_attack"),
+	ExtResource("6_ability_gold"),
+	ExtResource("102_ability"),
+	ExtResource("104_ability"),
+	ExtResource("101_ability"),
+	ExtResource("103_ability"),
+	ExtResource("100_ability")
+])
+```
+
+### File: `resources/units/UnitTier2H.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitH.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2H_Ability.tres" id="4_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2H_Ability_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2H_Ability_L3.tres" id="l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_h"
+min_day = 10
+max_day = 99
+display_name_key = "unit_t2_h.name"
+description_key = "unit_t2_h.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_WATER", &"SOUL_AIR"])
+tier = 2
+level = 1
+cost = 2
+category = &"UNIT"
+
+base_hp = 2
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability"), ExtResource("l2"), ExtResource("l3")])
+```
+
+### File: `resources/units/UnitTier2I.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating.tres" id="2_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L3.tres" id="l3"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitI.png" id="3_icon"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_i"
+tier = 2
+level = 1
+cost = 2
+base_hp = 3
+base_pwr = 2
+is_hero = false
+
+souls = 2
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("l2"), ExtResource("l3")])
+icon = ExtResource("3_icon")
+display_name_key = "unit_t2_i.name"
+description_key = "unit_t2_i.desc"
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER"])
+category = &"UNIT"
+```
+
+### File: `resources/units/UnitTier2J.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitJ.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Scald.tres" id="4_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Scald_L2.tres" id="l2"]
+[ext_resource type="Resource" path="res://resources/abilities/Ability_Scald_L3.tres" id="l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t2_j"
+display_name_key = "unit_t2_j.name"
+description_key = "unit_t2_j.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER"])
+tier = 2
+level = 1
+cost = 2
+category = &"UNIT"
+
+base_hp = 2
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability"), ExtResource("l2"), ExtResource("l3")])
+```
+
+### File: `resources/units/UnitTier3A.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitA.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3A_MirrorStrike.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3A_MirrorStrike_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3A_MirrorStrike_L2.tres" id="101_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_a"
+display_name_key = "unit_t3_a.name"
+description_key = "unit_t3_a.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_FIRE"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_ability"),
+	ExtResource("101_ability"),
+	ExtResource("100_ability")
+])
+```
+
+### File: `resources/units/UnitTier3B.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitB.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3B_GuardianSacrifice.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3B_GuardianSacrifice_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3B_GuardianSacrifice_L3.tres" id="101_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_b"
+display_name_key = "unit_t3_b.name"
+description_key = "unit_t3_b.desc"
+icon = ExtResource("2_icon")
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+tags = Array[StringName]([&"intercept_lethal", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH"])
+ability_definitions = Array[Resource]([
+	ExtResource("3_ability"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability")
+])
+```
+
+### File: `resources/units/UnitTier3Berserker.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2B_Shockwave.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitB.png" id="3_icon"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3Berserker_Shockwave_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3Berserker_Shockwave_L1.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3Berserker_Shockwave_L3.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"unit_t3_berserker"
+display_name_key = "unit_t3_berserker.name"
+description_key = "unit_t3_berserker.desc"
+icon = ExtResource("3_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_FIRE"])
+is_hero = false
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 6
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("101_ability"),
+	ExtResource("100_ability"),
+	ExtResource("102_ability")
+])
+```
+
+### File: `resources/units/UnitTier3C.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitC.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3C_SoulSummon_L3.tres" id="101_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_c"
+display_name_key = "unit_t3_c.name"
+description_key = "unit_t3_c.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_EARTH"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_ability"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability")
+])
+```
+
+### File: `resources/units/UnitTier3D.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitD.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3D_ResilientAura.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3D_ResilientAura_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3D_ResilientAura_L3.tres" id="101_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_d"
+display_name_key = "unit_t3_d.name"
+description_key = "unit_t3_d.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_EARTH"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_ability"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability")
+])
+```
+
+### File: `resources/units/UnitTier3E.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitE.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3E_AmbushPredator_L2.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_e"
+display_name_key = "unit_t3_e.name"
+description_key = "unit_t3_e.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_FIRE"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("101_ability"),
+	ExtResource("102_ability"),
+	ExtResource("100_ability")
+])
+```
+
+### File: `resources/units/UnitTier3F.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitF.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3F_SummonBlessing.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3F_SummonBlessing.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3F_SummonBlessing_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3F_SummonBlessing_L3.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_f"
+display_name_key = "unit_t3_f.name"
+description_key = "unit_t3_f.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_FIRE"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("100_ability"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability")
+])
+```
+
+### File: `resources/units/UnitTier3G.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitG.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3G_BenchGrowth.tres" id="4_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3G_BenchGrowth.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3G_BenchGrowth_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3G_BenchGrowth_L3.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_g"
+display_name_key = "unit_t3_g.name"
+description_key = "unit_t3_g.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_AIR", &"SOUL_AIR", &"SOUL_AIR", &"SOUL_AIR"])
+is_hero = false
+is_player_exclusive = true
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability")
+])
+```
+
+### File: `resources/units/UnitTier3H.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitH.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth.tres" id="4_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3H_MergeGrowth_L2.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_h"
+display_name_key = "unit_t3_h.name"
+description_key = "unit_t3_h.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic_attack"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability"),
+	ExtResource("100_ability")
+])
+```
+
+### File: `resources/units/UnitTier3I.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3unitI.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale.tres" id="4_scale"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death.tres" id="5_death"]
+
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death_L3.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death_L2.tres" id="102_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale_L3.tres" id="103_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_death.tres" id="104_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppleganger_scale.tres" id="105_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_i"
+display_name_key = "unit_t3_i.name"
+description_key = "unit_t3_i.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+base_hp = 5
+base_pwr = 4
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic_attack"),
+	ExtResource("105_ability"),
+	ExtResource("100_ability"),
+	ExtResource("103_ability"),
+	ExtResource("104_ability"),
+	ExtResource("102_ability"),
+	ExtResource("101_ability")
+])
+```
+
+### File: `resources/units/UnitTier3J.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3UnitJ.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3J_Ability.tres" id="3_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3J_Ability_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3J_Ability_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3J_Ability.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_j"
+display_name_key = "unit_t3_j.name"
+description_key = "unit_t3_j.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR"])
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("102_ability"),
+	ExtResource("101_ability"),
+	ExtResource("100_ability")
+])
+```
+
+### File: `resources/units/UnitTier3L.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3UnitL.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3L_Ability.tres" id="4_ability"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3L_Ability.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3L_Ability_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier3L_Ability_L3.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_t3_l"
+display_name_key = "unit_t3_l.name"
+description_key = "unit_t3_l.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR"])
+is_hero = false
+is_player_exclusive = true
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 4
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability")
+])
+```
+
+### File: `resources/units/UnitTier3Mimic.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2E_Mimic.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitE.png" id="3_icon"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2E_Mimic_L2.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2E_Mimic_L3.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2E_Mimic.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"unit_t3_mimic"
+display_name_key = "unit_t3_mimic.name"
+description_key = "unit_t3_mimic.desc"
+icon = ExtResource("3_icon")
+tags = Array[StringName]([&"SOUL_WATER", &"SOUL_WATER"])
+is_hero = false
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 4
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("102_ability"),
+	ExtResource("100_ability"),
+	ExtResource("101_ability")
+])
+```
+
+### File: `resources/units/UnitTier3Paladin.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitA.png" id="3_icon"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance_L2.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance_L3.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"unit_t3_paladin"
+display_name_key = "unit_t3_paladin.name"
+description_key = "unit_t3_paladin.desc"
+icon = ExtResource("3_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH"])
+is_hero = false
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 6
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("100_ability"),
+	ExtResource("101_ability"),
+	ExtResource("102_ability")
+])
+```
+
+### File: `resources/units/UnitTier3Shadow.tres`
+```ini
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2G_BuffEcho.tres" id="2_ability"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitG.png" id="3_icon"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2G_BuffEcho_L3.tres" id="100_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2G_BuffEcho.tres" id="101_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier2G_BuffEcho_L2.tres" id="102_ability"]
+
+[resource]
+script = ExtResource("1_unit")
+id = &"unit_t3_shadow"
+display_name_key = "unit_t3_shadow.name"
+description_key = "unit_t3_shadow.desc"
+icon = ExtResource("3_icon")
+tags = Array[StringName]([&"SOUL_AIR"])
+is_hero = false
+tier = 3
+level = 1
+cost = 4
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("101_ability"),
+	ExtResource("102_ability"),
+	ExtResource("100_ability")
+])
+```
 
 ### File: `scripts/abilities/EffectScald.gd`
 ```gdscript
@@ -720,7 +9559,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var initial_enemies = battle_manager.get_instances_in_container(enemy_container).filter(func(u): return u.current_hp > 0)
 	if initial_enemies.is_empty():
 		return result
-	current_target_uuid = initial_enemies[randi() % initial_enemies.size()].ball_uuid
+	current_target_uuid = RNGManager.combat_rng.pick_random(initial_enemies).ball_uuid
 	
 	var current_burn_amount = heal_amount
 	
@@ -756,7 +9595,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				# Bounce back to same target if no one else is alive
 				possible_next_targets = enemies
 				
-			var next_enemy = possible_next_targets[randi() % possible_next_targets.size()]
+			var next_enemy = RNGManager.combat_rng.pick_random(possible_next_targets)
 			current_target_uuid = next_enemy.ball_uuid
 			
 	return result
@@ -1679,6 +10518,1103 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		context["attack_replaced"] = true
 ```
 
+### File: `scripts/actions/ActionFactory.gd`
+```gdscript
+class_name ActionFactory
+extends RefCounted
+
+## The one deserialization boundary for replay files.  Replay data never stores
+## script paths, so adding a command requires an explicit entry here.
+static func from_dict(data: Dictionary) -> GameAction:
+	var action_id := StringName(data.get("action_id", ""))
+	var action: GameAction = null
+	match action_id:
+		&"inventory_drag_action":
+			action = InventoryDragAction.new(LocationIdentifier.from_dict(data.get("source_loc", {})), LocationIdentifier.from_dict(data.get("target_loc", {})))
+		&"flashcard_intro_dismiss_action":
+			action = FlashcardIntroDismissAction.new()
+		&"tutorial_action":
+			action = TutorialAction.new(
+				StringName(data.get("tutorial_id", "")), 
+				StringName(data.get("action_type", "")),
+				data.get("pages", []),
+				data.get("anchor_path", "")
+			)
+		&"return_to_path_choice_action":
+			action = ReturnToPathChoiceAction.new(StringName(data.get("context", "")))
+		&"choice_action":
+			action = ChoiceAction.new(StringName(data.get("choice", "")), LocationIdentifier.from_dict(data.get("source_loc", {})), LocationIdentifier.from_dict(data.get("target_loc", {})), StringName(data.get("recipe_id", "")))
+		&"shop_purchase_action":
+			var is_drag = bool(data.get("is_drag", false))
+			var mx = float(data.get("mouse_pos_x", 0.0))
+			var my = float(data.get("mouse_pos_y", 0.0))
+			action = ShopPurchaseAction.new(String(data.get("instance_uuid", "")), int(data.get("cost", 0)), is_drag, Vector2(mx, my))
+		&"shop_reroll_action":
+			action = ShopRerollAction.new()
+		&"end_turn_action":
+			action = EndTurnAction.new()
+		&"flashcard_answer_action":
+			action = FlashcardAnswerAction.new(StringName(data.get("question_id", "")), StringName(data.get("selected_answer_id", "")), bool(data.get("was_correct", false)), float(data.get("elapsed_seconds", 0.0)), bool(data.get("skipped", false)))
+		&"path_selection_action":
+			action = PathSelectionAction.new(data.get("node", {}))
+		&"reward_selection_action":
+			action = RewardSelectionAction.new(data.get("selection", {}))
+		&"black_market_action":
+			action = BlackMarketAction.new(data.get("payload", {}))
+		&"battle_start_action":
+			action = BattleStartAction.new()
+		&"run_termination_action":
+			action = RunTerminationAction.new(StringName(data.get("reason", "")))
+		&"battle_victory_action":
+			action = BattleVictoryAction.new()
+		&"gacha_draw_action":
+			action = GachaDrawAction.new(int(data.get("tier", 1)))
+		&"reward_draw_action":
+			action = RewardDrawAction.new(int(data.get("tier", 1)))
+		&"rest_site_draw_action":
+			action = RestSiteDrawAction.new(int(data.get("tier", 1)))
+		&"rest_site_apply_action":
+			action = RestSiteApplyAction.new(int(data.get("prize_index", 0)))
+		&"unit_training_start_action":
+			var is_drag = bool(data.get("is_drag", false))
+			var mx = float(data.get("mouse_pos_x", 0.0))
+			var my = float(data.get("mouse_pos_y", 0.0))
+			action = UnitTrainingStartAction.new(String(data.get("stat", "")), LocationIdentifier.from_dict(data.get("location", {})), is_drag, Vector2(mx, my))
+		&"unit_training_action":
+			action = UnitTrainingAction.new(int(data.get("cost", 1)))
+		&"unit_training_done_action":
+			action = UnitTrainingDoneAction.new()
+		&"toggle_window_action":
+			action = ToggleWindowAction.new(StringName(data.get("window_name", "")))
+		&"inspect_action":
+			action = InspectAction.new(LocationIdentifier.from_dict(data.get("location", {})), bool(data.get("should_lock", false)))
+		&"clear_selection_action":
+			action = ClearSelectionAction.new()
+		&"combat_speed_action":
+			action = CombatSpeedAction.new(float(data.get("speed", 1.0)))
+		_:
+			push_error("[ActionFactory] Unknown replay action: %s" % action_id)
+			return null
+	if is_instance_valid(action):
+		action.timestamp = float(data.get("timestamp", action.timestamp))
+	return action
+```
+
+### File: `scripts/actions/ActionQueue.gd`
+```gdscript
+# res://scripts/actions/ActionQueue.gd
+extends Node
+
+## Autoload singleton managing the FIFO queue of GameActions.
+## Validates commands before execution and records action history for replayability.
+
+signal action_enqueued(action: GameAction)
+signal action_started(action: GameAction)
+signal action_completed(action: GameAction)
+signal action_failed(action: GameAction, reason: String)
+signal history_cleared
+
+var _queue: Array[GameAction] = []
+var _history: Array[Dictionary] = []
+var _is_processing: bool = false
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	add_to_group("action_queue")
+
+## Enqueue a GameAction for execution.
+func enqueue(action: GameAction) -> void:
+	if not is_instance_valid(action):
+		return
+	_queue.append(action)
+	action_enqueued.emit(action)
+	if not _is_processing:
+		_process_queue()
+
+## Process queued actions sequentially in FIFO order.
+func _process_queue() -> void:
+	if _is_processing or _queue.is_empty():
+		return
+	_is_processing = true
+	while not _queue.is_empty():
+		var action = _queue.pop_front()
+		if action.is_valid():
+			action_started.emit(action)
+			action.execute()
+			# Commands can schedule presentation work through deferred calls, tweens,
+			# or timers.  Yielding here prevents the queue from advancing in the same
+			# call stack as the state mutation and gives that work a frame to attach.
+			await get_tree().process_frame
+			_history.append(action.to_dict())
+			action_completed.emit(action)
+		else:
+			action_failed.emit(action, "Validation failed")
+	_is_processing = false
+
+## Get a copy of the executed action history for replay/serialization.
+func get_history() -> Array[Dictionary]:
+	return _history.duplicate()
+
+## Clear the action queue and history (called on new run or cleanup).
+func clear_history() -> void:
+	_queue.clear()
+	_history.clear()
+	_is_processing = false
+	history_cleared.emit()
+```
+
+### File: `scripts/actions/commands/BattleStartAction.gd`
+```gdscript
+class_name BattleStartAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"battle_start_action"
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	return is_instance_valid(gm) and is_instance_valid(gm.get_pending_replay_encounter())
+
+func execute() -> void:
+	GameAction.get_game_manager().execute_battle_start()
+```
+
+### File: `scripts/actions/commands/BattleVictoryAction.gd`
+```gdscript
+class_name BattleVictoryAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"battle_victory_action"
+
+func is_valid() -> bool:
+	var tree = Engine.get_main_loop()
+	if tree is SceneTree:
+		var popup = tree.get_first_node_in_group("end_battle_popup")
+		return is_instance_valid(popup)
+	return false
+
+func execute() -> void:
+	var tree = Engine.get_main_loop()
+	if tree is SceneTree:
+		var popup = tree.get_first_node_in_group("end_battle_popup")
+		if is_instance_valid(popup) and popup.has_method("_execute_return"):
+			popup._execute_return()
+```
+
+### File: `scripts/actions/commands/BlackMarketAction.gd`
+```gdscript
+class_name BlackMarketAction
+extends GameAction
+
+var payload: Dictionary
+
+func _init(p_payload: Dictionary) -> void:
+	super._init()
+	action_id = &"black_market_action"
+	payload = p_payload.duplicate(true)
+
+func is_valid() -> bool:
+	return not payload.is_empty() and is_instance_valid(GameAction.get_game_manager())
+
+func execute() -> void:
+	GameAction.get_game_manager().execute_black_market_action(payload)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict["payload"] = payload.duplicate(true)
+	return dict
+```
+
+### File: `scripts/actions/commands/ChoiceAction.gd`
+```gdscript
+# res://scripts/actions/commands/ChoiceAction.gd
+class_name ChoiceAction
+extends GameAction
+
+var choice: StringName
+var source_loc: LocationIdentifier
+var target_loc: LocationIdentifier
+var recipe_id: StringName
+
+func _init(p_choice: StringName, p_source_loc: LocationIdentifier, p_target_loc: LocationIdentifier, p_recipe_id: StringName = &"") -> void:
+	super._init()
+	action_id = &"choice_action"
+	choice = p_choice
+	source_loc = p_source_loc
+	target_loc = p_target_loc
+	recipe_id = p_recipe_id
+
+func is_valid() -> bool:
+	return is_instance_valid(source_loc) and is_instance_valid(target_loc)
+
+func execute() -> void:
+	var im = GameAction.get_inventory_manager()
+	if is_instance_valid(im):
+		im.execute_choice_action(choice, source_loc, target_loc, recipe_id)
+
+func to_dict() -> Dictionary:
+	var dict = super.to_dict()
+	dict["choice"] = str(choice)
+	dict["source_loc"] = source_loc.to_dict() if is_instance_valid(source_loc) else {}
+	dict["target_loc"] = target_loc.to_dict() if is_instance_valid(target_loc) else {}
+	dict["recipe_id"] = str(recipe_id)
+	return dict
+```
+
+### File: `scripts/actions/commands/ClearSelectionAction.gd`
+```gdscript
+class_name ClearSelectionAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"clear_selection_action"
+
+func is_valid() -> bool:
+	return true
+
+func execute() -> void:
+	if is_instance_valid(GlobalInteractionRouter):
+		GlobalInteractionRouter._execute_clear_selection()
+```
+
+### File: `scripts/actions/commands/CombatSpeedAction.gd`
+```gdscript
+class_name CombatSpeedAction
+extends GameAction
+
+var speed: float
+
+func _init(p_speed: float = 1.0) -> void:
+	super._init()
+	action_id = &"combat_speed_action"
+	speed = p_speed
+
+func is_valid() -> bool:
+	return true
+
+func execute() -> void:
+	# Only apply the speed change during the actual game run.
+	# During replays, we ignore it so spectators can control the playback speed.
+	if not ReplayManager.is_replaying:
+		var gm = GameAction.get_game_manager()
+		if is_instance_valid(gm) and is_instance_valid(gm._active_main_node):
+			var content = gm._active_main_node.get_active_content()
+			if is_instance_valid(content) and content.name == "BattleView":
+				if speed < 0:
+					content._on_pause_button_pressed_internal()
+				else:
+					content._on_speed_button_pressed_internal(speed)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({"speed": speed})
+	return dict
+```
+
+### File: `scripts/actions/commands/EndTurnAction.gd`
+```gdscript
+class_name EndTurnAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"end_turn_action"
+
+func execute() -> void:
+	SignalBus.end_turn_requested.emit()
+```
+
+### File: `scripts/actions/commands/FlashcardAnswerAction.gd`
+```gdscript
+class_name FlashcardAnswerAction
+extends GameAction
+
+var question_id: StringName
+var selected_answer_id: StringName
+var was_correct: bool
+var elapsed_seconds: float
+var skipped: bool
+
+func _init(p_question_id: StringName, p_selected_answer_id: StringName, p_was_correct: bool, p_elapsed_seconds: float, p_skipped: bool = false) -> void:
+	super._init()
+	action_id = &"flashcard_answer_action"
+	question_id = p_question_id
+	selected_answer_id = p_selected_answer_id
+	was_correct = p_was_correct
+	elapsed_seconds = p_elapsed_seconds
+	skipped = p_skipped
+
+func is_valid() -> bool:
+	var minigame = FlashcardManager._minigame_instance
+	return is_instance_valid(minigame) and minigame.has_method("execute_replay_answer") and minigame.get_current_question_id() == question_id
+
+func execute() -> void:
+	FlashcardManager._minigame_instance.execute_replay_answer(question_id, selected_answer_id, skipped)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({"question_id": str(question_id), "selected_answer_id": str(selected_answer_id), "was_correct": was_correct, "elapsed_seconds": elapsed_seconds, "skipped": skipped})
+	return dict
+```
+
+### File: `scripts/actions/commands/FlashcardIntroDismissAction.gd`
+```gdscript
+class_name FlashcardIntroDismissAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"flashcard_intro_dismiss_action"
+
+func is_valid() -> bool:
+	var minigame = FlashcardManager._minigame_instance
+	return is_instance_valid(minigame) and minigame._is_introducing_new_card
+
+func execute() -> void:
+	var minigame = FlashcardManager._minigame_instance
+	if is_instance_valid(minigame):
+		minigame._execute_intro_dismiss()
+```
+
+### File: `scripts/actions/commands/GachaDrawAction.gd`
+```gdscript
+class_name GachaDrawAction
+extends GameAction
+
+var tier: int
+
+func _init(p_tier: int = 1) -> void:
+	super._init()
+	action_id = &"gacha_draw_action"
+	tier = p_tier
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm): return false
+	var bm = gm.get_tree().get_first_node_in_group("battle_manager")
+	if not is_instance_valid(bm):
+		return false
+	if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return false
+	if not bm.can_draw_gacha_instance(tier):
+		return false
+	return true
+
+func execute() -> void:
+	var gm = GameAction.get_game_manager()
+	if is_instance_valid(gm):
+		var main_node = gm._active_main_node
+		if is_instance_valid(main_node) and main_node.has_method("execute_replay_draw"):
+			main_node.execute_replay_draw(tier)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({"tier": tier})
+	return dict
+```
+
+### File: `scripts/actions/commands/InspectAction.gd`
+```gdscript
+class_name InspectAction
+extends GameAction
+
+var location: LocationIdentifier
+var should_lock: bool
+
+func _init(p_location: LocationIdentifier = null, p_should_lock: bool = false) -> void:
+	super._init()
+	action_id = &"inspect_action"
+	location = p_location
+	should_lock = p_should_lock
+
+func is_valid() -> bool:
+	return true
+
+func execute() -> void:
+	if not is_instance_valid(location):
+		return
+	var anchor_view = WindowManager.find_view_for_location(location)
+	if is_instance_valid(anchor_view):
+		# Create a pseudo-command context for the router
+		var command = {
+			"type": &"OPEN_INSPECTION_WINDOW",
+			"context": InteractionContext.new(),
+			"anchor_view_id": anchor_view.get_instance_id(),
+			"lock": should_lock,
+			"is_from_action": true
+		}
+		command.context.location = location
+		command.context.source_view_instance_id = anchor_view.get_instance_id()
+		GlobalInteractionRouter._execute_open_inspection_window(command)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({
+		"location": location.to_dict() if is_instance_valid(location) else {},
+		"should_lock": should_lock
+	})
+	return dict
+```
+
+### File: `scripts/actions/commands/InventoryDragAction.gd`
+```gdscript
+# res://scripts/actions/commands/InventoryDragAction.gd
+class_name InventoryDragAction
+extends GameAction
+
+var source_loc: LocationIdentifier
+var target_loc: LocationIdentifier
+
+func _init(p_source_loc: LocationIdentifier, p_target_loc: LocationIdentifier) -> void:
+	super._init()
+	action_id = &"inventory_drag_action"
+	source_loc = p_source_loc
+	target_loc = p_target_loc
+
+func is_valid() -> bool:
+	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
+		return false
+	var im = GameAction.get_inventory_manager()
+	if not is_instance_valid(im):
+		return false
+	var source_instance = im._get_instance_at_location(source_loc)
+	return is_instance_valid(source_instance)
+
+func execute() -> void:
+	var im = GameAction.get_inventory_manager()
+	if is_instance_valid(im):
+		im.execute_drag_action(source_loc, target_loc)
+
+func to_dict() -> Dictionary:
+	var dict = super.to_dict()
+	dict["source_loc"] = source_loc.to_dict() if is_instance_valid(source_loc) else {}
+	dict["target_loc"] = target_loc.to_dict() if is_instance_valid(target_loc) else {}
+	return dict
+```
+
+### File: `scripts/actions/commands/PathSelectionAction.gd`
+```gdscript
+class_name PathSelectionAction
+extends GameAction
+
+var node: Dictionary
+
+func _init(p_node: Dictionary) -> void:
+	super._init()
+	action_id = &"path_selection_action"
+	node = p_node.duplicate(true)
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if node.is_empty() or not is_instance_valid(gm):
+		return false
+	if not ReplayManager.is_replaying:
+		return true
+	var main_node = gm.get_main_node()
+	if not is_instance_valid(main_node) or not main_node.has_method("get_active_content"):
+		return false
+	var active_content = main_node.get_active_content()
+	return is_instance_valid(active_content) and active_content.has_method("execute_replay_selection")
+
+func execute() -> void:
+	var gm = GameAction.get_game_manager()
+	if ReplayManager.is_replaying:
+		var active_content = gm.get_main_node().get_active_content()
+		active_content.execute_replay_selection(node)
+	else:
+		gm.execute_path_selection(node)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict["node"] = node.duplicate(true)
+	return dict
+```
+
+### File: `scripts/actions/commands/RestSiteApplyAction.gd`
+```gdscript
+class_name RestSiteApplyAction
+extends GameAction
+
+var prize_index: int
+
+func _init(p_prize_index: int = 0) -> void:
+	super._init()
+	action_id = &"rest_site_apply_action"
+	prize_index = p_prize_index
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("RestSite"):
+			return false
+	return true
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("RestSite") and content.has_method("_execute_apply_prize"):
+			content._execute_apply_prize(prize_index)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({
+		"prize_index": prize_index
+	})
+	return dict
+```
+
+### File: `scripts/actions/commands/RestSiteDrawAction.gd`
+```gdscript
+class_name RestSiteDrawAction
+extends GameAction
+
+var tier: int
+
+func _init(p_tier: int = 1) -> void:
+	super._init()
+	action_id = &"rest_site_draw_action"
+	tier = p_tier
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("RestSite"):
+			return false
+	return true
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("RestSite") and content.has_method("_execute_draw_tier"):
+			content._execute_draw_tier(tier)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({
+		"tier": tier
+	})
+	return dict
+```
+
+### File: `scripts/actions/commands/ReturnToPathChoiceAction.gd`
+```gdscript
+class_name ReturnToPathChoiceAction
+extends GameAction
+
+var context: StringName
+
+func _init(p_context: StringName = &"") -> void:
+	super._init()
+	action_id = &"return_to_path_choice_action"
+	context = p_context
+
+func is_valid() -> bool:
+	return is_instance_valid(GameManager._active_main_node) and not GameManager.is_in_battle
+
+func execute() -> void:
+	# Delegate the actual scene transition to the current encounter node
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node) and is_instance_valid(main_node._current_content_node):
+		var content = main_node._current_content_node
+		if content.has_method("_execute_leave"):
+			content._execute_leave()
+		else:
+			# Fallback for nodes that haven't explicitly implemented _execute_leave
+			if main_node.has_method("hide_action_instruction"):
+				main_node.hide_action_instruction()
+			SignalBus.emit_signal("path_choice_scene_requested")
+			content.queue_free()
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({"context": str(context)})
+	return dict
+```
+
+### File: `scripts/actions/commands/RewardDrawAction.gd`
+```gdscript
+class_name RewardDrawAction
+extends GameAction
+
+var tier: int
+
+func _init(p_tier: int = 1) -> void:
+	super._init()
+	action_id = &"reward_draw_action"
+	tier = p_tier
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var cost = GameManager.get_gacha_token_cost(tier)
+	# Main node might be null in headless testing, but if it exists we expect the Reward node
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("Reward"):
+			return false
+	
+	# Check if enough tokens and if we haven't maxed out prizes
+	if gm.run_state.total_tokens_earned < cost:
+		return false # Just a safety check, logic is mostly internal
+		
+	return true
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("Reward") and content.has_method("_execute_draw_tier"):
+			content._execute_draw_tier(tier)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({
+		"tier": tier
+	})
+	return dict
+```
+
+### File: `scripts/actions/commands/RewardSelectionAction.gd`
+```gdscript
+class_name RewardSelectionAction
+extends GameAction
+
+var selection: Dictionary
+
+func _init(p_selection: Dictionary) -> void:
+	super._init()
+	action_id = &"reward_selection_action"
+	selection = p_selection.duplicate(true)
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	var executed_in_scene = false
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and content.has_method("_execute_reward_selection"):
+			content._execute_reward_selection(selection)
+			executed_in_scene = true
+			
+	if not executed_in_scene:
+		var gm = GameAction.get_game_manager()
+		if is_instance_valid(gm):
+			gm.execute_reward_selection(selection)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict["selection"] = selection.duplicate(true)
+	return dict
+```
+
+### File: `scripts/actions/commands/RunTerminationAction.gd`
+```gdscript
+class_name RunTerminationAction
+extends GameAction
+
+var reason: StringName
+
+func _init(p_reason: StringName) -> void:
+	super._init()
+	action_id = &"run_termination_action"
+	reason = p_reason
+
+func execute() -> void:
+	SignalBus.title_scene_requested.emit()
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict["reason"] = str(reason)
+	return dict
+```
+
+### File: `scripts/actions/commands/ShopPurchaseAction.gd`
+```gdscript
+# res://scripts/actions/commands/ShopPurchaseAction.gd
+class_name ShopPurchaseAction
+extends GameAction
+
+var instance_uuid: String
+var cost: int
+var is_drag: bool
+var mouse_pos: Vector2
+
+func _init(p_uuid: String, p_cost: int, p_is_drag: bool = false, p_mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	super._init()
+	action_id = &"shop_purchase_action"
+	instance_uuid = p_uuid
+	cost = p_cost
+	is_drag = p_is_drag
+	mouse_pos = p_mouse_pos
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	if not gm._temporary_shop_master_dict.has(instance_uuid):
+		return false
+	return gm.run_state.gold >= cost
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("Shop") and content.has_method("_execute_shop_purchase"):
+			content._execute_shop_purchase(instance_uuid, cost, is_drag, mouse_pos)
+
+func to_dict() -> Dictionary:
+	var dict = super.to_dict()
+	dict["instance_uuid"] = instance_uuid
+	dict["cost"] = cost
+	dict["is_drag"] = is_drag
+	dict["mouse_pos_x"] = mouse_pos.x
+	dict["mouse_pos_y"] = mouse_pos.y
+	return dict
+```
+
+### File: `scripts/actions/commands/ShopRerollAction.gd`
+```gdscript
+# res://scripts/actions/commands/ShopRerollAction.gd
+class_name ShopRerollAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"shop_reroll_action"
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	return gm.run_state.gold >= gm._reroll_cost
+
+func execute() -> void:
+	var gm = GameAction.get_game_manager()
+	if is_instance_valid(gm):
+		gm.execute_shop_reroll()
+```
+
+### File: `scripts/actions/commands/ToggleWindowAction.gd`
+```gdscript
+class_name ToggleWindowAction
+extends GameAction
+
+var window_name: StringName
+
+func _init(p_window_name: StringName = &"") -> void:
+	super._init()
+	action_id = &"toggle_window_action"
+	window_name = p_window_name
+
+func is_valid() -> bool:
+	return true
+
+func execute() -> void:
+	if window_name == &"inventory":
+		if WindowManager.is_any_inspection_window_open():
+			if is_instance_valid(GlobalInteractionRouter):
+				GlobalInteractionRouter._execute_clear_selection()
+			else:
+				WindowManager.close_all_inspection_windows()
+		else:
+			var main_node = GameAction.get_game_manager()._active_main_node
+			if is_instance_valid(main_node):
+				var content = main_node.get_active_content()
+				if is_instance_valid(content) and content.name == "BlackMarket":
+					if main_node.has_method("set_action_zone_texts"):
+						var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameAction.get_game_manager().get_black_market_transform_cost())})
+						var remove_text = tr("ui.bm_drop_remove").format({"cost": str(GameAction.get_game_manager().get_black_market_remove_cost())})
+						main_node.set_action_zone_texts(transform_text, remove_text)
+			SignalBus.emit_signal("inspect_inventory_requested")
+	elif window_name == &"discard_pile":
+		SignalBus.emit_signal("display_discard_pile_requested")
+	else:
+		push_warning("[ToggleWindowAction] Unknown window: " + window_name)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({"window_name": str(window_name)})
+	return dict
+```
+
+### File: `scripts/actions/commands/TutorialAction.gd`
+```gdscript
+class_name TutorialAction
+extends GameAction
+
+var tutorial_id: StringName
+var action_type: StringName # &"next" or &"dismiss"
+var pages: Array
+var anchor_path: String
+
+func _init(p_tutorial_id: StringName = &"", p_action_type: StringName = &"", p_pages: Array = [], p_anchor_path: String = "") -> void:
+	super._init()
+	action_id = &"tutorial_action"
+	tutorial_id = p_tutorial_id
+	action_type = p_action_type
+	pages = p_pages
+	anchor_path = p_anchor_path
+
+func is_valid() -> bool:
+	if action_type == &"open":
+		return true
+	var popup = _get_tutorial_popup(tutorial_id)
+	return is_instance_valid(popup)
+
+func execute() -> void:
+	if action_type == &"open":
+		if is_instance_valid(TutorialManager):
+			var anchor: Control = null
+			if not anchor_path.is_empty():
+				var tree = Engine.get_main_loop() as SceneTree
+				if tree:
+					var node = tree.root.get_node_or_null(anchor_path)
+					if is_instance_valid(node) and node is Control:
+						anchor = node
+			TutorialManager._execute_show_tutorial(tutorial_id, pages, anchor)
+		return
+		
+	var popup = _get_tutorial_popup(tutorial_id)
+	if is_instance_valid(popup):
+		if action_type == &"next":
+			popup._execute_next()
+		elif action_type == &"dismiss":
+			popup._execute_dismiss()
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	
+	# Serialize NodePaths in pages to strings for JSON compatibility
+	var serialized_pages = []
+	for page in pages:
+		var p = page.duplicate() # shallow copy is safer and sufficient
+		if p.has("anchor_path") and p["anchor_path"] is NodePath:
+			p["anchor_path"] = str(p["anchor_path"])
+		if p.has("anchor_paths"):
+			var paths = []
+			for path in p["anchor_paths"]:
+				paths.append(str(path))
+			p["anchor_paths"] = paths
+		serialized_pages.append(p)
+		
+	dict.merge({
+		"tutorial_id": str(tutorial_id), 
+		"action_type": str(action_type),
+		"pages": serialized_pages,
+		"anchor_path": anchor_path
+	})
+	return dict
+
+func _get_tutorial_popup(id: StringName) -> Node:
+	var loop = Engine.get_main_loop()
+	if loop is SceneTree:
+		var popups = loop.get_nodes_in_group("tutorial_popup")
+		for p in popups:
+			if p.get("_tutorial_id") == id:
+				return p
+	return null
+```
+
+### File: `scripts/actions/commands/UnitTrainingAction.gd`
+```gdscript
+class_name UnitTrainingAction
+extends GameAction
+
+var cost: int
+
+func _init(p_cost: int = 1) -> void:
+	super._init()
+	action_id = &"unit_training_action"
+	cost = p_cost
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("UnitTrainingGround"):
+			return false
+	return true
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("UnitTrainingGround") and content.has_method("_execute_spend_tokens_and_train"):
+			content._execute_spend_tokens_and_train(cost)
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	dict.merge({
+		"cost": cost
+	})
+	return dict
+```
+
+### File: `scripts/actions/commands/UnitTrainingDoneAction.gd`
+```gdscript
+class_name UnitTrainingDoneAction
+extends GameAction
+
+func _init() -> void:
+	super._init()
+	action_id = &"unit_training_done_action"
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("UnitTrainingGround"):
+			return false
+	return true
+
+func execute() -> void:
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("UnitTrainingGround") and content.has_method("_execute_popup_done"):
+			content._execute_popup_done()
+
+func to_dict() -> Dictionary:
+	return super.to_dict()
+```
+
+### File: `scripts/actions/commands/UnitTrainingStartAction.gd`
+```gdscript
+class_name UnitTrainingStartAction
+extends GameAction
+
+var stat: String
+var location: LocationIdentifier
+var is_drag: bool
+var mouse_pos: Vector2
+
+func _init(p_stat: String = "hp", p_location: LocationIdentifier = null, p_is_drag: bool = false, p_mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	super._init()
+	action_id = &"unit_training_start_action"
+	stat = p_stat
+	location = p_location
+	is_drag = p_is_drag
+	mouse_pos = p_mouse_pos
+
+func is_valid() -> bool:
+	var gm = GameAction.get_game_manager()
+	if not is_instance_valid(gm) or not is_instance_valid(gm.run_state):
+		return false
+	
+	var main_node = gm._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if not is_instance_valid(content) or not String(content.name).begins_with("UnitTrainingGround"):
+			return false
+	return true
+
+func execute() -> void:
+	print("[UnitTrainingStartAction] Executing start training action for stat: ", stat)
+	var main_node = GameAction.get_game_manager()._active_main_node
+	if is_instance_valid(main_node):
+		var content = main_node.get_active_content()
+		if is_instance_valid(content) and String(content.name).begins_with("UnitTrainingGround") and content.has_method("_execute_start_training"):
+			print("[UnitTrainingStartAction] Successfully found UnitTrainingGround, calling _execute_start_training")
+			content._execute_start_training(stat, location, is_drag, mouse_pos)
+		else:
+			print("[UnitTrainingStartAction] Error: UnitTrainingGround not found or method missing! content = ", content.name if is_instance_valid(content) else "null")
+	else:
+		print("[UnitTrainingStartAction] Error: main_node not valid!")
+
+func to_dict() -> Dictionary:
+	var dict := super.to_dict()
+	var loc_dict = {}
+	if is_instance_valid(location):
+		loc_dict = location.to_dict()
+	dict.merge({
+		"stat": stat,
+		"location": loc_dict,
+		"is_drag": is_drag,
+		"mouse_pos_x": mouse_pos.x,
+		"mouse_pos_y": mouse_pos.y
+	})
+	return dict
+```
+
+### File: `scripts/actions/GameAction.gd`
+```gdscript
+# res://scripts/actions/GameAction.gd
+class_name GameAction
+extends RefCounted
+
+## Abstract base class for all player/game actions outside of immediate combat turn resolution.
+## Every state-mutating decision must be encapsulated as a GameAction subclass and passed to ActionQueue.
+
+var action_id: StringName = &"base_action"
+var timestamp: float = 0.0
+
+func _init() -> void:
+	timestamp = Time.get_ticks_msec() / 1000.0
+
+## Validate if this action is legal in the current game/run state.
+## Subclasses should override this to check conditions like gold balance, item existence, etc.
+func is_valid() -> bool:
+	return true
+
+## Execute the action and perform state mutations.
+## Subclasses must override this to perform the actual state change and emit signals.
+func execute() -> void:
+	pass
+
+## Serialize this action to a dictionary for run history and replay logs.
+func to_dict() -> Dictionary:
+	return {
+		"action_id": str(action_id),
+		"timestamp": timestamp
+	}
+
+## Deserialize from dictionary (to be overridden by subclasses / factory).
+static func from_dict(_data: Dictionary) -> GameAction:
+	return ActionFactory.from_dict(_data)
+
+static func get_inventory_manager() -> Node:
+	if Engine.has_singleton("InventoryManager"):
+		return Engine.get_singleton("InventoryManager")
+	var loop = Engine.get_main_loop()
+	if loop is SceneTree and is_instance_valid(loop.root):
+		return loop.root.get_node_or_null("InventoryManager")
+	return null
+
+static func get_game_manager() -> Node:
+	if Engine.has_singleton("GameManager"):
+		return Engine.get_singleton("GameManager")
+	var loop = Engine.get_main_loop()
+	if loop is SceneTree and is_instance_valid(loop.root):
+		return loop.root.get_node_or_null("GameManager")
+	return null
+```
+
 ### File: `scripts/animations/AnimationCompletionTracker.gd`
 ```gdscript
 # scripts/animations/AnimationCompletionTracker.gd
@@ -1807,14 +11743,22 @@ class_name AnimationConstants
 extends RefCounted
 
 # --- PLAYBACK SPEED ---
-# SAP-style speed factor. All animation durations are divided by this.
-# 1.0 = normal, 3.0 = 3x speed
-static var speed_factor: float = 1.0
+# Global game speed factor. 1.0 = normal, 3.0 = 3x speed.
+# Applies uniformly across all engines, tweens, timers, and token animations via Engine.time_scale.
+static var speed_factor: float = 1.0:
+	set(value):
+		speed_factor = clampf(value, 0.0, 100.0)
+		Engine.time_scale = speed_factor
+
+## Set global engine playback speed (1.0 = normal, 3.0 = 3x speed).
+static func set_speed(factor: float) -> void:
+	speed_factor = factor
 
 ## Get a duration scaled by the current speed factor.
-## All animation code should call this instead of using raw constants.
+## Since Engine.time_scale automatically speeds up all tweens and timers across Godot,
+## duration is returned directly without double-scaling.
 static func scaled(duration: float) -> float:
-	return duration / speed_factor
+	return duration
 
 ## Creates a timer that respects the game's pause state.
 ## All combat and management animations should use this instead of tree.create_timer directly
@@ -2026,6 +11970,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			if proj: projectiles.append(proj)
 			
 	if has_pwr:
+		if has_hp:
+			await AnimationConstants.create_pausable_timer(animator.get_tree(), 0.15).timeout
 		for target_uuid in targets:
 			var pwr_amount = payload.amount
 			var proj = _launch_projectile(animator, source_uuid, target_uuid, pwr_amount, "pwr", "blue")
@@ -8930,7 +18876,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 		return result
 	
 	# Pick one at random
-	var drawn_instance: GachaBallInstance = tier_pool.pick_random()
+	var drawn_instance: GachaBallInstance = RNGManager.gacha_rng.pick_random(tier_pool)
 	if not is_instance_valid(drawn_instance):
 		return result
 	
@@ -9528,13 +19474,13 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 		C.TARGET_RANDOM_ENEMY:
 			var enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not enemies.is_empty():
-				var random_enemy = enemies[randi() % enemies.size()]
+				var random_enemy = RNGManager.combat_rng.pick_random(enemies)
 				return [random_enemy.ball_uuid]
 			return []
 		C.TARGET_RANDOM_ALLY:
 			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
 			if not allies.is_empty():
-				var random_ally = allies[randi() % allies.size()]
+				var random_ally = RNGManager.combat_rng.pick_random(allies)
 				return [random_ally.ball_uuid]
 			return []
 		C.TARGET_ALLY_BEHIND:
@@ -10508,7 +20454,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var draw_result = payload.draw_result
 				if draw_result:
 					SignalBus.emit_signal("gacha_draw_animated", draw_result)
-					await AnimationConstants.create_pausable_timer(get_tree(), 0.45 / AnimationConstants.speed_factor).timeout
+					await AnimationConstants.create_pausable_timer(get_tree(), 0.45).timeout
 					
 					var battle_view = get_tree().get_first_node_in_group("battle_view")
 					if is_instance_valid(battle_view) and not draw_result.went_to_discard:
@@ -10971,7 +20917,7 @@ func wait_for_animation_completion(animation_type: String, expected_uuid: String
 
 ## Set combat playback speed (1.0 = normal, 2.0 = 2x, 3.0 = 3x, 4.0 = 4x)
 func set_combat_speed(factor: float) -> void:
-	AnimationConstants.speed_factor = clampf(factor, 1.0, 4.0)
+	AnimationConstants.set_speed(clampf(factor, 1.0, 4.0))
 
 ## Get current combat playback speed
 func get_combat_speed() -> float:
@@ -12778,18 +22724,14 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if is_instance_valid(drawn_instance):
 		drawn_instance.set_meta("skip_initial_scaling_anim", true)
 		
+	# Phase 1: Trigger passive scaling first (e.g. Doppleganger)
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
-	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
-	AbilityResolver.process_trigger(&"on_draw", context)
-	AbilityResolver.process_trigger(&"on_token_spent", context)
-	
-	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
-	var reaction_events = _combat.process_reaction_queue(self, {})
+	var scaling_reactions = _combat.process_reaction_queue(self, {})
 	
 	if is_instance_valid(drawn_instance):
 		drawn_instance.remove_meta("skip_initial_scaling_anim")
 		
-	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
+	# Phase 2: NOW create the draw event, so the snapshot contains the scaled base stats (but NOT the active buffs)
 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
 	var new_unit_snapshot = {}
 	if is_instance_valid(drawn_instance):
@@ -12801,9 +22743,17 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	draw_payload.new_unit_snapshot = new_unit_snapshot
 	draw_event.visual_payload = draw_payload
 	
-	# Append the draw event first, then any resulting reactions
+	# Phase 3: Trigger active buffs (e.g. Royal Insignia)
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
+	AbilityResolver.process_trigger(&"on_draw", context)
+	AbilityResolver.process_trigger(&"on_token_spent", context)
+	
+	var buff_reactions = _combat.process_reaction_queue(self, {})
+	
+	# Append the scaling reactions, then draw event, then buff reactions
+	chain_events.append_array(scaling_reactions)
 	chain_events.append(draw_event)
-	chain_events.append_array(reaction_events)
+	chain_events.append_array(buff_reactions)
 	
 	# If pool emptied, trigger reshuffle for next draw
 	# If pool emptied, next draw will fail until/if a retrieval mechanic is added.
@@ -13665,7 +23615,8 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					"triggering_uuid": instance.ball_uuid,
 					"stat": "hp",
 					"amount": delta,
-					"source_uuid": source_uuid
+					"source_uuid": source_uuid,
+					"is_simulation": true
 				})
 				
 				if not _is_applying_static_damage:
@@ -13682,7 +23633,8 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						"triggering_uuid": instance.ball_uuid,
 						"stat": "pwr",
 						"amount": delta,
-						"source_uuid": source_uuid
+						"source_uuid": source_uuid,
+						"is_simulation": true
 					})
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
@@ -14976,8 +24928,11 @@ func _ready() -> void:
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 	
 	# Connect this view's buttons to emit the correct intent signals
-	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
-	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
+	end_turn_button.pressed.connect(func(): ActionQueue.enqueue(EndTurnAction.new()))
+	discard_pile_button.pressed.connect(func():
+		if ReplayManager.is_replaying: return
+		ActionQueue.enqueue(ToggleWindowAction.new(&"discard_pile"))
+	)
 	
 	# Connect to locale changes to update button text
 	SignalBus.locale_changed.connect(_update_localized_text)
@@ -15014,7 +24969,7 @@ func _ready() -> void:
 	if is_instance_valid(speed_3x_btn): speed_3x_btn.pressed.connect(func(): _on_speed_button_pressed(3.0))
 	if is_instance_valid(step_button): step_button.pressed.connect(_on_step_button_pressed)
 	
-	if is_instance_valid(combat_controls_panel): combat_controls_panel.visible = true
+	if is_instance_valid(combat_controls_panel): combat_controls_panel.visible = not ReplayManager.is_replaying
 	var current_speed = AnimationConstants.speed_factor
 	_update_speed_button_styles(current_speed)
 	
@@ -15713,7 +25668,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# Arc parameters
 	var arc_height := 400.0 # Peak height above the highest point
-	var duration := 0.45 / AnimationConstants.speed_factor # Snappy fast animation, scale with speed
+	var duration := 0.45 # Snappy fast animation, scale with Engine.time_scale
 	
 	# Quadratic Bezier curve for natural basketball arc
 	# P0 = start_center (launch point)
@@ -15769,31 +25724,19 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		return
 	
-	# Show first draw tutorial (2 pages) - only on first successful draw
-	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
-	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
-	
-	TutorialManager.show_tutorial(&"first_draw", [
-		{
-			"text": tr("tutorial.first_draw_1"),
-			"anchor_side": "TOP_RIGHT",
-			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
-		},
-		{
-			"title": tr("tutorial.first_draw_combat.title"),
-			"text": tr("tutorial.first_draw_2"),
-			"center": true,
-			"anchor_path": end_turn_button.get_path()
-		}
-	])
-	
 	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
 	await get_tree().process_frame
+	
+	# Decoupled tutorial trigger: wait for the duration of the bounce animation (0.38s)
+	# plus a small buffer, then trigger the tutorial.
+	get_tree().create_timer(0.45, false).timeout.connect(_show_first_draw_tutorial)
 	
 	# Find the target slot
 	var target_ui_container: HBoxContainer = null
 	if draw_result.dest_container == "PlayerBench":
 		target_ui_container = player_bench
+	elif draw_result.dest_container == "PlayerLineup":
+		target_ui_container = player_lineup
 	
 	if not target_ui_container:
 		return
@@ -15831,20 +25774,43 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	# Phase 4: Settle to normal
 	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+func _show_first_draw_tutorial() -> void:
+	# Show first draw tutorial (2 pages) - only on first successful draw
+	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
+	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
 	
-	# Visual animation completes here. Logic and triggers are handled asynchronously by BattleManager.
+	TutorialManager.show_tutorial(&"first_draw", [
+		{
+			"text": tr("tutorial.first_draw_1"),
+			"anchor_side": "TOP_RIGHT",
+			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
+		},
+		{
+			"title": tr("tutorial.first_draw_combat.title"),
+			"text": tr("tutorial.first_draw_2"),
+			"center": true,
+			"anchor_path": end_turn_button.get_path()
+		}
+	])
 
 # =============================================================================
 # COMBAT CONTROLS LOGIC
 # =============================================================================
 
 func _on_pause_button_pressed() -> void:
+	ActionQueue.enqueue(CombatSpeedAction.new(-1.0))
+
+func _on_pause_button_pressed_internal() -> void:
 	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.pause_combat()
 	_update_speed_button_styles(-1.0) # -1.0 represents Paused
 
 func _on_speed_button_pressed(speed: float) -> void:
+	ActionQueue.enqueue(CombatSpeedAction.new(speed))
+	
+func _on_speed_button_pressed_internal(speed: float) -> void:
 	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.play_continuous(speed)
@@ -16032,11 +25998,11 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 	# Animate gold spend first
 	_animate_gold_spend(remove_cost, interaction_pos, func():
 		# Actually spend gold and remove the instance
-		SignalBus.emit_signal("black_market_action_requested", {
+		ActionQueue.enqueue(BlackMarketAction.new({
 			"type": "remove",
 			"cost": remove_cost,
 			"instance_uuid": item_data.uuid
-		})
+		}))
 		
 		# Play removal animation using the already-visible VFX ball
 		_animate_gachaball_removal_vfx(vfx_ball)
@@ -16111,14 +26077,14 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	# Animate gold spend first
 	_animate_gold_spend(transform_cost, interaction_pos, func():
 		# Emit transform request instead of mutating directly
-		SignalBus.emit_signal("black_market_action_requested", {
+		ActionQueue.enqueue(BlackMarketAction.new({
 			"type": "transform",
 			"cost": transform_cost,
 			"instance_uuid": item_data.uuid,
-			"source_location": source_location,
-			"result_definition": result_definition,
+			"source_location": source_location.to_dict(),
+			"result_definition_id": str(result_definition.id),
 			"source_level": item_data.instance.level
-		})
+		}))
 
 		# Animation starts from the interaction point
 		var start_pos = interaction_pos
@@ -16369,18 +26335,16 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 	wait_tween.tween_callback(on_complete)
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
-	else:
-		var main_node = GameManager._active_main_node
-		if is_instance_valid(main_node) and main_node.has_method("set_action_zone_texts"):
-			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
-			var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
-			main_node.set_action_zone_texts(transform_text, remove_text)
-			
-		SignalBus.emit_signal("inspect_inventory_requested")
+	if _action_in_progress: return
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ToggleWindowAction.new(&"inventory"))
 
 func _on_leave_pressed() -> void:
+	if _action_in_progress: return
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"BlackMarket"))
+
+func _execute_leave() -> void:
 	# Hide BM zones before leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
@@ -16531,7 +26495,11 @@ func _on_merge_pressed() -> void:
 func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	_choice_made = true
 	# The signature now matches the new, more robust SignalBus signal.
-	SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
+	var action = ChoiceAction.new(choice, _source_location, _target_location, recipe_id)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(action)
+	else:
+		SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
 	SignalBus.emit_signal("close_top_contextual_requested")
 ```
 
@@ -17937,24 +27905,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": &"ability_trinket_royal_insignia",
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
+		# Batched combined HP/PWR BUFF event
+		var combined_payload = CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+		combined_payload.targets_old_pwr.assign(batched_old_pwr)
+		combined_payload.targets_new_pwr.assign(batched_new_pwr)
+		combined_payload.new_pwr = combined_payload.targets_new_pwr[0] if not combined_payload.targets_new_pwr.is_empty() else 0
 		
-		# Batched PWR BUFF event
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": &"ability_trinket_royal_insignia",
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": combined_payload
 		}))
 
 	result.state_applied = true
@@ -18264,24 +28227,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": &"ability_trinket_veteran_insignia",
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
+		# Batched combined HP/PWR BUFF event
+		var combined_payload = CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+		combined_payload.targets_old_pwr.assign(batched_old_pwr)
+		combined_payload.targets_new_pwr.assign(batched_new_pwr)
+		combined_payload.new_pwr = combined_payload.targets_new_pwr[0] if not combined_payload.targets_new_pwr.is_empty() else 0
 		
-		# Batched PWR BUFF event
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": &"ability_trinket_veteran_insignia",
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": combined_payload
 		}))
 
 	result.state_applied = true
@@ -18341,7 +28299,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Select random targets independently for each buff
 	var buff_targets: Array[String] = []
 	for i in range(num_buffs):
-		var random_ally = allies[randi() % allies.size()]
+		var random_ally = RNGManager.combat_rng.pick_random(allies)
 		buff_targets.append(random_ally.ball_uuid)
 	
 	if is_simulation:
@@ -19178,7 +29136,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	if stealable_items.is_empty():
 		return EffectResult.empty()
 	# 2. Select Random Item
-	var stolen_item = stealable_items.pick_random()
+	var stolen_item = RNGManager.combat_rng.pick_random(stealable_items)
 	var stolen_def = stolen_item.get_definition()
 	var item_name = stolen_def.display_name_key if stolen_def else "Unknown Item" # Ideally localized later
 	
@@ -19997,24 +29955,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event (all projectiles launched simultaneously)
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
+		# Batched combined HP/PWR BUFF event
+		var combined_payload = CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+		combined_payload.targets_old_pwr.assign(batched_old_pwr)
+		combined_payload.targets_new_pwr.assign(batched_new_pwr)
+		combined_payload.new_pwr = combined_payload.targets_new_pwr[0] if not combined_payload.targets_new_pwr.is_empty() else 0
 		
-		# Batched PWR BUFF event (all projectiles launched simultaneously)
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": context.get("ability_id", &"ability_trinket_awe_inspiring_totem"),
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": combined_payload
 		}))
 
 	result.state_applied = true
@@ -20152,7 +30105,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			if valid_targets.is_empty():
 				break # No one left to bounce to
 			else:
-				target_inst = valid_targets.pick_random()
+				target_inst = RNGManager.combat_rng.pick_random(valid_targets)
 				current_target_uuid = target_inst.ball_uuid
 				
 		var old_hp = target_inst.current_hp
@@ -20233,7 +30186,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				# Pick random that is NOT the current target if possible
 				var next_targets = valid_targets.filter(func(u): return u.ball_uuid != current_target_uuid)
 				if not next_targets.is_empty():
-					current_target_uuid = next_targets.pick_random().ball_uuid
+					current_target_uuid = RNGManager.combat_rng.pick_random(next_targets).ball_uuid
 				else:
 					current_target_uuid = valid_targets[0].ball_uuid
 					
@@ -20385,7 +30338,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# 1. Select the dust unit FIRST to know its tier
 	# Tier 3 Elite spawns random of T1 or T2 Dust units
 	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2", &"unit_dust_t3"]
-	var selected_dust = dust_pool[randi() % dust_pool.size()]
+	var selected_dust = RNGManager.combat_rng.pick_random(dust_pool)
 	
 	# Determine target container based on tier
 	var tier := 1
@@ -20483,7 +30436,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	# 1. Select the dust unit (Tier 1 or Tier 2 for this elite)
 	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2"]
-	var selected_dust = dust_pool[randi() % dust_pool.size()]
+	var selected_dust = RNGManager.combat_rng.pick_random(dust_pool)
 	
 	var tier := 1
 	if selected_dust == &"unit_dust_t2":
@@ -21269,24 +31222,19 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event (all projectiles launched simultaneously)
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
+		# Batched combined HP/PWR BUFF event
+		var combined_payload = CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+		combined_payload.targets_old_pwr.assign(batched_old_pwr)
+		combined_payload.targets_new_pwr.assign(batched_new_pwr)
+		combined_payload.new_pwr = combined_payload.targets_new_pwr[0] if not combined_payload.targets_new_pwr.is_empty() else 0
 		
-		# Batched PWR BUFF event (all projectiles launched simultaneously)
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": combined_payload
 		}))
 
 	result.state_applied = true
@@ -22034,7 +31982,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if tier_1_units.is_empty():
 		return EffectResult.empty()
 	
-	var random_def = tier_1_units.pick_random()
+	var random_def = RNGManager.combat_rng.pick_random(tier_1_units)
 	
 	# 5. Return EffectResult with summon instructions
 	# CombatSimulator will process summon_request via EffectHandlers
@@ -22087,7 +32035,7 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	if tier_2_units.is_empty():
 		return EffectResult.empty()
 	
-	var random_def = tier_2_units.pick_random()
+	var random_def = RNGManager.combat_rng.pick_random(tier_2_units)
 	
 	var result := EffectResult.new()
 	result.summon_request = {
@@ -22349,6 +32297,7 @@ const MAX_UNITS := 5
 const MAX_TRINKETS := 5
 
 func _update_director_run_state() -> void:
+	director.rng = RNGManager.map_rng
 	if is_instance_valid(GameManager.run_state):
 		director_run_state.current_day = GameManager.run_state.day
 		director_run_state.player_gold = GameManager.run_state.gold
@@ -22436,7 +32385,7 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 		total_weight += w
 	
 	# 3. Pick weighted boss
-	var roll = randf() * total_weight
+	var roll = RNGManager.map_rng.randf() * total_weight
 	var cumulative_weight: float = 0.0
 	var selected_boss_id: StringName = boss_options[0] # Fallback
 	
@@ -22576,7 +32525,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 		for i in purchased_units.size(): upgrade_candidates.append([purchased_units, i, pools.units])
 		for i in purchased_items.size(): upgrade_candidates.append([purchased_items, i, pools.items])
 		for i in purchased_trinkets.size(): upgrade_candidates.append([purchased_trinkets, i, pools.trinkets])
-		upgrade_candidates.shuffle()
+		RNGManager.map_rng.shuffle(upgrade_candidates)
 		
 		for candidate in upgrade_candidates:
 			var list = candidate[0]
@@ -22674,7 +32623,7 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 		available_positions = [0, 1, 2, 3] # Reserve position 4 for boss/elite
 	else:
 		available_positions = [0, 1, 2, 3, 4]
-	available_positions.shuffle()
+	RNGManager.map_rng.shuffle(available_positions)
 	
 	for unit_def in build.units:
 		if available_positions.is_empty():
@@ -22692,7 +32641,7 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 				possible_parents.append(p)
 		if possible_parents.is_empty():
 			break
-		possible_parents.pick_random().items.append(item_def.id)
+		RNGManager.map_rng.pick_random(possible_parents).items.append(item_def.id)
 	
 	# Assign trinkets
 	_append_required_trait_trinkets(encounter)
@@ -22821,7 +32770,7 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 	else:
 		spawn_chance = 1.0
 		
-	if randf() > spawn_chance:
+	if RNGManager.map_rng.randf() > spawn_chance:
 		return 0 # No slots generated
 		
 	# We are generating slots. We want at least one slot on each team.
@@ -22839,14 +32788,14 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 				
 	var player_cost = 0
 	if not possible_player_combinations.is_empty():
-		var chosen = possible_player_combinations[randi() % possible_player_combinations.size()]
+		var chosen = RNGManager.map_rng.pick_random(possible_player_combinations)
 		var num_burn: int = chosen["burn"]
 		var num_lightning: int = chosen["lightning"]
 		player_cost = chosen["cost"]
 		
 		# Assign randomly
 		var pos = [0, 1, 2, 3, 4]
-		pos.shuffle()
+		RNGManager.map_rng.shuffle(pos)
 		for j in range(num_burn):
 			encounter.player_slot_effects[pos.pop_back()] = &"burn"
 		for j in range(num_lightning):
@@ -22865,14 +32814,14 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 			
 	var enemy_bonus = 0
 	if not possible_enemy_combinations.is_empty():
-		var chosen = possible_enemy_combinations[randi() % possible_enemy_combinations.size()]
+		var chosen = RNGManager.map_rng.pick_random(possible_enemy_combinations)
 		var num_burn: int = chosen["burn"]
 		var num_lightning: int = chosen["lightning"]
 		enemy_bonus = chosen["bonus"]
 		
 		# Assign randomly
 		var pos = [0, 1, 2, 3, 4]
-		pos.shuffle()
+		RNGManager.map_rng.shuffle(pos)
 		for j in range(num_burn):
 			encounter.enemy_slot_effects[pos.pop_back()] = &"burn"
 		for j in range(num_lightning):
@@ -22893,6 +32842,7 @@ class_name EndBattlePopup
 var _is_victory: bool = false
 
 func _ready() -> void:
+	add_to_group("end_battle_popup")
 	return_button.pressed.connect(_on_return_button_pressed)
 
 func populate(context: Dictionary) -> void:
@@ -22906,12 +32856,21 @@ func populate(context: Dictionary) -> void:
 		return_button.text = tr("ui.return_to_title")
 
 func _on_return_button_pressed() -> void:
+	if ReplayManager.is_replaying: return
+	
+	if _is_victory:
+		ActionQueue.enqueue(BattleVictoryAction.new())
+	else:
+		ActionQueue.enqueue(RunTerminationAction.new(&"loss"))
+
+func _execute_return() -> void:
 	if _is_victory:
 		SignalBus.emit_signal("battle_victory_acknowledged")
 	else:
 		# Clear save on game over (defeat)
 		SaveManager.clear_save()
-		SignalBus.emit_signal("title_scene_requested")
+		# RunTerminationAction handles its own execution, but if we need fallback
+		pass
 	queue_free()
 
 func get_window_to_animate() -> Control:
@@ -23015,14 +32974,14 @@ var _minigame_instance: Control = null
 func _select_card_via_srs() -> StringName:
 	"""Selects a card using the weighted SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
-		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
+		return RNGManager.map_rng.pick_random(_active_deck_ids) if not _active_deck_ids.is_empty() else &""
 	
 	var candidates = _active_deck_ids.duplicate()
 	if candidates.has(_last_shown_card_id):
 		candidates.erase(_last_shown_card_id)
 	
 	if candidates.is_empty():
-		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
+		return RNGManager.map_rng.pick_random(_active_deck_ids) if not _active_deck_ids.is_empty() else &""
 	
 	var weighted_candidates: Array[Dictionary] = []
 	var total_weight: float = 0.0
@@ -23035,7 +32994,7 @@ func _select_card_via_srs() -> StringName:
 		# TDD Section 9.3: Priority 1 = mastery (lower = higher weight), Priority 2 = recency, Tie-breaker = random
 		var mastery_component: float = pow(6 - progress.mastery_level, SRS_MASTERY_WEIGHT_POWER)
 		var time_component: float = float(_run_state_ref.day - progress.last_review_day) * SRS_RECENCY_WEIGHT
-		var random_component: float = randf() * SRS_RANDOM_FACTOR
+		var random_component: float = RNGManager.map_rng.randf() * SRS_RANDOM_FACTOR
 		var weight: float = mastery_component + time_component + random_component
 		
 		# Dampen weight of mastered cards so they are drawn much less frequently
@@ -23051,16 +33010,16 @@ func _select_card_via_srs() -> StringName:
 	
 	# If no weighted candidates, fall back to random selection
 	if weighted_candidates.is_empty():
-		return candidates.pick_random() if not candidates.is_empty() else &""
+		return RNGManager.map_rng.pick_random(candidates) if not candidates.is_empty() else &""
 	
 	# Perform weighted random selection
-	var rand_val = randf() * total_weight
+	var rand_val = RNGManager.map_rng.randf() * total_weight
 	for candidate in weighted_candidates:
 		rand_val -= candidate.weight
 		if rand_val <= 0:
 			return candidate.id
 	
-	return candidates.pick_random() # Fallback
+	return RNGManager.map_rng.pick_random(candidates) # Fallback
 
 ## TDD Section 9.2: Public API
 func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void:
@@ -23113,11 +33072,11 @@ func get_next_question() -> Dictionary:
 	
 	var distractors = _active_deck_ids.duplicate()
 	distractors.erase(question_card_id)
-	distractors.shuffle()
+	RNGManager.map_rng.shuffle(distractors)
 	
 	var choices: Array[StringName] = [question_card_id]
 	choices.append_array(distractors.slice(0, 5))
-	choices.shuffle()
+	RNGManager.map_rng.shuffle(choices)
 	
 	return {
 		"question_id": question_card_id,
@@ -23680,6 +33639,12 @@ func _show_new_card_tutorial() -> void:
 
 func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
+	if ReplayManager.is_replaying:
+		return
+	ActionQueue.enqueue(FlashcardIntroDismissAction.new())
+
+func _execute_intro_dismiss() -> void:
+	"""Called by FlashcardIntroDismissAction to actually dismiss the intro"""
 	card_intro_container.hide()
 	_start_minigame_session()
 
@@ -23851,8 +33816,24 @@ func _update_panel_color(color: Color) -> void:
 	elif _panel_style is StyleBoxFlat:
 		_panel_style.bg_color = color
 
+func get_current_question_id() -> StringName:
+	return _current_question_id
+
 func _on_choice_selected(selected_answer_id: StringName) -> void:
-	"""Handle when a player selects an answer"""
+	if _input_locked or _session_timer <= 0:
+		return
+	ActionQueue.enqueue(FlashcardAnswerAction.new(_current_question_id, selected_answer_id, selected_answer_id == _current_question_id, maxf(0.0, 7.0 - _session_timer), false))
+
+func execute_replay_answer(question_id: StringName, selected_answer_id: StringName, skipped: bool) -> void:
+	if question_id != _current_question_id:
+		return
+	if skipped:
+		_execute_skip()
+	else:
+		_execute_choice_selected(selected_answer_id)
+
+func _execute_choice_selected(selected_answer_id: StringName) -> void:
+	"""Apply an answer after it has been accepted by ActionQueue."""
 	if _input_locked or _session_timer <= 0:
 		return
 		
@@ -24091,6 +34072,11 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) 
 			break
 
 func _on_skip_pressed() -> void:
+	if _input_locked or _session_timer <= 0:
+		return
+	ActionQueue.enqueue(FlashcardAnswerAction.new(_current_question_id, &"", false, maxf(0.0, 7.0 - _session_timer), true))
+
+func _execute_skip() -> void:
 	if _input_locked or _session_timer <= 0:
 		return
 	
@@ -27670,6 +37656,7 @@ var _active_main_node: Node = null # ADD THIS LINE
 var loading_from_save: bool = false # Flag to prevent double day increment on load
 
 var test_starting_items: Array[StringName] = []
+var _pending_replay_encounter: EncounterDefinition = null
 
 # These functions are deprecated - use get_instance_from_location instead
 
@@ -27727,10 +37714,54 @@ func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_
 	if TutorialManager:
 		TutorialManager.reset_all_tutorials()
 		
+	ActionQueue.clear_history()
+	UUIDUtils.reset_counter()
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	reset_gacha_discounts()
+	if not ReplayManager.is_replaying:
+		ReplayRecorder.start_session({
+			"seed": run_state.run_seed,
+			"hero_id": str(hero_def_id),
+			"deck_id": str(deck_id),
+			"deck_order_mode": deck_order,
+			"deck_size": deck_size,
+			"test_mode": is_test_mode,
+			"test_mode_starters": Array(test_starting_items).map(func(id): return str(id)),
+			"tutorials_enabled": TutorialManager.tutorials_enabled if is_instance_valid(TutorialManager) else false
+		})
 	SignalBus.emit_signal("main_scene_requested")
+
+func start_replay_from_header(header: Dictionary) -> void:
+	if is_instance_valid(TutorialManager):
+		TutorialManager.tutorials_enabled = bool(header.get("tutorials_enabled", false))
+		TutorialManager._completed_tutorials.clear()
+		if header.has("completed_tutorials"):
+			var saved = header.get("completed_tutorials")
+			for k in saved:
+				TutorialManager._completed_tutorials[StringName(k)] = saved[k]
+		
+	var starters: Array[StringName] = []
+	for starter in header.get("test_mode_starters", []):
+		starters.append(StringName(starter))
+	test_starting_items = starters
+	is_test_mode = bool(header.get("test_mode", false))
+	ActionQueue.clear_history()
+	UUIDUtils.reset_counter()
+	run_state = RunState.new()
+	run_state.run_seed = int(header.get("seed", 0))
+	run_state.initialize_run(StringName(header.get("hero_id", "")), StringName(header.get("deck_id", "")), String(header.get("deck_order_mode", "REGULAR")), String(header.get("deck_size", "FULL")))
+	reset_gacha_discounts()
+
+func get_pending_replay_encounter() -> EncounterDefinition:
+	return _pending_replay_encounter
+
+func execute_battle_start() -> void:
+	if not is_instance_valid(_pending_replay_encounter):
+		return
+	var encounter := _pending_replay_encounter
+	_pending_replay_encounter = null
+	SignalBus.battle_start_requested.emit(encounter)
 
 func _on_new_game_requested() -> void:
 	# Default to first hero and deck if called without parameters
@@ -27792,6 +37823,10 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 	director_run_state.current_day = run_state.day
 	director_run_state.player_gold = run_state.gold
 	director_run_state.current_purpose = purpose as DirectorRunState.Purpose
+	if purpose == DirectorRunState.Purpose.SHOP:
+		director.rng = RNGManager.shop_rng
+	else:
+		director.rng = RNGManager.reward_rng
 	# flashcard_mastery calculation could go here if available
 	director_run_state.unlocked_recipes.clear()
 	for r_id in run_state.unlocked_recipes.keys():
@@ -27932,6 +37967,9 @@ func _on_reward_chosen(payload) -> void:
 	run_state.current_boss_level = 0
 	run_state.current_elite_level = 0
 
+func execute_reward_selection(selection: Dictionary) -> void:
+	_on_reward_chosen(selection)
+
 ## Temporary debug function to inspect the pending reward master dictionary
 # Removed redundant functions that were replaced by the new temporary instance system
 
@@ -28036,6 +38074,13 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	# Fallback if no valid case is met.
 	return null
 
+func execute_path_selection(node_data: Dictionary) -> void:
+	var node_def := PathNodeDefinition.new()
+	node_def.node_type = StringName(node_data.get("node_type", ""))
+	node_def.subtype = StringName(node_data.get("subtype", ""))
+	node_def.difficulty = int(node_data.get("difficulty", 1))
+	_on_node_selected(node_def)
+
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	match node_def.node_type:
 		"BATTLE":
@@ -28070,9 +38115,12 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				run_state.current_boss_level = 0
 				run_state.current_elite_level = 0
 			
-			# Use registered Main node
-			if is_instance_valid(_active_main_node):
-				_active_main_node._on_battle_start_requested(encounter_def)
+			_pending_replay_encounter = encounter_def
+			# A path choice and the transition into combat are distinct decisions in
+			# the replay stream.  During replay the recorded BattleStartAction is
+			# already next, so do not synthesize a duplicate command.
+			if not ReplayManager.is_replaying:
+				ActionQueue.enqueue(BattleStartAction.new())
 		"SHOP":
 			_enter_shop()
 		"BLACK_MARKET":
@@ -28092,7 +38140,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 					inst.setup_site()
 		"SURPRISE":
 			if is_instance_valid(_active_main_node):
-				var roll = randi() % 3
+				var roll = RNGManager.map_rng.randi() % 3
 				if roll == 0:
 					var inst = _active_main_node.load_content(REST_SITE_SCENE)
 					if inst is ResourceSite:
@@ -28137,6 +38185,12 @@ func _generate_shop_stock() -> void:
 		
 		_temporary_shop_master_dict[inst.ball_uuid] = inst
 		_temporary_shop_container.set_uuid(i, inst.ball_uuid)
+
+func execute_shop_purchase(instance_uuid: String, cost: int) -> void:
+	_on_shop_purchase_requested(instance_uuid, cost)
+
+func execute_shop_reroll() -> void:
+	_on_shop_reroll_requested()
 
 func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
 	if not _temporary_shop_master_dict.has(instance_uuid): return
@@ -28263,6 +38317,11 @@ func reset_gacha_discounts() -> void:
 	gacha_discounts_used = {1: false, 2: false, 3: false}
 
 func get_black_market_transform_cost() -> int:
+	return 2 # Fixed cost for now
+
+func get_black_market_remove_cost() -> int:
+	if is_instance_valid(run_state) and run_state.has_method("get_black_market_remove_cost"):
+		return run_state.get_black_market_remove_cost()
 	return 5
 
 func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDefinition:
@@ -28280,25 +38339,31 @@ func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDe
 
 	if eligible.is_empty():
 		return null
-	return eligible[randi() % eligible.size()]
+	return RNGManager.shop_rng.pick_random(eligible)
 
 func _on_black_market_action_requested(payload: Dictionary) -> void:
 	if not is_instance_valid(run_state):
 		return
 		
-	if payload.type == "remove":
-		var cost: int = payload.cost
-		var instance_uuid: String = payload.instance_uuid
+	var action_type := String(payload.get("type", ""))
+	if action_type == "remove":
+		var cost: int = payload.get("cost", 0)
+		var instance_uuid: String = payload.get("instance_uuid", "")
 		if run_state.spend_gold(cost):
 			run_state.remove_instance(instance_uuid)
 			if run_state.has_method("increase_black_market_remove_cost"):
 				run_state.increase_black_market_remove_cost()
 				
-	elif payload.type == "transform":
-		var cost: int = payload.cost
-		var instance_uuid: String = payload.instance_uuid
-		var source_location: LocationIdentifier = payload.source_location
-		var result_definition: GachaBallDefinition = payload.result_definition
+	elif action_type == "transform":
+		var cost: int = payload.get("cost", 0)
+		var instance_uuid: String = payload.get("instance_uuid", "")
+		
+		var raw_loc = payload.get("source_location", {})
+		var source_location: LocationIdentifier = raw_loc if raw_loc is LocationIdentifier else LocationIdentifier.from_dict(raw_loc)
+		
+		var raw_def = payload.get("result_definition")
+		var result_definition: GachaBallDefinition = raw_def if raw_def is GachaBallDefinition else Database.get_definition(StringName(payload.get("result_definition_id", "")))
+		
 		var source_level: int = payload.get("source_level", 1)
 		
 		if not is_instance_valid(result_definition): return
@@ -28311,6 +38376,9 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 			new_instance.level = source_level
 			run_state.add_instance(new_instance, source_location.container, source_location.index)
 			run_state.unlock_recipe_for_result(result_definition.id)
+
+func execute_black_market_action(payload: Dictionary) -> void:
+	_on_black_market_action_requested(payload)
 ```
 
 ### File: `scripts/GlobalInteractionRouter.gd`
@@ -28394,9 +38462,13 @@ func _ready() -> void:
 	# Connect to WindowManager closing signal to clear stale selections
 	if _window_manager.has_signal("window_closed"):
 		_window_manager.window_closed.connect(_on_window_closed)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.action_failed.connect(_on_action_failed)
 
 
 func _exit_tree() -> void:
+	if is_instance_valid(ActionQueue) and ActionQueue.action_failed.is_connected(_on_action_failed):
+		ActionQueue.action_failed.disconnect(_on_action_failed)
 	# Scene cleanup per spec: clear drag and selection
 	_end_drag_visuals(false)
 	_is_drag_active = false
@@ -28504,16 +38576,25 @@ func _input(event: InputEvent) -> void:
 		
 		# If the click is not inside any active inspection window, close them and swallow the event
 		if not WindowManager.is_point_inside_any_inspection_window(pos):
-			get_viewport().set_input_as_handled()
+			var gm = GameAction.get_game_manager()
+			var main_node = gm._active_main_node if is_instance_valid(gm) else null
+			var clicked_drop_zone = false
+			if is_instance_valid(main_node):
+				if main_node.has_method("is_point_inside_confirm_drop_zone") and main_node.is_point_inside_confirm_drop_zone(pos):
+					clicked_drop_zone = true
+				elif main_node.has_method("is_point_inside_action_drop_zones") and main_node.is_point_inside_action_drop_zones(pos):
+					clicked_drop_zone = true
+				elif main_node.has_method("is_point_inside_reward_drop_zones") and main_node.is_point_inside_reward_drop_zones(pos):
+					clicked_drop_zone = true
 			
-			if not _is_close_suppressed_now():
-				_is_inspection_locked = false
-				_locked_entity_view_id = -1
-				_hover_entity_view_id = -1
-				_execute_close_all_inspection_windows()
+			if not clicked_drop_zone:
+				get_viewport().set_input_as_handled()
 				
-			if not is_vcr_playing() and not _is_combat_phase:
-				_execute_deselect()
+				if not _is_close_suppressed_now():
+					if not is_vcr_playing() and is_instance_valid(ActionQueue):
+						ActionQueue.call_deferred("enqueue", ClearSelectionAction.new())
+					else:
+						call_deferred("_execute_clear_selection")
 
 
 ## High-priority input handling (Escape, true background)
@@ -28534,28 +38615,22 @@ func _unhandled_input(event: InputEvent) -> void:
 		if SignalBus.has_signal("close_modal_requested"):
 			SignalBus.emit_signal("close_modal_requested")
 			return
-		# 3) Clear lock/hover state
-		_is_inspection_locked = false
-		_locked_entity_view_id = -1
-		_hover_entity_view_id = -1
-		# 4) Close contextual windows (guarded by suppression) and clear selection
+		# 3) Close contextual windows (guarded by suppression) and clear selection
 		if not _is_close_suppressed_now():
-			_execute_close_all_inspection_windows()
-		if not is_vcr_playing() and not _is_combat_phase:
-			_execute_deselect()
+			if not is_vcr_playing() and is_instance_valid(ActionQueue):
+				ActionQueue.call_deferred("enqueue", ClearSelectionAction.new())
+			else:
+				call_deferred("_execute_clear_selection")
 		return
 
 	# True background click: left mouse press not handled by any Control
 	if InputUtils.is_primary_pointer_press(event):
 		# Close contextual windows and clear selection (guarded by suppression)
 		if not _is_close_suppressed_now():
-			# Clear lock/hover state
-			_is_inspection_locked = false
-			_locked_entity_view_id = -1
-			_hover_entity_view_id = -1
-			_execute_close_all_inspection_windows()
-		if not is_vcr_playing() and not _is_combat_phase:
-			_execute_deselect()
+			if not is_vcr_playing() and is_instance_valid(ActionQueue):
+				ActionQueue.call_deferred("enqueue", ClearSelectionAction.new())
+			else:
+				call_deferred("_execute_clear_selection")
 
 ## External signal handler: proactively clear selection when requested (e.g., scene transitions)
 func _on_selection_clear_requested() -> void:
@@ -28566,6 +38641,7 @@ func _on_selection_clear_requested() -> void:
 	# Always clear selection if present
 	if _current_selection != null:
 		_execute_deselect()
+	_execute_close_contextual_popups()
 	# Also activate a brief, contextless close suppression to guard the very next click
 	# after system-driven actions (e.g., shop purchase, reward choice). This prevents
 	# GR-4 global close or background handlers from triggering immediately.
@@ -28607,6 +38683,10 @@ func _on_battle_inventory_transition_started(_is_opening: bool) -> void:
 
 func _on_battle_inventory_transition_finished() -> void:
 	_is_ui_transitioning = false
+
+func _on_action_failed(action: GameAction, _reason: String) -> void:
+	if action is InventoryDragAction:
+		end_drag(false)
 
 ## Handler for WindowManager.window_closed signal
 ## Clears selection if the selected item was inside the closed window.
@@ -29236,6 +39316,12 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 	var should_lock: bool = command_context.get("lock", false)
 	
 	if _window_manager and context:
+		# Enqueue action if not replaying, else execute directly
+		var is_from_action: bool = command_context.get("is_from_action", false)
+		if not ReplayManager.is_replaying and not is_from_action and is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(InspectAction.new(context.location, should_lock))
+			return
+			
 		# Find the anchor view by instance ID
 		var anchor_view = _find_view_by_instance_id(anchor_view_id)
 		if anchor_view:
@@ -29249,6 +39335,14 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 func _execute_close_all_inspection_windows() -> void:
 	if _window_manager:
 		_window_manager.close_all_inspection_windows()
+
+## Execute close only contextual popups
+func _execute_close_contextual_popups() -> void:
+	if _window_manager:
+		if _window_manager.has_method("close_all_contextual_popups"):
+			_window_manager.close_all_contextual_popups()
+		else:
+			_window_manager.close_all_inspection_windows()
 
 ## Execute close child windows command
 func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
@@ -29283,15 +39377,28 @@ func _execute_request_action(command_context: Dictionary) -> void:
 				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
 				if src_view:
 					_activate_close_suppression_for_view(src_view)
-		SignalBus.emit_signal("try_inventory_action",
-			source_context.location,
-			target_context.location)
+		var action = InventoryDragAction.new(source_context.location, target_context.location)
+		if is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(action)
+		else:
+			SignalBus.emit_signal("try_inventory_action", source_context.location, target_context.location)
+
+## Execute clear selection
+func _execute_clear_selection() -> void:
+	_is_inspection_locked = false
+	_locked_entity_view_id = -1
+	_hover_entity_view_id = -1
+	_execute_close_all_inspection_windows()
+	if not _is_combat_phase:
+		_execute_deselect()
 
 ## Execute invalid action command
 func _execute_invalid_action() -> void:
 	# GR-5 resolution: close contextual windows and clear selection
-	_execute_close_all_inspection_windows()
-	_execute_deselect()
+	if not is_vcr_playing() and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(ClearSelectionAction.new())
+	else:
+		_execute_clear_selection()
 
 ## Emit selection changed uniformly
 func _emit_selection_changed(loc: LocationIdentifier) -> void:
@@ -29870,6 +39977,12 @@ func _ready() -> void:
 	SignalBus.choice_made.connect(_on_choice_made)
 
 # --- Main Action Handler ---
+
+func execute_drag_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
+	_on_try_inventory_action(source_loc, target_loc)
+
+func execute_choice_action(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName = &"") -> void:
+	_on_choice_made(choice, source_loc, target_loc, recipe_id)
 
 func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
@@ -31026,9 +41139,7 @@ func _update_description_and_stats(item_def: Resource) -> void:
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
 
-func _on_inventory_changed() -> void:
-	if not is_instance_valid(self):
-		return
+func _on_inventory_changed(_arg = null) -> void:
 	var all_instances: Dictionary = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_item_uuid)
 	if not is_instance_valid(current_instance):
@@ -31300,7 +41411,7 @@ func _trigger_trait_tutorial() -> void:
 	TutorialManager.show_tutorial(&"traits", [
 		{
 			"text": tr("tutorial.traits"),
-			"anchor_side": "AUTO_HORIZONTAL" # Attempt to place next to the inspection window without overlapping
+			"anchor_side": "AUTO_HORIZONTAL"
 		}
 	], self)
 ```
@@ -31866,6 +41977,28 @@ func is_equal(other: LocationIdentifier) -> bool:
 	if not is_instance_valid(other):
 		return false
 	return container == other.container and index == other.index and unit_uuid == other.unit_uuid
+
+## Serializes this LocationIdentifier to a Dictionary.
+func to_dict() -> Dictionary:
+	return {
+		"container": str(container),
+		"index": index,
+		"unit_uuid": unit_uuid
+	}
+
+func to_save_dict() -> Dictionary:
+	return to_dict()
+
+## Deserializes a LocationIdentifier from a Dictionary.
+static func from_dict(dict: Dictionary) -> LocationIdentifier:
+	var loc = LocationIdentifier.new()
+	if dict.has("container"):
+		loc.container = StringName(dict["container"])
+	if dict.has("index"):
+		loc.index = int(dict["index"])
+	if dict.has("unit_uuid"):
+		loc.unit_uuid = str(dict["unit_uuid"])
+	return loc
 ```
 
 ### File: `scripts/Main.gd`
@@ -31923,6 +42056,14 @@ const MASTERY_COLORS = {
 const LOCKED_COLOR = Color(0.4, 0.4, 0.4) # Grey for locked cards
 
 var _current_content_node: Node = null
+
+## ReplayManager uses this public boundary rather than reaching into a scene's
+## unique-node paths while SceneManager is still replacing the Title scene.
+func is_replay_start_ready() -> bool:
+	return is_instance_valid(_current_content_node) and _current_content_node.name == "PathChoice"
+
+func get_active_content() -> Node:
+	return _current_content_node
 
 # Confirm drop zone overlay (covers bottom area for Reward/Shop confirm)
 var _confirm_drop_zone: PanelContainer = null
@@ -32081,21 +42222,25 @@ func _on_ui_overlay_gui_input(event: InputEvent) -> void:
 func _on_machine_gui_input(event: InputEvent) -> void:
 	# Handle clicks on machine image area (outside the knob button)
 	if InputUtils.is_primary_pointer_press(event):
-		# Check if any windows are open
-		if WindowManager.is_any_inspection_window_open():
-			# Close all open windows - this is the "click outside window" behavior
-			WindowManager.close_all_inspection_windows()
-			# Don't open inventory - the close action was the intent
+		# Use ToggleWindowAction which handles both closing windows and opening inventory
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		var is_anim = _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing())
+		if is_anim and not WindowManager.is_any_inspection_window_open():
+			get_viewport().set_input_as_handled()
+			if InputUtils.is_touch_pointer_event(event):
+				accept_event()
+			return
+		
+		if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(ToggleWindowAction.new(&"inventory"))
 		else:
-			var bm = get_tree().get_first_node_in_group("battle_manager")
-			var is_anim = _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing())
-			if is_anim:
-				get_viewport().set_input_as_handled()
-				if InputUtils.is_touch_pointer_event(event):
-					accept_event()
-				return
-			# No windows open - open inventory
-			SignalBus.emit_signal("inspect_inventory_requested")
+			if WindowManager.is_any_inspection_window_open():
+				if is_instance_valid(GlobalInteractionRouter):
+					GlobalInteractionRouter._execute_clear_selection()
+				else:
+					WindowManager.close_all_inspection_windows()
+			else:
+				SignalBus.emit_signal("inspect_inventory_requested")
 		get_viewport().set_input_as_handled()
 		if InputUtils.is_touch_pointer_event(event):
 			accept_event()
@@ -32245,15 +42390,33 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	# Ensure UI focus doesn't interfere
 	button.release_focus()
 	
-	# Animate knob rotation (reset first to allow rapid clicks)
+	if ReplayManager.is_replaying:
+		return
+		
+	ActionQueue.enqueue(GachaDrawAction.new(tier))
+
+func execute_replay_draw(tier: int) -> void:
+	var button: BaseButton = null
+	match tier:
+		1: button = knob_button_1
+		2: button = knob_button_2
+		3: button = knob_button_3
+		
+	if not is_instance_valid(button):
+		return
+		
+	var effective_cost := tier
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("get_gacha_draw_cost"):
+		effective_cost = bm.get_gacha_draw_cost(tier)
+		
+	# Animate knob rotation
 	button.rotation_degrees = 0.0
 	var knob_tween = create_tween()
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
+	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0)
 	
-	# We've committed to this draw. Set _is_drawing_token to true.
 	_is_drawing_token = true
-	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
 	context.event_type = &"SINGLE_CLICK"
@@ -32264,7 +42427,6 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	context.window_group_id = 0
 	SignalBus.emit_signal("interaction_context_received", context)
 	
-	# Animate tokens flying from counter to machine, then proceed with draw
 	_animate_token_spend(tier, effective_cost, button)
 
 func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
@@ -32773,13 +42935,38 @@ func hide_confirm_drop_zone() -> void:
 	_confirm_drop_zone_visible = false
 	_confirm_drop_zone_mode = &""
 	
-	# Fade out animation
+	if not _confirm_drop_zone.visible:
+		return
+		
 	var tween = create_tween()
 	tween.tween_property(_confirm_drop_zone, "modulate:a", 0.0, 0.15).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	tween.tween_callback(func():
 		if is_instance_valid(_confirm_drop_zone):
 			_confirm_drop_zone.visible = false
 	)
+
+func is_point_inside_confirm_drop_zone(pos: Vector2) -> bool:
+	if _confirm_drop_zone_visible and is_instance_valid(_confirm_drop_zone):
+		return _confirm_drop_zone.get_global_rect().has_point(pos)
+	return false
+
+func is_point_inside_action_drop_zones(pos: Vector2) -> bool:
+	if not _split_action_drop_zones_visible or not is_instance_valid(_split_action_drop_zone_container):
+		return false
+	if is_instance_valid(_action_zone_1) and _action_zone_1.is_visible_in_tree() and _action_zone_1.get_global_rect().has_point(pos):
+		return true
+	if is_instance_valid(_action_zone_2) and _action_zone_2.is_visible_in_tree() and _action_zone_2.get_global_rect().has_point(pos):
+		return true
+	return false
+
+func is_point_inside_reward_drop_zones(pos: Vector2) -> bool:
+	if not _reward_drop_zones_visible or not is_instance_valid(_reward_drop_zone_container):
+		return false
+	if is_instance_valid(_reward_collect_zone) and _reward_collect_zone.is_visible_in_tree() and _reward_collect_zone.get_global_rect().has_point(pos):
+		return true
+	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.is_visible_in_tree() and _reward_sell_zone.get_global_rect().has_point(pos):
+		return true
+	return false
 
 func _on_confirm_drop_zone_gui_input(event: InputEvent) -> void:
 	"""Handle click on the confirm drop zone overlay."""
@@ -33432,7 +43619,9 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		if bm.has_method("block_ui_updates"):
 			bm.block_ui_updates()
 			
-		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid, "is_simulation": true})
+		
+		merge_context["is_simulation"] = true
 		AbilityResolver.process_trigger(&"on_merge", merge_context)
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		
@@ -33467,6 +43656,8 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 			pending_count = int(bm.get_pending_reactions_size())
 		else:
 			pending_count = int(bm._pending_reactions.size())
+			
+		if pending_count > 0:
 			await bm.resolve_management_effects_and_animate(snapshot)
 			
 		if bm.has_method("unblock_ui_updates"):
@@ -33681,12 +43872,14 @@ func _update_localized_text() -> void:
 	leave_button.text = tr("ui.leave")
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
-	else:
-		SignalBus.emit_signal("inspect_inventory_requested")
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ToggleWindowAction.new(&"inventory"))
 
 func _on_leave_pressed() -> void:
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"MergeEncounter"))
+
+func _execute_leave() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("hide_action_instruction"):
@@ -34539,6 +44732,7 @@ var director: WeightedPoolDirector = WeightedPoolDirector.new()
 var director_run_state: DirectorRunState = DirectorRunState.new()
 
 func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> void:
+	director.rng = RNGManager.map_rng
 	if is_instance_valid(GameManager.run_state):
 		director_run_state.current_day = GameManager.run_state.day
 		director_run_state.player_gold = GameManager.run_state.gold
@@ -34555,6 +44749,12 @@ func _ready() -> void:
 			GameManager.loading_from_save = false
 		else:
 			GameManager.run_state.advance_day(1)
+			
+			# Sync the recording state before saving
+			if ReplayRecorder.get_active_recording_name() != "":
+				GameManager.run_state.active_recording_name = ReplayRecorder.get_active_recording_name()
+				GameManager.run_state.last_save_action_count = ReplayRecorder.get_action_count()
+				
 			# Save checkpoint after day advances
 			SaveManager.save_run(GameManager.run_state)
 	
@@ -34684,6 +44884,9 @@ func _register_node_view(node_view: NodeView) -> void:
 	_node_views.append(node_view)
 
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
+	await _resolve_node_selection(node_def, false)
+
+func _resolve_node_selection(node_def: PathNodeDefinition, is_replay: bool) -> void:
 	if _selection_locked:
 		return
 	_selection_locked = true
@@ -34691,7 +44894,23 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 		if is_instance_valid(node_view):
 			node_view.disabled = true
 	await AnimationConstants.create_pausable_timer(get_tree(), SELECTION_TRANSITION_DELAY).timeout
-	SignalBus.emit_signal("node_selected", node_def)
+	var node_data := {
+		"node_type": str(node_def.node_type),
+		"subtype": str(node_def.subtype),
+		"difficulty": node_def.difficulty
+	}
+	if is_replay:
+		GameManager.execute_path_selection(node_data)
+	else:
+		ActionQueue.enqueue(PathSelectionAction.new(node_data))
+
+## Replays bypass the card-click animation timer and mutate state synchronously.
+## The timer inside _resolve_node_selection is a player-facing animation guard;
+## calling it during replay would leave execute() returning before
+## GameManager.execute_path_selection runs, making _pending_replay_encounter null
+## and causing the next BattleStartAction to fail its is_valid() check.
+func execute_replay_selection(node_data: Dictionary) -> void:
+	GameManager.execute_path_selection(node_data)
 ```
 
 ### File: `scripts/PathNodeDefinition.gd`
@@ -35357,6 +45576,529 @@ func get_count_label() -> Label:
 	return get_node_or_null("CountLabel") as Label
 ```
 
+### File: `scripts/replay/ReplayManager.gd`
+```gdscript
+extends Node
+
+## Drives recorded commands through the regular ActionQueue. Replays are a
+## developer-facing autoplay tool: input never pauses for a player decision.
+const ACTION_INTERVAL := 2.0
+const MAX_LOG_LINES := 8
+
+var is_replaying := false
+var _actions: Array[Dictionary] = []
+var _index := 0
+var _is_paused := false
+var _speed := 1.0
+var _overlay: CanvasLayer
+var _log_label: RichTextLabel
+var _log_lines: Array[String] = []
+
+func _ready() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS
+	ActionQueue.action_started.connect(_on_action_started)
+	ActionQueue.action_failed.connect(_on_action_failed)
+	SignalBus.log_animation_event.connect(_on_combat_event)
+
+func _input(event: InputEvent) -> void:
+	if not is_replaying or not event is InputEventKey or not event.pressed or event.echo:
+		return
+	if event.keycode >= KEY_0 and event.keycode <= KEY_9:
+		set_speed(float(event.keycode - KEY_0))
+		get_viewport().set_input_as_handled()
+
+func start_replay(path: String) -> void:
+	if is_replaying:
+		return
+	var replay := _read_replay(path)
+	if replay.is_empty():
+		return
+	var header: Dictionary = replay.header
+	_actions = replay.actions
+	_index = 0
+	is_replaying = true
+	_is_paused = false
+	_speed = 1.0
+	AnimationConstants.set_speed(_speed)
+	GameManager.start_replay_from_header(header)
+	_create_overlay()
+	_append_log("Replay started at 1x")
+	SignalBus.main_scene_requested.emit()
+	call_deferred("_run_replay")
+
+## Keyboard-only playback controls: 1-9 set speed and 0 pauses playback.
+func set_speed(speed: float) -> void:
+	if not is_replaying:
+		return
+	if speed <= 0.0:
+		_is_paused = true
+		AnimationConstants.set_speed(0.0)
+		_append_log("Playback paused")
+		return
+	_speed = speed
+	_is_paused = false
+	AnimationConstants.set_speed(_speed)
+	_append_log("Playback speed: %dx" % int(_speed))
+
+func exit_to_menu() -> void:
+	if not is_replaying:
+		return
+	is_replaying = false
+	_actions.clear()
+	ActionQueue.clear_history()
+	AnimationConstants.set_speed(1.0)
+	if is_instance_valid(_overlay):
+		_overlay.queue_free()
+	_overlay = null
+	_log_label = null
+	_log_lines.clear()
+	SignalBus.title_scene_requested.emit()
+
+func _run_replay() -> void:
+	# Main and PathChoice need to exist before the first recorded selection.
+	# SceneManager replaces Title asynchronously, and Main then creates
+	# PathChoice from its _ready callback. Do not dispatch the first command
+	# until that normal starting scene is actually present.
+	while is_replaying and not _is_initial_scene_ready():
+		await get_tree().process_frame
+	# Give the initial scene one full ACTION_INTERVAL to settle before the first
+	# dispatch.  Every subsequent action already waits this long; without this
+	# pause the first PathSelectionAction fires immediately on scene-ready.
+	if is_replaying:
+		await get_tree().create_timer(AnimationConstants.scaled(ACTION_INTERVAL), true, false, true).timeout
+	while is_replaying and _index < _actions.size():
+		while is_replaying and _is_paused:
+			await get_tree().process_frame
+		if not is_replaying:
+			return
+		var action_dict := _actions[_index]
+		var action := GameAction.from_dict(action_dict)
+		_index += 1
+		if not is_instance_valid(action):
+			exit_to_menu()
+			return
+		# Poll until the action's preconditions are satisfied.  Many actions
+		# depend on async game events (animations, scene loads, minigame opens)
+		# that complete after the previous action_completed signal fires.
+		# Failing immediately and returning would abort the whole replay; instead
+		# we wait here.  A 30-second wall-clock cap prevents infinite hangs.
+		var wait_frames := 0
+		const MAX_WAIT_FRAMES := 1800  # 30 s at 60 fps
+		while is_replaying and not action.is_valid() and wait_frames < MAX_WAIT_FRAMES:
+			await get_tree().process_frame
+			wait_frames += 1
+		if not is_replaying:
+			return
+		if not action.is_valid():
+			var msg = "Timed out waiting for action to become valid: %s" % _describe_action(action)
+			if action is TutorialAction:
+				msg += " (Looking for ID: %s)" % action.tutorial_id
+				var loop = Engine.get_main_loop()
+				if loop is SceneTree:
+					var popups = loop.get_nodes_in_group("tutorial_popup")
+					msg += " [Found %d popups: " % popups.size()
+					for p in popups:
+						msg += str(p.get("_tutorial_id")) + ", "
+					msg += "]"
+			push_error("[ReplayManager] " + msg)
+			print("\n\n=== REPLAY TIMEOUT ===\n" + msg + "\n======================\n\n")
+			exit_to_menu()
+			return
+		var state := { "completed": false, "failed": false, "failure_reason": "" }
+		var on_completed := func(done_action: GameAction):
+			if done_action == action:
+				state.completed = true
+		var on_failed := func(failed_action: GameAction, reason: String):
+			if failed_action == action:
+				state.failed = true
+				state.failure_reason = reason
+		ActionQueue.action_completed.connect(on_completed)
+		ActionQueue.action_failed.connect(on_failed)
+		ActionQueue.enqueue(action)
+		while is_replaying and not state.completed and not state.failed:
+			await get_tree().process_frame
+		if ActionQueue.action_completed.is_connected(on_completed):
+			ActionQueue.action_completed.disconnect(on_completed)
+		if ActionQueue.action_failed.is_connected(on_failed):
+			ActionQueue.action_failed.disconnect(on_failed)
+		if state.failed:
+			push_error("[ReplayManager] Replay action failed after becoming valid: %s (%s)" % [action.action_id, state.failure_reason])
+			return
+		if is_replaying and _index < _actions.size():
+			var next_action_dict = _actions[_index]
+			var current_timestamp: float = action_dict.get("timestamp", 0.0)
+			var next_timestamp: float = next_action_dict.get("timestamp", 0.0)
+			
+			# Calculate exact real-world delay, clamped between 0 and 10 seconds to prevent massive hangs
+			var delay := clampf(next_timestamp - current_timestamp, 0.0, 10.0)
+			
+			# Small minimum delay to allow for physics/rendering frames if actions were back-to-back
+			if delay < 0.01:
+				delay = 0.01
+				
+			await get_tree().create_timer(AnimationConstants.scaled(delay), true, false, true).timeout
+	if is_replaying:
+		exit_to_menu()
+
+func _read_replay(path: String) -> Dictionary:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		push_error("[ReplayManager] Could not open replay: %s" % path)
+		return {}
+	var header: Dictionary = {}
+	var actions: Array[Dictionary] = []
+	while not file.eof_reached():
+		var line := file.get_line()
+		if line.is_empty():
+			continue
+		var json := JSON.new()
+		if json.parse(line) != OK or not json.data is Dictionary:
+			continue
+		var data: Dictionary = json.data
+		if bool(data.get("header", false)):
+			header = data
+		elif String(data.get("action_id", "")) != "run_termination_action":
+			actions.append(data)
+	file.close()
+	return {"header": header, "actions": actions} if not header.is_empty() else {}
+
+func _create_overlay() -> void:
+	_overlay = CanvasLayer.new()
+	_overlay.layer = 200
+	_overlay.process_mode = Node.PROCESS_MODE_ALWAYS
+
+	# This transparent layer owns all pointer input, which prevents gameplay
+	# clicks and hover/click sounds from leaking through during a replay.
+	var input_blocker := Control.new()
+	input_blocker.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	input_blocker.mouse_filter = Control.MOUSE_FILTER_STOP
+	input_blocker.gui_input.connect(func(_event: InputEvent): get_viewport().set_input_as_handled())
+	_overlay.add_child(input_blocker)
+
+	var panel := PanelContainer.new()
+	panel.anchor_left = 0.0
+	panel.anchor_top = 1.0
+	panel.anchor_right = 1.0
+	panel.anchor_bottom = 1.0
+	panel.offset_left = 28.0
+	panel.offset_top = -248.0
+	panel.offset_right = -28.0
+	panel.offset_bottom = -28.0
+	panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_overlay.add_child(panel)
+
+	_log_label = RichTextLabel.new()
+	_log_label.bbcode_enabled = false
+	_log_label.fit_content = false
+	_log_label.scroll_active = false
+	_log_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_log_label.add_theme_font_size_override("normal_font_size", 18)
+	panel.add_child(_log_label)
+	get_tree().root.add_child(_overlay)
+
+func _on_action_started(action: GameAction) -> void:
+	if not is_replaying:
+		return
+	_append_log("ACTION  %s" % _describe_action(action))
+
+func _on_action_failed(action: GameAction, reason: String) -> void:
+	if is_replaying:
+		_append_log("FAILED  %s: %s" % [_describe_action(action), reason])
+
+func _on_combat_event(event: CombatEvent) -> void:
+	if not is_replaying or not is_instance_valid(event):
+		return
+	var targets := ", ".join(event.target_uuids)
+	_append_log("EVENT   %s  %s -> %s" % [event.get_type_name(), event.source_uuid, targets])
+
+func _describe_action(action: GameAction) -> String:
+	var data := action.to_dict()
+	match action.action_id:
+		&"path_selection_action":
+			var node: Dictionary = data.get("node", {})
+			return "Path: %s %s" % [node.get("subtype", ""), node.get("node_type", "")]
+		&"flashcard_answer_action":
+			return "Flashcard: %s" % data.get("selected_answer_id", "skip")
+		&"inventory_drag_action":
+			return "Inventory move"
+		&"choice_action":
+			return "Choice: %s" % data.get("choice", "")
+		&"end_turn_action":
+			return "End turn"
+		&"battle_start_action":
+			return "Start battle"
+		&"reward_selection_action":
+			return "Reward selection"
+		&"shop_purchase_action":
+			return "Shop purchase"
+		&"flashcard_intro_dismiss_action":
+			return "Dismiss intro"
+		&"tutorial_action":
+			return "Tutorial %s" % data.get("action_type", "dismiss")
+		&"return_to_path_choice_action":
+			return "Leave (%s)" % data.get("context", "")
+		_:
+			return String(action.action_id)
+
+func _append_log(message: String) -> void:
+	_log_lines.append(message)
+	while _log_lines.size() > MAX_LOG_LINES:
+		_log_lines.pop_front()
+	if is_instance_valid(_log_label):
+		_log_label.text = "\n".join(_log_lines)
+
+func _is_initial_scene_ready() -> bool:
+	var main_node := GameManager.get_main_node()
+	if not is_instance_valid(main_node) or not main_node.has_method("is_replay_start_ready"):
+		return false
+	return main_node.is_replay_start_ready()
+```
+
+### File: `scripts/replay/ReplayRecorder.gd`
+```gdscript
+extends Node
+
+## Persists an append-only action stream.  Every write is flushed immediately so
+## an interrupted run remains useful as a crash dump.
+const GAME_VERSION := "1.0.0"
+const REPLAY_DIR := "user://replays"
+const CRASH_DUMP_DIR := "user://crash_dumps"
+const MAX_RECORDINGS := 5
+
+var _mcr_file: FileAccess
+var _log_file: FileAccess
+var _active_mcr_path := ""
+var _active_log_path := ""
+var _is_recording := false
+var _last_gold := 0
+var _action_count := 0
+var _active_recording_name := ""
+
+func _ready() -> void:
+	_prepare_directory(REPLAY_DIR)
+	_prepare_directory(CRASH_DUMP_DIR)
+	_preserve_interrupted_recording()
+	ActionQueue.action_completed.connect(_on_action_completed)
+	SignalBus.log_animation_event.connect(_on_combat_event)
+	SignalBus.gold_changed.connect(_on_gold_changed)
+	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST and _is_recording:
+		_write_mcr({"action_id": "run_termination_action", "timestamp": Time.get_ticks_msec() / 1000.0, "reason": "game_quit"})
+		_write_log("=== SESSION END: game_quit ===")
+		end_session()
+
+func get_active_recording_name() -> String:
+	return _active_recording_name
+
+func get_action_count() -> int:
+	return _action_count
+
+func start_session(header: Dictionary) -> void:
+	end_session()
+	_enforce_recording_cap()
+	var stamp := Time.get_datetime_string_from_system(false, true).replace("T", "_").replace(":", "-")
+	_active_recording_name = stamp
+	_active_mcr_path = "%s/replay_%s.mcr" % [REPLAY_DIR, stamp]
+	_active_log_path = "%s/replay_%s.log" % [REPLAY_DIR, stamp]
+	_mcr_file = FileAccess.open(_active_mcr_path, FileAccess.WRITE)
+	_log_file = FileAccess.open(_active_log_path, FileAccess.WRITE)
+	if _mcr_file == null or _log_file == null:
+		push_error("[ReplayRecorder] Could not create replay files")
+		end_session()
+		return
+	var replay_header := header.duplicate(true)
+	replay_header["header"] = true
+	replay_header["version"] = GAME_VERSION
+	replay_header["timestamp"] = stamp
+	_action_count = 0
+	_write_mcr(replay_header)
+	_write_log("=== SESSION START: %s | SEED: %s ===" % [stamp, str(replay_header.get("seed", 0))])
+	_last_gold = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
+	_is_recording = true
+
+func resume_session(recording_name: String, action_count: int) -> void:
+	end_session()
+	if recording_name.is_empty():
+		return
+	
+	var mcr_path = "%s/replay_%s.mcr" % [REPLAY_DIR, recording_name]
+	var log_path = "%s/replay_%s.log" % [REPLAY_DIR, recording_name]
+	
+	if not FileAccess.file_exists(mcr_path):
+		push_error("[ReplayRecorder] Cannot resume, file not found: %s" % mcr_path)
+		return
+		
+	# Truncate MCR file to header + action_count
+	var read_file = FileAccess.open(mcr_path, FileAccess.READ)
+	var lines: Array[String] = []
+	
+	# Keep header (first line)
+	if not read_file.eof_reached():
+		lines.append(read_file.get_line())
+		
+	# Keep up to action_count actions
+	var current_actions = 0
+	while not read_file.eof_reached() and current_actions < action_count:
+		var line = read_file.get_line()
+		if not line.is_empty():
+			lines.append(line)
+			current_actions += 1
+			
+	read_file.close()
+	
+	# Rewrite truncated MCR file
+	var write_file = FileAccess.open(mcr_path, FileAccess.WRITE)
+	for line in lines:
+		write_file.store_line(line)
+	write_file.close()
+	
+	_active_recording_name = recording_name
+	_active_mcr_path = mcr_path
+	_active_log_path = log_path
+	_action_count = current_actions
+	
+	_mcr_file = FileAccess.open(_active_mcr_path, FileAccess.READ_WRITE)
+	_mcr_file.seek_end()
+	
+	_log_file = FileAccess.open(_active_log_path, FileAccess.READ_WRITE)
+	if _log_file != null:
+		_log_file.seek_end()
+		_write_log("=== SESSION RESUMED: %s | Actions Kept: %d ===" % [recording_name, current_actions])
+	
+	_last_gold = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
+	_is_recording = true
+
+func end_session() -> void:
+	if _mcr_file != null:
+		_mcr_file.close()
+	if _log_file != null:
+		_log_file.close()
+	_mcr_file = null
+	_log_file = null
+	_is_recording = false
+
+func is_recording() -> bool:
+	return _is_recording
+
+func list_recordings() -> Array[Dictionary]:
+	_prepare_directory(REPLAY_DIR)
+	var recordings: Array[Dictionary] = []
+	var dir := DirAccess.open(REPLAY_DIR)
+	if dir == null:
+		return recordings
+	dir.list_dir_begin()
+	var file_name := dir.get_next()
+	while not file_name.is_empty():
+		if not dir.current_is_dir() and file_name.begins_with("replay_") and file_name.ends_with(".mcr"):
+			recordings.append({"name": file_name.get_basename().trim_prefix("replay_"), "path": "%s/%s" % [REPLAY_DIR, file_name]})
+		file_name = dir.get_next()
+	dir.list_dir_end()
+	recordings.sort_custom(func(a, b): return String(a.name) > String(b.name))
+	return recordings
+
+func _on_action_completed(action: GameAction) -> void:
+	if not _is_recording:
+		return
+	var data := action.to_dict()
+	_write_mcr(data)
+	_write_log(" ACTION: %s" % _describe_action(action, data))
+	if action is RunTerminationAction:
+		_write_log("=== SESSION END: %s ===" % String((action as RunTerminationAction).reason))
+		end_session()
+
+func _on_combat_event(event: CombatEvent) -> void:
+	if not _is_recording or not is_instance_valid(event):
+		return
+	var targets := ", ".join(event.target_uuids)
+	var details := ""
+	if event.amount != 0:
+		details = " | Amount: %d" % event.amount
+	if not event.trigger_type.is_empty():
+		details += " | Trigger: %s" % event.trigger_type
+	_write_log("  └── EVENT: %s | Source: %s | Target: %s%s" % [event.get_type_name(), event.source_uuid, targets, details])
+
+func _on_gold_changed(new_amount: int) -> void:
+	if _is_recording:
+		_write_log("  ├── STATE: Gold %d -> %d" % [_last_gold, new_amount])
+	_last_gold = new_amount
+
+func _on_unit_stat_changed(uuid: String, stat_name: StringName, old_value: int, new_value: int) -> void:
+	if _is_recording:
+		_write_log("  ├── STATE: %s %s %d -> %d" % [uuid, stat_name, old_value, new_value])
+
+func _describe_action(action: GameAction, data: Dictionary) -> String:
+	match action.action_id:
+		&"shop_purchase_action":
+			return "ShopPurchaseAction (%s, cost: %d)" % [data.get("instance_uuid", ""), int(data.get("cost", 0))]
+		&"inventory_drag_action":
+			return "InventoryDragAction (%s -> %s)" % [JSON.stringify(data.get("source_loc", {})), JSON.stringify(data.get("target_loc", {}))]
+		&"flashcard_answer_action":
+			return "FlashcardAnswerAction (%s, correct: %s)" % [data.get("question_id", ""), str(data.get("was_correct", false))]
+		&"path_selection_action":
+			return "PathSelectionAction (%s)" % JSON.stringify(data.get("node", {}))
+		_:
+			return "%s | %s" % [action.action_id, JSON.stringify(data)]
+
+func _write_mcr(data: Dictionary) -> void:
+	if _mcr_file == null:
+		return
+	_mcr_file.store_line(JSON.stringify(data))
+	_mcr_file.flush()
+	if not bool(data.get("header", false)):
+		_action_count += 1
+
+func _write_log(line: String) -> void:
+	if _log_file == null:
+		return
+	_log_file.store_line(line)
+	_log_file.flush()
+
+func _prepare_directory(path: String) -> void:
+	DirAccess.make_dir_recursive_absolute(ProjectSettings.globalize_path(path))
+
+func _enforce_recording_cap() -> void:
+	var recordings := list_recordings()
+	while recordings.size() >= MAX_RECORDINGS:
+		var oldest: Dictionary = recordings.pop_back()
+		var mcr_path := String(oldest.path)
+		var log_path := mcr_path.get_basename() + ".log"
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(mcr_path))
+		DirAccess.remove_absolute(ProjectSettings.globalize_path(log_path))
+
+func _preserve_interrupted_recording() -> void:
+	var recordings := list_recordings()
+	if recordings.is_empty():
+		return
+	var newest: Dictionary = recordings.front()
+	var replay_path := String(newest.path)
+	if _has_termination_marker(replay_path):
+		return
+	var base_name := replay_path.get_file().get_basename()
+	var dump_mcr := "%s/%s.mcr" % [CRASH_DUMP_DIR, base_name]
+	var dump_log := "%s/%s.log" % [CRASH_DUMP_DIR, base_name]
+	DirAccess.copy_absolute(ProjectSettings.globalize_path(replay_path), ProjectSettings.globalize_path(dump_mcr))
+	var log_path := replay_path.get_basename() + ".log"
+	if FileAccess.file_exists(log_path):
+		DirAccess.copy_absolute(ProjectSettings.globalize_path(log_path), ProjectSettings.globalize_path(dump_log))
+
+func _has_termination_marker(path: String) -> bool:
+	var file := FileAccess.open(path, FileAccess.READ)
+	if file == null:
+		return true
+	var last_action := ""
+	while not file.eof_reached():
+		var line := file.get_line()
+		if line.is_empty():
+			continue
+		var json := JSON.new()
+		if json.parse(line) == OK and json.data is Dictionary and not bool(json.data.get("header", false)):
+			last_action = String(json.data.get("action_id", ""))
+	file.close()
+	return last_action == "run_termination_action"
+```
+
 ### File: `scripts/resources/AbilityComponent.gd`
 ```gdscript
 class_name AbilityComponent
@@ -35843,10 +46585,30 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	if is_instance_valid(button):
 		button.disabled = true
 	
+	_action_in_progress = true
+	
 	# Animate token spend
 	await _animate_token_spend(machine, cost, token_group)
 	
-	# Deduct tokens
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(RestSiteDrawAction.new(tier))
+	else:
+		_execute_draw_tier(tier)
+
+func _execute_draw_tier(tier: int) -> void:
+	var cost = 0
+	var machine: Control = null
+	if tier == 1:
+		cost = COST_TIER1
+		machine = tier1_machine
+	elif tier == 2:
+		cost = COST_TIER2
+		machine = tier2_machine
+	else:
+		cost = COST_TIER3
+		machine = tier3_machine
+		
+	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
 	_tokens -= cost
 	_update_token_display()
 	
@@ -35866,19 +46628,23 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 		"gold_value": value if site_type == SiteType.GOLD else 0
 	}
 	
-	# Animate draw and add prize
+	_continue_draw_tier(machine, slot_index, prize_data, cost, button)
+
+func _continue_draw_tier(machine: Control, slot_index: int, prize_data: Dictionary, cost: int, button: Button) -> void:
 	await _animate_prize_draw(machine, slot_index, prize_data)
 	_prizes.append(prize_data)
 	_populate_prize_slot(slot_index, prize_data)
 	
-	button.disabled = _tokens < cost
+	if is_instance_valid(button):
+		button.disabled = _tokens < cost
+	_action_in_progress = false
 
 func _roll_value_for_tier(tier: int) -> int:
 	"""Roll prize value based on tier (1: 0-1, 2: 0-3, 3: 0-5)"""
 	match tier:
-		1: return randi() % 2
-		2: return randi() % 4
-		3: return randi() % 6
+		1: return RNGManager.reward_rng.randi() % 2
+		2: return RNGManager.reward_rng.randi() % 4
+		3: return RNGManager.reward_rng.randi() % 6
 	return 0
 
 func _find_next_prize_slot() -> int:
@@ -36044,7 +46810,15 @@ func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 		_apply_prize(prize_index)
 
 func _apply_prize(prize_index: int) -> void:
+	if _action_in_progress: return
 	Audio.play_sfx("ui_click")
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(RestSiteApplyAction.new(prize_index))
+	else:
+		_execute_apply_prize(prize_index)
+
+func _execute_apply_prize(prize_index: int) -> void:
+	_action_in_progress = true
 	var p_idx = -1
 	for i in range(_prizes.size()):
 		if _prizes[i].slot_index == prize_index:
@@ -36059,6 +46833,7 @@ func _apply_prize(prize_index: int) -> void:
 	_apply_stat_to_hero(prize)
 	_clear_prize_slot(prize_index)
 	_populate_hero_slot()
+	_action_in_progress = false
 
 func _apply_stat_to_hero(prize_data: Dictionary) -> void:
 	if not is_instance_valid(GameManager.run_state): return
@@ -36133,18 +46908,25 @@ func _refresh_all_prize_slots() -> void:
 	for p in _prizes: _populate_prize_slot(p.slot_index, p)
 
 func _on_leave_pressed() -> void:
-	# Disable all interactions during auto-collection
-	leave_button.disabled = true
-	study_button.disabled = true
+	if _action_in_progress: return
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"RestSite"))
+
+func _execute_leave() -> void:
+	# Disable drawing buttons
 	tier1_draw_button.disabled = true
 	tier2_draw_button.disabled = true
 	tier3_draw_button.disabled = true
+	
+	# Disable all interactions during auto-collection
+	leave_button.disabled = true
+	study_button.disabled = true
 	
 	# Collect remaining prizes one by one
 	while not _prizes.is_empty():
 		var prize = _prizes[0]
 		# Use the slot_index stored in the prize dictionary
-		await _apply_prize(prize.slot_index)
+		await _execute_apply_prize(prize.slot_index)
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
@@ -36579,6 +47361,8 @@ func _animate_prize_draw(machine: Control, slot_index: int, instance: GachaBallI
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
 	anim_ball.populate(null, VisualDataAdapter.create_visual_data(instance))
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
@@ -36679,11 +47463,19 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	
 	if tier != -1:
 		await _animate_gachaball_to_machine(start_pos, visual_data, tier)
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+		var action = RewardSelectionAction.new({"type": "gachaball", "instance_uuid": uuid})
+		if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(action)
+		else:
+			if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 		_action_in_progress = false
 	else:
 		await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+		var action = RewardSelectionAction.new({"type": "gachaball", "instance_uuid": uuid})
+		if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(action)
+		else:
+			if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 		_action_in_progress = false
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
@@ -36721,7 +47513,11 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 			start_pos = mouse_pos
 	
 	await _animate_gold_receive(gold_yield, start_pos)
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_yield})
+	var action = RewardSelectionAction.new({"type": "gold", "amount": gold_yield, "instance_uuid": instance.ball_uuid})
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(action)
+	else:
+		if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 	_action_in_progress = false
 
 func _get_slot_global_center(index: int) -> Vector2:
@@ -36775,6 +47571,8 @@ func _animate_gachaball_to_machine(start_pos: Vector2, visual_data: Dictionary, 
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
 	anim_ball.populate(null, visual_data)
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
@@ -36834,6 +47632,8 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
 	anim_ball.populate(null, visual_data)
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
@@ -36931,10 +47731,18 @@ func _on_leave_pressed() -> void:
 			
 			if tier != -1:
 				await _animate_gachaball_to_machine(start_pos, visual_data, tier)
-				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+				var action = RewardSelectionAction.new({"type": "gachaball", "instance_uuid": uuid})
+				if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+					ActionQueue.enqueue(action)
+				else:
+					if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 			else:
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
-				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
+				var action = RewardSelectionAction.new({"type": "gachaball", "instance_uuid": uuid})
+				if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+					ActionQueue.enqueue(action)
+				else:
+					if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
@@ -37210,7 +48018,11 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
 	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
 	
-	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance.ball_uuid})
+	var action = RewardSelectionAction.new({"type": "gachaball", "instance_uuid": instance.ball_uuid})
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(action)
+	else:
+		if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -37243,7 +48055,11 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	
 	await _animate_gold_receive(_gold_amount, vfx_start_pos)
 	
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+	var action = RewardSelectionAction.new({"type": "gold", "amount": _gold_amount})
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(action)
+	else:
+		if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -37253,7 +48069,11 @@ func _on_gold_pressed() -> void:
 	pass
 
 func _complete_choice() -> void:
-	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
+	var action = RewardSelectionAction.new({"type": "elite_choice_complete"})
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(action)
+	else:
+		if GameManager.has_method("execute_reward_selection"): GameManager.execute_reward_selection(action.selection)
 	gold_button.visible = false
 	
 	# Reveal navigation button via modulation to prevent layout shifts
@@ -37295,6 +48115,10 @@ func _get_slot_global_center(index: int) -> Vector2:
 	return Vector2.ZERO
 
 func _on_back_to_path_pressed() -> void:
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"RewardElite"))
+
+func _execute_leave() -> void:
 	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
 		GameManager._active_main_node.hide_reward_drop_zones()
 	SignalBus.emit_signal("path_choice_scene_requested")
@@ -37328,6 +48152,8 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.z_index = 100
 	anim_ball.custom_minimum_size = Vector2(96, 96)
 	anim_ball.size = Vector2(96, 96)
+	if anim_ball.has_method("set_size_scale"):
+		anim_ball.set_size_scale(1.0)
 	anim_ball.populate(null, visual_data)
 	anim_ball.pivot_offset = Vector2(48, 48)
 	
@@ -37448,7 +48274,7 @@ func populate(context: Dictionary) -> void:
 func _on_return_button_pressed() -> void:
 	# Clear save on run completion (victory)
 	SaveManager.clear_save()
-	SignalBus.emit_signal("title_scene_requested")
+	ActionQueue.enqueue(RunTerminationAction.new(&"victory"))
 	queue_free()
 
 func get_window_to_animate() -> Control:
@@ -37472,11 +48298,14 @@ extends Resource
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
 @export var total_tokens_earned: int = 0
+@export var run_seed: int = 0
 @export var black_market_remove_cost: int = 5
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
 @export var last_elite_id: StringName = &""
+@export var active_recording_name: String = ""
+@export var last_save_action_count: int = 0
 
 # Track when each encounter was last offered for pity system
 @export var encounter_last_offered_day: Dictionary = {}
@@ -37705,8 +48534,7 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 				var all_uuids = container.get_all_non_empty_uuids()
 				if all_uuids.size() > 0:
 					# Select a random gachaball
-					randomize()
-					var uuid_to_replace = all_uuids[randi() % all_uuids.size()]
+					var uuid_to_replace = RNGManager.gacha_rng.pick_random(all_uuids)
 					var loc_to_replace = get_location_for_uuid(uuid_to_replace)
 					slot = loc_to_replace.index
 					# Permanently remove the chosen instance from the run to make space
@@ -38188,6 +49016,9 @@ func start_new_run() -> void:
 	cards_presented_count = 0
 	unlocked_recipes.clear() # All recipes start locked
 	encounter_last_offered_day.clear()
+	if run_seed == 0:
+		run_seed = randi()
+	RNGManager.initialize_streams(run_seed)
 
 ## Track which elite bosses have been encountered this run (ID -> count)
 ## Used for weighted encounter generation (pity system)
@@ -38228,7 +49059,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 			ordered_deck_pool = ordered_deck_pool.slice(ordered_deck_pool.size() - half_size, ordered_deck_pool.size())
 			ordered_deck_pool.reverse()
 		elif deck_order == "RANDOM":
-			ordered_deck_pool.shuffle()
+			RNGManager.map_rng.shuffle(ordered_deck_pool)
 			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
 		else:
 			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
@@ -38236,7 +49067,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		if deck_order == "INVERTED":
 			ordered_deck_pool.reverse()
 		elif deck_order == "RANDOM":
-			ordered_deck_pool.shuffle()
+			RNGManager.map_rng.shuffle(ordered_deck_pool)
 		
 	for card_id in ordered_deck_pool:
 		if not flashcard_progress.has(card_id):
@@ -38348,12 +49179,16 @@ func to_save_dict() -> Dictionary:
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
 		"total_tokens_earned": total_tokens_earned,
+		"run_seed": run_seed,
+		"rng_state": RNGManager.serialize(),
 		"black_market_remove_cost": black_market_remove_cost,
 		"merge_encounter_cost": merge_encounter_cost,
 		"get_tokens_cost": get_tokens_cost,
 		"deck_def_id": String(deck_def_id),
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
+		"active_recording_name": active_recording_name,
+		"last_save_action_count": last_save_action_count,
 		# Serialize all instances
 		"instances": {},
 		# Serialize container UUIDs
@@ -38388,12 +49223,19 @@ func from_save_dict(data: Dictionary) -> void:
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
 	total_tokens_earned = data.get("total_tokens_earned", 0)
+	run_seed = data.get("run_seed", 0)
+	if data.has("rng_state"):
+		RNGManager.deserialize(data.get("rng_state", {}))
+	elif run_seed != 0:
+		RNGManager.initialize_streams(run_seed)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
 	merge_encounter_cost = data.get("merge_encounter_cost", 5)
 	get_tokens_cost = data.get("get_tokens_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
+	active_recording_name = String(data.get("active_recording_name", ""))
+	last_save_action_count = int(data.get("last_save_action_count", 0))
 	
 	# Clear and restore instances
 	run_instances.clear()
@@ -38778,6 +49620,7 @@ var _selected_cost: int = 0
 var _price_tag_nodes: Array[Control] = []
 var _current_reroll_cost: int = 1
 var _is_first_populate: bool = true
+var _action_in_progress: bool = false
 
 func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
@@ -38982,6 +49825,7 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	_selected_cost = 0
 
 func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	if _action_in_progress: return
 	# Get the currently selected location from the new InteractionManager
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
@@ -39002,6 +49846,8 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 				var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
 				RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
 				return
+			
+			_action_in_progress = true
 			
 			# Capture slot position and visual data BEFORE purchase
 			var slot_nodes = slots_container.get_children()
@@ -39034,36 +49880,76 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 			if is_instance_valid(def) and def.category == &"TRINKET":
 				tier = 3
 			
-			# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
-			# We only hide the child GachaBallView so the slot background remains visible
-			var source_anchor = WindowManager.find_view_for_location(selected_loc)
-			if is_instance_valid(source_anchor):
-				for child in source_anchor.get_children():
-					if child is GachaBallView:
-						child.modulate.a = 0.0
-						child.visible = false
-			
-			# Create the VFX gachaball immediately so it stays visible during the coin animation
-			var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-			
 			var ball_uuid = instance.ball_uuid
+			var action = ShopPurchaseAction.new(ball_uuid, _selected_cost, is_drag, mouse_pos)
 			
-			# Animate gold coins then purchase, then animate gachaball
-			_animate_gold_spend(_selected_cost, interaction_pos, func():
-				SignalBus.emit_signal("shop_purchase_requested", ball_uuid, _selected_cost)
-				# AUDIO HOOK: Buy
-				Audio.play_sfx("shop_buy")
+			SignalBus.emit_signal("selection_clear_requested")
+			
+			if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+				ActionQueue.enqueue(action)
+			else:
+				_execute_shop_purchase(ball_uuid, _selected_cost, is_drag, mouse_pos)
+
+func _execute_shop_purchase(uuid: String, cost: int, is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	# Find the item being purchased
+	var target_slot_idx: int = -1
+	var visual_data: Dictionary = {}
+	var tier: int = 1
+	var interaction_pos = get_viewport().get_mouse_position()
+	for i in range(_current_shop_instances.size()):
+		var instance = _current_shop_instances[i]
+		if is_instance_valid(instance) and instance.ball_uuid == uuid:
+			target_slot_idx = instance.get_location().index
+			visual_data = VisualDataAdapter.create_visual_data(instance)
+			var def = instance.get_definition()
+			if "tier" in def:
+				tier = int(def.tier)
+			if is_instance_valid(def) and def.category == &"TRINKET":
+				tier = 3
+			break
+			
+	if target_slot_idx == -1: return
+	
+	var slots = slots_container.get_children()
+	if target_slot_idx < slots.size():
+		var source_anchor = slots[target_slot_idx]
+		if is_instance_valid(source_anchor):
+			var slot_center = source_anchor.get_global_rect().get_center()
+			var main_node = GameManager._active_main_node
+			if is_instance_valid(main_node):
+				var content_area = main_node.get_node_or_null("%ContentArea")
+				if is_instance_valid(content_area):
+					slot_center += content_area.global_position
+			
+			if is_drag:
+				interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+			else:
+				interaction_pos = slot_center
 				
-				# After purchase, animate the already-visible VFX gachaball to machine
-				_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
+			for child in source_anchor.get_children():
+				if child is GachaBallView:
+					child.modulate.a = 0.0
+					child.visible = false
 				
-				# Hide the drop zone after purchase
-				var mn = GameManager._active_main_node
-				if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
-					mn.hide_confirm_drop_zone()
-			)
+	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+	
+	_animate_gold_spend(cost, interaction_pos, func():
+		Audio.play_sfx("shop_buy")
+		_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
+		
+		var mn = GameManager._active_main_node
+		if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
+			mn.hide_confirm_drop_zone()
+		
+		# Now actually mutate the data state
+		if is_instance_valid(GameManager):
+			GameManager.execute_shop_purchase(uuid, cost)
+			
+		_action_in_progress = false
+	)
 
 func _on_reroll_pressed() -> void:
+	if _action_in_progress: return
 	# PRE-VALIDATION: Check if player has enough gold BEFORE animating
 	var current_gold: int = 0
 	if is_instance_valid(GameManager.run_state):
@@ -39076,6 +49962,7 @@ func _on_reroll_pressed() -> void:
 		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
 		return
 	
+	_action_in_progress = true
 	# Disable button during animation
 	reroll_button.disabled = true
 	
@@ -39089,10 +49976,15 @@ func _on_reroll_pressed() -> void:
 			
 	# Animate gold coins then reroll
 	_animate_gold_spend(_current_reroll_cost, target_pos, func():
-		SignalBus.emit_signal("shop_reroll_requested")
+		var action = ShopRerollAction.new()
+		if is_instance_valid(ActionQueue):
+			ActionQueue.enqueue(action)
+		else:
+			SignalBus.emit_signal("shop_reroll_requested")
 		# AUDIO HOOK: Reroll
 		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
+		_action_in_progress = false
 	)
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
@@ -39226,6 +50118,11 @@ func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vect
 	)
 
 func _on_leave_pressed() -> void:
+	if _action_in_progress: return
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"Shop"))
+
+func _execute_leave() -> void:
 	# Hide the drop zone overlay before leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
@@ -40990,6 +51887,8 @@ func get_dynamic_weight_multiplier(_run_state) -> float:
 class_name WeightedPoolDirector
 extends RefCounted
 
+var rng: RefCounted = null
+
 # Step 1-4: Fetch, Filter, Modify, and Roll
 func draw_item(raw_pool: Array, current_state) -> Resource:
     var valid_entities: Array = []
@@ -41018,7 +51917,8 @@ func draw_item(raw_pool: Array, current_state) -> Resource:
         return null
         
     # Roll
-    var random_roll: float = randf() * total_weight
+    var active_rng = rng if rng != null else RNGManager.reward_rng
+    var random_roll: float = active_rng.randf() * total_weight
     var current_sum: float = 0.0
     
     for item in weighted_list:
@@ -41039,6 +51939,189 @@ func draw_unique_items(raw_pool: Array, current_state, count: int) -> Array:
             pool_copy.erase(item)
             
     return drawn_items
+```
+
+### File: `scripts/systems/RNGManager.gd`
+```gdscript
+# res://scripts/systems/RNGManager.gd
+extends Node
+
+## Singleton managing isolated, seeded PRNG streams for all game subsystems.
+## Guarantees that rolling random numbers in one system (e.g. combat or shop)
+## never desynchronizes the sequence of another system (e.g. map generation).
+
+const SeededRNG = preload("res://scripts/systems/SeededRNG.gd")
+
+var map_rng: SeededRNG = SeededRNG.new()
+var gacha_rng: SeededRNG = SeededRNG.new()
+var shop_rng: SeededRNG = SeededRNG.new()
+var combat_rng: SeededRNG = SeededRNG.new()
+var reward_rng: SeededRNG = SeededRNG.new()
+
+var _master_seed: int = 0
+
+func _ready() -> void:
+	# Initial random seed if not explicitly initialized
+	if _master_seed == 0:
+		_master_seed = randi()
+	initialize_streams(_master_seed)
+
+## Initialize all streams deterministically from a single master run seed
+func initialize_streams(master_seed: int) -> void:
+	_master_seed = master_seed
+	if _master_seed == 0:
+		_master_seed = randi()
+	
+	# Derive unique sub-seeds using distinct hash offsets/primes
+	map_rng.set_seed(hash(str(_master_seed) + "_map"))
+	gacha_rng.set_seed(hash(str(_master_seed) + "_gacha"))
+	shop_rng.set_seed(hash(str(_master_seed) + "_shop"))
+	combat_rng.set_seed(hash(str(_master_seed) + "_combat"))
+	reward_rng.set_seed(hash(str(_master_seed) + "_reward"))
+
+## Get the master seed for this run
+func get_master_seed() -> int:
+	return _master_seed
+
+# --- Serialization ---
+
+## Serialize all RNG stream states
+func serialize() -> Dictionary:
+	return {
+		"master_seed": _master_seed,
+		"map_rng": map_rng.serialize(),
+		"gacha_rng": gacha_rng.serialize(),
+		"shop_rng": shop_rng.serialize(),
+		"combat_rng": combat_rng.serialize(),
+		"reward_rng": reward_rng.serialize()
+	}
+
+## Restore all RNG stream states from saved dictionary
+func deserialize(data: Dictionary) -> void:
+	if not data.is_empty():
+		if data.has("master_seed"):
+			_master_seed = int(data.get("master_seed", 0))
+		if data.has("map_rng"):
+			map_rng.deserialize(data.get("map_rng", {}))
+		if data.has("gacha_rng"):
+			gacha_rng.deserialize(data.get("gacha_rng", {}))
+		if data.has("shop_rng"):
+			shop_rng.deserialize(data.get("shop_rng", {}))
+		if data.has("combat_rng"):
+			combat_rng.deserialize(data.get("combat_rng", {}))
+		if data.has("reward_rng"):
+			reward_rng.deserialize(data.get("reward_rng", {}))
+```
+
+### File: `scripts/systems/SeededRNG.gd`
+```gdscript
+# res://scripts/systems/SeededRNG.gd
+class_name SeededRNG
+extends RefCounted
+
+## A deterministic, serializable PRNG stream wrapper around Godot's RandomNumberGenerator.
+## Enables stream isolation across game systems (map, combat, shop, gacha) to guarantee
+## replayability and zero-desync determinism.
+
+var _rng: RandomNumberGenerator
+var _initial_seed: int = 0
+
+func _init(p_seed: int = 0) -> void:
+	_rng = RandomNumberGenerator.new()
+	if p_seed == 0:
+		_rng.randomize()
+		_initial_seed = _rng.seed
+	else:
+		_initial_seed = p_seed
+		_rng.seed = _initial_seed
+
+## Set or reset the generator seed
+func set_seed(p_seed: int) -> void:
+	_initial_seed = p_seed
+	_rng.seed = p_seed
+
+## Get the initial seed of this stream
+func get_seed() -> int:
+	return _initial_seed
+
+## Get current generator state (for serialization)
+func get_state() -> int:
+	return _rng.state
+
+## Restore generator state (for deserialization)
+func set_state(p_state: int) -> void:
+	_rng.state = p_state
+
+# --- Random Number Generation API ---
+
+## Return a random unsigned 32-bit integer
+func randi() -> int:
+	return _rng.randi()
+
+## Return a random floating-point number between 0.0 and 1.0 (inclusive)
+func randf() -> float:
+	return _rng.randf()
+
+## Return a random integer between min and max (inclusive)
+func randi_range(from: int, to: int) -> int:
+	return _rng.randi_range(from, to)
+
+## Return a random floating-point number between min and max (inclusive)
+func randf_range(from: float, to: float) -> float:
+	return _rng.randf_range(from, to)
+
+## Pick a random element from an array deterministically
+func pick_random(array: Array) -> Variant:
+	if array.is_empty():
+		return null
+	var idx = _rng.randi() % array.size()
+	return array[idx]
+
+## Shuffle an array deterministically in place using Fisher-Yates
+func shuffle(array: Array) -> void:
+	var n = array.size()
+	if n <= 1:
+		return
+	for i in range(n - 1, 0, -1):
+		var j = _rng.randi() % (i + 1)
+		var temp = array[i]
+		array[i] = array[j]
+		array[j] = temp
+
+## Pick an index based on an array of floating-point weights
+func weighted_choice(weights: Array) -> int:
+	if weights.is_empty():
+		return -1
+	var total_weight: float = 0.0
+	for w in weights:
+		total_weight += float(w)
+	if total_weight <= 0.0:
+		return _rng.randi() % weights.size()
+	
+	var roll = _rng.randf() * total_weight
+	var cumulative: float = 0.0
+	for i in range(weights.size()):
+		cumulative += float(weights[i])
+		if roll <= cumulative:
+			return i
+	return weights.size() - 1
+
+# --- Serialization ---
+
+## Serialize RNG stream state to dictionary
+func serialize() -> Dictionary:
+	return {
+		"initial_seed": _initial_seed,
+		"current_state": _rng.state
+	}
+
+## Deserialize RNG stream state from dictionary
+func deserialize(data: Dictionary) -> void:
+	if data.has("initial_seed"):
+		_initial_seed = int(data.get("initial_seed", 0))
+		_rng.seed = _initial_seed
+	if data.has("current_state"):
+		_rng.state = int(data.get("current_state", 0))
 ```
 
 ### File: `scripts/TestEnvironmentManager.gd`
@@ -41304,6 +52387,7 @@ extends Control
 
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
+@onready var replays_button: Button = %ReplaysButton
 @onready var exit_button: Button = %ExitButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
 @onready var continue_button: Button = %ContinueButton
@@ -41344,6 +52428,7 @@ func _ready() -> void:
 		SignalBus.emit_signal("loadout_scene_requested")
 	)
 	options_button.pressed.connect(_on_options_pressed)
+	replays_button.pressed.connect(_on_replays_pressed)
 	
 	if exit_button:
 		exit_button.pressed.connect(func():
@@ -41364,6 +52449,7 @@ func _ready() -> void:
 func _update_localized_text() -> void:
 	start_run_button.text = tr("ui.play")
 	options_button.text = tr("ui.options")
+	replays_button.text = "Replays"
 	if exit_button:
 		exit_button.text = tr("ui.exit_game")
 	if continue_button:
@@ -41379,11 +52465,47 @@ func _on_options_pressed() -> void:
 	}
 	WindowManager._open_contextual_window(context)
 
+func _on_replays_pressed() -> void:
+	var popup := PopupPanel.new()
+	popup.size = Vector2i(560, 500)
+	var panel := PanelContainer.new()
+	panel.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	popup.add_child(panel)
+	var list := VBoxContainer.new()
+	list.add_theme_constant_override("separation", 10)
+	panel.add_child(list)
+	var heading := Label.new()
+	heading.text = "Recorded Replays"
+	heading.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	list.add_child(heading)
+	var recordings := ReplayRecorder.list_recordings()
+	if recordings.is_empty():
+		var empty := Label.new()
+		empty.text = "No recordings found."
+		empty.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		list.add_child(empty)
+	else:
+		for recording in recordings:
+			var button := Button.new()
+			button.text = String(recording.name)
+			button.pressed.connect(func():
+				popup.hide()
+				ReplayManager.start_replay(String(recording.path))
+			)
+			list.add_child(button)
+	add_child(popup)
+	popup.popup_centered()
+
 func _on_continue_pressed() -> void:
 	var loaded_state: RunState = SaveManager.load_run()
 	if is_instance_valid(loaded_state):
 		GameManager.run_state = loaded_state
 		GameManager.loading_from_save = true
+		
+		# Resume the recording session if one was active
+		if loaded_state.active_recording_name != "":
+			ReplayRecorder.resume_session(loaded_state.active_recording_name, loaded_state.last_save_action_count)
+			
 		SignalBus.emit_signal("main_scene_requested")
 	else:
 		push_error("[Title] Failed to load saved run")
@@ -41758,6 +52880,16 @@ func show_tutorial(tutorial_id: StringName, pages: Array, anchor: Control = null
 	if is_completed(tutorial_id):
 		return
 	
+	var anchor_path_str: String = ""
+	if is_instance_valid(anchor) and anchor.is_inside_tree():
+		anchor_path_str = str(anchor.get_path())
+	
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(TutorialAction.new(tutorial_id, &"open", pages, anchor_path_str))
+	elif not ReplayManager.is_replaying:
+		_execute_show_tutorial(tutorial_id, pages, anchor)
+
+func _execute_show_tutorial(tutorial_id: StringName, pages: Array, anchor: Control = null) -> void:
 	SignalBus.emit_signal("tutorial_requested", tutorial_id, pages, anchor)
 
 
@@ -41873,6 +53005,7 @@ var _extra_lines: Array[Line2D] = []
 
 
 func _ready() -> void:
+	add_to_group("tutorial_popup")
 	# Ensure popup handles input while game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	
@@ -42162,6 +53295,10 @@ func _draw_line_to_target(line: Line2D, popup_rect: Rect2, popup_center: Vector2
 
 
 func _on_next_pressed() -> void:
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(TutorialAction.new(_tutorial_id, &"next"))
+
+func _execute_next() -> void:
 	Audio.play_sfx("ui_button_click")
 	_current_page += 1
 	_update_page_display()
@@ -42170,6 +53307,10 @@ func _on_next_pressed() -> void:
 
 func _on_got_it_pressed() -> void:
 	if modulate.a < 1.0: return # Prevent early clicks during animation
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(TutorialAction.new(_tutorial_id, &"dismiss"))
+
+func _execute_dismiss() -> void:
 	Audio.play_sfx("ui_button_click")
 	TutorialManager.mark_completed(_tutorial_id)
 	SignalBus.emit_signal("tutorial_dismissed", _tutorial_id)
@@ -42549,7 +53690,7 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 			_update_description()
 			_reset_window_size()
 
-func _on_inventory_changed() -> void:
+func _on_inventory_changed(_arg = null) -> void:
 	if not is_instance_valid(self):
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
@@ -43022,32 +54163,38 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 		return
 
 	_action_in_progress = true
-	_training_stat = stat
-	_training_unit_data = item_data
-	_training_unit_location = item_data.location
 
-	# Determine interaction position
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(UnitTrainingStartAction.new(stat, item_data.location, is_drag, mouse_pos))
+	else:
+		_execute_start_training(stat, item_data.location, is_drag, mouse_pos)
+
+func _execute_start_training(stat: String, location: LocationIdentifier, is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	_training_stat = stat
+	var instance = GameManager.get_instance_from_location(location)
+	var definition = instance.get_definition() if is_instance_valid(instance) else null
+	_training_unit_data = {
+		"location": location,
+		"instance": instance,
+		"definition": definition,
+		"uuid": instance.ball_uuid if is_instance_valid(instance) else ""
+	}
+	_training_unit_location = location
+
+	var source_anchor = WindowManager.find_view_for_location(location)
+
+	_tokens = 0
+	_update_token_display()
+
 	var interaction_pos = Vector2.ZERO
 	if is_drag:
 		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
 	else:
-		var slot_view = WindowManager.find_view_for_location(item_data.location)
-		if is_instance_valid(slot_view):
-			interaction_pos = slot_view.get_global_rect().get_center()
+		if is_instance_valid(source_anchor):
+			interaction_pos = source_anchor.get_global_rect().get_center()
+		else:
+			interaction_pos = get_viewport().get_mouse_position()
 
-	# Hide the unit in inventory slot
-	var source_anchor = WindowManager.find_view_for_location(item_data.location)
-	if is_instance_valid(source_anchor):
-		for child in source_anchor.get_children():
-			if child is GachaBallView:
-				child.modulate.a = 0.0
-				child.visible = false
-
-	# Reset local tokens
-	_tokens = 0
-	_update_token_display()
-
-	# Animate gold spend then start minigame
 	_animate_gold_spend(TRAIN_COST_GOLD, interaction_pos, func():
 		if GameManager.run_state.spend_gold(TRAIN_COST_GOLD):
 			SignalBus.emit_signal("selection_clear_requested")
@@ -43185,6 +54332,14 @@ func _show_training_popup() -> void:
 		_action_in_progress = false
 		return
 
+	# Hide the original unit from the inventory now that the popup is about to show
+	var source_anchor = WindowManager.find_view_for_location(_training_unit_location)
+	if is_instance_valid(source_anchor):
+		for child in source_anchor.get_children():
+			if child is GachaBallView:
+				child.modulate.a = 0.0
+				child.visible = false
+
 	# Populate the unit display using a SlotView wrapper (same as BattleView)
 	var unit_slot = _popup_unit_slot
 
@@ -43226,6 +54381,8 @@ func _update_popup_buttons() -> void:
 	_popup_btn_1.text = "1 Token"
 	_popup_btn_2.text = "2 Tokens"
 	_popup_btn_3.text = "3 Tokens"
+	if is_instance_valid(_popup_done_btn):
+		_popup_done_btn.disabled = false
 
 func _on_popup_train_1() -> void:
 	_spend_tokens_and_train(1)
@@ -43238,12 +54395,19 @@ func _on_popup_train_3() -> void:
 
 func _spend_tokens_and_train(cost: int) -> void:
 	if _tokens < cost: return
+	
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(UnitTrainingAction.new(cost))
+	else:
+		_execute_spend_tokens_and_train(cost)
+
+func _execute_spend_tokens_and_train(cost: int) -> void:
 	_tokens -= cost
 	_update_token_display()
 	_update_popup_buttons()
 
 	# Roll: cost+1 possible outcomes (0..cost), uniform distribution
-	var roll = randi() % (cost + 1)
+	var roll = RNGManager.reward_rng.randi() % (cost + 1)
 
 	# Apply stat buff (even if zero, we still animate)
 	var unit_uuid = _training_unit_data.get("uuid", "")
@@ -43320,6 +54484,19 @@ func _play_buff_hop() -> void:
 
 func _on_popup_done() -> void:
 	if not is_instance_valid(_popup_panel): return
+
+	if not ReplayManager.is_replaying and is_instance_valid(ActionQueue):
+		ActionQueue.enqueue(UnitTrainingDoneAction.new())
+	else:
+		_execute_popup_done()
+
+func _execute_popup_done() -> void:
+	if not is_instance_valid(_popup_panel): return
+	
+	if is_instance_valid(_popup_done_btn):
+		_popup_done_btn.disabled = true
+	
+	_action_in_progress = true
 
 	# Inventory should already be open (re-opened after minigame), find the target slot
 	var target_view = WindowManager.find_view_for_location(_training_unit_location)
@@ -43461,12 +54638,14 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 # --- Standard UI handlers ---
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
-	else:
-		SignalBus.emit_signal("inspect_inventory_requested")
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ToggleWindowAction.new(&"inventory"))
 
 func _on_leave_pressed() -> void:
+	if ReplayManager.is_replaying: return
+	ActionQueue.enqueue(ReturnToPathChoiceAction.new(&"UnitTrainingGround"))
+
+func _execute_leave() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("hide_action_instruction"):
@@ -43685,12 +54864,16 @@ extends Node
 
 static var _counter: int = 0
 
-# Generates a UUID, e.g., "unit_t1_a_1677628800_1_1234"
+# UUIDs are part of action payloads, so they must be reproducible from a run
+# seed.  Wall-clock time and the global RNG would make recorded commands point
+# at instances that do not exist during replay.
+static func reset_counter() -> void:
+	_counter = 0
+
 static func generate_uuid(prefix: StringName) -> String:
 	_counter += 1
-	var timestamp: int = int(Time.get_unix_time_from_system())
-	var random_suffix: int = randi() % 100000
-	return "%s_%d_%d_%05d" % [prefix, timestamp, _counter, random_suffix]
+	var random_suffix: int = RNGManager.gacha_rng.randi() % 100000
+	return "%s_%d_%05d" % [prefix, _counter, random_suffix]
 ```
 
 ### File: `scripts/vfx/BuffNumberProjectile.gd`
@@ -45429,6 +56612,18 @@ func close_all_inspection_windows() -> void:
 
 	# no-op if already empty
 
+# Public API to close popups while preserving base inventory windows
+func close_all_contextual_popups() -> void:
+	for window in _active_inspection_group.duplicate():
+		if is_instance_valid(window):
+			var type = window.get_meta("window_type", &"")
+			if type == &"Inventory" or type == &"DiscardPile":
+				continue
+			if window == _persistent_inventory_window or window == _persistent_battle_inventory_window or window == _persistent_discard_pile_window:
+				continue
+			stop_tracking_window(window.get_instance_id())
+			_queue_free_with_optional_inventory_animation(window)
+
 # Public query function for the GIR.
 func is_any_inspection_window_open() -> bool:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
@@ -46574,5 +57769,79 @@ func _animate_window_open(window: Control) -> void:
 	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
 	tween.tween_property(window, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(window, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+```
+
+### File: `test_action.gd`
+```gdscript
+extends SceneTree
+
+func _init():
+    print("Test started")
+    var tm = load("res://scripts/TutorialManager.gd").new()
+    tm.name = "TutorialManager"
+    root.add_child(tm)
+    
+    var ActionQueue = load("res://scripts/actions/ActionQueue.gd").new()
+    ActionQueue.name = "ActionQueue"
+    root.add_child(ActionQueue)
+    
+    var pages = [{"text": "Hello"}]
+    var action = load("res://scripts/actions/commands/TutorialAction.gd").new(&"test", &"open", pages, "")
+    
+    print("Executing action...")
+    action.execute()
+    print("Action executed")
+    quit()
+```
+
+### File: `test_autoload.gd`
+```gdscript
+extends RefCounted
+func execute():
+	var tm = Engine.get_main_loop().root.get_node_or_null("TutorialManager")
+	print(tm)
+```
+
+### File: `test_path.gd`
+```gdscript
+extends SceneTree
+
+func _init():
+    var n = Node.new()
+    n.name = "MyNode"
+    root.add_child(n)
+    
+    var path_str = str(n.get_path())
+    print("Path: ", path_str)
+    
+    var found = root.get_node_or_null(path_str)
+    print("Found: ", found)
+    quit()
+```
+
+### File: `test_tutorial.gd`
+```gdscript
+extends SceneTree
+
+func _init():
+    print("Starting test")
+    var tm = load("res://scripts/TutorialManager.gd").new()
+    tm.tutorials_enabled = true
+    var pages = [{"text": "Hello"}]
+    tm.show_tutorial(&"test", pages, null)
+    print("Finished test")
+    quit()
+```
+
+### File: `test_tutorial_action.gd`
+```gdscript
+extends SceneTree
+
+func _init():
+    var action = load("res://scripts/actions/commands/TutorialAction.gd").new(&"test", &"open", [{"text": "Hello"}], "")
+    print("Action type: ", action.action_type)
+    print("Pages: ", action.pages)
+    print("Anchor path: ", action.anchor_path)
+    quit()
 ```
 

@@ -161,34 +161,46 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 		if is_instance_valid(slot_view):
 			interaction_pos = slot_view.get_global_rect().get_center()
 
-	# Hide the unit in inventory slot
+	# Reset local tokens
+	_tokens = 0
+	_update_token_display()
+
+	# Clear selection immediately to fall inside the drag suppression window
+	SignalBus.emit_signal("selection_clear_requested")
+	
+	# Spawn a persistent VFX clone of the unit so it doesn't vanish during the animation
+	var vfx_ball = null
+	if is_instance_valid(item_data.get("instance")):
+		var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
+		vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+		
+	# Immediately hide the source unit to prevent interaction and avoid duplicates
 	var source_anchor = WindowManager.find_view_for_location(item_data.location)
 	if is_instance_valid(source_anchor):
 		for child in source_anchor.get_children():
 			if child is GachaBallView:
 				child.modulate.a = 0.0
 				child.visible = false
-
-	# Reset local tokens
-	_tokens = 0
-	_update_token_display()
-
+	
 	# Animate gold spend then start minigame
 	_animate_gold_spend(TRAIN_COST_GOLD, interaction_pos, func():
+		if is_instance_valid(vfx_ball):
+			vfx_ball.queue_free()
+			
 		if GameManager.run_state.spend_gold(TRAIN_COST_GOLD):
-			SignalBus.emit_signal("selection_clear_requested")
 			Audio.play_sfx("ui_drag_drop")
+						
 			# Start flashcard minigame
 			if is_instance_valid(GameManager.run_state):
 				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 		else:
-			_action_in_progress = false
-			# Restore unit visibility
+			# Failed to spend gold, restore source visibility
 			if is_instance_valid(source_anchor):
 				for child in source_anchor.get_children():
 					if child is GachaBallView:
-						child.visible = true
 						child.modulate.a = 1.0
+						child.visible = true
+			_action_in_progress = false
 	)
 
 # --- Token tracking ---
@@ -202,7 +214,9 @@ func _on_live_token_earned(amount: int) -> void:
 	_update_token_display()
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
-	# Show the training popup directly since the inventory remains open
+	if WindowManager.has_method("close_all_inspection_windows"):
+		WindowManager.close_all_inspection_windows(true)
+	# Show the training popup
 	_show_training_popup()
 
 # --- Training Popup ---
@@ -369,7 +383,7 @@ func _spend_tokens_and_train(cost: int) -> void:
 	_update_popup_buttons()
 
 	# Roll: cost+1 possible outcomes (0..cost), uniform distribution
-	var roll = randi() % (cost + 1)
+	var roll = RNGManager.reward_rng.randi_range(0, cost)
 
 	# Apply stat buff (even if zero, we still animate)
 	var unit_uuid = _training_unit_data.get("uuid", "")
@@ -576,7 +590,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 		coin_vfx.coin_landed.connect(func(_pos: Vector2):
 			Audio.play_sfx("coin_land")
 		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55

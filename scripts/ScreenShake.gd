@@ -51,8 +51,8 @@ func _process(delta: float) -> void:
 	
 	# Apply random offset based on intensity
 	var offset = Vector2(
-		randf_range(-1.0, 1.0) * max_shake_offset * current_intensity,
-		randf_range(-1.0, 1.0) * max_shake_offset * current_intensity
+		RNGManager.cosmetic_rng.randf_range(-1.0, 1.0) * max_shake_offset * current_intensity,
+		RNGManager.cosmetic_rng.randf_range(-1.0, 1.0) * max_shake_offset * current_intensity
 	)
 	
 	_target_node.position = _original_position + offset

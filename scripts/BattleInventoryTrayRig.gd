@@ -234,7 +234,7 @@ func _spawn_ball(inst) -> void:
 	# SUIKA STYLE PHYSICS SPREAD:
 	# Keep horizontal offset extremely tight to the center so they never safely overlap
 	# the side walls upon spawning, which completely prevents them from falling out.
-	var random_offset = Vector2(randf_range(-150.0, 150.0), randf_range(-20.0, 20.0))
+	var random_offset = Vector2(RNGManager.cosmetic_rng.randf_range(-150.0, 150.0), RNGManager.cosmetic_rng.randf_range(-20.0, 20.0))
 	
 	# Use direct local relative offsets to ensure the ball is placed correctly 
 	# regardless of the tray's global position or stale transform updates.

@@ -11,6 +11,7 @@ display_name_key = "item.potion_plunder.name"
 description_key = "item.potion_plunder.desc"
 category = &"CONSUMABLE"
 tier = 3
+cost = 4
 icon = ExtResource("3_icon")
 tags = []
 is_hero = false

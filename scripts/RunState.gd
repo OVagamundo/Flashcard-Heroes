@@ -246,8 +246,7 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 				var all_uuids = container.get_all_non_empty_uuids()
 				if all_uuids.size() > 0:
 					# Select a random gachaball
-					randomize()
-					var uuid_to_replace = all_uuids[randi() % all_uuids.size()]
+					var uuid_to_replace = RNGManager.gacha_rng.pick_random(all_uuids)
 					var loc_to_replace = get_location_for_uuid(uuid_to_replace)
 					slot = loc_to_replace.index
 					# Permanently remove the chosen instance from the run to make space
@@ -769,7 +768,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 			ordered_deck_pool = ordered_deck_pool.slice(ordered_deck_pool.size() - half_size, ordered_deck_pool.size())
 			ordered_deck_pool.reverse()
 		elif deck_order == "RANDOM":
-			ordered_deck_pool.shuffle()
+			RNGManager.map_rng.shuffle(ordered_deck_pool)
 			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
 		else:
 			ordered_deck_pool = ordered_deck_pool.slice(0, half_size)
@@ -777,7 +776,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		if deck_order == "INVERTED":
 			ordered_deck_pool.reverse()
 		elif deck_order == "RANDOM":
-			ordered_deck_pool.shuffle()
+			RNGManager.map_rng.shuffle(ordered_deck_pool)
 		
 	for card_id in ordered_deck_pool:
 		if not flashcard_progress.has(card_id):

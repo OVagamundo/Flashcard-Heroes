@@ -185,18 +185,21 @@ func _input(event: InputEvent) -> void:
 		else:
 			return
 		
-		# If the click is not inside any active inspection window, close them and swallow the event
-		if not WindowManager.is_point_inside_any_inspection_window(pos):
-			get_viewport().set_input_as_handled()
-			
+		# If the click is not inside any active inspection window AND not inside a drop zone, close them
+		# We NO LONGER swallow the event here, so that UI elements (like buttons or GachaBalls) can still receive it.
+		# This restores "click and click" functionality and button clicks (e.g. Rest Site).
+		var main_node = GameManager._active_main_node if GameManager else null
+		var is_inside_drop_zone = false
+		if is_instance_valid(main_node) and main_node.has_method("is_point_inside_active_drop_zone"):
+			is_inside_drop_zone = main_node.is_point_inside_active_drop_zone(pos)
+
+		if not WindowManager.is_point_inside_any_inspection_window(pos) and not is_inside_drop_zone:
 			if not _is_close_suppressed_now():
 				_is_inspection_locked = false
 				_locked_entity_view_id = -1
 				_hover_entity_view_id = -1
 				_execute_close_all_inspection_windows()
-				
-			if not is_vcr_playing() and not _is_combat_phase:
-				_execute_deselect()
+
 
 
 ## High-priority input handling (Escape, true background)

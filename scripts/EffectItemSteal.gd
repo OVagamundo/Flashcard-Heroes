@@ -27,7 +27,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	if stealable_items.is_empty():
 		return EffectResult.empty()
 	# 2. Select Random Item
-	var stolen_item = stealable_items.pick_random()
+	var stolen_item = RNGManager.combat_rng.pick_random(stealable_items)
 	var stolen_def = stolen_item.get_definition()
 	var item_name = stolen_def.display_name_key if stolen_def else "Unknown Item" # Ideally localized later
 	

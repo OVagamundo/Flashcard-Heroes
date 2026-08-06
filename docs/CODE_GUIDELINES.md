@@ -22,6 +22,22 @@ Any operation that moves an instance (Equip, Move, Swap) **MUST** update both th
 *   **Incorrect:** Removing from `Inventory A` then adding to `Inventory B` manually.
 *   **Correct:** using `InventoryOperations.move_item(uuid, from_loc, to_loc)`.
 
+### 1.3 The Unified Command Pipeline (Command Pattern)
+No out-of-combat UI controller or event handler may directly mutate `RunState` or inventory contents.
+*   **Command Factory:** UI components validate local drag/click state and create a validated `GameAction` subclass (`InventoryDragAction`, `ShopPurchaseAction`, `ShopRerollAction`, `ChoiceAction`).
+*   **Action Queue:** Commands are enqueued to `ActionQueue.enqueue()`. The queue executes `is_valid()` before invoking `execute()`, maintaining a FIFO execution loop and recording serialized action history (`to_dict()`) for replayability.
+*   **No Core Game Loop:** Game state progresses strictly as a reaction to processed player input actions.
+
+### 1.4 Isolated Seeded PRNG Streams
+All game randomness must use `RNGManager` stream isolation.
+*   **No System Random:** Direct calls to `randi()`, `randf()`, or unseeded `randi_range()` are banned in game logic.
+*   **Stream Isolation:** Systems query dedicated streams (`map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`) seeded from `RunState.run_seed`.
+
+### 1.5 Global Engine Time Scaling
+Playback speed changes (1x, 3x, etc.) are managed globally via `Engine.time_scale` (`AnimationConstants.speed_factor`).
+*   **Universal Acceleration:** Setting `Engine.time_scale` automatically scales all tweens, timers, particle systems, and token animations uniformly across the engine.
+*   **No Double-Scaling:** Individual animation scripts must NOT manually divide durations by `speed_factor` when `Engine.time_scale` is active. Use `AnimationConstants.scaled(duration)` which returns raw durations.
+
 ---
 
 ## 2. The Simulation Layer (The Brain)

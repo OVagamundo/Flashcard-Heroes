@@ -86,8 +86,13 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 *   **Correct:** `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
 *   **Incorrect:** `DEATH` -> `BUFF` -> `SUMMON` (Violates causality; the buff source might be the summoned unit)
 
-### Step-by-Step Playback
+### Step-by-Step Playback & Global Speed Scaling
 In Step Mode, the Presentation Phase pauses between each `CombatEvent`. The player can click **"Next Step"** to advance exactly one event at a time. Each step captures a single logical transition (e.g., one instance of damage, one buff application), allowing players to debug and study complex priority-based chains.
+
+Playback speed (1x, 3x, etc.) is controlled globally via `Engine.time_scale` (`AnimationConstants.speed_factor`), uniformly accelerating all tweens, timers, particle systems, and token animations across the engine without double-scaling.
+
+### Deterministic Combat PRNG Stream Isolation
+All random decisions during combat (target selection for `TARGET_RANDOM_ENEMY` / `TARGET_RANDOM_ALLY`, gacha draws, effect rolls) strictly use isolated seeded PRNG streams (`RNGManager.combat_rng` and `RNGManager.gacha_rng`) derived from `RunState.run_seed`, guaranteeing zero-desync deterministic playback.
 
 > [!IMPORTANT]
 > **Fidelity Rule:** Every `CombatEvent` in the TurnLog **MUST** be processed by `BattleAnimator`. The animator may not skip, filter, or drop events. Each event has a unique `event_id` for verification. Look for `[SIM]` and `[ANIM]` prefixes in logs to trace simulation-presentation fidelity.

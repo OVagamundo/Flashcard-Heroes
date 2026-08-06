@@ -373,13 +373,17 @@ func close_child_windows(_window_group_id: int, parent_window_id: int = -1) -> v
 		close_children_of(parent_window)
 
 # Public API for GIR (Rules W2, W4, W5).
-func close_all_inspection_windows() -> void:
+func close_all_inspection_windows(keep_inventory: bool = false) -> void:
 	# AUDIO HOOK: Window close sound (play once even if multiple windows)
 	if not _active_inspection_group.is_empty():
 		Audio.play_sfx("ui_window_close")
 	
-	for window in _active_inspection_group:
+	# Iterate backwards because stop_tracking_window removes elements from the array
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var window = _active_inspection_group[i]
 		if is_instance_valid(window):
+			if keep_inventory and (window == _persistent_inventory_window or window == _persistent_battle_inventory_window or window == _persistent_discard_pile_window):
+				continue
 			stop_tracking_window(window.get_instance_id())
 			_queue_free_with_optional_inventory_animation(window)
 

@@ -41,7 +41,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Select random targets independently for each buff
 	var buff_targets: Array[String] = []
 	for i in range(num_buffs):
-		var random_ally = allies[randi() % allies.size()]
+		var random_ally = RNGManager.combat_rng.pick_random(allies)
 		buff_targets.append(random_ally.ball_uuid)
 	
 	if is_simulation:
