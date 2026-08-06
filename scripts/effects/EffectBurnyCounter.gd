@@ -44,7 +44,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			if valid_targets.is_empty():
 				break # No one left to bounce to
 			else:
-				target_inst = valid_targets.pick_random()
+				target_inst = RNGManager.combat_rng.pick_random(valid_targets)
 				current_target_uuid = target_inst.ball_uuid
 				
 		var old_hp = target_inst.current_hp
@@ -125,7 +125,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				# Pick random that is NOT the current target if possible
 				var next_targets = valid_targets.filter(func(u): return u.ball_uuid != current_target_uuid)
 				if not next_targets.is_empty():
-					current_target_uuid = next_targets.pick_random().ball_uuid
+					current_target_uuid = RNGManager.combat_rng.pick_random(next_targets).ball_uuid
 				else:
 					current_target_uuid = valid_targets[0].ball_uuid
 					

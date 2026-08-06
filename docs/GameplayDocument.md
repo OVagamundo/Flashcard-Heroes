@@ -31,7 +31,7 @@ Before starting a run (or a testing session), the player configures their starti
 - **Deck Ordering**: The player can configure the order in which flashcards are reviewed:
   - `REGULAR`: Reviews cards in their standard database order.
   - `INVERTED`: Reviews cards in reverse database order.
-  - `RANDOM`: Shuffles cards before review.
+  - `RANDOM`: Shuffles cards deterministically using `RNGManager.map_rng.shuffle(...)`.
 - **Deck Sorting**: Available decks are sorted dynamically to prioritize the `Katakana Main` deck at the start of the list.
 - **Test Mode Starters Option**: In Test Mode, the player is presented with a dropdown utility allowing them to selectively add starting Gacha items or trinkets directly from the registry to the Hero's starting inventory for debug purposes.
 - **Dynamic Localization Updates**: The scene dynamically swaps text elements and re-loads localized metadata if the system's locale is updated, preserving the player's active carousel selections.

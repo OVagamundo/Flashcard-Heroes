@@ -92,6 +92,12 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 					lineup_container = battle_view.enemy_lineup
 				elif container_tag == &"PlayerBench":
 					lineup_container = battle_view.player_bench
+				elif container_tag == &"EnemyTrinkets":
+					lineup_container = battle_view.enemy_trinket_bar
+				elif container_tag == &"PlayerTrinkets":
+					var main_node = get_tree().get_first_node_in_group("main")
+					if is_instance_valid(main_node) and "player_trinket_bar" in main_node:
+						lineup_container = main_node.player_trinket_bar
 				
 				if is_instance_valid(lineup_container) and index >= 0:
 					var children = lineup_container.get_children()
@@ -895,7 +901,7 @@ func _animate_gold_gain(origin_uuid: String, amount: int, target_gold_amount: in
 					SignalBus.emit_signal("gold_changed", target_gold_amount)
 		)
 		
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 

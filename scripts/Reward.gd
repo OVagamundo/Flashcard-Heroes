@@ -295,7 +295,7 @@ func _draw_definition_for_tier(tier: int) -> GachaBallDefinition:
 	
 	if eligible.is_empty():
 		return null
-	return eligible[randi() % eligible.size()]
+	return RNGManager.reward_rng.pick_random(eligible)
 
 func _find_next_prize_slot() -> int:
 	for i in range(_prizes.size()):
@@ -328,7 +328,7 @@ func _animate_token_spend(target_machine: Control, cost: int, token_group: Contr
 		WindowManager.get_vfx_layer().add_child(token_vfx)
 		token_vfx.coin_landed.connect(_on_coin_landed.bind(target_machine))
 		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
 	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
@@ -675,7 +675,7 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
 				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
 		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 	

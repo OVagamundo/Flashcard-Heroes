@@ -725,7 +725,7 @@ func _set_hover_state(active: bool, play_sound: bool = false) -> void:
 	_update_hover_draw_priority()
 
 	if active and play_sound:
-		Audio.play_sfx("ui_hover", randf_range(1.05, 1.12))
+		Audio.play_sfx("ui_hover", RNGManager.cosmetic_rng.randf_range(1.05, 1.12))
 
 	_animate_hover_to(1.0 if active else 0.0, 0.16 if active else 0.12)
 	if not active:
@@ -1135,12 +1135,12 @@ func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poi
 			tween.tween_property(burn_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			tween.tween_callback(func(): 
 				_pop_container(burn_container)
-				Audio.play_sfx("status_burn", randf_range(0.95, 1.05))
+				Audio.play_sfx("status_burn", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
 			)
 		elif target_stacks > old_stacks:
 			# Stacks increased: pop the container
 			_pop_container(burn_container)
-			Audio.play_sfx("status_burn", randf_range(0.95, 1.05))
+			Audio.play_sfx("status_burn", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
 		
 		# Always flash label on change
 		_flash_label(burn_label)
@@ -1168,12 +1168,12 @@ func animate_armor_change(target_stacks: int) -> void:
 			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			tween.tween_callback(func():
 				_pop_container(armor_container)
-				Audio.play_sfx("status_armor", randf_range(0.95, 1.05))
+				Audio.play_sfx("status_armor", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
 			)
 		elif target_stacks > old_stacks:
 			# Stacks increased: pop the container
 			_pop_container(armor_container)
-			Audio.play_sfx("status_armor", randf_range(0.95, 1.05))
+			Audio.play_sfx("status_armor", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
 		
 		# Always flash label on change
 		_flash_label(armor_label)
@@ -1257,7 +1257,7 @@ func _update_dynamic_status_icons(animate: bool = true) -> void:
 						if stacks > visual_current:
 							_pop_container(icon_node)
 							if status_id == &"spikes":
-								Audio.play_sfx("status_spikes", randf_range(0.95, 1.05))
+								Audio.play_sfx("status_spikes", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
 						_flash_label(label)
 					else:
 						label.text = str(stacks)

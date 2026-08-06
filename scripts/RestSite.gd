@@ -257,9 +257,9 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 func _roll_value_for_tier(tier: int) -> int:
 	"""Roll prize value based on tier (1: 0-1, 2: 0-3, 3: 0-5)"""
 	match tier:
-		1: return randi() % 2
-		2: return randi() % 4
-		3: return randi() % 6
+		1: return RNGManager.reward_rng.randi_range(0, 1)
+		2: return RNGManager.reward_rng.randi_range(0, 3)
+		3: return RNGManager.reward_rng.randi_range(0, 5)
 	return 0
 
 func _find_next_prize_slot() -> int:
@@ -292,7 +292,7 @@ func _animate_token_spend(target_machine: Control, cost: int, token_group: Contr
 		effects_layer.add_child(token_vfx)
 		token_vfx.coin_landed.connect(_on_coin_landed.bind(target_machine))
 		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
 	
 	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
@@ -367,7 +367,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 		coin_vfx.coin_landed.connect(func(_pos: Vector2):
 			Audio.play_sfx("coin_land")
 		)
-		var offset = Vector2(randf_range(-15, 15), randf_range(-8, 8))
+		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
 		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
 		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
 	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55

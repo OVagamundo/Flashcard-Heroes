@@ -44,7 +44,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if tier_1_units.is_empty():
 		return EffectResult.empty()
 	
-	var random_def = tier_1_units.pick_random()
+	var random_def = RNGManager.combat_rng.pick_random(tier_1_units)
 	
 	# 5. Return EffectResult with summon instructions
 	# CombatSimulator will process summon_request via EffectHandlers

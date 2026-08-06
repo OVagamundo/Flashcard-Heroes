@@ -29,4 +29,5 @@ Specialized logic is gated via `OS.has_feature("mobile")`:
 
 ## 3. Performance Optimization
 
-- **VCR Decoupling**: The simulation-at-start (VCR) model reduces per-frame CPU load during heavy combat turns, which is critical for maintaining 60 FPS on lower-end mobile devices.
+- **VCR & Command Queue Decoupling**: The simulation-at-start (VCR) model combined with sequential `ActionQueue` command processing eliminates continuous per-frame game loops and state polling. This drastically reduces CPU overhead, battery drain, and thermal throttling on mobile devices.
+- **Engine Time Scaling**: `Engine.time_scale` accelerates playback cleanly across mobile GPU/CPU threads without requiring extra script iterations.

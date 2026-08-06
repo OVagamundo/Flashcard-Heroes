@@ -35,7 +35,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var initial_enemies = battle_manager.get_instances_in_container(enemy_container).filter(func(u): return u.current_hp > 0)
 	if initial_enemies.is_empty():
 		return result
-	current_target_uuid = initial_enemies[randi() % initial_enemies.size()].ball_uuid
+	current_target_uuid = RNGManager.combat_rng.pick_random(initial_enemies).ball_uuid
 	
 	var current_burn_amount = heal_amount
 	
@@ -71,7 +71,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				# Bounce back to same target if no one else is alive
 				possible_next_targets = enemies
 				
-			var next_enemy = possible_next_targets[randi() % possible_next_targets.size()]
+			var next_enemy = RNGManager.combat_rng.pick_random(possible_next_targets)
 			current_target_uuid = next_enemy.ball_uuid
 			
 	return result

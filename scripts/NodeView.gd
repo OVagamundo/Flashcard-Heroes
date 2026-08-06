@@ -204,7 +204,7 @@ func _set_hover_state(active: bool, play_sound: bool) -> void:
 		return
 	_is_hovered = active
 	if play_sound and active:
-		Audio.play_sfx("ui_hover", randf_range(1.06, 1.14))
+		Audio.play_sfx("ui_hover", RNGManager.cosmetic_rng.randf_range(1.06, 1.14))
 	_animate_hover_to(1.0 if active else 0.0, 0.16 if active else 0.12)
 
 func _animate_hover_to(target: float, duration: float) -> void:

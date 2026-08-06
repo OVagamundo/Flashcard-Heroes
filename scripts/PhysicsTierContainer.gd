@@ -222,7 +222,7 @@ func _spawn_ball(inst) -> void:
 	ball.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
 	
 	ball.position = spawn_point.position
-	ball.position.x += randf_range(-150.0, 150.0) # Wider spread for better pile distribution
+	ball.position.x += RNGManager.cosmetic_rng.randf_range(-150.0, 150.0) # Wider spread for better pile distribution
 	
 	_balls_root.add_child(ball)
 	
@@ -304,9 +304,9 @@ func _on_global_sleep_timeout() -> void:
 func apply_jolt(base_impulse: Vector2) -> void:
 	for ball in _active_balls.values():
 		if is_instance_valid(ball) and ball is RigidBody2D:
-			var random_variance = Vector2(randf_range(-20, 20), randf_range(-20, 20))
+			var random_variance = Vector2(RNGManager.cosmetic_rng.randf_range(-20, 20), RNGManager.cosmetic_rng.randf_range(-20, 20))
 			ball.apply_central_impulse(base_impulse + random_variance)
-			ball.apply_torque_impulse(randf_range(-1000, 1000))
+			ball.apply_torque_impulse(RNGManager.cosmetic_rng.randf_range(-1000, 1000))
 
 func prepare_for_open() -> void:
 	_global_sleep_timer.stop()

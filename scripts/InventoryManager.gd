@@ -40,14 +40,17 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 			return
 
 	# Case 3: Equipping an ITEM onto a UNIT directly
+	# (Items dragged onto units in the inventory will fall through to Swap instead)
 	if sdef.category == &"ITEM" and is_instance_valid(target_instance):
 		if target_def.category == &"UNIT":
-			var owner = _get_data_owner()
-			if is_instance_valid(owner):
-				owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
-			GlobalInteractionRouter.end_drag(true)
-			SignalBus.emit_signal("inventory_action_completed", [target_instance.ball_uuid])
-			return
+			var target_group = GlobalInteractionRouter.get_context_group(target_loc.container)
+			if target_group != &"InventoryGrid":
+				var owner = _get_data_owner()
+				if is_instance_valid(owner):
+					owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
+				GlobalInteractionRouter.end_drag(true)
+				SignalBus.emit_signal("inventory_action_completed", [target_instance.ball_uuid])
+				return
 
 	# Case 4: Equipping an ITEM into a specific equipped_item slot
 	if sdef.category == &"ITEM" and target_loc.container == C.CONTAINER_EQUIPPED_ITEM:

@@ -89,7 +89,7 @@ def main():
     
     code_dir = Path("Code")
     code_dir.mkdir(exist_ok=True)
-    output_path = code_dir / "ai_project_context.md"
+    output_path = code_dir / "ai_project_context_with_tscn.md"
     
     with open(output_path, 'w', encoding='utf-8') as out:
         out.write("# Flashcard Heroes - AI Project Context\n\n")
@@ -128,11 +128,11 @@ def main():
             out.write("*No script attachments found or scenes folder missing.*\n\n")
             
         # 4. Source Code and Data
-        out.write("## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`)\n\n")
+        out.write("## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`, `.tscn`)\n\n")
         out.write("All GDScript source code files and relevant data resources are included below.\n\n")
         
         all_data_files = []
-        for ext in ["*.gd", "*.tres", "*.csv"]:
+        for ext in ["*.gd", "*.tres", "*.csv", "*.tscn"]:
             for p in Path.cwd().rglob(ext):
                 if "addons" in p.parts or ".godot" in p.parts or "brain" in p.parts or "scratch" in p.parts or "tools_and_archive" in p.parts:
                     continue
@@ -149,7 +149,7 @@ def main():
                 
                 # Determine syntax highlighting language
                 lang = "gdscript"
-                if p.suffix == ".tres":
+                if p.suffix == ".tres" or p.suffix == ".tscn":
                     lang = "ini"
                 elif p.suffix == ".csv":
                     lang = "csv"

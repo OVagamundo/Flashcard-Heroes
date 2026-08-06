@@ -238,7 +238,7 @@ func _on_body_entered(body: Node) -> void:
 		if current_time >= next_allowed_clack_time:
 			# 1. RANDOMIZED COOLDOWN: Break the "machine gun" rhythm
 			# The next sound is allowed anywhere from 30ms to 100ms from now
-			next_allowed_clack_time = current_time + randi_range(30, 100)
+			next_allowed_clack_time = current_time + RNGManager.cosmetic_rng.randi_range(30, 100)
 			
 			# 2. CALCULATE IMPACT INTENSITY (0.0 to 1.0)
 			# We subtract the 150 threshold so the lowest valid hit starts at 0 intensity.
@@ -251,7 +251,7 @@ func _on_body_entered(body: Node) -> void:
 			
 			# Harder hits get a slightly higher base pitch, plus a random variance
 			var base_pitch = lerp(0.85, 1.1, intensity)
-			var final_pitch = base_pitch + randf_range(-0.1, 0.15)
+			var final_pitch = base_pitch + RNGManager.cosmetic_rng.randf_range(-0.1, 0.15)
 			
 			# 4. PLAY THE SOUND
 			_play_impact_sound(final_pitch, volume_db)

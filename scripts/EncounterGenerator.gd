@@ -98,7 +98,7 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 		total_weight += w
 	
 	# 3. Pick weighted boss
-	var roll = randf() * total_weight
+	var roll = RNGManager.map_rng.randf() * total_weight
 	var cumulative_weight: float = 0.0
 	var selected_boss_id: StringName = boss_options[0] # Fallback
 	
@@ -238,7 +238,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 		for i in purchased_units.size(): upgrade_candidates.append([purchased_units, i, pools.units])
 		for i in purchased_items.size(): upgrade_candidates.append([purchased_items, i, pools.items])
 		for i in purchased_trinkets.size(): upgrade_candidates.append([purchased_trinkets, i, pools.trinkets])
-		upgrade_candidates.shuffle()
+		RNGManager.map_rng.shuffle(upgrade_candidates)
 		
 		for candidate in upgrade_candidates:
 			var list = candidate[0]
@@ -336,7 +336,7 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 		available_positions = [0, 1, 2, 3] # Reserve position 4 for boss/elite
 	else:
 		available_positions = [0, 1, 2, 3, 4]
-	available_positions.shuffle()
+	RNGManager.map_rng.shuffle(available_positions)
 	
 	for unit_def in build.units:
 		if available_positions.is_empty():
@@ -354,7 +354,7 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 				possible_parents.append(p)
 		if possible_parents.is_empty():
 			break
-		possible_parents.pick_random().items.append(item_def.id)
+		RNGManager.map_rng.pick_random(possible_parents).items.append(item_def.id)
 	
 	# Assign trinkets
 	_append_required_trait_trinkets(encounter)
@@ -483,7 +483,7 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 	else:
 		spawn_chance = 1.0
 		
-	if randf() > spawn_chance:
+	if RNGManager.map_rng.randf() > spawn_chance:
 		return 0 # No slots generated
 		
 	# We are generating slots. We want at least one slot on each team.
@@ -501,14 +501,14 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 				
 	var player_cost = 0
 	if not possible_player_combinations.is_empty():
-		var chosen = possible_player_combinations[randi() % possible_player_combinations.size()]
+		var chosen = RNGManager.map_rng.pick_random(possible_player_combinations)
 		var num_burn: int = chosen["burn"]
 		var num_lightning: int = chosen["lightning"]
 		player_cost = chosen["cost"]
 		
 		# Assign randomly
 		var pos = [0, 1, 2, 3, 4]
-		pos.shuffle()
+		RNGManager.map_rng.shuffle(pos)
 		for j in range(num_burn):
 			encounter.player_slot_effects[pos.pop_back()] = &"burn"
 		for j in range(num_lightning):
@@ -527,14 +527,14 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 			
 	var enemy_bonus = 0
 	if not possible_enemy_combinations.is_empty():
-		var chosen = possible_enemy_combinations[randi() % possible_enemy_combinations.size()]
+		var chosen = RNGManager.map_rng.pick_random(possible_enemy_combinations)
 		var num_burn: int = chosen["burn"]
 		var num_lightning: int = chosen["lightning"]
 		enemy_bonus = chosen["bonus"]
 		
 		# Assign randomly
 		var pos = [0, 1, 2, 3, 4]
-		pos.shuffle()
+		RNGManager.map_rng.shuffle(pos)
 		for j in range(num_burn):
 			encounter.enemy_slot_effects[pos.pop_back()] = &"burn"
 		for j in range(num_lightning):

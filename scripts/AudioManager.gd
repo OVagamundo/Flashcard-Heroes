@@ -62,7 +62,7 @@ func play_sfx(sound_id: String, pitch_scale: float = 1.0) -> void:
 	
 	# Vary pitch slightly for realism if default pitch is used (except for vocal pronunciation)
 	if is_equal_approx(pitch_scale, 1.0) and not is_vocal:
-		pitch_scale = randf_range(0.95, 1.05)
+		pitch_scale = RNGManager.cosmetic_rng.randf_range(0.95, 1.05)
 	
 	player.stream = stream
 	player.pitch_scale = pitch_scale

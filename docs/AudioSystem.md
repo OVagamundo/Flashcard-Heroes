@@ -35,6 +35,7 @@ Audio.set_music_pitch(1.2, 0.5)
 - **Looping**: OGG Vorbis streams are automatically set to loop
 - **Card Pronunciation Filtering**: Intercepts vocal pronunciation triggers (where `sound_id` starts with `"pronunciation_"`) and blocks playback if the card pronunciation option is disabled.
 - **Settings Persistence**: Saves and loads user volume and card pronunciation preferences automatically to/from `user://audio_settings.save` on boot (`_ready`) and when settings change in the Options menu.
+- **Global Speed & Command Sync**: Sound effects trigger reactively when `GameAction` commands or `CombatEvent` streams resolve. Audio playback operates independently of `Engine.time_scale`, ensuring audio pitch and volume remain steady during fast-forward (3x) playback.
 
 ---
 

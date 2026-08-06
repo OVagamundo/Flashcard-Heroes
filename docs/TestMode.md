@@ -31,7 +31,8 @@ Test mode must respect these rules:
    - `bm_swap_instances`
    - `bm_equip_item`
 3. Merge legality must use the same recipe gating logic as normal gameplay.
-4. Interaction routing must use GIR + InventoryManager + InventoryOperations.
+4. Interaction routing must use `ActionQueue` commands (`InventoryDragAction`, `ChoiceAction`) and `InventoryOperations`.
+5. Deterministic testing: Inject `RunState.run_seed` prior to test execution to ensure 100% reproducible PRNG streams across `RNGManager`. Headless test scripts push actions directly to `ActionQueue.enqueue()`.
 
 ## Current Test Helper Flow
 File: `scripts/battle/TestModeHelpers.gd`

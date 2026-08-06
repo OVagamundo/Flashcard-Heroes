@@ -5,8 +5,8 @@ The InventoryManager is a stateless logic controller. It is the "verb" system fo
 Core Principles:
 Stateless Operation: The manager never stores its own state between actions. It always queries the current game state from the data owners.
 Authoritative Validation: The manager is the final authority on whether a gameplay action is legal.
-Command-Driven: Its primary entry point for player-initiated actions is the `try_inventory_action` signal, which is emitted by the GlobalInteractionRouter (GIR) when it executes a `REQUEST_ACTION` command.
-Signal Contract (from GIR): `SignalBus.try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier)` — GIR extracts `.location` from its stored `source_context` and the current `target_context` (see `GlobalInteractionRouter._execute_request_action`).
+Command-Driven: Its primary entry points for player-initiated actions are `execute_drag_action` and `execute_choice_action`, invoked by validated `GameAction` command objects (`InventoryDragAction`, `ChoiceAction`) processed sequentially by `ActionQueue`.
+Command Pipeline Contract: `InventoryDragAction.execute()` $\rightarrow$ `InventoryManager.execute_drag_action(source_loc, target_loc)`. `ChoiceAction.execute()` $\rightarrow$ `InventoryManager.execute_choice_action(choice, source_loc, target_loc, recipe_id)`.
 The Golden Rule of State Synchronization: All state change instructions sent to data owners must be atomic. This means any operation that moves an instance must update both the DataContainer (the index) and the GachaBallInstance's properties (the truth) in a single, indivisible operation.
 
 > [!NOTE]

@@ -7,7 +7,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	# 1. Select the dust unit (Tier 1 or Tier 2 for this elite)
 	var dust_pool = [&"unit_dust_t1", &"unit_dust_t2"]
-	var selected_dust = dust_pool[randi() % dust_pool.size()]
+	var selected_dust = RNGManager.combat_rng.pick_random(dust_pool)
 	
 	var tier := 1
 	if selected_dust == &"unit_dust_t2":

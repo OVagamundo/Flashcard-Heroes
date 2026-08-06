@@ -36,7 +36,7 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	if tier_2_units.is_empty():
 		return EffectResult.empty()
 	
-	var random_def = tier_2_units.pick_random()
+	var random_def = RNGManager.combat_rng.pick_random(tier_2_units)
 	
 	var result := EffectResult.new()
 	result.summon_request = {

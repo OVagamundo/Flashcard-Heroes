@@ -21,14 +21,14 @@ var _minigame_instance: Control = null
 func _select_card_via_srs() -> StringName:
 	"""Selects a card using the weighted SRS algorithm"""
 	if not is_instance_valid(_run_state_ref):
-		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
+		return RNGManager.map_rng.pick_random(_active_deck_ids) if not _active_deck_ids.is_empty() else &""
 	
 	var candidates = _active_deck_ids.duplicate()
 	if candidates.has(_last_shown_card_id):
 		candidates.erase(_last_shown_card_id)
 	
 	if candidates.is_empty():
-		return _active_deck_ids.pick_random() if not _active_deck_ids.is_empty() else &""
+		return RNGManager.map_rng.pick_random(_active_deck_ids) if not _active_deck_ids.is_empty() else &""
 	
 	var weighted_candidates: Array[Dictionary] = []
 	var total_weight: float = 0.0
@@ -41,7 +41,7 @@ func _select_card_via_srs() -> StringName:
 		# TDD Section 9.3: Priority 1 = mastery (lower = higher weight), Priority 2 = recency, Tie-breaker = random
 		var mastery_component: float = pow(6 - progress.mastery_level, SRS_MASTERY_WEIGHT_POWER)
 		var time_component: float = float(_run_state_ref.day - progress.last_review_day) * SRS_RECENCY_WEIGHT
-		var random_component: float = randf() * SRS_RANDOM_FACTOR
+		var random_component: float = RNGManager.map_rng.randf() * SRS_RANDOM_FACTOR
 		var weight: float = mastery_component + time_component + random_component
 		
 		# Dampen weight of mastered cards so they are drawn much less frequently
@@ -57,16 +57,16 @@ func _select_card_via_srs() -> StringName:
 	
 	# If no weighted candidates, fall back to random selection
 	if weighted_candidates.is_empty():
-		return candidates.pick_random() if not candidates.is_empty() else &""
+		return RNGManager.map_rng.pick_random(candidates) if not candidates.is_empty() else &""
 	
 	# Perform weighted random selection
-	var rand_val = randf() * total_weight
+	var rand_val = RNGManager.map_rng.randf() * total_weight
 	for candidate in weighted_candidates:
 		rand_val -= candidate.weight
 		if rand_val <= 0:
 			return candidate.id
 	
-	return candidates.pick_random() # Fallback
+	return RNGManager.map_rng.pick_random(candidates) # Fallback
 
 ## TDD Section 9.2: Public API
 func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void:
@@ -119,11 +119,11 @@ func get_next_question() -> Dictionary:
 	
 	var distractors = _active_deck_ids.duplicate()
 	distractors.erase(question_card_id)
-	distractors.shuffle()
+	RNGManager.map_rng.shuffle(distractors)
 	
 	var choices: Array[StringName] = [question_card_id]
 	choices.append_array(distractors.slice(0, 5))
-	choices.shuffle()
+	RNGManager.map_rng.shuffle(choices)
 	
 	return {
 		"question_id": question_card_id,

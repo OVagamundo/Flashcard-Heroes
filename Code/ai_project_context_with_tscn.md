@@ -750,7 +750,7 @@ This section shows which `.gd` scripts are attached to nodes in the `.tscn` scen
 ### scenes/vfx/ItemPopup.tscn
   - Node `ItemPopup` -> `scripts/vfx/ItemPopup.gd`
 
-## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`)
+## 4. Source Code and Data Files (`.gd`, `.tres`, `.csv`, `.tscn`)
 
 All GDScript source code files and relevant data resources are included below.
 
@@ -9518,6 +9518,5106 @@ ability_definitions = Array[Resource]([
 	ExtResource("102_ability"),
 	ExtResource("100_ability")
 ])
+```
+
+### File: `scenes/BackgroundBlocker.tscn`
+```ini
+[gd_scene load_steps=2 format=3 uid="uid://b7vqgcyh6q8w"]
+
+[ext_resource type="Script" path="res://scripts/BackgroundBlocker.gd" id="1_blocker_script"]
+
+[node name="BackgroundBlocker" type="ColorRect"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0, 0, 0, 0.5)
+script = ExtResource("1_blocker_script")
+```
+
+### File: `scenes/Battle.tscn`
+```ini
+[gd_scene format=3 uid="uid://c8qj2qj2qj2q"]
+
+[ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
+[ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
+[ext_resource type="Script" path="res://scripts/TestEnvironmentManager.gd" id="5_testenv"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/battle.png" id="8_bg"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_controls"]
+
+[node name="Battle" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+script = ExtResource("3_battle_view_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="BattleManager" type="Node" parent="."]
+script = ExtResource("1_battle_manager_script")
+
+[node name="TeamAreas" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="PlayerArea" type="VBoxContainer" parent="TeamAreas"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 80
+alignment = 1
+
+[node name="PlayerLineup" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BenchAndInventory" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="PlayerBench" type="HBoxContainer" parent="TeamAreas/PlayerArea/BenchAndInventory"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="BenchSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BenchSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BenchSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BenchSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BenchSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="EnemyArea" type="VBoxContainer" parent="TeamAreas"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 80
+alignment = 1
+
+[node name="EnemyLineupContainer" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="EnemyBenchComposite" type="VBoxContainer" parent="TeamAreas/EnemyArea"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+
+[node name="BottomControlRow" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 72)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -82.0
+offset_bottom = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_constants/separation = 10
+alignment = 2
+
+[node name="CombatControlsPanel" type="PanelContainer" parent="BottomControlRow"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_styles/panel = SubResource("StyleBoxEmpty_controls")
+
+[node name="OuterVBox" type="VBoxContainer" parent="BottomControlRow/CombatControlsPanel"]
+layout_mode = 2
+alignment = 1
+
+[node name="StepDescLabel" type="Label" parent="BottomControlRow/CombatControlsPanel/OuterVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.85, 0.6, 1)
+horizontal_alignment = 1
+
+[node name="ControlsRow" type="HBoxContainer" parent="BottomControlRow/CombatControlsPanel/OuterVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+alignment = 1
+
+[node name="SpeedLabel" type="Label" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+text = "Speed:"
+
+[node name="PauseBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 54)
+layout_mode = 2
+text = "||"
+
+[node name="Speed1xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 54)
+layout_mode = 2
+text = "1x"
+
+[node name="Speed3xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(72, 54)
+layout_mode = 2
+text = "3x"
+
+[node name="VSeparator" type="VSeparator" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+custom_minimum_size = Vector2(2, 0)
+layout_mode = 2
+
+[node name="StepButton" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(220, 54)
+layout_mode = 2
+text = "Next Step ⏭"
+
+
+[node name="DiscardPileButton" type="Button" parent="BottomControlRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 54)
+layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 1
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Discard Pile (0)"
+
+[node name="EndTurnButton" type="Button" parent="BottomControlRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 54)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "End Turn"
+
+[node name="TestEnvironmentManager" type="Control" parent="."]
+script = ExtResource("5_testenv")
+```
+
+### File: `scenes/BattleInventoryWindow.tscn`
+```ini
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/BattleInventoryWindow.gd" id="1_biw_script"]
+[ext_resource type="Script" path="res://scripts/BattleInventoryTrayRig.gd" id="2_tray_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallContainer.png" id="3_tier1_back"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallContainer.png" id="4_tier2_back"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallContainer.png" id="5_tier3_back"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/GachaBallContainerDisplay.png" id="6_overlay"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="7_tier1_base"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid1"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid2"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid3"]
+
+[node name="BattleInventoryWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_biw_script")
+
+[node name="PhysicsRoot" type="Node2D" parent="."]
+
+[node name="Tier1Tray" type="Node2D" parent="PhysicsRoot"]
+unique_name_in_owner = true
+script = ExtResource("2_tray_script")
+tier = 1
+container_size = Vector2(640, 680)
+left_wall_padding = 14.0
+right_wall_padding = 14.0
+bottom_wall_padding = 15.0
+back_texture = ExtResource("3_tier1_back")
+overlay_texture = ExtResource("6_overlay")
+
+[node name="MotionBody" type="AnimatableBody2D" parent="PhysicsRoot/Tier1Tray"]
+
+[node name="BackArt" type="Sprite2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
+
+[node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
+z_index = 2
+
+[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier1Tray/MotionBody/LidArea"]
+shape = SubResource("RectangleShape2D_lid1")
+
+[node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
+
+[node name="BallsRoot" type="Node2D" parent="PhysicsRoot/Tier1Tray"]
+
+[node name="DropTimer" type="Timer" parent="PhysicsRoot/Tier1Tray"]
+wait_time = 0.12
+
+[node name="Tier2Tray" type="Node2D" parent="PhysicsRoot"]
+unique_name_in_owner = true
+script = ExtResource("2_tray_script")
+tier = 2
+container_size = Vector2(640, 680)
+left_wall_padding = 14.0
+right_wall_padding = 14.0
+bottom_wall_padding = 15.0
+back_texture = ExtResource("4_tier2_back")
+overlay_texture = ExtResource("6_overlay")
+
+[node name="MotionBody" type="AnimatableBody2D" parent="PhysicsRoot/Tier2Tray"]
+
+[node name="BackArt" type="Sprite2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
+
+[node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
+z_index = 2
+
+[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier2Tray/MotionBody/LidArea"]
+shape = SubResource("RectangleShape2D_lid2")
+
+[node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
+
+[node name="BallsRoot" type="Node2D" parent="PhysicsRoot/Tier2Tray"]
+
+[node name="DropTimer" type="Timer" parent="PhysicsRoot/Tier2Tray"]
+wait_time = 0.12
+
+[node name="Tier3Tray" type="Node2D" parent="PhysicsRoot"]
+unique_name_in_owner = true
+script = ExtResource("2_tray_script")
+tier = 3
+container_size = Vector2(640, 680)
+left_wall_padding = 14.0
+right_wall_padding = 14.0
+bottom_wall_padding = 15.0
+back_texture = ExtResource("5_tier3_back")
+overlay_texture = ExtResource("6_overlay")
+
+[node name="MotionBody" type="AnimatableBody2D" parent="PhysicsRoot/Tier3Tray"]
+
+[node name="BackArt" type="Sprite2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
+
+[node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
+z_index = 2
+
+[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier3Tray/MotionBody/LidArea"]
+shape = SubResource("RectangleShape2D_lid3")
+
+[node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
+
+[node name="BallsRoot" type="Node2D" parent="PhysicsRoot/Tier3Tray"]
+
+[node name="DropTimer" type="Timer" parent="PhysicsRoot/Tier3Tray"]
+wait_time = 0.12
+
+```
+
+### File: `scenes/BattleLogOverlay.tscn`
+```ini
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/BattleLogOverlay.gd" id="1"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.15, 0.17, 0.22, 0.9)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.4, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_header"]
+bg_color = Color(0.2, 0.22, 0.28, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+
+[node name="BattleLogOverlay" type="CanvasLayer"]
+layer = 120
+script = ExtResource("1")
+
+[node name="WindowContainer" type="Control" parent="."]
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = 520.0
+offset_bottom = 370.0
+
+[node name="BackgroundPanel" type="PanelContainer" parent="WindowContainer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="WindowContainer/BackgroundPanel"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Header" type="PanelContainer" parent="WindowContainer/BackgroundPanel/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_header")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="WindowContainer/BackgroundPanel/VBoxContainer/Header"]
+layout_mode = 2
+
+[node name="DragHandle" type="Label" parent="WindowContainer/BackgroundPanel/VBoxContainer/Header/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 1
+
+text = "⋮⋮ Battle Log"
+vertical_alignment = 1
+
+[node name="CollapseButton" type="Button" parent="WindowContainer/BackgroundPanel/VBoxContainer/Header/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 0)
+layout_mode = 2
+text = "▼ Hide"
+flat = true
+
+[node name="ClearButton" type="Button" parent="WindowContainer/BackgroundPanel/VBoxContainer/Header/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 0)
+layout_mode = 2
+text = "Clear"
+flat = true
+
+[node name="LogScrollContainer" type="ScrollContainer" parent="WindowContainer/BackgroundPanel/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="LogText" type="RichTextLabel" parent="WindowContainer/BackgroundPanel/VBoxContainer/LogScrollContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 0)
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+autowrap_mode = 2
+
+[node name="ResizeHandle" type="Control" parent="WindowContainer"]
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -20.0
+offset_top = -20.0
+grow_horizontal = 0
+grow_vertical = 0
+mouse_default_cursor_shape = 11
+```
+
+### File: `scenes/BlackMarket.tscn`
+```ini
+[gd_scene format=3 uid="uid://c6l8m7y3bv8k2"]
+
+[ext_resource type="Script" path="res://scripts/BlackMarket.gd" id="1_x0k8m"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+
+[node name="BlackMarket" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_x0k8m")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StandardUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+	[node name="TitleLabel" type="Label" parent="StandardUI"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 5
+	anchor_left = 0.5
+	anchor_right = 0.5
+	offset_left = -600.0
+	offset_top = 5.0
+	offset_right = 600.0
+	offset_bottom = 65.0
+	grow_horizontal = 2
+	theme_type_variation = &"HeaderLabel"
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 4
+	text = "BLACK MARKET"
+	horizontal_alignment = 1
+
+	[node name="DescriptionLabel" type="Label" parent="StandardUI"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 5
+	anchor_left = 0.5
+	anchor_right = 0.5
+	offset_left = -600.0
+	offset_top = 250.0
+	offset_right = 600.0
+	offset_bottom = 350.0
+	grow_horizontal = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_font_sizes/font_size = 24
+	text = "Description text"
+	horizontal_alignment = 1
+
+	[node name="OpenInventoryButton" type="Button" parent="StandardUI"]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(560, 90)
+	layout_mode = 1
+	anchors_preset = 8
+	anchor_left = 0.5
+	anchor_top = 0.5
+	anchor_right = 0.5
+	anchor_bottom = 0.5
+	offset_left = -280.0
+	offset_top = 132.0
+	offset_right = 280.0
+	offset_bottom = 222.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "REMOVE OR TRANSFORM"
+
+	[node name="LeaveButton" type="Button" parent="."]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(300, 70)
+	layout_mode = 1
+	anchors_preset = 6
+	anchor_left = 1.0
+	anchor_top = 0.5
+	anchor_right = 1.0
+	anchor_bottom = 0.5
+	offset_left = -320.0
+	offset_top = 152.0
+	offset_right = -20.0
+	offset_bottom = 222.0
+	grow_horizontal = 0
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "Leave"
+
+```
+
+### File: `scenes/ChoiceWindow.tscn`
+```ini
+[gd_scene load_steps=2 format=3 uid="uid://get0edktak2b"]
+
+[ext_resource type="Script" path="res://scripts/ChoiceWindow.gd" id="1_stuvw"]
+
+[node name="ChoiceWindow" type="PanelContainer"]
+custom_minimum_size = Vector2(300, 220)
+offset_right = 300.0
+offset_bottom = 220.0
+mouse_filter = 1
+script = ExtResource("1_stuvw")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+alignment = 1
+
+[node name="Label" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+text = "Choose Action"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ResultImage" type="TextureRect" parent="VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 120)
+layout_mode = 2
+size_flags_vertical = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+alignment = 1
+
+[node name="MergeButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Merge"
+
+[node name="SwapButton" type="Button" parent="VBoxContainer/HBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Swap"
+```
+
+### File: `scenes/DeckSelectButton.tscn`
+```ini
+[gd_scene load_steps=4 format=3 uid="uid://deck_select_button"]
+
+[ext_resource type="Script" path="res://scripts/DeckSelectButton.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_panel"]
+bg_color = Color(0.15, 0.17, 0.22, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.42, 0.47, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_selection"]
+draw_center = false
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.85, 0.3, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="DeckSelectButton" type="PanelContainer"]
+custom_minimum_size = Vector2(140, 80)
+theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
+script = ExtResource("1_script")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DeckName" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+
+text = "Deck Name"
+horizontal_alignment = 1
+
+[node name="CardCount" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+
+text = "0 cards"
+horizontal_alignment = 1
+
+[node name="SelectionBorder" type="Panel" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_selection")
+```
+
+### File: `scenes/DiscardPileWindow.tscn`
+```ini
+[gd_scene load_steps=9 format=3 uid="uid://c28k46w6p3h0"]
+
+[ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
+[ext_resource type="PackedScene" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
+size = Vector2(2000, 4000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_right"]
+size = Vector2(2000, 4000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
+size = Vector2(4000, 2000)
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid2"]
+size = Vector2(1252, 50)
+
+[node name="DiscardPileWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 1920.0
+offset_top = 140.0
+offset_right = 3200.0
+offset_bottom = 820.0
+mouse_filter = 1
+script = ExtResource("1_v38m6")
+
+[node name="ContainerBG" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("3_container_tex")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="DiscardPhysicsContainer" parent="." instance=ExtResource("2_physics_tier")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+custom_minimum_size = Vector2(1280, 680)
+tier = 4
+left_wall_padding = 16.0
+right_wall_padding = 16.0
+bottom_wall_padding = 15.0
+side_wall_thickness = 2000.0
+floor_thickness = 2000.0
+spawn_y = 100.0
+use_static_bounds = true
+
+[node name="SpawnPoint" parent="DiscardPhysicsContainer" index="0"]
+position = Vector2(640, 100)
+
+[node name="LeftWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="0"]
+position = Vector2(-986, 0)
+shape = SubResource("RectangleShape2D_left")
+
+[node name="RightWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="1"]
+position = Vector2(2266, 0)
+shape = SubResource("RectangleShape2D_right")
+
+[node name="FloorWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="2"]
+position = Vector2(640, 1665)
+shape = SubResource("RectangleShape2D_floor")
+
+[node name="LidArea" parent="DiscardPhysicsContainer" index="3"]
+position = Vector2(640, 0)
+
+[node name="CollisionShape2D" parent="DiscardPhysicsContainer/LidArea" index="0"]
+shape = SubResource("RectangleShape2D_lid2")
+```
+
+### File: `scenes/EffectInspectionWindow.tscn`
+```ini
+[gd_scene load_steps=4 format=3 uid="uid://c1w8nqy5cqrct"]
+
+[ext_resource type="Script" path="res://scripts/EffectInspectionWindow.gd" id="1_v452y"]
+
+[node name="EffectInspectionWindow" type="PanelContainer"]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+mouse_filter = 2
+
+script = ExtResource("1_v452y")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0, 0, 0, 0)
+mouse_filter = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+
+text = "Effect Name"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_vertical = 1
+theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+
+bbcode_enabled = true
+text = "This is the detailed description of the effect."
+fit_content = true
+autowrap_mode = 3
+```
+
+### File: `scenes/EndBattlePopup.tscn`
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://b4c5d6e7f8hah"]
+
+[ext_resource type="Script" path="res://scripts/EndBattlePopup.gd" id="1_abcde"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_fghij"]
+
+[node name="EndBattlePopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_abcde")
+
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_fghij")]
+layout_mode = 0
+anchors_preset = 0
+color = Color(0, 0, 0, 0.75)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(400, 200)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+text = "VICTORY"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ReturnButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Return to Path"
+```
+
+### File: `scenes/FlashcardMinigame.tscn`
+```ini
+[gd_scene load_steps=7 format=3 uid="uid://dajq7v7k8jvhg"]
+
+[ext_resource type="Script" path="res://scripts/FlashcardMinigame.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+
+[node name="FlashcardMinigame" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="MainPanel" type="PanelContainer" parent="CenterContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(1000, 0)
+layout_mode = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="CenterContainer/MainPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/MainPanel/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "New Flashcard and Review Time!"
+horizontal_alignment = 1
+
+[node name="TimerBar" type="ProgressBar" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 40)
+layout_mode = 2
+show_percentage = false
+
+[node name="TimerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/TimerBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "3.0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ScoreLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "Score: 0"
+horizontal_alignment = 1
+
+[node name="QuestionLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "What is the question?"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ChoicesGrid" type="GridContainer" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
+columns = 3
+
+[node name="SkipButton" type="Button" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+text = "SKIP"
+
+[node name="CardIntroContainer" type="VBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="IntroMainHBox" type="HBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="LeftSpacer" type="Control" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer/IntroMainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IntroQuestionLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer/IntroMainHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "New Card Introduction"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IntroArrow" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer/IntroMainHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 64
+text = "→"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="IntroAnswerLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer/IntroMainHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "[Answer]"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="RightSpacer" type="Control" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer/IntroMainHBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="IntroExplanationLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+text = "[Explanation]"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="PriorityCardsLabel" type="Label" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 1
+
+text = "Priority Cards (click to preview):"
+horizontal_alignment = 1
+
+[node name="PriorityCardsContainer" type="HBoxContainer" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 8
+
+[node name="GotItButton" type="Button" parent="CenterContainer/MainPanel/MarginContainer/VBoxContainer/CardIntroContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(250, 70)
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+
+text = "Ready!"
+```
+
+### File: `scenes/GachaBallView.tscn`
+```ini
+[gd_scene format=3 uid="uid://l5mhu3dnclc4"]
+
+[ext_resource type="Script" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
+[ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
+[ext_resource type="Script" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
+shader = ExtResource("2_outline")
+shader_parameter/outline_color = Color(1.0, 1.0, 1.0, 1.0)
+shader_parameter/outline_width = 3.0
+shader_parameter/outline_enabled = false
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_burn_bg"]
+bg_color = Color(1.0, 0.3, 0.0, 0.9)
+content_margin_left = 10.0
+content_margin_top = 6.0
+content_margin_right = 10.0
+content_margin_bottom = 6.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_unit"]
+
+[node name="GachaBallView" type="PanelContainer"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 0
+theme_override_styles/panel = SubResource("StyleBoxEmpty_unit")
+script = ExtResource("1_cm7jq")
+
+[node name="AnimationController" type="Node" parent="."]
+script = ExtResource("8_anim_ctrl")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="Icon" type="TextureRect" parent="VBoxContainer"]
+unique_name_in_owner = true
+texture_filter = 3
+layout_mode = 2
+size_flags_vertical = 3
+material = SubResource("ShaderMaterial_outline")
+
+[node name="TraitCountLabel" type="Label" parent="VBoxContainer/Icon"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -30.0
+offset_top = -26.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 2
+vertical_alignment = 2
+
+[node name="StatsAnchor" type="Control" parent="VBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 0
+
+[node name="StatsUnderlay" type="VBoxContainer" parent="VBoxContainer/StatsAnchor"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 4.0
+offset_bottom = 4.0
+grow_horizontal = 2
+theme_override_constants/separation = 2
+
+[node name="Row1" type="HBoxContainer" parent="VBoxContainer/StatsAnchor/StatsUnderlay"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="Row2" type="HBoxContainer" parent="VBoxContainer/StatsAnchor/StatsUnderlay"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="UnitOverlay" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+
+[node name="EquippedItemIcon" type="TextureRect" parent="UnitOverlay"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(34, 34)
+layout_mode = 1
+anchors_preset = 0
+offset_left = 6.0
+offset_top = 6.0
+offset_right = 40.0
+offset_bottom = 40.0
+expand_mode = 1
+stretch_mode = 5
+texture_filter = 1
+
+[node name="LevelLabel" type="Label" parent="UnitOverlay"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -54.0
+offset_top = 6.0
+offset_right = -6.0
+offset_bottom = 24.0
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "LV. 1"
+horizontal_alignment = 2
+
+[node name="StatsOverlay" type="Control" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+
+[node name="StatsContainer" type="HBoxContainer" parent="StatsOverlay"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 48.0
+grow_horizontal = 2
+alignment = 1
+
+[node name="HPContainer" type="HBoxContainer" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="HPIcon" type="TextureRect" parent="StatsOverlay/StatsContainer/HPContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("4_icon_heart")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="HPLabel" type="Label" parent="StatsOverlay/StatsContainer/HPContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PWRContainer" type="HBoxContainer" parent="StatsOverlay/StatsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="PWRIcon" type="TextureRect" parent="StatsOverlay/StatsContainer/PWRContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("5_icon_power")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="PWRLabel" type="Label" parent="StatsOverlay/StatsContainer/PWRContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BottomStatsContainer" type="HBoxContainer" parent="StatsOverlay"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -48.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+
+[node name="BurnContainer" type="HBoxContainer" parent="StatsOverlay/BottomStatsContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="BurnIcon" type="TextureRect" parent="StatsOverlay/BottomStatsContainer/BurnContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("6_icon_burn")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BurnLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/BurnContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ArmorContainer" type="HBoxContainer" parent="StatsOverlay/BottomStatsContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="ArmorIcon" type="TextureRect" parent="StatsOverlay/BottomStatsContainer/ArmorContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+texture = ExtResource("7_icon_armor")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ArmorLabel" type="Label" parent="StatsOverlay/BottomStatsContainer/ArmorContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+
+text = "0"
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/HeroSelectButton.tscn`
+```ini
+[gd_scene load_steps=2 format=3 uid="uid://hero_select_button"]
+
+[ext_resource type="Script" path="res://scripts/HeroSelectButton.gd" id="1_script"]
+
+[node name="HeroSelectButton" type="Control"]
+custom_minimum_size = Vector2(128, 128)
+layout_mode = 3
+anchors_preset = 0
+script = ExtResource("1_script")
+
+[node name="HeroSprite" type="TextureRect" parent="."]
+unique_name_in_owner = true
+texture_filter = 3
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="LockOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.6)
+
+[node name="LockLabel" type="Label" parent="LockOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+
+text = "🔒"
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/InventoryWindow.tscn`
+```ini
+[gd_scene format=3 uid="uid://b0fs8lab4tsoa"]
+
+[ext_resource type="Script" path="res://scripts/InventoryWindow.gd" id="1_yvw8v"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallContainer.png" id="2_tier1_container"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallContainer.png" id="4_tier2_container"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallContainer.png" id="5_tier3_container"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/GachaBallContainerDisplay.png" id="6_container_display"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="7_tier1_base"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
+[ext_resource type="PackedScene" path="res://scenes/PhysicsTierContainer.tscn" id="10_physics_tier"]
+[ext_resource type="Script" path="res://scripts/StaggeredGridContainer.gd" id="11_staggered_grid"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clean"]
+
+[node name="InventoryWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_yvw8v")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 162.0
+offset_bottom = -238.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_vertical = 3
+theme_override_constants/separation = -2
+alignment = 1
+
+[node name="Tier1Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+custom_minimum_size = Vector2(640, 680)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
+
+[node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_tier1_container")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+
+[node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
+custom_minimum_size = Vector2(576, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="Tier1Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column/ScrollContainer"]
+unique_name_in_owner = true
+name = "Tier1InventoryGrid"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
+
+[node name="Tier1Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+show_overflow_visual = false
+
+[node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ContainerDisplay" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_container_display")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="Tier2Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+custom_minimum_size = Vector2(640, 680)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
+
+[node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_tier2_container")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+
+[node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
+custom_minimum_size = Vector2(576, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="Tier2Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column/ScrollContainer"]
+unique_name_in_owner = true
+name = "Tier2InventoryGrid"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
+
+[node name="Tier2Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+tier = 2
+show_overflow_visual = false
+
+[node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ContainerDisplay" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_container_display")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="Tier3Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
+custom_minimum_size = Vector2(640, 680)
+layout_mode = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
+
+[node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_tier3_container")
+expand_mode = 0
+stretch_mode = 3
+
+[node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
+custom_minimum_size = Vector2(640, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+
+[node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
+custom_minimum_size = Vector2(0, 30)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
+custom_minimum_size = Vector2(576, 0)
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+size_flags_vertical = 3
+
+[node name="Tier3Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column/ScrollContainer"]
+unique_name_in_owner = true
+name = "Tier3InventoryGrid"
+size_flags_horizontal = 3
+size_flags_vertical = 3
+script = ExtResource("11_staggered_grid")
+columns = 6
+h_separation = 0.0
+v_separation = -12.86
+
+[node name="Tier3Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column" instance=ExtResource("10_physics_tier")]
+layout_mode = 2
+anchors_preset = 15
+size_flags_vertical = 3
+tier = 3
+show_overflow_visual = false
+
+[node name="BottomInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="ContainerDisplay" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("6_container_display")
+expand_mode = 0
+stretch_mode = 3
+```
+
+### File: `scenes/ItemInspectionWindow.tscn`
+```ini
+[gd_scene load_steps=4 format=3 uid="uid://bkhw1v2x3y405"]
+
+[ext_resource type="Script" path="res://scripts/ItemInspectionWindow.gd" id="1_fghij"]
+
+[node name="ItemInspectionWindow" type="PanelContainer"]
+mouse_filter = 1
+script = ExtResource("1_fghij")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 0.4, 0.8, 1)
+theme_override_font_sizes/font_size = 32
+text = "Item Name"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+bbcode_enabled = true
+fit_content = true
+autowrap_mode = 3
+meta_underlined = false
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="RecipeContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+visible = false
+```
+
+### File: `scenes/Loadout.tscn`
+```ini
+[gd_scene format=3 uid="uid://dsgh5wwasg7xe"]
+
+[ext_resource type="Script" path="res://scripts/Loadout.gd" id="1_bcdef"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/loadout.png" id="4_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hero_panel"]
+bg_color = Color(0.1, 0.12, 0.18, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.45, 0.3, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_deck_panel"]
+bg_color = Color(0.08, 0.12, 0.15, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3, 0.45, 0.55, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+content_margin_left = 20.0
+content_margin_top = 20.0
+content_margin_right = 20.0
+content_margin_bottom = 20.0
+
+[node name="Loadout" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_bcdef")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="MainContent" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_top = 40.0
+offset_right = -60.0
+offset_bottom = -120.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 60
+
+[node name="DeckColumn" type="VBoxContainer" parent="MainContent"]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="DeckSelection" type="VBoxContainer" parent="MainContent/DeckColumn"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="DeckTitle" type="Label" parent="MainContent/DeckColumn/DeckSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0.6, 0.85, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Choose Your Deck"
+horizontal_alignment = 1
+
+[node name="DeckCarousel" type="HBoxContainer" parent="MainContent/DeckColumn/DeckSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="DeckInfoPanel" type="PanelContainer" parent="MainContent/DeckColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_deck_panel")
+
+[node name="DeckInfoContent" type="VBoxContainer" parent="MainContent/DeckColumn/DeckInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="DeckName" type="Label" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "Select a Deck"
+horizontal_alignment = 1
+
+[node name="DeckStats" type="Label" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+layout_mode = 2
+
+[node name="DeckDescription" type="RichTextLabel" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
+bbcode_enabled = true
+text = "Choose a deck to see its details."
+fit_content = true
+scroll_active = false
+
+[node name="HeroColumn" type="VBoxContainer" parent="MainContent"]
+clip_contents = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 20
+
+[node name="HeroSelection" type="VBoxContainer" parent="MainContent/HeroColumn"]
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 12
+
+[node name="HeroTitle" type="Label" parent="MainContent/HeroColumn/HeroSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(1, 0.9, 0.6, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Choose Your Hero"
+horizontal_alignment = 1
+
+[node name="HeroCarousel" type="HBoxContainer" parent="MainContent/HeroColumn/HeroSelection"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 2
+alignment = 1
+theme_override_constants/separation = 12
+
+[node name="HeroInfoPanel" type="PanelContainer" parent="MainContent/HeroColumn"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_hero_panel")
+
+[node name="HeroInfoContent" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="HeaderBox" type="HBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(80, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+texture_filter = 3
+expand_mode = 1
+stretch_mode = 5
+
+[node name="NameStatsBox" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+
+[node name="HeroName" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 3
+text = "Select a Hero"
+
+[node name="HeroStats" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 2
+
+[node name="HSeparator" type="HSeparator" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="HeroDescription" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
+bbcode_enabled = true
+text = "Choose a hero to see their details."
+fit_content = true
+scroll_active = false
+
+[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/default_color = Color(0.7, 0.85, 1, 1)
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+
+[node name="BottomBar" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -80.0
+grow_horizontal = 2
+grow_vertical = 0
+alignment = 1
+theme_override_constants/separation = 30
+
+[node name="StartRunButton" type="Button" parent="BottomBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 60)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+
+text = "Play"
+
+[node name="TestModeButton" type="Button" parent="BottomBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 50)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.4, 0.42, 0.47, 1)
+theme_override_constants/outline_size = 0
+
+text = "Test Mode"
+```
+
+### File: `scenes/Main.tscn`
+```ini
+[gd_scene format=3 uid="uid://crndwktdbp0rc"]
+
+[ext_resource type="Script" path="res://scripts/Main.gd" id="2_cdefg"]
+[ext_resource type="Script" path="res://scripts/SelectionClearArea.gd" id="3_selclear"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
+[ext_resource type="PackedScene" path="res://scenes/BattleLogOverlay.tscn" id="6_battle_log_overlay"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="7_theme"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/gold_coin.png" id="8_gold_coin"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="9_token_coin"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="10_machine1"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="11_machine2"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="12_machine3"]
+[ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Knob.png" id="100_knob"]
+
+
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
+bg_color = Color(0.15, 0.17, 0.22, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bottom"]
+bg_color = Color(0.15, 0.17, 0.22, 0)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("7_theme")
+script = ExtResource("2_cdefg")
+
+[node name="ScreenShake" type="Node" parent="."]
+script = ExtResource("13_screenshake")
+
+[node name="BattleLogOverlay" parent="." instance=ExtResource("6_battle_log_overlay")]
+
+[node name="SelectionClearArea" type="Control" parent="."]
+anchors_preset = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("3_selclear")
+
+[node name="ContentArea" type="SubViewportContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="ContentArea"]
+transparent_bg = false
+handle_input_locally = false
+size = Vector2i(1920, 1080)
+render_target_update_mode = 4
+
+[node name="SceneBackground" type="TextureRect" parent="ContentArea/SubViewport"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+expand_mode = 1
+stretch_mode = 6
+
+[node name="EffectsLayer" type="CanvasLayer" parent="ContentArea/SubViewport" groups=["effects_layer"]]
+layer = 90
+
+[node name="VBoxContainer" type="VBoxContainer" parent="ContentArea/SubViewport"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 0
+
+[node name="TopAreaSpacer" type="Control" parent="ContentArea/SubViewport/VBoxContainer"]
+custom_minimum_size = Vector2(0, 232)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="SceneSlot" type="MarginContainer" parent="ContentArea/SubViewport/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomAreaSpacer" type="Control" parent="ContentArea/SubViewport/VBoxContainer"]
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="HUDLayer" type="CanvasLayer" parent="."]
+layer = 60
+
+[node name="HUDContainer" type="Control" parent="HUDLayer"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TopArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 232)
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_top")
+
+[node name="TopRows" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 8.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="StatsRow" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows"]
+layout_mode = 2
+mouse_filter = 2
+
+[node name="LeftStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 40
+alignment = 0
+mouse_filter = 2
+
+[node name="LeftMargin" type="Control" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
+custom_minimum_size = Vector2(20, 0)
+layout_mode = 2
+mouse_filter = 2
+
+[node name="GoldGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="GoldIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("8_gold_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="GoldLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/GoldGroup"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HUDLabel"
+theme_override_colors/font_color = Color(1, 0.843, 0, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+
+text = "0"
+vertical_alignment = 1
+
+[node name="TokenGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="TokenIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("9_token_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TokensLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HUDLabel"
+
+text = "0"
+vertical_alignment = 1
+
+[node name="CenterStats" type="CenterContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="CenterContent" type="VBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats"]
+layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 1
+
+[node name="DaysLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HUDLabel"
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+
+text = "Day 1"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FlashcardProgressBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(480, 10)
+layout_mode = 2
+theme_override_constants/separation = 2
+alignment = 1
+
+[node name="RightStats" type="Control" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+
+[node name="PlayerTrinketBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 0
+alignment = 0
+mouse_filter = 2
+
+[node name="TrinketSlot0" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot1" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot2" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot3" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot4" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot5" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot6" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot7" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot8" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot9" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot10" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot11" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot12" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot13" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot14" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot15" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot16" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot17" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot18" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="TrinketSlot19" parent="HUDLayer/HUDContainer/TopArea/TopRows/PlayerTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(96, 96)
+
+[node name="BottomArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 260)
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bottom")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="HUDLayer/HUDContainer/BottomArea"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = -2
+alignment = 1
+
+[node name="GachaMachine1" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 260)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("10_machine1")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
+layout_mode = 0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
+mouse_filter = 0
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine1"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.575
+anchor_top = 1.0
+anchor_right = 0.575
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -60.0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+
+text = "x0"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GachaMachine2" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 260)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("11_machine2")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
+layout_mode = 0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
+mouse_filter = 0
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine2"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.575
+anchor_top = 1.0
+anchor_right = 0.575
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -60.0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+
+text = "x0"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="GachaMachine3" type="Control" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(640, 260)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="MachineImage" type="TextureRect" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("12_machine3")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="KnobButton" type="TextureButton" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
+layout_mode = 0
+offset_left = 442.0
+offset_top = 90.0
+offset_right = 592.0
+offset_bottom = 240.0
+pivot_offset = Vector2(75, 75)
+mouse_filter = 0
+texture_normal = ExtResource("100_knob")
+ignore_texture_size = true
+stretch_mode = 5
+
+[node name="CountLabel" type="Label" parent="HUDLayer/HUDContainer/BottomArea/HBoxContainer/GachaMachine3"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.575
+anchor_top = 1.0
+anchor_right = 0.575
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -60.0
+offset_right = 100.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+
+text = "x0"
+horizontal_alignment = 1
+vertical_alignment = 2
+
+[node name="BackgroundUILayer" type="CanvasLayer" parent="." groups=["background_ui_layer"]]
+layer = 87
+
+[node name="ModalLayer" type="CanvasLayer" parent="." groups=["modal_layer"]]
+unique_name_in_owner = true
+layer = 120
+
+```
+
+### File: `scenes/MergeEncounter.tscn`
+```ini
+[gd_scene format=3 uid="uid://bv5m3j7y8k2pw"]
+
+[ext_resource type="Script" path="res://scripts/MergeEncounter.gd" id="1_merge"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+
+[node name="MergeEncounter" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_merge")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StandardUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="TitleLabel" type="Label" parent="StandardUI"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 65.0
+grow_horizontal = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+text = "MERGE ENCOUNTER"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="StandardUI"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 250.0
+offset_right = 600.0
+offset_bottom = 350.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Merge or level up your Gachamons or Spirits permanently! (5 Gold per action)"
+horizontal_alignment = 1
+
+[node name="OpenInventoryButton" type="Button" parent="StandardUI"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(560, 90)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -280.0
+offset_top = 132.0
+offset_right = 280.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "CLICK HERE TO MERGE!"
+
+[node name="LeaveButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 152.0
+offset_right = -20.0
+offset_bottom = 222.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Leave"
+```
+
+### File: `scenes/NodeView.tscn`
+```ini
+[gd_scene load_steps=3 format=3]
+
+[ext_resource path="res://scripts/NodeView.gd" type="Script" id=1]
+
+[node name="NodeView" type="TextureButton"]
+custom_minimum_size = Vector2(256, 384)
+offset_right = 256.0
+offset_bottom = 384.0
+script = ExtResource("1")
+
+[node name="BackgroundColor" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.2, 0.2, 0.2, 1)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 40.0
+offset_bottom = 80.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/OptionsWindow.tscn`
+```ini
+[gd_scene format=3 uid="uid://d1r64ueux6drg"]
+
+[ext_resource type="Script" path="res://scripts/OptionsWindow.gd" id="1_script"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="2_theme"]
+
+[node name="OptionsWindow" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="PanelContainer" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -400.0
+offset_top = -400.0
+offset_right = 400.0
+offset_bottom = 400.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("2_theme")
+
+[node name="MarginContainer" type="MarginContainer" parent="PanelContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PanelContainer/MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="TitleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+
+text = "Options"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="LanguageContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="LanguageLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/LanguageContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+text = "Language:"
+vertical_alignment = 1
+
+[node name="LanguageDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/LanguageContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("2_theme")
+
+[node name="SpacerArtStyle" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ArtStyleContainer" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="ArtStyleLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/ArtStyleContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+text = "Art Style:"
+vertical_alignment = 1
+
+[node name="ArtStyleDropdown" type="OptionButton" parent="PanelContainer/MarginContainer/VBoxContainer/ArtStyleContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 60)
+layout_mode = 2
+theme = ExtResource("2_theme")
+
+[node name="SpacerGraphics" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="FullscreenCheckbox" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="SpacerAudio" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="AudioLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+text = "Audio Settings"
+horizontal_alignment = 1
+
+[node name="MasterControl" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="MasterLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MasterControl"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+text = "Master:"
+vertical_alignment = 1
+
+[node name="MasterSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/MasterControl"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="MusicControl" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="MusicLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/MusicControl"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+text = "Music:"
+vertical_alignment = 1
+
+[node name="MusicSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/MusicControl"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="SFXControl" type="HBoxContainer" parent="PanelContainer/MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+
+[node name="SFXLabel" type="Label" parent="PanelContainer/MarginContainer/VBoxContainer/SFXControl"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+text = "SFX:"
+vertical_alignment = 1
+
+[node name="SFXSlider" type="HSlider" parent="PanelContainer/MarginContainer/VBoxContainer/SFXControl"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 0)
+layout_mode = 2
+size_flags_vertical = 4
+max_value = 1.0
+step = 0.05
+value = 1.0
+
+[node name="SpacerPronunciation" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="PronunciationCheckbox" type="CheckBox" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+
+[node name="Spacer2" type="Control" parent="PanelContainer/MarginContainer/VBoxContainer"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="CloseButton" type="Button" parent="PanelContainer/MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("2_theme")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+
+text = "Confirm"
+```
+
+### File: `scenes/PathChoice.tscn`
+```ini
+[gd_scene format=3 uid="uid://jsungguqbxwp"]
+
+[ext_resource type="Script" path="res://scripts/PathChoice.gd" id="1_defgh"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/pathScene.png" id="2_bg"]
+
+[node name="PathChoice" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_defgh")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("2_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 50
+anchor_right = 1.0
+anchor_bottom = 1.0
+```
+
+### File: `scenes/PhysicsGachaBall.tscn`
+```ini
+[gd_scene format=3 uid="uid://cx6y83y3j70w6"]
+
+[ext_resource type="Script" path="res://scripts/PhysicsGachaBall.gd" id="1_physics"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/gachaballcapsule.png" id="2_texture"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/ui/click1.ogg" id="3_audio"]
+[ext_resource type="PhysicsMaterial" path="res://resources/physics/GachaBallMaterial.tres" id="4_material"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_7xh3p"]
+radius = 48.0
+
+[node name="PhysicsGachaBall" type="RigidBody2D"]
+input_pickable = true
+mass = 20.0
+physics_material_override = ExtResource("4_material")
+gravity_scale = 4.0
+continuous_cd = 1
+max_contacts_reported = 3
+contact_monitor = true
+linear_damp = 0.05
+angular_damp = 0.5
+can_sleep = true
+script = ExtResource("1_physics")
+
+[node name="CapsuleSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_texture")
+
+[node name="IconSprite" type="Sprite2D" parent="."]
+
+	[node name="CollisionPolygon2D" type="CollisionPolygon2D" parent="."]
+	polygon = PackedVector2Array(48.0, 0.0, 41.57, 24.0, 24.0, 41.57, 0.0, 48.0, -24.0, 41.57, -41.57, 24.0, -48.0, 0.0, -41.57, -24.0, -24.0, -41.57, 0.0, -48.0, 24.0, -41.57, 41.57, -24.0)
+
+[node name="UIAnchor" type="Control" parent="."]
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 3
+anchors_preset = 0
+offset_left = -48.0
+offset_top = -48.0
+offset_right = 48.0
+offset_bottom = 48.0
+mouse_filter = 1
+
+[node name="AudioStreamPlayer" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("3_audio")
+max_polyphony = 3
+```
+
+### File: `scenes/PhysicsTierContainer.tscn`
+```ini
+[gd_scene format=3 uid="uid://cy8x8i0j8wab5"]
+
+[ext_resource type="Script" path="res://scripts/PhysicsTierContainer.gd" id="1_script"]
+
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid"]
+
+[node name="PhysicsTierContainer" type="Control"]
+mouse_filter = 2
+clip_contents = false
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="SpawnPoint" type="Marker2D" parent="."]
+
+[node name="Bounds" type="StaticBody2D" parent="."]
+
+[node name="DropTimer" type="Timer" parent="."]
+wait_time = 0.15
+
+[node name="LidArea" type="Area2D" parent="."]
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="LidArea"]
+shape = SubResource("RectangleShape2D_lid")
+```
+
+### File: `scenes/RestSite.tscn`
+```ini
+[gd_scene format=3 uid="uid://b8q7p6s5d4f3e"]
+
+[ext_resource type="Script" path="res://scripts/RestSite.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="4_slotview"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/rest.png" id="8_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.14, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
+[node name="RestSite" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("8_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 540.0
+grow_horizontal = 2
+theme_override_constants/separation = 5
+alignment = 0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Rest Site"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Description text"
+horizontal_alignment = 1
+
+[node name="MachinesArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Tier1Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "HP"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "1 Token"
+
+[node name="Tier2Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "PWR"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "2 Tokens"
+
+[node name="Tier3Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -28.0
+offset_right = 60.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.7, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "HP+PWR"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "3 Tokens"
+
+[node name="StudyButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(350, 80)
+theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Get Tokens!"
+
+[node name="SlotsRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+mouse_filter = 2
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = 30.0
+offset_right = 960.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="PrizeLineup" type="HBoxContainer" parent="SlotsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="HeroSlot" parent="SlotsRow/PrizeLineup" instance=ExtResource("4_slotview")]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot0" parent="SlotsRow/PrizeLineup" instance=ExtResource("4_slotview")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot1" parent="SlotsRow/PrizeLineup" instance=ExtResource("4_slotview")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot2" parent="SlotsRow/PrizeLineup" instance=ExtResource("4_slotview")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot3" parent="SlotsRow/PrizeLineup" instance=ExtResource("4_slotview")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="LeaveButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 152.0
+offset_right = -20.0
+offset_bottom = 222.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Leave"
+
+[node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
+layer = 90
+```
+
+### File: `scenes/ResultsPopup.tscn`
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://b8q7p5d4f3e2"]
+
+[ext_resource type="Script" path="res://scripts/ResultsPopup.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+
+[node name="ResultsPopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+layout_mode = 2
+custom_minimum_size = Vector2(600, 400)
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+text = "Results"
+horizontal_alignment = 1
+
+[node name="MessageLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+text = "Message"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ConfirmButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(200, 60)
+
+text = "Confirm"
+ 
+```
+
+### File: `scenes/Reward.tscn`
+```ini
+[gd_scene format=3 uid="uid://dvjmlqxnk7wqd"]
+
+[ext_resource type="Script" path="res://scripts/Reward.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.14, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
+[node name="Reward" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_reward_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 540.0
+grow_horizontal = 2
+theme_override_constants/separation = 5
+alignment = 0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+text = "REWARDS"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Description text"
+horizontal_alignment = 1
+
+[node name="MachinesArea" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+mouse_filter = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="Tier1Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 1"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier1Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 1 prizes\n(1 Token)"
+
+[node name="Tier2Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -28.0
+offset_right = 50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 2"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier2Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 2 prizes\n(2 Tokens)"
+
+[node name="Tier3Machine" type="Control" parent="VBoxContainer/MachinesArea"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 140)
+layout_mode = 2
+mouse_filter = 0
+
+[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -60.0
+offset_top = -28.0
+offset_right = 60.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_colors/font_color = Color(1, 0.7, 0.9, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Tier 3"
+horizontal_alignment = 1
+
+[node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier3Machine"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 100.0
+offset_top = 22.0
+offset_right = 210.0
+offset_bottom = 94.0
+mouse_filter = 0
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
+theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_knob_pressed")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_knob_disabled")
+theme_override_styles/focus = SubResource("StyleBoxFlat_knob_normal")
+text = "Tier 3 prizes\n(3 Tokens)"
+
+[node name="StudyButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+custom_minimum_size = Vector2(350, 80)
+theme_override_colors/font_color = Color(0.3, 0.9, 0.5, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "Get Tokens!"
+
+[node name="SlotsRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+mouse_filter = 2
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = 90.0
+offset_right = 960.0
+offset_bottom = 282.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="PrizeLineup" type="HBoxContainer" parent="SlotsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+
+[node name="PrizeSlot0" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot1" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot2" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot3" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="PrizeSlot4" parent="SlotsRow/PrizeLineup" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+
+[node name="LeaveButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 152.0
+offset_right = -20.0
+offset_bottom = 222.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Leave"
+
+[node name="EffectsLayer" type="CanvasLayer" parent="." groups=["effects_layer"]]
+layer = 90
+```
+
+### File: `scenes/RewardElite.tscn`
+```ini
+[gd_scene format=3 uid="uid://cyg3u5nj7ots4"]
+
+[ext_resource type="Script" path="res://scripts/RewardElite.gd" id="1_reward_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.12, 0.14, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.98, 0.96, 0.92, 0.9)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 3
+expand_margin_top = 3
+expand_margin_right = 3
+expand_margin_bottom = 3
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 3
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_hover"]
+bg_color = Color(0.98, 0.96, 0.92, 0.15)
+border_width_left = 5
+border_width_top = 5
+border_width_right = 5
+border_width_bottom = 5
+border_color = Color(0.98, 0.96, 0.92, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 4
+expand_margin_top = 4
+expand_margin_right = 4
+expand_margin_bottom = 4
+shadow_color = Color(0.15, 0.17, 0.22, 1)
+shadow_size = 4
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_pressed"]
+bg_color = Color(0.98, 0.96, 0.92, 0.25)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.88, 0.86, 0.82, 1)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0.15, 0.17, 0.22, 0.8)
+shadow_size = 2
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_disabled"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.5, 0.5, 0.5, 0.5)
+corner_radius_top_left = 12
+corner_radius_top_right = 12
+corner_radius_bottom_right = 12
+corner_radius_bottom_left = 12
+expand_margin_left = 2
+expand_margin_top = 2
+expand_margin_right = 2
+expand_margin_bottom = 2
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 2
+
+[node name="Reward" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_reward_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+layout_mode = 2
+text = "Choose Your Elite Reward"
+horizontal_alignment = 1
+
+[node name="RewardChoicesContainer" type="HBoxContainer" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="RewardSlot0" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="RewardSlot1" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="RewardSlot2" parent="VBoxContainer/RewardChoicesContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="ActionButtonsContainer" type="HBoxContainer" parent="VBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="TakeGoldButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Take Gold Instead"
+
+[node name="BackToPathButton" type="Button" parent="VBoxContainer/ActionButtonsContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Back to the Path"
+
+```
+
+### File: `scenes/RunCompletePopup.tscn`
+```ini
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/RunCompletePopup.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+
+[node name="RunCompletePopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
+layout_mode = 0
+anchors_preset = 0
+color = Color(0, 0, 0, 0.85)
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(500, 350)
+layout_mode = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+
+text = "RUN COMPLETE!"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StatsLabel" type="RichTextLabel" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
+layout_mode = 2
+bbcode_enabled = true
+text = "[center][b]Congratulations![/b][/center]"
+fit_content = true
+
+[node name="ReturnButton" type="Button" parent="CenterContainer/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Return to Title"
+```
+
+### File: `scenes/Shop.tscn`
+```ini
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/Shop.gd" id="1_shop_script"]
+[ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/shop.png" id="5_bg"]
+
+[node name="Shop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_shop_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("5_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="VBoxContainer" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -600.0
+offset_top = 5.0
+offset_right = 600.0
+offset_bottom = 540.0
+grow_horizontal = 2
+theme_override_constants/separation = 5
+alignment = 0
+
+[node name="TitleLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HeaderLabel"
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+text = "Shop"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="Label" parent="VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 24
+text = "Description text"
+horizontal_alignment = 1
+
+[node name="RerollButton" type="Button" parent="VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Reroll (1 Gold)"
+
+[node name="SlotsRow" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -960.0
+offset_top = 30.0
+offset_right = 960.0
+offset_bottom = 222.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="ShopSlotsContainer" type="HBoxContainer" parent="SlotsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="ShopSlot0" parent="SlotsRow/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="ShopSlot1" parent="SlotsRow/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="ShopSlot2" parent="SlotsRow/ShopSlotsContainer" instance=ExtResource("2_slot_view")]
+custom_minimum_size = Vector2(192, 192)
+layout_mode = 2
+
+[node name="LeaveButton" type="Button" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 70)
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -320.0
+offset_top = 152.0
+offset_right = -20.0
+offset_bottom = 222.0
+grow_horizontal = 0
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 3
+text = "Leave"
+```
+
+### File: `scenes/SlotView.tscn`
+```ini
+[gd_scene load_steps=2 format=3 uid="uid://c5w2h4x3y100"]
+
+[ext_resource type="Script" path="res://scripts/SlotView.gd" id="1_slotview_script"]
+
+[node name="SlotView" type="PanelContainer"]
+custom_minimum_size = Vector2(100, 120)
+mouse_filter = 1
+script = ExtResource("1_slotview_script")
+```
+
+### File: `scenes/Title.tscn`
+```ini
+[gd_scene format=3 uid="uid://cvorou27dlts"]
+
+[ext_resource type="Script" path="res://scripts/Title.gd" id="1_abcde"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="3_iyajp"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/tittle.png" id="4_bg"]
+
+[node name="Title" type="Control" unique_id=652401031]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_abcde")
+
+[node name="Background" type="TextureRect" parent="." unique_id=937947504]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="CenterContainer" type="CenterContainer" parent="." unique_id=271254616]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = 150.0
+offset_bottom = 150.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("3_iyajp")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer" unique_id=1127379861]
+layout_mode = 2
+theme_override_constants/separation = 40
+
+[node name="ContinueButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1018423652]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(350, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Continue"
+
+[node name="StartRunButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1839421922]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Play"
+
+[node name="OptionsButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=1322786734]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Options"
+
+[node name="ReplaysButton" type="Button" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Replays"
+
+[node name="ExitButton" type="Button" parent="CenterContainer/VBoxContainer" unique_id=340341179]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(350, 80)
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+text = "Exit Game"
+
+[node name="TutorialCheckbox" type="CheckBox" parent="CenterContainer/VBoxContainer" unique_id=1142518148]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme = ExtResource("3_iyajp")
+theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_constants/outline_size = 0
+button_pressed = true
+text = "Show Tutorials & Tooltips"
+```
+
+### File: `scenes/TraitInspectionWindow.tscn`
+```ini
+[gd_scene load_steps=5 format=3 uid="uid://cyk2d4e7x8p1"]
+
+[ext_resource type="Script" path="res://scripts/TraitInspectionWindow.gd" id="1_4j8lq"]
+
+[ext_resource type="Script" path="res://scripts/TraitInspectionWindow.gd" id="1_4j8lq"]
+
+[node name="TraitInspectionWindow" type="PanelContainer"]
+mouse_filter = 1
+script = ExtResource("1_4j8lq")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Header" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="Icon" type="TextureRect" parent="MarginContainer/VBoxContainer/Header"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(48, 48)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="TitleLabel" type="Label" parent="MarginContainer/VBoxContainer/Header"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.5, 0.8, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 32
+
+text = "TRAIT NAME"
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+size_flags_vertical = 1
+
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+bbcode_enabled = true
+text = "Level 1: Effect
+Level 2: Effect"
+fit_content = true
+scroll_active = false
+```
+
+### File: `scenes/TraitTracker.tscn`
+```ini
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/TraitTracker.gd" id="1_script"]
+
+[node name="TraitTracker" type="PanelContainer"]
+offset_right = 120.0
+offset_bottom = 50.0
+script = ExtResource("1_script")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="HBoxContainer"]
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+expand_mode = 1
+stretch_mode = 5
+
+[node name="VBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+alignment = 1
+
+[node name="NameLabel" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+text = "Trait"
+
+[node name="CountLabel" type="Label" parent="HBoxContainer/VBoxContainer"]
+layout_mode = 2
+
+text = "0 / 3"
+```
+
+### File: `scenes/TutorialPopup.tscn`
+```ini
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/TutorialPopup.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://scenes/BackgroundBlocker.tscn" id="2_blocker"]
+[ext_resource type="Theme" path="res://assets/styles/game_theme.tres" id="4_theme"]
+
+[node name="TutorialPopup" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("4_theme")
+script = ExtResource("1_script")
+
+[node name="BackgroundBlocker" parent="." instance=ExtResource("2_blocker")]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.375)
+
+[node name="PopupPanel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(700, 0)
+layout_mode = 0
+offset_right = 700.0
+offset_bottom = 180.0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel"]
+layout_mode = 2
+theme_override_constants/separation = 0
+
+[node name="HeaderArea" type="MarginContainer" parent="PopupPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="HeaderHBox" type="HBoxContainer" parent="PopupPanel/VBoxContainer/HeaderArea"]
+layout_mode = 2
+
+[node name="TitleLabel" type="Label" parent="PopupPanel/VBoxContainer/HeaderArea/HeaderHBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_type_variation = &"HeaderLabel"
+
+text = "TUTORIAL"
+horizontal_alignment = 1
+
+[node name="ContentMargin" type="MarginContainer" parent="PopupPanel/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="PopupPanel/VBoxContainer/ContentMargin"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="TextLabel" type="RichTextLabel" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+bbcode_enabled = true
+text = "Tutorial text here..."
+fit_content = true
+
+[node name="PageIndicator" type="HBoxContainer" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 4
+
+[node name="ButtonContainer" type="HBoxContainer" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 4
+theme_override_constants/separation = 8
+
+[node name="NextButton" type="Button" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 80)
+layout_mode = 2
+text = "Next"
+
+[node name="GotItButton" type="Button" parent="PopupPanel/VBoxContainer/ContentMargin/VBoxContainer/ButtonContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 80)
+layout_mode = 2
+text = "Got it!"
+
+[node name="PointerLine" type="Line2D" parent="."]
+z_index = 100
+width = 2.0
+default_color = Color(1, 1, 1, 0.4)
+begin_cap_mode = 2
+end_cap_mode = 2
+```
+
+### File: `scenes/UnitInspectionWindow.tscn`
+```ini
+[gd_scene load_steps=4 format=3 uid="uid://dopg1h1v15g2x"]
+
+[ext_resource type="Script" path="res://scripts/UnitInspectionWindow.gd" id="1_qwert"]
+
+[node name="UnitInspectionWindow" type="PanelContainer"]
+mouse_filter = 1
+script = ExtResource("1_qwert")
+
+[node name="InternalBackground" type="ColorRect" parent="."]
+layout_mode = 2
+color = Color(0, 0, 0, 0)
+mouse_filter = 2
+
+[node name="MarginContainer" type="MarginContainer" parent="."]
+layout_mode = 2
+theme_override_constants/margin_left = 0
+theme_override_constants/margin_top = 0
+theme_override_constants/margin_right = 0
+theme_override_constants/margin_bottom = 0
+
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+layout_mode = 2
+theme_override_constants/separation = 2
+
+[node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0, 0.4, 0.8, 1)
+theme_override_font_sizes/font_size = 32
+text = "Unit Name"
+horizontal_alignment = 1
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+bbcode_enabled = true
+text = ""
+fit_content = true
+meta_underlined = false
+
+[node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_colors/font_outline_color = Color(1, 1, 1, 0.5)
+theme_override_constants/outline_size = 0
+
+text = "Equipped Items:"
+
+[node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 5
+
+[node name="TraitIconsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="RecipeContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+visible = false
+```
+
+### File: `scenes/UnitTrainingGround.tscn`
+```ini
+[gd_scene format=3 uid="uid://dtraining_ground1"]
+
+[ext_resource type="Script" path="res://scripts/UnitTrainingGround.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/BlackMarket.png" id="4_bg"]
+
+[node name="UnitTrainingGround" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Background" type="TextureRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+texture = ExtResource("4_bg")
+expand_mode = 1
+stretch_mode = 6
+
+[node name="StandardUI" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+	[node name="TitleLabel" type="Label" parent="StandardUI"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 5
+	anchor_left = 0.5
+	anchor_right = 0.5
+	offset_left = -600.0
+	offset_top = 5.0
+	offset_right = 600.0
+	offset_bottom = 65.0
+	grow_horizontal = 2
+	theme_type_variation = &"HeaderLabel"
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 4
+	text = "UNIT TRAINING GROUND"
+	horizontal_alignment = 1
+
+	[node name="DescriptionLabel" type="Label" parent="StandardUI"]
+	unique_name_in_owner = true
+	layout_mode = 1
+	anchors_preset = 5
+	anchor_left = 0.5
+	anchor_right = 0.5
+	offset_left = -600.0
+	offset_top = 250.0
+	offset_right = 600.0
+	offset_bottom = 350.0
+	grow_horizontal = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 4
+	theme_override_font_sizes/font_size = 24
+	text = "Description text"
+	horizontal_alignment = 1
+
+	[node name="OpenInventoryButton" type="Button" parent="StandardUI"]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(560, 90)
+	layout_mode = 1
+	anchors_preset = 8
+	anchor_left = 0.5
+	anchor_top = 0.5
+	anchor_right = 0.5
+	anchor_bottom = 0.5
+	offset_left = -280.0
+	offset_top = 132.0
+	offset_right = 280.0
+	offset_bottom = 222.0
+	grow_horizontal = 2
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "TRAINING"
+
+	[node name="LeaveButton" type="Button" parent="."]
+	unique_name_in_owner = true
+	custom_minimum_size = Vector2(300, 70)
+	layout_mode = 1
+	anchors_preset = 6
+	anchor_left = 1.0
+	anchor_top = 0.5
+	anchor_right = 1.0
+	anchor_bottom = 0.5
+	offset_left = -320.0
+	offset_top = 152.0
+	offset_right = -20.0
+	offset_bottom = 222.0
+	grow_horizontal = 0
+	grow_vertical = 2
+	theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+	theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+	theme_override_constants/outline_size = 3
+	text = "Leave"
+```
+
+### File: `scenes/vfx/BuffNumberProjectile.tscn`
+```ini
+[gd_scene format=3 uid="uid://buffnumbpr0j1"]
+
+[ext_resource type="Script" path="res://scripts/vfx/BuffNumberProjectile.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_font"]
+
+[node name="BuffNumberProjectile" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Icon" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.0
+offset_right = 20.0
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 32
+
+text = "+1"
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/vfx/CannonballProjectile.tscn`
+```ini
+[gd_scene format=3 uid="uid://bjohp3s32cy3i"]
+
+[ext_resource type="Script" path="res://scripts/vfx/CannonballProjectile.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_font"]
+
+[node name="CannonballProjectile" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Icon" type="Sprite2D" parent="."]
+scale = Vector2(0.5, 0.5)
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -20.0
+offset_top = -11.0
+offset_right = 20.0
+offset_bottom = 11.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(1, 1, 1, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 0.4)
+theme_override_constants/outline_size = 8
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 32
+
+text = "+1"
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/vfx/FloatingDamageNumber.tscn`
+```ini
+[gd_scene load_steps=2 format=3 uid="uid://8equgvrut7ui"]
+
+[ext_resource type="Script" path="res://scripts/vfx/FloatingDamageNumber.gd" id="1_script"]
+[ext_resource type="FontFile" path="res://assets/fonts/static/NotoSansJP-Black.ttf" id="2_font"]
+
+[node name="FloatingDamageNumber" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Label" type="Label" parent="."]
+unique_name_in_owner = true
+offset_left = -100.0
+offset_top = -50.0
+offset_right = 100.0
+offset_bottom = 50.0
+theme_override_colors/font_color = Color(1, 0, 0, 1)
+theme_override_constants/outline_size = 0
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 48
+
+text = "99"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+```
+
+### File: `scenes/vfx/ItemPopup.tscn`
+```ini
+[gd_scene load_steps=3 format=3 uid="uid://itempopup001"]
+
+[ext_resource type="Script" path="res://scripts/vfx/ItemPopup.gd" id="1_script"]
+
+[node name="ItemPopup" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="Icon" type="Sprite2D" parent="."]
+position = Vector2(0, -25)
+scale = Vector2(0.6, 0.6)
+
+[node name="Label" type="Label" parent="."]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -120.0
+offset_top = -14.0
+offset_right = 120.0
+offset_bottom = 14.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+
+text = "Item Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+```
+
+### File: `scenes/vfx/MinigameAuraVFX.tscn`
+```ini
+[gd_scene load_steps=5 format=3 uid="uid://c83756f34m9x"]
+
+[ext_resource type="Script" path="res://scripts/vfx/MinigameAuraVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/FireBall.png" id="2_fireball"]
+
+[sub_resource type="CanvasItemMaterial" id="CanvasItemMaterial_add"]
+blend_mode = 1
+
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_fire"]
+emission_shape = 3
+emission_box_extents = Vector3(100, 10, 1)
+direction = Vector3(0, -1, 0)
+spread = 15.0
+initial_velocity_min = 150.0
+initial_velocity_max = 350.0
+gravity = Vector3(0, -50, 0)
+scale_min = 0.5
+scale_max = 1.0
+color = Color(0.2, 1, 0.8, 1)
+
+[node name="MinigameAuraVFX" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+script = ExtResource("1_script")
+
+[node name="TopParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 100
+process_material = SubResource("ParticleProcessMaterial_fire")
+texture = ExtResource("2_fireball")
+lifetime = 1.5
+randomness = 0.3
+visibility_rect = Rect2(-500, -500, 1000, 1000)
+
+[node name="BottomParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 100
+process_material = SubResource("ParticleProcessMaterial_fire")
+texture = ExtResource("2_fireball")
+lifetime = 1.5
+randomness = 0.3
+visibility_rect = Rect2(-500, -500, 1000, 1000)
+
+[node name="LeftParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 100
+process_material = SubResource("ParticleProcessMaterial_fire")
+texture = ExtResource("2_fireball")
+lifetime = 1.5
+randomness = 0.3
+visibility_rect = Rect2(-500, -500, 1000, 1000)
+
+[node name="RightParticles" type="GPUParticles2D" parent="."]
+material = SubResource("CanvasItemMaterial_add")
+emitting = false
+amount = 100
+process_material = SubResource("ParticleProcessMaterial_fire")
+texture = ExtResource("2_fireball")
+lifetime = 1.5
+randomness = 0.3
+visibility_rect = Rect2(-500, -500, 1000, 1000)
+```
+
+### File: `scenes/vfx/TokenPopVFX.tscn`
+```ini
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="2_token"]
+[sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparkle"]
+emission_shape = 1
+emission_sphere_radius = 10.0
+direction = Vector3(0, -1, 0)
+spread = 60.0
+initial_velocity_min = 50.0
+initial_velocity_max = 100.0
+gravity = Vector3(0, 200, 0)
+scale_min = 0.5
+scale_max = 1.0
+color = Color(1, 0.9, 0.3, 1)
+
+[node name="TokenPopVFX" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="TokenSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_token")
+
+[node name="Particles" type="GPUParticles2D" parent="."]
+emitting = false
+amount = 12
+lifetime = 0.4
+one_shot = true
+explosiveness = 1.0
+process_
+```
+
+### File: `scenes/vfx/TokenSpendVFX.tscn`
+```ini
+[gd_scene format=3 uid="uid://cfq4aqci8pr62"]
+
+[ext_resource type="Script" path="res://scripts/vfx/TokenSpendVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="2_token"]
+
+[node name="TokenSpendVFX" type="Node2D"]
+script = ExtResource("1_script")
+
+[node name="TokenSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_token")
 ```
 
 ### File: `scripts/abilities/EffectScald.gd`

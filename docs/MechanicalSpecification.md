@@ -249,18 +249,20 @@ The player may inspect the exact contents of each Tier pool and manually calcula
 
 ## Playback Controls
 
-* **Speed Scaling**: Combat animations can be scaled to 1x, 2x, or 4x speed. This affects only visual transitions and does not alter the underlying deterministic logic.
+* **Global Speed Scaling**: Playback speed (1x, 2x, 3x, 4x) is controlled globally via `Engine.time_scale` (`AnimationConstants.speed_factor`), uniformly accelerating all tweens, timers, token animations, and particle effects across the entire engine.
 * **Step-by-Step Mode**: Players can pause combat and advance exactly one `CombatEvent` at a time. This provides perfect transparency for complex priority-based interactions.
 * **Persistence**: Chosen playback speeds persist across battles and sessions.
 
 ---
 
-## Sources of Randomness
+## Sources of Randomness (Seeded PRNG)
 
-1. Gacha draw (uniform within tier pool)
-2. Encounter generation (budget-based)
-3. Random ability targeting
-4. Flashcard question selection (weighted SRS)
+All randomness is driven by isolated, seed-based PRNG streams (`SeededRNG` via `RNGManager`) derived from `RunState.run_seed`:
+1. **Gacha draw**: `gacha_rng` (uniform within tier pool)
+2. **Encounter & Map generation**: `map_rng` (budget-based)
+3. **Random ability targeting & Combat rolls**: `combat_rng`
+4. **Reward selection**: `reward_rng`
+5. **Flashcard question selection**: weighted SRS
 
 ---
 
