@@ -1,0 +1,28 @@
+@@ -1385,6 +1438,28 @@ func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String,
+ 	
+ 	return apply_stat_delta(instance, stat_type, delta)
+ 
++func apply_trinket_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_id: String) -> Variant:
++	assert(is_instance_valid(instance), "apply_trinket_stat_delta: instance is null")
++	
++	if delta == 0:
++		return instance.current_hp if stat_type == "hp" else instance.current_pwr
++		
++	var hp_delta = delta if stat_type == "hp" else 0
++	var pwr_delta = delta if stat_type == "pwr" else 0
++	
++	instance.add_or_update_stat_component(
++		StringName(source_id + "_trinket"),
++		&"TRINKET_BUFF",
++		source_id,
++		hp_delta,
++		pwr_delta,
++		false,
++		"Trinket Buff",
++		"Trinket conditional stat increase"
++	)
++	
++	return apply_stat_delta(instance, stat_type, delta)
++
+ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
+ 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")

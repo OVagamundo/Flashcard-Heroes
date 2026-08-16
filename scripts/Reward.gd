@@ -153,11 +153,9 @@ func _setup_prize_slots() -> void:
 # --- Token Logic ---
 
 func _on_study_pressed() -> void:
-	if _has_studied or _action_in_progress: return
-	_has_studied = true
-	study_button.disabled = true
-	if is_instance_valid(GameManager.run_state):
-		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+	if ActionQueue.is_busy(): return
+	var StudyRewardAction = preload("res://scripts/engine/actions/reward/StudyRewardAction.gd")
+	ActionQueue.request(StudyRewardAction.new())
 
 func _on_live_token_earned(amount: int) -> void:
 	_tokens += amount
@@ -173,19 +171,23 @@ func _update_token_display() -> void:
 # --- Draw Logic ---
 
 func _on_tier1_draw_pressed() -> void:
-	_try_draw_tier(1, GameManager.get_gacha_token_cost(1), tier1_machine)
+	if ActionQueue.is_busy(): return
+	var DrawRewardAction = preload("res://scripts/engine/actions/reward/DrawRewardAction.gd")
+	ActionQueue.request(DrawRewardAction.new(1, GameManager.get_gacha_token_cost(1)))
 
 func _on_tier2_draw_pressed() -> void:
-	_try_draw_tier(2, GameManager.get_gacha_token_cost(2), tier2_machine)
+	if ActionQueue.is_busy(): return
+	var DrawRewardAction = preload("res://scripts/engine/actions/reward/DrawRewardAction.gd")
+	ActionQueue.request(DrawRewardAction.new(2, GameManager.get_gacha_token_cost(2)))
 
 func _on_tier3_draw_pressed() -> void:
-	_try_draw_tier(3, GameManager.get_gacha_token_cost(3), tier3_machine)
+	if ActionQueue.is_busy(): return
+	var DrawRewardAction = preload("res://scripts/engine/actions/reward/DrawRewardAction.gd")
+	ActionQueue.request(DrawRewardAction.new(3, GameManager.get_gacha_token_cost(3)))
 
-func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
-	if _action_in_progress: return
-	
+func _execute_draw_tier_visuals(tier: int, cost: int, machine: Control) -> void:
 	var main_node = GameManager._active_main_node
-	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
+	var token_group = main_node.get_node_or_null("%TokenGroup") if main_node != null else null
 	
 	if _tokens < cost:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
@@ -193,16 +195,13 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	
 	var slot_index = _find_next_prize_slot()
 	if slot_index == -1:
-		# Lineup full
 		RejectionFeedbackScript.play_rejection_with_counter(machine, null, get_tree())
 		return
 	
-	_action_in_progress = true
 	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
-	if is_instance_valid(button):
+	if button != null:
 		button.disabled = true
 	
-	# Animate Bargain Charm if it is providing a discount
 	if GameManager.is_bargain_charm_active(tier):
 		BattleAnimator.hop_trinket_by_definition_id(&"trinket_bargain_charm", false)
 		await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
@@ -219,13 +218,11 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	var instance = GachaBallInstance.new()
 	instance.initialize(definition)
 	
-	# Add to GameManager so inspection windows resolve correctly
 	instance.location_container_tag = &"Rewards"
 	instance.location_slot_index = slot_index
 	GameManager._temporary_reward_master_dict[instance.ball_uuid] = instance
 	GameManager._temporary_reward_container.set_uuid(slot_index, instance.ball_uuid)
 	
-	# Animate draw and add prize
 	await _animate_prize_draw(machine, slot_index, instance)
 	_prizes[slot_index] = instance
 	_populate_prize_slot(slot_index, instance)
@@ -242,8 +239,8 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 			_update_token_display()
 			_animate_trinity_token_gain()
 	
-	button.disabled = false
-	_action_in_progress = false
+	if button != null:
+		button.disabled = false
 
 func _animate_trinity_token_gain() -> void:
 	var TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
@@ -424,18 +421,11 @@ func _get_selected_prize() -> Dictionary:
 	}
 
 func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
+	if ActionQueue.is_busy(): return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
 	
-	_action_in_progress = true
-	
 	var loc = prize_data.location
-	var instance = prize_data.instance
-	var uuid = prize_data.uuid
-	
-	_clear_prize_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
 	
 	# Determine animation origin: use mouse position for Drag & Drop, slot center for Click-to-Get
 	var start_pos = _get_slot_global_center(loc.index)
@@ -446,42 +436,16 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 			start_pos = get_viewport().get_mouse_position()
 		else:
 			start_pos = mouse_pos
-	
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var def = instance.get_definition()
-	var tier: int = 1
-	var target_trinket_slot: int = -1
-	if def is GachaBallDefinition: tier = int(def.tier)
-	if is_instance_valid(def) and def.category == &"TRINKET":
-		tier = -1
-		if is_instance_valid(GameManager.run_state):
-			var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-			if trinket_container and trinket_container.has_method("find_first_empty_slot"):
-				target_trinket_slot = trinket_container.find_first_empty_slot()
-				if target_trinket_slot < 0: target_trinket_slot = 0
-	
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		if not WindowManager.is_run_inventory_window_open() and main_node.has_method("show_action_instruction"):
-			main_node.show_action_instruction(tr("ui.reward_instruction"))
-	
-	if tier != -1:
-		await _animate_gachaball_to_machine(start_pos, visual_data, tier)
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-		_action_in_progress = false
-	else:
-		await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
-		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-		_action_in_progress = false
+			
+	var CollectRewardAction = preload("res://scripts/engine/actions/reward/CollectRewardAction.gd")
+	ActionQueue.request(CollectRewardAction.new(loc, start_pos))
+	# (Remainder of previous logic moved to Action)
+	pass
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
+	if ActionQueue.is_busy(): return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
-	
-	_action_in_progress = true
 	
 	var loc = prize_data.location
 	var instance = prize_data.instance
@@ -489,16 +453,6 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	# NEW: Use the dynamic gold value from the instance (half value, min 1 gold)
 	var unit_value = instance.get_gold_value()
 	var gold_yield = max(1, int(unit_value * 0.5))
-	
-	_clear_prize_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
-	
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		if not WindowManager.is_run_inventory_window_open() and main_node.has_method("show_action_instruction"):
-			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	# Determine animation origin: use mouse position for Drag & Drop, slot center for Click-to-Sell
 	var start_pos = _get_slot_global_center(loc.index)
@@ -509,10 +463,9 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 			start_pos = get_viewport().get_mouse_position()
 		else:
 			start_pos = mouse_pos
-	
-	await _animate_gold_receive(gold_yield, start_pos)
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_yield})
-	_action_in_progress = false
+			
+	var SellRewardAction = preload("res://scripts/engine/actions/reward/SellRewardAction.gd")
+	ActionQueue.request(SellRewardAction.new(loc, start_pos, gold_yield))
 
 func _get_slot_global_center(index: int) -> Vector2:
 	var slot_view = prize_lineup.get_child(index)
@@ -683,10 +636,11 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 
 func _on_leave_pressed() -> void:
-	if _action_in_progress: return
-	
-	# Auto collect sequence
-	_action_in_progress = true
+	if ActionQueue.is_busy(): return
+	var LeaveRewardAction = preload("res://scripts/engine/actions/reward/LeaveRewardAction.gd")
+	ActionQueue.request(LeaveRewardAction.new(false))
+
+func _run_auto_collect_sequence() -> void:
 	leave_button.disabled = true
 	study_button.disabled = true
 	tier1_draw_button.disabled = true
@@ -694,25 +648,23 @@ func _on_leave_pressed() -> void:
 	tier3_draw_button.disabled = true
 	
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
+	if main_node != null and main_node.has_method("hide_reward_drop_zones"):
 		main_node.hide_reward_drop_zones()
 	
 	# Collect all remaining sequentially
 	for i in range(_prizes.size()):
 		var instance = _prizes[i]
-		if is_instance_valid(instance):
-			# Set selection context so we can re-use _on_collect_pressed? Or just run logic manually.
+		if instance != null:
 			var uuid = instance.ball_uuid
 			var def = instance.get_definition()
 			var tier: int = int(def.tier) if "tier" in def else 1
 			var target_trinket_slot: int = -1
-			if is_instance_valid(def) and def.category == &"TRINKET":
+			if def != null and def.category == &"TRINKET":
 				tier = -1
-				if is_instance_valid(GameManager.run_state):
-					var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-					if trinket_container and trinket_container.has_method("find_first_empty_slot"):
-						target_trinket_slot = trinket_container.find_first_empty_slot()
-						if target_trinket_slot < 0: target_trinket_slot = 0
+				var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+				if trinket_container != null and trinket_container.has_method("find_first_empty_slot"):
+					target_trinket_slot = trinket_container.find_first_empty_slot()
+					if target_trinket_slot < 0: target_trinket_slot = 0
 			
 			var start_pos = _get_slot_global_center(i)
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
@@ -721,15 +673,8 @@ func _on_leave_pressed() -> void:
 			
 			if tier != -1:
 				await _animate_gachaball_to_machine(start_pos, visual_data, tier)
-				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 			else:
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
-				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
-	
-	SignalBus.emit_signal("gacha_tokens_changed", 0)
-	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
-	SignalBus.emit_signal("path_choice_scene_requested")
-	queue_free()
 
 func _on_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):

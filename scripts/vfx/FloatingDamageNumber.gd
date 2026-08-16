@@ -76,7 +76,7 @@ func setup_armor(damage: int, spawn_position: Vector2) -> void:
 	setup_stat(damage, spawn_position, Color(0.0, 0.6, 1.0)) # Blue for armor hits
 	# Armor hits are smaller (32px) as they are stat-related, not direct HP damage.
 
-func play() -> void:
+func play(float_dir: Vector2 = Vector2.UP) -> void:
 	# Juicy Pop Animation: Snap up -> Float up -> Fade out
 	var tween = create_tween()
 	
@@ -88,8 +88,8 @@ func play() -> void:
 	var float_tween = create_tween()
 	float_tween.set_parallel(true)
 	
-	# Float upward
-	float_tween.tween_property(self, "position:y", _start_position.y - FLOAT_DISTANCE, FLOAT_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Float in direction
+	float_tween.tween_property(self, "position", _start_position + (float_dir * FLOAT_DISTANCE), FLOAT_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	# Fade out near the end
 	float_tween.tween_property(self, "modulate:a", 0.0, FLOAT_DURATION * 0.4).set_delay(FLOAT_DURATION * 0.6)

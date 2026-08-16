@@ -150,7 +150,7 @@ func spawn_status_effect_number_on_layer(amount: int, type: String, spawn_pos: V
 			vfx.queue_free()
 
 ## Spawn a floating stat number (size 32) on the effects layer
-func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = Color.WHITE) -> void:
+func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = Color.WHITE, float_dir: Vector2 = Vector2.UP) -> void:
 	var vfx = create_damage_number()
 	var effects_layer = get_effects_layer()
 	
@@ -161,7 +161,7 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 			vfx.z_index = 100
 		effects_layer.add_child(vfx)
 		vfx.setup_stat(amount, spawn_pos + offset, color)
-		vfx.play()
+		vfx.play(float_dir)
 	else:
 		push_warning("[VFXFactory] No global effects layer found for stat number")
 		var battle_view = get_tree().get_first_node_in_group("battle_view")
@@ -169,7 +169,7 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 			vfx.position = spawn_pos
 			battle_view.add_child(vfx)
 			vfx.setup_stat(amount, spawn_pos, color)
-			vfx.play()
+			vfx.play(float_dir)
 		else:
 			vfx.queue_free()
 

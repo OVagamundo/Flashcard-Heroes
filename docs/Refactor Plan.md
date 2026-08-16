@@ -3,19 +3,21 @@
 ## 1. Prime Directive
 Transform the game into a **fully deterministic, event-driven architecture** modeled after the core systems of *Slay the Spire 2*. 
 
-The ultimate goal of this refactor is to establish a complete separation between **Player Agency / State Mutation** and **UI / Visual Presentation**. Every state modification across the entire game (run map, gacha pulls, inventory management, merges, and combat) must pass through a command pipeline driven by deterministic logic and seeded RNG.
+The ultimate goal of this refactor is to establish a complete separation between **Player Agency / State Mutation** and **UI / Visual Presentation**. Every state modification across the entire game (run map, gacha pulls, inventory management, merges, and combat) must pass through a command pipeline driven by deterministic logic and seeded RNG. 
 
-**This refactor must unlock:**
+**This refactor will allow for:**
 1. **Run Replays:** The ability to serialize the player's stream of actions into a lightweight log and replay any run or combat turn at variable speeds.
 2. **Headless Bot Testing:** The ability for an automated QA bot to feed commands directly into the queue at 100x speed to stress-test balance, find soft-locks, and gather telemetry without touching UI nodes.
 3. **Zero-Desync Determinism:** Guaranteed identical run generation and combat outcomes across all platforms given the same seed.
+
+**IMPORTANT:** The replay and headless bot will be implemented later after this refactor is complete. Do not attempt to do it without my explicit instruction. Focus on geting this refactor done correctly first.
 
 ---
 
 ## 2. The 4 Pillars of the Architecture
 
 ### Pillar 1: Unified Command & Input Pipeline (`GameAction` & `ActionQueue`)
-Every decision a player can make—whether buying an item, drawing a gacha ball, merging units, equipping items, resting, or triggering combat—must be encapsulated into a command object (`GameAction`).
+Every action input a player can make, whether is buying an item, drawing a gacha ball, merging units, equipping items, inspecting units or trinkets, swapping items/units, or triggering combat, must be encapsulated into a command object (`GameAction`).
 
 * **Validation First:** A command must validate itself against the current `RunState` / `BattleState` before execution (`is_valid() -> bool`). If invalid (e.g., trying to equip an item that no longer exists), it gracefully aborts.
 * **Execution & Mutation:** The command mutates state strictly through pure backend systems (`InventoryOperations.gd`, `MergeManager.gd`, `CombatSimulator.gd`).

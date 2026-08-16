@@ -11,6 +11,8 @@ extends RefCounted
 # Shared stat / damage fields.
 var source_uuid: String = ""
 var amount: int = 0
+var hp_amount: int = 0
+var pwr_amount: int = 0
 var stat: String = ""
 var skip_bump: bool = false
 var bump_direction: Vector2 = Vector2.ZERO
@@ -109,6 +111,22 @@ static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, 
 	payload.status_color = p_status_color
 	return payload
 
+static func multi_stat_change(p_source_uuid: String, p_hp_amount: int, p_pwr_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = [], p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.hp_amount = p_hp_amount
+	payload.pwr_amount = p_pwr_amount
+	payload.stat = "hp_and_pwr"
+	payload.targets_old_hp.assign(p_targets_old_hp)
+	payload.targets_new_hp.assign(p_targets_new_hp)
+	payload.targets_max_hp.assign(p_targets_max_hp)
+	payload.new_hp = payload.targets_new_hp[0] if not payload.targets_new_hp.is_empty() else 0
+	payload.targets_old_pwr.assign(p_targets_old_pwr)
+	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
+	return payload
+
+
 static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_armor: Array = [], p_targets_new_armor: Array = [], p_armor_consumed: Array = []) -> CombatPayload:
 	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
 	payload.targets_old_armor.assign(p_targets_old_armor)
@@ -131,6 +149,8 @@ func deep_clone() -> CombatPayload:
 	var copy := CombatPayload.new()
 	copy.source_uuid = source_uuid
 	copy.amount = amount
+	copy.hp_amount = hp_amount
+	copy.pwr_amount = pwr_amount
 	copy.stat = stat
 	copy.skip_bump = skip_bump
 	copy.bump_direction = bump_direction

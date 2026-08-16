@@ -9,7 +9,7 @@ extends EffectDefinition
 ## - Normalizes stacks and stats from 2 to 1 if two buffed units merge.
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation := bool(context.get("is_simulation", false))
+	var is_simulation := true # Always true so it generates visual events for animator in management phase
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	
 	# Resolve the trinket's team
@@ -27,6 +27,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var changed_units := 0
 	var total_hp_delta := 0
 	var total_pwr_delta := 0
+	
+	var result := EffectResult.new()
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
@@ -64,8 +66,25 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			delta = 1
 			
 		if delta != 0:
+			var old_hp = inst.current_hp
+			var old_pwr = inst.current_pwr
+			
 			inst.apply_hp_delta(delta, {"silent": is_simulation})
 			inst.apply_pwr_delta(delta, {"silent": is_simulation})
+			
+			if is_simulation:
+				var skip_anim = inst.has_meta("skip_initial_scaling_anim")
+				
+				var multi_payload = CombatPayload.multi_stat_change("", delta, delta, [old_hp], [inst.current_hp], [], [old_pwr], [inst.current_pwr])
+				multi_payload.skip_bump = skip_anim
+				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": "",
+					"target_uuids": [uuid],
+					"ability_id": context.get("ability_id", &"rusty_ring_passive"),
+					"ability_holder_uuid": source_uuid,
+					"visual_payload": multi_payload
+				}))
+			
 			changed_units += 1
 			total_hp_delta += delta
 			total_pwr_delta += delta
@@ -73,7 +92,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if changed_units == 0:
 		return EffectResult.empty()
 
-	var result := EffectResult.new()
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 		"text": "Rusty Ring updated %d units (%+d HP, %+d PWR)" % [changed_units, total_hp_delta, total_pwr_delta]
 	}))

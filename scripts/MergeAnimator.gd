@@ -92,6 +92,11 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		if bm.has_method("unblock_ui_updates"):
 			bm.unblock_ui_updates()
 
+	# VCR is done (or skipped)! Safe to clear the initial spawn stats so future UI interactions use the true hp
+	if is_instance_valid(new_instance):
+		new_instance.clear_initial_spawn_stats()
+
+
 func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
 	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
 	var visual_data = VisualDataAdapter.create_visual_data(instance)

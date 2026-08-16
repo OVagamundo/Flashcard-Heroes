@@ -108,10 +108,11 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if would_be_lethal and is_ally_damage:
 		var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, final_target_uuid)
 		if is_instance_valid(guardian):
+			# If the attacker is re-striking, ensure the Guardian intercept still applies
 			pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
 				"source_uuid": guardian.ball_uuid,
-				"target_uuids": [final_target_uuid],
-				"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, final_target_uuid)
+				"target_uuids": [target_instance.ball_uuid], # Keep the visual target pointing to the original target, so the guardian leaps there
+				"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, target_instance.ball_uuid)
 			}))
 			final_target_uuid = guardian.ball_uuid
 			final_target = guardian

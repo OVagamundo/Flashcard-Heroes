@@ -21,6 +21,7 @@ config/icon="res://assets/Realistic/ui/textures/GameIcon.png"
 
 [autoload]
 
+ActionQueue="*res://scripts/engine/ActionQueue.gd"
 ArtStyleManager="*res://scripts/ArtStyleManager.gd"
 SignalBus="*res://scripts/SignalBus.gd"
 C="*res://scripts/Constants.gd"

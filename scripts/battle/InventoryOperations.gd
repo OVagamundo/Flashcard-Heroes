@@ -138,7 +138,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 
 ## Equip an item to a unit. Returns OperationResult.
 ## Caller is responsible for signal emission.
-static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String, slot_index: int = -1) -> OperationResult:
+static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> OperationResult:
 	var result := OperationResult.new()
 	
 	var item := state.get_instance(item_uuid)
@@ -164,7 +164,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 			if is_instance_valid(prev_unit):
 				var prev_idx := item.equipped_slot_index
 				if prev_idx >= 0 and prev_idx < prev_unit.equipped_item_uuids.size():
-					prev_unit.unequip_item_bonus(item)
+					prev_unit.unequip_item_bonus(item, silent)
 					if prev_unit.equipped_item_uuids[prev_idx] == item.ball_uuid:
 						prev_unit.equipped_item_uuids[prev_idx] = ""
 				result.add_unit_change(prev_unit.ball_uuid)
@@ -191,7 +191,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	unit.equip_item_bonus(item)
+	unit.equip_item_bonus(item, silent)
 	
 	result.add_unit_change(unit.ball_uuid)
 	result.set_success()
@@ -219,7 +219,7 @@ static func _remove_from_container(state: BattleState, instance: GachaBallInstan
 
 ## Move an instance from source to target location. Returns OperationResult.
 ## NOTE: If target is an equipped slot, caller must handle the equip via equip_item after this returns.
-static func move_instance(state: BattleState, source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> OperationResult:
+static func move_instance(state: BattleState, source_loc: LocationIdentifier, target_loc: LocationIdentifier, silent: bool = false) -> OperationResult:
 	var result := OperationResult.new()
 	
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
@@ -286,7 +286,7 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 			return result
 		
 		# Remove bonuses and clear mapping
-		src_unit.unequip_item_bonus(a)
+		src_unit.unequip_item_bonus(a, silent)
 		src_unit.equipped_item_uuids[source_loc.index] = ""
 		a.equipped_on_uuid = ""
 		a.equipped_slot_index = -1
@@ -333,7 +333,7 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 # ============================================================================
 
 ## Swap two instances. Returns OperationResult.
-static func swap_instances(state: BattleState, source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> OperationResult:
+static func swap_instances(state: BattleState, source_loc: LocationIdentifier, target_loc: LocationIdentifier, silent: bool = false) -> OperationResult:
 	var result := OperationResult.new()
 	
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
@@ -360,7 +360,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 			var a_uuid := src_unit.equipped_item_uuids[source_loc.index]
 			item_a = state.get_instance(a_uuid)
 			if is_instance_valid(item_a):
-				src_unit.unequip_item_bonus(item_a)
+				src_unit.unequip_item_bonus(item_a, silent)
 			src_unit.equipped_item_uuids[source_loc.index] = ""
 			if is_instance_valid(item_a):
 				item_a.equipped_on_uuid = ""
@@ -388,7 +388,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 		
 		# If B exists, move it into source origin
 		if is_instance_valid(item_b):
-			unit.unequip_item_bonus(item_b)
+			unit.unequip_item_bonus(item_b, silent)
 			unit.equipped_item_uuids[target_loc.index] = ""
 			item_b.equipped_on_uuid = ""
 			item_b.equipped_slot_index = -1
@@ -402,7 +402,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 				item_b.equipped_slot_index = source_loc.index
 				item_b.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 				item_b.location_slot_index = source_loc.index
-				src_unit2.equip_item_bonus(item_b)
+				src_unit2.equip_item_bonus(item_b, silent)
 				result.add_unit_change(src_unit2.ball_uuid)
 			else:
 				var src_container := state.get_container(source_loc.container)
@@ -417,7 +417,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 		item_a.equipped_slot_index = target_loc.index
 		item_a.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 		item_a.location_slot_index = target_loc.index
-		unit.equip_item_bonus(item_a)
+		unit.equip_item_bonus(item_a, silent)
 		
 		# Notify source unit if it was an equipped slot and target had no B
 		if source_loc.container == C.CONTAINER_EQUIPPED_ITEM and not is_instance_valid(item_b):
@@ -498,7 +498,7 @@ static func remove_instance_from_container(state: BattleState, instance: GachaBa
 
 ## Move an instance to the discard pile. Handles equipped items and containers.
 ## Returns OperationResult.
-static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance) -> OperationResult:
+static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance, silent: bool = false) -> OperationResult:
 	var result := OperationResult.new()
 	assert(is_instance_valid(instance), "move_instance_to_discard: instance is null")
 	
@@ -510,7 +510,7 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
 					# Clear the parent's slot mapping if it points to this instance
 					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
-						parent.unequip_item_bonus(instance)
+						parent.unequip_item_bonus(instance, silent)
 						parent.equipped_item_uuids[loc.index] = ""
 						result.add_unit_change(parent.ball_uuid)
 			# Clear equipped linkage on the item itself

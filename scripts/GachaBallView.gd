@@ -1367,22 +1367,6 @@ func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	var tween = create_tween()
 	tween.tween_method(func(val): label.text = str(val), start_val, target_val, 0.5)
 
-	# Visual Reactions (moved from BuffAnimation to ensure all stat changes animate uniformly)
-	if target_val > start_val:
-		SignalBus.emit_signal("unit_color_flash", _instance_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
-		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HOP_DEFORM")
-		SignalBus.emit_signal("unit_move", _instance_uuid, &"HOP", Vector2.ZERO)
-	elif target_val < start_val:
-		SignalBus.emit_signal("unit_color_flash", _instance_uuid, Color(0.3, 0.3, 0.3), AnimationConstants.FLASH_FADE_DURATION)
-		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HIT_IMPACT")
-		
-		var offset_y = 0.3 if type == "pwr" else 0.2
-		var spawn_pos = global_position + (size * Vector2(0.5, offset_y))
-		var color = Color(1.0, 0.0, 0.0) if type == "hp" else Color(0.0, 0.0, 0.0)
-		var amount = start_val - target_val # absolute difference
-		if VFXFactory.has_method("spawn_stat_number_on_layer"):
-			VFXFactory.spawn_stat_number_on_layer(-amount, spawn_pos, color, Vector2.DOWN)
-
 func _flash_label(label: Label) -> void:
 	# Quick white flash on the label when its value changes
 	if not is_instance_valid(label):

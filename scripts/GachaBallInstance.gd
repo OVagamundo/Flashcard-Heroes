@@ -19,6 +19,12 @@ var current_pwr: int
 var _hp_debt: int = 0
 var _pwr_debt: int = 0
 
+# --- VCR Initialization State ---
+# Captured immediately after creation/merge to decouple UI visual instantiation from post-buff synchronous state
+var initial_spawn_hp: int = -1
+var initial_spawn_pwr: int = -1
+
+
 # --- Location Properties (for temporary battle state) ---
 var location_container_tag: StringName = &""
 var location_slot_index: int = -1
@@ -84,6 +90,9 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	# Reset to effective starting stats using component-aware calculation
 	copy.current_hp = copy.get_effective_starting_hp(all_instances_db)
 	copy.current_pwr = copy.get_effective_starting_pwr(all_instances_db)
+	
+	copy.initial_spawn_hp = copy.current_hp
+	copy.initial_spawn_pwr = copy.current_pwr
 
 	return copy
 
@@ -109,7 +118,7 @@ func initialize_from_trinket(trinket_def: Resource) -> void:
 # --- Equipment Stat Modification (Component-Aware Delta) ---
 # These compute the stat delta by comparing effective totals before/after the equipment
 # change. This preserves battle damage while deriving values from the component system.
-func equip_item_bonus(item_instance: GachaBallInstance) -> void:
+func equip_item_bonus(item_instance: GachaBallInstance, silent: bool = false) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
@@ -117,21 +126,22 @@ func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
 	
 	if hp_delta != 0:
-		apply_hp_delta(hp_delta, {"silent": false})
+		apply_hp_delta(hp_delta, {"silent": silent})
 	if pwr_delta != 0:
-		apply_pwr_delta(pwr_delta, {"silent": false})
+		apply_pwr_delta(pwr_delta, {"silent": silent})
 
-func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
+func unequip_item_bonus(item_instance: GachaBallInstance, silent: bool = false) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
 	var hp_delta: int = int(item_def.bonus_hp) if "bonus_hp" in item_def else 0
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
 	
+	# To unequip, apply inverse delta
 	if hp_delta != 0:
-		apply_hp_delta(-hp_delta, {"silent": false})
+		apply_hp_delta(-hp_delta, {"silent": silent})
 	if pwr_delta != 0:
-		apply_pwr_delta(-pwr_delta, {"silent": false})
+		apply_pwr_delta(-pwr_delta, {"silent": silent})
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
@@ -153,9 +163,9 @@ func reset_battle_stats() -> void:
 	var old_hp = current_hp
 	var old_pwr = current_pwr
 	
-	# Restore HP and PWR using component-aware persistent modifiers
-	current_hp = get_definition_base_hp() + get_persistent_hp_modifier()
-	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier()
+	# Restore HP and PWR using component-aware persistent modifiers and trinket modifiers
+	current_hp = get_definition_base_hp() + get_persistent_hp_modifier() + get_trinket_hp_modifier()
+	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_trinket_pwr_modifier()
 	
 	# Clear all status effects (poison, etc.)
 	status_effects.clear()
@@ -164,16 +174,15 @@ func reset_battle_stats() -> void:
 	# Reset dynamic tags
 	dynamic_tags.clear()
 	
-	# Emit granular signals for each stat that changed
-	if old_hp != current_hp:
+	if current_hp != old_hp:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"hp", old_hp, current_hp)
-	if old_pwr != current_pwr:
+	if current_pwr != old_pwr:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 
 func reset_battle_stats_silent() -> void:
-	# Restore HP and PWR using component-aware persistent modifiers - SILENT VERSION
-	current_hp = get_definition_base_hp() + get_persistent_hp_modifier()
-	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier()
+	# Restore HP and PWR using component-aware persistent modifiers and trinket modifiers - SILENT VERSION
+	current_hp = get_definition_base_hp() + get_persistent_hp_modifier() + get_trinket_hp_modifier()
+	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_trinket_pwr_modifier()
 	
 	# Clear all status effects (poison, etc.)
 	status_effects.clear()
@@ -475,6 +484,12 @@ func get_persistent_hp_modifier() -> int:
 func get_persistent_pwr_modifier() -> int:
 	return _sum_own_component_stat(&"pwr")
 
+func get_trinket_hp_modifier() -> int:
+	return _sum_trinket_component_stat(&"hp")
+
+func get_trinket_pwr_modifier() -> int:
+	return _sum_trinket_component_stat(&"pwr")
+
 func get_equipment_hp_modifier(all_instances_db: Dictionary) -> int:
 	return _sum_components_stat(_build_equipment_components(all_instances_db), &"hp", true)
 
@@ -488,11 +503,11 @@ func get_battle_pwr_modifier() -> int:
 	return _sum_components_stat(battle_components, &"pwr", true)
 
 func get_effective_starting_hp(all_instances_db: Dictionary = {}) -> int:
-	var total = get_definition_base_hp() + get_persistent_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
+	var total = get_definition_base_hp() + get_persistent_hp_modifier() + get_trinket_hp_modifier() + get_equipment_hp_modifier(all_instances_db) + get_battle_hp_modifier()
 	return max(1, total)
 
 func get_effective_starting_pwr(all_instances_db: Dictionary = {}) -> int:
-	var total = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
+	var total = get_definition_base_pwr() + get_persistent_pwr_modifier() + get_trinket_pwr_modifier() + get_equipment_pwr_modifier(all_instances_db) + get_battle_pwr_modifier()
 	return max(1, total)
 
 func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
@@ -821,6 +836,19 @@ func _sum_own_component_stat(stat_name: StringName) -> int:
 		var stat_component := component as StatComponent
 		if stat_component.is_battle_only:
 			continue
+		if stat_component.source_type == &"TRINKET_BUFF":
+			continue
+		result += _get_modifier_value(stat_component.modifiers, stat_name)
+	return result
+
+func _sum_trinket_component_stat(stat_name: StringName) -> int:
+	var result := 0
+	for component in components:
+		if not component is StatComponent:
+			continue
+		var stat_component := component as StatComponent
+		if stat_component.source_type != &"TRINKET_BUFF":
+			continue
 		result += _get_modifier_value(stat_component.modifiers, stat_name)
 	return result
 
@@ -844,6 +872,10 @@ func _duplicate_components(source_components: Array[GachaBallComponent]) -> Arra
 	var result: Array[GachaBallComponent] = []
 	for component in source_components:
 		if is_instance_valid(component):
+			# Do NOT copy trinket buffs into clones (e.g. Rusty Ring, Veteran Insignia).
+			# Clones should start fresh and have these buffs re-applied dynamically when drawn.
+			if component is StatComponent and component.source_type == &"TRINKET_BUFF":
+				continue
 			result.append(component.duplicate(true))
 	return result
 
@@ -1018,3 +1050,8 @@ func _deserialize_tags(data: Array) -> void:
 # --- Utilities ---
 func get_definition() -> Resource:
 	return Database.get_definition(definition_id)
+
+
+func clear_initial_spawn_stats() -> void:
+	initial_spawn_hp = -1
+	initial_spawn_pwr = -1

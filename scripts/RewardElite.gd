@@ -189,63 +189,28 @@ func _get_selected_prize() -> Dictionary:
 	return {"location": selected_loc, "instance": instance, "uuid": instance.ball_uuid}
 
 func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
+	if ActionQueue.is_busy(): return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
 	
-	_action_in_progress = true
 	var loc = prize_data.location
-	var instance = prize_data.instance
-	
-	_clear_reward_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
 	
 	var raw_pos = _get_slot_global_center(loc.index)
 	if is_drag:
 		raw_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
 	
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var target_trinket_slot: int = 0
-	if is_instance_valid(GameManager.run_state):
-		var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-		if trinket_container and trinket_container.has_method("find_first_empty_slot"):
-			target_trinket_slot = max(0, trinket_container.find_first_empty_slot())
-	
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		# We don't restore instruction here because choice is complete
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
-	
-	# Mapping for collection vfx (must stay global as it flies to Main bar)
+	# For Elite, start_pos needs mapping since it's animated differently
 	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
-	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
 	
-	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance.ball_uuid})
-	
-	_complete_choice()
-	_action_in_progress = false
+	var CollectRewardAction = preload("res://scripts/engine/actions/reward/CollectRewardAction.gd")
+	ActionQueue.request(CollectRewardAction.new(loc, start_pos, true))
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
+	if ActionQueue.is_busy(): return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
 	
-	_action_in_progress = true
 	var loc = prize_data.location
-	var instance = prize_data.instance
-	
-	_clear_reward_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
-	
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
 	
 	var raw_pos = _get_slot_global_center(loc.index)
 	if is_drag:
@@ -254,19 +219,13 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	var screen_pos = _get_absolute_screen_pos(raw_pos)
 	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
 	
-	await _animate_gold_receive(_gold_amount, vfx_start_pos)
-	
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
-	
-	_complete_choice()
-	_action_in_progress = false
+	var SellRewardAction = preload("res://scripts/engine/actions/reward/SellRewardAction.gd")
+	ActionQueue.request(SellRewardAction.new(loc, vfx_start_pos, _gold_amount, true))
 
 func _on_gold_pressed() -> void:
-	# Keep legacy method for compatibility if needed, but it's now redundant
 	pass
 
 func _complete_choice() -> void:
-	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
 	gold_button.visible = false
 	
 	# Reveal navigation button via modulation to prevent layout shifts
@@ -308,10 +267,9 @@ func _get_slot_global_center(index: int) -> Vector2:
 	return Vector2.ZERO
 
 func _on_back_to_path_pressed() -> void:
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-		GameManager._active_main_node.hide_reward_drop_zones()
-	SignalBus.emit_signal("path_choice_scene_requested")
-	queue_free()
+	if ActionQueue.is_busy(): return
+	var LeaveRewardAction = preload("res://scripts/engine/actions/reward/LeaveRewardAction.gd")
+	ActionQueue.request(LeaveRewardAction.new(true))
 
 func _on_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
@@ -322,7 +280,7 @@ func _on_gui_input(event: InputEvent) -> void:
 		SignalBus.emit_signal("interaction_context_received", context)
 		get_viewport().set_input_as_handled()
 
-func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int) -> void:
+func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int, instance_uuid: String = "") -> void:
 	var main_node = GameManager._active_main_node
 	if not is_instance_valid(main_node): return
 	var trinket_bar = main_node.get_node_or_null("%PlayerTrinketBar")

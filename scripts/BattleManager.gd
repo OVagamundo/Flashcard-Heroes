@@ -154,17 +154,26 @@ func _connect_signals() -> void:
 
 func _emit_battle_inventory_changed() -> void:
 	# Trigger real-time passive updates whenever the inventory changes
-	AbilityResolver.process_trigger(&"on_board_changed", {})
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	
 	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
-		# Process passive updates (e.g. Twin Charm scaling) immediately in the data layer without queuing VCR animations
-		_combat.process_reaction_queue(self, {})
+		# Process passive updates (e.g. Twin Charm scaling) via VCR animations so UI reflects changes
+		var events = _combat.process_reaction_queue(self, {})
 		
 		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
 		_flush_deferred_enemy_erasures()
 		
-		SignalBus.emit_signal("battle_inventory_changed")
-		_pending_inventory_refresh = false
+		if not events.is_empty():
+			var snapshot = VisualDataAdapter.create_board_snapshot(self.get_all_instances())
+			enqueue_management_animation(snapshot, events)
+			_pending_inventory_refresh = true
+		else:
+			for uuid in _battle_instances:
+				var inst = _battle_instances[uuid]
+				if is_instance_valid(inst):
+					inst.clear_initial_spawn_stats()
+			SignalBus.emit_signal("battle_inventory_changed")
+			_pending_inventory_refresh = false
 	else:
 		_pending_inventory_refresh = true
 
@@ -520,8 +529,6 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		"tokens_spent": tier # Tier equals tokens spent
 	}
 	var drawn_instance = get_instance(draw_result.drawn_uuid)
-	if is_instance_valid(drawn_instance):
-		drawn_instance.set_meta("skip_initial_scaling_anim", true)
 		
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
@@ -531,9 +538,6 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
 	var reaction_events = _combat.process_reaction_queue(self, {})
 	
-	if is_instance_valid(drawn_instance):
-		drawn_instance.remove_meta("skip_initial_scaling_anim")
-		
 	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
 	var new_unit_snapshot = {}
@@ -1385,6 +1389,28 @@ func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, 
 	
 	return apply_stat_delta(instance, stat_type, delta)
 
+func apply_trinket_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_id: String) -> Variant:
+	assert(is_instance_valid(instance), "apply_trinket_stat_delta: instance is null")
+	
+	if delta == 0:
+		return instance.current_hp if stat_type == "hp" else instance.current_pwr
+		
+	var hp_delta = delta if stat_type == "hp" else 0
+	var pwr_delta = delta if stat_type == "pwr" else 0
+	
+	instance.add_or_update_stat_component(
+		StringName(source_id + "_trinket"),
+		&"TRINKET_BUFF",
+		source_id,
+		hp_delta,
+		pwr_delta,
+		false,
+		"Trinket Buff",
+		"Trinket conditional stat increase"
+	)
+	
+	return apply_stat_delta(instance, stat_type, delta)
+
 func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
@@ -1774,9 +1800,20 @@ func _process_management_animation_queue() -> void:
 		var payload = _management_animation_queue.pop_front()
 		await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
 		
+	# Clear the initial spawn stats from all units now that their entrance animations have played.
+	# This ensures that if the board is redrawn later (e.g., when moving a unit), 
+	# the UI will use their true current stats instead of reverting to their base stats.
+	for uuid in _battle_instances:
+		var inst = _battle_instances[uuid]
+		if is_instance_valid(inst):
+			inst.clear_initial_spawn_stats()
+			
 	_is_processing_effect = false
 	_is_animating_management_queue = false
-
+	
+	if _pending_inventory_refresh:
+		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
 ## This ensures enemy units and items are still available in _battle_instances while

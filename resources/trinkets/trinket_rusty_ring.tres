@@ -2,7 +2,6 @@
 
 [ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_draw.tres" id="2_ability"]
-[ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_summon.tres" id="3_ability_summon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_battle_start.tres" id="4_ability_battle_start"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_rusty_ring_passive.tres" id="5_ability_passive"]
 [ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket15A.png" id="6_icon"]
@@ -17,5 +16,5 @@ category = &"TRINKET"
 is_player_exclusive = false
 is_enemy_exclusive = false
 rarity = 1
-ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_summon"), ExtResource("4_ability_battle_start"), ExtResource("5_ability_passive")])
+ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("4_ability_battle_start"), ExtResource("5_ability_passive")])
 cost = 10

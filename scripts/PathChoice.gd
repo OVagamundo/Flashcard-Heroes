@@ -159,9 +159,12 @@ func _register_node_view(node_view: NodeView) -> void:
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	if _selection_locked:
 		return
+	if ActionQueue.is_busy(): return
+	
 	_selection_locked = true
 	for node_view in _node_views:
 		if is_instance_valid(node_view):
 			node_view.disabled = true
-	await AnimationConstants.create_pausable_timer(get_tree(), SELECTION_TRANSITION_DELAY).timeout
-	SignalBus.emit_signal("node_selected", node_def)
+			
+	var SelectPathAction = preload("res://scripts/engine/actions/map/SelectPathAction.gd")
+	ActionQueue.request(SelectPathAction.new(node_def))

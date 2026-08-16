@@ -1,0 +1,656 @@
+======================
+Created At: 2026-08-14T15:07:28-03:00
+Completed At: 2026-08-14T15:07:41-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -521,7 +521,7 @@
+ 	}
+ 	var drawn_instance = get_instance(draw_result.drawn_uuid)
+ 	if is_instance_valid(drawn_instance):
+-		drawn_instance.set_meta("skip_initial_scaling_anim", true)
++		drawn_instance.add_tag(&"drawn_this_turn")
+ 		
+ 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+ 	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+
+We did our best to apply changes despite some inaccuracies. Double check if the edit applied is what you intended.
+======================
+Created At: 2026-08-14T15:07:54-03:00
+Completed At: 2026-08-14T15:07:56-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -530,9 +530,6 @@
+ 	
+ 	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
+ 	var reaction_events = _combat.process_reaction_queue(self, {})
+-	
+-	if is_instance_valid(drawn_instance):
+-		drawn_instance.remove_meta("skip_initial_scaling_anim")
+ 		
+ 	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
+ 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T15:08:03-03:00
+Completed At: 2026-08-14T15:08:03-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/.gemini/antigravity-ide/brain/d345ffdd-46a0-4f70-8d4b-0021943be551/task.md. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -5,7 +5,7 @@
+   - [ ] Add check to skip units that already have `rusty_ring_buffed` tag
+   - [ ] Optimize to only check `entered_uuid` if triggered by `on_board_enter`
+   - [ ] Use `CombatPayload.multi_stat_change` for HP and PWR events
+-- [ ] Update `BattleManager.gd`
+-  - [ ] Remove `drawn_instance.set_meta("skip_initial_scaling_anim", true)` to restore Twin Charm (and other scaling passives) projectiles on draw
++- [x] Update `BattleManager.gd`
++  - [x] Remove `drawn_instance.set_meta("skip_initial_scaling_anim", true)` to restore Twin Charm (and other scaling passives) projectiles on draw
+ - [ ] Manual verification and testing
+ 
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T15:08:27-03:00
+Completed At: 2026-08-14T15:08:27-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/.gemini/antigravity-ide/brain/d345ffdd-46a0-4f70-8d4b-0021943be551/task.md. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -1,10 +1,10 @@
+ # Task List
+ 
+-- [ ] Update `EffectRustyRingBuff.gd`
+-  - [ ] Remove `PlayerLineup` container restriction to include `PlayerBench`
+-  - [ ] Add check to skip units that already have `rusty_ring_buffed` tag
+-  - [ ] Optimize to only check `entered_uuid` if triggered by `on_board_enter`
+-  - [ ] Use `CombatPayload.multi_stat_change` for HP and PWR events
++- [x] Update `EffectRustyRingBuff.gd`
++  - [x] Remove `PlayerLineup` container restriction to include `PlayerBench`
++  - [x] Add check to skip units that already have `rusty_ring_buffed` tag
++  - [x] Optimize to only check `entered_uuid` if triggered by `on_board_enter`
++  - [x] Use `CombatPayload.multi_stat_change` for HP and PWR events
+ - [x] Update `BattleManager.gd`
+   - [x] Remove `drawn_instance.set_meta("skip_initial_scaling_anim", true)` to restore Twin Charm (and other scaling passives) projectiles on draw
+ - [ ] Manual verification and testing
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T15:44:30-03:00
+Completed At: 2026-08-14T15:44:32-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -510,8 +510,24 @@
+ 	if OS.is_debug_build():
+ 		_bm_validate_state_consistency()
+ 	
+-	# Trigger passive updates (like Trinkets) so they enter the reaction queue FIRST
+-	# This ensures the drawn unit's stats are updated before the snapshot is taken
++	# 1. Create the base unit snapshot BEFORE any buffs are applied
++	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
++	var new_unit_snapshot = {}
++	var drawn_instance = get_instance(draw_result.drawn_uuid)
++	if is_instance_valid(drawn_instance):
++		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
++		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
++		
++	var draw_payload := CombatPayload.new()
++	draw_payload.draw_result = draw_result
++	draw_payload.new_unit_snapshot = new_unit_snapshot
++	draw_event.visual_payload = draw_payload
++	
++	# Append the draw event first
++	chain_events.append(draw_event)
++
++	# 2. Trigger passive updates (like Trinkets) AFTER snapshot
++	# This ensures the drawn unit's base stats are shown first, then buff projectiles update them.
+ 	var context := {
+ 		"drawn_uuid": draw_result.drawn_uuid,
+ 		"dest_container": draw_result.dest_container,
+@@ -518,7 +518,6 @@
+ 		"tier": tier,
+ 		"tokens_spent": tier # Tier equals tokens spent
+ 	}
+-	var drawn_instance = get_instance(draw_result.drawn_uuid)
+ 	if is_instance_valid(drawn_instance):
+ 		drawn_instance.add_tag(&"drawn_this_turn")
+ 		
+@@ -528,21 +528,8 @@
+ 	
+ 	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
+ 	var reaction_events = _combat.process_reaction_queue(self, {})
+-		
+-	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
+-	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
+-	var new_unit_snapshot = {}
+-	if is_instance_valid(drawn_instance):
+-		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
+-		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
+-		
+-	var draw_payload := CombatPayload.new()
+-	draw_payload.draw_result = draw_result
+-	draw_payload.new_unit_snapshot = new_unit_snapshot
+-	draw_event.visual_payload = draw_payload
+-	
+-	# Append the draw event first, then any resulting reactions
+-	chain_events.append(draw_event)
++	
++	# Append any resulting reaction events (projectiles, log messages)
+ 	chain_events.append_array(reaction_events)
+ 	
+ 	# If pool emptied, trigger reshuffle for next draw
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T15:44:39-03:00
+Completed At: 2026-08-14T15:44:39-03:00
+The following changes were made by the replace_file_content tool to: /Users/danhh/.gemini/antigravity-ide/brain/d345ffdd-46a0-4f70-8d4b-0021943be551/task.md. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -1,9 +1,9 @@
+ # Task List
+ 
+-- [ ] Update `BattleManager.gd` - `bm_draw_gacha_instance`
+-  - [ ] Move `draw_event` and `new_unit_snapshot` creation BEFORE `process_trigger` calls.
+-  - [ ] Append `draw_event` to `chain_events` first.
+-  - [ ] Call `process_trigger` for `on_board_changed`, `on_board_enter`, `on_draw`, etc.
+-  - [ ] Process reaction queue and append to `chain_events`.
++- [x] Update `BattleManager.gd` - `bm_draw_gacha_instance`
++  - [x] Move `draw_event` and `new_unit_snapshot` creation BEFORE `process_trigger` calls.
++  - [x] Append `draw_event` to `chain_events` first.
++  - [x] Call `process_trigger` for `on_board_changed`, `on_board_enter`, `on_draw`, etc.
++  - [x] Process reaction queue and append to `chain_events`.
+ - [ ] Investigate and update any other spawn methods (e.g., `bm_summon_instance`, `bm_merge_instances`, `bm_add_instance`) to follow the same event ordering.
+ 
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T16:22:07-03:00
+Completed At: 2026-08-14T16:22:08-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/.gemini/antigravity-ide/brain/d345ffdd-46a0-4f70-8d4b-0021943be551/task.md. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -1,9 +1,7 @@
+ # Task List
+ 
+ - [x] Update `BattleManager.gd` - `bm_draw_gacha_instance`
+-  - [x] Move `draw_event` and `new_unit_snapshot` creation BEFORE `process_trigger` calls.
+-  - [x] Append `draw_event` to `chain_events` first.
+-  - [x] Call `process_trigger` for `on_board_changed`, `on_board_enter`, `on_draw`, etc.
+-  - [x] Process reaction queue and append to `chain_events`.
+-- [x] Investigate and update any other spawn methods (e.g., `bm_summon_instance`, `bm_merge_instances`, `bm_add_instance`) to follow the same event ordering.
++  - [x] Modify `BasicAttackEffect.gd` to encapsulate the guardian interception check into a reusable helper that can be called for each independent attack event in a multi-strike sequence.
++- [x] Implement logic to check if a guardian is available to intercept *after* the first attack finishes in a multi-strike sequence.
++- [x] Ensure that if a guardian intercepts, it remains available or is handled appropriately for subsequent strikes if the sequence is still active. and update any other spawn methods (e.g., `bm_summon_instance`, `bm_merge_instances`, `bm_add_instance`) to follow the same event ordering.
+ 
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+
+We did our best to apply changes despite some inaccuracies. Double check if the edit applied is what you intended.
+======================
+Created At: 2026-08-14T18:12:30-03:00
+Completed At: 2026-08-14T18:12:32-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -397,6 +397,11 @@
+ 	if result.success:
+ 		if OS.is_debug_build():
+ 			_bm_validate_state_consistency()
++		# Always trigger the passive scaling updates to guarantee holder stats are dynamically updated instantly.
++		# For non-silent UI interactions, this ensures the stats are applied before the UI refreshes.
++		# For silent simulations, it keeps the simulation state perfectly accurate.
++		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
++		
+ 		if not silent:
+ 			for uuid in result.changed_unit_uuids:
+ 				SignalBus.emit_signal("unit_inventory_changed", uuid)
+@@ -403,9 +403,6 @@
+ 				_emit_battle_inventory_changed()
+ 				SignalBus.emit_signal("inventory_ui_refresh_requested")
+ 		else:
+-			# Even when silent (e.g. during combat simulation), we must trigger the passive scaling
+-			# updates to guarantee holder stats are dynamically updated instantly.
+-			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+ 			_pending_inventory_refresh = true
+ 	
+ 	return result.success
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-14T18:12:50-03:00
+Completed At: 2026-08-14T18:12:52-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -363,6 +363,9 @@
+ 	if result.success:
+ 		if OS.is_debug_build():
+ 			_bm_validate_state_consistency()
++			
++		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
++		
+ 		for uuid in result.changed_unit_uuids:
+ 			SignalBus.emit_signal("unit_inventory_changed", uuid)
+ 		if result.inventory_changed:
+@@ -427,10 +427,13 @@
+ 	var result := InventoryOperations.move_instance_to_discard(_state, instance)
+ 	
+ 	if result.success:
++		if OS.is_debug_build():
++			_bm_validate_state_consistency()
++			
++		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
++		
+ 		for changed_uuid in result.changed_unit_uuids:
+ 			SignalBus.emit_signal("unit_inventory_changed", changed_uuid)
+-		if OS.is_debug_build():
+-			_bm_validate_state_consistency()
+ 		_emit_battle_inventory_changed()
+ 		SignalBus.emit_signal("inventory_ui_refresh_requested")
+ 	
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+
+There were some inaccuracies with your replacement chunks, specified by chunk index. We were unable to apply the following changes:
+chunk 1: target content not found in the specified range and not unique in the file
+======================
+Created At: 2026-08-14T18:13:04-03:00
+Completed At: 2026-08-14T18:13:06-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -383,6 +383,9 @@
+ 	if result.success:
+ 		if OS.is_debug_build():
+ 			_bm_validate_state_consistency()
++			
++		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
++		
+ 		for uuid in result.changed_unit_uuids:
+ 			SignalBus.emit_signal("unit_inventory_changed", uuid)
+ 		if result.inventory_changed:
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-15T08:50:02-03:00
+Completed At: 2026-08-15T08:50:03-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -346,71 +346,67 @@
+ 		target.apply_pwr_delta(-last_bonus)
+ 
+ 
+-func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
+-	assert(is_instance_valid(source_loc), "bm_move_instance: source_loc is null")
+-	assert(is_instance_valid(target_loc), "bm_move_instance: target_loc is null")
+-	
+-	var result := InventoryOperations.move_instance(_state, source_loc, target_loc)
+-	
+-	# Handle needs_equip delegation
++func _execute_with_inventory_animation(operation: Callable, silent: bool) -> bool:
++	var snapshot = {}
++	var old_stats = {}
++	if not silent:
++		snapshot = VisualDataAdapter.create_board_snapshot(get_all_instances())
++		for uuid in _battle_instances:
++			var inst = _battle_instances[uuid]
++			if is_instance_valid(inst) and is_instance_valid(inst.get_definition()) and inst.get_definition().category == &"UNIT":
++				old_stats[uuid] = {
++					"hp": inst.current_hp,
++					"pwr": inst.current_pwr,
++					"max_hp": inst.get_definition().base_hp
++				}
++				
++	var result: OperationResult = operation.call()
++	
+ 	if result.needs_equip:
+-		# Emit unit changes from the pre-equip phase
+-		for uuid in result.changed_unit_uuids:
+-			SignalBus.emit_signal("unit_inventory_changed", uuid)
+-		# Delegate to bm_equip_item which handles its own signals
+-		return bm_equip_item(result.equip_item_uuid, result.equip_unit_uuid, result.equip_slot_index)
+-	
+-	if result.success:
+-		if OS.is_debug_build():
+-			_bm_validate_state_consistency()
+-			
+-		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+-		
+-		for uuid in result.changed_unit_uuids:
+-			SignalBus.emit_signal("unit_inventory_changed", uuid)
+-		if result.inventory_changed:
+-			_emit_battle_inventory_changed()
+-			SignalBus.emit_signal("inventory_ui_refresh_requested")
+-	
+-	return result.success
+-
+-func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
+-	assert(is_instance_valid(source_loc), "bm_swap_instances: source_loc is null")
+-	assert(is_instance_valid(target_loc), "bm_swap_instances: target_loc is null")
+-	
+-	var result := InventoryOperations.swap_instances(_state, source_loc, target_loc)
+-	
+-	if result.success:
+-		if OS.is_debug_build():
+-			_bm_validate_state_consistency()
+-			
+-		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+-		
+-		for uuid in result.changed_unit_uuids:
+-			SignalBus.emit_signal("unit_inventory_changed", uuid)
+-		if result.inventory_changed:
+-			_emit_battle_inventory_changed()
+-			SignalBus.emit_signal("inventory_ui_refresh_requested")
+-	
+-	return result.success
+-
+-func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
+-	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
+-	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
+-	
+-	var result := InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index)
+-	
+-	if result.success:
+-		if OS.is_debug_build():
+-			_bm_validate_state_consistency()
+-		# Always trigger the passive scaling updates to guarantee holder stats are dynamically updated instantly.
+-		# For non-silent UI interactions, this ensures the stats are applied before the UI refreshes.
+-		# For silent simulations, it keeps the simulation state perfectly accurate.
++		for uuid in result.changed_unit_uuids:
++			SignalBus.emit_signal("unit_inventory_changed", uuid)
++		return bm_equip_item(result.equip_item_uuid, result.equip_unit_uuid, result.equip_slot_index, silent)
++		
++	if result.success:
++		if OS.is_debug_build():
++			_bm_validate_state_consistency()
++			
+ 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+ 		
+ 		if not silent:
++			var events: Array[CombatEvent] = []
++			
+ 			for uuid in result.changed_unit_uuids:
+ 				SignalBus.emit_signal("unit_inventory_changed", uuid)
++				
++				var inst = get_instance(uuid)
++				if is_instance_valid(inst) and old_stats.has(uuid):
++					var old = old_stats[uuid]
++					var new_hp = inst.current_hp
++					var new_pwr = inst.current_pwr
++					var hp_diff = new_hp - old.hp
++					var pwr_diff = new_pwr - old.pwr
++					
++					if hp_diff != 0 or pwr_diff != 0:
++						var payload = CombatPayload.pwr_change(uuid, 0, [old.pwr], [new_pwr])
++						payload.targets_old_hp = [old.hp]
++						payload.targets_new_hp = [new_hp]
++						payload.targets_max_hp = [old.max_hp]
++						payload.amount = hp_diff if hp_diff != 0 else pwr_diff
++						
++						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
++							"source_uuid": uuid,
++							"target_uuids": [uuid],
++							"visual_payload": payload
++						}))
++						
++			if not _pending_reactions.is_empty():
++				var death_tracking = {}
++				events.append_array(_combat.process_reaction_queue(self, death_tracking))
++				
++			if not events.is_empty():
++				enqueue_management_animation(snapshot, events)
++				
+ 			if result.inventory_changed:
+ 				_emit_battle_inventory_changed()
+ 				SignalBus.emit_signal("inventory_ui_refresh_requested")
+@@ -417,6 +417,24 @@
+ 			_pending_inventory_refresh = true
+-	
+-	return result.success
++			
++	return result.success
++
++func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier, silent: bool = false) -> bool:
++	assert(is_instance_valid(source_loc), "bm_move_instance: source_loc is null")
++	assert(is_instance_valid(target_loc), "bm_move_instance: target_loc is null")
++	var op = func(): return InventoryOperations.move_instance(_state, source_loc, target_loc, true)
++	return _execute_with_inventory_animation(op, silent)
++
++func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier, silent: bool = false) -> bool:
++	assert(is_instance_valid(source_loc), "bm_swap_instances: source_loc is null")
++	assert(is_instance_valid(target_loc), "bm_swap_instances: target_loc is null")
++	var op = func(): return InventoryOperations.swap_instances(_state, source_loc, target_loc, true)
++	return _execute_with_inventory_animation(op, silent)
++
++func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
++	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
++	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
++	var op = func(): return InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index, true)
++	return _execute_with_inventory_animation(op, silent)
+ 
+ # ------------------------------------------------------------------
+ # Composite atomic mutation API (Battle)
+@@ -423,26 +423,12 @@
+ 
+-func bm_move_instance_to_discard(uuid: String) -> bool:
++func bm_move_instance_to_discard(uuid: String, silent: bool = false) -> bool:
+ 	assert(not uuid.is_empty(), "bm_move_instance_to_discard: uuid is empty")
+ 	var instance := get_instance(uuid)
+ 	assert(is_instance_valid(instance), "bm_move_instance_to_discard: instance not found")
+-	
+-	# Ownership gate
+ 	assert(_is_player_owned(instance), "bm_move_instance_to_discard: instance is not player owned")
+ 	
+-	var result := InventoryOperations.move_instance_to_discard(_state, instance)
+-	
+-	if result.success:
+-		if OS.is_debug_build():
+-			_bm_validate_state_consistency()
+-			
+-		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+-		
+-		for changed_uuid in result.changed_unit_uuids:
+-			SignalBus.emit_signal("unit_inventory_changed", changed_uuid)
+-		_emit_battle_inventory_changed()
+-		SignalBus.emit_signal("inventory_ui_refresh_requested")
+-	
+-	return result.success
++	var op = func(): return InventoryOperations.move_instance_to_discard(_state, instance, true)
++	return _execute_with_inventory_animation(op, silent)
+ 
+ func bm_reshuffle_discard_pile(_tier_to_reshuffle: int) -> bool:
+ 	# Automatic reshuffle feature has been removed.
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-15T08:52:20-03:00
+Completed At: 2026-08-15T08:52:22-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -360,7 +360,7 @@
+ 					"max_hp": inst.get_definition().base_hp
+ 				}
+ 				
+-	var result: OperationResult = operation.call()
++	var result: InventoryOperations.OperationResult = operation.call()
+ 	
+ 	if result.needs_equip:
+ 		for uuid in result.changed_unit_uuids:
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-15T08:55:39-03:00
+Completed At: 2026-08-15T08:55:41-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -389,9 +389,9 @@
+ 					
+ 					if hp_diff != 0 or pwr_diff != 0:
+ 						var payload = CombatPayload.pwr_change(uuid, 0, [old.pwr], [new_pwr])
+-						payload.targets_old_hp = [old.hp]
+-						payload.targets_new_hp = [new_hp]
+-						payload.targets_max_hp = [old.max_hp]
++						payload.targets_old_hp.append(old.hp)
++						payload.targets_new_hp.append(new_hp)
++						payload.targets_max_hp.append(old.max_hp)
+ 						payload.amount = hp_diff if hp_diff != 0 else pwr_diff
+ 						
+ 						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-15T09:06:51-03:00
+Completed At: 2026-08-15T09:06:53-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -388,10 +388,12 @@
+ 					var pwr_diff = new_pwr - old.pwr
+ 					
+ 					if hp_diff != 0 or pwr_diff != 0:
+-						var payload = CombatPayload.pwr_change(uuid, 0, [old.pwr], [new_pwr])
++						var payload = CombatPayload.pwr_change(uuid, pwr_diff, [old.pwr], [new_pwr])
+ 						payload.targets_old_hp.append(old.hp)
+ 						payload.targets_new_hp.append(new_hp)
+ 						payload.targets_max_hp.append(old.max_hp)
++						payload.hp_amount = hp_diff
++						payload.pwr_amount = pwr_diff
+ 						payload.amount = hp_diff if hp_diff != 0 else pwr_diff
+ 						
+ 						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.
+======================
+Created At: 2026-08-15T09:21:46-03:00
+Completed At: 2026-08-15T09:21:49-03:00
+The following changes were made by the multi_replace_file_content tool to: /Users/danhh/Desktop/Flashcard Heroes/scripts/BattleManager.gd. If relevant, proactively run terminal commands to execute this code for the USER. Don't ask for permission.
+[diff_block_start]
+@@ -376,6 +376,52 @@
+ 		if not silent:
+ 			var events: Array[CombatEvent] = []
+ 			
++			var reaction_events: Array[CombatEvent] = []
++			if not _pending_reactions.is_empty():
++				var death_tracking = {}
++				reaction_events = _combat.process_reaction_queue(self, death_tracking)
++				
++			# Filter out BUFF events for units directly involved in the inventory change
++			# so we can present a clean, sequential NET change for them.
++			var final_reaction_events: Array[CombatEvent] = []
++			for rev in reaction_events:
++				if rev.type == CombatEvent.Type.BUFF:
++					var keep_indices = []
++					for i in range(rev.target_uuids.size()):
++						if not result.changed_unit_uuids.has(rev.target_uuids[i]):
++							keep_indices.append(i)
++					
++					if keep_indices.size() == rev.target_uuids.size():
++						final_reaction_events.append(rev)
++					elif keep_indices.size() > 0:
++						# Strip out the equipped unit to avoid double animations
++						var new_rev = rev.deep_clone()
++						var new_targets: Array[String] = []
++						var p = new_rev.visual_payload
++						var new_old_hp: Array[int] = []
++						var new_new_hp: Array[int] = []
++						var new_max_hp: Array[int] = []
++						var new_old_pwr: Array[int] = []
++						var new_new_pwr: Array[int] = []
++						
++						for i in keep_indices:
++							new_targets.append(rev.target_uuids[i])
++							if p.targets_old_hp.size() > i: new_old_hp.append(p.targets_old_hp[i])
++							if p.targets_new_hp.size() > i: new_new_hp.append(p.targets_new_hp[i])
++							if p.targets_max_hp.size() > i: new_max_hp.append(p.targets_max_hp[i])
++							if p.targets_old_pwr.size() > i: new_old_pwr.append(p.targets_old_pwr[i])
++							if p.targets_new_pwr.size() > i: new_new_pwr.append(p.targets_new_pwr[i])
++							
++						new_rev.target_uuids = new_targets
++						p.targets_old_hp.assign(new_old_hp)
++						p.targets_new_hp.assign(new_new_hp)
++						p.targets_max_hp.assign(new_max_hp)
++						p.targets_old_pwr.assign(new_old_pwr)
++						p.targets_new_pwr.assign(new_new_pwr)
++						final_reaction_events.append(new_rev)
++				else:
++					final_reaction_events.append(rev)
++					
+ 			for uuid in result.changed_unit_uuids:
+ 				SignalBus.emit_signal("unit_inventory_changed", uuid)
+ 				
+@@ -386,24 +386,50 @@
+ 					var hp_diff = new_hp - old.hp
+ 					var pwr_diff = new_pwr - old.pwr
+ 					
+-					if hp_diff != 0 or pwr_diff != 0:
+-						var payload = CombatPayload.pwr_change(uuid, pwr_diff, [old.pwr], [new_pwr])
++					var has_hp_buff = hp_diff > 0
++					var has_pwr_buff = pwr_diff > 0
++					var has_hp_debuff = hp_diff < 0
++					var has_pwr_debuff = pwr_diff < 0
++					
++					# 1. Sequence the Buffs first
++					if has_hp_buff or has_pwr_buff:
++						var buff_hp_diff = hp_diff if has_hp_buff else 0
++						var buff_pwr_diff = pwr_diff if has_pwr_buff else 0
++						
++						var payload = CombatPayload.pwr_change(uuid, buff_pwr_diff, [old.pwr], [old.pwr + buff_pwr_diff])
+ 						payload.targets_old_hp.append(old.hp)
++						payload.targets_new_hp.append(old.hp + buff_hp_diff)
++						payload.targets_max_hp.append(old.max_hp)
++						payload.hp_amount = buff_hp_diff
++						payload.pwr_amount = buff_pwr_diff
++						payload.amount = buff_hp_diff if buff_hp_diff != 0 else buff_pwr_diff
++						
++						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
++							"source_uuid": uuid,
++							"target_uuids": [uuid],
++							"visual_payload": payload
++						}))
++						
++					# 2. Sequence the Debuffs second
++					if has_hp_debuff or has_pwr_debuff:
++						var debuff_hp_diff = hp_diff if has_hp_debuff else 0
++						var debuff_pwr_diff = pwr_diff if has_pwr_debuff else 0
++						
++						var payload = CombatPayload.pwr_change(uuid, debuff_pwr_diff, [new_pwr - debuff_pwr_diff], [new_pwr])
++						payload.targets_old_hp.append(new_hp - debuff_hp_diff)
+ 						payload.targets_new_hp.append(new_hp)
+ 						payload.targets_max_hp.append(old.max_hp)
+-						payload.hp_amount = hp_diff
+-						payload.pwr_amount = pwr_diff
+-						payload.amount = hp_diff if hp_diff != 0 else pwr_diff
+-						
+-						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+-							"source_uuid": uuid,
+-							"target_uuids": [uuid],
+-							"visual_payload": payload
+-						}))
+-						
+-			if not _pending_reactions.is_empty():
+-				var death_tracking = {}
+-				events.append_array(_combat.process_reaction_queue(self, death_tracking))
++						payload.hp_amount = debuff_hp_diff
++						payload.pwr_amount = debuff_pwr_diff
++						payload.amount = debuff_hp_diff if debuff_hp_diff != 0 else debuff_pwr_diff
++						
++						events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
++							"source_uuid": uuid,
++							"target_uuids": [uuid],
++							"visual_payload": payload
++						}))
++						
++			events.append_array(final_reaction_events)
+ 				
+ 			if not events.is_empty():
+ 				enqueue_management_animation(snapshot, events)
+[diff_block_end]
+
+Please note that the above snippet only shows the MODIFIED lines from the last change. It shows up to 3 lines of unchanged lines before and after the modified lines. The actual file contents may have many more lines not shown.

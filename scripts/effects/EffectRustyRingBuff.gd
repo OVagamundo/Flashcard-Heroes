@@ -36,15 +36,24 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var batched_old_pwr: Array[int] = []
 	var batched_new_pwr: Array[int] = []
 
-	var lineup_container = &"PlayerLineup" if trinket_team == "PLAYER" else &"EnemyLineup"
+	var trigger_type = context.get("trigger_type", "")
+	var entered_uuid = context.get("entered_uuid", "")
+	var targets_to_process = []
+	
+	if trigger_type == &"on_board_enter" and not entered_uuid.is_empty():
+		targets_to_process.append(entered_uuid)
+	else:
+		targets_to_process = all_instances.keys()
 
-	for target_uuid in all_instances:
-		var target_instance: GachaBallInstance = all_instances[target_uuid]
+	for target_uuid in targets_to_process:
+		var target_instance: GachaBallInstance = all_instances.get(target_uuid)
 		if not is_instance_valid(target_instance) or target_instance.current_hp <= 0:
 			continue
 			
-		# Must be in the lineup
-		if target_instance.location_container_tag != lineup_container:
+		# Must be on the board (lineup or bench) and on the same team
+		var container = target_instance.location_container_tag
+		var is_on_board = container in [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]
+		if not is_on_board or _get_team_from_container(container) != trinket_team:
 			continue
 			
 		var target_def = target_instance.get_definition()
@@ -53,6 +62,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		# Skip the hero
 		if target_def.is_hero:
+			continue
+			
+		# Prevent double buffing
+		if target_instance.has_tag(buff_tag):
 			continue
 			
 		# Mark as registered
@@ -77,7 +90,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			var hp_result = battle_manager.apply_trinket_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -85,7 +98,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
+			var pwr_result = battle_manager.apply_trinket_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -102,8 +115,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			state_applied_any = true
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
-			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
+			battle_manager.apply_trinket_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_trinket_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
 	if is_simulation and not batched_target_uuids.is_empty():
@@ -119,24 +132,14 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event (all projectiles launched simultaneously)
+		# Batched Multi-Stat BUFF event
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
-		
-		# Batched PWR BUFF event (all projectiles launched simultaneously)
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": CombatPayload.multi_stat_change(_source_uuid, hp_amount, pwr_amount, batched_old_hp, batched_new_hp, batched_max_hp, batched_old_pwr, batched_new_pwr)
 		}))
 
 	result.state_applied = true

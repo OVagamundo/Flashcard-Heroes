@@ -95,27 +95,27 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	move_tween.set_parallel(false)
 	
 	# Pop up with elastic feel
-	move_tween.tween_property(self, "global_position", peak_pos, POP_UP_DURATION).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	move_tween.tween_property(self, "global_position", peak_pos, AnimationConstants.scaled(POP_UP_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Hang at peak briefly
-	move_tween.tween_interval(HANG_TIME)
+	move_tween.tween_interval(AnimationConstants.scaled(HANG_TIME))
 	
 	# === PHASE 2: FLY TO TARGET with wobble ===
-	move_tween.tween_property(self, "global_position", fly_target, FLY_TO_TARGET_DURATION).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
+	move_tween.tween_property(self, "global_position", fly_target, AnimationConstants.scaled(FLY_TO_TARGET_DURATION)).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_IN)
 	
 	# Scale animation: small -> overshoot big -> settle to normal
 	var scale_tween = create_tween()
 	# Pop to max size with overshoot
-	scale_tween.tween_property(token_sprite, "scale", Vector2(max_scale, max_scale), POP_UP_DURATION * 0.6).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	scale_tween.tween_property(token_sprite, "scale", Vector2(max_scale, max_scale), AnimationConstants.scaled(POP_UP_DURATION * 0.6)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	# Settle to normal size
-	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE, FINAL_SCALE), POP_UP_DURATION * 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE, FINAL_SCALE), AnimationConstants.scaled(POP_UP_DURATION * 0.4)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 	# Shrink as approaching target (absorbed effect)
-	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE * 0.6, FINAL_SCALE * 0.6), FLY_TO_TARGET_DURATION).set_delay(HANG_TIME).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	scale_tween.tween_property(token_sprite, "scale", Vector2(FINAL_SCALE * 0.6, FINAL_SCALE * 0.6), AnimationConstants.scaled(FLY_TO_TARGET_DURATION)).set_delay(AnimationConstants.scaled(HANG_TIME)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	
 	# Color: white flash -> golden glow -> normal
 	var color_tween = create_tween()
-	color_tween.tween_property(token_sprite, "modulate", glow_color, WHITE_FLASH_DURATION).set_trans(Tween.TRANS_SINE)
-	color_tween.tween_property(token_sprite, "modulate", Color.WHITE, POP_UP_DURATION - WHITE_FLASH_DURATION)
+	color_tween.tween_property(token_sprite, "modulate", glow_color, AnimationConstants.scaled(WHITE_FLASH_DURATION)).set_trans(Tween.TRANS_SINE)
+	color_tween.tween_property(token_sprite, "modulate", Color.WHITE, AnimationConstants.scaled(POP_UP_DURATION - WHITE_FLASH_DURATION))
 	
 	# Start spinning
 	_start_horizontal_flip(flip_count)
@@ -135,7 +135,7 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	# Quick scale squash on "impact"
 	var squash_tween = create_tween()
 	token_sprite.scale = Vector2(FINAL_SCALE * 0.8, FINAL_SCALE * 0.4) # Squash
-	squash_tween.tween_property(token_sprite, "scale", Vector2(0.0, 0.0), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	squash_tween.tween_property(token_sprite, "scale", Vector2(0.0, 0.0), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	
 	# Bright flash on landing
 	token_sprite.modulate = Color(1.5, 1.4, 1.0, 1.0) # Extra bright
@@ -163,10 +163,10 @@ func _start_horizontal_flip(count: int) -> void:
 	var flip_duration = total_duration / count / 4.0
 	
 	# Full rotation cycle using scale.x
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", -FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, AnimationConstants.scaled(flip_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_flip_tween.tween_property(token_sprite, "scale:x", -FINAL_SCALE, AnimationConstants.scaled(flip_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, AnimationConstants.scaled(flip_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
+	_flip_tween.tween_property(token_sprite, "scale:x", FINAL_SCALE, AnimationConstants.scaled(flip_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 func _start_wobble(delay: float) -> void:
 	"""Add a subtle side-to-side wobble during flight"""
@@ -176,6 +176,6 @@ func _start_wobble(delay: float) -> void:
 	var wobble_duration = FLY_TO_TARGET_DURATION / 4.0
 	
 	# Wobble using rotation
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 15.0, wobble_duration * 0.5).set_delay(delay).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -15.0, wobble_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, wobble_duration * 0.5).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 15.0, AnimationConstants.scaled(wobble_duration * 0.5)).set_delay(AnimationConstants.scaled(delay)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -15.0, AnimationConstants.scaled(wobble_duration)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, AnimationConstants.scaled(wobble_duration * 0.5)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

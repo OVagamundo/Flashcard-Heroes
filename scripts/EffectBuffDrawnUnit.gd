@@ -22,7 +22,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
 	else:
-		var ctx_uuid: String = context.get("drawn_uuid", "")
+		var ctx_uuid: String = context.get("entered_uuid", "")
+		if ctx_uuid.is_empty():
+			ctx_uuid = context.get("drawn_uuid", "")
 		if ctx_uuid.is_empty():
 			ctx_uuid = context.get("summoned_uuid", "")
 		if ctx_uuid.is_empty():
@@ -141,24 +143,14 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event
+		# Batched Multi-Stat BUFF event
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_target_uuids,
 			"ability_id": &"ability_trinket_royal_insignia",
 			"trigger_type": context.get("trigger_type", ""),
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
-		
-		# Batched PWR BUFF event
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": &"ability_trinket_royal_insignia",
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			"visual_payload": CombatPayload.multi_stat_change(_source_uuid, hp_amount, pwr_amount, batched_old_hp, batched_new_hp, batched_max_hp, batched_old_pwr, batched_new_pwr)
 		}))
 
 	result.state_applied = true

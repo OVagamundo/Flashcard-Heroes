@@ -7,6 +7,7 @@ const AC = preload("res://scripts/animations/AnimationConstants.gd")
 func _ready() -> void:
 	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
 	SignalBus.choice_made.connect(_on_choice_made)
+	SignalBus.inventory_action_completed.connect(_on_inventory_action_completed)
 
 # --- Main Action Handler ---
 
@@ -152,12 +153,16 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 
 	if is_instance_valid(bm):
 		bm.unblock_ui_updates()
-		
-		# Clear the skip meta from all units now that initial scaling is processed
-		for uuid in data_owner.get_all_instances():
-			var inst = data_owner.get_all_instances()[uuid]
-			if inst.has_meta("skip_initial_scaling_anim"):
-				inst.remove_meta("skip_initial_scaling_anim")
+
+func _on_inventory_action_completed(_uuids: Array) -> void:
+	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner): return
+	
+	# Clear the skip meta from all units now that any inventory action is fully processed
+	for uuid in data_owner.get_all_instances():
+		var inst = data_owner.get_all_instances()[uuid]
+		if inst.has_meta("skip_initial_scaling_anim"):
+			inst.remove_meta("skip_initial_scaling_anim")
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
 	var def = consumable_instance.get_definition()

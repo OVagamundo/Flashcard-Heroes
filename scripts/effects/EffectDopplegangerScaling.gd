@@ -26,6 +26,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	var scale_amount = self.parameters.get("scale_amount", 3)
 	var bonus_pwr = copy_count * scale_amount
+	
+	# If the source doppleganger is not on the board, it shouldn't hold the stat buff
+	if not _is_on_board(source):
+		bonus_pwr = 0
+		
 	var status_key = &"doppleganger_scaling"
 	var last_scaling = source.get_status_effect_amount(status_key)
 	var delta = bonus_pwr - last_scaling
@@ -44,9 +49,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var result := EffectResult.new()
 	if is_simulation:
-		var skip_anim = source.has_meta("skip_initial_scaling_anim")
+		var skip_anim = false
 		# Use BUFF for both positive and negative stat changes to avoid attack/damage animations
-		var visual_source_uuid = "" # Omit source_uuid to prevent self-projectile
+		var visual_source_uuid = source_uuid # Self-buff origin
 		var payload = CombatPayload.pwr_change(visual_source_uuid, delta, [], [source.current_pwr])
 		payload.skip_bump = skip_anim # Silently update the UI without hopping or flashing
 		
