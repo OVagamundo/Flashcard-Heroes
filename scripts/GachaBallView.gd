@@ -57,6 +57,7 @@ var _window_group_id: int = 0
 
 # Visual State (Puppet Mode)
 var _visual_hp: int = 0
+var _has_started_vcr_stats: bool = false
 var _visual_pwr: int = 0
 var _visual_burn_stacks: int = 0 # Legacy - kept for backward compat
 var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
@@ -281,6 +282,7 @@ func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
 func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true) -> void:
+	_has_started_vcr_stats = false
 	self._location = loc
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
@@ -330,9 +332,13 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		_last_soul_count = -1
 		_last_trait_level = -1
 	
-	# Initialize visual state
-	_visual_hp = visual_data.get("hp", 0)
-	_visual_pwr = visual_data.get("pwr", 0)
+	# Initialize visual state (prefer initial_spawn stats for decoupled VCR animation timing)
+	var initial_hp = visual_data.get("initial_spawn_hp", -1)
+	_visual_hp = initial_hp if initial_hp != -1 else visual_data.get("hp", 0)
+	
+	var initial_pwr = visual_data.get("initial_spawn_pwr", -1)
+	_visual_pwr = initial_pwr if initial_pwr != -1 else visual_data.get("pwr", 0)
+	
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
@@ -582,8 +588,17 @@ func update_visuals(visual_data: Dictionary) -> void:
 	if visual_data.is_empty() or visual_data.get("uuid") != _instance_uuid:
 		return
 		
-	_visual_hp = visual_data.get("hp", 0)
-	_visual_pwr = visual_data.get("pwr", 0)
+	var initial_hp = visual_data.get("initial_spawn_hp", -1)
+	if initial_hp != -1 and not _has_started_vcr_stats:
+		pass # Do not overwrite _visual_hp yet, wait for VCR to animate from the base
+	else:
+		_visual_hp = visual_data.get("hp", _visual_hp)
+		
+	var initial_pwr = visual_data.get("initial_spawn_pwr", -1)
+	if initial_pwr != -1 and not _has_started_vcr_stats:
+		pass
+	else:
+		_visual_pwr = visual_data.get("pwr", _visual_pwr)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
@@ -1331,6 +1346,7 @@ func animate_status_change(status_id: StringName, new_stacks: int) -> void:
 			_pop_container(icon_node)
 
 func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
+	_has_started_vcr_stats = true
 	# type: "hp" or "pwr"
 	var label = hp_label if type == "hp" else pwr_label
 	var container = hp_container if type == "hp" else pwr_container
@@ -1350,6 +1366,22 @@ func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	# Tween the number
 	var tween = create_tween()
 	tween.tween_method(func(val): label.text = str(val), start_val, target_val, 0.5)
+
+	# Visual Reactions (moved from BuffAnimation to ensure all stat changes animate uniformly)
+	if target_val > start_val:
+		SignalBus.emit_signal("unit_color_flash", _instance_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HOP_DEFORM")
+		SignalBus.emit_signal("unit_move", _instance_uuid, &"HOP", Vector2.ZERO)
+	elif target_val < start_val:
+		SignalBus.emit_signal("unit_color_flash", _instance_uuid, Color(0.3, 0.3, 0.3), AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HIT_IMPACT")
+		
+		var offset_y = 0.3 if type == "pwr" else 0.2
+		var spawn_pos = global_position + (size * Vector2(0.5, offset_y))
+		var color = Color(1.0, 0.0, 0.0) if type == "hp" else Color(0.0, 0.0, 0.0)
+		var amount = start_val - target_val # absolute difference
+		if VFXFactory.has_method("spawn_stat_number_on_layer"):
+			VFXFactory.spawn_stat_number_on_layer(-amount, spawn_pos, color, Vector2.DOWN)
 
 func _flash_label(label: Label) -> void:
 	# Quick white flash on the label when its value changes
