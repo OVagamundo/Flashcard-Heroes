@@ -69,6 +69,8 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		# Stats
 		"hp": instance.current_hp,
 		"pwr": instance.current_pwr,
+		"initial_spawn_hp": instance.initial_spawn_hp,
+		"initial_spawn_pwr": instance.initial_spawn_pwr,
 		"burn_stacks": instance.get_status_effect_amount(&"burn"), # Backward compat
 		"armor_stacks": instance.get_status_effect_amount(&"armor"), # Same pattern as burn
 		"spikes_stacks": instance.get_status_effect_amount(&"spikes"), # Spikes status effect

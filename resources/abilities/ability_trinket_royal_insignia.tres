@@ -8,6 +8,6 @@ script = ExtResource("1_script")
 id = &"ability_trinket_royal_insignia"
 name_key = "ability.royal_insignia.name"
 description_key = "ability.royal_insignia.desc"
-trigger = &"on_draw"
+trigger = &"on_board_enter"
 priority = 50
 effects = Array[Resource]([ExtResource("2_effect")])

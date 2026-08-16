@@ -121,6 +121,11 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	if _is_ui_transitioning:
 		return
 
+	# Strict Input Blocking: drop inputs if ActionQueue is busy
+	# (Pause and Speed controls bypass this because they don't route through GIR)
+	if ActionQueue.is_busy():
+		return
+
 	# Hover events: handled separately, never enter the click-based command queue
 	if context.event_type == &"HOVER_ENTER":
 		if _is_combat_phase: 
@@ -965,13 +970,15 @@ func _execute_request_action(command_context: Dictionary) -> void:
 			if tgt_view:
 				_activate_close_suppression_for_view(tgt_view)
 			else:
-				# Fallback: tie suppression to the source view's parent (covers drag from inventory)
+			# Fallback: tie suppression to the source view's parent (covers drag from inventory)
 				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
 				if src_view:
 					_activate_close_suppression_for_view(src_view)
-		SignalBus.emit_signal("try_inventory_action",
-			source_context.location,
-			target_context.location)
+		
+		# Instantiate a deterministic GameAction instead of immediate mutation
+		var MoveInventoryAction = preload("res://scripts/engine/actions/MoveInventoryAction.gd")
+		var action = MoveInventoryAction.new(source_context.location, target_context.location)
+		ActionQueue.request(action)
 
 ## Execute invalid action command
 func _execute_invalid_action() -> void:

@@ -222,38 +222,25 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	_selected_cost = 0
 
 func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
+	if ActionQueue.is_busy(): return
+	
 	# Get the currently selected location from the new InteractionManager
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
-		if is_instance_valid(instance):
-			# PRE-VALIDATION: Check if player has enough gold BEFORE animating
-			var current_gold: int = 0
-			if is_instance_valid(GameManager.run_state):
-				current_gold = GameManager.run_state.gold
-			
-			if current_gold < _selected_cost:
-				# Insufficient gold - play rejection feedback
-				var main_node = GameManager._active_main_node
-				var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-				# Play rejection on the drop zone overlay instead of the old buy button
-				var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
-				var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
-				RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
-				return
-			
+		if instance != null:
 			# Capture slot position and visual data BEFORE purchase
 			var slot_nodes = slots_container.get_children()
 			var slot_view = slot_nodes[selected_loc.index] if selected_loc.index < slot_nodes.size() else null
 			var slot_center: Vector2 = Vector2.ZERO
-			if is_instance_valid(slot_view):
+			if slot_view != null:
 				slot_center = slot_view.get_global_rect().get_center()
 				# CONVERSION: Slot is in SubViewport, animations are in Screen Space (Main)
 				var main_node = GameManager._active_main_node
-				if is_instance_valid(main_node):
+				if main_node != null:
 					var content_area = main_node.get_node_or_null("%ContentArea")
-					if is_instance_valid(content_area):
+					if content_area != null:
 						slot_center += content_area.global_position
 			
 			# Determine interaction point: drop point for drag, slot center for click
@@ -264,76 +251,22 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 				else:
 					interaction_pos = mouse_pos
 			
-			# Capture visual data and tier before purchase clears the instance
-			var visual_data = VisualDataAdapter.create_visual_data(instance)
-			var def = instance.get_definition()
-			var tier: int = 1
-			if "tier" in def:
-				tier = int(def.tier)
-			# Trinkets go to machine 3
-			if is_instance_valid(def) and def.category == &"TRINKET":
-				tier = 3
-			
-			# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
-			# We only hide the child GachaBallView so the slot background remains visible
-			var source_anchor = WindowManager.find_view_for_location(selected_loc)
-			if is_instance_valid(source_anchor):
-				for child in source_anchor.get_children():
-					if child is GachaBallView:
-						child.modulate.a = 0.0
-						child.visible = false
-			
-			# Create the VFX gachaball immediately so it stays visible during the coin animation
-			var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-			
-			var ball_uuid = instance.ball_uuid
-			
-			# Animate gold coins then purchase, then animate gachaball
-			_animate_gold_spend(_selected_cost, interaction_pos, func():
-				SignalBus.emit_signal("shop_purchase_requested", ball_uuid, _selected_cost)
-				# AUDIO HOOK: Buy
-				Audio.play_sfx("shop_buy")
-				
-				# After purchase, animate the already-visible VFX gachaball to machine
-				_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
-				
-				# Hide the drop zone after purchase
-				var mn = GameManager._active_main_node
-				if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
-					mn.hide_confirm_drop_zone()
-			)
+			var BuyShopAction = preload("res://scripts/engine/actions/shop/BuyShopAction.gd")
+			ActionQueue.request(BuyShopAction.new(selected_loc, _selected_cost, interaction_pos))
 
 func _on_reroll_pressed() -> void:
-	# PRE-VALIDATION: Check if player has enough gold BEFORE animating
-	var current_gold: int = 0
-	if is_instance_valid(GameManager.run_state):
-		current_gold = GameManager.run_state.gold
-	
-	if current_gold < _current_reroll_cost:
-		# Insufficient gold - play rejection feedback
-		var main_node = GameManager._active_main_node
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
-		return
-	
-	# Disable button during animation
-	reroll_button.disabled = true
-	
+	if ActionQueue.is_busy(): return
+
 	var target_pos = reroll_button.get_global_rect().get_center()
 	# Button is in SubViewport
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
+	if main_node != null:
 		var content_area = main_node.get_node_or_null("%ContentArea")
-		if is_instance_valid(content_area):
+		if content_area != null:
 			target_pos += content_area.global_position
 			
-	# Animate gold coins then reroll
-	_animate_gold_spend(_current_reroll_cost, target_pos, func():
-		SignalBus.emit_signal("shop_reroll_requested")
-		# AUDIO HOOK: Reroll
-		Audio.play_sfx("shop_reroll")
-		reroll_button.disabled = false
-	)
+	var RerollShopAction = preload("res://scripts/engine/actions/shop/RerollShopAction.gd")
+	ActionQueue.request(RerollShopAction.new(_current_reroll_cost, target_pos))
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
 	"""Animate gold coins flying from gold counter to target position"""
@@ -466,12 +399,9 @@ func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vect
 	)
 
 func _on_leave_pressed() -> void:
-	# Hide the drop zone overlay before leaving
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
-		main_node.hide_confirm_drop_zone()
-	SignalBus.emit_signal("path_choice_scene_requested")
-	queue_free()
+	if ActionQueue.is_busy(): return
+	var LeaveShopAction = preload("res://scripts/engine/actions/shop/LeaveShopAction.gd")
+	ActionQueue.request(LeaveShopAction.new())
 
 func _on_gui_input(event: InputEvent) -> void:
 	# Handle background clicks using the new InteractionContext system

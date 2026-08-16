@@ -62,6 +62,8 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
+	merged_instance.initial_spawn_hp = final_hp
+	merged_instance.initial_spawn_pwr = final_pwr
 	
 	# Merge status effects: sum up stacks of each status effect.
 	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
@@ -81,10 +83,15 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 			
 	# Merge dynamic tags (ensuring uniqueness)
+	var trinket_tags_to_ignore: Array[StringName] = [&"rusty_ring_buffed", &"rusty_ring_debuffed"]
 	for tag in instance_a.dynamic_tags:
+		if trinket_tags_to_ignore.has(tag):
+			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	for tag in instance_b.dynamic_tags:
+		if trinket_tags_to_ignore.has(tag):
+			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	

@@ -67,7 +67,8 @@ func _process(delta: float) -> void:
 		return
 	
 	_elapsed += delta
-	var t = _elapsed / TOSS_DURATION
+	var scaled_toss = AnimationConstants.scaled(TOSS_DURATION)
+	var t = _elapsed / scaled_toss
 	
 	if t >= 1.0:
 		# Arrived at destination
@@ -112,8 +113,8 @@ func _on_landing() -> void:
 	
 	# Brief visible moment, then vanish (absorbed into machine)
 	var vanish_tween = create_tween()
-	vanish_tween.tween_interval(0.05)
-	vanish_tween.tween_property(token_sprite, "modulate:a", 0.0, 0.08)
+	vanish_tween.tween_interval(AnimationConstants.scaled(0.05))
+	vanish_tween.tween_property(token_sprite, "modulate:a", 0.0, AnimationConstants.scaled(0.08))
 	
 	await vanish_tween.finished
 	
@@ -124,7 +125,7 @@ func _start_spin() -> void:
 	"""Spin the coin during flight - like a flipping coin"""
 	_flip_tween = create_tween()
 	
-	var spin_duration = TOSS_DURATION / SPIN_COUNT / 4.0
+	var spin_duration = AnimationConstants.scaled(TOSS_DURATION / SPIN_COUNT / 4.0)
 	
 	# Full rotation cycle using scale.x (creates flip illusion)
 	_flip_tween.set_loops(SPIN_COUNT)
@@ -138,6 +139,6 @@ func _start_wobble() -> void:
 	_wobble_tween = create_tween()
 	_wobble_tween.set_loops(int(TOSS_DURATION / 0.12))
 	
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", WOBBLE_DEGREES, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -WOBBLE_DEGREES, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", WOBBLE_DEGREES, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -WOBBLE_DEGREES, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

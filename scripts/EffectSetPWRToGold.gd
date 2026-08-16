@@ -12,7 +12,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.new()
 
 	var trigger = context.get("trigger_type", "")
-	var drawn_uuid = context.get("drawn_uuid", "")
+	var drawn_uuid = context.get("entered_uuid", context.get("drawn_uuid", ""))
 	
 	# The on_board_enter trigger handles filtering the target, so we don't need a guard clause here.
 	var gold = 0

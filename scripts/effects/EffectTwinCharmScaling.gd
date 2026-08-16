@@ -51,6 +51,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 		var total_copies: int = int(copy_counts.get(inst.definition_id, 0))
 		var bonus_pwr: int = total_copies / 2
+		
+		# If the unit is not on the board yet (e.g. in the Gacha Machine/Inventory), 
+		# it shouldn't hold the stat buff. This ensures the delta triggers when it enters the board.
+		if not _is_on_board(inst):
+			bonus_pwr = 0
+			
 		var delta: int = bonus_pwr - last_bonus
 		if delta == 0:
 			continue

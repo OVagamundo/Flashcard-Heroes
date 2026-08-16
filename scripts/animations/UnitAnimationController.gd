@@ -151,7 +151,9 @@ func _restore_move_layout_state() -> void:
 	else:
 		# Restore the original local layout state so container-managed slots do not
 		# accumulate offsets after temporary top-level animations.
-		_view.position = _move_original_local_position
+		# ONLY do this if we aren't currently returning a guardian (guardian logic uses _guardian_original_position)
+		if _guardian_original_position == Vector2.ZERO:
+			_view.position = _move_original_local_position
 		if _move_original_size != Vector2.ZERO:
 			_view.size = _move_original_size
 
@@ -593,7 +595,11 @@ func animate_leap_to(target_center: Vector2) -> void:
 		_move_tween.kill()
 		_restore_move_layout_state()
 		
-	_guardian_original_position = _view.global_position
+	# Only set original position if it's currently at Vector2.ZERO (meaning it was properly returned)
+	# or if we haven't jumped yet. If we are somehow already mid-jump, don't overwrite it with the target position!
+	if _guardian_original_position == Vector2.ZERO:
+		_guardian_original_position = _view.global_position
+		
 	_original_z_index = _view.z_index
 	_view.z_index = 100
 	
@@ -642,6 +648,10 @@ func animate_leap_return() -> void:
 	if _move_tween and _move_tween.is_valid():
 		_move_tween.kill()
 		_restore_move_layout_state()
+	
+	# Ensure the view is actually visible and top_level is false so it can return to its slot properly
+	_view.top_level = false
+	_view.z_index = _original_z_index
 	
 	var tween = _view.create_tween()
 	_move_tween = tween

@@ -100,9 +100,17 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		elif stat == "pwr" or stat == "hp_and_pwr":
 			animator.apply_pwr_delta(target_uuid, pwr_delta, payload.new_pwr)
 			
-		# Visual Reactions are now handled directly by GachaBallView.animate_stat_change
-		# This ensures that ALL stat changes (even those that bypass the VCR) trigger 
-		# the correct hops, flashes, and floating debuff texts uniformly.
+		if not is_pure_debuff:
+			SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+			SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
+			SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
+		else:
+			SignalBus.emit_signal("unit_color_flash", target_uuid, Color(0.3, 0.3, 0.3), AnimationConstants.FLASH_FADE_DURATION)
+			SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
+			if has_hp_debuff:
+				_spawn_floating_stat_debuff(animator, target_uuid, abs(hp_delta), "hp")
+			if has_pwr_debuff:
+				_spawn_floating_stat_debuff(animator, target_uuid, abs(pwr_delta), "pwr")
 				
 	# Wait for animation completion
 	if final_target_uuid != "":
@@ -112,3 +120,15 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
 
+func _spawn_floating_stat_debuff(animator: Node, target_uuid: String, amount: int, type: String) -> void:
+	if not VFXFactory.has_method("spawn_stat_number_on_layer"): return
+	
+	var target_view = animator._visual_registry.get(target_uuid)
+	if not is_instance_valid(target_view): return
+	
+	var offset_y = 0.3 if type == "pwr" else 0.2
+	var spawn_pos = target_view.global_position + (target_view.size * Vector2(0.5, offset_y))
+	var color = Color(1.0, 0.0, 0.0) if type == "hp" else Color(0.0, 0.0, 0.0)
+	
+	# Amount is passed as a positive absolute value. The VFXFactory takes the literal number to display, so negate it for debuffs.
+	VFXFactory.spawn_stat_number_on_layer(-amount, spawn_pos, color, Vector2.DOWN)

@@ -98,166 +98,36 @@ func _get_selected_inventory_item() -> Dictionary:
 	}
 
 func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress:
-		return
+	if ActionQueue.is_busy(): return
 	var item_data = _get_selected_inventory_item()
-	if item_data.is_empty():
-		return
+	if item_data.is_empty(): return
 
-	var main_node = GameManager._active_main_node
-	var remove_target = main_node.get_action_zone_2() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_2") else null
-	var remove_cost := _get_remove_cost()
-	
-	# Check if enough gold first
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < remove_cost:
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		var target = remove_target if is_instance_valid(remove_target) else open_inventory_button
-		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
-		return
-
-	_action_in_progress = true
-	
-	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
 	if is_drag:
 		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
 	else:
-		# Find the slot center
 		var slot_view = WindowManager.find_view_for_location(item_data.location)
-		if is_instance_valid(slot_view):
+		if slot_view != null:
 			interaction_pos = slot_view.get_global_rect().get_center()
-	
-	# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
-	# We only hide the child GachaBallView so the slot background remains visible
-	var source_anchor = WindowManager.find_view_for_location(item_data.location)
-	if is_instance_valid(source_anchor):
-		for child in source_anchor.get_children():
-			if child is GachaBallView:
-				child.modulate.a = 0.0
-				child.visible = false
-				
-	# Create the VFX gachaball immediately so it stays visible during the coin animation
-	var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
-	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
 
-	# Animate gold spend first
-	_animate_gold_spend(remove_cost, interaction_pos, func():
-		# Actually spend gold and remove the instance
-		SignalBus.emit_signal("black_market_action_requested", {
-			"type": "remove",
-			"cost": remove_cost,
-			"instance_uuid": item_data.uuid
-		})
-		
-		# Play removal animation using the already-visible VFX ball
-		_animate_gachaball_removal_vfx(vfx_ball)
-
-		# Refresh drop zone texts dynamically
-		if is_instance_valid(main_node):
-			if main_node.has_method("set_action_zone_texts"):
-				var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
-				var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
-				main_node.set_action_zone_texts(transform_text, remove_text)
-			if main_node.has_method("show_split_action_drop_zones"):
-				main_node.show_split_action_drop_zones()
-
-			# Clear selection
-			SignalBus.emit_signal("selection_clear_requested")
-			Audio.play_sfx("ui_drag_drop")
-		
-		_action_in_progress = false
-	)
+	var RemoveBlackMarketAction = preload("res://scripts/engine/actions/black_market/RemoveBlackMarketAction.gd")
+	ActionQueue.request(RemoveBlackMarketAction.new(item_data.location, item_data.uuid, _get_remove_cost(), interaction_pos))
 
 func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress:
-		return
+	if ActionQueue.is_busy(): return
 	var item_data = _get_selected_inventory_item()
-	if item_data.is_empty():
-		return
+	if item_data.is_empty(): return
 
-	var source_definition = item_data.definition
-	var source_location: LocationIdentifier = item_data.location
-
-	var result_definition := GameManager.get_transform_result(source_definition)
-	if not is_instance_valid(result_definition):
-		return
-
-	var main_node = GameManager._active_main_node
-	var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else null
-	
-	var transform_cost = GameManager.get_black_market_transform_cost()
-	
-	# Check if enough gold first
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < transform_cost:
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		var target = transform_target if is_instance_valid(transform_target) else open_inventory_button
-		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
-		return
-
-	_action_in_progress = true
-
-	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
 	if is_drag:
 		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
 	else:
 		var slot_view = WindowManager.find_view_for_location(item_data.location)
-		if is_instance_valid(slot_view):
+		if slot_view != null:
 			interaction_pos = slot_view.get_global_rect().get_center()
 
-	# Hide the slot view IMMEDIATELY via modulation to prevent the 1-frame flash during refresh.
-	# Using modulate.a = 0 instead of visible = false preserves the layout space (no shifting).
-	var target_slot_view = WindowManager.find_view_for_location(source_location)
-	if is_instance_valid(target_slot_view):
-		target_slot_view.modulate.a = 0.0
-
-	# Clean up UI states immediately
-	SignalBus.emit_signal("hide_slot_indicators")
-	SignalBus.emit_signal("selection_clear_requested")
-
-	# Create the VFX gachaball immediately so it stays visible during the coin animation
-	var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
-	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-
-	# Animate gold spend first
-	_animate_gold_spend(transform_cost, interaction_pos, func():
-		# Emit transform request instead of mutating directly
-		SignalBus.emit_signal("black_market_action_requested", {
-			"type": "transform",
-			"cost": transform_cost,
-			"instance_uuid": item_data.uuid,
-			"source_location": source_location,
-			"result_definition": result_definition,
-			"source_level": item_data.instance.level
-		})
-
-		# Animation starts from the interaction point
-		var start_pos = interaction_pos
-
-		# We need a temporary instance just to generate visual data for the animation
-		var temp_new_instance := GachaBallInstance.new()
-		temp_new_instance.initialize(result_definition)
-
-		# Update the VFX ball to show the NEW transformed unit
-		var new_visual_data = VisualDataAdapter.create_visual_data(temp_new_instance)
-		if is_instance_valid(vfx_ball):
-			vfx_ball.populate(null, new_visual_data, false)
-
-		# Wait for views to update then animate using the vfx_ball
-		var target_view := await _prepare_transform_target_view(source_location)
-		if start_pos != Vector2.ZERO and is_instance_valid(target_view):
-			await _animate_transform_to_slot_vfx(vfx_ball, new_visual_data, start_pos, target_view)
-		else:
-			# Fallback if no target view, just cleanup vfx ball
-			if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-			if is_instance_valid(target_view):
-				target_view.visible = true
-				target_view.modulate.a = 1.0
-				if target_view.has_method("play_landing_bounce"):
-					target_view.play_landing_bounce()
-
-		_action_in_progress = false
-	)
+	var TransformBlackMarketAction = preload("res://scripts/engine/actions/black_market/TransformBlackMarketAction.gd")
+	ActionQueue.request(TransformBlackMarketAction.new(item_data.location, item_data.uuid, GameManager.get_black_market_transform_cost(), interaction_pos))
 
 func _find_ball_view_for_location(loc: LocationIdentifier) -> Control:
 	var anchor = WindowManager.find_view_for_location(loc)
@@ -492,15 +362,9 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
-	# Hide BM zones before leaving
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
-		if main_node.has_method("hide_split_action_drop_zones"):
-			main_node.hide_split_action_drop_zones()
-	SignalBus.emit_signal("path_choice_scene_requested")
-	queue_free()
+	if ActionQueue.is_busy(): return
+	var LeaveBlackMarketAction = preload("res://scripts/engine/actions/black_market/LeaveBlackMarketAction.gd")
+	ActionQueue.request(LeaveBlackMarketAction.new())
 
 func _on_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):

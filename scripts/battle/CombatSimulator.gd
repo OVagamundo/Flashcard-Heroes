@@ -672,9 +672,6 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
-		# Suppress visual buff pop for the newly summoned unit's initial stats
-		new_inst.set_meta("skip_initial_scaling_anim", true)
-		
 		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		
@@ -692,9 +689,6 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			out_events.append_array(inline_evts)
 			out_events.append_array(reaction_events)
 			
-		# Clean up suppression flag
-		new_inst.remove_meta("skip_initial_scaling_anim")
-		
 		# UPDATE THE SNAPSHOT in the previously generated SUMMON event so the spawn animation uses the final stats!
 		for event in out_events:
 			if event.type == CombatEvent.Type.SUMMON and is_instance_valid(event.visual_payload):
