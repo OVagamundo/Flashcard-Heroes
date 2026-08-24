@@ -219,12 +219,11 @@ func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[Co
 				elif next_ev.type in [CombatEvent.Type.BUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
 					var next_payload = next_ev.visual_payload
 					
-					# Match Rule: Same source_uuid, OR same ability_id, OR both are passive scaling (empty source_uuid)
+					# Match Rule: Events must originate from the SAME source_uuid. If both are passive (empty source_uuid), ability_id must match.
 					var is_same_source = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
-					var is_same_ability = (next_ev.ability_id == ability_id and not String(ability_id).is_empty())
-					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty())
+					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty() and next_ev.ability_id == ability_id)
 					
-					if is_same_source or is_same_ability or is_both_passive:
+					if is_same_source or is_both_passive:
 						_merge_event_payloads(merged_event, next_ev)
 						j += 1
 						continue
@@ -284,10 +283,6 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		
 		_play_trinket_activations_for_event(event)
 		if event.type == CombatEvent.Type.LOG_MESSAGE:
-			var has_trinket = event.trinket_activations.size() > 0
-			if has_trinket:
-				# Standalone trinket activations need to be awaited so the UI isn't destroyed immediately
-				await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
 			continue
 		
 		if _is_paused and not _step_advance_requested:

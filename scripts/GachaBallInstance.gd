@@ -1055,3 +1055,7 @@ func get_definition() -> Resource:
 func clear_initial_spawn_stats() -> void:
 	initial_spawn_hp = -1
 	initial_spawn_pwr = -1
+
+func capture_initial_spawn_stats() -> void:
+	initial_spawn_hp = current_hp
+	initial_spawn_pwr = current_pwr

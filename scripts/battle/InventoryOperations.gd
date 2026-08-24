@@ -177,7 +177,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	if not existing_uuid.is_empty():
 		var existing := state.get_instance(existing_uuid)
 		if is_instance_valid(existing):
-			var discard_result := move_instance_to_discard(state, existing)
+			var discard_result := move_instance_to_discard(state, existing, silent)
 			if not discard_result.success:
 				return result
 			for changed_uuid in discard_result.changed_unit_uuids:

@@ -58,7 +58,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			if proj: projectiles.append(proj)
 			
 	if has_hp_buff and has_pwr_buff:
-		await animator.get_tree().create_timer(0.15).timeout
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.15)).timeout
 			
 	if has_pwr_buff:
 		for target_uuid in targets:
@@ -100,22 +100,25 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		elif stat == "pwr" or stat == "hp_and_pwr":
 			animator.apply_pwr_delta(target_uuid, pwr_delta, payload.new_pwr)
 			
-		if not is_pure_debuff:
-			SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+		# Spawn floating debuff numbers for negative stat deltas
+		if has_hp_debuff:
+			_spawn_floating_stat_debuff(animator, target_uuid, abs(hp_delta), "hp")
+		if has_pwr_debuff:
+			_spawn_floating_stat_debuff(animator, target_uuid, abs(pwr_delta), "pwr")
+			
+		# Unit motion / flash reactions
+		if has_hp_buff or has_pwr_buff:
+			var flash_col = Color(0.2, 1.0, 0.3) if (has_hp_buff and not has_pwr_buff) else (Color(0.2, 0.8, 1.0) if (has_pwr_buff and not has_hp_buff) else Color(0.3, 1.0, 0.6))
+			SignalBus.emit_signal("unit_color_flash", target_uuid, flash_col, AnimationConstants.FLASH_FADE_DURATION)
 			SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
 			SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
-		else:
+		elif is_pure_debuff:
 			SignalBus.emit_signal("unit_color_flash", target_uuid, Color(0.3, 0.3, 0.3), AnimationConstants.FLASH_FADE_DURATION)
 			SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
-			if has_hp_debuff:
-				_spawn_floating_stat_debuff(animator, target_uuid, abs(hp_delta), "hp")
-			if has_pwr_debuff:
-				_spawn_floating_stat_debuff(animator, target_uuid, abs(pwr_delta), "pwr")
 				
-	# Wait for animation completion
-	if final_target_uuid != "":
-		# Always wait for at least a standard flash duration so the sequence doesn't blow past it
-		await animator.wait_for_animation_completion("flash", final_target_uuid)
+	# Wait for hop move completion if unit hopped
+	if final_target_uuid != "" and (has_hp_buff or has_pwr_buff):
+		await animator.wait_for_animation_completion("move", final_target_uuid)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)

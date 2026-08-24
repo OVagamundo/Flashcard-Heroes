@@ -200,7 +200,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 	while spent < budget and purchased_units.size() < max_units:
 		var affordable_units = pools.units.filter(func(x): return _get_cost(x) <= budget - spent)
 		if affordable_units.is_empty(): break
-		var u = director.draw_item(affordable_units, director_run_state)
+		var u = director.draw_item(affordable_units, director_run_state, RNGManager.map_rng)
 		if u == null: break
 		purchased_units.append(u)
 		spent += _get_cost(u)
@@ -211,7 +211,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 	while spent < budget and purchased_items.size() < total_slots:
 		var affordable_items = pools.items.filter(func(x): return _get_cost(x) <= budget - spent)
 		if affordable_items.is_empty(): break
-		var item = director.draw_item(affordable_items, director_run_state)
+		var item = director.draw_item(affordable_items, director_run_state, RNGManager.map_rng)
 		if item == null: break
 		purchased_items.append(item)
 		spent += _get_cost(item)
@@ -222,7 +222,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 	while spent < budget and purchased_trinkets.size() < max_trinkets:
 		var affordable_trinkets = pools.trinkets.filter(func(x): return _get_cost(x) <= budget - spent)
 		if affordable_trinkets.is_empty(): break
-		var t = director.draw_item(affordable_trinkets, director_run_state)
+		var t = director.draw_item(affordable_trinkets, director_run_state, RNGManager.map_rng)
 		if t == null: break
 		purchased_trinkets.append(t)
 		director_run_state.exclude_entity(t.id)
@@ -249,7 +249,7 @@ func _single_build_attempt(budget: int, pools: Dictionary, max_units: int, max_t
 			
 			var potential_upgrades = pool.filter(func(x): return _get_cost(x) > current_cost and _get_cost(x) <= current_cost + remaining)
 			if not potential_upgrades.is_empty():
-				var upgrade = director.draw_item(potential_upgrades, director_run_state)
+				var upgrade = director.draw_item(potential_upgrades, director_run_state, RNGManager.map_rng)
 				if upgrade:
 					list[idx] = upgrade
 					spent += (_get_cost(upgrade) - current_cost)

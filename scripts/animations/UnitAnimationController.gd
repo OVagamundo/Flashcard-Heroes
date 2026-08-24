@@ -685,23 +685,35 @@ func _on_unit_color_flash(unit_uuid: String, flash_color: Color, duration: float
 	if _get_uuid() != unit_uuid:
 		return
 	
-	var mat = _get_active_material()
-	if not mat:
+	var materials: Array[ShaderMaterial] = []
+	if is_instance_valid(_icon_rect) and _icon_rect.material is ShaderMaterial:
+		materials.append(_icon_rect.material as ShaderMaterial)
+	if is_instance_valid(_icon_rect):
+		var unit_sprite = _icon_rect.get_node_or_null("UnitSprite")
+		if is_instance_valid(unit_sprite) and unit_sprite.material is ShaderMaterial:
+			materials.append(unit_sprite.material as ShaderMaterial)
+	
+	if materials.is_empty():
 		return
 	
 	if _color_tween and _color_tween.is_valid():
 		_color_tween.kill()
 	
-	# Set flash
-	mat.set_shader_parameter("flash_color", flash_color)
-	mat.set_shader_parameter("flash_intensity", 1.0)
+	# Set flash on all active materials
+	for mat in materials:
+		mat.set_shader_parameter("flash_color", flash_color)
+		mat.set_shader_parameter("flash_intensity", 1.0)
+	
 	var original_modulate: Color = _view.modulate
 	_view.modulate = Color(flash_color.r * 1.3, flash_color.g * 1.3, flash_color.b * 1.3, 1.0)
 	
 	# Fade out
 	_color_tween = _view.create_tween()
 	_color_tween.set_parallel(true)
-	_color_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, AC.scaled(duration))
+	_color_tween.tween_method(func(v: float):
+		for mat in materials:
+			mat.set_shader_parameter("flash_intensity", v)
+	, 1.0, 0.0, AC.scaled(duration))
 	_color_tween.tween_property(_view, "modulate", original_modulate, AC.scaled(duration))
 	_color_tween.set_parallel(false)
 	

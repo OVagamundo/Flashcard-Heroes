@@ -18,7 +18,7 @@ func execute() -> void:
 
 func _perform_mutation() -> void:
 	if not elite_mode:
-		for i in range(5):
+		for i in range(GameManager._temporary_reward_container.get_size()):
 			var uuid = GameManager._temporary_reward_container.get_uuid(i)
 			if not uuid.is_empty():
 				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})

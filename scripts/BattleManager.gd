@@ -27,6 +27,7 @@ var _is_processing_effect: bool:
 
 var _management_animation_queue: Array[Dictionary] = []
 var _is_animating_management_queue: bool = false
+var _is_evaluating_logic: bool = false
 
 
 var _battle_over_deferred: bool = false
@@ -114,6 +115,9 @@ func get_current_phase() -> Phases:
 
 func is_processing_effect() -> bool:
 	return _is_processing_effect
+
+func is_evaluating_logic() -> bool:
+	return _is_evaluating_logic
 
 func set_processing_effect(active: bool) -> void:
 	_is_processing_effect = active
@@ -401,17 +405,65 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
 	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
 	
-	var result := InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index)
+	# Pre-equip snapshot and stats for VCR animation (only if not already silent)
+	var snapshot := {}
+	var pre_stats := {}
+	if not silent:
+		snapshot = get_board_snapshot()
+		var all_instances = get_all_instances()
+		for uuid in all_instances:
+			var inst = all_instances[uuid]
+			if is_instance_valid(inst) and inst.get_definition().category == &"UNIT":
+				pre_stats[uuid] = {"hp": inst.current_hp, "pwr": inst.current_pwr}
+	
+	# Pass `true` for silent to prevent immediate UI stat snapping (we will animate it instead)
+	var result := InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index, true)
 	
 	if result.success:
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
+			
 		if not silent:
+			# Calculate deltas for any units that changed and enqueue VCR events
+			var vcr_events: Array[CombatEvent] = []
+			var all_instances = get_all_instances()
+			for uuid in result.changed_unit_uuids:
+				if not pre_stats.has(uuid):
+					continue
+				var inst = all_instances.get(uuid)
+				if not is_instance_valid(inst):
+					continue
+					
+				var old_hp = pre_stats[uuid].hp
+				var old_pwr = pre_stats[uuid].pwr
+				var new_hp = inst.current_hp
+				var new_pwr = inst.current_pwr
+				
+				var hp_delta = new_hp - old_hp
+				var pwr_delta = new_pwr - old_pwr
+				
+				if hp_delta != 0 or pwr_delta != 0:
+					var skip_anim = inst.has_meta("skip_initial_scaling_anim")
+					var payload = CombatPayload.multi_stat_change("", hp_delta, pwr_delta, [old_hp], [new_hp], [], [old_pwr], [new_pwr])
+					payload.skip_bump = skip_anim
+					
+					vcr_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": "",
+						"target_uuids": [uuid],
+						"visual_payload": payload
+					}))
+			
+			if not vcr_events.is_empty():
+				enqueue_management_animation(snapshot, vcr_events)
+			
 			for uuid in result.changed_unit_uuids:
 				SignalBus.emit_signal("unit_inventory_changed", uuid)
 			if result.inventory_changed:
 				_emit_battle_inventory_changed()
 				SignalBus.emit_signal("inventory_ui_refresh_requested")
+				
+			# Trigger passive abilities (e.g. Rusty Ring) which may add more VCR events
+			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		else:
 			# Even when silent (e.g. during combat simulation), we must trigger the passive scaling
 			# updates to guarantee holder stats are dynamically updated instantly.
@@ -530,6 +582,16 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	}
 	var drawn_instance = get_instance(draw_result.drawn_uuid)
 		
+	# CAPTURE SNAPSHOT BEFORE TRIGGERS
+	# This ensures the VCR entrance animations use the true base stats
+	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
+	var new_unit_snapshot = {}
+	if is_instance_valid(drawn_instance):
+		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
+		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
+	
+	_is_evaluating_logic = true
+	
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
 	AbilityResolver.process_trigger(&"on_draw", context)
@@ -538,12 +600,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
 	var reaction_events = _combat.process_reaction_queue(self, {})
 	
-	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
-	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
-	var new_unit_snapshot = {}
-	if is_instance_valid(drawn_instance):
-		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
-		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
+	_is_evaluating_logic = false
 		
 	var draw_payload := CombatPayload.new()
 	draw_payload.draw_result = draw_result
@@ -1750,7 +1807,8 @@ func block_ui_updates() -> void:
 func unblock_ui_updates() -> void:
 	_is_processing_effect = false
 	if _pending_inventory_refresh:
-		_emit_battle_inventory_changed()
+		_pending_inventory_refresh = false
+		SignalBus.emit_signal("battle_inventory_changed")
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 ## Called from BattleView after gacha draw animation completes.
@@ -1812,7 +1870,8 @@ func _process_management_animation_queue() -> void:
 	_is_animating_management_queue = false
 	
 	if _pending_inventory_refresh:
-		_emit_battle_inventory_changed()
+		_pending_inventory_refresh = false
+		SignalBus.emit_signal("battle_inventory_changed")
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
