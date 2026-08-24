@@ -30,6 +30,7 @@ func execute() -> void:
 		_trigger_animations()
 
 func _perform_mutation() -> void:
+	GameManager._temporary_reward_container.set_uuid(reward_loc.index, "")
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_amount})
 	if elite_mode:

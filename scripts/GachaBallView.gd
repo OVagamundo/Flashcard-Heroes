@@ -1620,10 +1620,13 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 		return
 	
 	# ARCHITECTURE: Puppet Mode Guard
-	# If BattleManager is playing a VCR sequence, we MUST ignore "Truth" signals.
+	# If BattleManager is playing a VCR sequence or evaluating logic that will produce VCR events, we MUST ignore "Truth" signals.
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_processing_effect") and bm.is_processing_effect():
-		return
+	if is_instance_valid(bm):
+		var is_processing = bm.has_method("is_processing_effect") and bm.is_processing_effect()
+		var is_evaluating = bm.has_method("is_evaluating_logic") and bm.is_evaluating_logic()
+		if is_processing or is_evaluating:
+			return
 	
 	# Update ONLY the specific stat that changed
 	match stat_name:

@@ -44,6 +44,12 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	var snapshot: Dictionary = {}
+	
+	# CAPTURE VFX SNAPSHOT BEFORE TRIGGERS
+	# This ensures the visual merge ball shows base stats before buffs apply
+	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
+	var pre_trigger_visual_data = VisualDataAdapter.create_visual_data(new_instance)
+	
 	if should_trigger_on_merge and is_instance_valid(bm):
 		# Capture snapshot BEFORE stats are modified, so the VCR can play from this base state
 		snapshot = bm.get_board_snapshot()
@@ -56,7 +62,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		
 		# new_instance now has its fully calculated passive stats!
 
-	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
+	var vfx_ball = _create_vfx_ball(pre_trigger_visual_data, start_pos)
 	if is_instance_valid(vfx_ball):
 		vfx_ball.play_landing_bounce()
 
@@ -97,9 +103,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		new_instance.clear_initial_spawn_stats()
 
 
-func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
-	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
+func _create_vfx_ball(visual_data: Dictionary, global_pos: Vector2) -> Control:
 	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)

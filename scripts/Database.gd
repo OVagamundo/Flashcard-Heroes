@@ -42,6 +42,8 @@ func _apply_global_textures() -> void:
 			
 			for prop in def.get_property_list():
 				if prop.type == TYPE_OBJECT:
+					if prop.name.begins_with("metadata/"):
+						continue
 					var val = def.get(prop.name)
 					if val is Texture2D:
 						# Ensure we store the original texture before modifying it

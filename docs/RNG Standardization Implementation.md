@@ -44,3 +44,6 @@ Once the `RNGManager` is implemented, the developer must systematically purge na
 
 ### Verification:
 The refactor is considered complete when a global search (grep) for `randi`, `randf`, `shuffle`, and `pick_random` yields **zero** results outside of the `SeededRNG.gd` wrapper script, and the game compiles and runs normally using the new streams.
+
+### Post-Completion Fix (Applied):
+The `WeightedPoolDirector.draw_item()` defaults to `RNGManager.shop_rng` when no explicit RNG stream is passed. This caused `PathChoice.gd` and `EncounterGenerator.gd` to silently use the shop stream for map/encounter generation, breaking determinism across subsystem boundaries. Both scripts have been updated to explicitly pass `RNGManager.map_rng` to the director.

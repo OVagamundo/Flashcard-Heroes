@@ -315,7 +315,7 @@ func _draw_line_to_target(line: Line2D, popup_rect: Rect2, popup_center: Vector2
 
 
 func _on_next_pressed() -> void:
-	Audio.play_sfx("ui_button_click")
+	Audio.play_sfx("ui_click")
 	_current_page += 1
 	_update_page_display()
 	_update_pointer()
@@ -323,7 +323,7 @@ func _on_next_pressed() -> void:
 
 func _on_got_it_pressed() -> void:
 	if modulate.a < 1.0: return # Prevent early clicks during animation
-	Audio.play_sfx("ui_button_click")
+	Audio.play_sfx("ui_click")
 	TutorialManager.mark_completed(_tutorial_id)
 	SignalBus.emit_signal("tutorial_dismissed", _tutorial_id)
 	_close_popup()
