@@ -431,31 +431,28 @@ func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 		var UpgradeRestSiteAction = preload("res://scripts/engine/actions/rest_site/UpgradeRestSiteAction.gd")
 		ActionQueue.request(UpgradeRestSiteAction.new(prize_index))
 
-func _apply_prize(prize_index: int) -> void:
-	Audio.play_sfx("ui_click")
+func consume_prize_data(prize_index: int) -> Dictionary:
 	var p_idx = -1
 	for i in range(_prizes.size()):
 		if _prizes[i].slot_index == prize_index:
 			p_idx = i
 			break
-	if p_idx == -1: return
+	if p_idx == -1: return {}
 	
 	var prize = _prizes[p_idx]
 	_prizes.remove_at(p_idx)
-	
-	await _animate_buff_application(prize_index, prize)
-	_apply_stat_to_hero(prize)
+	return prize
+
+func _apply_prize_visuals(prize_index: int) -> void:
+	Audio.play_sfx("ui_click")
+	# We rely on the Action passing us the exact prize_index that matches the visual slot.
+	# The actual _prizes array might have been modified by consume_prize_data already.
+	# We'll just animate the slot. We can pass a dummy dictionary for the animation 
+	# because the animation only relies on the visuals that are already in the slot.
+	var fake_prize = {}
+	await _animate_buff_application(prize_index, fake_prize)
 	_clear_prize_slot(prize_index)
 	_populate_hero_slot()
-
-func _apply_stat_to_hero(prize_data: Dictionary) -> void:
-	if not is_instance_valid(GameManager.run_state): return
-	
-	if site_type == SiteType.GOLD:
-		GameManager.run_state.add_gold(prize_data.gold_value)
-	elif is_instance_valid(GameManager.run_state.hero_instance):
-		var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
-		GameManager.run_state.modify_unit_base_stats(hero_uuid, prize_data.hp_value, prize_data.pwr_value)
 
 func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void:
 	var prize_slot = prize_lineup.get_child(prize_index + 1)
@@ -511,7 +508,14 @@ func _auto_apply_oldest_prize() -> void:
 	if _prizes.is_empty(): return
 	var p = _prizes[0]
 	_prizes.remove_at(0)
-	_apply_stat_to_hero(p)
+	
+	if is_instance_valid(GameManager.run_state):
+		if site_type == SiteType.GOLD:
+			GameManager.run_state.add_gold(p.gold_value)
+		elif is_instance_valid(GameManager.run_state.hero_instance):
+			var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
+			GameManager.run_state.modify_unit_base_stats(hero_uuid, p.hp_value, p.pwr_value)
+			
 	_clear_prize_slot(p.slot_index)
 	for rem in _prizes: if rem.slot_index > 0: rem.slot_index -= 1
 	_refresh_all_prize_slots()
@@ -536,8 +540,17 @@ func _run_auto_collect_sequence() -> void:
 	# Collect remaining prizes one by one
 	while not _prizes.is_empty():
 		var prize = _prizes[0]
-		# Use the slot_index stored in the prize dictionary
-		await _apply_prize(prize.slot_index)
+		_prizes.remove_at(0)
+		
+		# Inline state mutation since auto-collect is part of the Leave visual sequence consequence
+		if is_instance_valid(GameManager.run_state):
+			if site_type == SiteType.GOLD:
+				GameManager.run_state.add_gold(prize.gold_value)
+			elif is_instance_valid(GameManager.run_state.hero_instance):
+				var hero_uuid = GameManager.run_state.hero_instance.ball_uuid
+				GameManager.run_state.modify_unit_base_stats(hero_uuid, prize.hp_value, prize.pwr_value)
+				
+		await _apply_prize_visuals(prize.slot_index)
 
 func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):

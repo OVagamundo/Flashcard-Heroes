@@ -121,6 +121,12 @@ func _on_merge_pressed() -> void:
 
 func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	_choice_made = true
-	# The signature now matches the new, more robust SignalBus signal.
-	SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
+	
+	if choice == &"MERGE":
+		var ConfirmMergeAction = preload("res://scripts/engine/actions/ConfirmMergeAction.gd")
+		ActionQueue.request(ConfirmMergeAction.new(_source_location, _target_location, recipe_id))
+	elif choice == &"SWAP":
+		var ConfirmSwapAction = preload("res://scripts/engine/actions/ConfirmSwapAction.gd")
+		ActionQueue.request(ConfirmSwapAction.new(_source_location, _target_location))
+		
 	SignalBus.emit_signal("close_top_contextual_requested")

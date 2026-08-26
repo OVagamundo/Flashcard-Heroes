@@ -66,10 +66,6 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
-			
-	SignalBus.emit_signal("path_choice_scene_requested")
-	queue_free()
+	if ActionQueue.is_busy(): return
+	var LeaveMergeEncounterAction = preload("res://scripts/engine/actions/map/LeaveMergeEncounterAction.gd")
+	ActionQueue.request(LeaveMergeEncounterAction.new())

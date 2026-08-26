@@ -24,8 +24,9 @@ Any operation that moves an instance (Equip, Move, Swap) **MUST** update both th
 
 ### 1.3 The Unified Command Pipeline (Command Pattern)
 No out-of-combat UI controller or event handler may directly mutate `RunState` or inventory contents.
-*   **Command Factory:** UI components validate local drag/click state and create a validated `GameAction` subclass (`InventoryDragAction`, `ShopPurchaseAction`, `ShopRerollAction`, `ChoiceAction`).
+*   **Command Factory:** UI components validate local drag/click state and create a validated `GameAction` subclass (e.g., `InventoryDragAction`, `ShopPurchaseAction`, `DismissTutorialAction`).
 *   **Action Queue:** Commands are enqueued to `ActionQueue.enqueue()`. The queue executes `is_valid()` before invoking `execute()`, maintaining a FIFO execution loop and recording serialized action history (`to_dict()`) for replayability.
+*   **Strict Deterministic Replays:** Replays are "dumb and blind". The playback engine ONLY injects recorded `GameAction`s. It never records or attempts to mimic UI states, mouse movements, or telemetries. During playback, all player input is strictly blocked (except spectator controls).
 *   **No Core Game Loop:** Game state progresses strictly as a reaction to processed player input actions.
 
 ### 1.4 Isolated Seeded PRNG Streams
@@ -37,6 +38,15 @@ All game randomness must use `RNGManager` stream isolation.
 Playback speed changes (1x, 3x, etc.) are managed globally via `Engine.time_scale` (`AnimationConstants.speed_factor`).
 *   **Universal Acceleration:** Setting `Engine.time_scale` automatically scales all tweens, timers, particle systems, and token animations uniformly across the engine.
 *   **No Double-Scaling:** Individual animation scripts must NOT manually divide durations by `speed_factor` when `Engine.time_scale` is active. Use `AnimationConstants.scaled(duration)` which returns raw durations.
+
+---
+
+### 1.6 The "Why" of the Command Pipeline (Slay the Spire 2 Architecture)
+The fundamental reason the entire game operates on this strict `GameAction` pipeline is exactly the same as the architecture for Slay the Spire 2:
+1. **Deterministic Replays:** By turning every state mutation into a serialized command, any gameplay session can be perfectly recorded and reproduced without massive save states. The replay engine just needs the initial seed and the sequence of actions.
+2. **Headless Bot Testing:** AI agents or automated QA bots can play the game at 100x speed by injecting `GameAction`s directly into the queue, entirely bypassing the UI layer, graphics rendering, and human reaction times.
+3. **Desync Prevention:** It guarantees that the same input always results in the same outcome, completely eliminating "ghost units" or desyncs caused by UI glitches, animation race conditions, or frame drops.
+4. **Decoupling Presentation from State:** It forces the UI to be a "dumb puppet," meaning visual polish, animation changes, and pacing adjustments can be made freely without ever breaking the underlying game logic.
 
 ---
 
