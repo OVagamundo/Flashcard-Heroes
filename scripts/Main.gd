@@ -342,34 +342,25 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 		instance.populate(context)
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
-	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
+	# Action validation handles logic, UI validates visually to prevent spam
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
 		return
-	var effective_cost := tier
-	if is_instance_valid(bm):
-		if bm.has_method("get_gacha_draw_cost"):
-			effective_cost = bm.get_gacha_draw_cost(tier)
 		
-		var can_draw = true
-		if bm.has_method("can_draw_gacha_instance"):
-			can_draw = bm.can_draw_gacha_instance(tier)
-		elif bm.has_method("get_gacha_tokens"):
-			var current_tokens: int = bm.get_gacha_tokens()
-			if current_tokens < effective_cost:
-				can_draw = false
-				
-		if not can_draw:
-			# Insufficient tokens or invalid state - play rejection feedback on machine and token counter
-			var target_machine: Control = null
-			match tier:
-				1: target_machine = gacha_machine_1
-				2: target_machine = gacha_machine_2
-				3: target_machine = gacha_machine_3
-			var token_group = get_node_or_null("%TokenGroup")
-			if is_instance_valid(target_machine):
-				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
-			return
+	var DrawGachaAction = preload("res://scripts/engine/actions/battle/DrawGachaAction.gd")
+	var action = DrawGachaAction.new(tier)
+	
+	if not action.is_valid():
+		# Insufficient tokens or invalid state - play rejection feedback on machine and token counter
+		var target_machine: Control = null
+		match tier:
+			1: target_machine = gacha_machine_1
+			2: target_machine = gacha_machine_2
+			3: target_machine = gacha_machine_3
+		var token_group = get_node_or_null("%TokenGroup")
+		if is_instance_valid(target_machine):
+			RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
+		return
 	
 	# Ensure UI focus doesn't interfere
 	button.release_focus()
@@ -380,8 +371,6 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
 	
-	# We've committed to this draw. Set _is_drawing_token to true.
-	_is_drawing_token = true
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
 	context.source_view_instance_id = button.get_instance_id()
@@ -393,16 +382,19 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	context.window_group_id = 0
 	SignalBus.emit_signal("interaction_context_received", context)
 	
-	# Animate tokens flying from counter to machine, then proceed with draw
-	_animate_token_spend(tier, effective_cost, button)
+	# Queue the action - the action will call back into _animate_token_spend
+	ActionQueue.request(action)
 
-func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
+func _animate_token_spend(tier: int, cost: int, callback: Callable = Callable()) -> void:
 	"""Animate tokens flying from counter to gacha machine before drawing"""
+	_is_drawing_token = true
 	const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
 	
 	# Get token counter position (source)
 	var token_group = get_node_or_null("%TokenGroup")
 	if not is_instance_valid(token_group):
+		_is_drawing_token = false
+		if callback.is_valid(): callback.call()
 		return
 	
 	var token_rect = token_group.get_global_rect()
@@ -419,8 +411,8 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 		3: target_machine = gacha_machine_3
 	
 	if not is_instance_valid(target_machine):
-		SignalBus.emit_signal("draw_gacha_requested", tier)
 		_is_drawing_token = false
+		if callback.is_valid(): callback.call()
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -456,8 +448,8 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 	
 	# Proceed with the draw
-	SignalBus.emit_signal("draw_gacha_requested", tier)
 	_is_drawing_token = false
+	if callback.is_valid(): callback.call()
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""

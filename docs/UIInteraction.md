@@ -152,6 +152,12 @@ During the `MANAGEMENT` phase, interactions (like Drawing units from the Gacha o
 3. `BattleAnimator.play_async_chain()` is called asynchronously without blocking the UI thread.
 4. **Parallel Execution:** Rapid interactions (like spam-clicking Draw) fire off concurrent chains, allowing visual animations to overlap and play in parallel instead of queuing sequentially.
 
+### 4.3 Replay System Input Architecture
+The game's replay system strictly adheres to the Slay the Spire 2 Command Queue model:
+- **GameAction Only**: Replays serialize and execute ONLY `GameAction`s. They never serialize UI telemetry, ghost mouse movements, or hovering hesitations.
+- **Strict Playback Lockdown**: During a replay, the UI does NOT respond to normal player input. All mouse clicks, drags, and hovers are aggressively intercepted and blocked by the `ReplayEngine`. The only exceptions are spectator hotkeys (1-9 for playback speed, 0 for pause, ESC to open the exit menu).
+- **Deterministic Tutorials**: If a tutorial spawns during a replay, it pauses the engine deterministically. The recorded `DismissTutorialAction` injected from the replay file will close it natively, without requiring "fake" UI clicks.
+
 ### Blocking Phases
 | Phase | UI Status |
 |-------|-----------|

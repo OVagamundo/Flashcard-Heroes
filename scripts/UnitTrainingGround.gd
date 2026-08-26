@@ -131,28 +131,7 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 	if _action_in_progress: return
 	var item_data = _get_selected_inventory_unit()
 	if item_data.is_empty(): return
-
-	var main_node = GameManager._active_main_node
-	var zone = null
-	if is_instance_valid(main_node):
-		if stat == "hp" and main_node.has_method("get_action_zone_1"):
-			zone = main_node.get_action_zone_1()
-		elif stat == "pwr" and main_node.has_method("get_action_zone_2"):
-			zone = main_node.get_action_zone_2()
-
-	# Check gold
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRAIN_COST_GOLD:
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		var target = zone if is_instance_valid(zone) else open_inventory_button
-		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
-		return
-
-	_action_in_progress = true
-	_training_stat = stat
-	_training_unit_data = item_data
-	_training_unit_location = item_data.location
-
-	# Determine interaction position
+	
 	var interaction_pos = Vector2.ZERO
 	if is_drag:
 		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
@@ -161,47 +140,40 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 		if is_instance_valid(slot_view):
 			interaction_pos = slot_view.get_global_rect().get_center()
 
-	# Reset local tokens
+	var StartTrainingAction = preload("res://scripts/engine/actions/training/StartTrainingAction.gd")
+	var action = StartTrainingAction.new(stat, item_data.location, TRAIN_COST_GOLD, interaction_pos)
+	
+	if not action.is_valid():
+		var main_node = GameManager._active_main_node
+		var zone = null
+		if is_instance_valid(main_node):
+			if stat == "hp" and main_node.has_method("get_action_zone_1"):
+				zone = main_node.get_action_zone_1()
+			elif stat == "pwr" and main_node.has_method("get_action_zone_2"):
+				zone = main_node.get_action_zone_2()
+		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		var target = zone if is_instance_valid(zone) else open_inventory_button
+		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
+		return
+
+	ActionQueue.request(action)
+
+
+func _on_start_training_mutation_complete(stat: String, item_location: LocationIdentifier) -> void:
+	_action_in_progress = true
+	_training_stat = stat
+	var item_data = GameManager.get_instance_from_location(item_location)
+	_training_unit_data = item_data.to_dict() if item_data != null else {}
+	_training_unit_location = item_location
+
 	_tokens = 0
 	_update_token_display()
 
-	# Clear selection immediately to fall inside the drag suppression window
 	SignalBus.emit_signal("selection_clear_requested")
 	
-	# Spawn a persistent VFX clone of the unit so it doesn't vanish during the animation
-	var vfx_ball = null
-	if is_instance_valid(item_data.get("instance")):
-		var visual_data = VisualDataAdapter.create_visual_data(item_data.instance)
-		vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-		
-	# Immediately hide the source unit to prevent interaction and avoid duplicates
-	var source_anchor = WindowManager.find_view_for_location(item_data.location)
-	if is_instance_valid(source_anchor):
-		for child in source_anchor.get_children():
-			if child is GachaBallView:
-				child.modulate.a = 0.0
-				child.visible = false
-	
-	# Animate gold spend then start minigame
-	_animate_gold_spend(TRAIN_COST_GOLD, interaction_pos, func():
-		if is_instance_valid(vfx_ball):
-			vfx_ball.queue_free()
-			
-		if GameManager.run_state.spend_gold(TRAIN_COST_GOLD):
-			Audio.play_sfx("ui_drag_drop")
-						
-			# Start flashcard minigame
-			if is_instance_valid(GameManager.run_state):
-				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-		else:
-			# Failed to spend gold, restore source visibility
-			if is_instance_valid(source_anchor):
-				for child in source_anchor.get_children():
-					if child is GachaBallView:
-						child.modulate.a = 1.0
-						child.visible = true
-			_action_in_progress = false
-	)
+	Audio.play_sfx("ui_drag_drop")
+	if is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 # --- Token tracking ---
 
@@ -378,44 +350,43 @@ func _on_popup_train_3() -> void:
 
 func _spend_tokens_and_train(cost: int) -> void:
 	if _tokens < cost: return
+	
+	var unit_uuid = _training_unit_data.get("uuid", "")
+	if unit_uuid == "" or not is_instance_valid(GameManager.run_state):
+		return
+		
+	var TrainStatAction = preload("res://scripts/engine/actions/training/TrainStatAction.gd")
+	ActionQueue.request(TrainStatAction.new(unit_uuid, _training_stat, cost))
+
+func _on_train_stat_mutation_complete(cost: int) -> void:
 	_tokens -= cost
 	_update_token_display()
 	_update_popup_buttons()
 
-	# Roll: cost+1 possible outcomes (0..cost), uniform distribution
-	var roll = RNGManager.reward_rng.randi_range(0, cost)
-
-	# Apply stat buff (even if zero, we still animate)
-	var unit_uuid = _training_unit_data.get("uuid", "")
-	if unit_uuid == "" or not is_instance_valid(GameManager.run_state):
-		return
-
+func _animate_stat_buff(roll: int, stat: String, callback: Callable = Callable()) -> void:
 	# Self-buff VFX: projectile from unit to itself (animate even on zero)
 	if is_instance_valid(_popup_ball_view):
 		var center = _popup_ball_view.get_global_rect().get_center()
-		var proj = VFXFactory.spawn_projectile_on_layer(roll, _training_stat, center, center, true)
+		var proj = VFXFactory.spawn_projectile_on_layer(roll, stat, center, center, true)
 		if proj:
 			proj.launch()
 			await proj.impact
 		
-		# DEFERRED: Apply stat buff to backend AFTER impact so visual tween has correct start/end
-		if roll > 0:
-			var hp_delta = roll if _training_stat == "hp" else 0
-			var pwr_delta = roll if _training_stat == "pwr" else 0
-			GameManager.run_state.modify_unit_base_stats(unit_uuid, hp_delta, pwr_delta)
-		
 		# Update the visual label with animation (replicates battle board logic)
+		var unit_uuid = _training_unit_data.get("uuid", "")
 		var instance = GameManager.run_state.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
-			var new_val = instance.current_hp if _training_stat == "hp" else instance.current_pwr
-			_popup_ball_view.animate_stat_change(new_val, roll, _training_stat)
+			var new_val = instance.current_hp if stat == "hp" else instance.current_pwr
+			_popup_ball_view.animate_stat_change(new_val, roll, stat)
 			
 		# HOP_DEFORM animation (same as battle buff hop)
-		await _play_buff_hop()
+		await _play_buff_hop(stat)
 	else:
 		Audio.play_sfx("unit_buff")
+		
+	if callback.is_valid(): callback.call()
 
-func _play_buff_hop() -> void:
+func _play_buff_hop(stat: String) -> void:
 	"""Replicate the battle-board HOP + HOP_DEFORM animation on the popup ball view."""
 	if not is_instance_valid(_popup_ball_view):
 		return
@@ -450,7 +421,7 @@ func _play_buff_hop() -> void:
 	deform_tween.tween_property(icon, "scale", Vector2.ONE, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 	# Color flash
-	var flash_color = Color.RED if _training_stat == "hp" else Color.MEDIUM_PURPLE
+	var flash_color = Color.RED if stat == "hp" else Color.MEDIUM_PURPLE
 	_popup_ball_view.modulate = Color(flash_color.r * 1.3, flash_color.g * 1.3, flash_color.b * 1.3, 1.0)
 	var color_tween = _popup_ball_view.create_tween()
 	color_tween.tween_property(_popup_ball_view, "modulate", Color.WHITE, 0.3)
@@ -607,6 +578,11 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
+	if ActionQueue.is_busy(): return
+	var LeaveTrainingAction = preload("res://scripts/engine/actions/training/LeaveTrainingAction.gd")
+	ActionQueue.request(LeaveTrainingAction.new())
+
+func _on_leave_training_mutation_complete() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("hide_action_instruction"):
@@ -614,7 +590,6 @@ func _on_leave_pressed() -> void:
 		if main_node.has_method("hide_split_action_drop_zones"):
 			main_node.hide_split_action_drop_zones()
 	_update_token_display(0)
-	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
 func _on_gui_input(event: InputEvent) -> void:

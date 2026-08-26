@@ -3,16 +3,44 @@
 ## 1. Commander's Intent & Context
 We are implementing an **Automatic Session Recorder & Replay Engine** that captures every gameplay session in real-time and allows replaying any past run from the Title Menu.
 
-**CRITICAL CONTEXT:** The game has recently undergone a major architectural refactor to make it fully deterministic. The `ActionQueue` (see `scripts/engine/ActionQueue.gd`) processes `GameAction` commands which already expose a `serialize() -> Dictionary` method for capturing executed actions. The `RNGManager` maintains isolated, seeded PRNG streams (`map_rng`, `combat_rng`, `shop_rng`, `reward_rng`, `gacha_rng`, `cosmetic_rng`) with full `serialize()`/`deserialize()` support.
+**CRITICAL CONTEXT:** The game has recently undergone a major architectural refactor to make it fully deterministic. The `ActionQueue` (see `scripts/engine/ActionQueue.gd`) processes `GameAction` commands which already expose a `serialize() -> Dictionary` method for capturing executed actions. The `RNGManager` maintains isolated, seeded PRNG streams with full `serialize()`/`deserialize()` support.
+
+### The "Slay the Spire 2" VCR Philosophy: What, How, and Why
+
+#### What it is
+The game architecture strictly separates Player Intent (UI interactions) from State Mutation (Backend Logic). The UI never changes the game state directly; it acts purely as a "remote control" dispatching commands.
+
+#### How it works
+1. **The Remote Control (UI Phase):** A player interacts with the game. The UI calculates what they are trying to do, constructs a specific `GameAction`, and pushes it to the `ActionQueue`.
+2. **The Blinder (Execution Phase):** As soon as an action hits the queue, the game blocks all player input. The `GameAction` executes instantly and blindly on the backend and emits a global signal, without knowing or caring about the UI.
+3. **The Puppet Show (Presentation Phase):** The UI elements act as puppets listening to the `SignalBus`. When they hear a signal, they asynchronously animate the result.
+4. **The Unblock:** When the visual animations finish, the `ActionQueue` unlocks player input for the next action.
+
+#### Why it's designed this way
+This architecture is built specifically to enable a **Deterministic VCR Replay System**.
+* **Blind Reproduction:** By recording the exact sequence of `GameAction`s and the RNG Seed, the engine perfectly reconstructs the run.
+* **Input Immunity during Playback:** If the backend waited for UI callbacks or permitted inputs during replay, it would break the deterministic chain. By making the backend execute instantly and treating the UI as a puppet, replays just push the recorded commands into the queue and the game flawlessly plays itself.
+* **Decoupled Telemetry:** The mechanical replay is strictly for game state. Pure UI interactions (speed toggles, inspection windows, hesitations) are recorded as separate telemetry events for analytical pacing but are completely bypassed from the mechanical action queue to prevent contaminating the core determinism.
+
+#### THE PRIME DIRECTIVE: DO NOT TOUCH THE GAME
+**The Record and Replay systems are completely decoupled, isolated observers. They MUST NEVER modify, patch, or alter the core game's logic or behavior.**
+Because the game follows a strict, deterministic `GameAction` pipeline, implementing the replay system requires **zero** changes to the game's actual rules, scenes, or state mutations. 
+* **Recording** is simply listening to the `ActionQueue` and saving the output to a file alongside its timestamp.
+* **Replaying** is simply reading that file and feeding those exact actions back into the `ActionQueue` in the right order. 
+The game plays itself exactly as it originally did. If a bug occurs during playback, the solution is **never** to have the Replay Engine "fix" or spoof the game state. The bug means the game itself is bypassing the Action Queue somewhere (e.g., a UI button progressing state directly), and the fix is to refactor that specific game feature into a `GameAction`, strictly preserving the decoupled nature of the replay engine.
+
+#### THE GOLDEN RULE OF THE VCR PATTERN (Zero-Bypass Architecture)
+**Absolutely nothing that progresses the game can bypass the `GameAction` pipeline.**
+If a UI button (like "Start Minigame", "Close Tutorial", or "Review Next Flashcard") directly calls a function that advances the game state instead of pushing a `GameAction` to the `ActionQueue`, **the replay will permanently halt at that screen.**
+*Why?* Because during replay playback, all player inputs are physically blocked. The replay engine does not simulate mouse clicks on UI elements; it *only* reads recorded `GameAction`s from the `.mcr` file and pushes them to the queue. If an event wasn't a `GameAction`, it wasn't recorded, and the replay engine will never trigger it. 
+**If it advances the game, it MUST be a GameAction.**
 
 **Do not reinvent a recording or action-tracking system.** The core determinism is already in place. Your objective is to build the infrastructure around it:
 
 1. **File I/O:** Write actions to disk in real-time as they are executed by the `ActionQueue`.
 2. **Readability:** Generate a human-readable debug log alongside the machine-readable recording.
 3. **Playback Engine:** Read saved recordings, deserialize actions via an `ActionFactory`, and feed them back into the `ActionQueue` to reproduce a run.
-4. **Continued Runs:** When a player loads a saved run and continues playing, the recording must resume from the checkpoint, appending new actions to the existing recording file.
-
-You have the freedom and authority to structure helper classes, adjust file-saving hooks, or introduce nodes as you see fit to ensure performance and stability. If you encounter edge cases not covered here, use your best judgment while maintaining the core goal of perfect determinism.
+4. **Continued Runs:** When a player loads a saved run and continues playing, the recording must resume from the checkpoint.
 
 ---
 
@@ -29,15 +57,12 @@ A machine-readable line-delimited JSON (JSON Lines) file capturing BOTH determin
   ```
   For fresh runs, `rng_state` is `null` (streams are derived from the master seed). For continued runs, `rng_state` contains the full `RNGManager.serialize()` output.
 
-* **Payload (Lines 2+):** Each recorded event must include an `event_class` to distinguish core game logic from UI telemetry:
+* **Payload (Lines 2+):** Each recorded event must strictly be a core state mutation logic (GameAction). The replay system is "dumb and blind"—it strictly reproduces the deterministic GameActions mapped from player inputs. It does NOT record or inject pure UI telemetry, ghost mouse movements, or hovering hesitations.
   * **GameActions:** Strict state mutations executed by the ActionQueue. Must include `time_delta` (real-world seconds elapsed since the previous action). **Serialization Rule:** Actions must only store primitive data types (Strings, Ints, Floats) or `UUID` strings. They must NEVER store direct Node or Object references, as these will crash JSON parsing.
     ```json
     {"event_class": "GameAction", "action_id": "BuyShopAction", "time_delta": 4.25, "instance_uuid": "item_t3_g", "cost": 5}
     ```
-  * **Telemetry Events (UI):** Non-mutating player interactions (e.g., pausing, changing combat speed, opening an inspection window). These are recorded purely for statistical analysis and developer review. During a replay, the engine logs that they happened but **does not execute them** (so a recorded speed change doesn't override the spectator's replay controls).
-    ```json
-    {"event_class": "TelemetryEvent", "action_id": "changed_combat_speed", "new_speed": 2.0, "time_delta": 1.2}
-    ```
+  * Note: Spectator controls (pausing, changing playback speed, exiting to title) are native interactions performed by the spectator during playback and are NOT recorded or executed from the replay file.
 
 ### B. The Human-Readable Debug Log (`.log`)
 Written alongside the `.mcr` file to provide a clear, chronological narrative of state modifications and combat resolution. It should capture the **Input (Cause)** and the **CombatEvents (Effects)**.

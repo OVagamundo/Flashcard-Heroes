@@ -9,6 +9,24 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 3.  **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
 4.  **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
 
+### 1.2 The Command Pipeline (Slay the Spire 2 Architecture)
+The game uses a strict Command Pattern to isolate user intent from state mutation.
+
+**What it is:**
+Every state-altering player interaction (buying an item, dragging a card, choosing a path, or closing a tutorial) is encapsulated into an immutable object called a `GameAction`. The UI is completely forbidden from directly mutating the `RunState`.
+
+**How it works:**
+1. **Generation**: A UI script (like `GlobalInteractionRouter` or a button click) instantiates a `GameAction` (e.g., `BuyShopAction(item_uuid)`).
+2. **Execution**: It passes the action to the `ActionQueue`. The queue checks `action.is_valid()`. If valid, it invokes `action.execute()`, which delegates to pure backend logic (`InventoryOperations`, `CombatSimulator`).
+3. **Lockdown**: While an action is processing, the `ActionQueue` physically blocks all global player input until the mutation and ALL of its resulting visual animations have completed.
+4. **Recording**: As the action completes, the `SessionRecorder` intercepts it, calls `action.serialize()`, and writes it as a JSON line to the active `.mcr` replay file, alongside a timestamp `time_delta`.
+5. **Replays**: During a replay, the game is completely blind. The `ReplayEngine` loads the initial RNG seed, blocks the player's mouse, and simply deserializes the JSON lines back into `GameAction`s. It pushes them into the `ActionQueue` at the exact recorded `time_delta` intervals. Because the engine is perfectly deterministic, the exact same run visually plays out with 100% fidelity.
+
+**Why we do it this way:**
+1. **Deterministic Replays:** It enables perfect VCR-like replays. We only need to record the initial seed and the sequence of actions to reproduce an entire 40-minute run flawlessly.
+2. **Headless Bot Testing:** It allows QA bots to instantly test game balance and discover soft-locks by feeding actions directly into the simulation layer, completely bypassing the UI and its animations.
+3. **Decoupling Presentation:** The UI becomes a pure "puppet" that only reacts to state changes. This eliminates animation race conditions, desyncs, and "ghost items" that occur when UI graphics mistakenly mutate underlying game logic.
+
 ---
 
 > [!IMPORTANT]
@@ -57,7 +75,8 @@ Core logic is partitioned to ensure Single Responsibility:
 
 ### 3.2 Interactions & UI Flow
 Centralized interpretation of user intent to decouple Views from Logic:
--   **Command Pipeline (`ActionQueue` & `GameAction`):** Out-of-combat UI inputs (drags, choices, purchases) construct validated `GameAction` commands. `ActionQueue` executes them sequentially (`is_valid() -> execute()`) and logs serialized action histories (`to_dict()`) for session replayability.
+-   **Command Pipeline (`ActionQueue` & `GameAction`):** EVERY state-altering interaction across the game (purchases, path choices, drags, and even dismissing UI tutorials) must construct a validated `GameAction` command. `ActionQueue` executes them sequentially (`is_valid() -> execute()`) and handles input blocking until all visuals resolve. The engine serializes this queue for flawless deterministic session replayability.
+-   **Strict Deterministic Replay Engine:** Replays in Flashcard Heroes are strictly "dumb and blind" pipelines (inspired by Slay the Spire 2). They operate purely by re-injecting serialized `GameAction`s into the deterministic engine. They never serialize UI telemetry or mouse movements, and during playback, all user input is aggressively blocked (except spectator controls like playback speed and exiting).
 -   **Global Interaction Router (Command Factory):** Validates UI context, constructs `InventoryDragAction` or `ChoiceAction`, and pushes them to `ActionQueue`.
 -   **Seeded PRNG Streams (`RNGManager` & `SeededRNG`):** Stream isolation across game systems (`map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`) seeded from `RunState.run_seed`.
 -   **Global Engine Time Scale:** Engine-level playback acceleration (`Engine.time_scale`) via `AnimationConstants.speed_factor` scales all tweens, timers, particle systems, and token animations uniformly.
