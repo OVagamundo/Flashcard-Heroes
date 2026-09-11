@@ -432,8 +432,9 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				run_state.current_boss_level = 0
 				run_state.current_elite_level = 0
 			
-			var StartBattleAction = preload("res://scripts/engine/actions/map/StartBattleAction.gd")
-			ActionQueue.enqueue_system(StartBattleAction.new(encounter_def))
+			# Use registered Main node
+			if is_instance_valid(_active_main_node):
+				_active_main_node._on_battle_start_requested(encounter_def)
 		"SHOP":
 			_enter_shop()
 		"BLACK_MARKET":

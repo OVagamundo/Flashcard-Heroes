@@ -178,9 +178,11 @@ func _setup_prize_slot_clicks() -> void:
 # --- Token System ---
 
 func _on_study_pressed() -> void:
-	if ActionQueue.is_busy(): return
-	var StudyRestSiteAction = preload("res://scripts/engine/actions/rest_site/StudyRestSiteAction.gd")
-	ActionQueue.request(StudyRestSiteAction.new())
+	if _has_studied or _action_in_progress: return
+	_has_studied = true
+	study_button.disabled = true
+	if is_instance_valid(GameManager.run_state):
+		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_live_token_earned(amount: int) -> void:
 	"""Called when a token lands during flashcard minigame animation"""
@@ -201,31 +203,25 @@ func _update_button_states() -> void:
 # --- Draw Logic ---
 
 func _on_tier1_draw_pressed() -> void:
-	if ActionQueue.is_busy(): return
-	var DrawRestSiteAction = preload("res://scripts/engine/actions/rest_site/DrawRestSiteAction.gd")
-	ActionQueue.request(DrawRestSiteAction.new(1, COST_TIER1))
+	_try_draw_tier(1, COST_TIER1, tier1_machine)
 
 func _on_tier2_draw_pressed() -> void:
-	if ActionQueue.is_busy(): return
-	var DrawRestSiteAction = preload("res://scripts/engine/actions/rest_site/DrawRestSiteAction.gd")
-	ActionQueue.request(DrawRestSiteAction.new(2, COST_TIER2))
+	_try_draw_tier(2, COST_TIER2, tier2_machine)
 
 func _on_tier3_draw_pressed() -> void:
-	if ActionQueue.is_busy(): return
-	var DrawRestSiteAction = preload("res://scripts/engine/actions/rest_site/DrawRestSiteAction.gd")
-	ActionQueue.request(DrawRestSiteAction.new(3, COST_TIER3))
+	_try_draw_tier(3, COST_TIER3, tier3_machine)
 
-func _execute_draw_tier_visuals(tier: int, cost: int, machine: Control) -> void:
-	"""Called by DrawRestSiteAction to run the visual sequence"""
+func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
+	"""Attempt to draw a prize from a machine"""
 	var main_node = GameManager._active_main_node
-	var token_group = main_node.get_node_or_null("%TokenGroup") if main_node != null else null
+	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
 	
 	if _tokens < cost:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
 		return
 	
 	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
-	if button != null:
+	if is_instance_valid(button):
 		button.disabled = true
 	
 	# Animate token spend
@@ -256,8 +252,7 @@ func _execute_draw_tier_visuals(tier: int, cost: int, machine: Control) -> void:
 	_prizes.append(prize_data)
 	_populate_prize_slot(slot_index, prize_data)
 	
-	if button != null:
-		button.disabled = _tokens < cost
+	button.disabled = _tokens < cost
 
 func _roll_value_for_tier(tier: int) -> int:
 	"""Roll prize value based on tier (1: 0-1, 2: 0-3, 3: 0-5)"""
@@ -427,9 +422,7 @@ func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
 
 func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		if ActionQueue.is_busy(): return
-		var UpgradeRestSiteAction = preload("res://scripts/engine/actions/rest_site/UpgradeRestSiteAction.gd")
-		ActionQueue.request(UpgradeRestSiteAction.new(prize_index))
+		_apply_prize(prize_index)
 
 func _apply_prize(prize_index: int) -> void:
 	Audio.play_sfx("ui_click")
@@ -521,11 +514,6 @@ func _refresh_all_prize_slots() -> void:
 	for p in _prizes: _populate_prize_slot(p.slot_index, p)
 
 func _on_leave_pressed() -> void:
-	if ActionQueue.is_busy(): return
-	var LeaveRestSiteAction = preload("res://scripts/engine/actions/rest_site/LeaveRestSiteAction.gd")
-	ActionQueue.request(LeaveRestSiteAction.new())
-
-func _run_auto_collect_sequence() -> void:
 	# Disable all interactions during auto-collection
 	leave_button.disabled = true
 	study_button.disabled = true
@@ -538,6 +526,11 @@ func _run_auto_collect_sequence() -> void:
 		var prize = _prizes[0]
 		# Use the slot_index stored in the prize dictionary
 		await _apply_prize(prize.slot_index)
+	
+	SignalBus.emit_signal("gacha_tokens_changed", 0)
+	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
+	SignalBus.emit_signal("path_choice_scene_requested")
+	queue_free()
 
 func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
