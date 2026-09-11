@@ -6,6 +6,7 @@ const AC = preload("res://scripts/animations/AnimationConstants.gd")
 
 func _ready() -> void:
 	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
+	SignalBus.choice_made.connect(_on_choice_made)
 	SignalBus.inventory_action_completed.connect(_on_inventory_action_completed)
 
 # --- Main Action Handler ---
@@ -113,8 +114,7 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 
 	# Case 7: Possible Swap
 	if is_valid_placement(source_instance, target_loc) and is_valid_placement(target_instance, source_loc):
-		var ConfirmSwapAction = preload("res://scripts/engine/actions/ConfirmSwapAction.gd")
-		ActionQueue.request(ConfirmSwapAction.new(source_loc, target_loc))
+		_swap(source_loc, target_loc)
 		GlobalInteractionRouter.end_drag(true)
 		return
 
@@ -123,7 +123,36 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 	GlobalInteractionRouter.end_drag(false)
 
 
+func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
+	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
+		return
+	# Activate suppression via GIR for the parent inspection window of the target (or source) view
+	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
+	var wm = WindowManager
+	var anchor_view: Control = wm.find_view_for_location(target_loc)
+	if not is_instance_valid(anchor_view):
+		anchor_view = wm.find_view_for_location(source_loc)
+	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
+	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
+	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
+	if parent_id != -1:
+		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
+		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
 
+	var data_owner = _get_data_owner()
+	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
+	
+	if is_instance_valid(bm):
+		bm.block_ui_updates()
+
+	match choice:
+		&"MERGE":
+			_merge(source_loc, target_loc, recipe_id)
+		&"SWAP":
+			_swap(source_loc, target_loc)
+
+	if is_instance_valid(bm):
+		bm.unblock_ui_updates()
 
 func _on_inventory_action_completed(_uuids: Array) -> void:
 	var data_owner = _get_data_owner()
@@ -247,24 +276,8 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal.call_deferred("inventory_action_completed", [instance_to_move.ball_uuid])
 
-func perform_swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
-	# Activate suppression via GIR for the parent inspection window of the target (or source) view
-	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
-	var wm = WindowManager
-	var anchor_view: Control = wm.find_view_for_location(target_loc)
-	if not is_instance_valid(anchor_view):
-		anchor_view = wm.find_view_for_location(source_loc)
-	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
-	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
-	if parent_id != -1:
-		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
-		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
-		
+func _swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
 	var data_owner = _get_data_owner()
-	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
-	if is_instance_valid(bm): bm.block_ui_updates()
-	
 	if not is_instance_valid(data_owner): return
 	
 	var all_instances_db = data_owner.get_all_instances()
@@ -277,7 +290,6 @@ func perform_swap(source_loc: LocationIdentifier, target_loc: LocationIdentifier
 
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal.call_deferred("inventory_action_completed", [source_instance.ball_uuid, target_instance.ball_uuid])
-	if is_instance_valid(bm): bm.unblock_ui_updates()
 
 func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
@@ -312,27 +324,11 @@ func _equip_item(item_instance: GachaBallInstance, unit_instance: GachaBallInsta
 		owner.equip_item(item_instance.ball_uuid, unit_instance.ball_uuid, empty_slot_idx)
 	SignalBus.emit_signal("selection_clear_requested")
 
-func perform_merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
-	# Activate suppression via GIR for the parent inspection window of the target (or source) view
-	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
-	var wm = WindowManager
-	var anchor_view: Control = wm.find_view_for_location(target_loc)
-	if not is_instance_valid(anchor_view):
-		anchor_view = wm.find_view_for_location(source_loc)
-	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
-	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
-	if parent_id != -1:
-		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
-		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
-		
+func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
 	var target_view = WindowManager.find_view_for_location(target_loc)
 	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
 
 	var data_owner = _get_data_owner()
-	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
-	if is_instance_valid(bm): bm.block_ui_updates()
-	
 	if not is_instance_valid(data_owner): return
 
 	var all_instances_db = data_owner.get_all_instances()
@@ -463,7 +459,6 @@ func perform_merge(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 
 	# Clear selection at the end for UX consistency
 	SignalBus.emit_signal("selection_clear_requested")
-	if is_instance_valid(bm): bm.unblock_ui_updates()
 
 
 	
