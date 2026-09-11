@@ -757,8 +757,6 @@ static func create_unit_snapshot(inst: GachaBallInstance, unit_def: Resource) ->
 		"uuid": inst.ball_uuid,
 		"hp": inst.current_hp,
 		"pwr": inst.current_pwr,
-		"initial_spawn_hp": inst.initial_spawn_hp if inst.initial_spawn_hp != -1 else inst.current_hp,
-		"initial_spawn_pwr": inst.initial_spawn_pwr if inst.initial_spawn_pwr != -1 else inst.current_pwr,
 		"burn_stacks": inst.get_status_effect_amount(&"burn"),
 		"def_id": unit_def.id,
 		"icon": icon,
@@ -933,7 +931,7 @@ static func handle_summon_units(
 	
 	# Get container for slot finding
 	var lineup_container = battle_manager.get_container(target_container_tag)
-	if !is_instance_valid(lineup_container):
+	if not is_instance_valid(lineup_container):
 		return result
 	
 	# Track slots we've filled in this batch
@@ -942,11 +940,14 @@ static func handle_summon_units(
 	for summon_data in summon_list:
 		var unit_id = summon_data.get("unit_id")
 		var unit_def = Database.get_definition(unit_id)
-		if !is_instance_valid(unit_def):
+		if not is_instance_valid(unit_def):
 			continue
 		
 		# Find empty slot using Unified Finder
 		var empty_slot: int = find_best_summon_slot(lineup_container, team == "PLAYER", filled_slots)
+		
+		if empty_slot == -1:
+			break # No more slots
 		
 		if empty_slot == -1:
 			break # No more slots
