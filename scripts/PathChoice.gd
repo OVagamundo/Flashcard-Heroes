@@ -130,7 +130,7 @@ func _setup_normal_nodes() -> void:
 		if pool.is_empty():
 			break
 			
-		var drawn = director.draw_item(pool, director_run_state, RNGManager.map_rng)
+		var drawn = director.draw_item(pool, director_run_state)
 		if is_instance_valid(drawn):
 			selected_nodes.append(drawn)
 			# Filter pool to remove any node with the same type/subtype pair
