@@ -1,11 +1,12 @@
+# res://scripts/EffectItemSteal.gd
 @tool
 class_name EffectItemSteal
 extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-## Execute the stealing effect.
-## Returns EffectResult on success, or null if no item could be stolen.
+## Execute the item-stripping effect (Potion of Plunder).
+## Removes a random equipped item from the target unit and sends it directly to the Battle Discard Pile.
 func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -14,11 +15,11 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	
 	if not is_instance_valid(target_unit):
 		return EffectResult.empty()
+
 	# 1. Find Stealable Items
 	var stealable_items: Array[GachaBallInstance] = []
 	for item_uuid in target_unit.equipped_item_uuids:
-		if item_uuid == "": continue
-		
+		if item_uuid.is_empty(): continue
 		var item = battle_manager.get_instance(item_uuid)
 		if is_instance_valid(item):
 			stealable_items.append(item)
@@ -26,89 +27,68 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	# Condition: Target must have at least one item
 	if stealable_items.is_empty():
 		return EffectResult.empty()
+
 	# 2. Select Random Item
-	var stolen_item = RNGManager.combat_rng.pick_random(stealable_items)
+	var stolen_item: GachaBallInstance = RNGManager.combat_rng.pick_random(stealable_items)
 	var stolen_def = stolen_item.get_definition()
-	var item_name = stolen_def.display_name_key if stolen_def else "Unknown Item" # Ideally localized later
+	var item_name = tr(stolen_def.display_name_key) if stolen_def and not stolen_def.display_name_key.is_empty() else "Item"
 	
-	# 3. Determine Destination (Player Inventory)
-	# Determine tier for destination container
-	var tier = 1
-	if is_instance_valid(stolen_def) and "tier" in stolen_def:
-		tier = stolen_def.tier
-	
-	var dest_container_tag = "BattleInventoryT%d" % tier
-	
-	# Simulation Mode: Just report what WOULD happen (but successful)
-	# For consumables, InventoryManager often runs with is_simulation=true to check validity first,
-	# but for pure logic that affects inventory, we might need to actually move it if not strict simulation.
-	# However, InventoryManager._use_consumable runs with is_simulation=true and expects events.
-	# BUT `bm_move_instance` is a state mutation. 
-	# 
-	# CRITICAL ARCHITECTURE CHECK:
-	# InventoryManager._use_consumable runs in "simulation" mode to gather visual events, 
-	# but relies on the effect to perform logic? 
-	# No, looking at InventoryManager.gd:208:
-	# "Execute effect in Execution Mode (is_simulation=false)" -> Wait, comment says false but context sets true?
-	# Line 190: var context = {"is_simulation": true, "silent": is_battle}
-	#
-	# If I strictly follow simulation rules, I shouldn't move the item.
-	# BUT InventoryManager consumes the potion based on result.
-	# AND it controls visual playback.
-	#
-	# If I don't move the item in `execute`, who does?
-	# InventoryManager `_use_consumable` DOES NOT have logic to move stolen items from an event.
-	# It only plays animations.
-	#
-	# Therefore, this effect MUST enter "Execution Mode" to move the item, OR return a specialized response 
-	# that InventoryManager isn't currently built to handle (e.g. "steal_request").
-	#
-	# Given the constraints and the goal (make it work without refactoring core),
-	# I should perform the move if `battle_manager` allows it, or use `bm_move_instance` which is safe.
-	#
-	# Re-reading InventoryManager.gd:
-	# It calls `effect.execute`.
-	# If `res != null`, it eventually calls `owner.remove_instance(consumable)`.
-	#
-	# So I must perform the move HERE.
-	# `is_simulation` flag in context is technically true, which is slightly contradictory for this usage,
-	# but standard for getting the EffectResult visual payload.
-	# I will perform the move regardless of is_simulation flag because "Stealing" IS the effect.
-	
-	# Execute Move
-	# We need to find a valid slot in the destination
-	var dest_container = battle_manager.get_container(dest_container_tag)
-	var dest_index = -1
-	
-	if is_instance_valid(dest_container):
-		dest_index = dest_container.find_first_empty_slot()
-	
-	if dest_index == -1:
-		# Inventory full - fail? Or move to discard?
-		# Let's try to move to discard if inventory is full
-		# BUT standard behavior is usually "fail if no room".
-		# Let's return null if no room.
+	# Determine matching Gacha Machine tier container
+	var item_tier = stolen_def.tier if stolen_def and "tier" in stolen_def else 1
+	item_tier = clampi(item_tier, 1, 3)
+	var target_tag = StringName("BattleInventoryT%d" % item_tier)
+	var target_container = battle_manager.get_container(target_tag)
+	if not is_instance_valid(target_container):
 		return EffectResult.empty()
+		
+	var target_slot = target_container.find_first_empty_slot()
+	if target_slot == -1:
+		return EffectResult.empty()
+
+	# 3. Capture Pre-Unequip Stats
+	var pre_stats: Dictionary = battle_manager._capture_all_unit_stats()
+
+	# 4. Move from equipped slot to target Gacha Machine inventory container
 	var source_loc = stolen_item.get_location()
-	var dest_loc = LocationIdentifier.new(dest_container_tag, dest_index)
-	
-	# Perform atomic move
-	var success = battle_manager.bm_move_instance(source_loc, dest_loc)
-	
-	if not success:
+	var target_loc = LocationIdentifier.new(target_tag, target_slot)
+	var move_res = InventoryOperations.move_instance(battle_manager._state, source_loc, target_loc)
+	if not move_res.success:
 		return EffectResult.empty()
-	# 4. Construct Result
+
+	# 5. Construct Result with Gacha Machine Arc Animation and Stat Change Events
 	var result := EffectResult.new()
-	
-	# Log Message
-	# _source_name and _target_name are now underscored to silence warnings
-	var _source_name = "Potion of Plunder"
-	var _target_name = "Target"
-	
-	# Try to get localized names if possible, but for now hardcode for safety
-	var log_text = "Stole %s!" % [item_name] # Simplified log
-	
-	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	result.state_applied = true
+
+	# Emit SUMMON event targeting BattleInventoryT{tier} for parabolic arc to Gacha Machine
+	var item_snapshot := {
+		"uuid": stolen_item.ball_uuid,
+		"category": "ITEM",
+		"icon": stolen_def.icon if stolen_def and "icon" in stolen_def else null,
+		"definition_id": stolen_item.definition_id,
+		"tier": item_tier
+	}
+	var summon_payload := CombatPayload.new()
+	summon_payload.new_unit_uuid = stolen_item.ball_uuid
+	summon_payload.old_unit_location = target_loc
+	summon_payload.new_unit_snapshot = item_snapshot
+	summon_payload.spawn_source_uuid = target_unit.ball_uuid
+	summon_payload.unit_tier = item_tier
+	
+	var summon_event := CombatEvent.new(CombatEvent.Type.SUMMON, {
+		"source_uuid": target_unit.ball_uuid,
+		"target_uuids": [stolen_item.ball_uuid],
+		"visual_payload": summon_payload
+	})
+	result.add_event(summon_event)
+
+	# Generate and append unequip stat reduction events
+	var stat_data = battle_manager._generate_inventory_stat_events(pre_stats)
+	for ev in stat_data.events:
+		result.add_event(ev)
+
+	# Log message
+	var target_name = BattleHelpers.get_instance_display_name(target_unit)
+	var log_text = "Plundered %s from %s to the Tier %d Gacha Machine!" % [item_name, target_name, item_tier]
+	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
 	return result

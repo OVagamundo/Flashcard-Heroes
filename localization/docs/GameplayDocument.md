@@ -240,3 +240,65 @@ To maintain strategic depth and balance, the game adheres to these economic prin
 *   **Economic Duality**:
     *   *Run Economy (Gold)*: Curating and maintaining a lean deck.
     *   *Battle Economy (Tokens)*: Spinning Gacha machines to draw and field the curated deck.
+
+---
+
+# 14. Player Action & Command Registry
+
+To enforce a fully deterministic architecture (for replays, headless QA bots, and strict RNG seeds), player inputs are strictly divided into two categories: **State-Mutating Actions** (which enter the `ActionQueue` and affect the run) and **Local UI / Visual Controls** (which do not affect game state or RNG).
+
+## 14.1 State-Mutating Actions (ActionQueue)
+*These actions are deterministic and fully serialized for replays. If a player interaction advances or mutates the game state, it MUST be listed here as a `GameAction`.*
+
+**1. Map & Navigation (Path Choice Context)**
+- `SelectPathAction`: Clicking or Tapping a specific encounter node icon on the map to proceed.
+
+**2. Combat Management (Battle Context)**
+- `MoveInventoryAction`: 
+  - **Deploy/Bench Unit**: Dragging a Unit from the Bench to the Board, or Swapping slots. (Drag & Drop / Click-to-Move).
+  - **Equip Item**: Dragging an Item onto a Unit to equip it. (Drag & Drop).
+  - **Consume Item**: Dragging a Consumable onto a Unit to activate it. (Drag & Drop).
+  - **Merge Units (Battle Temp)**: Dragging duplicate units together on the board to merge them. (Drag & Drop).
+- `DrawGachaAction` **[NEW]**: Clicking the tier lever on a Gacha Machine to draw an item/unit to the bench. (Click / Tap).
+- `EndTurnAction` **[NEW]**: Clicking the "Battle!" button to transition from Management to Combat. (Click / Tap).
+- `CombatCommand`: (Existing System) Various internal engine commands executed automatically during the auto-battler layer.
+
+**3. Shop Node (Shop Context)**
+- `BuyShopAction`: Dragging an item from the shelf to the player inventory or clicking the item. (Drag & Drop / Click).
+- `RerollShopAction`: Clicking the Reroll button. (Click / Tap).
+- `LeaveShopAction`: Clicking the Leave button. (Click / Tap).
+
+**4. Reward Node (Reward Context)**
+- `StudyRewardAction`: Clicking the "Study" book icon to start the Flashcard Minigame. (Click / Tap).
+- `DrawRewardAction`: Clicking the Gacha lever to draw a reward using earned tokens. (Click / Tap).
+- `CollectRewardAction`: Dragging a drawn reward to the "Collect" drop zone or inventory. (Drag & Drop).
+- `SellRewardAction`: Dragging a drawn reward to the "Sell" drop zone. (Drag & Drop).
+- `LeaveRewardAction`: Clicking the Leave button. (Click / Tap).
+
+**5. Black Market Node (Black Market Context)**
+- `RemoveBlackMarketAction`: Dragging an inventory item into the "Remove" zone. (Drag & Drop).
+- `TransformBlackMarketAction`: Dragging an inventory item into the "Transform" zone. (Drag & Drop).
+- `LeaveBlackMarketAction`: Clicking the Leave button. (Click / Tap).
+
+**6. Rest Site Node (Rest Site Context)**
+- `StudyRestSiteAction`: Clicking the "Study" book icon to start the Flashcard Minigame. (Click / Tap).
+- `DrawRestSiteAction`: Clicking a Gacha lever to draw a capsule. (Click / Tap).
+- `UpgradeRestSiteAction`: Clicking a specific capsule to apply its permanent stat buff to the Hero. (Click / Tap).
+- `LeaveRestSiteAction`: Clicking the Leave button. (Click / Tap).
+
+**7. Progression & Minigames (Global Overlays)**
+- `SubmitFlashcardAnswerAction`: Submitting an answer in the flashcard minigame. (Click / Tap).
+- `SkipFlashcardAction`: Skipping a flashcard question. (Click / Tap).
+- `AbandonRunAction`: Clicking "Abandon Run" in the pause menu. (Click / Tap).
+- `MoveInventoryAction` (Global Tool): Reorganizing units or items across inventories via Drag & Drop.
+
+## 14.2 Local UI & Visual Controls (Non-Mutating / Telemetry Only)
+*These actions trigger visual overlays, menus, or speed changes. They never touch the `RunState` or `ActionQueue`, meaning a mechanical replay completely ignores them (though they may be logged as telemetry).*
+
+- **Pause Menu**: Clicking the pause button or hitting ESC to open the system menu (unless clicking 'Abandon Run', which is a `GameAction`).
+- **Combat Speed Controls**: Clicking 1x or 3x speed toggles, or stepping through combat events manually.
+- **Inspection Windows**: Hovering or clicking on Units, Items, or Buffs to open the contextual details window (`WindowManager.open_inspection_window`).
+- **Gacha Machine Inventory Toggle**: Clicking a machine to view its internal probability pool in a pop-up window.
+- **Tutorial Popups**: Dismissing tutorial dialogs or informational overlays (these mutate no state and are auto-bypassed in headless/replay modes).
+
+*(CRITICAL NOTE: Flashcard answering, combat actions, and room transactions mutate state and progress the game, and thus must be routed through the `ActionQueue`.)*

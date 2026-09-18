@@ -1,84 +1,150 @@
-# Architectural Mandate: Deterministic Game Engine & Command Pipeline
+# Architectural Mandate: Game Action Pipeline & Deterministic Command Engine
 
 ## 1. Prime Directive
-Transform the game into a **fully deterministic, event-driven architecture** modeled after the core systems of *Slay the Spire 2*. 
 
-The ultimate goal of this refactor is to establish a complete separation between **Player Agency / State Mutation** and **UI / Visual Presentation**. Every state modification across the entire game (run map, gacha pulls, inventory management, merges, and combat) must pass through a command pipeline driven by deterministic logic and seeded RNG.
+Transform the game's player interaction layer into a **unified, input-gated command pipeline** modeled after the core architecture of *Slay the Spire*:
 
-**This refactor must unlock:**
-1. **Run Replays:** The ability to serialize the player's stream of actions into a lightweight log and replay any run or combat turn at variable speeds.
-2. **Headless Bot Testing:** The ability for an automated QA bot to feed commands directly into the queue at 100x speed to stress-test balance, find soft-locks, and gather telemetry without touching UI nodes.
-3. **Zero-Desync Determinism:** Guaranteed identical run generation and combat outcomes across all platforms given the same seed.
+> **Every player input that generates a game state change MUST create a `GameAction` and pass through `ActionQueue.request()`. Nothing that alters game state may bypass this pipeline.**
+
+This refactor establishes the architectural prerequisite for upcoming systems (**Deterministic Session Replays** and **Headless QA Bot Testing**). It does **not** implement the replay recorder or the QA bot directly; rather, it guarantees that all runtime state mutations and state machine transitions are driven exclusively by discrete `GameAction`s.
 
 ---
 
-## 2. The 4 Pillars of the Architecture
+## 2. Core Architectural Principles
 
-### Pillar 1: Unified Command & Input Pipeline (`GameAction` & `ActionQueue`)
-Every decision a player can make—whether buying an item, drawing a gacha ball, merging units, equipping items, resting, or triggering combat—must be encapsulated into a command object (`GameAction`).
+### 1. The Single Pipeline Rule (Zero-Bypass)
+- **Comprehensive Definition of Game State:** Game state is the complete state machine of the entire game. It includes not only core numerical data (`RunState` gold, health, tokens, items, deck sizes), but also **room states, phase transitions, and modal lifecycles**.
+- Any player input that **alters game data, advances game flow, dismisses a gating modal/popup (e.g. "Got It!" flashcard introduction, tutorial dialogs, battle results), or unlocks subsequent interactions MUST instantiate a `GameAction` and pass through `ActionQueue.request()`**.
+- If an input does not change game state or gate progress (e.g. raw mouse cursor movement across empty space, hover highlights, passive tooltips, non-blocking entity inspections), it is client-side presentation. But the moment **any input moves the game state machine forward**, it MUST enter the pipeline as a `GameAction`.
+- UI controllers, room scenes, and `GlobalInteractionRouter` have zero authority to mutate state, deduct currencies, grant items, advance phases, or close gating windows directly. Their sole role upon receiving user input is to construct and request a `GameAction`.
 
-* **Validation First:** A command must validate itself against the current `RunState` / `BattleState` before execution (`is_valid() -> bool`). If invalid (e.g., trying to equip an item that no longer exists), it gracefully aborts.
-* **Execution & Mutation:** The command mutates state strictly through pure backend systems (`InventoryOperations.gd`, `MergeManager.gd`, `CombatSimulator.gd`).
-* **UI Decoupling:** UI controls (drag-and-drop routers, shop buttons, gacha levers) are strictly **Command Generators**. They never mutate game state directly; they instantiate a `GameAction` and push it to the `ActionQueue`.
-* **Strict Input Blocking:** When a `GameAction` is enqueued, the `ActionQueue` MUST physically block all other global player input (e.g. via a transparent full-screen `ColorRect` overlay intercepting mouse events) until the action and ALL of its resulting visual animations are 100% finished. Players cannot spam inputs or execute new actions while one is resolving.
-* **UI Telemetry & Execution Bypass:** The recorder MUST capture data on how the player interacts with the UI (e.g., when they change combat speed, pause the game via ESC, or open a unit's inspection window) so developers have statistical data on player behavior and animation pacing. However, these pure UI interactions MUST NEVER be implemented as `GameAction`s. They are pushed to the recorder as `TelemetryEvent`s, which bypass the `ActionQueue` completely and take effect instantly on the client side. During replay playback, the engine reads these events for statistical logging but **does not execute them**, ensuring that a recorded speed change never overrides the spectator's replay UI controls.
-* **Blocker Layering:** To allow players to click on-screen presentation buttons (like changing speed or opening the settings menu) while the `ActionQueue` is blocking input, those specific UI elements must reside on a CanvasLayer with a higher index than the global input blocker.
+### 2. Input Gating (The Slay the Spire Model)
+- While `ActionQueue` is busy processing an action and its visual consequences (`is_busy() == true`), **player inputs are blocked**.
+- No new player input can fire, corrupt state, or cause race conditions while animations or events are resolving.
+- When the action and its cascaded visual events finish, the action signals completion (`finish_visuals()`), resetting `is_busy() = false` and enabling player input for the next decision.
 
-### Pillar 2: Simulation Event Stream & Reactive Presentation ("VCR System")
-The visual layer (animations, floating numbers, unit jumps, audio) must never dictate game logic.
+### 3. 100% Behavioral & Visual Preservation
+- The game must look, feel, sound, and play **identically** to the pre-refactor baseline (`Code/AllProjectFiles.md`).
+- Visual timing, pacing (e.g. coins flying before transactions commit), button disabling, sound effects, and animations must be preserved completely. The refactor wraps player decisions into `GameAction`s; it does not change how the game plays or feels.
 
-* **Simulation Generates Events:** When commands or combat turns resolve, the underlying engine generates a queue of immutable `CombatEvent` / `GameEvent` logs carrying snapshot payloads (`CombatPayload`).
-* **UI as a Reactive View:** Nodes like `BattleAnimator.gd`, `GachaBallView.gd`, and `SlotView.gd` are purely visual puppets. They consume the event stream and play animations sequentially.
-* **Global Engine Speed Scaling:** Playback speed (1x, 3x, etc.) is controlled globally via `Engine.time_scale` (`AnimationConstants.speed_factor`), uniformly accelerating all tweens, timers, particle systems, and token animations without double-scaling. Headless QA bots operate at 0x animation wait time for instant turn processing.
-* **Perfect Pacing Preservation:** The event stream must record the exact physical time delta between user actions. Replays must NOT skip or fast-forward human idle time—they must capture and recreate the exact physical time the player waited between clicks to guarantee a perfectly organic VCR playback.
-* **Empty Animation Resolution:** If a `GameAction` (like swapping inventory slots) does not trigger any visual animations, the `AnimationCompletionTracker` must instantly resolve without yielding, allowing the `ActionQueue` to proceed immediately without hanging in a soft-lock.
-* **Combat Resolution Locking:** For complex state transitions like `BattleStartAction`, the action's `execute()` method must yield until the `CombatSimulator` explicitly broadcasts a `combat_resolved` signal. This guarantees the `ActionQueue` remains locked for the entire multi-minute duration of the battle, preventing players from injecting map or inventory actions while units are fighting.
+### 4. Absolute Execution Equivalence (The Universal Action Path)
+- Real gameplay, replay playback, and headless bot execution must follow the **100% identical command execution path**.
+- The core engine, `ActionQueue`, and `GameAction`s have zero knowledge of who submitted an action. The only difference across all three modes is the input source:
+  - **Real Gameplay:** Mouse, keyboard, or touch inputs generate a `GameAction` -> `ActionQueue.request(action)`.
+  - **Replay Playback:** Replay file deserializer reads an action -> `ActionQueue.request(action)`.
+  - **Headless Bot:** Automated decision agent selects an action -> `ActionQueue.request(action)`.
+- Never branch or alter gameplay logic based on whether the game is replaying or being played live.
 
-### Pillar 3: Card / Unit Instance & 3-Tier Stat Lifecycle
-Units, items, and flashcard resources must maintain clean state tracking as they are acquired, modified, upgraded, and removed over the course of a run.
+### 5. Grounded Timeline via Authoritative Global Run Timer
+- All timed events and recorded action timestamps must be grounded in an authoritative **Global Run Timer** (elapsed simulation time since run start, tracked in the core run state).
+- Relying exclusively on relative think times or local delays causes small processing lags and frame variations to accumulate into severe desynchronizations over long runs. A global run clock guarantees absolute time grounding across recording, narrative logging, telemetry, and playback.
 
-* **Flyweight Base + Cloned Instances:** Use master definitions (`GachaBallDefinition`) for static data, and cloned instances (`GachaBallInstance`) for run/battle state.
-* **3-Tier Stat System:** Stats (HP, PWR, etc.) must clearly differentiate between:
-  1. **Base Value:** Unmodified definition default.
-  2. **Enchanted / Permanent Value:** Modifications accrued across the run (merges, training, permanent items).
-  3. **Active / Display Value:** Temporary combat-only modifications (buffs, debuffs, burn, armor).
-* **Reset Lifecycle:** At the end of combat, active stats discard temporary modifiers and fall back to their run-permanent values.
-
-### Pillar 4: Isolated, Seeded PRNG Streams (COMPLETED)
-Randomness no longer relies on platform-dependent system random functions (`randi()`, `randf_range()`). This pillar has been fully implemented.
-
-* **Seeded PRNG (`SeededRNG.gd`):** A wrapper around Godot's `RandomNumberGenerator` that provides deterministic API replacements and serialization support.
-* **Stream Isolation (`RNGManager.gd`):** The game now utilizes 6 completely isolated, independent streams derived from a master seed:
-  - `map_rng`: Node selection, encounter generation, deck shuffling, flashcards.
-  - `combat_rng`: Target resolution, abilities, bounce mechanics, summons.
-  - `shop_rng`: Shop generation and `WeightedPoolDirector` rolls.
-  - `reward_rng`: Post-combat drops, rest sites, training outcomes.
-  - `gacha_rng`: In-combat inventory pulls, UUID generation, run-level overflow.
-  - `cosmetic_rng`: Screen shake, coin scatter, physics spread, and audio pitch variance.
+### 6. Pause Fidelity & Speed Compounding
+- **Pause Reproduction:** Pausing during gameplay is a state change that is recorded and **faithfully reproduced in replay playback** so that the replay unfolds 100% identically to the real playthrough. Spectators can use the replay viewer's speed controls to fast-forward through pauses if desired.
+- **Multiplicative Speed Compounding:** In-game speed settings (such as combat speed toggles: 1x, 2x, 4x) compound multiplicatively with global replay playback speed controls:
+  $$\text{Effective Speed} = \text{Base Gameplay Speed} \times \text{Replay Playback Multiplier}$$
+  For example, a combat recorded at 2x base speed, watched at 2x replay playback speed, plays back at 4x effective speed. Outside of combat (at 1x base speed), it plays back at 2x speed. Because Godot's `Engine.time_scale` universally scales deltas, tweens, and timers, synchronization is preserved perfectly across all compounding factors.
 
 ---
 
-## 3. Codebase Integration Map & Hotspots
+## 3. Strict Precautions & Guardrails
 
-As you implement this refactor, pay close attention to how existing scripts fit into this pipeline:
+The implementing programmer agent must adhere to the following firm guardrails:
 
-* **`CombatSimulator.gd` & `CombatCommand.gd`:** You already have a strong command/reaction pattern working inside combat! **Keep this engine intact.** Extend its pattern upward so that out-of-combat operations (`InventoryOperations.gd`, `MergeManager.gd`) follow the same queue-and-event structures.
-* **`GlobalInteractionRouter.gd`:** Refactor this from a synchronous logic executor into a **Command Factory**. On drop/click, validate basic UI state, construct the appropriate `GameAction` (e.g., `EquipItemAction`, `SwapInstancesAction`), and pass it to the queue.
-* **`SignalBus.gd` & Reactive UI:** When `GameActionQueue` processes an action, it must emit through `SignalBus`. Visual nodes (`SlotView.gd`, `BattleInventoryWindow.gd`) update their presentation solely by reacting to these signals.
-* **`AnimationCompletionTracker.gd`:** Use this to allow the `ActionQueue` to `await` active visual feedback before processing the next queued action (during normal player sessions), while bypassing it during headless bot simulations.
+### Precaution 1: Strict Data Purity in Actions (NO UI Coordinates or Object Pointers)
+* `GameAction` payloads must contain **ONLY logical game state data** (`int`, `StringName`, `String`, `bool`, `LocationIdentifier`).
+* **NEVER pass screen pixel coordinates (`Vector2`), mouse positions, Viewport transforms, UI Control references, or engine Resource object pointers into a `GameAction`.**
+* **Presentation Responsibility:** The UI View (e.g. `Shop.gd`, `BlackMarket.gd`, `RestSite.gd`) owns its own visual elements and layout. If an animation requires screen coordinates (such as spawning coin VFX at a button or flying a gachaball from a slot), the UI View must determine those coordinates locally from its own node hierarchy and slot indices. The Action payload must remain purely logical data.
+
+### Precaution 2: Respect Existing Visual Pacing and Timing
+* In several rooms (e.g., Shop purchases, Rest Site draws), the original game's visual design plays an animation (e.g. coins flying to the button/slot) *before* the transaction commits, followed by an animation of the resulting gachaball flying to the machine.
+* The refactor must **preserve this visual flow and feel**. Do not prematurely snap state changes if it breaks the visual choreography, and do not shove UI animation tweens directly into action classes to bypass proper view handling.
+
+### Precaution 3: Headless Mode Must Perform Real State Mutations
+* In headless mode (`ActionQueue.is_headless_mode() == true`), animations are bypassed and actions resolve immediately on frame 0.
+* **Actions MUST still execute genuine state mutations in headless mode** (deducting gold/tokens, transferring items, updating stats, advancing rooms, transitioning modal states).
+* **NEVER leave mutations as no-ops (`pass`)**. If an action skips visual tweens, the backend state change must still execute deterministically.
+
+### Precaution 4: Room Generation and State Must Live in the Data Layer (Not UI `_ready()`)
+* Because the headless QA bot must generate `.mcr` replays that can be reproduced identically in the normal visual client, **room state, procedural generation (shop stock, rewards, rest capsules, Dojo choices), and room tokens must NEVER be tied to UI scene `_ready()` callbacks or UI-local variables**.
+* If generation logic lives inside a UI node, headless runs will fail to generate data or will roll RNG out of order compared to visual mode, causing immediate replay desynchronization. Generation, room stock, and room tokens belong strictly to the data/engine layer (`RunState`, pool directors).
+
+### Precaution 5: Scene Transition Actions Must Not Signal Completion Prematurely
+* Actions that transition between scenes or rooms (`SelectPathAction`, `LeaveShopAction`, etc.) must **never** invoke `finish_visuals()` before the destination room has fully loaded, entered the scene tree, and signaled it is ready for player input.
+* Signaling `finish_visuals()` while an asynchronous scene load is still pending causes `ActionQueue` to declare itself idle prematurely, causing replays and bots to dispatch subsequent actions against an uninitialized scene.
+
+### Precaution 6: Post-Loadout Playback Initialization Boundary
+* Replay playback initializes directly from the **post-loadout run state** (Hero selected, Deck selected, Master Seed initialized, initial run inventory configured at Floor 1 entrance), rather than playing through Title screen menu clicks.
+* However, all player configuration choices (Hero, Deck, Seed, Options) are captured in the `.mcr` header metadata for telemetry, statistics, and run auditing.
+
+### Precaution 7: Input & Drag-and-Drop Lifecycles Must Cleanly Reset
+* If an action is rejected by `validate()` or dropped by the queue, the UI interaction lifecycle must be cleanly terminated.
+* Specifically, drag-and-drop systems (like `GlobalInteractionRouter`) must ensure `end_drag(false)` is invoked on invalid actions so dragged items cleanly snap back and never get stuck floating in screen limbo.
+
+### Precaution 8: Zero Codebase Assumptions (Investigate First)
+* **No assumptions on how the codebase is set up should be made.** The active agent programmer must investigate the actual files, scenes, and scripts until there are zero assumptions, since the complete codebase is available to read and verify.
+* Never assume how a room manages its state, how signals are wired, or where data resides. Always inspect the active implementation before designing or writing any code.
 
 ---
 
-## 4. Developer Autonomy & Refactoring Freedom
+## 4. Player Actions Across Game Rooms
 
-As the lead developer executing this refactor:
-* **Freedom of Implementation:** You have full authority to introduce new base classes, helper singletons, or event types as you explore the codebase.
-* **Iterative Migration:** You do not need to rewrite the entire engine in a single pass. You can introduce the `GameActionQueue` and migrate input handling subsystem by subsystem (e.g., Inventory drag-drop -> Gacha pulls -> Merge encounters -> Shop choices).
-* **Preserve Core Rules:** The balance, math, unit abilities, and visual feel of the game must remain identical. The player should experience no change in gameplay—only a vastly more stable, deterministic, and replay-capable architecture under the hood.
+The following player decisions represent the interactions across the game that alter game state or gate progress, and must be routed through `GameAction`s:
+
+| Room / Context | Typical Action | Player Intent & State Mutation |
+| :--- | :--- | :--- |
+| **Map Navigation** | `SelectPathAction` | Choose a node index on the path map to transition rooms. |
+| **Battle Management** | `MoveInventoryAction` | Move, equip, or use units/items between bench, board, and inventory. |
+| **Battle Management** | `ConfirmMergeAction` | Confirm a merge recipe between two units from `ChoiceWindow`. |
+| **Battle Management** | `ConfirmSwapAction` | Swap positions of two units or items from `ChoiceWindow` or direct drag. |
+| **Battle Management** | `DrawGachaAction` | Pull a unit/item from combat gacha machines using combat tokens. |
+| **Battle Management** | `EndTurnAction` | Finish management phase and transition to combat execution. |
+| **Battle Flow** | `AcknowledgeBattleResultsAction` | Acknowledge end-of-battle victory/defeat modal to open rewards or map. |
+| **Battle Settings** | `SetCombatSpeedAction` | Toggle combat playback speed multiplier (1x, 2x, 4x). |
+| **Flashcard Minigame**| `AcknowledgeFlashcardIntroAction` | Dismiss "Got It!" card introduction, transition to `SPRINT_ACTIVE`, and start countdown timer. |
+| **Flashcard Minigame**| `SubmitFlashcardAnswerAction` | Submit an answer choice, update streak, award tokens, load next question. |
+| **Flashcard Minigame**| `SkipFlashcardAction` | Skip current flashcard, reset streak, load next question. |
+| **Tutorial System** | `DismissTutorialAction` | Dismiss a blocking tutorial dialog and resume game progression. |
+| **Run Lifecycle** | `PauseRunAction` | Toggle pause state on/off, preserving simulation timeline integrity. |
+| **Shop** | `BuyShopAction` | Purchase an item/unit from a specific shop slot index. |
+| **Shop** | `RerollShopAction` | Pay gold to reroll shop stock. |
+| **Shop** | `LeaveShopAction` | Leave the shop and return to map navigation. |
+| **Reward Room** | `DrawRewardAction` | Spend reward tokens to draw a capsule. |
+| **Reward Room** | `CollectRewardAction` | Claim a drawn reward capsule into inventory/trinkets. |
+| **Reward Room** | `SellRewardAction` | Sell a drawn reward capsule for gold. |
+| **Reward Room** | `StudyRewardAction` | Initiate flashcard minigame to earn reward tokens. |
+| **Reward Room** | `LeaveRewardAction` | Finalize/discard remaining rewards and exit room. |
+| **Rest Site** | `DrawRestSiteAction` | Spend tokens to draw a stat capsule. |
+| **Rest Site** | `UpgradeRestSiteAction` | Apply a drawn stat capsule to the Hero. |
+| **Rest Site** | `StudyRestSiteAction` | Initiate flashcard minigame to earn rest site tokens. |
+| **Rest Site** | `LeaveRestSiteAction` | Auto-apply remaining capsules and exit rest site. |
+| **Dojo / Training** | `StartTrainingAction` | Commit gold, select target unit & stat (`hp`/`pwr`), and initiate minigame. |
+| **Dojo / Training** | `TrainUnitStatAction` | Spend 1, 2, or 3 tokens inside training popup to roll and apply stat buffs. |
+| **Dojo / Training** | `CloseTrainingPopupAction` | Close training popup after training, returning to dojo room view. |
+| **Dojo / Training** | `LeaveTrainingAction` | Exit the training ground and return to map navigation. |
+| **Black Market** | `RemoveBlackMarketAction` | Pay gold to purge a unit/item from the run. |
+| **Black Market** | `TransformBlackMarketAction` | Pay gold to reroll a unit/item into a new instance. |
+| **Black Market** | `LeaveBlackMarketAction` | Exit the black market and return to map navigation. |
 
 ---
 
-## 5. Definition of Done
-1. **100% Command Ingestion:** All player interactions across the run map, management screens, gacha, and combat are routed through validated `GameAction` objects.
-2. **Replayability:** A list of serialized `GameAction` objects combined with a Run Seed can reproduce an entire game session identically from start to finish.
-3. **Bot Compatibility:** An automated script can feed valid `GameAction` commands into the queue without UI interaction and successfully play through runs headless.
+## 5. Input Gating & Visual Settling Contract
+
+1. **Submission (`request`)**: UI interactions instantiate and submit a `GameAction` to `ActionQueue.request(action)`.
+2. **Gating**: If the queue is currently busy (`is_busy() == true`), incoming requests are dropped or rejected to prevent race conditions and concurrent input execution.
+3. **Execution & Visuals**:
+   - In UI mode: the action and view coordinate playback. `ActionQueue` remains busy while visual feedback runs.
+   - In headless mode: the action executes state changes instantly without waiting for tweens or visual timers.
+4. **Settling**: When animations and cascaded events conclude, the action signals completion (`finish_visuals()`), resetting `is_busy() = false` and emitting `queue_idle` so the next player input can be accepted.
+
+---
+
+## 6. Definition of Done
+
+1. **100% Action Routing:** All player inputs that alter game state, advance progression, or dismiss gating modals are routed through `GameAction` and `ActionQueue`.
+2. **Zero Bypass:** No UI button callback, scene script, or untracked signal directly mutates run state, inventory, or modal states.
+3. **Zero Presentation Leakage:** No `GameAction` requires or stores screen coordinates, pixel offsets, or UI node references.
+4. **Visual & Behavioral Parity:** The game looks, feels, and plays identically to the pre-refactor state. Animations and visual pacing are fully preserved.
+5. **Clean Drag-and-Drop Lifecycle:** Dropping items on invalid targets cleanly cancels the interaction without freezing UI state.
+6. **Headless Integrity:** In headless mode, all actions mutate state deterministically without crashing or relying on UI elements.
+7. **Pause & Speed Parity:** Pauses are faithfully reproduced in replay playback, and replay playback speeds compound multiplicatively with base in-game speeds.

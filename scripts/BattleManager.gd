@@ -12,7 +12,6 @@ var _current_battle_phase: Phases
 # Internal delegates - encapsulate battle data and combat simulation
 var _state = BattleStateClass.new()
 var _combat = CombatSimulatorClass.new()
-var _visual_gacha_tokens: int = 0
 
 # Combat variables - forward to _combat for backwards compatibility
 var _actor_queue: Array[GachaBallInstance]:
@@ -22,11 +21,17 @@ var _pending_reactions: Array[EffectRequest]:
 	get: return _combat._pending_reactions
 	set(value): _combat._pending_reactions = value
 var _is_processing_effect: bool:
-	get: return _combat._is_processing_effect
-	set(value): _combat._is_processing_effect = value
+	get: return _combat._processing_effect_count > 0
+	set(value):
+		if value:
+			_combat._processing_effect_count += 1
+		else:
+			_combat._processing_effect_count = maxi(0, _combat._processing_effect_count - 1)
 
 var _management_animation_queue: Array[Dictionary] = []
 var _is_animating_management_queue: bool = false
+var _is_drawing: bool = false
+signal management_animation_queue_completed
 
 
 var _battle_over_deferred: bool = false
@@ -112,6 +117,9 @@ func _ready() -> void:
 func get_current_phase() -> Phases:
 	return _current_battle_phase
 
+func get_battle_phase() -> Phases:
+	return _current_battle_phase
+
 func is_processing_effect() -> bool:
 	return _is_processing_effect
 
@@ -152,19 +160,116 @@ func _connect_signals() -> void:
 		SignalBus.management_animation_requested.connect(_on_management_animation_requested)
 	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
-func _emit_battle_inventory_changed() -> void:
-	# Trigger real-time passive updates whenever the inventory changes
-	AbilityResolver.process_trigger(&"on_board_changed", {})
+func _is_unit_instance(inst: GachaBallInstance) -> bool:
+	if not is_instance_valid(inst):
+		return false
+	var def = inst.get_definition()
+	return is_instance_valid(def) and def.category == &"UNIT"
+
+func _capture_all_unit_stats() -> Dictionary:
+	var stats: Dictionary = {}
+	for uuid in _battle_instances:
+		var inst = _battle_instances[uuid]
+		if _is_unit_instance(inst):
+			stats[uuid] = {"hp": inst.current_hp, "pwr": inst.current_pwr}
+	return stats
+
+func _generate_inventory_stat_events(pre_stats: Dictionary) -> Dictionary:
+	var extra_events: Array[CombatEvent] = []
+	var pre_stats_override: Dictionary = {}
 	
-	if _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
-		# Process passive updates (e.g. Twin Charm scaling) immediately in the data layer without queuing VCR animations
-		_combat.process_reaction_queue(self, {})
+	for uuid in pre_stats:
+		var inst = get_instance(uuid)
+		if not is_instance_valid(inst):
+			continue
+		var old_hp: int = pre_stats[uuid]["hp"]
+		var old_pwr: int = pre_stats[uuid]["pwr"]
+		var new_hp: int = inst.current_hp
+		var new_pwr: int = inst.current_pwr
+		var delta_hp: int = new_hp - old_hp
+		var delta_pwr: int = new_pwr - old_pwr
 		
-		# Ensure any enemy deaths that occurred during these updates are properly cleaned up
-		_flush_deferred_enemy_erasures()
-		
-		SignalBus.emit_signal("battle_inventory_changed")
-		_pending_inventory_refresh = false
+		if delta_hp != 0 or delta_pwr != 0:
+			pre_stats_override[uuid] = {"hp": old_hp, "pwr": old_pwr}
+			var payload := CombatPayload.both_stats_change(
+				uuid,
+				delta_hp,
+				delta_pwr,
+				[old_hp],
+				[new_hp],
+				[old_pwr],
+				[new_pwr]
+			)
+			var event := CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": uuid,
+				"target_uuids": [uuid],
+				"ability_holder_uuid": uuid,
+				"visual_payload": payload
+			})
+			extra_events.append(event)
+			
+	return {
+		"events": extra_events,
+		"pre_stats": pre_stats_override
+	}
+
+func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_stats_override: Dictionary = {}, pre_equipped_override: Dictionary = {}) -> void:
+	# Trigger real-time passive updates whenever the inventory changes
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	
+	if _current_battle_phase == Phases.MANAGEMENT:
+		if not _is_processing_effect:
+			# Process passive updates (e.g. Twin Charm scaling) via VCR animations so UI reflects changes
+			var events: Array[CombatEvent] = []
+			if not extra_events.is_empty():
+				events.append_array(extra_events)
+			var passive_events = _combat.process_reaction_queue(self, {})
+			if not passive_events.is_empty():
+				events.append_array(passive_events)
+			
+			# Ensure any enemy deaths that occurred during these updates are properly cleaned up
+			_flush_deferred_enemy_erasures()
+			
+			if not events.is_empty():
+				var snapshot = VisualDataAdapter.create_board_snapshot(self.get_all_instances())
+				for unit_uuid in pre_stats_override:
+					if snapshot.has(unit_uuid):
+						var unit_override: Dictionary = pre_stats_override[unit_uuid]
+						if unit_override.has("hp"):
+							snapshot[unit_uuid]["hp"] = unit_override["hp"]
+						if unit_override.has("pwr"):
+							snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+				for unit_uuid in pre_equipped_override:
+					if snapshot.has(unit_uuid):
+						var eq_override: Dictionary = pre_equipped_override[unit_uuid]
+						if eq_override.has("equipped_items"):
+							snapshot[unit_uuid]["equipped_items"] = eq_override["equipped_items"]
+						if eq_override.has("equipped_item_icon"):
+							snapshot[unit_uuid]["equipped_item_icon"] = eq_override["equipped_item_icon"]
+				enqueue_management_animation(snapshot, events)
+				_pending_inventory_refresh = true
+			else:
+				SignalBus.emit_signal("battle_inventory_changed")
+				_pending_inventory_refresh = false
+		else:
+			if not extra_events.is_empty():
+				var snapshot = VisualDataAdapter.create_board_snapshot(self.get_all_instances())
+				for unit_uuid in pre_stats_override:
+					if snapshot.has(unit_uuid):
+						var unit_override: Dictionary = pre_stats_override[unit_uuid]
+						if unit_override.has("hp"):
+							snapshot[unit_uuid]["hp"] = unit_override["hp"]
+						if unit_override.has("pwr"):
+							snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+				for unit_uuid in pre_equipped_override:
+					if snapshot.has(unit_uuid):
+						var eq_override: Dictionary = pre_equipped_override[unit_uuid]
+						if eq_override.has("equipped_items"):
+							snapshot[unit_uuid]["equipped_items"] = eq_override["equipped_items"]
+						if eq_override.has("equipped_item_icon"):
+							snapshot[unit_uuid]["equipped_item_icon"] = eq_override["equipped_item_icon"]
+				enqueue_management_animation(snapshot, extra_events)
+			_pending_inventory_refresh = true
 	else:
 		_pending_inventory_refresh = true
 
@@ -190,7 +295,6 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	# AUDIO HOOK: Battle BGM
 	Audio.play_music(SoundRegistry.BGM_BATTLE)
 	
-	sync_visual_gacha_tokens()
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
 	# Emit unit_stat_changed for all units that have equipped items after UI is populated
@@ -307,13 +411,15 @@ func bm_remove_instance(uuid: String) -> bool:
 	if is_instance_valid(instance):
 		_cleanup_removed_trinket_passives(instance)
 
+	var pre_stats := _capture_all_unit_stats()
 	var result := _state.bm_remove_instance(uuid)
 	if result.success:
 		if not result.unit_changed_uuid.is_empty():
 			SignalBus.emit_signal("unit_inventory_changed", result.unit_changed_uuid)
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
-		_emit_battle_inventory_changed()
+		var stat_data := _generate_inventory_stat_events(pre_stats)
+		_emit_battle_inventory_changed(stat_data.events, stat_data.pre_stats)
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	return result.success
 
@@ -329,7 +435,9 @@ func _cleanup_removed_trinket_passives(instance: GachaBallInstance) -> void:
 	if definition.id != &"trinket_twin_charm":
 		return
 
-	var status_key := StringName("twin_charm_scaling_" + instance.ball_uuid)
+	var team = "PLAYER" if _is_player_owned(instance) else "ENEMY"
+	var status_key := StringName("twin_charm_scaling_" + team)
+	var legacy_status_key := StringName("twin_charm_scaling_" + instance.ball_uuid)
 	for uuid in _battle_instances:
 		var target: GachaBallInstance = _battle_instances[uuid]
 		if not is_instance_valid(target):
@@ -339,6 +447,9 @@ func _cleanup_removed_trinket_passives(instance: GachaBallInstance) -> void:
 			continue
 
 		var last_bonus := target.get_status_effect_amount(status_key)
+		if last_bonus <= 0:
+			last_bonus = target.get_status_effect_amount(legacy_status_key)
+			status_key = legacy_status_key
 		if last_bonus <= 0:
 			continue
 
@@ -350,6 +461,7 @@ func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdenti
 	assert(is_instance_valid(source_loc), "bm_move_instance: source_loc is null")
 	assert(is_instance_valid(target_loc), "bm_move_instance: target_loc is null")
 	
+	var pre_stats := _capture_all_unit_stats()
 	var result := InventoryOperations.move_instance(_state, source_loc, target_loc)
 	
 	# Handle needs_equip delegation
@@ -366,7 +478,8 @@ func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdenti
 		for uuid in result.changed_unit_uuids:
 			SignalBus.emit_signal("unit_inventory_changed", uuid)
 		if result.inventory_changed:
-			_emit_battle_inventory_changed()
+			var stat_data := _generate_inventory_stat_events(pre_stats)
+			_emit_battle_inventory_changed(stat_data.events, stat_data.pre_stats)
 			SignalBus.emit_signal("inventory_ui_refresh_requested")
 	
 	return result.success
@@ -375,6 +488,7 @@ func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdent
 	assert(is_instance_valid(source_loc), "bm_swap_instances: source_loc is null")
 	assert(is_instance_valid(target_loc), "bm_swap_instances: target_loc is null")
 	
+	var pre_stats := _capture_all_unit_stats()
 	var result := InventoryOperations.swap_instances(_state, source_loc, target_loc)
 	
 	if result.success:
@@ -383,25 +497,74 @@ func bm_swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdent
 		for uuid in result.changed_unit_uuids:
 			SignalBus.emit_signal("unit_inventory_changed", uuid)
 		if result.inventory_changed:
-			_emit_battle_inventory_changed()
+			var stat_data := _generate_inventory_stat_events(pre_stats)
+			_emit_battle_inventory_changed(stat_data.events, stat_data.pre_stats)
 			SignalBus.emit_signal("inventory_ui_refresh_requested")
 	
 	return result.success
 
-func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
+func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false, out_events: Array[CombatEvent] = []) -> bool:
 	assert(not item_uuid.is_empty(), "bm_equip_item: item_uuid is empty")
 	assert(not unit_uuid.is_empty(), "bm_equip_item: unit_uuid is empty")
 	
+	var pre_stats := _capture_all_unit_stats() if not silent else {}
+	var old_unit: GachaBallInstance = get_instance(unit_uuid) if not silent else null
+	var old_equipped_items_data: Array = []
+	if not silent and is_instance_valid(old_unit):
+		for u_item_uuid in old_unit.equipped_item_uuids:
+			if not u_item_uuid.is_empty():
+				var u_item = get_instance(u_item_uuid)
+				if is_instance_valid(u_item):
+					var u_def = u_item.get_definition()
+					if is_instance_valid(u_def):
+						old_equipped_items_data.append({
+							"uuid": u_item_uuid,
+							"icon": u_def.icon,
+							"definition_id": u_item.definition_id
+						})
+
 	var result := InventoryOperations.equip_item(_state, item_uuid, unit_uuid, slot_index)
 	
 	if result.success:
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
+			
+		# If an item was replaced, create an ITEM_DISCARD event (sequential beat!)
+		var discard_event: CombatEvent = null
+		if not result.replaced_item_uuid.is_empty():
+			var discard_payload := CombatPayload.item_discard(
+				result.replaced_from_unit_uuid,
+				result.replaced_item_uuid,
+				result.replaced_item_icon,
+				result.replaced_item_icon_path,
+				result.replaced_item_name
+			)
+			discard_event = CombatEvent.new(CombatEvent.Type.ITEM_DISCARD, {
+				"source_uuid": result.replaced_from_unit_uuid,
+				"target_uuids": [result.replaced_item_uuid],
+				"visual_payload": discard_payload
+			})
+			if out_events != null:
+				out_events.append(discard_event)
+
 		if not silent:
 			for uuid in result.changed_unit_uuids:
 				SignalBus.emit_signal("unit_inventory_changed", uuid)
 			if result.inventory_changed:
-				_emit_battle_inventory_changed()
+				var stat_data := _generate_inventory_stat_events(pre_stats)
+				var extra_events: Array[CombatEvent] = []
+				var pre_equipped_override: Dictionary = {}
+				
+				if discard_event != null:
+					extra_events.append(discard_event)
+					if not old_equipped_items_data.is_empty():
+						pre_equipped_override[unit_uuid] = {
+							"equipped_items": old_equipped_items_data,
+							"equipped_item_icon": old_equipped_items_data[0]["icon"]
+						}
+				
+				extra_events.append_array(stat_data.events)
+				_emit_battle_inventory_changed(extra_events, stat_data.pre_stats, pre_equipped_override)
 				SignalBus.emit_signal("inventory_ui_refresh_requested")
 		else:
 			# Even when silent (e.g. during combat simulation), we must trigger the passive scaling
@@ -415,14 +578,31 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 # Composite atomic mutation API (Battle)
 # ------------------------------------------------------------------
 
-func bm_move_instance_to_discard(uuid: String) -> bool:
+func bm_move_instance_to_discard(uuid: String, out_events: Array[CombatEvent] = []) -> bool:
 	assert(not uuid.is_empty(), "bm_move_instance_to_discard: uuid is empty")
 	var instance := get_instance(uuid)
 	assert(is_instance_valid(instance), "bm_move_instance_to_discard: instance not found")
 	
-	# Ownership gate
-	assert(_is_player_owned(instance), "bm_move_instance_to_discard: instance is not player owned")
-	
+	var pre_stats := _capture_all_unit_stats()
+	var old_parent_uuid: String = ""
+	var old_equipped_items_data: Array = []
+	var loc := instance.get_location()
+	if is_instance_valid(loc) and loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		old_parent_uuid = loc.unit_uuid
+		var parent := get_instance(old_parent_uuid)
+		if is_instance_valid(parent):
+			for u_item_uuid in parent.equipped_item_uuids:
+				if not u_item_uuid.is_empty():
+					var u_item = get_instance(u_item_uuid)
+					if is_instance_valid(u_item):
+						var u_def = u_item.get_definition()
+						if is_instance_valid(u_def):
+							old_equipped_items_data.append({
+								"uuid": u_item_uuid,
+								"icon": u_def.icon,
+								"definition_id": u_item.definition_id
+							})
+
 	var result := InventoryOperations.move_instance_to_discard(_state, instance)
 	
 	if result.success:
@@ -430,7 +610,32 @@ func bm_move_instance_to_discard(uuid: String) -> bool:
 			SignalBus.emit_signal("unit_inventory_changed", changed_uuid)
 		if OS.is_debug_build():
 			_bm_validate_state_consistency()
-		_emit_battle_inventory_changed()
+		var stat_data := _generate_inventory_stat_events(pre_stats)
+		var extra_events: Array[CombatEvent] = []
+		var pre_equipped_override: Dictionary = {}
+		if not result.replaced_item_uuid.is_empty():
+			var discard_payload := CombatPayload.item_discard(
+				result.replaced_from_unit_uuid,
+				result.replaced_item_uuid,
+				result.replaced_item_icon,
+				result.replaced_item_icon_path,
+				result.replaced_item_name
+			)
+			var discard_event := CombatEvent.new(CombatEvent.Type.ITEM_DISCARD, {
+				"source_uuid": result.replaced_from_unit_uuid,
+				"target_uuids": [result.replaced_item_uuid],
+				"visual_payload": discard_payload
+			})
+			extra_events.append(discard_event)
+			if out_events != null:
+				out_events.append(discard_event)
+			if not old_equipped_items_data.is_empty() and not old_parent_uuid.is_empty():
+				pre_equipped_override[old_parent_uuid] = {
+					"equipped_items": old_equipped_items_data,
+					"equipped_item_icon": old_equipped_items_data[0]["icon"]
+				}
+		extra_events.append_array(stat_data.events)
+		_emit_battle_inventory_changed(extra_events, stat_data.pre_stats, pre_equipped_override)
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	
 	return result.success
@@ -496,6 +701,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if not draw_result.success:
 		return chain_events
 	
+	_is_drawing = true
 	# Spend tokens
 	_gacha_tokens -= cost
 	if has_bargain and not bargain_used:
@@ -520,8 +726,11 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		"tokens_spent": tier # Tier equals tokens spent
 	}
 	var drawn_instance = get_instance(draw_result.drawn_uuid)
+	var new_unit_snapshot = {}
 	if is_instance_valid(drawn_instance):
-		drawn_instance.set_meta("skip_initial_scaling_anim", true)
+
+		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
+		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
 		
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
@@ -531,19 +740,12 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
 	var reaction_events = _combat.process_reaction_queue(self, {})
 	
-	if is_instance_valid(drawn_instance):
-		drawn_instance.remove_meta("skip_initial_scaling_anim")
-		
-	# NOW create the draw event, so the snapshot contains the FINAL scaled stats
+	# Create the draw event with the base stats snapshot
 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
-	var new_unit_snapshot = {}
-	if is_instance_valid(drawn_instance):
-		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
-		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
-		
 	var draw_payload := CombatPayload.new()
 	draw_payload.draw_result = draw_result
 	draw_payload.new_unit_snapshot = new_unit_snapshot
+	draw_payload.target_token_amount = _gacha_tokens
 	draw_event.visual_payload = draw_payload
 	
 	# Append the draw event first, then any resulting reactions
@@ -555,6 +757,7 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	if draw_result.pool_emptied:
 		pass
 	
+	_is_drawing = false
 	return chain_events
 
 # ------------------------------------------------------------------
@@ -568,28 +771,16 @@ func _bm_validate_state_consistency() -> bool:
 func get_gacha_tokens() -> int:
 	return _gacha_tokens
 
-func get_visual_gacha_tokens() -> int:
-	return _visual_gacha_tokens
+func add_gacha_token(amount: int = 1, silent: bool = false) -> void:
+	add_gacha_tokens(amount, silent)
 
-func add_gacha_token(amount: int = 1) -> void:
-	add_gacha_tokens(amount)
-
-func add_gacha_tokens(amount: int) -> void:
-	"""Add logical gacha tokens and emit logical signal. Does not update UI visual signal."""
+func add_gacha_tokens(amount: int, silent: bool = false) -> void:
+	"""Add gacha tokens to authoritative state. If not silent, emits gacha_tokens_changed."""
 	_gacha_tokens += amount
 	if amount > 0 and is_instance_valid(GameManager.run_state):
 		GameManager.run_state.total_tokens_earned += amount
-	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
-
-func add_visual_gacha_token(amount: int) -> void:
-	"""Add visual gacha tokens and emit visual signal to update the UI."""
-	_visual_gacha_tokens += amount
-	SignalBus.emit_signal("gacha_tokens_visual_changed", _visual_gacha_tokens)
-
-func sync_visual_gacha_tokens() -> void:
-	"""Synchronize the visual token count to match the current logical token count."""
-	_visual_gacha_tokens = _gacha_tokens
-	SignalBus.emit_signal("gacha_tokens_visual_changed", _visual_gacha_tokens)
+	if not silent:
+		SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
 func get_current_phase_name() -> StringName:
 	var phase_name: StringName
@@ -620,9 +811,12 @@ func _change_phase(new_phase: Phases) -> void:
 	_current_battle_phase = new_phase
 	SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
 	
-	# Auto-sync visual tokens to logical tokens when entering key resting phases
-	if new_phase == Phases.MANAGEMENT or new_phase == Phases.PRE_COMBAT or new_phase == Phases.BATTLE_OVER:
-		sync_visual_gacha_tokens()
+	# Re-assert canonical tokens on UI when entering key resting phases
+	if new_phase == Phases.START_OF_TURN or new_phase == Phases.MANAGEMENT or new_phase == Phases.PRE_COMBAT or new_phase == Phases.BATTLE_OVER:
+		SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+
+	if (new_phase == Phases.START_OF_TURN or new_phase == Phases.MANAGEMENT or new_phase == Phases.BATTLE_OVER) and is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is EndTurnAction:
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 		
 	match _current_battle_phase:
 		Phases.START_OF_TURN:
@@ -636,7 +830,6 @@ func _change_phase(new_phase: Phases) -> void:
 			if _is_timekeeper_hero():
 				_gacha_tokens += 5
 			
-			sync_visual_gacha_tokens()
 			SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 			
 			# The flashcard mini-game is the first event of the turn.
@@ -646,7 +839,6 @@ func _change_phase(new_phase: Phases) -> void:
 				# In test mode, skip minigame
 				# Grant massive tokens for testing
 				_gacha_tokens += 999
-				sync_visual_gacha_tokens()
 				SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 				# Transition to results acknowledged (which triggers turn start abilities)
 				call_deferred("_on_results_acknowledged")
@@ -820,7 +1012,11 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
 func get_board_snapshot() -> Dictionary:
-	return BattleHelpers.get_combat_board_snapshot(_battle_instances)
+	var snapshot = BattleHelpers.get_combat_board_snapshot(_battle_instances)
+	var discard_c = get_container(&"DiscardPile")
+	if is_instance_valid(discard_c):
+		snapshot["__discard_count__"] = discard_c.get_all_non_empty_uuids().size()
+	return snapshot
 
 func _resolve_combat_phase() -> void:
 	if _is_processing_effect: return
@@ -1064,10 +1260,9 @@ func _determine_battle_result() -> Dictionary:
 
 func _emit_battle_over() -> void:
 	# Transition to BATTLE_OVER and emit results once animations are finished.
-	_current_battle_phase = Phases.BATTLE_OVER
+	_change_phase(Phases.BATTLE_OVER)
 	if not _battle_over_emitted:
 		_battle_over_emitted = true
-		SignalBus.emit_signal("battle_phase_changed", get_current_phase_name())
 		
 		var result := _determine_battle_result()
 		var results: Dictionary = {"victory": result.player_won, "reason": result.reason}
@@ -1090,13 +1285,14 @@ func _on_gacha_tokens_changed(_new_amount: int) -> void:
 	# Trigger "on_gacha_tokens_changed" abilities
 	# This allows units like Templar to update their stats immediately when tokens change.
 	# We don't need to pass the amount in context because the effect will query the current amount.
-	if _current_battle_phase == Phases.COMBAT: # Only relevant in combat? Or always?
-		# Let's allow it in all phases for now, as stats should reflect reality.
-		pass
-		
-	# Optimization: Only broadcast if we have units that care? 
-	# For now, just broadcast. AbilityResolver filters efficiently.
 	AbilityResolver.process_trigger(&"on_gacha_tokens_changed", {})
+	
+	if not _is_drawing and _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
+		var passive_events = _combat.process_reaction_queue(self, {})
+		if not passive_events.is_empty():
+			var snapshot = VisualDataAdapter.create_board_snapshot(self.get_all_instances())
+			enqueue_management_animation(snapshot, passive_events)
+			_pending_inventory_refresh = true
 
 func _on_battle_victory() -> void:
 	# Only restore the hero's location in the run state.
@@ -1522,9 +1718,7 @@ func _trigger_battle_start_abilities() -> void:
 			
 	TurnAbilities.trigger_battle_start_abilities(_state)
 	# Trigger passive scaling right after battle start abilities
-	AbilityResolver.process_trigger(&"on_board_changed", {})
-	# Instantly resolve starting passive stats/buffs before the first turn begins.
-	_combat.process_reaction_queue(self, {})
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	
 	# BUGFIX: Delay erasing enemy instances from memory until _on_turn_animation_finished
 	# so that players can inspect them while they are animating their death or combat actions.
@@ -1598,8 +1792,8 @@ func _trigger_turn_start_abilities() -> void:
 			if request:
 				_pending_reactions.append(request)
 	
-	# Sort reactions by priority descending (Higher priority executes first)
-	_pending_reactions.sort_custom(func(a, b): return b.priority < a.priority)
+	# Sort reactions using unified 3-layer hierarchy
+	_combat.sort_reactions_by_priority()
 	
 	# Process turn start effects (heals, etc.) without starting combat
 	# Don't populate actor queue - we're just processing turn start abilities
@@ -1755,16 +1949,25 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
 	events.append_array(_combat.process_reaction_queue(self , death_tracking))
 	
-	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns) are caught
-	# and any deferred deaths (waiting for empty queue) are released immediately.
-	_check_for_deaths_with_counter_delay(true, events, death_tracking)
-	_process_completed_counter_deaths(events, death_tracking)
+	# Loop until all cascading reactions + death triggers are fully drained.
+	# Death checks can fire on_death triggers (e.g. Empathic Link) which enqueue new reactions.
+	# Those MUST be captured in the same event batch with the original snapshot.
+	var safety := 20
+	while safety > 0:
+		_check_for_deaths_with_counter_delay(true, events, death_tracking)
+		_process_completed_counter_deaths(events, death_tracking)
+		if _pending_reactions.is_empty():
+			break
+		events.append_array(_combat.process_reaction_queue(self , death_tracking))
+		safety -= 1
 	
-	# Clean up any deaths that occurred during effect resolution
-	# Since is_simulation=true for VCR, cleanup is deferred until now
-	_finalize_deaths()
-	
+	if events.is_empty():
+		return
+
+	_pending_inventory_refresh = true
 	enqueue_management_animation(snapshot, events)
+	if _is_animating_management_queue:
+		await management_animation_queue_completed
 
 func _process_management_animation_queue() -> void:
 	_is_animating_management_queue = true
@@ -1772,10 +1975,22 @@ func _process_management_animation_queue() -> void:
 	
 	while not _management_animation_queue.is_empty():
 		var payload = _management_animation_queue.pop_front()
-		await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
+		if is_instance_valid(_animator):
+			await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
 		
+	# Finalize any deaths that occurred during the management sequence (e.g. from Fusion Spark)
+	# NOW that the death animations have finished playing.
+	_finalize_deaths()
+			
 	_is_processing_effect = false
 	_is_animating_management_queue = false
+
+	if _pending_inventory_refresh:
+		_pending_inventory_refresh = false
+		_emit_battle_inventory_changed()
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+
+	management_animation_queue_completed.emit()
 
 
 ## Flush deferred enemy instance erasures. Called after all reactions have resolved.
@@ -1861,8 +2076,9 @@ func _process_registered_death(unit: GachaBallInstance, phase: StringName, death
 		"dying_location": death_location
 	})
 	
+	
 	while not _pending_reactions.is_empty():
-		_pending_reactions.sort_custom(func(a, b): return a.priority > b.priority)
+		_combat.sort_reactions_by_priority()
 		var death_reaction = _pending_reactions.pop_front()
 		var death_reaction_events: Array[CombatEvent] = []
 		_resolve_single_effect_request(death_reaction, death_reaction_events, death_tracking)
@@ -1877,6 +2093,7 @@ func _track_first_killed_non_hero(unit: GachaBallInstance, death_team: String) -
 		var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
 		if is_instance_valid(loc_snapshot):
 			_turn_metadata[first_killed_key] = {
+				"uuid": unit.ball_uuid,
 				"def_id": unit.definition_id,
 				"team": death_team,
 				"location_snapshot": loc_snapshot
@@ -1884,7 +2101,6 @@ func _track_first_killed_non_hero(unit: GachaBallInstance, death_team: String) -
 
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
-	# print("DEBUG: _trigger_turn_end_abilities called")
 	var all_units = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP) + get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	var all_events: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
@@ -1901,14 +2117,9 @@ func _trigger_turn_end_abilities() -> void:
 		_process_status_turn_effect(status_def, all_units, all_events, death_tracking)
 
 	# 2. Process on_turn_end triggers
-	# print("DEBUG: Processing on_turn_end triggers")
-	# 2. Process on_turn_end triggers
-	# print("DEBUG: Processing on_turn_end triggers")
 	# Call once globally; AbilityResolver iterates all units
 	AbilityResolver.process_trigger(&"on_turn_end", {})
 	
-	# 3. Resolve pending reactions from on_turn_end
-	# print("DEBUG: Resolving ", _pending_reactions.size(), " pending reactions")
 	# 3. Resolve pending reactions from on_turn_end
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
 	all_events.append_array(_combat.process_reaction_queue(self , death_tracking))
@@ -2283,7 +2494,6 @@ func _calculate_active_traits(team: String) -> Dictionary:
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var units = get_instances_in_container(container_tag)
-	# Removed debug print during calc to reduce noise
 	for unit in units:
 		if not is_instance_valid(unit) or unit.current_hp <= 0:
 			continue

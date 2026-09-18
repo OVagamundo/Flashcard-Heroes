@@ -57,7 +57,6 @@ var _window_group_id: int = 0
 
 # Visual State (Puppet Mode)
 var _visual_hp: int = 0
-var _has_started_vcr_stats: bool = false
 var _visual_pwr: int = 0
 var _visual_burn_stacks: int = 0 # Legacy - kept for backward compat
 var _visual_armor_stacks: int = 0 # Armor stacks - same pattern as burn
@@ -282,7 +281,6 @@ func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
 func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true) -> void:
-	_has_started_vcr_stats = false
 	self._location = loc
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
@@ -332,12 +330,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		_last_soul_count = -1
 		_last_trait_level = -1
 	
-	# Initialize visual state (prefer initial_spawn stats for decoupled VCR animation timing)
-	var initial_hp = visual_data.get("initial_spawn_hp", -1)
-	_visual_hp = initial_hp if initial_hp != -1 else visual_data.get("hp", 0)
-	
-	var initial_pwr = visual_data.get("initial_spawn_pwr", -1)
-	_visual_pwr = initial_pwr if initial_pwr != -1 else visual_data.get("pwr", 0)
+	# Initialize visual state
+	_visual_hp = visual_data.get("hp", 0)
+	_visual_pwr = visual_data.get("pwr", 0)
 	
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
@@ -588,17 +583,8 @@ func update_visuals(visual_data: Dictionary) -> void:
 	if visual_data.is_empty() or visual_data.get("uuid") != _instance_uuid:
 		return
 		
-	var initial_hp = visual_data.get("initial_spawn_hp", -1)
-	if initial_hp != -1 and not _has_started_vcr_stats:
-		pass # Do not overwrite _visual_hp yet, wait for VCR to animate from the base
-	else:
-		_visual_hp = visual_data.get("hp", _visual_hp)
-		
-	var initial_pwr = visual_data.get("initial_spawn_pwr", -1)
-	if initial_pwr != -1 and not _has_started_vcr_stats:
-		pass
-	else:
-		_visual_pwr = visual_data.get("pwr", _visual_pwr)
+	_visual_hp = visual_data.get("hp", _visual_hp)
+	_visual_pwr = visual_data.get("pwr", _visual_pwr)
 	_visual_burn_stacks = visual_data.get("burn_stacks", 0) # Renamed from poison_stacks
 	_visual_armor_stacks = visual_data.get("armor_stacks", 0) # Same pattern as burn
 	_visual_spikes_stacks = visual_data.get("spikes_stacks", 0) # Spikes status effect
@@ -697,6 +683,10 @@ func _update_view_groups() -> void:
 
 func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive
+
+func set_animation_controller_active(active: bool) -> void:
+	if is_instance_valid(_anim_controller) and _anim_controller.has_method("set_active"):
+		_anim_controller.set_active(active)
 
 ## Configure the interaction context for this view
 func set_interaction_context(interaction_mode: StringName, entity_type: StringName, window_group_id: int = 0) -> void:
@@ -1332,7 +1322,7 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	if animate:
 		hbox.scale = Vector2.ZERO # Start scaled down for animation
 		var tween = create_tween()
-		tween.tween_property(hbox, "scale", Vector2.ONE, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		tween.tween_property(hbox, "scale", Vector2.ONE, AnimationConstants.scaled(0.3)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 ## Animate a status effect change (for non-burn effects)
 func animate_status_change(status_id: StringName, new_stacks: int) -> void:
@@ -1345,8 +1335,7 @@ func animate_status_change(status_id: StringName, new_stacks: int) -> void:
 		if is_instance_valid(icon_node):
 			_pop_container(icon_node)
 
-func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
-	_has_started_vcr_stats = true
+func animate_stat_change(target_val: int, _delta: int, type: String, trigger_reactions: bool = true) -> void:
 	# type: "hp" or "pwr"
 	var label = hp_label if type == "hp" else pwr_label
 	var container = hp_container if type == "hp" else pwr_container
@@ -1365,23 +1354,17 @@ func animate_stat_change(target_val: int, _delta: int, type: String) -> void:
 	
 	# Tween the number
 	var tween = create_tween()
-	tween.tween_method(func(val): label.text = str(val), start_val, target_val, 0.5)
+	tween.tween_method(func(val): label.text = str(val), start_val, target_val, AnimationConstants.scaled(0.5))
 
-	# Visual Reactions (moved from BuffAnimation to ensure all stat changes animate uniformly)
-	if target_val > start_val:
-		SignalBus.emit_signal("unit_color_flash", _instance_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
-		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HOP_DEFORM")
-		SignalBus.emit_signal("unit_move", _instance_uuid, &"HOP", Vector2.ZERO)
-	elif target_val < start_val:
-		SignalBus.emit_signal("unit_color_flash", _instance_uuid, Color(0.3, 0.3, 0.3), AnimationConstants.FLASH_FADE_DURATION)
-		SignalBus.emit_signal("unit_deform", _instance_uuid, &"HIT_IMPACT")
-		
-		var offset_y = 0.3 if type == "pwr" else 0.2
-		var spawn_pos = global_position + (size * Vector2(0.5, offset_y))
-		var color = Color(1.0, 0.0, 0.0) if type == "hp" else Color(0.0, 0.0, 0.0)
-		var amount = start_val - target_val # absolute difference
-		if VFXFactory.has_method("spawn_stat_number_on_layer"):
-			VFXFactory.spawn_stat_number_on_layer(-amount, spawn_pos, color, Vector2.DOWN)
+	# Visual Reactions: Buff animations (color flash, hop, deform).
+	# Damage reactions (floating numbers, hit impacts, recoils) are strictly owned by DamageAnimation.
+	if trigger_reactions:
+		if target_val > start_val:
+			SignalBus.emit_signal("unit_color_flash", _instance_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+			SignalBus.emit_signal("unit_deform", _instance_uuid, &"HOP_DEFORM")
+			SignalBus.emit_signal("unit_move", _instance_uuid, &"HOP", Vector2.ZERO)
+		elif target_val < start_val:
+			SignalBus.emit_signal("unit_color_flash", _instance_uuid, Color(0.4, 0.4, 0.4), AnimationConstants.FLASH_FADE_DURATION)
 
 func _flash_label(label: Label) -> void:
 	# Quick white flash on the label when its value changes
@@ -1392,7 +1375,7 @@ func _flash_label(label: Label) -> void:
 	label.modulate = Color(2.0, 2.0, 2.0, 1.0) # Bright white flash
 	
 	var tween = create_tween()
-	tween.tween_property(label, "modulate", original_modulate, 0.2).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(label, "modulate", original_modulate, AnimationConstants.scaled(0.2)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 ## Pop animation for stat containers - scales up then bounces back (like token/gold)
 ## Includes color flash just like the token counter animation
@@ -1424,12 +1407,12 @@ func _pop_container(container: Control) -> void:
 	pop_tween.set_parallel(true)
 	
 	# Scale: pop big then bounce back (1.4x like token counter)
-	pop_tween.tween_property(container, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	pop_tween.tween_property(container, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(container, "scale", Vector2(1.4, 1.4), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(container, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.15)).set_delay(AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	# Color flash - modulate the container (icon + label together)
-	pop_tween.tween_property(container, "modulate", flash_color, 0.05)
-	pop_tween.tween_property(container, "modulate", Color.WHITE, 0.2).set_delay(0.05)
+	pop_tween.tween_property(container, "modulate", flash_color, AnimationConstants.scaled(0.05))
+	pop_tween.tween_property(container, "modulate", Color.WHITE, AnimationConstants.scaled(0.2)).set_delay(AnimationConstants.scaled(0.05))
 
 func _update_item_slots() -> void:
 	_update_level_display()
@@ -2008,9 +1991,9 @@ func play_trinket_activation_bounce() -> void:
 	icon_rect.pivot_offset = icon_rect.size / 2.0
 	var original_scale := icon_rect.scale
 	var tween := create_tween()
-	tween.tween_property(icon_rect, "scale", Vector2(0.85, 1.15), 0.08).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(1.1, 0.9), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", original_scale, 0.12).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(0.85, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(1.1, 0.9), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", original_scale, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 
 func play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return
@@ -2040,10 +2023,10 @@ func play_landing_bounce() -> void:
 	var original_scale := icon_rect.scale
 	
 	var tween := create_tween()
-	tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(icon_rect, "scale", original_scale, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	tween.tween_property(icon_rect, "scale", original_scale, AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 # ------------------------------------------------------------------
 # Layout Helpers
 

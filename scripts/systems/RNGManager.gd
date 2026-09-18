@@ -40,8 +40,6 @@ func initialize(master_seed: int = -1) -> void:
 	gacha_rng    = SeededRNG.new(&"gacha",    _derive_seed("gacha"))
 	cosmetic_rng = SeededRNG.new(&"cosmetic", _derive_seed("cosmetic"))
 
-	print("[RNGManager] Initialized with master seed: %d" % _master_seed)
-
 ## Get the master seed (for saving/display).
 func get_master_seed() -> int:
 	return _master_seed
@@ -86,5 +84,3 @@ func deserialize(data: Dictionary) -> void:
 	if streams.has("reward"):   reward_rng.deserialize(streams["reward"])
 	if streams.has("gacha"):    gacha_rng.deserialize(streams["gacha"])
 	if streams.has("cosmetic"): cosmetic_rng.deserialize(streams["cosmetic"])
-
-	print("[RNGManager] Deserialized with master seed: %d" % _master_seed)

@@ -99,3 +99,6 @@ func _change_scene_to(path: String) -> void:
 		
 	current_scene = new_scene_res.instantiate()
 	get_tree().root.add_child(current_scene)
+	get_tree().current_scene = current_scene
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		ActionQueue.finish_action(ActionQueue.get_active_action())

@@ -79,17 +79,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"text": "%s grants %s +%d %s" % [holder_name, " and ".join(batched_target_names), buff_amount, stat_label]
 			}))
 			
-			var visual_payload := CombatPayload.new()
-			visual_payload.source_uuid = holder_uuid
-			visual_payload.amount = buff_amount
-			visual_payload.stat = buff_stat
+			var visual_payload: CombatPayload
 			if buff_stat == "pwr":
-				visual_payload.targets_old_pwr = batched_old_vals
-				visual_payload.targets_new_pwr = batched_new_vals
+				visual_payload = CombatPayload.pwr_change(holder_uuid, buff_amount, batched_old_vals, batched_new_vals)
 			else:
-				visual_payload.targets_old_val = batched_old_vals
-				visual_payload.targets_new_val = batched_new_vals
-				visual_payload.targets_max_hp = batched_max_hp
+				visual_payload = CombatPayload.hp_change(holder_uuid, buff_amount, batched_old_vals, batched_new_vals, batched_max_hp)
 			
 			# Single batched BUFF event for all targets simultaneously
 			var event_type = CombatEvent.Type.HEAL if buff_stat == "hp" else CombatEvent.Type.BUFF

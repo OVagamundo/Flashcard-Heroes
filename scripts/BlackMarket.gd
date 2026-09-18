@@ -14,6 +14,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 
 var _action_in_progress: bool = false
 var _last_inventory_open: bool = false
+var _transient_drop_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("black_market_controller")
@@ -103,24 +104,46 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 	var item_data = _get_selected_inventory_item()
 	if item_data.is_empty():
 		return
+	var cost := _get_remove_cost()
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := RemoveBlackMarketAction.new(item_data.uuid, cost)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_remove_visuals(item_data.uuid, cost)
+
+func execute_remove_visuals(target_uuid: String, cost: int) -> void:
+	var item_data = _get_selected_inventory_item()
+	if item_data.is_empty() or item_data.uuid != target_uuid:
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
 
 	var main_node = GameManager._active_main_node
 	var remove_target = main_node.get_action_zone_2() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_2") else null
-	var remove_cost := _get_remove_cost()
+	var remove_cost := cost
 	
 	# Check if enough gold first
 	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < remove_cost:
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		var target = remove_target if is_instance_valid(remove_target) else open_inventory_button
 		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 
 	_action_in_progress = true
 	
 	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
-	if is_drag:
-		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	if not _transient_drop_pos.is_zero_approx():
+		interaction_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	else:
 		# Find the slot center
 		var slot_view = WindowManager.find_view_for_location(item_data.location)
@@ -166,6 +189,8 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 			Audio.play_sfx("ui_drag_drop")
 		
 		_action_in_progress = false
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
@@ -175,31 +200,56 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 	if item_data.is_empty():
 		return
 
+	var transform_cost = GameManager.get_black_market_transform_cost()
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := TransformBlackMarketAction.new(item_data.uuid, transform_cost)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_transform_visuals(item_data.uuid, transform_cost)
+
+func execute_transform_visuals(target_uuid: String, cost: int) -> void:
+	var item_data = _get_selected_inventory_item()
+	if item_data.is_empty() or item_data.uuid != target_uuid:
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
 	var source_definition = item_data.definition
 	var source_location: LocationIdentifier = item_data.location
 
 	var result_definition := GameManager.get_transform_result(source_definition)
 	if not is_instance_valid(result_definition):
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 
 	var main_node = GameManager._active_main_node
 	var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else null
 	
-	var transform_cost = GameManager.get_black_market_transform_cost()
+	var transform_cost = cost
 	
 	# Check if enough gold first
 	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < transform_cost:
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		var target = transform_target if is_instance_valid(transform_target) else open_inventory_button
 		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 
 	_action_in_progress = true
 
 	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
-	if is_drag:
-		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	if not _transient_drop_pos.is_zero_approx():
+		interaction_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	else:
 		var slot_view = WindowManager.find_view_for_location(item_data.location)
 		if is_instance_valid(slot_view):
@@ -257,6 +307,8 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 					target_view.play_landing_bounce()
 
 		_action_in_progress = false
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _find_ball_view_for_location(loc: LocationIdentifier) -> Control:
@@ -492,6 +544,13 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
+	var action := LeaveBlackMarketAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	# Hide BM zones before leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):

@@ -39,3 +39,31 @@ func meets_prerequisites(state) -> bool:
 
 ## Relative difficulty level (1-5)
 @export var difficulty: int = 1
+
+func to_dict() -> Dictionary:
+	return {
+		"node_type": String(node_type),
+		"subtype": String(subtype),
+		"display_name_key": display_name_key,
+		"description_key": description_key,
+		"encounter_id": String(encounter_id),
+		"boss_level": boss_level,
+		"difficulty": difficulty,
+		"base_weight": base_weight,
+		"min_day_required": min_day_required,
+		"required_mastery_threshold": required_mastery_threshold
+	}
+
+static func from_dict(data: Dictionary) -> PathNodeDefinition:
+	var def := PathNodeDefinition.new()
+	def.node_type = StringName(data.get("node_type", ""))
+	def.subtype = StringName(data.get("subtype", ""))
+	def.display_name_key = data.get("display_name_key", "")
+	def.description_key = data.get("description_key", "")
+	def.encounter_id = StringName(data.get("encounter_id", ""))
+	def.boss_level = int(data.get("boss_level", 0))
+	def.difficulty = int(data.get("difficulty", 1))
+	def.base_weight = int(data.get("base_weight", 0))
+	def.min_day_required = int(data.get("min_day_required", 1))
+	def.required_mastery_threshold = float(data.get("required_mastery_threshold", 0.0))
+	return def

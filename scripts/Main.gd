@@ -136,8 +136,7 @@ func _ready() -> void:
 		tokens_label.gui_input.connect(_on_ui_overlay_gui_input)
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
-	SignalBus.gacha_tokens_visual_changed.connect(_on_gacha_tokens_changed)
-	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_logical_changed)
+	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
@@ -281,7 +280,20 @@ func load_content(scene_resource: PackedScene) -> Node:
 	
 	# Sync background texture to full-screen SceneBackground
 	_sync_scene_background(instance)
+	_notify_scene_transition_complete(instance)
 	return instance
+
+func _notify_scene_transition_complete(instance: Node) -> void:
+	if not is_instance_valid(instance): return
+	if not instance.is_node_ready():
+		await instance.ready
+	await get_tree().process_frame
+	
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if is_instance_valid(act):
+			if act is SelectPathAction or act is LeaveShopAction or act is LeaveRewardAction or act is LeaveRestSiteAction or act is LeaveTrainingAction or act is LeaveBlackMarketAction or act is LeaveMergeEncounterAction or act is AcknowledgeBattleResultsAction:
+				ActionQueue.finish_action(act)
 
 func _sync_scene_background(scene_instance: Node) -> void:
 	"""Extract background texture from loaded scene and apply to full-screen SceneBackground"""
@@ -340,11 +352,28 @@ func _on_reward_scene_requested(context: Dictionary) -> void:
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
+	_notify_scene_transition_complete(instance)
+
+func get_knob_button(tier: int) -> BaseButton:
+	match tier:
+		1: return knob_button_1
+		2: return knob_button_2
+		3: return knob_button_3
+	return null
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
+	var action := DrawGachaAction.new(tier)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_draw_gacha_visuals(button, tier)
+
+func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
 	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	var effective_cost := tier
 	if is_instance_valid(bm):
@@ -369,22 +398,24 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 			var token_group = get_node_or_null("%TokenGroup")
 			if is_instance_valid(target_machine):
 				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
+			if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+				ActionQueue.finish_action(ActionQueue.get_active_action())
 			return
 	
 	# Ensure UI focus doesn't interfere
-	button.release_focus()
-	
-	# Animate knob rotation (reset first to allow rapid clicks)
-	button.rotation_degrees = 0.0
-	var knob_tween = create_tween()
-	knob_tween.tween_property(button, "rotation_degrees", 360.0, 0.4).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
+	if is_instance_valid(button):
+		button.release_focus()
+		button.rotation_degrees = 0.0
+		var knob_tween = create_tween()
+		knob_tween.tween_property(button, "rotation_degrees", 360.0, AnimationConstants.scaled(0.4)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
 	
 	# We've committed to this draw. Set _is_drawing_token to true.
 	_is_drawing_token = true
 	# Route a background interaction through GIR so any open inspection windows close
 	var context = InteractionContext.new()
-	context.source_view_instance_id = button.get_instance_id()
+	if is_instance_valid(button):
+		context.source_view_instance_id = button.get_instance_id()
 	context.event_type = &"SINGLE_CLICK"
 	context.location = null
 	context.entity_uuid = ""
@@ -403,6 +434,10 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	# Get token counter position (source)
 	var token_group = get_node_or_null("%TokenGroup")
 	if not is_instance_valid(token_group):
+		SignalBus.emit_signal("draw_gacha_requested", tier)
+		_is_drawing_token = false
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
 	var token_rect = token_group.get_global_rect()
@@ -421,6 +456,8 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	if not is_instance_valid(target_machine):
 		SignalBus.emit_signal("draw_gacha_requested", tier)
 		_is_drawing_token = false
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
 	var machine_rect = target_machine.get_global_rect()
@@ -431,7 +468,7 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	
 	# Spawn tokens with stagger - each one triggers machine reaction on landing
 	var tokens_to_spawn = cost
-	var stagger_delay = 0.12 # Increased delay for more dramatic sequential tosses
+	var stagger_delay = AnimationConstants.scaled(0.12) # Increased delay for more dramatic sequential tosses
 	
 	for i in range(tokens_to_spawn):
 		var token_vfx = TokenSpendScene.instantiate()
@@ -452,12 +489,13 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	
 	# Wait for all animations to complete, then trigger draw
 	# TokenSpendVFX.TOSS_DURATION = 0.45
-	var total_wait = (tokens_to_spawn - 1) * stagger_delay + 0.55
+	var total_wait = (tokens_to_spawn - 1) * stagger_delay + AnimationConstants.scaled(0.55)
 	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
 	
-	# Proceed with the draw
 	SignalBus.emit_signal("draw_gacha_requested", tier)
 	_is_drawing_token = false
+	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
@@ -471,10 +509,6 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	var _unused = target_pos
 	
 	_play_machine_bounce(machine)
-	
-	var bm = GameManager._active_battle_manager
-	if is_instance_valid(bm) and bm.has_method("add_visual_gacha_token"):
-		bm.add_visual_gacha_token(-1)
 
 ## Public function to trigger machine bounce and update inventory counts visually
 ## Used when gachballs visually arrive at or depart from a machine
@@ -506,14 +540,19 @@ func _play_machine_bounce(machine: Control) -> void:
 	reaction_tween.set_parallel(true)
 	
 	# Quick scale bounce - squash then stretch back
-	reaction_tween.tween_property(machine, "scale", Vector2(1.03, 0.97), 0.04).set_trans(Tween.TRANS_SINE)
-	reaction_tween.tween_property(machine, "scale", Vector2(0.98, 1.02), 0.06).set_delay(0.04).set_trans(Tween.TRANS_SINE)
-	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	var b1 = AnimationConstants.scaled(0.04)
+	var b2 = AnimationConstants.scaled(0.06)
+	var b3 = AnimationConstants.scaled(0.08)
+	reaction_tween.tween_property(machine, "scale", Vector2(1.03, 0.97), b1).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(0.98, 1.02), b2).set_delay(b1).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.0), b3).set_delay(b1 + b2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	# Flash bright on the machine image
 	var flash_color = Color(1.3, 1.25, 1.1, 1.0) # Warm bright flash
-	reaction_tween.tween_property(machine_image, "modulate", flash_color, 0.03)
-	reaction_tween.tween_property(machine_image, "modulate", Color.WHITE, 0.12).set_delay(0.03)
+	var f1 = AnimationConstants.scaled(0.03)
+	var f2 = AnimationConstants.scaled(0.12)
+	reaction_tween.tween_property(machine_image, "modulate", flash_color, f1)
+	reaction_tween.tween_property(machine_image, "modulate", Color.WHITE, f2).set_delay(f1)
 
 func _on_battle_inventory_changed() -> void:
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
@@ -544,6 +583,9 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	else:
 		# Entering battle - snap visual counters to model state
 		call_deferred("sync_visual_machine_counts_with_model")
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and is_instance_valid(tokens_label):
+			tokens_label.text = "%d" % bm.get_gacha_tokens()
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
@@ -592,11 +634,6 @@ func _animate_gold_counter_pop() -> void:
 	var flash_color = Color(1.0, 0.85, 0.3, 1.0) # Gold flash
 	pop_tween.tween_property(gold_label, "modulate", flash_color, 0.05)
 	pop_tween.tween_property(gold_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
-
-func _on_gacha_tokens_logical_changed(new_amount: int) -> void:
-	# Outside of battle, token changes apply to the UI in real-time
-	if not is_instance_valid(GameManager._active_battle_manager):
-		_on_gacha_tokens_changed(new_amount)
 
 func _on_gacha_tokens_changed(new_amount: int) -> void:
 	if is_instance_valid(tokens_label):
@@ -663,6 +700,7 @@ func _on_shop_scene_requested(context: Dictionary) -> void:
 	
 	if instance.has_method("populate"):
 		instance.populate(context)
+	_notify_scene_transition_complete(instance)
 
 func _update_day_label(day: int) -> void:
 	if is_instance_valid(days_label):

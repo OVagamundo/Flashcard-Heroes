@@ -18,6 +18,7 @@ var _selected_cost: int = 0
 var _price_tag_nodes: Array[Control] = []
 var _current_reroll_cost: int = 1
 var _is_first_populate: bool = true
+var _transient_drop_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
@@ -222,117 +223,126 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	_selected_cost = 0
 
 func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	# Get the currently selected location from the new InteractionManager
 	var selected_ctx = GlobalInteractionRouter.get_current_selection()
 	var selected_loc = selected_ctx.location if selected_ctx else null
 	if selected_loc and selected_loc.container == &"Shop":
 		var instance = _find_instance_for_slot(selected_loc.index)
-		if is_instance_valid(instance):
-			# PRE-VALIDATION: Check if player has enough gold BEFORE animating
-			var current_gold: int = 0
-			if is_instance_valid(GameManager.run_state):
-				current_gold = GameManager.run_state.gold
-			
-			if current_gold < _selected_cost:
-				# Insufficient gold - play rejection feedback
-				var main_node = GameManager._active_main_node
-				var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-				# Play rejection on the drop zone overlay instead of the old buy button
-				var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
-				var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
-				RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
-				return
-			
-			# Capture slot position and visual data BEFORE purchase
-			var slot_nodes = slots_container.get_children()
-			var slot_view = slot_nodes[selected_loc.index] if selected_loc.index < slot_nodes.size() else null
-			var slot_center: Vector2 = Vector2.ZERO
-			if is_instance_valid(slot_view):
-				slot_center = slot_view.get_global_rect().get_center()
-				# CONVERSION: Slot is in SubViewport, animations are in Screen Space (Main)
-				var main_node = GameManager._active_main_node
-				if is_instance_valid(main_node):
-					var content_area = main_node.get_node_or_null("%ContentArea")
-					if is_instance_valid(content_area):
-						slot_center += content_area.global_position
-			
-			# Determine interaction point: drop point for drag, slot center for click
-			var interaction_pos = slot_center
-			if is_drag:
-				if mouse_pos.is_zero_approx():
-					interaction_pos = get_viewport().get_mouse_position()
-				else:
-					interaction_pos = mouse_pos
-			
-			# Capture visual data and tier before purchase clears the instance
-			var visual_data = VisualDataAdapter.create_visual_data(instance)
-			var def = instance.get_definition()
-			var tier: int = 1
-			if "tier" in def:
-				tier = int(def.tier)
-			# Trinkets go to machine 3
-			if is_instance_valid(def) and def.category == &"TRINKET":
-				tier = 3
-			
-			# Hide the gachaball in the slot IMMEDIATELY before starting gold animation
-			# We only hide the child GachaBallView so the slot background remains visible
-			var source_anchor = WindowManager.find_view_for_location(selected_loc)
-			if is_instance_valid(source_anchor):
-				for child in source_anchor.get_children():
-					if child is GachaBallView:
-						child.modulate.a = 0.0
-						child.visible = false
-			
-			# Create the VFX gachaball immediately so it stays visible during the coin animation
-			var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-			
-			var ball_uuid = instance.ball_uuid
-			
-			# Animate gold coins then purchase, then animate gachaball
-			_animate_gold_spend(_selected_cost, interaction_pos, func():
-				SignalBus.emit_signal("shop_purchase_requested", ball_uuid, _selected_cost)
-				# AUDIO HOOK: Buy
-				Audio.play_sfx("shop_buy")
-				
-				# After purchase, animate the already-visible VFX gachaball to machine
-				_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
-				
-				# Hide the drop zone after purchase
-				var mn = GameManager._active_main_node
-				if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
-					mn.hide_confirm_drop_zone()
-			)
+		if not is_instance_valid(instance):
+			return
+		var actual_cost: int = GameManager.get_item_cost(instance.get_definition())
+		var current_gold: int = 0
+		if is_instance_valid(GameManager.run_state):
+			current_gold = GameManager.run_state.gold
+		
+		if current_gold < actual_cost:
+			var main_node = GameManager._active_main_node
+			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+			var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
+			var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
+			RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
+			return
+
+		if is_drag:
+			_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+		else:
+			_transient_drop_pos = Vector2.ZERO
+
+		var action := BuyShopAction.new(selected_loc.index, actual_cost)
+		if is_instance_valid(ActionQueue):
+			ActionQueue.request(action)
+		else:
+			execute_buy_visuals(selected_loc.index, actual_cost)
+
+func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance = null) -> void:
+	if not is_instance_valid(instance):
+		instance = _find_instance_for_slot(slot_index)
+	if not is_instance_valid(instance):
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+	
+	var slot_nodes = slots_container.get_children()
+	var slot_view = slot_nodes[slot_index] if slot_index < slot_nodes.size() else null
+	var slot_center: Vector2 = Vector2.ZERO
+	if is_instance_valid(slot_view):
+		slot_center = slot_view.get_global_rect().get_center()
+		var main_node = GameManager._active_main_node
+		if is_instance_valid(main_node):
+			var content_area = main_node.get_node_or_null("%ContentArea")
+			if is_instance_valid(content_area):
+				slot_center += content_area.global_position
+	
+	var interaction_pos = slot_center
+	if not _transient_drop_pos.is_zero_approx():
+		interaction_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
+	
+	var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var def = instance.get_definition()
+	var tier: int = 1
+	if "tier" in def:
+		tier = int(def.tier)
+	if is_instance_valid(def) and def.category == &"TRINKET":
+		tier = 3
+	
+	var selected_loc = LocationIdentifier.new(&"Shop", slot_index)
+	var source_anchor = WindowManager.find_view_for_location(selected_loc)
+	if is_instance_valid(source_anchor):
+		for child in source_anchor.get_children():
+			if child is GachaBallView:
+				child.modulate.a = 0.0
+				child.visible = false
+	
+	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
+	var ball_uuid = instance.ball_uuid
+	
+	_animate_gold_spend(cost, interaction_pos, func():
+		if not is_instance_valid(ActionQueue):
+			SignalBus.emit_signal("shop_purchase_requested", ball_uuid, cost)
+		Audio.play_sfx("shop_buy")
+		_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
+		var mn = GameManager._active_main_node
+		if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
+			mn.hide_confirm_drop_zone()
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+	)
 
 func _on_reroll_pressed() -> void:
-	# PRE-VALIDATION: Check if player has enough gold BEFORE animating
 	var current_gold: int = 0
 	if is_instance_valid(GameManager.run_state):
 		current_gold = GameManager.run_state.gold
 	
 	if current_gold < _current_reroll_cost:
-		# Insufficient gold - play rejection feedback
 		var main_node = GameManager._active_main_node
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
 		return
-	
-	# Disable button during animation
+
+	var action := RerollShopAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_reroll_visuals()
+
+func execute_reroll_visuals(cost: int = -1) -> void:
 	reroll_button.disabled = true
-	
 	var target_pos = reroll_button.get_global_rect().get_center()
-	# Button is in SubViewport
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		var content_area = main_node.get_node_or_null("%ContentArea")
 		if is_instance_valid(content_area):
 			target_pos += content_area.global_position
 			
-	# Animate gold coins then reroll
-	_animate_gold_spend(_current_reroll_cost, target_pos, func():
-		SignalBus.emit_signal("shop_reroll_requested")
-		# AUDIO HOOK: Reroll
+	var spend_cost = cost if cost >= 0 else _current_reroll_cost
+	_animate_gold_spend(spend_cost, target_pos, func():
+		SignalBus.emit_signal("selection_clear_requested")
+		if not is_instance_valid(ActionQueue):
+			SignalBus.emit_signal("shop_reroll_requested")
 		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
@@ -466,6 +476,13 @@ func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vect
 	)
 
 func _on_leave_pressed() -> void:
+	var action := LeaveShopAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	# Hide the drop zone overlay before leaving
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):

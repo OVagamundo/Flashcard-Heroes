@@ -24,7 +24,8 @@ enum Type {
 	ITEM_TRANSFER, # Standard Bearer: item transfer on death
 	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
 	TOKEN_GAIN,
-	DRAW # New for Async Draw Chains
+	DRAW, # New for Async Draw Chains
+	ITEM_DISCARD # Replaced/discarded item arcs to Discard Pile button
 }
 
 var type: Type

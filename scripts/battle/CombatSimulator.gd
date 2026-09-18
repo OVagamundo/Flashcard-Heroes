@@ -26,8 +26,10 @@ var _pending_reactions: Array[EffectRequest] = []
 ## Events from on_before_attack processing
 var _inline_events: Array[CombatEvent] = []
 
-## Flag to prevent re-entrant effect processing
-var _is_processing_effect: bool = false
+## Ref-counted lock to prevent re-entrant effect processing.
+## Multiple callers (MergeAnimator, _process_management_animation_queue, etc.) can each
+## increment this counter; the lock is only fully released when ALL holders decrement.
+var _processing_effect_count: int = 0
 
 ## Track the currently acting unit to prevent re-insertion complications
 var _current_acting_unit: GachaBallInstance = null
@@ -191,23 +193,21 @@ func has_pending_reactions() -> bool:
 	return not _pending_reactions.is_empty()
 
 func enqueue_reaction(request: EffectRequest) -> void:
-	if OS.is_debug_build():
-		print("[CS] Enqueue reaction: ", request.ability_id, " Prio:", request.priority)
 	_pending_reactions.append(request)
 
 func sort_reactions_by_priority() -> void:
 	_pending_reactions.sort_custom(_compare_reactions)
 
 func _compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
-	# Layer 1: Category Pass (UNIT -> ITEM -> TRINKET)
+	# Layer 1: Execution Priority (Descending integer priority)
+	if a.priority != b.priority:
+		return a.priority > b.priority
+
+	# Layer 2: Category Tie-Breaker (UNIT -> ITEM -> TRINKET)
 	var rank_a := _get_category_rank(a.category)
 	var rank_b := _get_category_rank(b.category)
 	if rank_a != rank_b:
 		return rank_a < rank_b
-		
-	# Layer 2: Execution Priority (Descending integer priority)
-	if a.priority != b.priority:
-		return a.priority > b.priority
 		
 	# Layer 3: Visual Direction / The Mirror Rule (Left-to-Right)
 	if a.is_player != b.is_player:
@@ -261,10 +261,13 @@ func has_inline_events() -> bool:
 # ============================================================================
 
 func is_processing() -> bool:
-	return _is_processing_effect
+	return _processing_effect_count > 0
 
 func set_processing(value: bool) -> void:
-	_is_processing_effect = value
+	if value:
+		_processing_effect_count += 1
+	else:
+		_processing_effect_count = maxi(0, _processing_effect_count - 1)
 
 # ============================================================================
 # COMBAT TURN EXECUTION
@@ -295,10 +298,10 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
 		
 		# 2. In case the unit was replaced (e.g. by Mimic), update current_actor
-		var container_tag = current_actor.location_container_tag
-		var slot_index = current_actor.location_slot_index
+		var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if _current_turn_is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		var slot_index: int = _current_turn_slot_index
 		var container = battle_manager.get_container(container_tag)
-		if is_instance_valid(container):
+		if is_instance_valid(container) and slot_index >= 0:
 			var new_uuid = container.get_uuid(slot_index)
 			if not new_uuid.is_empty():
 				var new_actor = battle_manager.get_instance_by_uuid(new_uuid)
@@ -558,10 +561,6 @@ func drain_reactions_inline(start_index: int, bm) -> void:
 	reactions_to_process.sort_custom(_compare_reactions)
 	
 	for request in reactions_to_process:
-		# DEBUG: Trace priority execution
-		if OS.is_debug_build():
-			print("[CS] Draining reaction: ", request.ability_id, " Prio:", request.priority, " Src:", request.source_uuid)
-			
 		# Capture events to _inline_events so they can be collected by the outer loop
 		# IMPORTANT: Pass a special death_tracking that disables death checking
 		var inline_start_index := _inline_events.size()
@@ -671,10 +670,8 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
-		
-		# Suppress visual buff pop for the newly summoned unit's initial stats
-		new_inst.set_meta("skip_initial_scaling_anim", true)
-		
+
+
 		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		
@@ -691,16 +688,6 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			var inline_evts = collect_and_clear_inline_events()
 			out_events.append_array(inline_evts)
 			out_events.append_array(reaction_events)
-			
-		# Clean up suppression flag
-		new_inst.remove_meta("skip_initial_scaling_anim")
-		
-		# UPDATE THE SNAPSHOT in the previously generated SUMMON event so the spawn animation uses the final stats!
-		for event in out_events:
-			if event.type == CombatEvent.Type.SUMMON and is_instance_valid(event.visual_payload):
-				if event.visual_payload.new_unit_uuid == new_inst.ball_uuid:
-					var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
-					event.visual_payload.new_unit_snapshot = VisualDataAdapter.create_visual_data(new_inst, bm.get_all_instances())
 
 func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
 	if request.source_uuid.is_empty():
@@ -757,4 +744,4 @@ func clear() -> void:
 	_actor_queue.clear()
 	_pending_reactions.clear()
 	_inline_events.clear()
-	_is_processing_effect = false
+	_processing_effect_count = 0

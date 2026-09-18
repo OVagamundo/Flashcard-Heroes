@@ -324,18 +324,24 @@ func _on_next_pressed() -> void:
 func _on_got_it_pressed() -> void:
 	if modulate.a < 1.0: return # Prevent early clicks during animation
 	Audio.play_sfx("ui_button_click")
-	TutorialManager.mark_completed(_tutorial_id)
-	SignalBus.emit_signal("tutorial_dismissed", _tutorial_id)
-	_close_popup()
+	var action := DismissTutorialAction.new(_tutorial_id)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		TutorialManager.mark_completed(_tutorial_id)
+		SignalBus.emit_signal("tutorial_dismissed", _tutorial_id)
+		_close_popup()
 
 
 func _close_popup() -> void:
+	if get_tree() and get_tree().paused:
+		get_tree().paused = false
 	queue_free()
 
 
 func _exit_tree() -> void:
 	# Ensure game unpauses when popup is removed (closed or scene change)
-	if get_tree():
+	if get_tree() and get_tree().paused:
 		get_tree().paused = false
 
 

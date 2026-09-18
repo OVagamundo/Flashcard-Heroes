@@ -30,6 +30,18 @@ var _move_original_position: Vector2 = Vector2.ZERO
 var _move_original_local_position: Vector2 = Vector2.ZERO
 var _move_original_size: Vector2 = Vector2.ZERO
 var _move_original_top_level: bool = false
+var _is_active: bool = true
+
+func set_active(active: bool) -> void:
+	if _is_active == active:
+		return
+	_is_active = active
+	if not _is_active:
+		_kill_active_tweens()
+		_disconnect_signals()
+	else:
+		if is_inside_tree():
+			_connect_signals()
 
 func _ready() -> void:
 	_view = get_parent() as GachaBallView
@@ -37,9 +49,12 @@ func _ready() -> void:
 	
 	# Wait one frame to ensure parent is fully initialized
 	await get_tree().process_frame
+	if not is_inside_tree():
+		return
 	_icon_rect = _view.icon_rect
 	
-	_connect_signals()
+	if _is_active:
+		_connect_signals()
 
 func _exit_tree() -> void:
 	_disconnect_signals()
@@ -740,10 +755,10 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 			# We animate the sprite to prevent breaking container layouts when in HBox/VBox.
 			if is_instance_valid(sprite):
 				sprite.pivot_offset = Vector2(sprite.size.x / 2.0, sprite.size.y)
-				_deform_tween.tween_property(sprite, "scale", Vector2(1.2, 0.8), 0.06).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2(0.9, 1.15), 0.1).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2.ONE, 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2(1.2, 0.8), AC.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2(0.9, 1.15), AC.scaled(0.1)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2(1.05, 0.95), AC.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+				_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	_deform_tween.finished.connect(func():
 		_reset_sprite_scale()

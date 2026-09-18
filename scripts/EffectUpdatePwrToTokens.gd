@@ -3,41 +3,51 @@
 class_name EffectUpdatePwrToTokens
 extends EffectDefinition
 
-## Sets the source unit's PWR equal to the current Gacha Token count.
-## Used for the Tier 2 unit "Templar".
+## Dynamically scales the source unit's PWR based on current Gacha Tokens.
+## Updates dynamically whenever the player's token count changes, and when entering the board.
+## Applies to both player and enemy Templars, scaling with the player's current token count.
+## Preserves outside-battle training upgrades and existing base stats.
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source):
+	if not is_instance_valid(source) or source.current_hp <= 0:
 		return EffectResult.new()
 
-	var current_tokens = battle_manager.get_gacha_tokens()
+	var current_tokens: int = battle_manager.get_gacha_tokens()
 	var multiplier: float = self.parameters.get("multiplier", 1.0)
-	var target_pwr = maxi(1, int(current_tokens * multiplier)) # Min PWR 1
-	
-	var base_pwr = source.get_definition_base_pwr()
-	var required_bonus = max(0, target_pwr - base_pwr)
-	
-	var previous_bonus = source.get_meta("token_pwr_bonus", 0)
-	var delta = required_bonus - previous_bonus
-	
+	var target_bonus: int = int(current_tokens * multiplier)
+	var previous_bonus: int = source.get_meta("token_pwr_bonus", 0)
+	var delta: int = target_bonus - previous_bonus
+
 	if delta == 0:
 		return EffectResult.new()
-		
-	source.set_meta("token_pwr_bonus", required_bonus)
-	
-	# Apply change via BattleManager for consistency and signals
-	var new_pwr = battle_manager.apply_stat_delta(source, "pwr", delta)
-	
-	# Create visual event
-	var event = CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": source_uuid,
+
+	# Update tracked bonus metadata
+	source.set_meta("token_pwr_bonus", target_bonus)
+
+	# Update status effect for UI/inspection
+	var status_key: StringName = &"templar_token_pwr"
+	if previous_bonus > 0:
+		source.clear_status_effect(status_key)
+	if target_bonus > 0:
+		source.add_status_effect_silent(status_key, target_bonus)
+
+	var old_pwr: int = source.current_pwr
+	var new_pwr: int = battle_manager.apply_stat_delta(source, "pwr", delta, source_uuid)
+
+	var visual_source_uuid := source_uuid
+	var payload := CombatPayload.pwr_change(visual_source_uuid, delta, [old_pwr], [new_pwr])
+
+	var event := CombatEvent.new(CombatEvent.Type.BUFF, {
+		"source_uuid": visual_source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
-		"visual_payload": CombatPayload.pwr_change("", delta, [source.current_pwr - delta], [new_pwr])
+		"ability_holder_uuid": source_uuid,
+		"visual_payload": payload
 	})
-	
-	var result = EffectResult.new()
+
+	var result := EffectResult.new()
 	result.add_event(event)
 	result.state_applied = true
 	return result
+

@@ -60,6 +60,10 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	# Cleanup from registry
 	if animator._visual_registry.has(source_uuid):
 		animator._visual_registry.erase(source_uuid)
+		
+	# Departure to discard pile for player unit
+	if animator.has_method("animate_player_death_departure"):
+		await animator.animate_player_death_departure(source_uuid, target_position, payload)
 
 func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: CombatPayload) -> void:
 	var targets_new_hp = payload.targets_new_hp

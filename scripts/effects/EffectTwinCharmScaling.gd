@@ -16,11 +16,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var copy_counts: Dictionary = {}
 	var changed_units := 0
 	var total_delta := 0
-	
-	var buff_groups: Dictionary = {} # delta -> { "targets": [], "new_pwrs": [] }
-	var debuff_groups: Dictionary = {}
-	var silent_buff_groups: Dictionary = {}
-	var silent_debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "new_pwrs": [] }
+
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
@@ -29,6 +25,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if not _is_valid_count_target(inst, team, battle_manager):
 			continue
 		copy_counts[inst.definition_id] = int(copy_counts.get(inst.definition_id, 0)) + 1
+
+	var buff_groups: Dictionary = {} # delta -> { "targets": [], "old_pwrs": [], "new_pwrs": [] }
+	var debuff_groups: Dictionary = {}
+	var silent_buff_groups: Dictionary = {}
+	var silent_debuff_groups: Dictionary = {} # abs(delta) -> { "targets": [], "old_pwrs": [], "new_pwrs": [] }
 
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
@@ -44,13 +45,20 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				
 				if is_simulation and _is_on_board(inst):
 					if not debuff_groups.has(last_bonus):
-						debuff_groups[last_bonus] = {"targets": [], "new_pwrs": []}
+						debuff_groups[last_bonus] = {"targets": [] as Array[String], "old_pwrs": [] as Array[int], "new_pwrs": [] as Array[int]}
 					debuff_groups[last_bonus]["targets"].append(uuid)
+					debuff_groups[last_bonus]["old_pwrs"].append(inst.current_pwr + last_bonus)
 					debuff_groups[last_bonus]["new_pwrs"].append(inst.current_pwr)
 			continue
 
 		var total_copies: int = int(copy_counts.get(inst.definition_id, 0))
 		var bonus_pwr: int = total_copies / 2
+		
+		# If the unit is not on the board yet (e.g. in the Gacha Machine/Inventory), 
+		# it shouldn't hold the stat buff. This ensures the delta triggers when it enters the board.
+		if not _is_on_board(inst):
+			bonus_pwr = 0
+			
 		var delta: int = bonus_pwr - last_bonus
 		if delta == 0:
 			continue
@@ -64,15 +72,17 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			if delta > 0:
 				var groups = silent_buff_groups if is_silent else buff_groups
 				if not groups.has(delta):
-					groups[delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
+					groups[delta] = {"targets": [] as Array[String], "old_pwrs": [] as Array[int], "new_pwrs": [] as Array[int]}
 				groups[delta]["targets"].append(uuid)
+				groups[delta]["old_pwrs"].append(inst.current_pwr - delta)
 				groups[delta]["new_pwrs"].append(inst.current_pwr)
 			else:
 				var groups = silent_debuff_groups if is_silent else debuff_groups
 				var abs_delta = abs(delta)
 				if not groups.has(abs_delta):
-					groups[abs_delta] = {"targets": [] as Array[String], "new_pwrs": [] as Array[int]}
+					groups[abs_delta] = {"targets": [] as Array[String], "old_pwrs": [] as Array[int], "new_pwrs": [] as Array[int]}
 				groups[abs_delta]["targets"].append(uuid)
+				groups[abs_delta]["old_pwrs"].append(inst.current_pwr - delta)
 				groups[abs_delta]["new_pwrs"].append(inst.current_pwr)
 
 	if changed_units == 0:
@@ -80,18 +90,19 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	if is_simulation:
 		var result := EffectResult.new()
-		var visual_source_uuid = source.equipped_on_uuid if source.get("equipped_on_uuid") and not source.equipped_on_uuid.is_empty() else source_uuid
+		var visual_source_uuid = source_uuid
 
 		for d in buff_groups:
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": visual_source_uuid,
 				"target_uuids": buff_groups[d]["targets"],
+				"ability_id": context.get("ability_id", &"twin_charm_scaling"),
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, [], buff_groups[d]["new_pwrs"])
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, buff_groups[d]["old_pwrs"], buff_groups[d]["new_pwrs"])
 			}))
 			
 		for d in silent_buff_groups:
-			var payload = CombatPayload.pwr_change("", d, [], silent_buff_groups[d]["new_pwrs"])
+			var payload = CombatPayload.pwr_change("", d, silent_buff_groups[d]["old_pwrs"], silent_buff_groups[d]["new_pwrs"])
 			payload.skip_bump = true
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": "",
@@ -105,11 +116,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				"source_uuid": visual_source_uuid,
 				"target_uuids": debuff_groups[d]["targets"],
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, -d, [], debuff_groups[d]["new_pwrs"])
+				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, -d, debuff_groups[d]["old_pwrs"], debuff_groups[d]["new_pwrs"])
 			}))
 			
 		for d in silent_debuff_groups:
-			var payload = CombatPayload.pwr_change("", -d, [], silent_debuff_groups[d]["new_pwrs"])
+			var payload = CombatPayload.pwr_change("", -d, silent_debuff_groups[d]["old_pwrs"], silent_debuff_groups[d]["new_pwrs"])
 			payload.skip_bump = true
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": "",

@@ -16,6 +16,7 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 
+var _visual_discard_count: int = 0
 var player_traits: Control = null
 var enemy_traits: Control = null
 var _player_trait_anchor: Control = null
@@ -33,12 +34,12 @@ const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 @onready var speed_label: Label = %SpeedLabel
 @onready var pause_btn: Button = %PauseBtn
 @onready var speed_1x_btn: Button = %Speed1xBtn
-@onready var speed_3x_btn: Button = %Speed3xBtn
-@onready var step_button: Button = %StepButton
-@onready var step_desc_label: Label = %StepDescLabel
+@onready var speed_2x_btn: Button = %Speed2xBtn
+@onready var speed_4x_btn: Button = %Speed4xBtn
 
 var _speed_buttons: Array[Button] = []
 var _battle_animator: Node = null
+var _pending_board_redraw: bool = false
 var _waiting_for_management_tutorial: bool = false
 
 # --- Node References ---
@@ -111,7 +112,7 @@ func _ready() -> void:
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 	
 	# Connect this view's buttons to emit the correct intent signals
-	end_turn_button.pressed.connect(func(): SignalBus.emit_signal("end_turn_requested"))
+	end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
 	
 	# Connect to locale changes to update button text
@@ -143,25 +144,30 @@ func _ready() -> void:
 	# Initialize combat controls styling/connections
 	_resolve_battle_animator()
 	
-	_speed_buttons = [pause_btn, speed_1x_btn, speed_3x_btn]
+	_speed_buttons = [pause_btn, speed_1x_btn, speed_2x_btn, speed_4x_btn]
 	if is_instance_valid(pause_btn): pause_btn.pressed.connect(_on_pause_button_pressed)
 	if is_instance_valid(speed_1x_btn): speed_1x_btn.pressed.connect(func(): _on_speed_button_pressed(1.0))
-	if is_instance_valid(speed_3x_btn): speed_3x_btn.pressed.connect(func(): _on_speed_button_pressed(3.0))
-	if is_instance_valid(step_button): step_button.pressed.connect(_on_step_button_pressed)
-	
+	if is_instance_valid(speed_2x_btn): speed_2x_btn.pressed.connect(func(): _on_speed_button_pressed(2.0))
+	if is_instance_valid(speed_4x_btn): speed_4x_btn.pressed.connect(func(): _on_speed_button_pressed(4.0))
 	if is_instance_valid(combat_controls_panel): combat_controls_panel.visible = true
 	var current_speed = AnimationConstants.speed_factor
+	if is_instance_valid(_battle_animator):
+		_battle_animator.play_continuous(current_speed)
 	_update_speed_button_styles(current_speed)
-	
-	if is_instance_valid(_battle_animator) and _battle_animator.has_signal("combat_step_reached"):
-		_battle_animator.combat_step_reached.connect(_on_combat_step_reached)
 
 func _resolve_battle_animator() -> void:
-	if is_instance_valid(_battle_animator):
-		return
-	_battle_animator = get_node_or_null("/root/BattleAnimator")
 	if not is_instance_valid(_battle_animator):
-		_battle_animator = get_tree().get_first_node_in_group("battle_animator")
+		_battle_animator = get_node_or_null("/root/BattleAnimator")
+		if not is_instance_valid(_battle_animator):
+			_battle_animator = get_tree().get_first_node_in_group("battle_animator")
+	if is_instance_valid(_battle_animator) and _battle_animator.has_signal("turn_animation_finished"):
+		if not _battle_animator.turn_animation_finished.is_connected(_on_turn_animation_finished_redraw):
+			_battle_animator.turn_animation_finished.connect(_on_turn_animation_finished_redraw)
+
+func _on_turn_animation_finished_redraw() -> void:
+	if _pending_board_redraw:
+		_pending_board_redraw = false
+		_redraw_board()
 
 func _apply_battle_vertical_padding() -> void:
 	var team_areas = %TeamAreas
@@ -214,16 +220,26 @@ func _update_localized_text() -> void:
 	if is_instance_valid(end_turn_button):
 		end_turn_button.text = tr("ui.end_turn")
 	if is_instance_valid(discard_pile_button):
-		# We need to refresh the discard pile text which includes a counter
-		var discard_container = battle_manager.get_container(&"DiscardPile")
-		if is_instance_valid(discard_container):
-			var discard_count = discard_container.get_all_non_empty_uuids().size()
-			discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
-		else:
-			discard_pile_button.text = tr("ui.discard_pile")
+		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
 	
 	if is_instance_valid(speed_label):
 		speed_label.text = tr("battle.speed.label")
+
+## Initializes visual discard count from turn start snapshot or live state
+func init_visual_discard_count(initial_count: int) -> void:
+	_visual_discard_count = initial_count
+	if is_instance_valid(discard_pile_button):
+		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+
+## Animates arrival of a unit/item at the discard pile, bumping button and updating counter
+func animate_discard_pile_arrival(amount: int = 1) -> void:
+	_visual_discard_count += amount
+	if is_instance_valid(discard_pile_button):
+		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		var bump_tween = discard_pile_button.create_tween()
+		discard_pile_button.pivot_offset = discard_pile_button.size / 2.0
+		bump_tween.tween_property(discard_pile_button, "scale", Vector2(1.15, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		bump_tween.tween_property(discard_pile_button, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 
 
 func _animate_initial_unit_entry() -> void:
@@ -262,7 +278,7 @@ func _animate_initial_unit_entry() -> void:
 			target_node.pivot_offset = target_node.size / 2.0
 			
 			# Schedule delayed reveal with bounce
-			var delay = i * AnimationConstants.ENTRY_STAGGER_DELAY
+			var delay = i * AnimationConstants.scaled(AnimationConstants.ENTRY_STAGGER_DELAY)
 			var wait_tween = create_tween()
 			wait_tween.tween_interval(delay)
 			wait_tween.tween_callback(func():
@@ -273,11 +289,11 @@ func _animate_initial_unit_entry() -> void:
 			)
 
 	# Calculate total time for the staggered entry
-	var total_time = maxf(0.0, (all_units.size() - 1) * AnimationConstants.ENTRY_STAGGER_DELAY)
+	var total_time = maxf(0.0, (all_units.size() - 1) * AnimationConstants.scaled(AnimationConstants.ENTRY_STAGGER_DELAY))
 	
 	# Wait for the longest animation to complete before signaling finished
 	var wait_tween = create_tween()
-	wait_tween.tween_interval(total_time + 0.5)
+	wait_tween.tween_interval(total_time + AnimationConstants.scaled(0.5))
 	wait_tween.tween_callback(func():
 		SignalBus.emit_signal("battle_entry_animation_finished")
 	)
@@ -295,8 +311,12 @@ func _redraw_board() -> void:
 	if current_phase == BattleManager.Phases.COMBAT or \
 	   current_phase == BattleManager.Phases.START_OF_TURN or \
 	   current_phase == BattleManager.Phases.END_OF_TURN or \
-	   (is_instance_valid(_battle_animator) and _battle_animator.has_method("is_playing_sequence") and _battle_animator.is_playing_sequence()):
+	   (is_instance_valid(_battle_animator) and _battle_animator.has_method("is_playing_sequence") and _battle_animator.is_playing_sequence()) or \
+	   battle_manager.is_processing_effect():
+		_pending_board_redraw = true
 		return
+	
+	_pending_board_redraw = false
 	
 
 	_populate_container(player_lineup, "PlayerLineup", false)
@@ -307,7 +327,8 @@ func _redraw_board() -> void:
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
-		discard_pile_button.text = tr("ui.discard_pile_count") % discard_count
+		_visual_discard_count = discard_count
+		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
 
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
@@ -490,7 +511,7 @@ func _show_battle_management_tutorial() -> void:
 			"anchor_paths": anchors
 		}
 	], null)
-	# Controls remain visible in all phases to allow step/speed control of start/end turn effects
+	# Controls remain visible in all phases to allow pause/speed control of start/end turn effects
 
 func _gui_input(event) -> void:
 	if InputUtils.is_primary_pointer_press(event):
@@ -900,8 +921,14 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result == null:
 		return
 	
-	# Skip bounce for discard pile
+	# Trigger bounce/bump for discard pile
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
+		Audio.play_sfx("coin_land")
+		if is_instance_valid(discard_pile_button):
+			var bump_tween = discard_pile_button.create_tween()
+			discard_pile_button.pivot_offset = discard_pile_button.size / 2.0
+			bump_tween.tween_property(discard_pile_button, "scale", Vector2(1.15, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+			bump_tween.tween_property(discard_pile_button, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 		return
 	
 	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
@@ -962,15 +989,22 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	icon_rect.pivot_offset = icon_rect.size / 2.0
 	
 	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	# Phase 2: Stretch upward (bounce up)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), 0.12).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	# Phase 3: Small squish
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), 0.08).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
 	# Phase 4: Settle to normal
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), 0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	# Visual animation completes here. Logic and triggers are handled asynchronously by BattleManager.
+
+func _on_end_turn_button_pressed() -> void:
+	var action := EndTurnAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		SignalBus.emit_signal("end_turn_requested")
 
 # =============================================================================
 # COMBAT CONTROLS LOGIC
@@ -978,46 +1012,91 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 
 func _on_pause_button_pressed() -> void:
 	_resolve_battle_animator()
+	var is_currently_paused = is_instance_valid(_battle_animator) and _battle_animator.is_paused()
+	var action := PauseRunAction.new(not is_currently_paused)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		if is_currently_paused:
+			execute_speed(AnimationConstants.speed_factor)
+		else:
+			execute_pause()
+
+func execute_pause() -> void:
+	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.pause_combat()
 	_update_speed_button_styles(-1.0) # -1.0 represents Paused
 
 func _on_speed_button_pressed(speed: float) -> void:
+	var action := SetCombatSpeedAction.new(speed)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_speed(speed)
+
+func execute_speed(speed: float) -> void:
 	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.play_continuous(speed)
 	_update_speed_button_styles(speed)
 
 func _update_speed_button_styles(active_speed: float) -> void:
-	var speeds := [-1.0, 1.0, 3.0]
+	var speeds := [-1.0, 1.0, 2.0, 4.0]
 	for i in range(mini(_speed_buttons.size(), speeds.size())):
 		var btn = _speed_buttons[i]
 		if not is_instance_valid(btn): continue
 		var is_active = is_equal_approx(speeds[i], active_speed)
 		
-		var style := StyleBoxFlat.new()
-		style.bg_color = Color(0.3, 0.5, 0.8) if is_active else Color(0.25, 0.25, 0.3)
-		style.corner_radius_top_left = 4
-		style.corner_radius_top_right = 4
-		style.corner_radius_bottom_left = 4
-		style.corner_radius_bottom_right = 4
-		btn.add_theme_stylebox_override("normal", style)
-
-func _on_step_button_pressed() -> void:
-	_resolve_battle_animator()
-	if not is_instance_valid(_battle_animator):
-		return
-	
-	_battle_animator.request_step()
-	if is_instance_valid(step_button):
-		step_button.text = "Next Step ⏭"
-	_update_speed_button_styles(-1.0) # Always highlights Pause when stepping
-
-func _on_combat_step_reached(step_info: Dictionary) -> void:
-	if is_instance_valid(step_desc_label):
-		var desc = String(step_info.get("description", ""))
-		step_desc_label.text = desc
-		step_desc_label.visible = not desc.is_empty()
-	
-	if is_instance_valid(step_button):
-		step_button.text = "Next Step ⏭"
+		var normal_style := StyleBoxFlat.new()
+		normal_style.corner_radius_top_left = 6
+		normal_style.corner_radius_top_right = 6
+		normal_style.corner_radius_bottom_left = 6
+		normal_style.corner_radius_bottom_right = 6
+		
+		var hover_style := normal_style.duplicate() as StyleBoxFlat
+		var pressed_style := normal_style.duplicate() as StyleBoxFlat
+		
+		if is_active:
+			normal_style.bg_color = Color(0.24, 0.48, 0.82)
+			normal_style.border_width_left = 2
+			normal_style.border_width_top = 2
+			normal_style.border_width_right = 2
+			normal_style.border_width_bottom = 2
+			normal_style.border_color = Color(0.65, 0.85, 1.0)
+			
+			hover_style.bg_color = Color(0.28, 0.54, 0.90)
+			hover_style.border_width_left = 2
+			hover_style.border_width_top = 2
+			hover_style.border_width_right = 2
+			hover_style.border_width_bottom = 2
+			hover_style.border_color = Color(0.8, 0.92, 1.0)
+			
+			pressed_style.bg_color = Color(0.20, 0.42, 0.74)
+			btn.add_theme_color_override("font_color", Color.WHITE)
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+			btn.add_theme_color_override("font_pressed_color", Color.WHITE)
+		else:
+			normal_style.bg_color = Color(0.18, 0.19, 0.23)
+			normal_style.border_width_left = 1
+			normal_style.border_width_top = 1
+			normal_style.border_width_right = 1
+			normal_style.border_width_bottom = 1
+			normal_style.border_color = Color(0.28, 0.29, 0.35)
+			
+			hover_style.bg_color = Color(0.26, 0.28, 0.35)
+			hover_style.border_width_left = 1
+			hover_style.border_width_top = 1
+			hover_style.border_width_right = 1
+			hover_style.border_width_bottom = 1
+			hover_style.border_color = Color(0.4, 0.42, 0.5)
+			
+			pressed_style.bg_color = Color(0.14, 0.15, 0.18)
+			btn.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
+			btn.add_theme_color_override("font_hover_color", Color.WHITE)
+			btn.add_theme_color_override("font_pressed_color", Color(0.6, 0.6, 0.65))
+		
+		btn.add_theme_stylebox_override("normal", normal_style)
+		btn.add_theme_stylebox_override("hover", hover_style)
+		btn.add_theme_stylebox_override("pressed", pressed_style)
+		btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())

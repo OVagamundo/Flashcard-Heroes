@@ -6,6 +6,8 @@ extends Node
 ## TDD Section 9.2: FlashcardManager.gd
 
 signal minigame_finished(results: Dictionary)
+signal session_timer_updated(current_time: float, max_time: float)
+signal session_question_changed(question_data: Dictionary)
 
 ## SRS Algorithm weights
 const SRS_MASTERY_WEIGHT_POWER: float = 2.0
@@ -16,6 +18,19 @@ var _run_state_ref: RunState = null
 var _active_deck_ids: Array[StringName] = []
 var _last_shown_card_id: StringName = &""
 var _minigame_instance: Control = null
+
+# Authoritative session state
+var is_session_active: bool = false
+var is_sprint_active: bool = false
+var is_introducing_new_card: bool = false
+var introduced_card_id: StringName = &""
+var session_timer: float = 0.0
+var session_duration: float = 7.0
+var correct_answers: int = 0
+var total_answers: int = 0
+var current_streak: int = 0
+var tokens_earned: int = 0
+var current_question: Dictionary = {}
 
 ## TDD Section 9.3: The Weighted SRS Algorithm
 func _select_card_via_srs() -> StringName:
@@ -71,7 +86,7 @@ func _select_card_via_srs() -> StringName:
 ## TDD Section 9.2: Public API
 func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void:
 	"""Starts a flashcard minigame with the specified run state and active deck"""
-	if is_instance_valid(_minigame_instance):
+	if is_session_active or is_instance_valid(_minigame_instance):
 		return # Game already in progress
 	
 	if not is_instance_valid(run_state):
@@ -94,11 +109,140 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	self._run_state_ref = run_state
 	self._active_deck_ids = run_state.active_deck_ids.duplicate()
 	
-	# Open the flashcard minigame modal window (preserve existing windows like inventory)
-	_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
-		"run_state": run_state,
-		"active_deck": self._active_deck_ids
-	}, true)
+	# Configure authoritative session parameters
+	session_duration = 7.0
+	if GameManager.is_in_battle and GameManager.has_trinket(&"trinket_time_sprint_charm"):
+		session_duration += 2.0
+		var animator = get_node_or_null("/root/BattleAnimator")
+		if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
+			animator.call_deferred("hop_trinket_by_definition_id", &"trinket_time_sprint_charm", false)
+			
+	session_timer = session_duration
+	correct_answers = 0
+	total_answers = 0
+	current_streak = 0
+	tokens_earned = 0
+	is_session_active = true
+	
+	# Determine if introducing a new card
+	if run_state.cards_presented_count < run_state.active_deck_ids.size():
+		introduced_card_id = run_state.active_deck_ids[run_state.cards_presented_count]
+		is_introducing_new_card = true
+		is_sprint_active = false
+	else:
+		introduced_card_id = &""
+		is_introducing_new_card = false
+		is_sprint_active = true
+		
+	current_question = get_next_question()
+	session_question_changed.emit(current_question)
+	session_timer_updated.emit(session_timer, session_duration)
+	
+	# Open UI window only if not in headless mode
+	if not ActionQueue.is_headless_mode():
+		_minigame_instance = WindowManager.open_modal_window(&"FlashcardMinigame", {
+			"run_state": run_state,
+			"active_deck": self._active_deck_ids
+		}, true)
+
+func acknowledge_intro() -> void:
+	"""Transitions from card introduction to active sprint"""
+	if is_instance_valid(_run_state_ref) and is_introducing_new_card:
+		_run_state_ref.cards_presented_count += 1
+	is_introducing_new_card = false
+	is_sprint_active = true
+
+func advance_session_timer(seconds: float) -> void:
+	"""Authoritatively steps the minigame session timer"""
+	if not is_session_active or is_introducing_new_card:
+		return
+	session_timer = maxf(0.0, session_timer - seconds)
+	session_timer_updated.emit(session_timer, session_duration)
+	if session_timer <= 0.0:
+		_on_minigame_complete(correct_answers, total_answers - correct_answers)
+
+func submit_minigame_answer(question_id: StringName, selected_answer_id: StringName, think_time: float = 0.0) -> Dictionary:
+	"""Processes an answer submission, advancing timer and awarding tokens"""
+	if not is_session_active or session_timer <= 0.0:
+		return {}
+
+	if think_time > 0.0:
+		advance_session_timer(think_time)
+		if not is_session_active:
+			return {}
+
+	var was_correct: bool = (question_id == selected_answer_id)
+	total_answers += 1
+	
+	var mastery_level: int = FlashcardProgress.MASTERY_MIN
+	if is_instance_valid(_run_state_ref) and _run_state_ref.flashcard_progress.has(question_id):
+		var prog = _run_state_ref.flashcard_progress[question_id]
+		if is_instance_valid(prog):
+			mastery_level = prog.mastery_level
+
+	submit_answer(question_id, was_correct)
+	
+	var tokens_to_give: int = 0
+	if was_correct:
+		correct_answers += 1
+		current_streak += 1
+		session_timer += 0.5
+		
+		var has_charm: bool = GameManager.has_trinket(&"trinket_beginners_charm")
+		tokens_to_give = 2 if (mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm) else 1
+		tokens_earned += tokens_to_give
+		
+		if GameManager.is_in_battle:
+			var bm = GameManager.get_battle_manager()
+			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
+				bm.add_gacha_tokens(tokens_to_give, true)
+			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
+				bm.add_gacha_token(tokens_to_give, true)
+		elif is_instance_valid(_run_state_ref):
+			_run_state_ref.add_room_tokens(tokens_to_give)
+	else:
+		current_streak = 0
+		
+	session_timer_updated.emit(session_timer, session_duration)
+	current_question = get_next_question()
+	session_question_changed.emit(current_question)
+	
+	return {
+		"was_correct": was_correct,
+		"tokens_to_give": tokens_to_give,
+		"current_streak": current_streak,
+		"correct_answers": correct_answers,
+		"total_answers": total_answers,
+		"next_question": current_question
+	}
+
+func skip_minigame_question(question_id: StringName, think_time: float = 0.0) -> Dictionary:
+	"""Skips the current question, advancing timer and resetting streak"""
+	if not is_session_active or session_timer <= 0.0:
+		return {}
+
+	if think_time > 0.0:
+		advance_session_timer(think_time)
+		if not is_session_active:
+			return {}
+
+	total_answers += 1
+	submit_answer(question_id, false)
+	current_streak = 0
+	session_timer += 0.5
+	session_timer_updated.emit(session_timer, session_duration)
+	
+	current_question = get_next_question()
+	session_question_changed.emit(current_question)
+	
+	return {
+		"was_correct": false,
+		"tokens_to_give": 0,
+		"current_streak": 0,
+		"correct_answers": correct_answers,
+		"total_answers": total_answers,
+		"next_question": current_question
+	}
 
 func get_next_question() -> Dictionary:
 	"""Gets the next question using SRS algorithm"""
@@ -140,16 +284,54 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 		progress.record_answer(was_correct, _run_state_ref.day)
 		SignalBus.emit_signal("run_data_changed")
 
+func _is_starter_hero(rs: RunState) -> bool:
+	if not is_instance_valid(rs) or not is_instance_valid(rs.hero_instance):
+		return false
+	var def = rs.hero_instance.get_definition()
+	return is_instance_valid(def) and def.id == &"hero_starter"
+
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
-	# Store results before cleanup
-	var results: Dictionary = {"correct_answers": correct, "incorrect_answers": incorrect}
+	if not is_session_active:
+		return
+		
+	is_session_active = false
+	is_sprint_active = false
+	is_introducing_new_card = false
 	
-	# Deck expansion now happens at the START of the minigame session
-	# to ensure a new card is introduced immediately.
+	# Starter hero minimum guarantee: guarantee at least 3 tokens
+	if is_instance_valid(_run_state_ref) and _is_starter_hero(_run_state_ref) and correct < 3:
+		var bonus = 3 - correct
+		if GameManager.is_in_battle:
+			var bm = GameManager.get_battle_manager()
+			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
+				bm.add_gacha_tokens(bonus, true)
+			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
+				bm.add_gacha_token(bonus, true)
+		else:
+			_run_state_ref.add_room_tokens(bonus)
+		correct = 3
+		tokens_earned += bonus
+	
+	if GameManager.is_in_battle:
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
+			SignalBus.emit_signal("gacha_tokens_changed", bm.get_gacha_tokens())
+	
+	var results: Dictionary = {
+		"correct_answers": correct,
+		"incorrect_answers": incorrect,
+		"total_answers": correct + incorrect,
+		"tokens_earned": tokens_earned
+	}
+	
+	# Finish any active flashcard action if queue was waiting
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction:
+			ActionQueue.finish_action(act)
 	
 	# CRITICAL: Close the window - FlashcardManager owns the minigame lifecycle
-	# This ensures the window closes regardless of what encounter started it
 	if is_instance_valid(_minigame_instance):
 		_minigame_instance.queue_free()
 	

@@ -78,6 +78,14 @@ func _ready() -> void:
 	if _window_manager.has_signal("window_closed"):
 		_window_manager.window_closed.connect(_on_window_closed)
 
+	if is_instance_valid(ActionQueue):
+		ActionQueue.action_rejected.connect(_on_action_rejected)
+
+func _on_action_rejected(_action: GameAction, _reason: String) -> void:
+	if _is_drag_active:
+		end_drag(false)
+
+
 
 func _exit_tree() -> void:
 	# Scene cleanup per spec: clear drag and selection
@@ -138,7 +146,6 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
 		if is_vcr_playing(): 
 			return
-		# print("DEBUG_GIR: DRAG_START intercepted for ", context.entity_type)
 		start_drag(context)
 		return
 
@@ -157,14 +164,6 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Generate commands based on the interaction context and current state
 	command_queue = _generate_command_queue(context, was_hover_promoted)
 	
-	if context.event_type != &"HOVER_ENTER" and context.event_type != &"HOVER_EXIT":
-		# print("DEBUG_GIR: Processing ", context.entity_type, " Event: ", context.event_type)
-		# print("DEBUG_GIR: Locked: ", _is_inspection_locked, " | LockedID: ", _locked_entity_view_id)
-		# print("DEBUG_GIR: Selection: ", _current_selection != null)
-		# print("DEBUG_GIR: Commands: ", command_queue.size())
-		# for cmd in command_queue:
-		# 	print("DEBUG_GIR: + CMD: ", cmd.cmd)
-		pass
 
 	# Execute the command queue
 	_execute_command_queue(command_queue)
@@ -306,7 +305,6 @@ func _on_window_closed(window: Control) -> void:
 	if is_instance_valid(sel_view) and is_instance_valid(window):
 		# check if selection is inside the closed window
 		if window == sel_view or window.is_ancestor_of(sel_view):
-			# print("DEBUG_GIR: Selection invalidated by window close. Window=", window.get_class(), " Name=", window.name)
 			_execute_deselect()
 
 ## Generate command queue based on interaction context and current state
@@ -969,9 +967,15 @@ func _execute_request_action(command_context: Dictionary) -> void:
 				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
 				if src_view:
 					_activate_close_suppression_for_view(src_view)
-		SignalBus.emit_signal("try_inventory_action",
-			source_context.location,
-			target_context.location)
+		var move_action := MoveInventoryAction.new(source_context.location, target_context.location)
+		if is_instance_valid(ActionQueue):
+			var accepted = ActionQueue.request(move_action)
+			if not accepted:
+				end_drag(false)
+		else:
+			SignalBus.emit_signal("try_inventory_action",
+				source_context.location,
+				target_context.location)
 
 ## Execute invalid action command
 func _execute_invalid_action() -> void:
@@ -1053,8 +1057,8 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 
 ## Public API: start a drag operation (called by InteractionManager)
 func start_drag(origin_context: InteractionContext) -> void:
-	# Full input lock during COMBAT: do not start drags
-	if _is_combat_phase or is_vcr_playing():
+	# Full input lock during COMBAT or when animations / ActionQueue are active
+	if _is_combat_phase or is_vcr_playing() or (is_instance_valid(ActionQueue) and ActionQueue.is_busy()):
 		return
 	
 	# Per docs: "It clears any current selection"
@@ -1230,6 +1234,9 @@ func get_drag_origin_context() -> InteractionContext:
 
 func is_vcr_playing() -> bool:
 	var animator = get_tree().get_first_node_in_group("battle_animator")
-	if is_instance_valid(animator) and animator.has_method("is_playing_sequence"):
-		return animator.is_playing_sequence()
+	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
+		return true
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return true
 	return false

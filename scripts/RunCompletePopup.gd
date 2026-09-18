@@ -66,10 +66,13 @@ func populate(context: Dictionary) -> void:
 	]
 
 func _on_return_button_pressed() -> void:
-	# Clear save on run completion (victory)
-	SaveManager.clear_save()
-	SignalBus.emit_signal("title_scene_requested")
-	queue_free()
+	var action := AcknowledgeRunCompleteAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		SaveManager.clear_save()
+		SignalBus.emit_signal("title_scene_requested")
+		queue_free()
 
 func get_window_to_animate() -> Control:
 	return $CenterContainer/PanelContainer

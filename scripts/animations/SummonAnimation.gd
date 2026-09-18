@@ -29,13 +29,13 @@ func execute(animator: Node, targets: Array[String], _payload: CombatPayload) ->
 				
 				# Phase 1: Drop + Color Fade (to normal)
 				tween.set_parallel(true)
-				tween.tween_property(view, "position", original_position, AC.SUMMON_DROP_DURATION * speed_factor).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-				tween.tween_property(view, "modulate", Color.WHITE, AC.SUMMON_FADE_DURATION * speed_factor).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+				tween.tween_property(view, "position", original_position, AC.scaled(AC.SUMMON_DROP_DURATION * speed_factor)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+				tween.tween_property(view, "modulate", Color.WHITE, AC.scaled(AC.SUMMON_FADE_DURATION * speed_factor)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 				tween.set_parallel(false)
 				
 				# Simplified landing bounce (scale entire view slightly)
-				tween.tween_property(view, "scale", Vector2(1.2, 0.8), AC.DEFORM_DURATION * speed_factor).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				tween.tween_property(view, "scale", Vector2.ONE, AC.DEFORM_DURATION * 2 * speed_factor).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+				tween.tween_property(view, "scale", Vector2(1.2, 0.8), AC.scaled(AC.DEFORM_DURATION * speed_factor)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+				tween.tween_property(view, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2 * speed_factor)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 				
 				await tween.finished
 		else:

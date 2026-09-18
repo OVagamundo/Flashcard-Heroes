@@ -9,7 +9,10 @@ const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 ## Also acts as the single source of truth for the game's battle state.
 
 var run_state: RunState
-var is_in_battle: bool = false # The global authority on whether a battle is active.
+var is_in_battle: bool = false:
+	set(val):
+		is_in_battle = val
+		AnimationConstants.is_in_battle = val
 var is_test_mode: bool = false # Global flag for test environment
 var _active_battle_manager: Node = null # ADD THIS LINE
 var gacha_discounts_used: Dictionary = {1: false, 2: false, 3: false}
@@ -21,6 +24,13 @@ var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
 var _reward_reroll_cost: int = 1 # Reward reroll cost (resets per battle)
+
+var _temporary_rest_site_prizes: Array[Dictionary] = []
+var current_rest_site_type: int = 0 # 0: HP, 1: PWR, 2: GOLD
+var _trinity_t1_drawn: bool = false
+var _trinity_t2_drawn: bool = false
+var _trinity_t3_drawn: bool = false
+var _trinity_rewarded: bool = false
 
 # Temporary shop state
 var _temporary_shop_master_dict: Dictionary = {}
@@ -49,12 +59,8 @@ func _ready() -> void:
 	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
-	SignalBus.flashcard_token_earned.connect(_on_flashcard_token_earned)
 	SignalBus.black_market_action_requested.connect(_on_black_market_action_requested)
-
-func _on_flashcard_token_earned(amount: int) -> void:
-	if is_instance_valid(run_state) and amount > 0:
-		run_state.total_tokens_earned += amount
+	SignalBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
 
 # ADD THESE TWO FUNCTIONS
 func register_battle_manager(bm: Node) -> void:
@@ -91,8 +97,18 @@ func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_
 	RNGManager.initialize()
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
+	run_state.run_seed = RNGManager.get_master_seed()
+	run_state.run_id = UUIDUtils.generate_uuid(&"run")
 	reset_gacha_discounts()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.reset_global_run_timer()
+		ActionQueue.start_timer()
+	generate_path_nodes()
 	SignalBus.emit_signal("main_scene_requested")
+
+func _on_path_choice_scene_requested() -> void:
+	if is_instance_valid(run_state) and run_state.available_path_nodes.is_empty():
+		generate_path_nodes()
 
 func _on_new_game_requested() -> void:
 	# Default to first hero and deck if called without parameters
@@ -153,6 +169,7 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 		return
 	director_run_state.current_day = run_state.day
 	director_run_state.player_gold = run_state.gold
+	director_run_state.unlock_percentage = run_state.get_deck_unlock_percentage()
 	director_run_state.current_purpose = purpose as DirectorRunState.Purpose
 	# flashcard_mastery calculation could go here if available
 	director_run_state.unlocked_recipes.clear()
@@ -226,9 +243,18 @@ func get_reward_instance(index: int) -> GachaBallInstance:
 func _on_return_to_title() -> void:
 	# Clear the run state and any pending rewards when returning to the title screen
 	run_state = null
+	if is_instance_valid(ActionQueue):
+		ActionQueue.pause_timer()
+		ActionQueue.reset_global_run_timer()
 	# Clear any temporary rewards if the player quits or loses.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
+	_temporary_rest_site_prizes.clear()
+	current_rest_site_type = 0
+	_trinity_t1_drawn = false
+	_trinity_t2_drawn = false
+	_trinity_t3_drawn = false
+	_trinity_rewarded = false
 
 
 
@@ -265,6 +291,11 @@ func _on_reward_chosen(payload) -> void:
 			var selected_instance = _temporary_reward_master_dict[chosen_uuid]
 			var def = selected_instance.get_definition()
 			
+			if is_instance_valid(_temporary_reward_container):
+				var slot_idx = _temporary_reward_container.get_index_of_uuid(chosen_uuid)
+				if slot_idx != -1:
+					_temporary_reward_container.set_uuid(slot_idx, "")
+			
 			# Clear the temporary reward location before adding to run state
 			selected_instance.location_container_tag = &""
 			selected_instance.location_slot_index = -1
@@ -293,6 +324,30 @@ func _on_reward_chosen(payload) -> void:
 	# Reset levels ONLY AFTER the choice is processed and data is cleared
 	run_state.current_boss_level = 0
 	run_state.current_elite_level = 0
+
+## Authoritative data method to sell a pending reward capsule, credit gold, and clear temporary containers.
+func sell_reward_instance(instance_uuid: String) -> int:
+	if not _temporary_reward_master_dict.has(instance_uuid):
+		return 0
+	var instance: GachaBallInstance = _temporary_reward_master_dict[instance_uuid]
+	var gold_yield: int = 1
+	if is_instance_valid(run_state) and (run_state.current_boss_level > 0 or run_state.current_elite_level > 0):
+		gold_yield = 10
+	elif is_instance_valid(instance):
+		var unit_value = instance.get_gold_value()
+		gold_yield = max(1, int(unit_value * 0.5))
+	
+	if is_instance_valid(run_state):
+		run_state.add_gold(gold_yield)
+		
+	if is_instance_valid(_temporary_reward_container):
+		var slot_idx = _temporary_reward_container.get_index_of_uuid(instance_uuid)
+		if slot_idx != -1:
+			_temporary_reward_container.set_uuid(slot_idx, "")
+	_temporary_reward_master_dict.erase(instance_uuid)
+	
+	SignalBus.emit_signal("selection_clear_requested")
+	return gold_yield
 
 ## Temporary debug function to inspect the pending reward master dictionary
 # Removed redundant functions that were replaced by the new temporary instance system
@@ -399,6 +454,8 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 	return null
 
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
+	if is_instance_valid(run_state):
+		run_state.available_path_nodes.clear()
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
@@ -447,29 +504,23 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/UnitTrainingGround.tscn"))
 		"GOLD":
+			current_rest_site_type = 2 # GOLD
+			_temporary_rest_site_prizes.clear()
 			if is_instance_valid(_active_main_node):
 				var inst = _active_main_node.load_content(REST_SITE_SCENE)
 				if inst is ResourceSite:
 					inst.site_type = ResourceSite.SiteType.GOLD
 					inst.setup_site()
 		"SURPRISE":
+			var roll = RNGManager.map_rng.randi_range(0, 2)
+			current_rest_site_type = 0 if roll == 0 else (2 if roll == 1 else 1)
+			_temporary_rest_site_prizes.clear()
 			if is_instance_valid(_active_main_node):
-				var roll = RNGManager.map_rng.randi_range(0, 2)
-				if roll == 0:
-					var inst = _active_main_node.load_content(REST_SITE_SCENE)
-					if inst is ResourceSite:
-						inst.site_type = ResourceSite.SiteType.HP
-						inst.setup_site()
-				elif roll == 1:
-					var inst = _active_main_node.load_content(REST_SITE_SCENE)
-					if inst is ResourceSite:
-						inst.site_type = ResourceSite.SiteType.GOLD
-						inst.setup_site()
-				else:
-					var inst = _active_main_node.load_content(REST_SITE_SCENE)
-					if inst is ResourceSite:
-						inst.site_type = ResourceSite.SiteType.PWR
-						inst.setup_site()
+				var site_t = ResourceSite.SiteType.HP if roll == 0 else (ResourceSite.SiteType.GOLD if roll == 1 else ResourceSite.SiteType.PWR)
+				var inst = _active_main_node.load_content(REST_SITE_SCENE)
+				if inst is ResourceSite:
+					inst.site_type = site_t
+					inst.setup_site()
 
 func _enter_shop() -> void:
 	_reroll_cost = 1
@@ -673,3 +724,208 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 			new_instance.level = source_level
 			run_state.add_instance(new_instance, source_location.container, source_location.index)
 			run_state.unlock_recipe_for_result(result_definition.id)
+
+func generate_path_nodes() -> Array[PathNodeDefinition]:
+	if not is_instance_valid(run_state):
+		return []
+	
+	if loading_from_save:
+		loading_from_save = false
+		if not run_state.available_path_nodes.is_empty():
+			return run_state.available_path_nodes
+	
+	run_state.advance_day(1)
+	
+	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
+	
+	var is_half_deck = run_state.is_half_deck
+	var boss_level: int = run_state.bosses_defeated + 1
+	var threshold: float = boss_level * 0.2
+	var max_bosses: int = 5
+	if is_half_deck:
+		threshold = boss_level * 0.3333
+		max_bosses = 3
+	
+	var selected_nodes: Array[PathNodeDefinition] = []
+	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= max_bosses:
+		var node_def = PathNodeDefinition.new()
+		node_def.node_type = "BATTLE"
+		node_def.subtype = "BOSS"
+		node_def.display_name_key = "ui.boss"
+		node_def.boss_level = boss_level
+		node_def.difficulty = boss_level
+		selected_nodes.append(node_def)
+	else:
+		var types = [
+			{"type": "BATTLE", "subtype": "", "name": "ui.battle_node"},
+			{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node"},
+			{"type": "SHOP", "subtype": "", "name": "ui.shop_node"},
+			{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node"},
+			{"type": "REST", "subtype": "", "name": "ui.rest_node"},
+			{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node"},
+			{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node"}
+		]
+		var pool: Array[PathNodeDefinition] = []
+		var current_day = run_state.day
+		for t in types:
+			var base_w = 50
+			if t.type == "BATTLE" and t.subtype == "":
+				base_w = 100
+			elif t.type == "BATTLE" and t.subtype == "ELITE":
+				var elite_day_threshold = 3 if is_half_deck else 5
+				if current_day < elite_day_threshold:
+					base_w = 20
+				else:
+					base_w = 80
+			var dict_key = t.type
+			if t.subtype != "":
+				dict_key += "_" + t.subtype
+			var last_offered = run_state.encounter_last_offered_day.get(dict_key, 0)
+			var days_since = current_day - last_offered
+			var final_weight = base_w + (days_since * 20)
+			
+			var def = PathNodeDefinition.new()
+			def.node_type = t.type
+			def.subtype = t.subtype
+			def.display_name_key = t.name
+			def.base_weight = final_weight
+			pool.append(def)
+		
+		for i in range(3):
+			if pool.is_empty():
+				break
+			var drawn = director.draw_item(pool, director_run_state, RNGManager.map_rng)
+			if is_instance_valid(drawn):
+				selected_nodes.append(drawn)
+				var next_pool: Array[PathNodeDefinition] = []
+				for p in pool:
+					if p.node_type != drawn.node_type or p.subtype != drawn.subtype:
+						next_pool.append(p)
+				pool = next_pool
+
+	run_state.available_path_nodes = selected_nodes
+
+	for node_def in selected_nodes:
+		var dict_key = node_def.node_type
+		if node_def.subtype != "":
+			dict_key += "_" + node_def.subtype
+		run_state.encounter_last_offered_day[dict_key] = run_state.day
+
+	SaveManager.save_run(run_state)
+
+	return selected_nodes
+
+func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
+	if not is_instance_valid(run_state):
+		return null
+	var cost = get_gacha_token_cost(tier)
+	if run_state.get_room_tokens() < cost:
+		return null
+	
+	run_state.spend_room_tokens(cost)
+	use_gacha_discount(tier)
+	
+	if _temporary_reward_container == null:
+		_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(5)
+	
+	if slot_index == -1:
+		slot_index = _temporary_reward_container.find_first_empty_slot()
+		if slot_index == -1:
+			return null
+			
+	var eligible: Array[GachaBallDefinition] = []
+	for definition in Database.get_all_pool_definitions():
+		if not is_instance_valid(definition): continue
+		if definition.tier != tier: continue
+		eligible.append(definition)
+	
+	if eligible.is_empty():
+		return null
+		
+	var definition = RNGManager.reward_rng.pick_random(eligible)
+	var instance = GachaBallInstance.new()
+	instance.initialize(definition)
+	instance.location_container_tag = &"Rewards"
+	instance.location_slot_index = slot_index
+	_temporary_reward_master_dict[instance.ball_uuid] = instance
+	_temporary_reward_container.set_uuid(slot_index, instance.ball_uuid)
+	
+	if has_trinket(&"trinket_trinity_charm") and not _trinity_rewarded:
+		if tier == 1: _trinity_t1_drawn = true
+		elif tier == 2: _trinity_t2_drawn = true
+		elif tier == 3: _trinity_t3_drawn = true
+		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
+			_trinity_rewarded = true
+			run_state.add_room_tokens(1)
+			
+	return instance
+
+func roll_rest_site_prize(tier: int) -> Dictionary:
+	if not is_instance_valid(run_state):
+		return {}
+	var cost = tier
+	if run_state.get_room_tokens() < cost:
+		return {}
+	run_state.spend_room_tokens(cost)
+	
+	var value = 0
+	match tier:
+		1: value = RNGManager.reward_rng.randi_range(0, 1)
+		2: value = RNGManager.reward_rng.randi_range(0, 3)
+		3: value = RNGManager.reward_rng.randi_range(0, 5)
+	
+	var slot_index = -1
+	for i in range(4):
+		var has_prize = false
+		for p in _temporary_rest_site_prizes:
+			if p.slot_index == i:
+				has_prize = true
+				break
+		if not has_prize:
+			slot_index = i
+			break
+			
+	if slot_index == -1:
+		if not _temporary_rest_site_prizes.is_empty():
+			var oldest = _temporary_rest_site_prizes[0]
+			_apply_rest_site_prize_data(oldest)
+			_temporary_rest_site_prizes.remove_at(0)
+			for rem in _temporary_rest_site_prizes:
+				if rem.slot_index > 0:
+					rem.slot_index -= 1
+			slot_index = 3
+		else:
+			slot_index = 0
+			
+	var prize_data = {
+		"slot_index": slot_index,
+		"hp_value": value if current_rest_site_type == 0 else 0,
+		"pwr_value": value if current_rest_site_type == 1 else 0,
+		"gold_value": value if current_rest_site_type == 2 else 0
+	}
+	_temporary_rest_site_prizes.append(prize_data)
+	return prize_data
+
+func claim_rest_site_prize(slot_index: int) -> Dictionary:
+	for i in range(_temporary_rest_site_prizes.size()):
+		if _temporary_rest_site_prizes[i].slot_index == slot_index:
+			var prize = _temporary_rest_site_prizes[i]
+			_temporary_rest_site_prizes.remove_at(i)
+			_apply_rest_site_prize_data(prize)
+			return prize
+	return {}
+
+func _apply_rest_site_prize_data(prize_data: Dictionary) -> void:
+	if not is_instance_valid(run_state):
+		return
+	if current_rest_site_type == 2: # GOLD
+		run_state.add_gold(prize_data.get("gold_value", 0))
+	elif is_instance_valid(run_state.hero_instance):
+		var hero_uuid = run_state.hero_instance.ball_uuid
+		run_state.modify_unit_base_stats(hero_uuid, prize_data.get("hp_value", 0), prize_data.get("pwr_value", 0))
+
+func auto_claim_all_rest_site_prizes() -> void:
+	while not _temporary_rest_site_prizes.is_empty():
+		var p = _temporary_rest_site_prizes[0]
+		_temporary_rest_site_prizes.remove_at(0)
+		_apply_rest_site_prize_data(p)

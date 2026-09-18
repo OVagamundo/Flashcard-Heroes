@@ -6,11 +6,20 @@ extends RefCounted
 # SAP-style speed factor. All animation durations are divided by this.
 # 1.0 = normal, 3.0 = 3x speed
 static var speed_factor: float = 1.0
+static var is_in_battle: bool = false
 
 ## Get a duration scaled by the current speed factor.
-## All animation code should call this instead of using raw constants.
+## When in battle, durations are scaled by speed_factor. Outside battle, returns raw duration.
 static func scaled(duration: float) -> float:
-	return duration / speed_factor
+	if is_in_battle:
+		return duration / maxf(speed_factor, 0.001)
+	return duration
+
+## Get the active speed multiplier (1.0 outside battle, speed_factor in battle).
+static func get_effective_speed_factor() -> float:
+	if is_in_battle:
+		return maxf(speed_factor, 0.001)
+	return 1.0
 
 ## Creates a timer that respects the game's pause state.
 ## All combat and management animations should use this instead of tree.create_timer directly

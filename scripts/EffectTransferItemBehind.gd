@@ -1,5 +1,6 @@
 # res://scripts/EffectTransferItemBehind.gd
 @tool
+class_name EffectTransferItemBehind
 extends EffectDefinition
 
 ## Transfers the equipped item of the dying unit to the ally behind it.
@@ -78,7 +79,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		if is_instance_valid(item_def) and is_instance_valid(item_def.icon):
 			item_icon_path = item_def.icon.resource_path
 		
-		# Now iterate and equip
+		# Now iterate and equip a copy for each unit behind
 		for i in range(units_behind.size()):
 			var tgt = units_behind[i]
 			var tgt_uuid = tgt.ball_uuid
@@ -86,15 +87,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			var old_pwr: int = tgt.current_pwr
 			var old_hp: int = tgt.current_hp
 			
-			if i == 0:
-				# First unit gets the ACTUAL item transferred
-				battle_manager.bm_equip_item(item_uuid, tgt_uuid, 0, true)
-			else:
-				# Subsequent units get a COPY of the item
-				var new_item = GachaBallInstance.new()
-				new_item.initialize(item_def)
-				battle_manager._state.bm_add_instance(new_item, "", -1)
-				battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true)
+			# Each unit behind receives a COPY of the item
+			var new_item = GachaBallInstance.new()
+			new_item.initialize(item_def)
+			battle_manager._state.bm_add_instance(new_item, "", -1)
+			var equip_events: Array[CombatEvent] = []
+			battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true, equip_events)
+			for ev in equip_events:
+				result.add_event(ev)
 			
 			var new_pwr: int = tgt.current_pwr
 			var new_hp: int = tgt.current_hp
@@ -110,7 +110,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			}))
 			
 			var transfer_payload := CombatPayload.new()
-			transfer_payload.item_uuid = item_uuid if i == 0 else ""
+			transfer_payload.item_uuid = new_item.ball_uuid
 			transfer_payload.item_icon_path = item_icon_path
 			transfer_payload.old_pwr = old_pwr
 			transfer_payload.new_pwr = new_pwr

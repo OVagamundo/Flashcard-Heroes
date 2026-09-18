@@ -191,6 +191,11 @@ func _on_animation_event(event: CombatEvent) -> void:
 			var amount = payload.amount
 			log_system("Gained %d tokens!" % amount)
 
+		CombatEvent.Type.ITEM_DISCARD:
+			var payload = event.visual_payload
+			var item_name = payload.item_name
+			log_system("%s's %s was discarded." % [source_name, item_name])
+
 
 func _get_source_name(event: CombatEvent) -> String:
 	# First check cached source_name
@@ -263,19 +268,6 @@ func _add_entry(type: String, message: String, details: String, indent_level: in
 		_log_entries.pop_front()
 	
 	log_entry_added.emit(entry)
-	
-	# Also print to console for debugging
-	var indent_str = "  ".repeat(indent_level)
-	if indent_level > 0:
-		indent_str = "└─ "
-	var console_msg = "[%d:%d] %s %s" % [_current_turn, _event_index, indent_str + _strip_bbcode(message), details]
-	# print("[BattleLog] " + console_msg)
-
-func _strip_bbcode(text: String) -> String:
-	# Remove BBCode tags for console output
-	var regex = RegEx.new()
-	regex.compile("\\[.*?\\]")
-	return regex.sub(text, "", true)
 
 func _on_battle_phase_changed(phase_name: String) -> void:
 	if phase_name == "START_OF_TURN":

@@ -197,6 +197,11 @@ func is_player_owned(instance: GachaBallInstance) -> bool:
 	var loc = instance.get_location()
 	if not is_instance_valid(loc):
 		return false
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent := get_instance(loc.unit_uuid)
+		if is_instance_valid(parent):
+			return is_player_owned(parent)
+		return false
 	var container = String(loc.container)
 	# Player containers or common battle containers (discard, etc.)
 	return (container.begins_with("Player") or

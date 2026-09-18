@@ -26,9 +26,6 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	# Ensure this is always a coroutine (GDScript quirk)
 	await animator.get_tree().process_frame
 	
-	if OS.is_debug_build():
-		pass
-		# print("[DamageAnimation] Executing for targets: ", targets, " source: ", source_uuid, " attack_type: ", attack_type)
 	
 	# Get visual registry - ONLY used for view updates, NOT position lookups
 	# Position data comes from animator.get_snapshot_position() for decoupling
@@ -89,9 +86,6 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
 			# AUDIO HOOK: Attack lunge whoosh (before movement starts)
-			if OS.is_debug_build():
-				pass
-				# print("[DamageAnimation] Playing LUNGE sound: unit_toss")
 			Audio.play_sfx("unit_toss")
 			SignalBus.emit_signal("unit_melee_lunge", source_uuid, target_position)
 			await animator.wait_for_animation_completion("melee_lunge", source_uuid)

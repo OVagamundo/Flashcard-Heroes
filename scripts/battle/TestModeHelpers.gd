@@ -38,8 +38,6 @@ static func register_test_unit(bm, unit_def_id: StringName, is_enemy: bool, posi
 	if not bm.bm_add_instance(unit_inst, container_tag, slot):
 		push_warning("[TestMode] Failed to register unit via bm_add_instance: %s" % unit_def_id)
 		return null
-	
-	print("[TestMode] Registered unit: %s at %s slot %d" % [unit_def_id, container_tag, slot])
 	return unit_inst
 
 ## Register an item in test mode.
@@ -58,7 +56,6 @@ static func register_test_item(bm, item_def_id: StringName, is_enemy: bool) -> G
 		return null
 	
 	if not is_enemy:
-		print("[TestMode] Registered item: %s in PlayerBench" % item_def_id)
 		return item_inst
 	
 	var enemy_unit_uuid: String = _find_first_unit_with_free_item_slot(bm, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
@@ -69,8 +66,6 @@ static func register_test_item(bm, item_def_id: StringName, is_enemy: bool) -> G
 	if not bm.bm_equip_item(item_inst.ball_uuid, enemy_unit_uuid, -1):
 		push_warning("[TestMode] Failed to equip spawned item %s to enemy unit %s" % [item_def_id, enemy_unit_uuid])
 		return item_inst
-	
-	print("[TestMode] Registered item: %s and equipped to enemy unit %s" % [item_def_id, enemy_unit_uuid])
 	return item_inst
 
 ## Equip an item on a unit using the same logic as real battles.
@@ -100,8 +95,6 @@ static func register_test_item_on_unit(bm, item_def_id: StringName, unit_uuid: S
 		bm.bm_remove_instance(item_inst.ball_uuid)
 		push_warning("[TestMode] Failed to equip item %s on unit %s" % [item_def_id, unit_uuid])
 		return null
-	
-	print("[TestMode] Equipped item: %s on unit: %s" % [item_def_id, unit_uuid])
 	return item_inst
 
 ## Register a trinket for test mode.
@@ -109,6 +102,10 @@ static func register_test_trinket(bm, trinket_def_id: StringName, is_enemy: bool
 	var trinket_def: Resource = Database.get_definition(trinket_def_id)
 	if not is_instance_valid(trinket_def):
 		push_warning("[TestMode] Trinket definition not found: %s" % trinket_def_id)
+		return null
+	
+	if is_enemy and trinket_def.get("is_player_exclusive") == true:
+		push_warning("[TestMode] Cannot equip player-exclusive trinket '%s' on enemy team." % trinket_def_id)
 		return null
 	
 	var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS if is_enemy else C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS
@@ -133,17 +130,13 @@ static func register_test_trinket(bm, trinket_def_id: StringName, is_enemy: bool
 	# Keep enemy trinket cache synchronized for BattleView.
 	if is_enemy:
 		_sync_enemy_trinket_cache(bm)
-	
-	print("[TestMode] Registered trinket: %s for %s at slot %d" % [trinket_def_id, "enemy" if is_enemy else "player", slot])
 	return trinket_inst
 
 ## Trigger on_battle_start abilities for all units currently on the board.
 static func trigger_test_battle_start(bm) -> void:
-	print("[TestMode] Triggering on_battle_start for all units...")
 	bm._trigger_battle_start_abilities()
 	bm.call_deferred("_emit_stats_changed_for_equipped_units")
 	bm._emit_battle_inventory_changed()
-	print("[TestMode] Battle start trigger complete")
 
 ## Clear all entities for a specific team.
 static func clear_test_team(bm, is_enemy: bool) -> void:
@@ -170,8 +163,6 @@ static func clear_test_team(bm, is_enemy: bool) -> void:
 			bm.bm_remove_instance(uuid)
 		
 		_sync_enemy_trinket_cache(bm)
-		
-		print("[TestMode] Cleared enemy team")
 	else:
 		# Clear player lineup (excluding hero at position 0)
 		var player_container: DataContainer = bm.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
@@ -191,8 +182,6 @@ static func clear_test_team(bm, is_enemy: bool) -> void:
 		
 		for uuid in uuids_to_remove:
 			bm.bm_remove_instance(uuid)
-		
-		print("[TestMode] Cleared player team (kept hero)")
 
 static func _find_first_unit_with_free_item_slot(bm, container_tag: StringName) -> String:
 	var units: Array[GachaBallInstance] = bm.get_instances_in_container(container_tag)

@@ -108,10 +108,6 @@ func generate_elite_encounter(total_budget: int, history: Dictionary = {}, last_
 			selected_boss_id = boss_options[i]
 			break
 			
-	if OS.is_debug_build():
-		pass
-		# print("[EncounterGenerator] Elite weighting: ", weights, " (Last: ", last_elite_id, ") Picked: ", selected_boss_id)
-
 	var boss_def = Database.get_definition(selected_boss_id)
 	assert(is_instance_valid(boss_def), "Elite boss definition not found: %s" % selected_boss_id)
 	_update_director_run_state()
@@ -523,7 +519,8 @@ func _generate_slot_effects(encounter: EncounterDefinition, budget: int) -> int:
 			if b + l > 5:
 				continue
 			var bonus = b * 3 + l * 2
-			possible_enemy_combinations.append({"burn": b, "lightning": l, "bonus": bonus})
+			if bonus <= budget - 1:
+				possible_enemy_combinations.append({"burn": b, "lightning": l, "bonus": bonus})
 			
 	var enemy_bonus = 0
 	if not possible_enemy_combinations.is_empty():

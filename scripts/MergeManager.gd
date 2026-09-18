@@ -100,6 +100,13 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		false
 	)
 
+	# Post-merge scaling preservation for Level Up merges:
+	# When duplicate units merge to level up (is_level_up), pre-inherit the post-merge battle pool
+	# scaling bonus directly into initial stats and tracking state.
+	# NOTE: Strictly applies to level-up merges (is_level_up), NEVER to tier evolutions.
+	if is_level_up:
+		_apply_level_up_scaling_trackers(instance_a, instance_b, merged_instance, all_instances_db)
+
 	# Inherit surplus souls
 	var parent_a_souls = instance_a.get_trait_soul_counts(all_instances_db)
 	var parent_b_souls = instance_b.get_trait_soul_counts(all_instances_db)
@@ -249,3 +256,92 @@ func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Diction
 	
 	# Perform the merge. We use the instance's own location as a placeholder.
 	return calculate_merge_result(instance, template_instance, instance.get_location(), instance.get_location(), all_instances_db)
+
+## Pre-inherits dynamic scaling passives (Twin Charm, Doppleganger) onto a newly leveled-up unit.
+## Ensures the unit starts with the correct post-merge bonus without triggering duplicate animations.
+## STRICTLY applied to level-up merges (is_level_up), NEVER to tier evolutions.
+func _apply_level_up_scaling_trackers(instance_a: GachaBallInstance, instance_b: GachaBallInstance, merged_instance: GachaBallInstance, all_instances_db: Dictionary) -> void:
+	# 1. Twin Charm scaling
+	var twin_charm_key := StringName("")
+	for key in instance_a.status_effects:
+		if String(key).begins_with("twin_charm_scaling_"):
+			twin_charm_key = key
+			break
+	if twin_charm_key.is_empty():
+		for key in instance_b.status_effects:
+			if String(key).begins_with("twin_charm_scaling_"):
+				twin_charm_key = key
+				break
+
+	if not twin_charm_key.is_empty():
+		var team := "PLAYER" if String(twin_charm_key).ends_with("PLAYER") else "ENEMY"
+		var current_pool_count := 0
+		for uuid in all_instances_db:
+			var inst = all_instances_db[uuid]
+			if not is_instance_valid(inst):
+				continue
+			if inst.definition_id != instance_a.definition_id:
+				continue
+			var def = inst.get_definition()
+			if not is_instance_valid(def) or def.category != &"UNIT":
+				continue
+			if _get_instance_team(inst, all_instances_db) == team:
+				current_pool_count += 1
+		
+		# Ensure we count at least the 2 merging parents if they weren't in all_instances_db
+		current_pool_count = maxi(current_pool_count, 2)
+		
+		# In battle pool, instance_a and instance_b merge into 1 unit (reduction of 1 copy)
+		var post_merge_count: int = maxi(0, current_pool_count - 1)
+		var post_merge_bonus: int = int(post_merge_count / 2)
+		if post_merge_bonus > 0:
+			merged_instance.status_effects[twin_charm_key] = post_merge_bonus
+			merged_instance.apply_pwr_delta(post_merge_bonus, {"silent": true})
+
+	# 2. Doppleganger scaling
+	if instance_a.status_effects.has(&"doppleganger_scaling") or instance_b.status_effects.has(&"doppleganger_scaling"):
+		var current_pool_count := 0
+		var team := _get_instance_team(instance_a, all_instances_db)
+		for uuid in all_instances_db:
+			var inst = all_instances_db[uuid]
+			if not is_instance_valid(inst):
+				continue
+			if inst.definition_id != instance_a.definition_id:
+				continue
+			var def = inst.get_definition()
+			if not is_instance_valid(def) or def.category != &"UNIT":
+				continue
+			if _get_instance_team(inst, all_instances_db) == team:
+				current_pool_count += 1
+		
+		current_pool_count = maxi(current_pool_count, 2)
+		var post_merge_count: int = maxi(0, current_pool_count - 1)
+		var scale_amount: int = 2 + merged_instance.level
+		for ability in merged_instance.get_active_abilities(all_instances_db):
+			if String(ability.id).begins_with("ability_doppleganger_scale"):
+				if ability.effects.size() > 0 and "parameters" in ability.effects[0]:
+					scale_amount = ability.effects[0].parameters.get("scale_amount", scale_amount)
+				break
+		var post_merge_bonus: int = maxi(0, (post_merge_count - 1) * scale_amount)
+		if post_merge_bonus > 0:
+			merged_instance.status_effects[&"doppleganger_scaling"] = post_merge_bonus
+			merged_instance.apply_pwr_delta(post_merge_bonus, {"silent": true})
+
+func _get_instance_team(inst: GachaBallInstance, all_instances_db: Dictionary) -> String:
+	if not is_instance_valid(inst):
+		return ""
+	var loc = inst.get_location()
+	if not is_instance_valid(loc):
+		return ""
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent: GachaBallInstance = all_instances_db.get(loc.unit_uuid)
+		if is_instance_valid(parent):
+			return _get_instance_team(parent, all_instances_db)
+		return ""
+	var container := String(loc.container)
+	if container.begins_with("Player") or container.begins_with("BattleInventory") or container == "DiscardPile":
+		return "PLAYER"
+	if container.begins_with("Enemy"):
+		return "ENEMY"
+	return ""
+

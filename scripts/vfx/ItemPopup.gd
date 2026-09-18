@@ -22,16 +22,16 @@ func play() -> void:
 	tween.set_parallel(true)
 	
 	# Pop up and scale
-	tween.tween_property(self, "scale", Vector2(1.2, 1.2), 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "modulate:a", 1.0, 0.1)
-	tween.tween_property(self, "position:y", position.y - 80, 0.3).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", Vector2(1.2, 1.2), AnimationConstants.scaled(0.2)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "modulate:a", 1.0, AnimationConstants.scaled(0.1))
+	tween.tween_property(self, "position:y", position.y - 80, AnimationConstants.scaled(0.3)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	# Hover briefly
-	tween.chain().tween_interval(0.5)
+	tween.chain().tween_interval(AnimationConstants.scaled(0.5))
 	
 	# Fade out and move up further
-	tween.chain().tween_property(self, "modulate:a", 0.0, 0.3)
-	tween.parallel().tween_property(self, "position:y", position.y - 120, 0.3)
+	tween.chain().tween_property(self, "modulate:a", 0.0, AnimationConstants.scaled(0.3))
+	tween.parallel().tween_property(self, "position:y", position.y - 120, AnimationConstants.scaled(0.3))
 	
 	await tween.finished
 	animation_finished.emit()

@@ -59,17 +59,14 @@ func _exit_tree() -> void:
 		SignalBus.locale_changed.disconnect(_update_localized_text)
 		
 	# Restore visibility of source view if it was hidden (e.g. on Cancel)
-	if _source_view_instance_id != -1:
+	if not _choice_made and _source_view_instance_id != -1:
 		var view = instance_from_id(_source_view_instance_id)
 		if is_instance_valid(view) and view is Control:
 			view.visible = true
 			view.modulate.a = 1.0
 			
-			# If no choice was made (Swap/Merge), it implies a Cancel/Close.
 			# Trigger the standard "drop cancelled" bounce animation.
-			if not _choice_made and view.has_method("play_landing_bounce"):
-				# We need to defer this slightly to ensure the view interacts with layout correctly after being hidden
-				# But play_landing_bounce usually handles that.
+			if view.has_method("play_landing_bounce"):
 				view.play_landing_bounce()
 
 
@@ -121,6 +118,17 @@ func _on_merge_pressed() -> void:
 
 func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	_choice_made = true
-	# The signature now matches the new, more robust SignalBus signal.
-	SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
+	if is_instance_valid(ActionQueue):
+		if choice == &"MERGE":
+			var action: GameAction
+			if is_instance_valid(MergeManager) and MergeManager.is_merge_encounter_active():
+				action = MergeEncounterAction.new(_source_location, _target_location, recipe_id)
+			else:
+				action = ConfirmMergeAction.new(_source_location, _target_location, recipe_id)
+			ActionQueue.request(action)
+		elif choice == &"SWAP":
+			var action := ConfirmSwapAction.new(_source_location, _target_location)
+			ActionQueue.request(action)
+	else:
+		SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
 	SignalBus.emit_signal("close_top_contextual_requested")

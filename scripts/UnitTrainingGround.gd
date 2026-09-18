@@ -1,4 +1,5 @@
 # res://scripts/UnitTrainingGround.gd
+class_name UnitTrainingGround
 extends Control
 
 ## Unit Training Ground - Train units' HP or PWR using flashcard tokens
@@ -18,10 +19,18 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 
 var _action_in_progress: bool = false
 var _last_inventory_open: bool = false
+var _transient_drop_pos: Vector2 = Vector2.ZERO
 var _training_stat: String = "" # "hp" or "pwr"
 var _training_unit_data: Dictionary = {}
 var _training_unit_location: LocationIdentifier = null
-var _tokens: int = 0
+var _tokens: int:
+	get:
+		if is_instance_valid(GameManager.run_state):
+			return GameManager.run_state.get_room_tokens()
+		return 0
+	set(val):
+		if is_instance_valid(GameManager.run_state):
+			GameManager.run_state.current_room_tokens = val
 
 # Popup references (built programmatically)
 var _popup_root: CenterContainer = null
@@ -42,7 +51,6 @@ func _ready() -> void:
 	SignalBus.action_drop_zone_1_activated.connect(_on_train_hp_requested)
 	SignalBus.action_drop_zone_2_activated.connect(_on_train_pwr_requested)
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
-	SignalBus.flashcard_token_earned.connect(_on_live_token_earned)
 	_update_localized_text()
 	set_process(true)
 	_build_training_popup()
@@ -60,8 +68,6 @@ func _exit_tree() -> void:
 		SignalBus.action_drop_zone_2_activated.disconnect(_on_train_pwr_requested)
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
-	if SignalBus.flashcard_token_earned.is_connected(_on_live_token_earned):
-		SignalBus.flashcard_token_earned.disconnect(_on_live_token_earned)
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("set_action_zone_texts"):
@@ -122,14 +128,52 @@ func _get_selected_inventory_unit() -> Dictionary:
 # --- Training requests ---
 
 func _on_train_hp_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	_start_training("hp", is_drag, mouse_pos)
+	var item_data = _get_selected_inventory_unit()
+	if item_data.is_empty(): return
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+	var action := StartTrainingAction.new(item_data.uuid, "hp")
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_start_training_visuals(item_data.uuid, "hp")
 
 func _on_train_pwr_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	_start_training("pwr", is_drag, mouse_pos)
+	var item_data = _get_selected_inventory_unit()
+	if item_data.is_empty(): return
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+	var action := StartTrainingAction.new(item_data.uuid, "pwr")
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_start_training_visuals(item_data.uuid, "pwr")
 
-func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
+func execute_start_training_visuals(target_uuid: String, stat: String) -> void:
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.training_unit_uuid = target_uuid
+		GameManager.run_state.training_stat = stat
+		GameManager.run_state.is_training_active = true
+	_start_training(stat, target_uuid)
+
+func _start_training(stat: String, target_uuid: String = "") -> void:
 	if _action_in_progress: return
 	var item_data = _get_selected_inventory_unit()
+	if item_data.is_empty() or (not target_uuid.is_empty() and item_data.get("uuid", "") != target_uuid):
+		if not target_uuid.is_empty() and is_instance_valid(GameManager.run_state):
+			var inst = GameManager.run_state.get_instance_by_uuid(target_uuid)
+			var loc = GameManager.run_state.get_location_for_uuid(target_uuid)
+			if is_instance_valid(inst) and is_instance_valid(loc):
+				item_data = {
+					"uuid": target_uuid,
+					"instance": inst,
+					"location": loc,
+					"definition": inst.get_definition()
+				}
 	if item_data.is_empty(): return
 
 	var main_node = GameManager._active_main_node
@@ -140,8 +184,8 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 		elif stat == "pwr" and main_node.has_method("get_action_zone_2"):
 			zone = main_node.get_action_zone_2()
 
-	# Check gold
-	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRAIN_COST_GOLD:
+	# Check gold - fallback only for non-ActionQueue paths
+	if not is_instance_valid(ActionQueue) and (not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < TRAIN_COST_GOLD):
 		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
 		var target = zone if is_instance_valid(zone) else open_inventory_button
 		RejectionFeedbackScript.play_rejection_with_counter(target, gold_group, get_tree())
@@ -154,8 +198,9 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 
 	# Determine interaction position
 	var interaction_pos = Vector2.ZERO
-	if is_drag:
-		interaction_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	if not _transient_drop_pos.is_zero_approx():
+		interaction_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	else:
 		var slot_view = WindowManager.find_view_for_location(item_data.location)
 		if is_instance_valid(slot_view):
@@ -187,31 +232,20 @@ func _start_training(stat: String, is_drag: bool, mouse_pos: Vector2) -> void:
 		if is_instance_valid(vfx_ball):
 			vfx_ball.queue_free()
 			
-		if GameManager.run_state.spend_gold(TRAIN_COST_GOLD):
-			Audio.play_sfx("ui_drag_drop")
+		Audio.play_sfx("ui_drag_drop")
 						
-			# Start flashcard minigame
-			if is_instance_valid(GameManager.run_state):
-				FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-		else:
-			# Failed to spend gold, restore source visibility
-			if is_instance_valid(source_anchor):
-				for child in source_anchor.get_children():
-					if child is GachaBallView:
-						child.modulate.a = 1.0
-						child.visible = true
-			_action_in_progress = false
+		# Start flashcard minigame
+		if is_instance_valid(GameManager.run_state):
+			FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
+		_action_in_progress = false
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 # --- Token tracking ---
 
 func _update_token_display(val: int = _tokens) -> void:
 	SignalBus.emit_signal("gacha_tokens_changed", val)
-	SignalBus.emit_signal("gacha_tokens_visual_changed", val)
-
-func _on_live_token_earned(amount: int) -> void:
-	_tokens += amount
-	_update_token_display()
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	if WindowManager.has_method("close_all_inspection_windows"):
@@ -344,6 +378,9 @@ func _show_training_popup() -> void:
 		if slot_view.has_method("set_slot_color"):
 			slot_view.set_slot_color(&"PlayerLineup")
 		unit_slot.add_child(slot_view)
+		# Disconnect preview slot from unit_stat_changed to prevent premature/unsequenced callbacks
+		if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
+			SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
 		# Use set_content to create and configure the GachaBallView internally
 		slot_view.set_content(visual_data, false, false)
 		# Find the GachaBallView that set_content created
@@ -351,6 +388,7 @@ func _show_training_popup() -> void:
 			if child is GachaBallView:
 				_popup_ball_view = child
 				_popup_ball_view.set_is_interactive(false)
+				_popup_ball_view.set_animation_controller_active(false)
 				break
 
 	_update_popup_buttons()
@@ -368,22 +406,40 @@ func _update_popup_buttons() -> void:
 	_popup_btn_3.text = "3 Tokens"
 
 func _on_popup_train_1() -> void:
-	_spend_tokens_and_train(1)
+	_request_train(1)
 
 func _on_popup_train_2() -> void:
-	_spend_tokens_and_train(2)
+	_request_train(2)
 
 func _on_popup_train_3() -> void:
-	_spend_tokens_and_train(3)
+	_request_train(3)
 
-func _spend_tokens_and_train(cost: int) -> void:
-	if _tokens < cost: return
-	_tokens -= cost
+func _request_train(cost: int) -> void:
+	var action := TrainUnitStatAction.new(cost)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_train_visuals(cost)
+
+func execute_train_visuals(cost: int, roll: int = -1) -> void:
+	await _spend_tokens_and_train(cost, roll)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
+
+func _spend_tokens_and_train(cost: int, pre_rolled_value: int = -1) -> void:
+	var roll = pre_rolled_value
+	if roll == -1:
+		if _tokens < cost: return
+		_tokens -= cost
+		roll = RNGManager.reward_rng.randi_range(0, cost)
+		var unit_uuid = _training_unit_data.get("uuid", "")
+		if unit_uuid != "" and is_instance_valid(GameManager.run_state) and roll > 0:
+			var hp_delta = roll if _training_stat == "hp" else 0
+			var pwr_delta = roll if _training_stat == "pwr" else 0
+			GameManager.run_state.modify_unit_base_stats(unit_uuid, hp_delta, pwr_delta)
+
 	_update_token_display()
 	_update_popup_buttons()
-
-	# Roll: cost+1 possible outcomes (0..cost), uniform distribution
-	var roll = RNGManager.reward_rng.randi_range(0, cost)
 
 	# Apply stat buff (even if zero, we still animate)
 	var unit_uuid = _training_unit_data.get("uuid", "")
@@ -398,17 +454,11 @@ func _spend_tokens_and_train(cost: int) -> void:
 			proj.launch()
 			await proj.impact
 		
-		# DEFERRED: Apply stat buff to backend AFTER impact so visual tween has correct start/end
-		if roll > 0:
-			var hp_delta = roll if _training_stat == "hp" else 0
-			var pwr_delta = roll if _training_stat == "pwr" else 0
-			GameManager.run_state.modify_unit_base_stats(unit_uuid, hp_delta, pwr_delta)
-		
 		# Update the visual label with animation (replicates battle board logic)
 		var instance = GameManager.run_state.get_instance_by_uuid(unit_uuid)
 		if is_instance_valid(instance):
 			var new_val = instance.current_hp if _training_stat == "hp" else instance.current_pwr
-			_popup_ball_view.animate_stat_change(new_val, roll, _training_stat)
+			_popup_ball_view.animate_stat_change(new_val, roll, _training_stat, false)
 			
 		# HOP_DEFORM animation (same as battle buff hop)
 		await _play_buff_hop()
@@ -434,8 +484,8 @@ func _play_buff_hop() -> void:
 	var squish := Vector2(0.85, 1.15)
 	var stretch := Vector2(1.15, 0.85)
 
-	var original_pos = _popup_ball_view.position
-	var hop_target = Vector2(original_pos.x, original_pos.y - hop_height)
+	var original_pos = Vector2.ZERO
+	var hop_target = Vector2(0, -hop_height)
 
 	# Movement: hop up then land
 	var move_tween = _popup_ball_view.create_tween()
@@ -457,8 +507,16 @@ func _play_buff_hop() -> void:
 
 	await deform_tween.finished
 	icon.scale = Vector2.ONE
+	_popup_ball_view.position = Vector2.ZERO
 
 func _on_popup_done() -> void:
+	var action := CloseTrainingPopupAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		_close_training_popup()
+
+func _close_training_popup() -> void:
 	if not is_instance_valid(_popup_panel): return
 
 	# Inventory should already be open (re-opened after minigame), find the target slot
@@ -502,6 +560,8 @@ func _on_popup_done() -> void:
 	_training_unit_location = null
 	_training_stat = ""
 	_update_token_display(0)
+	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is CloseTrainingPopupAction:
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 # --- Animation helpers (reused from BlackMarket pattern) ---
 
@@ -607,6 +667,13 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
+	var action := LeaveTrainingAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("hide_action_instruction"):

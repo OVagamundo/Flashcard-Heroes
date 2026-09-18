@@ -9,6 +9,7 @@ extends RefCounted
 # Animation types that can be tracked
 enum AnimationType {
 	FLASH,
+	COLOR_FLASH,
 	BUMP,
 	DEATH_FADE,
 	SUMMON_FADE,
@@ -20,13 +21,14 @@ enum AnimationType {
 
 # Default timeout durations per animation type (seconds)
 const TIMEOUTS: Dictionary = {
-	AnimationType.FLASH: 1.1,
-	AnimationType.BUMP: 1.1,
-	AnimationType.DEATH_FADE: 1.5,
-	AnimationType.SUMMON_FADE: 1.1,
-	AnimationType.MELEE_LUNGE: 1.5,
+	AnimationType.FLASH: 0.5,
+	AnimationType.COLOR_FLASH: 0.5,
+	AnimationType.BUMP: 0.5,
+	AnimationType.DEATH_FADE: 0.8,
+	AnimationType.SUMMON_FADE: 0.6,
+	AnimationType.MELEE_LUNGE: 0.8,
 	AnimationType.MELEE_RETURN: 0.5,
-	AnimationType.LETHAL_SAVE: 2.0,
+	AnimationType.LETHAL_SAVE: 0.8,
 	AnimationType.MOVE: 0.5 # Movement effects are quick
 }
 
@@ -46,6 +48,8 @@ func _connect_signals() -> void:
 		return # Already connected
 	
 	SignalBus.unit_flash_finished.connect(_on_flash_finished)
+	if SignalBus.has_signal("unit_color_flash_finished"):
+		SignalBus.unit_color_flash_finished.connect(_on_color_flash_finished)
 	SignalBus.unit_bump_finished.connect(_on_bump_finished)
 	SignalBus.unit_death_fade_finished.connect(_on_death_fade_finished)
 	SignalBus.unit_summon_fade_finished.connect(_on_summon_fade_finished)
@@ -62,9 +66,9 @@ func await_completion(uuid: String, anim_type: AnimationType) -> void:
 		_pending[uuid] = []
 	_pending[uuid].append(anim_type)
 	
-	# Get timeout duration
-	var timeout_duration: float = TIMEOUTS.get(anim_type, 1.5)
-	var timeout_timer = AnimationConstants.create_pausable_timer(_tree, timeout_duration)
+	# Get timeout duration scaled by combat speed factor
+	var timeout_duration: float = TIMEOUTS.get(anim_type, 0.5)
+	var timeout_timer = AnimationConstants.create_pausable_timer(_tree, AnimationConstants.scaled(timeout_duration))
 	
 	# Poll until complete or timeout
 	while _is_pending(uuid, anim_type) and timeout_timer.time_left > 0:
@@ -89,6 +93,11 @@ func _remove_pending(uuid: String, anim_type: AnimationType) -> void:
 
 # Signal handlers - route to common handler
 func _on_flash_finished(uuid: String) -> void:
+	_remove_pending(uuid, AnimationType.FLASH)
+	_remove_pending(uuid, AnimationType.COLOR_FLASH)
+
+func _on_color_flash_finished(uuid: String) -> void:
+	_remove_pending(uuid, AnimationType.COLOR_FLASH)
 	_remove_pending(uuid, AnimationType.FLASH)
 
 func _on_bump_finished(uuid: String) -> void:

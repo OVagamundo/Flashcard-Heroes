@@ -22,9 +22,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		
 	var extra_bounces: int = parameters.get("extra_bounces", 0)
 	
-	if OS.is_debug_build():
-		print("[EffectScald] execute: heal_amount=", heal_amount, ", extra_bounces=", extra_bounces)
-	
 	var is_player_team = (container_tag == &"PlayerLineup")
 	var enemy_container = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	

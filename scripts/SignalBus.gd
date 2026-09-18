@@ -249,12 +249,11 @@ signal draw_gacha_requested(tier: int)
 ## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
 signal gacha_draw_animated(draw_result)
 
-## Emitted when gacha tokens change logically (used for capability checks and triggers)
+## Emitted when gacha tokens change (canonical signal for both logic and UI presentation)
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
 
-## Emitted when the visual gacha token display should update (used by UI only)
-## @param new_amount: int - The new visual token amount
+## @deprecated - Use gacha_tokens_changed instead. Preserved only for backward compatibility.
 signal gacha_tokens_visual_changed(new_amount: int)
 
 ## Emitted when the black market receives a user action (remove or transform)
@@ -476,9 +475,6 @@ signal flashcard_progress_updated(card_id: StringName, new_progress: FlashcardPr
 ## Emitted when results are acknowledged
 signal results_acknowledged
 
-## Emitted when a token is earned during flashcard minigame (non-battle context)
-## @param amount: int - Number of tokens earned (usually 1)
-signal flashcard_token_earned(amount: int)
 
 # -----------------------------------------------------------------------------
 # DEBUG & DEVELOPMENT SIGNALS

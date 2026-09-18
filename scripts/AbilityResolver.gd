@@ -357,7 +357,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			var ability: AbilityDefinition = entry.get("ability_def")
 			if not is_instance_valid(ability):
 				continue
-			if ability.trigger == trigger:
+			if ability.trigger == trigger or (ability.trigger == &"on_gacha_tokens_changed" and (trigger == &"on_board_enter" or trigger == &"on_board_changed")):
 				_process_ability(ability, entry.get("source_instance_uuid", instance_uuid), battle_manager, context)
 
 

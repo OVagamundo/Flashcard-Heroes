@@ -79,20 +79,22 @@ func setup_armor(damage: int, spawn_position: Vector2) -> void:
 func play() -> void:
 	# Juicy Pop Animation: Snap up -> Float up -> Fade out
 	var tween = create_tween()
+	var pop_step = AnimationConstants.scaled(0.1)
 	
 	# 1. THE POP (Snappy scale up)
-	tween.tween_property(self, "scale", IMPACT_SCALE, 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(self, "scale", TARGET_SCALE, 0.1).set_trans(Tween.TRANS_SINE)
+	tween.tween_property(self, "scale", IMPACT_SCALE, pop_step).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(self, "scale", TARGET_SCALE, pop_step).set_trans(Tween.TRANS_SINE)
 	
 	# 2. THE FLOAT (In parallel with fade)
+	var float_dur = AnimationConstants.scaled(FLOAT_DURATION)
 	var float_tween = create_tween()
 	float_tween.set_parallel(true)
 	
 	# Float upward
-	float_tween.tween_property(self, "position:y", _start_position.y - FLOAT_DISTANCE, FLOAT_DURATION).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	float_tween.tween_property(self, "position:y", _start_position.y - FLOAT_DISTANCE, float_dur).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	
 	# Fade out near the end
-	float_tween.tween_property(self, "modulate:a", 0.0, FLOAT_DURATION * 0.4).set_delay(FLOAT_DURATION * 0.6)
+	float_tween.tween_property(self, "modulate:a", 0.0, float_dur * 0.4).set_delay(float_dur * 0.6)
 	
 	float_tween.finished.connect(_on_animation_complete)
 
