@@ -288,13 +288,8 @@ static func handle_damage_effect(
 		if fire_level >= 9 and damage_to_apply < 0: # Check damage < 0 to be sure it's damage
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 				var burn_count = tgt.get_status_effect_amount(&"burn")
-				if OS.is_debug_build():
-					print("[EffectHandlers] Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, damage_to_apply])
-				
 				if burn_count > 0:
 					var bonus_damage = burn_count
-					if OS.is_debug_build():
-						print("[EffectHandlers] Fire 9 Bonus: +%d" % bonus_damage)
 					damage_to_apply -= bonus_damage # Make it more negative (increase damage)
 		
 		# Log message (Per Target)
@@ -564,13 +559,8 @@ static func handle_cascade_damage(
 		if fire_level >= 9:
 			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
 				var burn_count = cascade_tgt.get_status_effect_amount(&"burn")
-				if OS.is_debug_build():
-					print("[EffectHandlers] Cascade Fire 9 Check: Lvl=%d Src=%s Burn=%d Dmg=%d" % [fire_level, source.ball_uuid, burn_count, cascade_amount])
-					
 				if burn_count > 0:
 					var bonus_damage = burn_count
-					if OS.is_debug_build():
-						print("[EffectHandlers] Cascade Fire 9 Bonus: +%d" % bonus_damage)
 					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
@@ -830,8 +820,9 @@ static func handle_summon_unit(
 			else:
 				# If occupied by SAME unit (holder), check if they are ALIVE.
 				# If alive (e.g. just resurrected), we cannot overwrite them.
+				# Units registered as dead this turn are corpses to be replaced, not live collisions.
 				var slot_unit = battle_manager.get_instance_by_uuid(slot_uuid)
-				if is_instance_valid(slot_unit) and slot_unit.current_hp > 0:
+				if is_instance_valid(slot_unit) and slot_unit.current_hp > 0 and not battle_manager.is_dead_this_turn(slot_uuid):
 					collision_detected = true
 	
 	if collision_detected:
@@ -869,7 +860,7 @@ static func handle_summon_unit(
 			var old_uuid: String = rez_container.get_uuid(final_location.index)
 			if not old_uuid.is_empty():
 				var old_inst: GachaBallInstance = battle_manager.get_instance(old_uuid)
-				if is_instance_valid(old_inst) and old_inst.current_hp <= 0:
+				if is_instance_valid(old_inst) and (old_inst.current_hp <= 0 or battle_manager.is_dead_this_turn(old_uuid)):
 					result.cleanup_uuids.append(old_uuid)
 	
 	# Queue behavior:
@@ -909,7 +900,6 @@ static func handle_summon_unit(
 		"ability_holder_uuid": request.source_uuid,
 		"visual_payload": summon_payload
 	}))
-	
 	return result
 
 # ============================================================================

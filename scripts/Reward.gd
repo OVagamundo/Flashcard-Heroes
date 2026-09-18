@@ -27,10 +27,18 @@ const COST_TIER3: int = 3
 @onready var tier2_draw_button: Button = %Tier2Machine.get_draw_button() if %Tier2Machine.has_method("get_draw_button") else %Tier2Machine.get_node_or_null("DrawButton")
 @onready var tier3_draw_button: Button = %Tier3Machine.get_draw_button() if %Tier3Machine.has_method("get_draw_button") else %Tier3Machine.get_node_or_null("DrawButton")
 
-var _tokens: int = 0
+var _tokens: int:
+	get:
+		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+			return GameManager.run_state.get_room_tokens()
+		return 0
+	set(value):
+		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+			GameManager.run_state.current_room_tokens = value
 var _prizes: Array[GachaBallInstance] = [null, null, null, null, null]
 var _has_studied: bool = false
 var _action_in_progress: bool = false
+var _transient_drop_pos: Vector2 = Vector2.ZERO
 var _last_inventory_open: bool = false
 
 var _trinity_t1_drawn: bool = false
@@ -53,7 +61,6 @@ func _ready() -> void:
 	leave_button.pressed.connect(_on_leave_pressed)
 	
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
-	SignalBus.flashcard_token_earned.connect(_on_live_token_earned)
 	SignalBus.selection_changed.connect(_on_selection_changed)
 	
 	SignalBus.reward_collect_zone_activated.connect(_on_collect_pressed)
@@ -95,8 +102,6 @@ func _process(_delta: float) -> void:
 func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
-	if SignalBus.flashcard_token_earned.is_connected(_on_live_token_earned):
-		SignalBus.flashcard_token_earned.disconnect(_on_live_token_earned)
 	if SignalBus.reward_collect_zone_activated.is_connected(_on_collect_pressed):
 		SignalBus.reward_collect_zone_activated.disconnect(_on_collect_pressed)
 	if SignalBus.reward_sell_zone_activated.is_connected(_on_sell_pressed):
@@ -154,47 +159,65 @@ func _setup_prize_slots() -> void:
 
 func _on_study_pressed() -> void:
 	if _has_studied or _action_in_progress: return
+	var action := StudyRewardAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		_execute_study()
+
+func _execute_study() -> void:
 	_has_studied = true
 	study_button.disabled = true
 	if is_instance_valid(GameManager.run_state):
 		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
-
-func _on_live_token_earned(amount: int) -> void:
-	_tokens += amount
-	_update_token_display()
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	pass
 
 func _update_token_display() -> void:
 	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
-	SignalBus.emit_signal("gacha_tokens_visual_changed", _tokens)
 
 # --- Draw Logic ---
 
 func _on_tier1_draw_pressed() -> void:
-	_try_draw_tier(1, GameManager.get_gacha_token_cost(1), tier1_machine)
+	_request_draw_tier(1)
 
 func _on_tier2_draw_pressed() -> void:
-	_try_draw_tier(2, GameManager.get_gacha_token_cost(2), tier2_machine)
+	_request_draw_tier(2)
 
 func _on_tier3_draw_pressed() -> void:
-	_try_draw_tier(3, GameManager.get_gacha_token_cost(3), tier3_machine)
+	_request_draw_tier(3)
 
-func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
+func _request_draw_tier(tier: int) -> void:
+	var action := DrawRewardAction.new(tier)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_draw_tier_visuals(tier)
+
+func execute_draw_tier_visuals(tier: int, pre_drawn_instance: GachaBallInstance = null) -> void:
+	var cost = GameManager.get_gacha_token_cost(tier)
+	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
+	_try_draw_tier(tier, cost, machine, pre_drawn_instance)
+
+func _try_draw_tier(tier: int, cost: int, machine: Control, pre_drawn_instance: GachaBallInstance = null) -> void:
 	if _action_in_progress: return
 	
 	var main_node = GameManager._active_main_node
 	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
 	
-	if _tokens < cost:
+	if not is_instance_valid(pre_drawn_instance) and _tokens < cost:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
-	var slot_index = _find_next_prize_slot()
+	var slot_index = pre_drawn_instance.location_slot_index if is_instance_valid(pre_drawn_instance) else _find_next_prize_slot()
 	if slot_index == -1:
 		# Lineup full
 		RejectionFeedbackScript.play_rejection_with_counter(machine, null, get_tree())
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
 	_action_in_progress = true
@@ -209,41 +232,26 @@ func _try_draw_tier(tier: int, cost: int, machine: Control) -> void:
 	
 	await _animate_token_spend(machine, cost, token_group)
 	
-	_tokens -= cost
+	var instance = pre_drawn_instance
+	if not is_instance_valid(instance):
+		instance = GameManager.create_reward_draw(tier, slot_index)
 	_update_token_display()
-	
-	GameManager.use_gacha_discount(tier)
 	_update_localized_text()
-	
-	var definition = _draw_definition_for_tier(tier)
-	var instance = GachaBallInstance.new()
-	instance.initialize(definition)
-	
-	# Add to GameManager so inspection windows resolve correctly
-	instance.location_container_tag = &"Rewards"
-	instance.location_slot_index = slot_index
-	GameManager._temporary_reward_master_dict[instance.ball_uuid] = instance
-	GameManager._temporary_reward_container.set_uuid(slot_index, instance.ball_uuid)
 	
 	# Animate draw and add prize
 	await _animate_prize_draw(machine, slot_index, instance)
 	_prizes[slot_index] = instance
 	_populate_prize_slot(slot_index, instance)
 	
-	if GameManager.has_trinket(&"trinket_trinity_charm") and not _trinity_rewarded:
-		if tier == 1: _trinity_t1_drawn = true
-		elif tier == 2: _trinity_t2_drawn = true
-		elif tier == 3: _trinity_t3_drawn = true
-		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
-			_trinity_rewarded = true
-			_tokens += 1
-			if is_instance_valid(GameManager.run_state):
-				GameManager.run_state.total_tokens_earned += 1
-			_update_token_display()
-			_animate_trinity_token_gain()
+	if GameManager._trinity_rewarded and not _trinity_rewarded:
+		_trinity_rewarded = true
+		_update_token_display()
+		_animate_trinity_token_gain()
 	
 	button.disabled = false
 	_action_in_progress = false
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _animate_trinity_token_gain() -> void:
 	var TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
@@ -427,25 +435,47 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	if _action_in_progress: return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
-	
+	var uuid = prize_data.uuid
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := CollectRewardAction.new(uuid)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_collect_visuals(uuid)
+
+func execute_collect_visuals(uuid: String) -> void:
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty() or prize_data.uuid != uuid:
+		# Search by uuid in prizes
+		for i in range(_prizes.size()):
+			if is_instance_valid(_prizes[i]) and _prizes[i].ball_uuid == uuid:
+				prize_data = {
+					"location": LocationIdentifier.new(&"Rewards", i),
+					"instance": _prizes[i],
+					"uuid": uuid
+				}
+				break
+	if prize_data.is_empty():
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
 	_action_in_progress = true
-	
 	var loc = prize_data.location
 	var instance = prize_data.instance
-	var uuid = prize_data.uuid
 	
 	_clear_prize_slot(loc.index)
 	SignalBus.emit_signal("selection_clear_requested")
 	
-	# Determine animation origin: use mouse position for Drag & Drop, slot center for Click-to-Get
 	var start_pos = _get_slot_global_center(loc.index)
-	
-	if is_drag:
-		# Use mouse_pos if provided, fallback to viewport if Zero
-		if mouse_pos.is_zero_approx():
-			start_pos = get_viewport().get_mouse_position()
-		else:
-			start_pos = mouse_pos
+	if not _transient_drop_pos.is_zero_approx():
+		start_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	
 	var visual_data = VisualDataAdapter.create_visual_data(instance)
 	var def = instance.get_definition()
@@ -476,17 +506,46 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 		SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 		_action_in_progress = false
 
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
+
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress: return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
-	
+	var uuid = prize_data.uuid
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := SellRewardAction.new(uuid)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_sell_visuals(uuid)
+
+func execute_sell_visuals(uuid: String) -> void:
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty() or prize_data.uuid != uuid:
+		for i in range(_prizes.size()):
+			if is_instance_valid(_prizes[i]) and _prizes[i].ball_uuid == uuid:
+				prize_data = {
+					"location": LocationIdentifier.new(&"Rewards", i),
+					"instance": _prizes[i],
+					"uuid": uuid
+				}
+				break
+	if prize_data.is_empty():
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
 	_action_in_progress = true
-	
 	var loc = prize_data.location
 	var instance = prize_data.instance
 	
-	# NEW: Use the dynamic gold value from the instance (half value, min 1 gold)
 	var unit_value = instance.get_gold_value()
 	var gold_yield = max(1, int(unit_value * 0.5))
 	
@@ -500,19 +559,17 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 		if not WindowManager.is_run_inventory_window_open() and main_node.has_method("show_action_instruction"):
 			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
-	# Determine animation origin: use mouse position for Drag & Drop, slot center for Click-to-Sell
 	var start_pos = _get_slot_global_center(loc.index)
-	
-	if is_drag:
-		# Use mouse_pos if provided, fallback to viewport if Zero
-		if mouse_pos.is_zero_approx():
-			start_pos = get_viewport().get_mouse_position()
-		else:
-			start_pos = mouse_pos
+	if not _transient_drop_pos.is_zero_approx():
+		start_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	
 	await _animate_gold_receive(gold_yield, start_pos)
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": gold_yield})
+	GameManager.sell_reward_instance(uuid)
 	_action_in_progress = false
+
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _get_slot_global_center(index: int) -> Vector2:
 	var slot_view = prize_lineup.get_child(index)
@@ -684,7 +741,13 @@ func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
 
 func _on_leave_pressed() -> void:
 	if _action_in_progress: return
-	
+	var action := LeaveRewardAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	# Auto collect sequence
 	_action_in_progress = true
 	leave_button.disabled = true
@@ -727,7 +790,6 @@ func _on_leave_pressed() -> void:
 				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 	
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
-	SignalBus.emit_signal("gacha_tokens_visual_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 

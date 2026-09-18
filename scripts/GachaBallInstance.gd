@@ -15,6 +15,7 @@ var level: int = 1
 var current_hp: int
 var current_pwr: int
 
+
 # --- Stat Debt (Systemic Minimum 1 constraint) ---
 var _hp_debt: int = 0
 var _pwr_debt: int = 0
@@ -47,6 +48,7 @@ func initialize(definition: GachaBallDefinition) -> void:
 	self.level = definition.level if "level" in definition else 1
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
+
 	self.components.clear()
 	self.battle_components.clear()
 
@@ -84,6 +86,8 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	# Reset to effective starting stats using component-aware calculation
 	copy.current_hp = copy.get_effective_starting_hp(all_instances_db)
 	copy.current_pwr = copy.get_effective_starting_pwr(all_instances_db)
+
+
 
 	return copy
 
@@ -1018,3 +1022,4 @@ func _deserialize_tags(data: Array) -> void:
 # --- Utilities ---
 func get_definition() -> Resource:
 	return Database.get_definition(definition_id)
+

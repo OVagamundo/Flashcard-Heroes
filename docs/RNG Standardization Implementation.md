@@ -42,5 +42,5 @@ Once the `RNGManager` is implemented, the developer must systematically purge na
 2. **Never use native Array randomization:** Any call to `Array.shuffle()` or `Array.pick_random()` must be replaced with `RNGManager.[stream_name].shuffle(array)` or `RNGManager.[stream_name].pick_random(array)`.
 3. **No Exceptions:** This applies universally to all scripts in `scripts/abilities/`, `scripts/effects/`, `TargetResolver.gd`, `FlashcardManager.gd`, and `RunState.gd`.
 
-### Verification:
-The refactor is considered complete when a global search (grep) for `randi`, `randf`, `shuffle`, and `pick_random` yields **zero** results outside of the `SeededRNG.gd` wrapper script, and the game compiles and runs normally using the new streams.
+### Subsystem Stream Isolation Requirement:
+When querying `WeightedPoolDirector.draw_item()`, calling subsystems must explicitly pass their dedicated subsystem stream (e.g., `RNGManager.map_rng` for `PathChoice.gd` and `EncounterGenerator.gd`) to maintain strict PRNG stream isolation and prevent unintended cross-subsystem consumption.

@@ -16,6 +16,7 @@ var _gold_amount: int = 10 # Default to 10 for Elite rewards
 var _action_in_progress: bool = false
 var _original_reward_instances: Array = [] 
 var _is_first_populate: bool = true
+var _transient_drop_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("reward_scene")
@@ -192,7 +193,35 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	if _action_in_progress: return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
-	
+	var instance = prize_data.instance
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := CollectRewardAction.new(instance.ball_uuid)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_collect_visuals(instance.ball_uuid)
+
+func execute_collect_visuals(uuid: String) -> void:
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty() or prize_data.uuid != uuid:
+		for i in range(_reward_instances.size()):
+			if is_instance_valid(_reward_instances[i]) and _reward_instances[i].ball_uuid == uuid:
+				prize_data = {
+					"location": LocationIdentifier.new(&"Rewards", i),
+					"instance": _reward_instances[i],
+					"uuid": uuid
+				}
+				break
+	if prize_data.is_empty():
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
 	_action_in_progress = true
 	var loc = prize_data.location
 	var instance = prize_data.instance
@@ -201,8 +230,9 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	SignalBus.emit_signal("selection_clear_requested")
 	
 	var raw_pos = _get_slot_global_center(loc.index)
-	if is_drag:
-		raw_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	if not _transient_drop_pos.is_zero_approx():
+		raw_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	
 	var visual_data = VisualDataAdapter.create_visual_data(instance)
 	var target_trinket_slot: int = 0
@@ -228,11 +258,42 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	_complete_choice()
 	_action_in_progress = false
 
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
+
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress: return
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty(): return
-	
+	var instance = prize_data.instance
+
+	if is_drag:
+		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	else:
+		_transient_drop_pos = Vector2.ZERO
+
+	var action := SellRewardAction.new(instance.ball_uuid)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_sell_visuals(instance.ball_uuid)
+
+func execute_sell_visuals(uuid: String) -> void:
+	var prize_data = _get_selected_prize()
+	if prize_data.is_empty() or prize_data.uuid != uuid:
+		for i in range(_reward_instances.size()):
+			if is_instance_valid(_reward_instances[i]) and _reward_instances[i].ball_uuid == uuid:
+				prize_data = {
+					"location": LocationIdentifier.new(&"Rewards", i),
+					"instance": _reward_instances[i],
+					"uuid": uuid
+				}
+				break
+	if prize_data.is_empty():
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
 	_action_in_progress = true
 	var loc = prize_data.location
 	var instance = prize_data.instance
@@ -248,18 +309,21 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 			main_node.hide_action_instruction()
 	
 	var raw_pos = _get_slot_global_center(loc.index)
-	if is_drag:
-		raw_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
+	if not _transient_drop_pos.is_zero_approx():
+		raw_pos = _transient_drop_pos
+		_transient_drop_pos = Vector2.ZERO
 	
 	var screen_pos = _get_absolute_screen_pos(raw_pos)
 	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
 	
 	await _animate_gold_receive(_gold_amount, vfx_start_pos)
-	
-	SignalBus.emit_signal("reward_chosen", {"type": "gold", "amount": _gold_amount})
+	GameManager.sell_reward_instance(uuid)
 	
 	_complete_choice()
 	_action_in_progress = false
+
+	if is_instance_valid(ActionQueue):
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _on_gold_pressed() -> void:
 	# Keep legacy method for compatibility if needed, but it's now redundant
@@ -308,6 +372,13 @@ func _get_slot_global_center(index: int) -> Vector2:
 	return Vector2.ZERO
 
 func _on_back_to_path_pressed() -> void:
+	var action := LeaveRewardAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
 		GameManager._active_main_node.hide_reward_drop_zones()
 	SignalBus.emit_signal("path_choice_scene_requested")

@@ -238,9 +238,9 @@ const ABILITIES: Dictionary = {
 	
 	"ability_trinket_token_return_charm": {
 		"owner": "Token Return Charm (Trinket)",
-		"trigger": "on_unit_death",
+		"trigger": "on_ally_death",
 		"condition": null,
-		"effect": "The first unit to die that round returns tokens equivalent to its tier (Tier 1 = 1, Tier 2 = 2, Tier 3 = 3). Player exclusive.",
+		"effect": "The first ally to die that round returns tokens equivalent to its tier (Tier 1 = 1, Tier 2 = 2, Tier 3 = 3). Player exclusive.",
 	},
 	
 	"ability_trinket_time_sprint_charm": {
@@ -315,7 +315,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Echoing Orb (T2D)",
 		"trigger": "on_turn_start",
 		"condition": null,
-		"effect": "Grant holder +2 PWR for every other Echoing Orb in Battle (including copies in the Discard Pile)",
+		"effect": "Grant holder +2 PWR for every Echoing Orb in Battle (including copies in the Discard Pile)",
 	},
 	
 	"ability_echoing_orb_death": {
@@ -346,9 +346,3 @@ static func describe(ability_id: StringName) -> String:
 		desc += " (if %s)" % condition
 	return desc
 
-## Print all abilities for debugging
-static func print_all() -> void:
-	print("=== ABILITIES REGISTRY ===")
-	for ability_id in ABILITIES:
-		print("  %s: %s" % [ability_id, describe(ability_id)])
-	print("=========================")

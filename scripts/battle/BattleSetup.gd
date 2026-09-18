@@ -91,6 +91,7 @@ static func create_battle_copies_from_run_state(state: RefCounted) -> Dictionary
 			battle_inst.current_hp = battle_inst.get_effective_starting_hp(state.get_all_instances())
 			battle_inst.current_pwr = battle_inst.get_effective_starting_pwr(state.get_all_instances())
 
+
 	return permanent_to_battle_uuid_map
 
 static func place_instances_from_run_state(state: RefCounted, permanent_to_battle_uuid_map: Dictionary) -> void:
@@ -197,6 +198,7 @@ static func setup_enemy_lineup(state: RefCounted, encounter_def: Resource) -> vo
 		lineup_container.set_uuid(pos, enemy_inst.ball_uuid)
 		state.update_instance_location(enemy_inst.ball_uuid, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
 
+
 static func _perform_static_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance) -> void:
 	var empty_slot_idx: int = unit_instance.equipped_item_uuids.find("")
 	if empty_slot_idx != -1:
@@ -221,7 +223,7 @@ static func setup_enemy_trinkets(state: RefCounted, encounter_def: Resource) -> 
 		if slot_index >= et_container.get_size():
 			break
 		var trinket_def = Database.get_definition(trinket_id)
-		if not is_instance_valid(trinket_def):
+		if not is_instance_valid(trinket_def) or trinket_def.get("is_player_exclusive") == true:
 			continue
 		var trinket_inst := GachaBallInstance.new()
 		trinket_inst.initialize_from_trinket(trinket_def)

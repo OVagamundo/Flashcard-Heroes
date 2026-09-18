@@ -20,6 +20,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	var merge_context: Dictionary = context.get("merge_context", {})
 
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc) or not is_instance_valid(new_instance):
+		_finish_merge_action_if_active()
 		return
 
 	# Locate views
@@ -32,6 +33,16 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	_set_unit_view_visible(source_view, false)
 	_set_unit_view_visible(target_view, false)
 
+	# Ensure the target/final slot is populated with the new unit's view
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(final_view) and final_view.has_method("set_content"):
+		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
+		var db = bm.get_all_instances() if is_instance_valid(bm) else (GameManager.run_state.get_all_instances() if is_instance_valid(GameManager.run_state) else {})
+		var visual_data = VisualDataAdapter.create_visual_data(new_instance, db)
+		final_view.set_content(visual_data)
+	if is_instance_valid(source_view) and source_view != final_view and source_view.has_method("set_content"):
+		source_view.set_content({})
+
 	# Wait for the tree to process frame so the new final_view is actually ready/instantiated
 	await get_tree().process_frame
 
@@ -42,14 +53,11 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	# Hide the real result unit so we can animate the VFX ball
 	_set_unit_view_visible(final_view, false)
 
-	var bm = get_tree().get_first_node_in_group("battle_manager")
 	var snapshot: Dictionary = {}
 	if should_trigger_on_merge and is_instance_valid(bm):
 		# Capture snapshot BEFORE stats are modified, so the VCR can play from this base state
 		snapshot = bm.get_board_snapshot()
-		if bm.has_method("block_ui_updates"):
-			bm.block_ui_updates()
-			
+		# Note: UI updates are already blocked by InventoryManager before _merge
 		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
 		AbilityResolver.process_trigger(&"on_merge", merge_context)
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
@@ -72,6 +80,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
 	else:
 		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		_set_unit_view_visible(final_view, true)
 		# Use call_deferred to be safe
 		SignalBus.emit_signal.call_deferred("inventory_action_completed", [merged_uuid])
 
@@ -91,6 +100,22 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 			
 		if bm.has_method("unblock_ui_updates"):
 			bm.unblock_ui_updates()
+	elif is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
+		bm.unblock_ui_updates()
+
+	final_view = WindowManager.find_view_for_location(final_loc)
+	_set_unit_view_visible(final_view, true)
+	if not GameManager.is_in_battle:
+		SignalBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+
+	_finish_merge_action_if_active()
+
+func _finish_merge_action_if_active() -> void:
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
+			ActionQueue.finish_action(act)
 
 func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
 	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
@@ -121,9 +146,8 @@ func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Contr
 func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
 	if not is_instance_valid(slot_view): return
 	for child in slot_view.get_children():
-		if "GachaBallView" in child.name or child.has_method("populate"):
+		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("populate")):
 			child.visible = is_visible
-			break
 
 func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: GachaBallInstance) -> void:
 	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
@@ -133,19 +157,28 @@ func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: G
 	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
 	var end_pos = target_slot.get_global_rect().get_center()
 	
-	# If start and end are too close, just trigger bounce and return
-	if start_pos.distance_to(end_pos) < 20.0:
-		vfx_ball.queue_free()
-		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
-		return
-		
-	# Hide the real ball view in the target slot
+	# Locate real ball view in target slot
 	var real_ball_view: Control = null
 	for child in target_slot.get_children():
-		if "GachaBallView" in child.name or child.has_method("play_landing_bounce"):
+		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
 			real_ball_view = child
 			break
-	
+
+	# If start and end are too close, reveal the real unit view, trigger bounce and return
+	if start_pos.distance_to(end_pos) < 20.0:
+		vfx_ball.queue_free()
+		real_ball_view = null
+		for child in target_slot.get_children():
+			if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
+				real_ball_view = child
+				break
+		if is_instance_valid(real_ball_view):
+			real_ball_view.visible = true
+		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+		await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
+		return
+		
+	# Hide the real ball view in the target slot during flight
 	if is_instance_valid(real_ball_view):
 		real_ball_view.visible = false
 		target_slot.visible = true
@@ -181,12 +214,16 @@ func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: G
 	
 	# Cleanup
 	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+	real_ball_view = null
+	for child in target_slot.get_children():
+		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
+			real_ball_view = child
+			break
 	if is_instance_valid(real_ball_view):
 		real_ball_view.visible = true
-		if real_ball_view.has_method("play_landing_bounce"):
-			real_ball_view.play_landing_bounce()
 			
 	SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
 
 func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
 	var target_view = WindowManager.find_view_for_location(target_loc)

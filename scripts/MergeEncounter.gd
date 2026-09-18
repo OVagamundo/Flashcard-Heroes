@@ -66,6 +66,13 @@ func _on_open_inventory_pressed() -> void:
 		SignalBus.emit_signal("inspect_inventory_requested")
 
 func _on_leave_pressed() -> void:
+	var action := LeaveMergeEncounterAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_leave_visuals()
+
+func execute_leave_visuals() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
 		if main_node.has_method("hide_action_instruction"):

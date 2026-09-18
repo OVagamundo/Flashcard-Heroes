@@ -83,6 +83,9 @@ func _on_continue_pressed() -> void:
 	if is_instance_valid(loaded_state):
 		GameManager.run_state = loaded_state
 		GameManager.loading_from_save = true
+		if is_instance_valid(ActionQueue):
+			ActionQueue.reset_global_run_timer(loaded_state.elapsed_simulation_time)
+			ActionQueue.start_timer()
 		SignalBus.emit_signal("main_scene_requested")
 	else:
 		push_error("[Title] Failed to load saved run")

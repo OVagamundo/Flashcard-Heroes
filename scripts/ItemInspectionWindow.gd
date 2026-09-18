@@ -147,12 +147,8 @@ func _update_description_and_stats(item_def: Resource) -> void:
 				effect_desc = tr("item.effect.both").replace("(HP)", str(item_def.bonus_hp)).replace("(PWR)", str(item_def.bonus_pwr))
 			elif item_def.bonus_hp > 0:
 				effect_desc = tr("item.effect.hp").replace("(HP)", str(item_def.bonus_hp))
-			elif item_def.bonus_pwr > 0 or (is_instance_valid(_instance) and _instance.definition_id == &"item_t2_d"):
-				var display_pwr = item_def.bonus_pwr
-				if is_instance_valid(_instance) and _instance.definition_id == &"item_t2_d":
-					display_pwr += _instance.current_pwr
-				if display_pwr > 0:
-					effect_desc = tr("item.effect.pwr").replace("(PWR)", str(display_pwr))
+			elif item_def.bonus_pwr > 0:
+				effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
 		
 		# Build abilities section: list all abilities with name and localized description
 		var abilities_block := ""
@@ -171,7 +167,19 @@ func _update_description_and_stats(item_def: Resource) -> void:
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
 				if ability.id == &"ability_echoing_orb_scale":
-					var current_bonus = _instance.current_pwr
+					var current_bonus = 0
+					var all_db = _get_all_instances_db()
+					if not _instance.equipped_on_uuid.is_empty():
+						var holder = all_db.get(_instance.equipped_on_uuid)
+						if is_instance_valid(holder):
+							current_bonus = holder.get_status_effect_amount(StringName("echoing_orb_scaling_" + _instance.ball_uuid))
+					if current_bonus == 0:
+						var count = 0
+						for uuid in all_db:
+							var inst = all_db[uuid]
+							if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
+								count += 1
+						current_bonus = maxi(1, count) * 2
 					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 					ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			

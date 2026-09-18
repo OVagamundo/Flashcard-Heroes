@@ -70,9 +70,10 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Animation**: Reacts to gravity, collisions, and drawer movement with tactile physics and clack sounds.
 
 **Equipped Items:**
-- **Position:** Vertically stacked on the **Left Edge** of the unit slot.
-- **Size:** Small, fixed 45x45px icons.
-- **Style:** Purely visual (non-interactive in battle). Must have a 1px white outline to separate from background.
+- **Constraint:** All units (including the Hero) are restricted to **one single item slot**.
+- **Position:** Positioned on the **Left Edge** of the unit slot.
+- **Size:** Small, fixed 45x45px icon.
+- **Style:** Purely visual in combat. Must have a 1px white outline to separate from background.
 - **Layout:** Strictly aligned to x=0. Must not overlap the unit sprite (which faces right).
 
 **Trait Trinkets:**

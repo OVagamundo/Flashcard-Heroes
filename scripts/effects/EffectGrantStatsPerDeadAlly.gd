@@ -53,16 +53,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": _make_both_stat_payload(amount, new_hp, new_pwr)
+		"visual_payload": _make_both_stat_payload(source_uuid, amount, _old_hp, new_hp, _old_pwr, new_pwr)
 	}))
 	
 	result.state_applied = true
 	return result
 
-func _make_both_stat_payload(amount: int, new_hp: int, new_pwr: int) -> CombatPayload:
-	var payload := CombatPayload.new()
-	payload.stat = "both"
-	payload.amount = amount
-	payload.new_hp = new_hp
-	payload.new_pwr = new_pwr
-	return payload
+func _make_both_stat_payload(source_uuid: String, amount: int, old_hp: int, new_hp: int, old_pwr: int, new_pwr: int) -> CombatPayload:
+	return CombatPayload.both_stats_change(source_uuid, amount, amount, [old_hp], [new_hp], [old_pwr], [new_pwr])

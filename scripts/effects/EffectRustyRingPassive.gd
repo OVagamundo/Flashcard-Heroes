@@ -28,9 +28,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var total_hp_delta := 0
 	var total_pwr_delta := 0
 
+	var result := EffectResult.new()
+
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
-		if not is_instance_valid(inst):
+		if not is_instance_valid(inst) or inst.current_hp <= 0 or battle_manager.is_dead_this_turn(uuid):
 			continue
 		
 		# Only process UNIT category on the same team
@@ -64,8 +66,25 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			delta = 1
 			
 		if delta != 0:
+			var old_hp = inst.current_hp
+			var old_pwr = inst.current_pwr
+			
 			inst.apply_hp_delta(delta, {"silent": is_simulation})
 			inst.apply_pwr_delta(delta, {"silent": is_simulation})
+			
+			if is_simulation:
+				# If delta < 0 (debuff on equip): self debuff
+				# If delta > 0 (buff on unequip): originates from Rusty Ring trinket
+				var visual_source = source_uuid if delta > 0 else ""
+				var multi_payload = CombatPayload.both_stats_change(visual_source, delta, delta, [old_hp], [inst.current_hp], [old_pwr], [inst.current_pwr])
+				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": visual_source,
+					"target_uuids": [uuid],
+					"ability_id": context.get("ability_id", &"rusty_ring_passive"),
+					"ability_holder_uuid": source_uuid,
+					"visual_payload": multi_payload
+				}))
+				
 			changed_units += 1
 			total_hp_delta += delta
 			total_pwr_delta += delta
@@ -73,7 +92,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if changed_units == 0:
 		return EffectResult.empty()
 
-	var result := EffectResult.new()
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 		"text": "Rusty Ring updated %d units (%+d HP, %+d PWR)" % [changed_units, total_hp_delta, total_pwr_delta]
 	}))

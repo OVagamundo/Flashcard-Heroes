@@ -30,6 +30,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 					
 					if is_simulation:
 						battle_manager._state.add_gacha_tokens(1)
+						var target_tokens: int = battle_manager.get_gacha_tokens()
 						var result := EffectResult.new()
 						result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 							"text": "Trinity Charm: Gained 1 token!"
@@ -40,7 +41,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 							"ability_holder_uuid": _source_uuid,
 							"ability_id": "ability_trinket_trinity_charm_draw",
 							"amount": 1,
-							"visual_payload": _make_token_payload(_source_uuid)
+							"visual_payload": _make_token_payload(_source_uuid, target_tokens)
 						}))
 						result.state_applied = true
 						return result
@@ -68,8 +69,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 	return EffectResult.empty()
 
-func _make_token_payload(source_uuid: String) -> CombatPayload:
+func _make_token_payload(source_uuid: String, target_tokens: int = -1) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.amount = 1
 	payload.origin_uuid = source_uuid
+	payload.target_token_amount = target_tokens
 	return payload

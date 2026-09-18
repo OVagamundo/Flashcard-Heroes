@@ -110,19 +110,47 @@ static func has_lethal_counter_abilities(unit: GachaBallInstance, battle_instanc
 ## @param unit_uuid: UUID of the dying unit
 ## @param death_tracking: Dictionary to track which deaths were already processed
 ## @param container_tag: Optional container tag to include in payload (for tutorial detection)
-static func create_death_event_if_needed(unit_uuid: String, death_tracking: Dictionary, container_tag: StringName = &"") -> CombatEvent:
+## @param is_player: Whether the dying unit is player-owned
+## @param unit_snapshot: Optional dictionary containing unit visual data
+## @param equipped_items: Optional array of item snapshots held by the unit
+static func create_death_event_if_needed(
+	unit_uuid: String,
+	death_tracking: Dictionary,
+	container_tag: StringName = &"",
+	is_player: bool = false,
+	unit_snapshot: Dictionary = {},
+	equipped_items: Array[Dictionary] = []
+) -> CombatEvent:
 	if death_tracking.has(unit_uuid):
 		return null # Already created
 	
 	death_tracking[unit_uuid] = true
+	var payload := CombatPayload.container_payload(container_tag)
+	payload.is_player = is_player or (container_tag == &"PlayerLineup" or container_tag == &"PlayerBench")
+	payload.unit_snapshot = unit_snapshot
+	payload.equipped_items = equipped_items
 	return CombatEvent.new(CombatEvent.Type.DEATH, {
 		"target_uuids": [unit_uuid],
-		"visual_payload": CombatPayload.container_payload(container_tag)
+		"visual_payload": payload
 	})
 
 # ============================================================================
 # CONTEXT ENRICHMENT
 # ============================================================================
+
+## Snapshot unit definition data for visual death animation presentation
+static func snapshot_unit(unit: GachaBallInstance) -> Dictionary:
+	if not is_instance_valid(unit):
+		return {}
+	var def = unit.get_definition()
+	return {
+		"uuid": unit.ball_uuid,
+		"def_id": unit.definition_id,
+		"definition_id": unit.definition_id,
+		"category": def.category if is_instance_valid(def) else &"UNIT",
+		"tier": def.tier if (is_instance_valid(def) and "tier" in def) else 0,
+		"icon": def.icon if (is_instance_valid(def) and "icon" in def) else null
+	}
 
 ## Snapshot equipped items for context enrichment (effects should use context, not query instances)
 ## @param unit: The unit whose items to snapshot
@@ -139,7 +167,9 @@ static func snapshot_equipped_items(unit: GachaBallInstance, battle_instances: D
 					"def_id": item.definition_id,
 					"equipped_on_uuid": item.equipped_on_uuid,
 					"slot_index": item.equipped_slot_index,
-					"category": item_def.category if is_instance_valid(item_def) else &"ITEM"
+					"category": item_def.category if is_instance_valid(item_def) else &"ITEM",
+					"icon": item_def.icon if (is_instance_valid(item_def) and "icon" in item_def) else null,
+					"tier": item_def.tier if (is_instance_valid(item_def) and "tier" in item_def) else 0
 				})
 	return items
 
@@ -209,7 +239,10 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 			if out_events != null and death_tracking != null:
 				var death_location = bm.get_location_for_uuid(uuid)
 				var container_tag: StringName = death_location.container if is_instance_valid(death_location) else &""
-				var death_event = create_death_event_if_needed(uuid, death_tracking, container_tag)
+				var is_player = bm._is_player_unit(unit)
+				var unit_snap = snapshot_unit(unit)
+				var equipped = snapshot_equipped_items(unit, bm._battle_instances)
+				var death_event = create_death_event_if_needed(uuid, death_tracking, container_tag, is_player, unit_snap, equipped)
 				if death_event != null:
 					out_events.append(death_event)
 			
@@ -277,9 +310,13 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 			something_changed = true
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
+				var p_payload := CombatPayload.container_payload(unit.location_container_tag)
+				p_payload.is_player = true
+				p_payload.unit_snapshot = snapshot_unit(unit)
+				p_payload.equipped_items = snapshot_equipped_items(unit, bm._battle_instances)
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
+					"visual_payload": p_payload
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -312,9 +349,11 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 			something_changed = true
 			if is_simulation and out_events != null:
 				# During simulation, ONLY add DEATH event - do not process actual death yet
+				var e_payload := CombatPayload.container_payload(unit.location_container_tag)
+				e_payload.is_player = false
 				out_events.append(CombatEvent.new(CombatEvent.Type.DEATH, {
 					"target_uuids": [unit.ball_uuid],
-					"visual_payload": CombatPayload.container_payload(unit.location_container_tag)
+					"visual_payload": e_payload
 				}))
 			elif not is_simulation:
 				# Trigger on_death for the dying unit (semantic key: dying_uuid)
@@ -460,10 +499,6 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			}
 			AbilityResolver.process_trigger(&"on_death", death_ctx)
 	
-	if OS.is_debug_build() and is_simulation:
-		pass
-		# print("[DeathProcessor] Phase 1 (on_death) done. Pending: ", bm._pending_reactions.size())
-
 
 	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
 	# and emit DEATH events
@@ -474,7 +509,9 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		else:
 			# Emit DEATH event with container_tag for player unit detection (deferred until after cascade)
 			var death_container_tag: StringName = data.death_location.container if is_instance_valid(data.death_location) else &""
-			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag)
+			var unit_snap = snapshot_unit(data.unit)
+			var is_player = (data.team == "PLAYER")
+			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag, is_player, unit_snap, data.equipped_items)
 			if death_event != null:
 				pending_death_events.append(death_event)
 			
@@ -501,9 +538,6 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			}
 			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 
-	if OS.is_debug_build() and is_simulation:
-		pass
-		# print("[DeathProcessor] Phase 2 (on_ally_death) done. Pending: ", bm._pending_reactions.size())
 	
 	# Store deferred deaths for processing after counter-attacks complete
 	if not deferred_deaths.is_empty():
@@ -516,9 +550,6 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	if is_simulation and out_events != null:
 		var cascade_evts: Array[CombatEvent] = []
 		if not bm._pending_reactions.is_empty():
-			if OS.is_debug_build():
-				pass
-				# print("[DeathProcessor] Draining batch of ", bm._pending_reactions.size())
 			bm.drain_pending_reactions_inline(0)
 			cascade_evts = bm.collect_inline_events()
 			
@@ -606,8 +637,12 @@ static func _defer_ally_death(bm, unit: GachaBallInstance, death_location, team_
 	})
 	bm.set_meta(meta_key, deferred_list)
 
-static func _emit_immediate_death(_bm, unit: GachaBallInstance, death_location, team: String, out_events: Array, death_tracking: Dictionary) -> void:
-	var death_event = create_death_event_if_needed(unit.ball_uuid, death_tracking)
+static func _emit_immediate_death(bm, unit: GachaBallInstance, death_location, team: String, out_events: Array, death_tracking: Dictionary) -> void:
+	var container_tag: StringName = death_location.container if is_instance_valid(death_location) else &""
+	var is_player = (team == "PLAYER")
+	var unit_snap = snapshot_unit(unit)
+	var equipped = snapshot_equipped_items(unit, bm._battle_instances) if is_instance_valid(bm) and "_battle_instances" in bm else []
+	var death_event = create_death_event_if_needed(unit.ball_uuid, death_tracking, container_tag, is_player, unit_snap, equipped)
 	if death_event != null:
 		out_events.append(death_event)
 	

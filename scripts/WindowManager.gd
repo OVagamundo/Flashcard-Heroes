@@ -830,6 +830,13 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 		var window = stack[i]
 		if not is_instance_valid(window) or window.get_instance_id() == window_id:
 			stack.remove_at(i)
+	if was_modal and is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if act is AcknowledgeFlashcardIntroAction or act is SelectFlashcardIntroCardAction \
+			or act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction \
+			or act is DismissTutorialAction or act is AcknowledgeBattleResultsAction \
+			or act is AcknowledgeRunCompleteAction:
+			ActionQueue.finish_action(act)
 
 func _close_top_modal() -> void:
 	if not _modal_stack.is_empty():

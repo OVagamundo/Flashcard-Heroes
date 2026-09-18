@@ -239,28 +239,20 @@ func populate(context: Dictionary) -> void:
 
 func _check_for_new_card() -> void:
 	"""Check if a new card should be introduced to the active deck"""
+	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+		_is_introducing_new_card = FlashcardManager.is_introducing_new_card
+		_new_card_id = FlashcardManager.introduced_card_id
+		return
 	
 	if not is_instance_valid(_run_state):
 		_is_introducing_new_card = false
 		return
 	
-	# Check if there are any cards in active_deck_ids that haven't been formally introduced yet
-	# cards_presented_count tracks how many cards have been shown via the intro popup
-	# active_deck_ids.size() is how many cards are actually in the playable deck
-	# 
-	# Phase 1: Initial 10 cards are added to active_deck_ids at run start
-	# Phase 2: check_deck_expansion() adds 1 card AFTER each minigame session
-	# 
-	# This function introduces the NEXT un-introduced card (if any)
-	
 	if _run_state.cards_presented_count < _run_state.active_deck_ids.size():
-		# There's a card in active_deck_ids that hasn't been introduced yet
 		_new_card_id = _run_state.active_deck_ids[_run_state.cards_presented_count]
-		_run_state.cards_presented_count += 1
 		_is_introducing_new_card = true
 		return
 	
-	# No new cards to introduce - all active deck cards have been presented
 	_is_introducing_new_card = false
 
 func _show_card_introduction() -> void:
@@ -464,6 +456,13 @@ func _populate_priority_cards() -> void:
 
 func _on_priority_card_clicked(card_id: StringName) -> void:
 	"""Handle click on a priority card button - switch which card is displayed"""
+	var action := SelectFlashcardIntroCardAction.new(card_id)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_select_intro_card(card_id)
+
+func execute_select_intro_card(card_id: StringName) -> void:
 	_displayed_card_id = card_id
 	_update_displayed_card_info(card_id)
 	# Refresh the priority cards to update the highlight
@@ -481,6 +480,16 @@ func _show_new_card_tutorial() -> void:
 
 func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
+	var action := AcknowledgeFlashcardIntroAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_acknowledge_intro()
+
+func execute_acknowledge_intro() -> void:
+	if is_instance_valid(FlashcardManager):
+		FlashcardManager.acknowledge_intro()
+	_is_introducing_new_card = false
 	card_intro_container.hide()
 	_start_minigame_session()
 
@@ -491,16 +500,19 @@ func _start_minigame_session() -> void:
 	
 	card_intro_container.hide()
 	
-	# 7-second base timer
-	_session_timer = 7.0
-	if GameManager.is_in_battle and _has_trinket(&"trinket_time_sprint_charm"):
-		_session_timer += 2.0
-		var animator = get_node_or_null("/root/BattleAnimator")
-		if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
-			animator.call_deferred("hop_trinket_by_definition_id", &"trinket_time_sprint_charm", false)
-	if is_instance_valid(timer_bar):
-		timer_bar.max_value = _session_timer
-		timer_bar.value = _session_timer
+	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+		_session_timer = FlashcardManager.session_timer
+		if is_instance_valid(timer_bar):
+			timer_bar.max_value = FlashcardManager.session_duration
+			timer_bar.value = _session_timer
+	else:
+		# 7-second base timer fallback
+		_session_timer = 7.0
+		if GameManager.is_in_battle and _has_trinket(&"trinket_time_sprint_charm"):
+			_session_timer += 2.0
+		if is_instance_valid(timer_bar):
+			timer_bar.max_value = _session_timer
+			timer_bar.value = _session_timer
 		
 	_is_introducing_new_card = false
 	_correct_answers = 0
@@ -527,7 +539,12 @@ func _start_minigame_session() -> void:
 func _process(delta: float) -> void:
 	"""Update the session timer"""
 	if not _is_introducing_new_card and _session_timer > 0:
-		_session_timer -= delta
+		if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+			FlashcardManager.advance_session_timer(delta)
+			_session_timer = FlashcardManager.session_timer
+		else:
+			_session_timer -= delta
+			
 		_update_timer_display()
 		
 		if _session_timer <= 0:
@@ -545,7 +562,11 @@ func _show_next_question() -> void:
 	if _session_timer <= 0:
 		return
 	
-	var current_question: Dictionary = FlashcardManager.get_next_question()
+	var current_question: Dictionary = {}
+	if is_instance_valid(FlashcardManager) and not FlashcardManager.current_question.is_empty():
+		current_question = FlashcardManager.current_question
+	elif is_instance_valid(FlashcardManager):
+		current_question = FlashcardManager.get_next_question()
 	_show_next_question_with_data(current_question, true) # true = set panel color
 
 func _show_next_question_with_data(current_question: Dictionary, set_panel_color: bool = false) -> void:
@@ -611,11 +632,23 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 			button.clip_text = false
 			
-			button.pressed.connect(_on_choice_selected.bind(choice_id))
+			button.pressed.connect(_on_choice_button_pressed.bind(choice_id))
 			choices_grid.add_child(button)
 			
 	# Unlock input now that new buttons are ready
 	_input_locked = false
+
+func _on_choice_button_pressed(selected_answer_id: StringName) -> void:
+	if _input_locked or _session_timer <= 0:
+		return
+	var action := SubmitFlashcardAnswerAction.new(_current_question_id, selected_answer_id)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_choice_selected(selected_answer_id)
+
+func execute_choice_selected(selected_answer_id: StringName) -> void:
+	_on_choice_selected(selected_answer_id)
 
 func _update_panel_to_mastery_color(card_id: StringName) -> void:
 	"""Update the panel color based on the card's current mastery level"""
@@ -659,14 +692,30 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		
 	_input_locked = true
 	var was_correct: bool = selected_answer_id == _current_question_id
-	_total_answers += 1
+	var tokens_to_give: int = 1
+	var res: Dictionary = {}
 	
-	var mastery_level: int = FlashcardProgress.MASTERY_MIN
-	if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(_current_question_id):
-		mastery_level = _run_state.flashcard_progress[_current_question_id].mastery_level
-	
-	# Submit answer to FlashcardManager first (this updates mastery)
-	FlashcardManager.submit_answer(_current_question_id, was_correct)
+	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+		res = FlashcardManager.submit_minigame_answer(_current_question_id, selected_answer_id, 0.0)
+		_correct_answers = FlashcardManager.correct_answers
+		_total_answers = FlashcardManager.total_answers
+		_current_streak = FlashcardManager.current_streak
+		_session_timer = FlashcardManager.session_timer
+		_tokens_earned = FlashcardManager.tokens_earned
+		tokens_to_give = res.get("tokens_to_give", 1)
+	else:
+		_total_answers += 1
+		FlashcardManager.submit_answer(_current_question_id, was_correct)
+		if was_correct:
+			_correct_answers += 1
+			_current_streak += 1
+			_session_timer += 0.5
+			var mastery_level: int = FlashcardProgress.MASTERY_MIN
+			if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(_current_question_id):
+				mastery_level = _run_state.flashcard_progress[_current_question_id].mastery_level
+			if mastery_level <= FlashcardProgress.MASTERY_MIN and _has_trinket(&"trinket_beginners_charm"):
+				tokens_to_give = 2
+			_tokens_earned += tokens_to_give
 	
 	# Play pronunciation of selected answer
 	if selected_answer_id.begins_with("KANJI_") or selected_answer_id.begins_with("KOR_") or selected_answer_id.begins_with("THAI_"):
@@ -678,23 +727,12 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			Audio.play_sfx("pronunciation_" + romaji)
 	
 	if was_correct:
-		_correct_answers += 1
-		_current_streak += 1
+		# Hop animation for trinket trigger
+		if tokens_to_give > 1 and GameManager.is_in_battle:
+			var animator = get_node_or_null("/root/BattleAnimator")
+			if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
+				animator.call_deferred("hop_trinket_by_definition_id", &"trinket_beginners_charm", false)
 		
-		var has_charm: bool = _has_trinket(&"trinket_beginners_charm")
-		var tokens_to_give: int = 1
-		if mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm:
-			tokens_to_give = 2
-			
-			# Hop animation for trinket trigger
-			if GameManager.is_in_battle:
-				var animator = get_node_or_null("/root/BattleAnimator")
-				if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
-					animator.call_deferred("hop_trinket_by_definition_id", &"trinket_beginners_charm", false)
-		
-		_tokens_earned += tokens_to_give
-		
-		_session_timer += 0.5
 		_update_timer_display()
 		_update_aura_vfx()
 			
@@ -734,7 +772,11 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		)
 	
 	# Delay showing the next question
-	var next_question: Dictionary = FlashcardManager.get_next_question()
+	var next_question: Dictionary = res.get("next_question", {})
+	if next_question.is_empty() and is_instance_valid(FlashcardManager):
+		next_question = FlashcardManager.current_question
+	if next_question.is_empty() and is_instance_valid(FlashcardManager):
+		next_question = FlashcardManager.get_next_question()
 	var next_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 	
 	if not next_question.is_empty():
@@ -757,9 +799,13 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		# Check timer again before proceeding
 		if _session_timer <= 0:
 			_end_minigame()
+			if is_instance_valid(ActionQueue):
+				ActionQueue.finish_action(ActionQueue.get_active_action())
 			return
 			
 		_show_next_question_with_data(next_question)
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> void:
@@ -894,25 +940,41 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) 
 func _on_skip_pressed() -> void:
 	if _input_locked or _session_timer <= 0:
 		return
+	var action := SkipFlashcardAction.new(_current_question_id)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_skip()
+
+func execute_skip() -> void:
+	if _input_locked or _session_timer <= 0:
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
 	
 	_input_locked = true
+	var res: Dictionary = {}
 	
-	# Skip counts as an incorrect answer for mastery (reduces it by 1)
-	FlashcardManager.submit_answer(_current_question_id, false)
-	
-	# 1. Correct answer lit green for 0.5s
-	# 2. Timer +0.5s increment
-	# 3. NO token
-	# 4. Stay for 0.5s while timer runs then move to next
+	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+		res = FlashcardManager.skip_minigame_question(_current_question_id, 0.0)
+		_total_answers = FlashcardManager.total_answers
+		_current_streak = FlashcardManager.current_streak
+		_session_timer = FlashcardManager.session_timer
+	else:
+		_total_answers += 1
+		FlashcardManager.submit_answer(_current_question_id, false)
+		_current_streak = 0
+		_session_timer += 0.5
 	
 	_flash_button_correct(_current_question_id, 0)
-	_session_timer += 0.5
 	_update_timer_display()
-	
-	# Reveal correct button
 	_flash_timer_bar_correct() 
 	
-	var next_question: Dictionary = FlashcardManager.get_next_question()
+	var next_question: Dictionary = res.get("next_question", {})
+	if next_question.is_empty() and is_instance_valid(FlashcardManager):
+		next_question = FlashcardManager.current_question
+	if next_question.is_empty() and is_instance_valid(FlashcardManager):
+		next_question = FlashcardManager.get_next_question()
 	var next_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 	if not next_question.is_empty():
 		var next_card_id: StringName = next_question.get("question_id", &"")
@@ -928,8 +990,12 @@ func _on_skip_pressed() -> void:
 		if not is_instance_valid(self): return
 		if _session_timer <= 0:
 			_end_minigame()
+			if is_instance_valid(ActionQueue):
+				ActionQueue.finish_action(ActionQueue.get_active_action())
 			return
 		_show_next_question_with_data(next_question)
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _get_token_counter_target_position() -> Vector2:
@@ -966,18 +1032,16 @@ func _spawn_token_pop_at_pos(spawn_pos: Vector2) -> void:
 	token_pop.play(target_pos, _current_streak)
 
 func _on_token_landed() -> void:
-	"""Called when a token animation completes - update the counter live"""
+	"""Called when a token animation completes - update the visual counter live"""
 	_tokens_pending -= 1
 	
-	# Find BattleManager to update tokens (battle context)
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
-		bm.add_gacha_token(1)
-		if bm.has_method("add_visual_gacha_token"):
-			bm.add_visual_gacha_token(1)
-	else:
-		# Non-battle context (Rest Site, etc.): emit signal directly
-		SignalBus.emit_signal("flashcard_token_earned", 1)
+	# In battle context, update visual gacha tokens for the landing animation
+	if GameManager.is_in_battle:
+		var bm = GameManager.get_battle_manager() if is_instance_valid(GameManager) else null
+		if not is_instance_valid(bm):
+			bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
+			SignalBus.emit_signal("gacha_tokens_changed", bm.get_gacha_tokens())
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""
@@ -998,16 +1062,11 @@ func _end_minigame() -> void:
 	else:
 		Audio.play_music(SoundRegistry.BGM_REST)
 	
-	# Starter hero: guarantee minimum 3 tokens
-	if _is_starter_hero() and _correct_answers < 3:
-		var bonus = 3 - _correct_answers
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm) and bm.has_method("add_gacha_token"):
-			bm.add_gacha_token(bonus)
-		else:
-			SignalBus.emit_signal("flashcard_token_earned", bonus)
-		_correct_answers = 3  # Update for results dict
-		_tokens_earned += bonus
+	# Finish any active flashcard action if queue was waiting on visual resolution
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction:
+			ActionQueue.finish_action(act)
 	
 	var results: Dictionary = {
 		"correct_answers": _correct_answers,
@@ -1015,12 +1074,10 @@ func _end_minigame() -> void:
 		"incorrect_answers": _total_answers - _correct_answers,
 		"tokens_already_awarded": _tokens_earned - _tokens_pending # Tokens that completed animation
 	}
+	minigame_complete.emit(results)
 	
 	# Call FlashcardManager's completion method
 	FlashcardManager._on_minigame_complete(_correct_answers, _total_answers - _correct_answers)
-	
-	# Emit our internal signal
-	minigame_complete.emit(results)
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	"""Called when FlashcardManager emits minigame_finished"""
@@ -1033,6 +1090,12 @@ func _exit_tree() -> void:
 	
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
+	
+	# Clean up any lingering flashcard action if the minigame node was freed while an action was active
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction or act is AcknowledgeFlashcardIntroAction or act is SelectFlashcardIntroCardAction:
+			ActionQueue.finish_action(act)
 
 ## Helper to detect Japanese characters for font selection
 func _is_japanese(text: String) -> bool:

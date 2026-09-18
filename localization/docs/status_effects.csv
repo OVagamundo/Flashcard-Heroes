@@ -1,0 +1,5 @@
+Status,Description
+Burn,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.
+Armor,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.
+Spikes,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.
+Static,Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.

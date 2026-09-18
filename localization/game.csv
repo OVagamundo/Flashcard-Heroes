@@ -10,9 +10,9 @@ unit_t1_b.desc,Loyal squire.,Escudeiro leal. Passiva: [RetaliaÃ§Ã£o]
 unit_t2_d.name,Templar,Templar
 unit_t2_d.desc,A devout templar.,Um templÃ¡rio devoto.
 ability.unit_t2_d_power.name,Token Power,Poder das Fichas
-ability.unit_t2_d_power_l1.desc,"PWR equals 100% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 100% das Fichas (Mín 1). Buffs de PWR viram HP."
-ability.unit_t2_d_power_l2.desc,"PWR equals 150% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 150% das Fichas (Mín 1). Buffs de PWR viram HP."
-ability.unit_t2_d_power_l3.desc,"PWR equals 200% of Tokens (Min 1). PWR buffs become HP.","O PWR é igual a 200% das Fichas (Mín 1). Buffs de PWR viram HP."
+ability.unit_t2_d_power_l1.desc,"Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
+ability.unit_t2_d_power_l2.desc,"Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 150% das Fichas atuais, atualizando conforme as Fichas mudam."
+ability.unit_t2_d_power_l3.desc,"Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 200% das Fichas atuais, atualizando conforme as Fichas mudam."
 unit_t2_f.name,Merchant,Merchant
 unit_t2_f.desc,Traveling merchant.,Mercador viajante. Passiva: [Investimentos em Ouro]
 ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
@@ -400,10 +400,10 @@ item.potion_heroism.name,Heroism Potion,PoÃ§Ã£o de HeroÃ­smo
 item.potion_heroism.desc,A potion that inspires heroism.,Uma poÃ§Ã£o que inspira heroÃ­smo.
 ability.grant_heroism.name,Heroism,HeroÃ­smo
 ability.grant_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
-item.potion_plunder.name,Potion of Plunder,PoÃ§Ã£o do Saqueador
-item.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatÃ³rio do alvo.
+item.potion_plunder.name,Potion of Plunder,Poção do Saqueador
+item.potion_plunder.desc,Steals a random item from the target and sends it to your Gacha Machine of the matching tier.,Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente.
 ability.potion_plunder.name,Plunder,Saquear
-ability.potion_plunder.desc,Steals a random item from the target.,Rouba um item aleatÃ³rio do alvo.
+ability.potion_plunder.desc,Steals a random item from the target and sends it to your Gacha Machine of the matching tier.,Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente.
 unit_t3_mimic.name,Mimic,MÃ­mico
 unit_t3_mimic.desc,Mysterious entity.,Entidade misteriosa. Passiva: [Imagem Espelhada]
 ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
@@ -532,9 +532,9 @@ ability.doppleganger_scale.desc,Gains [**+3 / +4 / +5 PWR**] for each other Dopp
 ability.doppleganger_death.name,Clone Split,DivisÃ£o de Clone
 ability.doppleganger_death.desc,Spawns a Doppleganger into the Tier 3 Gacha Machine on death.,Gera um Doppleganger na MÃ¡quina Gacha de NÃ­vel 3 ao morrer.
 item_t2_d.name,Echoing Orb,Orbe Ressonante
-item_t2_d.desc,A resonant orb that amplifies the power of others.,Um orbe ressonante que amplifica o poder de outros.
+item_t2_d.desc,A resonant orb that amplifies the power of its bearer.,Um orbe ressonante que amplifica o poder de seu portador.
 ability.echoing_orb_scale.name,Resonance,RessonÃ¢ncia
-ability.echoing_orb_scale.desc,Grants the holder +2 PWR for each other Echoing Orb in battle.,Concede ao portador +2 PWR para cada outro Orbe Ressonante em batalha.
+ability.echoing_orb_scale.desc,Grants the holder +2 PWR for each Echoing Orb in battle.,Concede ao portador +2 PWR para cada Orbe Ressonante em batalha.
 ability.echoing_orb_death.name,Echo Split,DivisÃ£o de Eco
 ability.echoing_orb_death.desc,Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,Gera um Orbe Ressonante na MÃ¡quina Gacha de NÃ­vel 2 ao morrer.
 unit_t3_j.name,Standard Bearer,Porta-Estandarte

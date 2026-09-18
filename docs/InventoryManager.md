@@ -65,11 +65,21 @@ Rationale: Provides a clear, type-based definition for the equip action.
 Rule I3: The Equip Legality Rule
 Statement: A valid Equip action is constrained by the item's origin (InventoryGrid or BattleBoard), the unit's capacity, and cross‑unit restrictions.
 Validation Checklist:
-The source Item must originate from an InventoryGrid container (`RunInventoryT*`, `BattleInventoryT*`) or the `PlayerBench` (BattleBoard context).
-An item already equipped on Unit A cannot be directly moved to Unit B or back to an inventory container. There is no direct player action to un‑equip; items must be removed via explicit unequip flows.
-The target must be a UNIT on `PlayerLineup` or `PlayerBench`, or that unit's empty `equipped_item` slot. **Note:** Items equipped on bench units provide stat bonuses but their triggered abilities do not activate until the unit is in the `PlayerLineup` (combat-active).
-Mechanism: If these checks pass, the manager performs an early equip path: remove the item from its source container and attach it to the target unit's equipped list, updating both the container index and the instance's location (atomic update).
-Rationale: This makes equipping deliberate and predictable while allowing click‑to‑click and drag‑and‑drop equip from bench or inventory.
+- **Strict Bench Origin**: The source Item must strictly originate from the `PlayerBench` during battle. Items cannot be equipped directly from inventory grid drawers (which are read-only) and cannot be equipped outside of battle.
+- **No Manual Unequipping**: An item already equipped on Unit A cannot be directly moved to Unit B or back to the bench. Outside of specific item-stripping consumables (such as *Potion of Plunder*, which removes an equipped item from a unit and sends it directly to the player's matching tier Gacha Machine (`BattleInventoryT{tier}`) so it can be drawn in the future), equipment cannot be unequipped without being replaced.
+- **Target Legality**: The target must be a UNIT on `PlayerLineup` or `PlayerBench`, or that unit's `equipped_item` slot. **Note:** Items equipped on bench units provide passive stat bonuses, but their triggered abilities do not activate until the unit is in the `PlayerLineup` (combat-active).
+- **Consumable Item Rules**: Consumables are distinct from standard items. They can only be used from `PlayerBench`, can target **both Player units and Enemy units**, execute their effects immediately without occupying an item slot, and disappear from the active battle pool upon consumption **without** going to the Discard Pile. Item-stripping consumables (*Potion of Plunder*) transfer the stripped item directly into the player's corresponding Gacha Machine drawer (`BattleInventoryT{tier}`).
+- **Single Item Capacity & Item Replacement**: All units possess strictly **one** item slot. If the target unit already holds an equipped item, equipping a new item executes as an **Item Replacement**.
+  - **Discard Destination**: The existing equipped item is immediately removed and sent directly to the **Battle Discard Pile** (`DiscardPile`). It does **NOT** return to the player bench or inventory.
+  - **Discard Animation**: The replaced item triggers a `CombatEvent.Type.ITEM_DISCARD` event, animating a parabolic arc toss from the unit's position into the Discard Pile UI button (`discard_pile_button`) using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.5` over a 500px arc) with `coin_land` audio feedback and button bump. This visualizes to the player exactly where the item was sent, precisely matching the death departure animation.
+  - **Sequential Resolution & Net Delta Evaluation**: The item discard animation resolves first sequentially. Afterwards, the unit's item slot updates to the new item and the system evaluates the net stat delta between the old and new item (`delta_hp = new_item.bonus_hp - old_item.bonus_hp`, `delta_pwr = new_item.bonus_pwr - old_item.bonus_pwr`). Positive stat increases launch a parabolic self-cast projectile onto the unit, while negative stat reductions display floating debuff text (`-X` in red for HP, black for PWR).
+  - **Equip Pipeline Parity**: In-game equip and transfer effects (such as the Standard Bearer's *Standard's Legacy*) route through this exact same `InventoryOperations.equip_item` logic, ensuring replaced items are consistently discarded and animated regardless of whether equipping occurred manually or via an ability.
+Mechanism: If these checks pass, the manager performs an atomic equip transaction:
+1. If replacing an existing item, the old item is removed from the unit and moved directly to the `BattleDiscardPile` via `move_instance_to_discard()`, recording replaced item metadata.
+2. An `ITEM_DISCARD` event is enqueued ahead of the equip inventory change to ensure sequential presentation.
+3. The new item is removed from its source container and attached to the target unit's `equipped_item_uuids[0]`.
+4. The unit's effective stats are updated, emitting unified stat delta events for presentation.
+Rationale: This makes equipping deliberate and predictable while ensuring replaced equipment is permanently committed to the discard pile rather than recycled onto the bench.
 Rule I4: The Swap/Move Rule
 Statement: If an action is not a Merge and not an Equip, it is interpreted as a potential Swap or Move.
 Mechanism (Swap): If the target location contains an instance, the manager checks if the source instance can legally occupy the target's slot, AND if the target instance can legally occupy the source's original slot (per Rule I5). If both are true, it's a Swap. The data owner is instructed to exchange their location properties.
@@ -81,7 +91,7 @@ The Definitive Checklist:
 Hero Restriction: The Hero instance can only exist in the PlayerLineup container. It cannot be moved to the bench or any inventory.
 Container Type Restriction: Items cannot be placed in PlayerLineup. Both units and items can be placed in PlayerBench.
 Container Tier Integrity: A GachaBall of Tier X cannot be placed in an inventory container for Tier Y (e.g., RunInventoryT1 cannot hold a Tier 2 item).
-Intra-Unit Item Management: An item already equipped on a unit can only be moved or swapped with other slots on that same unit.
+Single Item Slot Constraint: Units are constrained to a single item slot. Equipping an item onto a unit that already has an equipped item triggers an Item Replacement (the existing item is moved directly to the Battle Discard Pile).
 Rationale: These rules enforce the fundamental structure of the game's inventories and battle board, preventing game-breaking states.
 Rule I6: The Merge Placement Context Rule
 Statement: The destination of a newly created merged GachaBall depends on where the merge was performed.
@@ -123,9 +133,10 @@ Rationale: This enforces a strict UI limit (39 slots) while ensuring that gettin
 
 The Discard Pile & Reshuffle Mechanism
 What Goes to the Discard Pile:
-Drawn GachaBalls when the bench/inventory is full (Rule G2).
-Items that were equipped on a Unit that is defeated in combat.
-The defeated Unit instance itself.
+- Drawn GachaBalls when the bench/inventory is full (Rule G2).
+- Items that were equipped on a Unit that is defeated in combat.
+- The defeated Unit instance itself.
+- **Replaced Items**: When an item is equipped onto a unit that already holds an equipped item, the existing item is immediately replaced and moved directly to the Battle Discard Pile (it does not return to the bench).
 Rule G1: The Draw Fail Rule:
 Statement: If a tier pool is empty, any draw from that tier will fail and no tokens are spent. Discarded units do not return to the active draw pool.
 Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.

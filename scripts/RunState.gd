@@ -13,11 +13,45 @@ extends Resource
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
 @export var total_tokens_earned: int = 0
+@export var current_room_tokens: int = 0
+@export var elapsed_simulation_time: float = 0.0
 @export var black_market_remove_cost: int = 5
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
 @export var last_elite_id: StringName = &""
+@export var run_id: String = ""
+@export var run_seed: int = 0
+
+# Room state data (Data layer decoupled from UI scenes)
+var available_path_nodes: Array[PathNodeDefinition] = []
+var is_training_active: bool = false
+var training_unit_uuid: String = ""
+var training_stat: String = ""
+
+# Room token helper methods
+func get_room_tokens() -> int:
+	return current_room_tokens
+
+func add_room_tokens(amount: int) -> void:
+	if amount <= 0: return
+	current_room_tokens += amount
+	total_tokens_earned += amount
+	SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
+	SignalBus.emit_signal("run_data_changed")
+
+func spend_room_tokens(amount: int) -> bool:
+	if current_room_tokens < amount:
+		return false
+	current_room_tokens -= amount
+	SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
+	SignalBus.emit_signal("run_data_changed")
+	return true
+
+func reset_room_tokens() -> void:
+	current_room_tokens = 0
+	SignalBus.emit_signal("gacha_tokens_changed", 0)
+
 
 # Track when each encounter was last offered for pity system
 @export var encounter_last_offered_day: Dictionary = {}
@@ -728,6 +762,7 @@ func start_new_run() -> void:
 	cards_presented_count = 0
 	unlocked_recipes.clear() # All recipes start locked
 	encounter_last_offered_day.clear()
+	available_path_nodes.clear()
 
 ## Track which elite bosses have been encountered this run (ID -> count)
 ## Used for weighted encounter generation (pity system)
@@ -878,7 +913,12 @@ func prismatize_unit(instance: GachaBallInstance) -> void:
 
 ## Converts the entire run state to a Dictionary for saving.
 func to_save_dict() -> Dictionary:
+	if is_instance_valid(ActionQueue):
+		elapsed_simulation_time = ActionQueue.get_global_run_timer()
+
 	var data: Dictionary = {
+		"run_id": run_id,
+		"run_seed": run_seed,
 		"gold": gold,
 		"day": day,
 		"current_boss_level": current_boss_level,
@@ -888,12 +928,19 @@ func to_save_dict() -> Dictionary:
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
 		"total_tokens_earned": total_tokens_earned,
+		"current_room_tokens": current_room_tokens,
+		"elapsed_simulation_time": elapsed_simulation_time,
 		"black_market_remove_cost": black_market_remove_cost,
 		"merge_encounter_cost": merge_encounter_cost,
 		"get_tokens_cost": get_tokens_cost,
 		"deck_def_id": String(deck_def_id),
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
+		"last_elite_id": String(last_elite_id),
+		"encounter_last_offered_day": _serialize_encounter_last_offered_day(),
+		"elite_encounter_history": _serialize_elite_encounter_history(),
+		"available_path_nodes": _serialize_available_path_nodes(),
+		"rng_state": RNGManager.serialize() if is_instance_valid(RNGManager) else {},
 		# Serialize all instances
 		"instances": {},
 		# Serialize container UUIDs
@@ -919,6 +966,8 @@ func to_save_dict() -> Dictionary:
 
 ## Restores the run state from a saved Dictionary.
 func from_save_dict(data: Dictionary) -> void:
+	run_id = data.get("run_id", "")
+	run_seed = data.get("run_seed", 0)
 	gold = data.get("gold", 0)
 	day = data.get("day", 1)
 	current_boss_level = data.get("current_boss_level", 0)
@@ -928,12 +977,24 @@ func from_save_dict(data: Dictionary) -> void:
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
 	total_tokens_earned = data.get("total_tokens_earned", 0)
+	current_room_tokens = data.get("current_room_tokens", 0)
+	elapsed_simulation_time = data.get("elapsed_simulation_time", 0.0)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
 	merge_encounter_cost = data.get("merge_encounter_cost", 5)
 	get_tokens_cost = data.get("get_tokens_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
+	last_elite_id = StringName(data.get("last_elite_id", ""))
+	
+	_deserialize_encounter_last_offered_day(data.get("encounter_last_offered_day", {}))
+	_deserialize_elite_encounter_history(data.get("elite_encounter_history", {}))
+	_deserialize_available_path_nodes(data.get("available_path_nodes", []))
+	
+	if data.has("rng_state") and is_instance_valid(RNGManager):
+		var rng_dict: Dictionary = data.get("rng_state", {})
+		if not rng_dict.is_empty():
+			RNGManager.deserialize(rng_dict)
 	
 	# Clear and restore instances
 	run_instances.clear()
@@ -977,6 +1038,41 @@ func from_save_dict(data: Dictionary) -> void:
 	
 	# Restore unlocked recipes
 	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
+
+func _serialize_available_path_nodes() -> Array:
+	var result: Array = []
+	for node in available_path_nodes:
+		if is_instance_valid(node) and node.has_method("to_dict"):
+			result.append(node.to_dict())
+	return result
+
+func _deserialize_available_path_nodes(data: Array) -> void:
+	available_path_nodes.clear()
+	for node_data in data:
+		if node_data is Dictionary:
+			available_path_nodes.append(PathNodeDefinition.from_dict(node_data))
+
+func _serialize_encounter_last_offered_day() -> Dictionary:
+	var result: Dictionary = {}
+	for key in encounter_last_offered_day.keys():
+		result[String(key)] = encounter_last_offered_day[key]
+	return result
+
+func _deserialize_encounter_last_offered_day(data: Dictionary) -> void:
+	encounter_last_offered_day.clear()
+	for key_str in data.keys():
+		encounter_last_offered_day[String(key_str)] = data[key_str]
+
+func _serialize_elite_encounter_history() -> Dictionary:
+	var result: Dictionary = {}
+	for key in elite_encounter_history.keys():
+		result[String(key)] = elite_encounter_history[key]
+	return result
+
+func _deserialize_elite_encounter_history(data: Dictionary) -> void:
+	elite_encounter_history.clear()
+	for key_str in data.keys():
+		elite_encounter_history[StringName(key_str)] = data[key_str]
 
 func _serialize_flashcard_progress() -> Dictionary:
 	var result: Dictionary = {}

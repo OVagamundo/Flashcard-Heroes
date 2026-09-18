@@ -86,10 +86,8 @@ Events must be ordered by cause and effect. A cause must *always* precede its ef
 *   **Correct:** `DAMAGE` -> `DEATH` -> `SUMMON` -> `BUFF`
 *   **Incorrect:** `DEATH` -> `BUFF` -> `SUMMON` (Violates causality; the buff source might be the summoned unit)
 
-### Step-by-Step Playback & Global Speed Scaling
-In Step Mode, the Presentation Phase pauses between each `CombatEvent`. The player can click **"Next Step"** to advance exactly one event at a time. Each step captures a single logical transition (e.g., one instance of damage, one buff application), allowing players to debug and study complex priority-based chains.
-
-Playback speed (1x, 3x, etc.) is controlled globally via `Engine.time_scale` (`AnimationConstants.speed_factor`), uniformly accelerating all tweens, timers, particle systems, and token animations across the engine without double-scaling.
+### Combat Playback Speed & Pause Controls
+Combat playback speed (1x, 2x, 4x) is controlled globally via `AnimationConstants.speed_factor`, uniformly accelerating all combat animations, tweens, timers, particle systems, and token/gold animations during battle without double-scaling. Players can toggle pause (`⏸`) at any time to pause event presentation, and toggle again or select a speed setting to resume continuous playback.
 
 ### Deterministic Combat PRNG Stream Isolation
 All random decisions during combat (target selection for `TARGET_RANDOM_ENEMY` / `TARGET_RANDOM_ALLY`, gacha draws, effect rolls) strictly use isolated seeded PRNG streams (`RNGManager.combat_rng` and `RNGManager.gacha_rng`) derived from `RunState.run_seed`, guaranteeing zero-desync deterministic playback.
@@ -267,19 +265,22 @@ All visual animation execution in the game—across both Combat and Management p
 During the `COMBAT` phase, `CombatSimulator` generates a linear `TurnLog` array (`Array[CombatEvent]`). `BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**, executing one `CombatEvent` at a time. Each event is fully awaited before the next begins, preserving exact causal history (e.g., Damage $\rightarrow$ Reaction Buffs $\rightarrow$ Death $\rightarrow$ Ally Triggers $\rightarrow$ Summon).
 
 ### Sequential Management Animation Queue (`_management_animation_queue`)
-During the `MANAGEMENT` phase, committing interactions (such as **Gacha Draws**, **Merging Units**, or **Equipping Items**) resolve their logical state instantly and emit `CombatEvent` sequences:
+During the `MANAGEMENT` phase, committing interactions (such as **Gacha Draws**, **Merging Units**, **Equipping Items**, or **Consumables**) resolve their logical state instantly and emit `CombatEvent` sequences:
 - All management-phase event sequences are funneled into `BattleManager.enqueue_management_animation(snapshot, events)`.
 - `BattleManager` processes them via a sequential FIFO queue (`_management_animation_queue`).
-- **Zero Parallel Overlaps:** If multiple events are triggered in rapid succession, they are appended to the queue and played back sequentially by `BattleAnimator.play_turn_sequence()` without overlapping or interrupting active animations.
+- **Player Unit Death Discard Flow (`DEATH`)**: When a player unit dies in combat, its board view fades out via `death_fade`. Immediately upon fade completion, the unit's GachaBall capsule animates from the death position along a 500px parabolic arc (`GachaBallView.tscn` in inventory mode, scaling `0.3` $\rightarrow$ `1.5`) into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps (`1.0` $\rightarrow$ `1.15` $\rightarrow$ `1.0`), and the Discard Pile counter increments (+1). If the unit held equipped items, each item's GachaBall capsule follows along the exact same arc **strictly sequentially**, with each capsule landing triggering `coin_land` SFX, button bump, and counter increment (+1). **Enemy units do NOT go to the discard pile**; they dissolve upon death without departure arcs or counter changes.
+- **Item Discard Flow (`ITEM_DISCARD`)**: When an item is replaced (manual equip, Standard Bearer death equip, or merge overflow), an `ITEM_DISCARD` event executes sequentially first. It launches the replaced item along a 500px parabolic arc using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling `0.3` $\rightarrow$ `1.5`) directly into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps, and the Discard Pile counter increments (+1). Subsequent stat change floats resolve only after the discard lands.
+- **Gacha Machine Departure Flow (`SUMMON` with Inventory Target)**: When an item or unit is sent to the Gacha Machine (e.g. Echoing Orb death duplicate, or *Potion of Plunder* item stripping), a `SUMMON` event targeting `BattleInventoryT{tier}` is emitted. The animator launches the capsule from the source unit's position/slot into `%GachaMachine{tier}`, clears the source unit's equipped visual, plays `coin_land` SFX, and triggers `animate_machine_inventory_change(tier, 1)` to bounce the machine and update its count badge at the exact moment of landing.
+- **Real-Time Counter Synchronization**: Counter labels (both the Discard Pile button counter and Gacha Machine tier badges) are strictly decoupled from live end-of-turn container counts during playback. They initialize from the turn-start snapshot and update exclusively at the arrival moment of each individual capsule.
 
 ### The 3-Layer Reaction Sorting Hierarchy
 When multiple reaction triggers fire simultaneously during simulation, `CombatSimulator.gd` sorts reaction requests using a strict 3-layer hierarchy before emitting combat events:
-1. **Layer 1: Category Pass**: Units (Rank 1) $\rightarrow$ Items (Rank 2) $\rightarrow$ Trinkets (Rank 3).
-2. **Layer 2: Execution Priority**: Descending integer priority defined in `AbilityDefinition` (e.g. Intercepts at 300, Summons at 210, Default at 0).
-3. **Layer 3: Visual Direction (The Mirror Rule)**: Priority ties resolve Left-to-Right visually on screen.
+1. **Layer 1: Execution Priority**: Descending integer priority defined in `AbilityDefinition` (e.g., Intercepts at 300, Trinket Summons at 210, Unit Summons at 205, Item Summons at 200, Default at 0). Reactions with higher priority execute first.
+2. **Layer 2: Category Pass (Tie-Breaker)**: When reactions share the same priority, resolve by category rank: Units (Rank 1) $\rightarrow$ Items (Rank 2) $\rightarrow$ Trinkets (Rank 3).
+3. **Layer 3: Visual Direction (The Mirror Rule)**: When priority and category are identical, resolve Left-to-Right visually on screen.
    - **Player Team**: Evaluated Left-to-Right (Slot 4 down to Slot 0).
    - **Enemy Team**: Evaluated Right-to-Left visually (Slot 0 up to Slot 4).
-   - Multiple items on the same unit break ties via `equipped_slot_index`.
+   - Units are restricted to a single item slot, so intra-unit item ties do not occur.
 
 ### Source-Based Consolidation (Multi-Target Batching)
 Multi-target status applications (e.g. a trinket or ability applying Burn or Armor to all allies/enemies) emit a **single consolidated `STATUS_EFFECT` combat event** containing all target UUIDs and stat deltas. The VCR launches all projectiles for all targets simultaneously from the source and awaits their landing before applying visual stat changes and floating numbers.
@@ -386,17 +387,18 @@ To ensure consistency during combat (preventing "mid-battle effectiveness drops"
 
 ### Unified Turn-Start Sequence
 
-To ensure correct interaction between Unit Abilities (like Mimic) and Team Traits (like Earth Armor), `START_OF_TURN` effects are processed via the **Reaction Queue**.
+To ensure correct interaction between Unit Abilities and Team Traits (like Earth Armor), `START_OF_TURN` effects are processed via the **Reaction Queue**.
 
 1.  **Unit Abilities (Priority > 100)**: Trigger first.
-    *   *Example:* Mimic Transformation (Priority 500). The unit transforms *before* traits calculate.
+    *   High-priority turn-start abilities resolve before trait calculations.
 2.  **Trait Effects (Priority -10)**: Trigger last.
     *   `BattleManager` queues a special `_trait_start_effects` reaction with **Priority -10**.
-    *   This ensures that Trait logic (e.g., counting active Earth units) sees the board state *after* standard Summons (Priority 0) or Transformations (Priority 500) have entered the board.
+    *   This ensures that Trait logic (e.g., counting active Earth units) sees the board state *after* turn-start spawns have entered the board.
 3.  **Trinkets/Other**: Interleave based on their explicit priority values.
 
-This unified queue ensures that state mutations (Transformations) happen *before* state-dependent calculations (Buffs), preventing "missed buffs" on transformed units.
-    *   *Result:* +3 Armor (Trait) and +3 Armor (Trinket) result in a smooth +6 Armor visualization and correct final state.
+> [!NOTE]
+> **Mimic Transformation Timing:**
+> Mimic (*Mirror Image*) does **not** trigger on `START_OF_TURN`. Instead, it triggers on `on_before_turn_action` (Priority 500) during the combat phase immediately prior to its basic attack. The newly transformed unit immediately replaces Mimic in the acting slot, executes that slot's attack, and is **not** re-enqueued for an extra turn.
 
 > [!NOTE]
 > **First-Turn Suppression:**
@@ -529,6 +531,9 @@ Effects receive ALL data via the `context` parameter:
 {
     "actor_uuid": "unit_abc",              # The unit that is about to act
 }
+# Used by Mimic (Mirror Image). If the unit is replaced/transformed during this trigger,
+# CombatSimulator updates current_actor in-place so the new unit takes this turn's action.
+# The new unit is NOT queued into _actor_queue, preserving the single-action-per-slot invariant.
 ```
 
 > [!CAUTION]
@@ -633,6 +638,10 @@ The Animator maintains a **Visual Queue** of actions. Unlike the simulation, thi
 *   **Visual Priority** (Presentation) is purely about **Z-Index** and **Screen Space**.
     *   Floating Text > Unit Sprites > Background.
     *   The `BattleAnimator` does **not** reorder events. It plays the VCR tape exactly as recorded.
+
+> [!NOTE]
+> **Gameplay & Visual Clarity Rules:**
+> All expected player-facing visual contracts (directional buff projectiles, self-cast parabolic arcs, debuff floats, item equip/replace feedback) and game design rules are authoritatively documented in [Game Rules & Expected Behaviors.md](Game%20Rules%20&%20Expected%20Behaviors.md).
 
 ---
 

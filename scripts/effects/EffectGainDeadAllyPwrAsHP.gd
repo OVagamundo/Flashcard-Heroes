@@ -51,6 +51,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		# Mark harvest as done
 		battle_manager._turn_metadata[harvest_flag_key] = true
 		
+	var old_hp = source_unit.current_hp
 	var new_hp = source_unit.current_hp + amount
 	if not is_simulation:
 		new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
@@ -67,7 +68,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": CombatPayload.hp_change("", amount, [], [new_hp])
+		"visual_payload": CombatPayload.hp_change(source_uuid, amount, [old_hp], [new_hp])
 	}))
 	
 	result.state_applied = true

@@ -152,6 +152,12 @@ During the `MANAGEMENT` phase, interactions (like Drawing units from the Gacha o
 3. `BattleAnimator.play_async_chain()` is called asynchronously without blocking the UI thread.
 4. **Parallel Execution:** Rapid interactions (like spam-clicking Draw) fire off concurrent chains, allowing visual animations to overlap and play in parallel instead of queuing sequentially.
 
+### 4.3 Replay System Input Architecture
+The game's replay system strictly adheres to the Slay the Spire 2 Command Queue model:
+- **GameAction Only**: Replays serialize and execute ONLY `GameAction`s. They never serialize UI telemetry, ghost mouse movements, or hovering hesitations.
+- **Strict Playback Lockdown**: During a replay, the UI does NOT respond to normal player input. All mouse clicks, drags, and hovers are aggressively intercepted and blocked by the `ReplayEngine`. The only exceptions are spectator hotkeys (1-9 for playback speed, 0 for pause, ESC to open the exit menu).
+- **Deterministic Tutorials**: If a tutorial spawns during a replay, it pauses the engine deterministically. The recorded `DismissTutorialAction` injected from the replay file will close it natively, without requiring "fake" UI clicks.
+
 ### Blocking Phases
 | Phase | UI Status |
 |-------|-----------|
@@ -167,8 +173,8 @@ Animations must use `animator.get_snapshot_position(uuid)`, **never query `_visu
 ### 4.4 Playback Controls
 
 The `CombatControlsPanel` provides real-time interaction with the `BattleAnimator`:
-- **Speed Toggles (1x, 2x, 4x)**: Updates `AnimationConstants.speed_factor`. These buttons use a "Radio Button" style (only one active at a time) and reflect the current global state upon room entry.
-- **Step Button**: Immediately pauses playback and enters "Step Mode". If already in Step Mode, it advances the animator by exactly one `CombatEvent`.
+- **Speed Toggles (1x, 2x, 4x)**: Updates `AnimationConstants.speed_factor`. These buttons use a "Radio Button" style (only one active at a time) and reflect the current global state upon room entry. Speed choices persist across encounters throughout the entire run, while acceleration only takes effect inside combat (`GameManager.is_in_battle == true`).
+- **Pause Button (`⏸`)**: Toggles combat event playback between paused and running. Clicking while paused resumes playback at the preserved speed setting. Upon transitioning to a new battle, pause state automatically resets to running (unpaused).
 - **Center Alignment**: To prevent overlap with Trait labels, these controls are anchored to the bottom-center of the screen.
 
 ---

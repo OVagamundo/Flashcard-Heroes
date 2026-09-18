@@ -148,4 +148,4 @@ We distinguish between two distinct merging pathways:
 - **Transparency**: Board states, enemy stats, and all Gacha machine pools (the "Drawer") are fully visible for tactical planning.
 - **Inspection System**: Hierarchical window system; clicking "locks" a hover/peek window open for detailed analysis.
 
-*Detailed interaction priorities and window hierarchy logic are preserved in the [Mechanical Specification](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/MechanicalSpecification.md).*
+*Detailed interaction priorities, game rules, and expected behaviors are preserved in [Game Rules & Expected Behaviors.md](Game%20Rules%20&%20Expected%20Behaviors.md).*

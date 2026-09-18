@@ -1,90 +1,289 @@
 # Implementation Mandate: Automatic Session Recorder & Deterministic Replay Engine
 
-## 1. Commander's Intent & Context
-We are implementing an **Automatic Session Recorder & Replay Engine** that captures every gameplay session in real-time and allows replaying any past run from the Title Menu with full VCR playback controls.
+## 1. High-Level Goals
 
-**CRITICAL CONTEXT:** The game has recently undergone a major architectural refactor to make it fully deterministic. If you inspect `scripts/actions/ActionQueue.gd`, you will see it processes `GameAction` commands and already captures executed actions into the `_history` array via `action.to_dict()`. **Do not reinvent a recording or action-tracking system.** The core determinism is already in place.
+Implement an **Automatic Session Recorder & Replay Engine** that captures gameplay sessions in real time and reproduces past runs with 100% deterministic fidelity.
 
-Your objective is to build the infrastructure around this existing architecture:
-1. **File I/O:** Write the `_history` to the hard drive in real-time.
-2. **Readability:** Generate a human-readable debug log alongside the machine log.
-3. **Playback Engine:** Read saved logs, deserialize the actions, and feed them back into the `ActionQueue` to reproduce a run.
-4. **Playback UI:** Build the UI overlay to control the replay speed and stepping.
-
-You have the freedom and authority to structure helper classes, adjust file-saving hooks, or introduce UI overlay nodes as you see fit to ensure performance and visual stability. If you encounter edge cases not covered here, use your best judgment to solve them while maintaining the core goal of perfect determinism.
+### Core Objectives:
+1. **Zero-Overhead Real-Time Recording:** Every run writes a machine-readable stream (`.mcr`) and human-readable narrative log (`.log`) in real time, flushed on every action so no data is lost on a crash.
+2. **Post-Loadout Playback Initialization:** Replay playback begins directly from the post-loadout run state (Hero, Deck, Master Seed, and initial inventory configured at Floor 1 entrance), while the recording captures the complete action history for telemetry and statistics.
+3. **State-Gated Playback (Zero-Desync):** Replay playback does not advance on a free-running continuous timer; it waits for the engine to reach the required **Ready for Input** state before dispatching each recorded `GameAction`.
+4. **Variable Playback Speed:** The spectator or developer can watch replays at variable speeds (1x to 8x, pause) while maintaining 100% mathematical and visual synchronization.
+5. **Spectator Isolation:** During replay, all local player gameplay inputs are blocked so spectator clicks cannot interfere with playback.
+6. **Unified Session Continuity:** Runs continued from save files append to the run's existing recording file, allowing playback to reproduce the entire run from start to finish as a single uninterrupted session.
 
 ---
 
-## 2. File Formats & Real-Time Storage
+## 2. Core Architectural Principles
 
-Every recorded session generates a pair of files in `user://replays/`. Files are named by timestamp (e.g., `replay_2026-07-26_23-30-00.mcr` and `replay_2026-07-26_23-30-00.log`).
+### 1. The VCR Philosophy (Universal Action Pipeline)
+The replay engine relies on the game's deterministic command pipeline established in `Refactor Plan.md`:
+- A run is completely defined by its **Master Seed** + **The Sequence of Player `GameAction`s**.
+- Replay playback and live gameplay execute through the **exact same code paths**: the replay engine does not simulate mouse clicks, physics, or UI states. It simply loads the initial run state and feeds the recorded `GameAction`s back into `ActionQueue.request(action)`.
+- Gating dialogs and modals (such as "Got It!" card introductions, blocking tutorial popups, and battle results) are state machine gates driven by explicit `GameAction`s in the recording (`AcknowledgeFlashcardIntroAction`, `DismissTutorialAction`, `AcknowledgeBattleResultsAction`). Passive, non-gating presentation (mouse hovers, inspection panels that do not block game flow) are bypassed during replay.
 
-### A. The Replay Driver File (`.mcr`)
-A machine-readable line-delimited JSON (JSON Lines) file capturing BOTH deterministic actions and non-deterministic UI telemetry.
-* **Header (Line 1):** Must store the run seed and game version.
-  `{"header": true, "seed": 1337420, "version": "1.0.0", "timestamp": "2026-07-26_23-30-00"}`
-* **Payload (Lines 2+):** Each recorded event must include an `event_class` to distinguish core game logic from UI telemetry:
-  * **GameActions:** Strict state mutations executed by the ActionQueue. Must include `time_delta` (real-world seconds elapsed since the previous action). **Serialization Rule:** Actions must only store primitive data types (Strings, Ints, Floats) or `UUID` strings. They must NEVER store direct Node or Object references, as these will crash JSON parsing.
-    `{"event_class": "GameAction", "action_id": "shop_purchase_action", "time_delta": 4.25, "instance_uuid": "item_t3_g", "cost": 5}`
-  * **Telemetry Events (UI):** Non-mutating player interactions (e.g., pausing, changing combat speed, opening an inspection window). These are recorded purely for statistical analysis and developer review. During a replay, the engine logs that they happened, but **does not execute them** (so a recorded speed change doesn't override the spectator's replay UI controls).
-    `{"event_class": "TelemetryEvent", "action_id": "changed_combat_speed", "new_speed": 2.0, "time_delta": 1.2}`
+### 2. State-Gated Intent Queuing (Input Gates)
+Replays must **never** fire actions on a continuous wall-clock timer (`playback_time += delta`), because animation runtimes, frame rates, and scene loading vary across machines:
+- The `ReplayController` observes `ActionQueue.is_busy()`.
+- It only counts down the recorded think time when `ActionQueue.is_busy() == false` and the current scene has signaled readiness.
+- It dispatches the action to `ActionQueue.request(action)` and waits until the action and its cascaded visual events fully conclude (`ActionQueue.is_busy() == false` or `queue_idle`) before considering the next action.
 
-### B. The Human-Readable Debug Log (`.log`)
-Written alongside the `.mcr` file to provide a clear, chronological narrative of state modifications and combat resolution. It should capture the **Input (Cause)** and the **CombatEvents (Effects)**.
-```text
-=== SESSION START: 2026-07-26_23-30-00 | SEED: 1337420 ===
- ACTION: ShopPurchaseAction (item_t3_g, cost: 5)
-  ├── STATE: Gold 15 -> 10
-  └── STATE: Added item_t3_g to PlayerBench[0]
- ACTION: StartCombatAction
-  ├── COMBAT: Turn 1 Started
-  ├── EVENT: DAMAGE | Attacker: Burny -> Target: Slime_A | Dmg: 5 (HP 12 -> 7)
-  └── TRIGGER: on_hurt fired for Slime_A
-C. Real-Time Instant Flushing
-Do NOT buffer the log until the end of a run. Open the FileAccess handles at the start of a session. Whenever ActionQueue completes a GameAction, immediately call file.store_line(...) followed by file.flush(). Because actions occur periodically, instant flushing carries 0% performance overhead while ensuring 100% crash resilience.
+### 3. Absolute Timeline Grounding (Global Run Timer)
+To prevent small frame-rate variations, garbage collection pauses, or micro-processing lags from accumulating into severe desynchronizations over long runs:
+- All actions and narrative log entries are grounded by the authoritative **Global Run Timer** in `ActionQueue` (elapsed simulation time since run start, tracked in `RunState.elapsed_simulation_time`).
+- Each recorded action captures:
+  - `timestamp`: absolute seconds elapsed on the Global Run Timer since run start.
+  - `idle_time`: relative seconds spent waiting for player input before submitting the action.
+- This provides an unshakeable ground-truth timeline for replay playback, narrative logs, and telemetry.
 
-D. File Management
-Rolling 5 Storage: The user://replays/ folder must enforce a cap of 5 recording pairs. When a new session starts, automatically delete the oldest .mcr/.log pair based on the timestamp.
+### 4. Real-Time Storage & Crash Resilience
+- When a run begins, `GameplayRecorder` opens file handles in `user://replays/run_<run_id>.mcr` and `user://replays/run_<run_id>.log`.
+- Every executed `GameAction` is formatted and immediately flushed to disk (`file.flush()`).
+- If the game crashes, the recording file is already intact up to the exact action that triggered the crash, pinpointing the bug immediately.
 
-Crash Dump Preservation: If the game detects an improper shutdown (e.g., a run was active but never fired a "Run Ended" or "Game Quit" action), copy the last active .mcr/.log pair into a dedicated user://crash_dumps/ folder before cleaning up the rolling storage.
+### 5. Unified Save & Continue Continuity (Zero Checkpoint Desync)
+- Because PRNG streams (`map`, `combat`, `shop`, `reward`, `gacha`, `cosmetic`) in `RNGManager` advance deterministically from the Master Seed across the sequence of actions, **replay playback does not need to simulate saves or quits**.
+- When a player saves and quits, file handles are closed.
+- When a player clicks "Continue", `GameplayRecorder` opens the existing `run_<run_id>.mcr` in append mode (`FileAccess.READ_WRITE`, seek to end) and resumes logging.
+- Replaying the `.mcr` file simply runs through all recorded actions from start to finish as one continuous playthrough.
 
-3. The Playback Engine & Deserialization
-To replay a game, the engine must rebuild the exact state sequence.
+---
 
-Deserialization Factory & Telemetry Filtering: `GameAction.from_dict()` currently returns null. You must implement an ActionFactory to re-instantiate JSON payloads into executable `GameAction` objects. **Critical Routing Rule:** The Replay Engine MUST parse the `event_class`. It only instantiates and pushes `GameAction` events to the `ActionQueue`. `TelemetryEvent`s must be routed to a separate analytics parser or ignored entirely; pushing telemetry to the ActionQueue will cause a fatal execution crash.
+## 3. Strict Precautions & Guardrails
 
-Seed Injection & Pacing: Before a replay begins, the engine must parse the `.mcr` header and initialize `RNGManager.gd` with the recorded master seed so all subsequent logic resolves identically. Furthermore, the replay engine must read the `time_delta` from each action payload and perfectly simulate that delay (`await get_tree().create_timer(time_delta / AnimationConstants.speed_factor)`) before pushing it to the ActionQueue, ensuring organic pacing is exactly preserved.
+The implementing programmer agent must follow these architectural guardrails:
 
+### Precaution 1: Strict Data Purity (No Presentation in Replay Files)
+* Replay files (`.mcr`) must contain **only logical game data primitives** (`int`, `float`, `String`, `StringName`, `bool`, `Dictionary`, `Array`).
+* **NEVER record or deserialize screen pixel coordinates (`Vector2`), mouse positions, Viewport offsets, UI Control paths, or runtime memory pointers.**
+* Location-dependent payloads must strictly use `LocationIdentifier.to_dict()` and `LocationIdentifier.create_from_dict()`.
 
-4. Playback UI & Engine Control
-Title Menu Integration
-Add a "Replays" button to Title.tscn or OptionsWindow.tscn that displays a list of stored recordings in user://replays/. Selecting one initializes a playback session.
+### Precaution 2: Speed Scaling & Multiplicative Compounding
+* Playback speed scaling must be applied globally via `Engine.time_scale` and `AnimationConstants.speed_factor`.
+* **NEVER multiply `delta * speed` inside `_process(delta)`**: In Godot, `delta` is already scaled by `Engine.time_scale`. Multiplying by `speed` manually will square the speed multiplier and cause catastrophic timing desyncs.
+* **Compounding Formula:** Recorded in-game speed settings (such as combat speed buttons) compound multiplicatively with spectator playback speed controls:
+  $$\text{Effective Speed} = \text{Base Gameplay Speed} \times \text{Replay Playback Multiplier}$$
+  A 2x combat speed viewed at 2x replay speed resolves at 4x speed, while a 1x room speed views at 2x. All animations, tweens, and simulation clock increments scale together without desync.
 
-Floating Playback Controls Overlay
-Implement a sleek, minimal CanvasLayer UI overlay visible only during replay sessions:
+### Precaution 3: Pause Reproduction Fidelity
+* When a player pauses during gameplay, `PauseRunAction` is recorded and **faithfully reproduced during replay playback**.
+* Spectators can use the replay viewer's speed controls (e.g. 4x or 8x) to fast-forward through pauses.
 
-Play / Pause: Freezes or resumes the ActionQueue execution and visual animations.
+### Precaution 4: Spectator Isolation Overlay
+* During replay playback, an invisible, full-screen input blocker Control (`mouse_filter = Control.MOUSE_FILTER_STOP`) must be placed over the game viewport.
+* This prevents any accidental spectator clicks from triggering `GlobalInteractionRouter` or clicking room buttons, while allowing the Replay Viewer UI hotkeys (Space for pause, 1–8 for speed, Esc for exit) to function cleanly.
 
-Step-by-Step: When paused, executes exactly ONE GameAction from the recording and immediately pauses again.
+### Precaution 5: Fail-Fast Desync Detection
+* If `ActionQueue.request(action)` rejects a replayed action (`VALIDATION_FAILED` or `QUEUE_BUSY`), the replay must **not** silently swallow the error or skip the action.
+* It must pause playback immediately, push an error log with the offending line number, action type, and state snapshot, and alert the user.
 
-Speed Controls: Adjusts playback speed (1x, 2x, 5x, 10x) by assigning AnimationConstants.speed_factor or calling AnimationConstants.set_speed(). Do not manually modify Engine.time_scale, as the existing setter in AnimationConstants.gd automatically handles this linkage.
+---
 
-Exit to Menu: Terminates playback, cleans up active states, restores default speed via AnimationConstants.speed_factor = 1.0, and returns to the Title screen.
+## 4. File Specifications & Data Contracts
 
-5. Codebase Integration Hotspots & Warnings
-Asynchronous Pacing & Input Blocking (`ActionQueue.gd`): `ActionQueue._process_queue()` must be fully asynchronous. When an action is enqueued, it MUST instantly enable a global input blocker (e.g. `GlobalInputBlocker.set_blocking(true)`) to prevent ANY further player interaction. The queue must execute the action and `await AnimationCompletionTracker.wait_for_animations()`. It MUST NOT pop the next item or unblock inputs until ALL visual animations are 100% finished. Do not write logic to manually skip or bypass awaits during fast-forward. Because the game handles speed globally via `AnimationConstants.speed_factor -> Engine.time_scale`, the engine natively compresses tween durations. Trust the engine scale to make the awaits instant during sped-up simulations.
+### 1. The Replay Driver File (`.mcr` - JSON Lines)
+Located at: `user://replays/run_<run_id>.mcr`
+A line-delimited JSON file:
 
-Native randi() Leaks: (COMPLETED in RNG Standardization Pass). The codebase has already been fully audited and sterilized of native GDScript randomness (`randi()`, `.pick_random()`). All systems correctly route through `RNGManager` streams.
+#### Line 1: Header Payload (`RunHeader`)
+Contains the run metadata required to initialize the run deterministically:
+```json
+{
+  "event_class": "RunHeader",
+  "run_id": "run_1789592069_18_82048",
+  "run_seed": 88888,
+  "hero_id": "hero_ironclad",
+  "deck_id": "starter_deck",
+  "deck_order": "ALPHABETICAL",
+  "deck_size": "ALL",
+  "timestamp": 0.0
+}
+```
+*(For backwards compatibility, `seed` maps to `run_seed` and `hero_def_id` maps to `hero_id`).*
 
-SignalBus.gd Reliance: Do not hook the recorder directly into visual nodes. Listen to the ActionQueue and SignalBus to append context entries into the readable .log file during combat resolution.
+#### Lines 2+: GameAction Payloads
+Each line represents a discrete player action or modal lifecycle transition:
+```json
+{
+  "event_class": "GameAction",
+  "action_type": "BuyShopAction",
+  "timestamp": 14.52,
+  "idle_time": 1.25,
+  "slot_index": 0,
+  "cost": 5
+}
+```
 
-6. Definition of Done
-Every gameplay session automatically creates a paired .mcr and .log file in user://replays/, instantly flushed to disk.
+### 2. The 37 Authoritative Action Payloads
+The following 37 actions are mapped in `ActionFactory.gd` and must be supported:
 
-The folder cleanly enforces the rolling 5-file cap. Crash dumps are successfully isolated.
+| Action Class | Payload Fields | Description |
+| :--- | :--- | :--- |
+| `SelectPathAction` | `node_index: int` | Selects path choice map node |
+| `MoveInventoryAction` | `source_loc: Dict`, `target_loc: Dict` | Moves/equips/swaps inventory or units |
+| `ConfirmMergeAction` | `source_loc: Dict`, `target_loc: Dict`, `recipe_id: String` | Confirms free unit merge |
+| `ConfirmSwapAction` | `source_loc: Dict`, `target_loc: Dict` | Confirms unit swap from choice window |
+| `MergeEncounterAction` | `source_loc: Dict`, `target_loc: Dict`, `recipe_id: String` | Confirms paid merge in Merge Encounter |
+| `DrawGachaAction` | `tier: int` | Draws unit/item from gacha machine |
+| `EndTurnAction` | *(None)* | Commits turn and triggers combat |
+| `AcknowledgeBattleResultsAction` | `is_victory: bool` | Dismisses battle results popup |
+| `AcknowledgeRunCompleteAction` | *(None)* | Dismisses run victory screen |
+| `SetCombatSpeedAction` | `speed: float` | Adjusts combat animation speed (1x, 2x, 4x) |
+| `PauseRunAction` | `is_paused: bool` | Pauses/resumes combat and run timer |
+| `AcknowledgeFlashcardIntroAction` | *(None)* | Dismisses "Got It!" intro, begins sprint |
+| `SelectFlashcardIntroCardAction` | `card_id: String` | Switches active card in intro screen |
+| `SubmitFlashcardAnswerAction` | `question_id: String`, `selected_answer_id: String`, `think_time: float` | Submits flashcard answer |
+| `SkipFlashcardAction` | `question_id: String`, `think_time: float` | Skips current flashcard |
+| `DismissTutorialAction` | `tutorial_id: String` | Dismisses modal tutorial dialog |
+| `BuyShopAction` | `slot_index: int`, `cost: int` | Buys item from shop slot |
+| `RerollShopAction` | *(None)* | Pays gold to reroll shop stock |
+| `LeaveShopAction` | *(None)* | Exits shop to map |
+| `DrawRewardAction` | `tier: int` | Draws reward capsule |
+| `CollectRewardAction` | `instance_uuid: String` | Claims reward capsule into inventory |
+| `SellRewardAction` | `instance_uuid: String` | Sells reward capsule for gold |
+| `StudyRewardAction` | *(None)* | Starts minigame in reward room |
+| `LeaveRewardAction` | *(None)* | Discards remaining rewards and exits |
+| `DrawRestSiteAction` | `tier: int` | Draws stat capsule at rest site |
+| `UpgradeRestSiteAction` | `slot_index: int` | Applies stat capsule to hero |
+| `ClaimRestSiteGoldAction` | `prize_index: int` | Claims gold prize at gambling den |
+| `StudyRestSiteAction` | *(None)* | Starts minigame at rest site |
+| `LeaveRestSiteAction` | *(None)* | Applies remaining capsules and exits |
+| `StartTrainingAction` | `target_unit_uuid: String`, `stat_type: String` | Commits gold to start unit training |
+| `TrainUnitStatAction` | `token_cost: int` | Spends 1-3 tokens to roll stat upgrade |
+| `CloseTrainingPopupAction` | *(None)* | Closes training ground popup |
+| `LeaveTrainingAction` | *(None)* | Exits training ground to map |
+| `RemoveBlackMarketAction` | `target_uuid: String`, `cost: int` | Purges unit/item from run |
+| `TransformBlackMarketAction` | `target_uuid: String`, `cost: int` | Rerolls unit/item in black market |
+| `LeaveBlackMarketAction` | *(None)* | Exits black market to map |
+| `LeaveMergeEncounterAction` | *(None)* | Exits merge encounter to map |
 
-GameAction subclasses can be seamlessly serialized to and deserialized from JSON.
+### 3. Human-Readable Narrative Log (`.log`)
+Located at: `user://replays/run_<run_id>.log`
+A companion text file output alongside the `.mcr` file. Every entry is formatted with `[MM:SS.s]` simulation timestamp and room context:
+```
+[00:00.0] Run started. ID: run_1789592069_18_82048 | Hero: Ironclad | Seed: 88888 | Deck: Starter (ALL, ALPHABETICAL)
+[00:04.2] (Map) Selected Day 1 node: SHOP
+[00:11.5] (Shop) Purchased Iron Sword (UUID: ball_123) for 5 gold
+[00:15.0] (Shop) Left Shop -> returned to Path Map
+[00:19.8] (Map) Selected Day 2 node: BATTLE
+[00:27.4] (Battle) Moved Knight from Lineup [0] to Lineup [1]
+[00:34.2] (Battle) Drew Tier 1 Gacha Ball (Cost: 1 Token)
+[00:41.0] (Battle) Ended turn 1 -> combat resolved (VICTORY)
+[00:43.2] (Battle) Acknowledged victory modal -> transitioning to Rewards
+```
 
-Loading a replay from the Title Menu replays the game with identical RNG outcomes.
+---
 
-The player can fully control playback via the floating overlay (Play, Pause, Speed, Step, Exit) without visual overlapping or engine crashes.
+## 5. Replay State Machine & Gating Contract
+
+The `ReplayController` playback loop executes via a strict state machine:
+
+```
+                  ┌──────────────────────┐
+                  │    STATE_LOAD_RUN    │
+                  └──────────┬───────────┘
+                             │ (Init Master Seed & RunState)
+                             ▼
+                  ┌──────────────────────┐
+        ┌────────►│   STATE_IDLE_WAIT    │◄────────┐
+        │         └──────────┬───────────┘         │
+        │                    │ ActionQueue.is_busy == false
+        │                    ▼
+        │         ┌──────────────────────┐         │
+        │         │   STATE_COUNTDOWN    │         │
+        │         └──────────┬───────────┘         │
+        │                    │ think_time <= 0     │
+        │                    ▼                     │
+        │         ┌──────────────────────┐         │
+        │         │    STATE_DISPATCH    │         │
+        │         └──────────┬───────────┘         │
+        │                    │ ActionQueue.request(action)
+        │                    ▼                     │
+        │         ┌──────────────────────┐         │
+        └─────────┤  STATE_AWAIT_SETTLE  ├─────────┘
+        (Instant) └──────────────────────┘ (Yields visuals)
+```
+
+### State Definitions:
+1. **`STATE_LOAD_RUN`**:
+   - Reads Line 1 `RunHeader`.
+   - Initializes `GameManager.start_run_with_seed(header.hero_id, header.deck_id, header.deck_order, header.deck_size, header.run_seed)`.
+   - Sets `ActionQueue.set_headless_mode(false)` (or `true` if headless playback test).
+   - Resets and starts `ActionQueue.reset_global_run_timer(0.0)`.
+   - Transitions to `STATE_IDLE_WAIT`.
+
+2. **`STATE_IDLE_WAIT`**:
+   - Polls `ActionQueue.is_busy()`.
+   - If `true`: wait.
+   - If `false`: check if there is an active scene transition pending. If waiting for `Main._notify_scene_transition_complete()`, await `ActionQueue.queue_idle`.
+   - Once fully idle: load next action from `.mcr`, set `remaining_think_time = next_action.idle_time`, and transition to `STATE_COUNTDOWN`.
+
+3. **`STATE_COUNTDOWN`**:
+   - Deducts think time: `remaining_think_time -= delta`.
+   - If spectator accelerates playback speed (e.g. 2x, 4x), delta is already scaled by `Engine.time_scale`.
+   - When `remaining_think_time <= 0.0`: transition to `STATE_DISPATCH`.
+
+4. **`STATE_DISPATCH`**:
+   - Calls `var accepted = ActionQueue.request(next_action)`.
+   - If `accepted == false`: trigger desync breakpoint! Pause playback and emit `playback_desync_error`.
+   - If `accepted == true`:
+     - If `next_action.yields_for_visuals()`: transition to `STATE_AWAIT_SETTLE`.
+     - Otherwise: transition immediately back to `STATE_IDLE_WAIT`.
+
+5. **`STATE_AWAIT_SETTLE`**:
+   - Waits for `ActionQueue.action_completed` or `ActionQueue.queue_idle`.
+   - Transitions to `STATE_IDLE_WAIT`.
+
+6. **`STATE_COMPLETED`**:
+   - Reached EOF. Emits `playback_finished`. Displays playback complete summary.
+
+---
+
+## 6. Architecture & File Blueprint
+
+```
+scripts/
+└── engine/
+    ├── recorder/
+    │   ├── GameplayRecorder.gd        # Real-time recorder singleton/node
+    │   └── NarrativeLogWriter.gd      # Formatter for human-readable .log
+    └── replay/
+        ├── ReplayController.gd        # Playback engine & state machine
+        └── ReplayReader.gd            # File deserializer (.mcr streaming)
+scenes/
+└── ui/
+    ├── ReplayViewer.tscn              # Overlay UI scene with controls
+    └── ReplayViewer.gd                # Speed buttons, scrubber, spectator blocker
+```
+
+### Component Responsibilities:
+
+#### 1. `GameplayRecorder.gd`
+- Autoload or child of `GameManager`.
+- Listens to `ActionQueue.action_started(action: GameAction)`.
+- When action starts, writes JSON line to `.mcr` and narrative entry to `.log`, then calls `file.flush()`.
+- On run completion or defeat, writes final summary line and closes files.
+
+#### 2. `ReplayController.gd`
+- Core playback driver.
+- Controls playback state machine, speed multiplier, pause/resume, and EOF handling.
+- Exposes signals: `playback_started`, `playback_paused`, `playback_speed_changed(speed)`, `action_dispatched(action)`, `playback_finished`, `playback_desync_error(reason)`.
+
+#### 3. `ReplayViewer.tscn` / `ReplayViewer.gd`
+- Top-level canvas layer overlay.
+- Contains:
+  - Full-screen `SpectatorBlocker` (`mouse_filter = STOP`).
+  - Top bar: Run ID, Seed, Elapsed Time, Current Room.
+  - Bottom bar: Play/Pause button, Speed buttons (1x, 2x, 4x, 8x), Scrubber bar (showing progress through total actions), Exit button.
+  - Hotkey bindings: Space (Play/Pause), 1-4 (Speed), Esc (Exit).
+
+---
+
+## 7. Definition of Done
+
+1. **Automatic Flushed Recording:** Every run automatically creates and flushes `run_<run_id>.mcr` and `run_<run_id>.log` in `user://replays/` on every action.
+2. **Deterministic Playback:** Loading any `.mcr` file reproduces the entire run with 100% identical state transitions, PRNG rolls, combat results, and room outcomes.
+3. **Save & Continue Continuity:** Continued runs resume appending to the existing `.mcr` file, and replay playback reproduces the combined run as a single seamless session.
+4. **Variable Speed Parity:** Replay playback at 1x, 2x, 4x, or 8x resolves identically without animation drops or state drift.
+5. **Spectator Isolation:** Spectator mouse clicks and keypresses are completely blocked from interacting with the underlying game while replay controls function cleanly.
+6. **Zero Presentation Pollution:** Replay files contain zero screen pixel coordinates, mouse offsets, or UI node references.

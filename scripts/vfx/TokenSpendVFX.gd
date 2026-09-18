@@ -25,6 +25,7 @@ var _start_pos: Vector2
 var _target_pos: Vector2
 var _elapsed: float = 0.0
 var _flight_active: bool = false
+var _effective_toss_duration: float = TOSS_DURATION
 
 func _ready() -> void:
 	if not is_instance_valid(token_sprite):
@@ -40,6 +41,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	_start_pos = start_pos
 	_target_pos = target_pos
 	global_position = start_pos
+	_effective_toss_duration = AnimationConstants.scaled(TOSS_DURATION)
 	
 	token_sprite.modulate = Color.WHITE
 	token_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
@@ -48,7 +50,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	# Wait for stagger delay
 	if delay > 0:
 		token_sprite.visible = false
-		await AnimationConstants.create_pausable_timer(get_tree(), delay).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(delay)).timeout
 		token_sprite.visible = true
 	
 	# Start the spinning
@@ -67,7 +69,7 @@ func _process(delta: float) -> void:
 		return
 	
 	_elapsed += delta
-	var t = _elapsed / TOSS_DURATION
+	var t = _elapsed / _effective_toss_duration
 	
 	if t >= 1.0:
 		# Arrived at destination
@@ -112,8 +114,8 @@ func _on_landing() -> void:
 	
 	# Brief visible moment, then vanish (absorbed into machine)
 	var vanish_tween = create_tween()
-	vanish_tween.tween_interval(0.05)
-	vanish_tween.tween_property(token_sprite, "modulate:a", 0.0, 0.08)
+	vanish_tween.tween_interval(AnimationConstants.scaled(0.05))
+	vanish_tween.tween_property(token_sprite, "modulate:a", 0.0, AnimationConstants.scaled(0.08))
 	
 	await vanish_tween.finished
 	
@@ -124,7 +126,7 @@ func _start_spin() -> void:
 	"""Spin the coin during flight - like a flipping coin"""
 	_flip_tween = create_tween()
 	
-	var spin_duration = TOSS_DURATION / SPIN_COUNT / 4.0
+	var spin_duration = _effective_toss_duration / SPIN_COUNT / 4.0
 	
 	# Full rotation cycle using scale.x (creates flip illusion)
 	_flip_tween.set_loops(SPIN_COUNT)
@@ -136,8 +138,8 @@ func _start_spin() -> void:
 func _start_wobble() -> void:
 	"""Add a slight rotation wobble for natural tumbling feel"""
 	_wobble_tween = create_tween()
-	_wobble_tween.set_loops(int(TOSS_DURATION / 0.12))
+	_wobble_tween.set_loops(maxi(1, int(_effective_toss_duration / AnimationConstants.scaled(0.12))))
 	
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", WOBBLE_DEGREES, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -WOBBLE_DEGREES, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", WOBBLE_DEGREES, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", -WOBBLE_DEGREES, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(token_sprite, "rotation_degrees", 0.0, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

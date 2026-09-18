@@ -22,6 +22,13 @@ class OperationResult:
 	var equip_item_uuid: String = ""
 	var equip_unit_uuid: String = ""
 	var equip_slot_index: int = -1
+	
+	# For item discard / replacement
+	var replaced_item_uuid: String = ""
+	var replaced_item_icon: Texture2D = null
+	var replaced_item_icon_path: String = ""
+	var replaced_item_name: String = ""
+	var replaced_from_unit_uuid: String = ""
 	 
 	func add_unit_change(uuid: String) -> void:
 		if not uuid.is_empty() and not changed_unit_uuids.has(uuid):
@@ -172,7 +179,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 			item.equipped_slot_index = -1
 		state.update_instance_location(item.ball_uuid, &"", -1)
 	
-	# If slot occupied, move existing to player item inventory
+	# If slot occupied, move existing to discard pile (original game behavior)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	if not existing_uuid.is_empty():
 		var existing := state.get_instance(existing_uuid)
@@ -180,6 +187,11 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 			var discard_result := move_instance_to_discard(state, existing)
 			if not discard_result.success:
 				return result
+			result.replaced_item_uuid = discard_result.replaced_item_uuid
+			result.replaced_item_icon = discard_result.replaced_item_icon
+			result.replaced_item_icon_path = discard_result.replaced_item_icon_path
+			result.replaced_item_name = discard_result.replaced_item_name
+			result.replaced_from_unit_uuid = discard_result.replaced_from_unit_uuid
 			for changed_uuid in discard_result.changed_unit_uuids:
 				result.add_unit_change(changed_uuid)
 			if discard_result.inventory_changed:
@@ -192,6 +204,7 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
 	unit.equip_item_bonus(item)
+	result.inventory_changed = true
 	
 	result.add_unit_change(unit.ball_uuid)
 	result.set_success()
@@ -507,6 +520,17 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 			var parent := state.get_instance(loc.unit_uuid)
 			if is_instance_valid(parent):
+				result.replaced_from_unit_uuid = parent.ball_uuid
+				result.replaced_item_uuid = instance.ball_uuid
+				var idef = instance.get_definition()
+				if is_instance_valid(idef):
+					if "icon" in idef and is_instance_valid(idef.icon):
+						result.replaced_item_icon = idef.icon
+						result.replaced_item_icon_path = idef.icon.resource_path
+					elif "icon_path" in idef and idef.icon_path is String:
+						result.replaced_item_icon_path = idef.icon_path
+					if "display_name_key" in idef:
+						result.replaced_item_name = idef.display_name_key
 				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
 					# Clear the parent's slot mapping if it points to this instance
 					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:

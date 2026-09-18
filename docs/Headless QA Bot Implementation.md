@@ -1,42 +1,75 @@
 # Implementation Mandate: Headless QA Bot
 
-## 1. Commander's Intent & Context
-We are implementing an automated QA Bot designed to stress-test the game's fully deterministic `ActionQueue` architecture. The bot will run completely "headless" (without UI or visual overhead) to execute runs as fast as the CPU allows. Its primary goals are to find edge-case bugs, crashes, soft-locks, and **game balance issues** (such as broken builds or overpowered combos) across millions of simulated runs.
+## 1. High-Level Goals
 
-Because the game is fully deterministic, the bot's output is highly valuable: any crash or soft-lock it finds can be perfectly reproduced by loading its generated `.mcr` replay file into the normal visual game client.
+Implement an automated **Headless QA Bot** designed to stress-test the game's deterministic command pipeline (`ActionQueue`) at maximum CPU speed without UI overhead.
 
----
-
-## 2. Bot Autonomy (The Chaos Strategy)
-The bot operates strictly as a random stress-tester ("monkey on a keyboard"). 
-* **State Evaluation:** Whenever the game state requires player input (Run Map, Shop, Battle, etc.), the bot queries the current state for a list of all theoretically valid `GameAction`s.
-* **Random Selection:** It selects one valid action completely at random using a dedicated, isolated `SeededRNG` stream (e.g., `qa_bot_rng`) so that the bot's decisions are deterministically reproducible.
-* **Execution:** It instantiates the `GameAction` and pushes it to the `ActionQueue`.
+### Core Objectives:
+1. **Rapid Automated Stress Testing:** Execute complete game runs in seconds to discover crashes, soft-locks, infinite loops, and race conditions across thousands of randomized playthroughs.
+2. **Deterministic Bug Reproduction:** Every bot run outputs a standard `.mcr` replay file and log. Any crash, soft-lock, or strange behavior found by the bot can be loaded into the normal visual game client to watch the exact sequence of events unfold.
+3. **Game Balance & Outlier Telemetry:** Track statistical performance (wins, losses, damage spikes, infinite synergies) to flag overpowered or broken builds for balance review.
 
 ---
 
-## 3. Headless Pacing & Visual Replayability
-The bot must execute at maximum CPU speed without breaking the deterministic rules.
-* **Headless Bypass:** When the game is launched with the `--qa-bot` flag, no visual scenes or UI nodes are loaded. The `ActionQueue` MUST bypass the `AnimationCompletionTracker` entirely, popping and resolving actions instantly without waiting for any physical time or tweens.
-* **Bot Time Delta:** Because the bot calculates decisions instantly, the real-world time elapsed between actions is effectively 0 seconds. To ensure replays remain human-watchable, the bot MUST inject a standardized `time_delta` (e.g., `1.0` seconds) into every serialized `.mcr` payload instead of 0.0. **Critical Pacing Rule:** The injected `time_delta` is ONLY written to the text file. The bot itself must NEVER actually `await` or sleep; it must push the next action instantly on the same frame to maintain maximum CPU execution speed.
-* **Visual Replayability:** The bot still serializes every action into a standard `.mcr` replay file. Since the engine is deterministic, developers can load a bot's `.mcr` file into the normal game client. The normal Replay Viewer will apply the injected `time_delta` rules and animation blocking, allowing the developer to watch the bot's chaotic 100x speed run organically at normal or controllable speeds to visually see how the game broke.
+## 2. Core Architectural Principles
+
+### 1. Decision-Driven Bot Autonomy & Modal Transitions
+- Whenever the game reaches a state requiring player input (Run Map, Battle Management, Shop, Rewards, Rest Site, Minigame sprints, or gating modals like card introductions, tutorials, training popups, or battle results), the bot queries the available legal moves.
+- For modal gating states (`AcknowledgeFlashcardIntroAction`, `DismissTutorialAction`, `AcknowledgeBattleResultsAction`, `CloseTrainingPopupAction`), the bot dispatches the required action immediately to transition the game state machine forward.
+- For open-ended gameplay decisions (path choices, purchases, moves, card answers), it selects one valid action using a dedicated, isolated seeded PRNG stream (`qa_bot_rng`), ensuring the bot's decisions are 100% reproducible given the same seed.
+- It submits the chosen action to `ActionQueue.request(action)`.
+
+### 2. Maximum CPU Execution (Instant Visual Bypass)
+- When the game is launched with the `--qa-bot` flag, `ActionQueue.is_headless_mode()` is enabled.
+- Actions execute on frame 0 without waiting for animations, tweens, or visual timers (`yields_for_visuals() == false`).
+- The bot itself never sleeps or waits; as soon as an action resolves, it immediately evaluates the next decision.
+
+### 3. Visual Reproduction Parity & Minigame Simulation (Replay Output)
+- Although the bot executes instantly in real time (taking 0.0 seconds of real-world think time), it writes standardized synthetic `idle_time` (e.g. `1.0` seconds) and incremental `timestamp` values into the `.mcr` payload.
+- **Minigame Sprint Simulation:** When entering the flashcard minigame, the bot submits `AcknowledgeFlashcardIntroAction` to start the sprint, then answers questions via `SubmitFlashcardAnswerAction` with synthetic think times (e.g. 1.0s per answer). Each action advances the simulation clock and the minigame's session timer until the 7.0-second sprint naturally concludes.
+- This guarantees that **every headless bot run can be loaded into the standard visual client as an ordinary replay**, playing back with full animations, sound effects, visual pacing, and UI choreography at 1x or 3x speed for easy developer inspection.
 
 ---
 
-## 4. Telemetry & Success Metrics
-When a bot concludes a run, it must output a complete package of data to `user://qa_runs/`:
-1. **The Replay File (`.mcr` & `.log`):** The exact standard playback files required to visually replay the run.
-2. **Statistical Telemetry (`.json`):** A detailed data dump containing:
-   * Run Seed
-   * Win/Loss/Crash outcome
-   * Floor reached
-   * Statistical aggregates (purchases made, units merged, total damage dealt, etc.)
+## 3. Strict Precautions & Guardrails
 
-3. **Outlier & Balance Flagging:** If a run exceeds predefined mathematical thresholds (e.g., dealing >10,000 damage in a single turn, clearing a boss in 1 round, or achieving infinite loops), the bot must flag this run with a `BALANCE_WARNING` tag. This allows developers to easily search for and replay anomalous "broken builds" that the chaos monkey managed to construct.
+The implementing programmer agent must adhere to the following guardrails:
+
+### Precaution 1: Headless Mode Must Execute Real State Mutations
+* In headless mode, visual presentation and UI scenes are bypassed, **but game logic and state machine transitions must NEVER be bypassed**.
+* **Actions MUST still execute genuine state mutations in headless mode** (deducting gold/tokens, transferring items, rolling rewards, updating stats, advancing rooms, transitioning modal states).
+* **NEVER leave mutations as no-ops (`pass`)**. If an action skips visual tweens, the underlying data change must still occur deterministically.
+
+### Precaution 2: Zero Codebase Assumptions (Investigate First)
+* **No assumptions on how the codebase is set up should be made.** The agent implementing the bot must inspect the active codebase to verify:
+  - How each room or manager validates legal actions.
+  - How room state is initialized and stored when scenes are loaded without full UI tree rendering.
+  - How encounter completion, modal states, and room transitions are triggered.
+* Always inspect active scripts and scenes rather than assuming pre-existing bot helper interfaces.
+
+### Precaution 3: Soft-Lock Detection
+* A soft-lock occurs when the game requires player input to proceed, but there are **zero valid `GameAction`s** available.
+* If the bot detects this state, it must immediately flag a `SOFTLOCK_ERROR`, flush the active `.mcr` replay file, and dump diagnostic telemetry so the soft-lock can be reproduced.
 
 ---
 
-## 5. Soft-Lock Detection & Crash Dumping
-A soft-lock occurs when the game is waiting for player input, but no valid moves exist.
-* **Detection Rule:** After evaluating the game state, if the game requires a choice but there are **exactly 0 valid `GameAction`s** available to the bot, it must instantly throw a `SOFTLOCK_ERROR`.
-* **Preservation:** Upon detecting a soft-lock, the bot instantly flushes the active `.mcr` and `.log` files and dumps the exact current `RunState` into the telemetry JSON. This guarantees developers have the exact replay file leading up to the freeze.
+## 4. Telemetry & Output Contracts
+
+When the bot concludes a run, it writes a diagnostic package to `user://qa_runs/`:
+1. **The Replay Pair (`.mcr` & `.log`):** The standard playback files required to visually replay the run in the client.
+2. **Statistical Telemetry (`.json`):**
+   - Run seed and bot RNG seed.
+   - Outcome (Victory, Defeat, Soft-lock, Crash).
+   - Floor / Day reached.
+   - Aggregated metrics (total gold spent, items bought, units merged, max damage in a turn).
+3. **Balance Flagging:**
+   - If a run triggers extreme statistical anomalies (e.g. infinite loops, one-turn boss kills, or damage exceeding sanity thresholds), the telemetry must be tagged with a `BALANCE_WARNING` for developer inspection.
+
+---
+
+## 5. Definition of Done
+
+1. **Autonomous Run Execution:** The bot can launch with `--qa-bot`, autonomously make legal decisions, and play through entire runs to completion without human interaction.
+2. **Headless State Integrity:** Every action executed headless performs real data mutations, matching the state transitions of a normal visual run.
+3. **Replay Fidelity:** Replay files generated by the bot load cleanly into the visual client, playing identically at normal speed.
+4. **Soft-lock and Crash Dumping:** Any run freeze or unhandled error immediately flushes `.mcr` and telemetry data for debugging.

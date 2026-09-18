@@ -43,8 +43,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if not is_instance_valid(target_instance) or target_instance.current_hp <= 0:
 			continue
 			
-		# Must be in the lineup
-		if target_instance.location_container_tag != lineup_container:
+		# Must be on the board (lineup or bench) and on the same team
+		var container = target_instance.location_container_tag
+		var is_on_board = container in [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]
+		if not is_on_board or _get_team_from_container(container) != trinket_team:
 			continue
 			
 		var target_def = target_instance.get_definition()
@@ -53,6 +55,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		# Skip the hero
 		if target_def.is_hero:
+			continue
+			
+		# Prevent double buffing
+		if target_instance.has_tag(buff_tag):
 			continue
 			
 		# Mark as registered

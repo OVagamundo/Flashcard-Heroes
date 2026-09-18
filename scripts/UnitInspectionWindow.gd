@@ -284,11 +284,17 @@ func _update_description() -> void:
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
 			if ability_def.id == &"ability_echoing_orb_scale":
-				var source_inst = all_instances_db.get(entry.get("source_uuid"))
-				if is_instance_valid(source_inst):
-					var current_bonus = source_inst.current_pwr
-					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
-					ability_desc += " [color=#4ade80]%s[/color]" % suffix
+				var source_uuid = entry.get("source_uuid", "")
+				var current_bonus = _instance.get_status_effect_amount(StringName("echoing_orb_scaling_" + source_uuid))
+				if current_bonus == 0:
+					var count = 0
+					for uuid in all_instances_db:
+						var inst = all_instances_db[uuid]
+						if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
+							count += 1
+					current_bonus = maxi(1, count) * 2
+				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+				ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			elif ability_def.id == &"ability_doppleganger_scale":
 				var current_bonus = _instance.get_status_effect_amount(&"doppleganger_scaling")
 				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus

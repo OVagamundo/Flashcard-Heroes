@@ -21,6 +21,7 @@ var _start_pos: Vector2
 var _target_pos: Vector2
 var _elapsed: float = 0.0
 var _flight_active: bool = false
+var _effective_toss_duration: float = TOSS_DURATION
 
 func _ready() -> void:
 	# Create gold coin sprite
@@ -39,6 +40,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	_start_pos = start_pos
 	_target_pos = target_pos
 	global_position = start_pos
+	_effective_toss_duration = AnimationConstants.scaled(TOSS_DURATION)
 	
 	_coin_sprite.modulate = Color(1.0, 1.0, 1.0, 1.0) # Ensure it has no tint
 	_coin_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
@@ -46,7 +48,7 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	
 	if delay > 0:
 		_coin_sprite.visible = false
-		await AnimationConstants.create_pausable_timer(get_tree(), delay).timeout
+		await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(delay)).timeout
 		_coin_sprite.visible = true
 	
 	_start_spin()
@@ -61,7 +63,7 @@ func _process(delta: float) -> void:
 		return
 	
 	_elapsed += delta
-	var t = _elapsed / TOSS_DURATION
+	var t = _elapsed / _effective_toss_duration
 	
 	if t >= 1.0:
 		t = 1.0
@@ -95,8 +97,8 @@ func _on_landing() -> void:
 	
 	# Quick vanish
 	var vanish_tween = create_tween()
-	vanish_tween.tween_interval(0.04)
-	vanish_tween.tween_property(_coin_sprite, "modulate:a", 0.0, 0.06)
+	vanish_tween.tween_interval(AnimationConstants.scaled(0.04))
+	vanish_tween.tween_property(_coin_sprite, "modulate:a", 0.0, AnimationConstants.scaled(0.06))
 	
 	await vanish_tween.finished
 	animation_finished.emit()
@@ -104,7 +106,7 @@ func _on_landing() -> void:
 
 func _start_spin() -> void:
 	_flip_tween = create_tween()
-	var spin_duration = TOSS_DURATION / SPIN_COUNT / 4.0
+	var spin_duration = _effective_toss_duration / SPIN_COUNT / 4.0
 	
 	_flip_tween.set_loops(SPIN_COUNT)
 	_flip_tween.tween_property(_coin_sprite, "scale:x", 0.0, spin_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
@@ -114,8 +116,8 @@ func _start_spin() -> void:
 
 func _start_wobble() -> void:
 	_wobble_tween = create_tween()
-	_wobble_tween.set_loops(int(TOSS_DURATION / 0.12))
+	_wobble_tween.set_loops(maxi(1, int(_effective_toss_duration / AnimationConstants.scaled(0.12))))
 	
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", WOBBLE_DEGREES, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", -WOBBLE_DEGREES, 0.12).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
-	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", 0.0, 0.06).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", WOBBLE_DEGREES, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", -WOBBLE_DEGREES, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	_wobble_tween.tween_property(_coin_sprite, "rotation_degrees", 0.0, AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)

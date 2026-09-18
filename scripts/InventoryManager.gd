@@ -58,7 +58,6 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 		if is_instance_valid(data_owner):
 			var parent_unit: GachaBallInstance = data_owner.get_all_instances().get(target_loc.unit_uuid)
 			if is_instance_valid(parent_unit):
-				# If slot already occupied, fall through to swap/merge logic later
 				var slot_is_empty = true
 				if target_loc.index < parent_unit.equipped_item_uuids.size():
 					slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
@@ -68,6 +67,16 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 					GlobalInteractionRouter.end_drag(true)
 					SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
 					return
+				else:
+					# Slot is occupied: check for merge recipe first (Rule I1)
+					var all_instances_db = data_owner.get_all_instances()
+					var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
+					if not is_instance_valid(recipe):
+						# No merge recipe: equip/replace item directly (Rule I3)
+						data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+						GlobalInteractionRouter.end_drag(true)
+						SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
+						return
 
 	# Case 5: Target slot is empty, check for valid move
 	if not is_instance_valid(target_instance):
@@ -139,6 +148,10 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
 
 	var data_owner = _get_data_owner()
+	if not is_instance_valid(data_owner):
+		_finish_merge_action_if_active()
+		return
+		
 	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
 	
 	if is_instance_valid(bm):
@@ -149,15 +162,8 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 			_merge(source_loc, target_loc, recipe_id)
 		&"SWAP":
 			_swap(source_loc, target_loc)
-
-	if is_instance_valid(bm):
-		bm.unblock_ui_updates()
-		
-		# Clear the skip meta from all units now that initial scaling is processed
-		for uuid in data_owner.get_all_instances():
-			var inst = data_owner.get_all_instances()[uuid]
-			if inst.has_meta("skip_initial_scaling_anim"):
-				inst.remove_meta("skip_initial_scaling_anim")
+			if is_instance_valid(bm):
+				bm.unblock_ui_updates()
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
 	var def = consumable_instance.get_definition()
@@ -324,13 +330,17 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
 
 	var data_owner = _get_data_owner()
-	if not is_instance_valid(data_owner): return
+	if not is_instance_valid(data_owner):
+		_finish_merge_action_if_active()
+		return
 
 	var all_instances_db = data_owner.get_all_instances()
 
 	var source_instance = _get_instance_at_location(source_loc)
 	var target_instance = _get_instance_at_location(target_loc)
-	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance): return
+	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance):
+		_finish_merge_action_if_active()
+		return
 
 	# --- MERGE ENCOUNTER LOGIC ---
 	var is_merge_encounter = MergeManager.is_merge_encounter_active()
@@ -341,20 +351,21 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			if GameManager.run_state.gold < merge_encounter_cost:
 				# Emit invalid action so the UI can play rejection feedback
 				SignalBus.emit_signal("inventory_action_invalid", source_loc, target_loc)
+				_finish_merge_action_if_active()
 				return
 
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if merge_result.is_empty():
+		_finish_merge_action_if_active()
 		return
 
 	var new_instance: GachaBallInstance = merge_result["merged_instance"]
 	
-	# Flag the new instance so that its initial passive scaling (Twin Charm, Doppleganger, etc.) 
-	# applies silently rather than popping up floating buff numbers over a freshly spawned unit.
-	new_instance.set_meta("skip_initial_scaling_anim", true)
-	
+
 	var result_def = new_instance.get_definition()
-	if not is_instance_valid(result_def): return
+	if not is_instance_valid(result_def):
+		_finish_merge_action_if_active()
+		return
 
 	# Collect items equipped on parents (if any) to equip onto a UNIT result later
 	# MergeManager returns the list of items that should be equipped.
@@ -378,9 +389,10 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		data_owner.remove_instance(source_instance.ball_uuid)
 		data_owner.remove_instance(target_instance.ball_uuid)
 
-	if is_same_unit_item_merge:
-		data_owner.remove_instance(source_instance.ball_uuid)
-		data_owner.remove_instance(target_instance.ball_uuid)
+	if target_is_equipped:
+		if is_same_unit_item_merge:
+			data_owner.remove_instance(source_instance.ball_uuid)
+			data_owner.remove_instance(target_instance.ball_uuid)
 		data_owner.add_instance(new_instance, &"PlayerBench", -1)
 		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		placed_container = C.CONTAINER_EQUIPPED_ITEM
@@ -437,6 +449,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	}
 	
 	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
+	if new_instance.location_container_tag == C.CONTAINER_EQUIPPED_ITEM:
+		final_loc.unit_uuid = new_instance.equipped_on_uuid
 
 	# Emit animation sequence request
 	SignalBus.emit_signal("merge_animation_requested", {
@@ -612,3 +626,12 @@ func _atomic_move_instance(instance: GachaBallInstance, from_loc: LocationIdenti
 	# Optional extra validation (atomic APIs already validate in debug builds)
 	if OS.is_debug_build():
 		_validate_state_consistency()
+
+func _finish_merge_action_if_active() -> void:
+	var data_owner = _get_data_owner()
+	if is_instance_valid(data_owner) and data_owner.has_method("unblock_ui_updates"):
+		data_owner.unblock_ui_updates()
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		var act = ActionQueue.get_active_action()
+		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
+			ActionQueue.finish_action(act)

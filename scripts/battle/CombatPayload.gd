@@ -39,6 +39,8 @@ var new_pwr: int = 0
 var new_val: int = 0
 var old_hp: int = 0
 var old_pwr: int = 0
+var hp_amount: int = 0
+var pwr_amount: int = 0
 var status_color: Color = Color.WHITE
 var is_status_damage: bool = false
 var old_value: int = 0
@@ -56,6 +58,8 @@ var old_unit_uuid: String = ""
 var new_unit_uuid: String = ""
 var old_unit_location: LocationIdentifier
 var new_unit_snapshot: Dictionary = {}
+var unit_snapshot: Dictionary = {}
+var equipped_items: Array[Dictionary] = []
 var spawn_source_uuid: String = ""
 var unit_tier: int = 1
 var visual_style: String = ""
@@ -67,12 +71,14 @@ var heal_amount: int = 1
 var guardian_uuid: String = ""
 var origin_uuid: String = ""
 var target_gold_amount: int = -1
+var target_token_amount: int = -1
 var container_tag: StringName = &""
 var slot_index: int = -1
 var is_player: bool = false
 var from_effect: StringName = &""
 var to_effect: StringName = &""
 var item_uuid: String = ""
+var item_icon: Texture2D = null
 var item_icon_path: String = ""
 var item_name: String = "Item"
 var message: String = ""
@@ -95,6 +101,21 @@ static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: 
 	payload.stat = "pwr"
 	payload.targets_old_pwr.assign(p_targets_old_pwr)
 	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
+	return payload
+
+static func both_stats_change(p_source_uuid: String, p_hp_amount: int, p_pwr_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.amount = p_hp_amount
+	payload.hp_amount = p_hp_amount
+	payload.pwr_amount = p_pwr_amount
+	payload.stat = "both"
+	payload.targets_old_hp.assign(p_targets_old_hp)
+	payload.targets_new_hp.assign(p_targets_new_hp)
+	payload.targets_old_pwr.assign(p_targets_old_pwr)
+	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.new_hp = payload.targets_new_hp[0] if not payload.targets_new_hp.is_empty() else 0
 	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
 	return payload
 
@@ -125,6 +146,15 @@ static func guardian_intercept(p_guardian_uuid: String, p_original_target_uuid: 
 static func container_payload(p_container_tag: StringName) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.container_tag = p_container_tag
+	return payload
+
+static func item_discard(p_source_uuid: String, p_item_uuid: String, p_icon: Texture2D = null, p_icon_path: String = "", p_item_name: String = "Item") -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.item_uuid = p_item_uuid
+	payload.item_icon = p_icon
+	payload.item_icon_path = p_icon_path
+	payload.item_name = p_item_name
 	return payload
 
 func deep_clone() -> CombatPayload:
@@ -158,6 +188,8 @@ func deep_clone() -> CombatPayload:
 	copy.new_val = new_val
 	copy.old_hp = old_hp
 	copy.old_pwr = old_pwr
+	copy.hp_amount = hp_amount
+	copy.pwr_amount = pwr_amount
 	copy.status_color = status_color
 	copy.is_status_damage = is_status_damage
 	copy.old_value = old_value
@@ -174,6 +206,8 @@ func deep_clone() -> CombatPayload:
 	copy.new_unit_uuid = new_unit_uuid
 	copy.old_unit_location = old_unit_location
 	copy.new_unit_snapshot = new_unit_snapshot.duplicate(true)
+	copy.unit_snapshot = unit_snapshot.duplicate(true)
+	copy.equipped_items = equipped_items.duplicate(true)
 	copy.spawn_source_uuid = spawn_source_uuid
 	copy.unit_tier = unit_tier
 	copy.visual_style = visual_style
@@ -183,12 +217,14 @@ func deep_clone() -> CombatPayload:
 	copy.guardian_uuid = guardian_uuid
 	copy.origin_uuid = origin_uuid
 	copy.target_gold_amount = target_gold_amount
+	copy.target_token_amount = target_token_amount
 	copy.container_tag = container_tag
 	copy.slot_index = slot_index
 	copy.is_player = is_player
 	copy.from_effect = from_effect
 	copy.to_effect = to_effect
 	copy.item_uuid = item_uuid
+	copy.item_icon = item_icon
 	copy.item_icon_path = item_icon_path
 	copy.item_name = item_name
 	copy.message = message
