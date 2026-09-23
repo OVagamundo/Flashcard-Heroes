@@ -153,6 +153,36 @@ static func place_instances_from_run_state(state: RefCounted, permanent_to_battl
 		container.set_uuid(index, battle_copy.ball_uuid)
 		state.update_instance_location(battle_copy.ball_uuid, target_container_name, index)
 
+static func stage_enemy_lineup(state: RefCounted, encounter_def: Resource) -> void:
+	if not is_instance_valid(encounter_def):
+		return
+	
+	var placements = encounter_def.get("enemy_placements")
+	if not placements is Array:
+		return
+		
+	state.staged_enemy_placements.clear()
+	for placement in placements:
+		var unit_id = placement.get("id", placement.get("unit_id", ""))
+		var unit_def = Database.get_definition(unit_id)
+		if not is_instance_valid(unit_def):
+			continue
+			
+		var pos = placement.get("position", 0)
+		var scale: float = 1.0
+		if encounter_def.has_meta("elite_stat_scale") and pos == 4:
+			var id_str = String(unit_id)
+			if not id_str.contains("unit_dust_elite"):
+				scale = float(encounter_def.get_meta("elite_stat_scale"))
+		
+		var equipment = placement.get("equipment", placement.get("items", []))
+		state.staged_enemy_placements.append({
+			"id": unit_id,
+			"position": pos,
+			"equipment": equipment,
+			"elite_stat_scale": scale
+		})
+
 static func setup_enemy_lineup(state: RefCounted, encounter_def: Resource) -> void:
 	if not is_instance_valid(encounter_def):
 		return

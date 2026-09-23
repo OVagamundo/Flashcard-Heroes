@@ -160,14 +160,31 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		spikes_data_list.append(damage_result["spikes_data"])
 		
 	var impact_start: int = battle_manager.get_pending_reactions_size()
+	if damage_result.has("spikes_data"):
+		var spikes = damage_result["spikes_data"]
+		battle_manager.trigger_on_hurt(
+			String(spikes["attacker_uuid"]),
+			int(spikes["spikes_damage"]),
+			String(spikes["defender_uuid"]),
+			C.CAUSE_ABILITY,
+			&"",
+			false
+		)
 	battle_manager.trigger_on_hurt(final_target_uuid, damage, attacker_uuid)
-	
-	if new_hp <= 0:
-		battle_manager.trigger_on_kill(attacker_uuid, final_target_uuid)
 		
 	var impact_events: Array[CombatEvent] = []
 	if is_simulation:
 		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
+
+	# A lethal save resolves in the on_hurt reaction window, so determine kills only
+	# after that window closes.
+	if final_target.current_hp <= 0:
+		battle_manager.trigger_on_kill(attacker_uuid, final_target_uuid)
+	if damage_result.has("spikes_data"):
+		var spikes = damage_result["spikes_data"]
+		var reflected_target = battle_manager.get_instance_by_uuid(String(spikes["attacker_uuid"]))
+		if is_instance_valid(reflected_target) and reflected_target.current_hp <= 0:
+			battle_manager.trigger_on_kill(String(spikes["defender_uuid"]), reflected_target.ball_uuid)
 		
 	var visual_payload := CombatPayload.damage(attacker_uuid, damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	visual_payload.targets_old_burn.assign([old_burn])

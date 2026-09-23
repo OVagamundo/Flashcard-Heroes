@@ -102,6 +102,16 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		result.events.append(dmg_event)
 		
 		# 3. Trigger Reactions
+		if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
+			var spikes = dmg_res["spikes_data"]
+			battle_manager.trigger_on_hurt(
+				String(spikes["attacker_uuid"]),
+				int(spikes["spikes_damage"]),
+				String(spikes["defender_uuid"]),
+				C.CAUSE_ABILITY,
+				&"",
+				false
+			)
 		battle_manager.trigger_on_hurt(current_target_uuid, dmg_res["hp_damage"], source_uuid, C.CAUSE_ABILITY)
 		if new_hp <= 0:
 			battle_manager.trigger_on_kill(source_uuid, current_target_uuid)

@@ -19,14 +19,18 @@ const C = preload("res://scripts/Constants.gd")
 func _get_instance_team(instance: GachaBallInstance, battle_manager: Node) -> String:
 	assert(is_instance_valid(instance), "AbilityResolver: instance must be valid")
 	var container = instance.location_container_tag
-	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
+	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
 		return "PLAYER"
-	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 		return "ENEMY"
 	elif container == C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 		return "PLAYER"
 	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 		return "ENEMY"
+	elif not instance.equipped_on_uuid.is_empty() and battle_manager != null and battle_manager.has_method("get_instance_by_uuid"):
+		var parent_unit = battle_manager.get_instance_by_uuid(instance.equipped_on_uuid)
+		if is_instance_valid(parent_unit):
+			return _get_instance_team(parent_unit, battle_manager)
 	return ""
 
 ## Unified filter: Should this unit respond to this trigger?

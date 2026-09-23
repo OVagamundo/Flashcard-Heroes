@@ -112,3 +112,7 @@ const HURT_RECOIL_DISTANCE := 35.0 # Very noticeable recoil (was 15px)
 # STAGGERED ENTRY ANIMATION
 # =============================================================================
 const ENTRY_STAGGER_DELAY := 0.1 # 100ms between each ball appearing
+
+# Keep the two number projectiles in a combined HP/PWR buff readable instead
+# of spawning them directly on top of one another.
+const SECONDARY_STAT_BUFF_DELAY := 0.15

@@ -66,6 +66,15 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	# Trigger on_hurt for damaged units
 	var on_hurt_start_index = combat_sim._pending_reactions.size()
+	for reflected_hit in damage_result.reflected_hits:
+		battle_manager.trigger_on_hurt(
+			reflected_hit.target_uuid,
+			reflected_hit.damage_amount,
+			reflected_hit.source_uuid,
+			C.CAUSE_ABILITY,
+			&"",
+			false
+		)
 	for tgt_uuid in damage_result.damaged_uuids:
 		battle_manager.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, damage_request.cause)
 	
@@ -79,6 +88,10 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 		var tgt = battle_manager.get_instance_by_uuid(tgt_uuid)
 		if is_instance_valid(tgt) and tgt.current_hp <= 0:
 			battle_manager.trigger_on_kill(request.source_uuid, tgt_uuid)
+	for reflected_hit in damage_result.reflected_hits:
+		var reflected_target = battle_manager.get_instance_by_uuid(reflected_hit.target_uuid)
+		if is_instance_valid(reflected_target) and reflected_target.current_hp <= 0:
+			battle_manager.trigger_on_kill(reflected_hit.source_uuid, reflected_hit.target_uuid)
 	
 	# Death check
 	battle_manager._check_for_deaths_with_counter_delay(true, out_events, death_tracking)

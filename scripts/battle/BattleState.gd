@@ -44,6 +44,9 @@ var player_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
 ## Slot effects for enemy lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
 var enemy_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
 
+## Staged enemy placements for sequential entrance
+var staged_enemy_placements: Array = []
+
 
 # ============================================================================
 # CONTAINER ACCESS
@@ -247,6 +250,7 @@ func clear() -> void:
 	_gacha_tokens = 0
 	player_slot_effects = [&"", &"", &"", &"", &""]
 	enemy_slot_effects = [&"", &"", &"", &"", &""]
+	staged_enemy_placements.clear()
 
 
 func register_instance(instance: GachaBallInstance) -> void:

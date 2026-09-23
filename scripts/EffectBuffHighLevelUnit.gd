@@ -2,16 +2,22 @@
 @tool
 extends EffectDefinition
 
-## Effect that buffs the drawn/summoned/merged/battle-started unit if it is level 2 or 3.
-## Used by Veteran Insignia trinket to grant +1 HP, +1 PWR to units with level > 1.
+## Effect that buffs Level 2 units when they enter the board.
+## Clone of EffectBuffDrawnUnit (Royal Insignia) targeting Level 2 units without tier requirements.
 ## Expected parameters:
 ##   - hp_amount: int (default 1) - HP buff amount
-##   - pwr_amount: int (default 1) - PWR buff amount  
+##   - pwr_amount: int (default 1) - PWR buff amount
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
-	# Determine targets: Use _targets if provided, otherwise infer from context based on trigger
+	# Get the target unit UUID from context
+	# Context key depends on trigger:
+	# - on_draw: "drawn_uuid"
+	# - on_ally_summon: "summoned_uuid"
+	# - on_merge: "merged_uuid"
+	# - on_battle_start: "source_uuid" (the unit starting battle)
+	# Determine targets: Use _targets if provided, otherwise infer from context
 	var targets_to_process: Array[String] = []
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
@@ -32,12 +38,11 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var result := EffectResult.new()
 	var state_applied_any := false
 	
-	# TEAM CHECK: Ensure targets are on the same team as the trinket owner
+	# TEAM CHECK: Ensure targets are on same team as trinket owner
 	var trinket_instance = battle_manager.get_instance(_source_uuid)
 	var source_team := ""
 	if is_instance_valid(trinket_instance):
 		source_team = _get_team_from_container(trinket_instance.location_container_tag)
-	
 	var batched_target_uuids: Array[String] = []
 	var batched_target_names: Array[String] = []
 	var batched_old_hp: Array[int] = []
@@ -45,8 +50,15 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var batched_max_hp: Array[int] = []
 	var batched_old_pwr: Array[int] = []
 	var batched_new_pwr: Array[int] = []
+
+	var raw_hp = parameters.get("hp_amount", 1)
+	var hp_amount: int = int(raw_hp) if raw_hp != null else 1
+	
+	var raw_pwr = parameters.get("pwr_amount", 1)
+	var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 	
 	for target_uuid in targets_to_process:
+		# Get the target instance
 		var target_instance = battle_manager.get_instance(target_uuid)
 		if not is_instance_valid(target_instance):
 			continue
@@ -57,7 +69,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			if target_team != source_team:
 				continue
 		
-		# Get definition to check category
+		# Get definition to check category and hero status
 		var target_def = target_instance.get_definition()
 		if not is_instance_valid(target_def):
 			continue
@@ -66,9 +78,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.category != &"UNIT":
 			continue
 		
-		# Check if Level is > 1 OR Tier is > 1 (i.e., Level 2+ or Tier 2+ units)
-		var target_tier = int(target_def.tier) if "tier" in target_def else 1
-		if target_instance.level <= 1 and target_tier <= 1:
+		# Heroes do not have levels or tiers and are not affected by this trinket
+		if target_def.is_hero:
+			continue
+		
+		# Veteran Insignia applies to Level 2 units only (no tier requirement)
+		if target_instance.level != 2:
 			continue
 		
 		# Check recursion prevention tag
@@ -79,13 +94,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		# Mark as buffed to prevent recursion
 		target_instance.add_tag(buff_tag)
 		
-		# Get buff amounts from parameters
-		var raw_hp = parameters.get("hp_amount", 1)
-		var hp_amount: int = int(raw_hp) if raw_hp != null else 1
-		
-		var raw_pwr = parameters.get("pwr_amount", 1)
-		var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
-		
 		if is_simulation:
 			# Capture old stats
 			var old_hp: int = target_instance.current_hp
@@ -93,7 +101,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var max_hp: int = target_def.base_hp
 			
 			# Apply HP buff
-			var hp_result = battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
+			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
 			var new_hp: int = target_instance.current_hp
 			if hp_result is Dictionary:
 				new_hp = hp_result.get("new_hp", target_instance.current_hp)
@@ -101,7 +109,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				new_hp = int(hp_result)
 			
 			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
 			if pwr_result is Dictionary:
 				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
@@ -119,8 +127,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_stat_delta(target_instance, "hp", hp_amount)
-			battle_manager.apply_stat_delta(target_instance, "pwr", pwr_amount)
+			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			state_applied_any = true
 
 	if is_simulation and not batched_target_uuids.is_empty():
@@ -131,11 +139,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				trinket_name = tr(trinket_def.name_key)
 		if trinket_name.is_empty():
 			trinket_name = "Veteran Insignia"
-
-		var raw_hp = parameters.get("hp_amount", 1)
-		var hp_amount: int = int(raw_hp) if raw_hp != null else 1
-		var raw_pwr = parameters.get("pwr_amount", 1)
-		var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 
 		# Single Log message for all targets
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {

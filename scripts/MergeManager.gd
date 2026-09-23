@@ -26,10 +26,10 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Calculate initial combined stats using ONLY permanent stats.
 	# This ensures temporary battle buffs (like Doppleganger scaling) and item bonuses
 	# are NOT permanently baked into the merged unit's base stats.
-	var total_hp: int = instance_a.get_definition_base_hp() + instance_a.get_persistent_hp_modifier() + \
-						instance_b.get_definition_base_hp() + instance_b.get_persistent_hp_modifier()
-	var total_pwr: int = instance_a.get_definition_base_pwr() + instance_a.get_persistent_pwr_modifier() + \
-						 instance_b.get_definition_base_pwr() + instance_b.get_persistent_pwr_modifier()
+	var total_hp: int = instance_a.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_a, &"hp", all_instances_db) + \
+						instance_b.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_b, &"hp", all_instances_db)
+	var total_pwr: int = instance_a.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_a, &"pwr", all_instances_db) + \
+						 instance_b.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_b, &"pwr", all_instances_db)
 	
 	# Determine items to transfer (items will be re-equipped and their stats re-applied later)
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
@@ -80,11 +80,16 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 			
-	# Merge dynamic tags (ensuring uniqueness)
+	# Merge dynamic tags (ensuring uniqueness). Conditional trinket registration is
+	# deliberately not inherited: the resulting unit is evaluated as a new unit.
 	for tag in instance_a.dynamic_tags:
+		if _is_conditional_trinket_tag(tag):
+			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	for tag in instance_b.dynamic_tags:
+		if _is_conditional_trinket_tag(tag):
+			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	
@@ -244,6 +249,35 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instance
 
 	return equipped_items
 
+## Conditional trinket bonuses (Rusty Ring and the two Insignias) are a single
+## unit-state modifier, not earned stats. They must be re-evaluated after every
+## merge instead of being summed from both parents.
+func _get_mergeable_persistent_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
+	var total := 0
+	for component in instance.components:
+		if not component is StatComponent:
+			continue
+		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
+			continue
+		total += int(component.modifiers.get(String(stat), 0))
+	return total
+
+func _is_conditional_trinket_component(component: StatComponent, all_instances_db: Dictionary) -> bool:
+	if component.source_type == &"CONDITIONAL_TRINKET":
+		return true
+	# Compatibility with saves created before conditional bonuses had their own
+	# component type. The source instance identifies the three affected trinkets.
+	var source_instance: GachaBallInstance = all_instances_db.get(component.source_id)
+	if not is_instance_valid(source_instance):
+		return false
+	return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+
+func _is_conditional_trinket_tag(tag: StringName) -> bool:
+	var value := String(tag)
+	return value == "rusty_ring_buffed" or value == "rusty_ring_debuffed" \
+		or value.begins_with("royal_insignia_buffed_") \
+		or value.begins_with("veteran_insignia_buffed_")
+
 ## Performs an evolution by merging the instance with a 'phantom' copy of itself.
 func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Dictionary) -> Dictionary:
 	var recipe = Database.get_self_merge_recipe(instance.definition_id)
@@ -344,4 +378,3 @@ func _get_instance_team(inst: GachaBallInstance, all_instances_db: Dictionary) -
 	if container.begins_with("Enemy"):
 		return "ENEMY"
 	return ""
-

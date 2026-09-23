@@ -151,11 +151,18 @@ def build_docs():
             
             abils = []
             for a in item["abilities"]:
-                aname = f"**{t_md(a['name_key'])}**"
-                adesc = t_md(a['desc_key'])
+                raw_name = t_md(a['name_key']).strip()
+                raw_desc = t_md(a['desc_key']).strip()
+                if not raw_name and not raw_desc:
+                    continue
+                aname = f"**{raw_name}**" if raw_name else ""
                 if a['mechanics']:
-                    adesc += " " + " ".join(a['mechanics'])
-                if adesc: aname += f": {adesc}"
+                    raw_desc += (" " if raw_desc else "") + " ".join(a['mechanics'])
+                if raw_desc:
+                    if aname:
+                        aname += f": {raw_desc}"
+                    else:
+                        aname = raw_desc
                 abils.append(aname)
             
             abil_str = "<br><br>".join(abils)
@@ -178,12 +185,13 @@ def build_docs():
                     item.get("hp", ""),
                     item.get("pwr", "")
                 ]
+                named_abilities = [a for a in item["abilities"] if a.get("name_key") or a.get("desc_key")]
                 for i in range(3):
-                    if i < len(item["abilities"]):
-                        row.append(t(item["abilities"][i]["name_key"]))
-                        desc = t(item["abilities"][i]["desc_key"])
-                        if item["abilities"][i]["mechanics"]:
-                            desc += " " + " ".join(item["abilities"][i]["mechanics"])
+                    if i < len(named_abilities):
+                        row.append(t(named_abilities[i]["name_key"]))
+                        desc = t(named_abilities[i]["desc_key"])
+                        if named_abilities[i]["mechanics"]:
+                            desc += " " + " ".join(named_abilities[i]["mechanics"])
                         row.append(desc)
                     else:
                         row.extend(["", ""])
@@ -201,6 +209,16 @@ def build_docs():
             if key.startswith("STATUS_") and key.endswith("_DESC"):
                 status_name = key.replace("STATUS_", "").replace("_DESC", "").capitalize()
                 writer.writerow([status_name, val.replace("\n", " ")])
+
+    # 4. Sync to localization/docs if present
+    loc_docs_dir = os.path.join(PROJECT_ROOT, "localization/docs")
+    if os.path.exists(loc_docs_dir):
+        import shutil
+        for fname in ["GameContentDocument.md", "units.csv", "items.csv", "trinkets.csv", "status_effects.csv"]:
+            src = os.path.join(PROJECT_ROOT, "docs", fname)
+            dst = os.path.join(loc_docs_dir, fname)
+            if os.path.exists(src):
+                shutil.copyfile(src, dst)
                 
     print("Documentation (MD and CSVs) generated successfully including Status Effects.")
 

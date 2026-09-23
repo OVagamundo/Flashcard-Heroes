@@ -69,8 +69,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			var old_hp = inst.current_hp
 			var old_pwr = inst.current_pwr
 			
-			inst.apply_hp_delta(delta, {"silent": is_simulation})
-			inst.apply_pwr_delta(delta, {"silent": is_simulation})
+			# Keep the component and live stats in sync. This means a later merge
+			# cannot inherit a stale Ring bonus after the unit equips an item.
+			battle_manager.set_conditional_trinket_bonus(inst, source_uuid, 1, 1, not has_equip, is_simulation)
 			
 			if is_simulation:
 				# If delta < 0 (debuff on equip): self debuff

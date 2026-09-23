@@ -123,13 +123,15 @@ static func trigger_on_damage_dealt(actual_attacker_uuid: String, victim_uuid: S
 ## @param victim_team: String - "PLAYER" or "ENEMY"
 ## @param victim_current_hp: int - The victim's current HP after damage
 ## @param cause: StringName - The cause of damage (C.CAUSE_ATTACK, etc.)
-static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName, status_id: StringName = &"") -> void:
+## @param victim_category: The victim definition category captured at trigger time
+static func trigger_on_hurt(victim_uuid: String, damage_amount: int, attacker_uuid: String, victim_team: String, victim_current_hp: int, cause: StringName, status_id: StringName = &"", victim_category: StringName = &"") -> void:
 	var hurt_context: Dictionary = {
 		"victim_uuid": victim_uuid,
 		"damage_taken": damage_amount,
 		"attacker_uuid": attacker_uuid,
 		"victim_team": victim_team,
 		"victim_current_hp": victim_current_hp,
+		"victim_category": victim_category,
 		"trigger_cause": cause,
 		"status_id": status_id
 	}

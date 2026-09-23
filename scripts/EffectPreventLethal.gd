@@ -7,7 +7,7 @@ extends EffectDefinition
 ## Uses turn metadata to ensure once-per-turn limit per team.
 ## 
 ## DOCUMENTATION COMPLIANT: Uses context keys only (ZERO-INSTANCE-QUERY RULE)
-## Required context keys: victim_uuid, victim_team, victim_current_hp, team
+## Required context keys: victim_uuid, victim_team, victim_current_hp, victim_category, team
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
@@ -16,6 +16,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var victim_uuid: String = context.get("victim_uuid", "")
 	var victim_team: String = context.get("victim_team", "")
 	var victim_current_hp: int = context.get("victim_current_hp", 1)
+	var victim_category: StringName = context.get("victim_category", &"")
 	var trinket_team: String = context.get("team", "") # AbilityResolver provides this for trinkets
 	
 	pass
@@ -38,10 +39,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		pass
 		return EffectResult.empty()
 	
-	# 2.5 Check victim is a valid UNIT (not a trinket)
-	var victim_def_id = context.get("victim_def_id", "")
-	var victim_def = Database.get_definition(victim_def_id)
-	if not is_instance_valid(victim_def) or victim_def.category != &"UNIT":
+	# 2.5 Only combat units can be saved.  The trigger provides this snapshot
+	# so the effect stays independent of battle-instance lookups.
+	if victim_category != &"UNIT":
 		pass
 		return EffectResult.empty()
 		
