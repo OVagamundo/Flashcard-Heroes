@@ -26,7 +26,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	if has_damaged:
 		var events_hurt_start = combat_sim._pending_reactions.size()
 		for damaged_uuid in effect_result.damaged_uuids:
-			var amount: int = effect_result.events[0].visual_payload.amount if not effect_result.events.is_empty() and effect_result.events[0].visual_payload != null else 0
+			var amount := _get_damage_amount(damaged_uuid)
 			battle_manager.trigger_on_hurt(damaged_uuid, abs(amount), request.source_uuid, C.CAUSE_ABILITY)
 		
 		combat_sim.drain_reactions_inline(events_hurt_start, battle_manager)
@@ -54,3 +54,11 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	# though generally we want this to run unless an effect explicitly defers it)
 	if not effect_result.skip_death_check:
 		battle_manager._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
+
+func _get_damage_amount(target_uuid: String) -> int:
+	for event in effect_result.events:
+		if event.type != CombatEvent.Type.DAMAGE or not event.target_uuids.has(target_uuid):
+			continue
+		if is_instance_valid(event.visual_payload):
+			return int(event.visual_payload.amount)
+	return 0

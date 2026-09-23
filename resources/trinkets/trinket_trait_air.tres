@@ -10,6 +10,6 @@ name_key = "trinket.trait_air.name"
 description_key = "trinket.trait_air.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
-is_player_exclusive = true
+is_player_exclusive = false
 linked_trait_id = &"AIR"
 ability_definitions = Array[Resource]([])

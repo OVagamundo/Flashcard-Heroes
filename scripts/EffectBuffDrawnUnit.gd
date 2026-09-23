@@ -2,12 +2,11 @@
 @tool
 extends EffectDefinition
 
-## Effect that buffs the drawn unit based on tier filtering.
-## Used by Royal Insignia trinket to grant +1 HP, +1 PWR to Tier 1 units on draw.
+## Effect that buffs Level 1 units when they enter the board.
+## Used by Royal Insignia trinket to grant +1 HP, +1 PWR to Level 1 units.
 ## Expected parameters:
 ##   - hp_amount: int (default 1) - HP buff amount
-##   - pwr_amount: int (default 1) - PWR buff amount  
-##   - tier_filter: int (default 1) - Only buff units of this tier (0 = any)
+##   - pwr_amount: int (default 1) - PWR buff amount
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
@@ -16,6 +15,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Context key depends on trigger:
 	# - on_draw: "drawn_uuid"
 	# - on_ally_summon: "summoned_uuid"
+	# - on_merge: "merged_uuid"
 	# - on_battle_start: "source_uuid" (the unit starting battle)
 	# Determine targets: Use _targets if provided, otherwise infer from context
 	var targets_to_process: Array[String] = []
@@ -25,6 +25,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		var ctx_uuid: String = context.get("drawn_uuid", "")
 		if ctx_uuid.is_empty():
 			ctx_uuid = context.get("summoned_uuid", "")
+		if ctx_uuid.is_empty():
+			ctx_uuid = context.get("merged_uuid", "")
 		if ctx_uuid.is_empty():
 			ctx_uuid = context.get("source_uuid", "")
 		if not ctx_uuid.is_empty():
@@ -67,7 +69,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			if target_team != source_team:
 				continue
 		
-		# Get definition to check tier and category
+		# Get definition to check category and hero status
 		var target_def = target_instance.get_definition()
 		if not is_instance_valid(target_def):
 			continue
@@ -76,10 +78,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.category != &"UNIT":
 			continue
 		
-		# Check tier filter
-		var raw_tier = parameters.get("tier_filter", 1)
-		var tier_filter: int = int(raw_tier) if raw_tier != null else 1
-		if tier_filter > 0 and target_def.tier != tier_filter:
+		# Heroes do not have levels or tiers and are not affected by this trinket
+		if target_def.is_hero:
+			continue
+		
+		# Royal Insignia applies to Level 1 units only (no tier requirement)
+		if target_instance.level != 1:
 			continue
 		
 		# Check recursion prevention tag

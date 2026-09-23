@@ -212,7 +212,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Vengeance (Trinket)",
 		"trigger": "on_ally_death",
 		"condition": null,
-		"effect": "Grant +1 PWR to a random ally when an ally dies",
+		"effect": "Grant +1 HP and +1 PWR to a random ally when an ally dies",
 	},
 
 	"ability_trinket_underdog_emblem": {
@@ -222,11 +222,18 @@ const ABILITIES: Dictionary = {
 		"effect": "If outnumbered in the lineup, grant all allies +2 Armor per missing ally",
 	},
 
+	"ability_trinket_royal_insignia": {
+		"owner": "Royal Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_LEVEL_1_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 1 unit enters the board (drawn, summoned, merged, or at battle start)",
+	},
+
 	"ability_trinket_veteran_insignia": {
 		"owner": "Veteran Insignia (Trinket)",
-		"trigger": "on_draw / on_ally_summon / on_battle_start",
-		"condition": "TARGET_LEVEL_GREATER_THAN_1",
-		"effect": "Grant +1 HP and +1 PWR when a level 2 or 3 unit is drawn, summoned, merged, or at battle start",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_LEVEL_2_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 2 unit enters the board (drawn, summoned, merged, or at battle start)",
 	},
 
 	"ability_trinket_bargain_charm": {

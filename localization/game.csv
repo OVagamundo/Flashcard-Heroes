@@ -353,11 +353,11 @@ STATUS_STATIC_DESC,Any core stat change consumes 1 stack of static and deals 1 d
 trinket.royal_insignia.name,Royal Insignia,InsÃ­gnia Real
 trinket.royal_insignia.desc,A medal signifying royal favor.,Uma medalha significando favor real.
 ability.royal_insignia.name,Royal Blessing,BÃªnÃ§Ã£o Real
-ability.royal_insignia.desc,"When a Tier 1 unit is drawn, grant it +1 HP and +1 PWR.","Quando uma unidade NÃ­vel 1 Ã© sacada, concede +1 HP e +1 PWR."
+ability.royal_insignia.desc,"When a Level 1 unit enters the board, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 1 entra no tabuleiro, concede +1 HP e +1 PWR."
 trinket.veteran_insignia.name,Veteran Insignia,InsÃ­gnia do Veterano
 trinket.veteran_insignia.desc,A badge of honor for seasoned warriors.,Um distintivo de honra para guerreiros experientes.
 ability.veteran_insignia.name,Veteran Blessing,BÃªnÃ§Ã£o do Veterano
-ability.veteran_insignia.desc,"When a level 2 or 3 unit is drawn, summoned, or merged, grant it +1 HP and +1 PWR.","Quando uma unidade nÃ­vel 2 ou 3 Ã© comprada, invocada ou fundida, concede +1 HP e +1 PWR."
+ability.veteran_insignia.desc,"When a Level 2 unit enters the board, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 2 entra no tabuleiro, concede +1 HP e +1 PWR."
 trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
 trinket.trait_fire.desc,Enables the Fire trait whenever your team has enough Fire souls.,Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes.
 trinket.trait_earth.name,Earth Trait,Sinergia de Terra

@@ -327,10 +327,11 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	BattleSetup.place_instances_from_run_state(_state, permanent_to_battle_uuid_map)
 	
 	# Setup board using BattleSetup
-	BattleSetup.setup_enemy_lineup(_state, encounter_def)
-	
 	if not is_test_mode and is_instance_valid(encounter_def):
+		BattleSetup.stage_enemy_lineup(_state, encounter_def)
 		BattleSetup.setup_enemy_trinkets(_state, encounter_def)
+	elif is_instance_valid(encounter_def):
+		BattleSetup.stage_enemy_lineup(_state, encounter_def)
 	
 	# Copy player trinkets
 	BattleSetup.setup_player_trinkets(_state)
@@ -1011,8 +1012,15 @@ func _resolve_single_effect_request(request: EffectRequest, out_events: Array[Co
 
 ## New priority-driven combat phase resolution.
 ## Uses actor queue with nested reaction loops for cascading effects.
-func get_board_snapshot() -> Dictionary:
+func get_board_snapshot(pre_stats_override: Dictionary = {}) -> Dictionary:
 	var snapshot = BattleHelpers.get_combat_board_snapshot(_battle_instances)
+	for unit_uuid in pre_stats_override:
+		if snapshot.has(unit_uuid):
+			var unit_override: Dictionary = pre_stats_override[unit_uuid]
+			if unit_override.has("hp"):
+				snapshot[unit_uuid]["hp"] = unit_override["hp"]
+			if unit_override.has("pwr"):
+				snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
 	var discard_c = get_container(&"DiscardPile")
 	if is_instance_valid(discard_c):
 		snapshot["__discard_count__"] = discard_c.get_all_non_empty_uuids().size()
@@ -1285,12 +1293,20 @@ func _on_gacha_tokens_changed(_new_amount: int) -> void:
 	# Trigger "on_gacha_tokens_changed" abilities
 	# This allows units like Templar to update their stats immediately when tokens change.
 	# We don't need to pass the amount in context because the effect will query the current amount.
+	var pre_stats := _capture_all_unit_stats()
 	AbilityResolver.process_trigger(&"on_gacha_tokens_changed", {})
 	
 	if not _is_drawing and _current_battle_phase == Phases.MANAGEMENT and not _is_processing_effect:
 		var passive_events = _combat.process_reaction_queue(self, {})
 		if not passive_events.is_empty():
 			var snapshot = VisualDataAdapter.create_board_snapshot(self.get_all_instances())
+			for unit_uuid in pre_stats:
+				if snapshot.has(unit_uuid):
+					var unit_override: Dictionary = pre_stats[unit_uuid]
+					if unit_override.has("hp"):
+						snapshot[unit_uuid]["hp"] = unit_override["hp"]
+					if unit_override.has("pwr"):
+						snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
 			enqueue_management_animation(snapshot, passive_events)
 			_pending_inventory_refresh = true
 
@@ -1581,6 +1597,37 @@ func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, 
 	
 	return apply_stat_delta(instance, stat_type, delta)
 
+## Sets a non-stacking, condition-bound trinket bonus on one unit.
+## Unlike ordinary permanent buffs, this component is intentionally excluded from
+## merge inheritance and can be safely removed when its eligibility changes.
+func set_conditional_trinket_bonus(instance: GachaBallInstance, source_id: String,
+		hp_amount: int, pwr_amount: int, enabled: bool, silent: bool = false) -> void:
+	assert(is_instance_valid(instance), "set_conditional_trinket_bonus: instance is null")
+	var component_id := StringName(source_id + "_conditional")
+	var old_hp := 0
+	var old_pwr := 0
+	for component in instance.components:
+		if component is StatComponent and component.id == component_id:
+			old_hp = int(component.modifiers.get("hp", 0))
+			old_pwr = int(component.modifiers.get("pwr", 0))
+			break
+
+	instance.remove_component_by_id(component_id)
+	var new_hp := hp_amount if enabled else 0
+	var new_pwr := pwr_amount if enabled else 0
+	if enabled:
+		instance.add_or_update_stat_component(
+			component_id, &"CONDITIONAL_TRINKET", source_id, new_hp, new_pwr, false,
+			"Conditional Trinket Bonus", "Conditional trinket stat bonus"
+		)
+
+	var hp_delta := new_hp - old_hp
+	var pwr_delta := new_pwr - old_pwr
+	if hp_delta != 0:
+		instance.apply_hp_delta(hp_delta, {"silent": silent})
+	if pwr_delta != 0:
+		instance.apply_pwr_delta(pwr_delta, {"silent": silent})
+
 func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
@@ -1668,20 +1715,24 @@ func _trigger_static_consumption(instance: GachaBallInstance) -> void:
 		)
 		_pending_reactions.append(request)
 
-func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"") -> void:
+func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"", trigger_damage_dealt: bool = true) -> void:
 	# Get target instance data for context (effects should not query instances directly)
 	var target_instance = get_instance_by_uuid(target_uuid)
 	var victim_team := ""
 	var victim_current_hp := 0
+	var victim_category: StringName = &""
 	if is_instance_valid(target_instance):
 		victim_current_hp = target_instance.current_hp
+		var target_definition = target_instance.get_definition()
+		if is_instance_valid(target_definition):
+			victim_category = target_definition.category
 		if target_instance.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
 			victim_team = "PLAYER"
 		elif target_instance.location_container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			victim_team = "ENEMY"
 	
 	# LIFESTEAL TIMING FIX: Process on_damage_dealt BEFORE on_hurt
-	if not attacker_uuid.is_empty():
+	if trigger_damage_dealt and not attacker_uuid.is_empty():
 		# Resolve the actual attacking UNIT - if attacker is an item, get the holder
 		var actual_attacker_uuid := attacker_uuid
 		var attacker_instance = get_instance_by_uuid(attacker_uuid)
@@ -1694,7 +1745,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 		TurnAbilities.trigger_on_damage_dealt(actual_attacker_uuid, target_uuid, damage_amount, victim_current_hp)
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
-	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id)
+	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id, victim_category)
 	
 	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
 	var victim_loc = get_location_for_uuid(target_uuid)
@@ -2358,9 +2409,10 @@ func _on_draw_gacha_requested(tier: int) -> void:
 	# Ignore draw intents during COMBAT or when animations are playing to enforce strict input blocking.
 	if not can_draw_gacha_instance(tier):
 		return
+	var pre_stats := _capture_all_unit_stats()
 	var chain_events = bm_draw_gacha_instance(tier)
 	if not chain_events.is_empty():
-		enqueue_management_animation(get_board_snapshot(), chain_events)
+		enqueue_management_animation(get_board_snapshot(pre_stats), chain_events)
 
 
 # Helper function to equip an item on a unit
@@ -2415,6 +2467,9 @@ func _on_results_acknowledged() -> void:
 	
 	SignalBus.emit_signal("close_modal_requested")
 	
+	if _current_turn <= 1 and not _state.staged_enemy_placements.is_empty():
+		await execute_enemy_entrance_sequence()
+	
 	# Trigger turn start abilities AFTER mini-game completion
 	if not _turn_start_abilities_triggered:
 		_trigger_turn_start_abilities()
@@ -2423,6 +2478,119 @@ func _on_results_acknowledged() -> void:
 	else:
 		# No abilities to execute, go directly to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
+
+## Executes sequential entrance of staged enemy units from Slot 4 (Backline) down to Slot 0 (Frontline).
+func execute_enemy_entrance_sequence() -> void:
+	if _state.staged_enemy_placements.is_empty():
+		return
+		
+	var placements: Array = _state.staged_enemy_placements.duplicate(true)
+	_state.staged_enemy_placements.clear()
+	
+	# Order strictly Slot 4 (Rightmost, Backline) down to Slot 0 (Leftmost, Frontline)
+	placements.sort_custom(func(a, b): return a.get("position", 0) > b.get("position", 0))
+	
+	var battle_view = get_tree().get_first_node_in_group("battle_view") if is_inside_tree() else null
+	_resolve_animator()
+	
+	for placement in placements:
+		var unit_id = placement.get("id", placement.get("unit_id", ""))
+		var unit_def = Database.get_definition(unit_id)
+		if not is_instance_valid(unit_def):
+			continue
+			
+		var pos: int = placement.get("position", 0)
+		var enemy_inst := GachaBallInstance.new()
+		enemy_inst.initialize(unit_def)
+		
+		var scale: float = placement.get("elite_stat_scale", 1.0)
+		if scale > 1.0:
+			enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
+			enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
+		
+		# 1. Capture snapshot before this unit enters
+		var pre_snap := get_board_snapshot()
+		
+		# 2. Place unit in EnemyLineup[pos] in data
+		_state.bm_add_instance(enemy_inst, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
+		
+		# 3. Create standard SUMMON event (same as boss / elite summons)
+		var summon_loc := LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
+		var unit_snap := EffectHandlers.create_unit_snapshot(enemy_inst, unit_def)
+		var summon_payload := EffectHandlers._make_summon_payload("", enemy_inst.ball_uuid, summon_loc, unit_snap)
+		var summon_event := CombatEvent.new(CombatEvent.Type.SUMMON, {
+			"source_uuid": "",
+			"target_uuids": [enemy_inst.ball_uuid],
+			"visual_payload": summon_payload
+		})
+		
+		# 4. Trigger on_board_enter, on_battle_start, on_board_changed
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": enemy_inst.ball_uuid})
+		AbilityResolver.process_trigger(&"on_battle_start", {"source_uuid": enemy_inst.ball_uuid})
+		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+		
+		# 5. Collect reaction events (e.g. Royal Insignia buff, Templar power scaling)
+		var reaction_events := _combat.process_reaction_queue(self, {})
+		var entrance_events: Array[CombatEvent] = [summon_event]
+		entrance_events.append_array(reaction_events)
+		
+		# 6. Animate SUMMON followed by reactions via BattleAnimator
+		if is_instance_valid(_animator):
+			await _animator.play_turn_sequence(pre_snap, entrance_events)
+		
+		# 7. If unit has equipment, equip each item sequentially
+		var equipment = placement.get("equipment", placement.get("items", []))
+		for item_data in equipment:
+			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
+			var item_def = Database.get_definition(item_id)
+			if not is_instance_valid(item_def):
+				continue
+				
+			var item_inst := GachaBallInstance.new()
+			item_inst.initialize(item_def)
+			_state.register_instance(item_inst)
+			
+			var equip_pre_stats := _capture_all_unit_stats()
+			var old_equipped_items_data: Array = []
+			for u_item_uuid in enemy_inst.equipped_item_uuids:
+				if not u_item_uuid.is_empty():
+					var u_item = get_instance(u_item_uuid)
+					if is_instance_valid(u_item):
+						var u_def = u_item.get_definition()
+						if is_instance_valid(u_def):
+							old_equipped_items_data.append({
+								"uuid": u_item_uuid,
+								"icon": u_def.icon,
+								"definition_id": u_item.definition_id
+							})
+			
+			var equip_result := InventoryOperations.equip_item(_state, item_inst.ball_uuid, enemy_inst.ball_uuid)
+			if equip_result.success:
+				AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+				var equip_reaction_events := _combat.process_reaction_queue(self, {})
+				
+				var stat_data := _generate_inventory_stat_events(equip_pre_stats)
+				var equip_events: Array[CombatEvent] = []
+				equip_events.append_array(stat_data.events)
+				equip_events.append_array(equip_reaction_events)
+				
+				if not equip_events.is_empty():
+					if is_instance_valid(_animator):
+						var eq_snapshot = get_board_snapshot(equip_pre_stats)
+						if not old_equipped_items_data.is_empty():
+							eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
+							eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
+						await _animator.play_turn_sequence(eq_snapshot, equip_events)
+				else:
+					if is_inside_tree() and is_instance_valid(get_tree()):
+						await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
+		
+		# Brief pause before next unit enters
+		if is_inside_tree() and is_instance_valid(get_tree()):
+			await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
+	
+	# Final sync
+	_emit_battle_inventory_changed()
 
 
 # ------------------------------------------------------------------

@@ -68,6 +68,16 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	# Trigger on_hurt and on_kill
 	var kamikaze_hurt_start = combat_sim._pending_reactions.size()
+	if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
+		var spikes = dmg_res["spikes_data"]
+		battle_manager.trigger_on_hurt(
+			String(spikes["attacker_uuid"]),
+			int(spikes["spikes_damage"]),
+			String(spikes["defender_uuid"]),
+			C.CAUSE_ABILITY,
+			&"",
+			false
+		)
 	battle_manager.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 	
 	combat_sim.drain_reactions_inline(kamikaze_hurt_start, battle_manager)
@@ -76,5 +86,10 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	if new_hp <= 0:
 		battle_manager.trigger_on_kill(request.source_uuid, target_uuid)
+	if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
+		var spikes = dmg_res["spikes_data"]
+		var reflected_target = battle_manager.get_instance_by_uuid(String(spikes["attacker_uuid"]))
+		if is_instance_valid(reflected_target) and reflected_target.current_hp <= 0:
+			battle_manager.trigger_on_kill(String(spikes["defender_uuid"]), reflected_target.ball_uuid)
 	
 	battle_manager._check_for_deaths_with_counter_delay(true, out_events, death_tracking)

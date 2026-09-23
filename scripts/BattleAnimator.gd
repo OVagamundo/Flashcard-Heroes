@@ -230,7 +230,13 @@ func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[Co
 					var is_same_source = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
 					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty() and next_ev.ability_id == ability_id)
 					
-					if is_same_source or is_both_passive:
+					# A combined stat animation can only reuse one target list when both
+					# effects affect exactly the same units. For example, Timekeeper's
+					# HP aura targets units in front while its PWR aura targets units
+					# behind, so merging them would send both projectile types to every
+					# unit in the combined list.
+					var has_matching_targets := _have_matching_target_sets(merged_event.target_uuids, next_ev.target_uuids)
+					if (is_same_source or is_both_passive) and has_matching_targets:
 						_merge_event_payloads(merged_event, next_ev)
 						j += 1
 						continue
@@ -249,6 +255,18 @@ func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[Co
 			i += 1
 			
 	return consolidated
+
+
+## Stat payloads are indexed by their event's target list, so they can only be
+## merged when their target membership is identical. Ordering may differ, as
+## _merge_event_payloads matches entries by UUID.
+func _have_matching_target_sets(first_targets: Array[String], second_targets: Array[String]) -> bool:
+	if first_targets.size() != second_targets.size():
+		return false
+	for target_uuid in first_targets:
+		if not second_targets.has(target_uuid):
+			return false
+	return true
 
 
 func _merge_event_payloads(merged_event: CombatEvent, next_ev: CombatEvent) -> void:
@@ -320,6 +338,10 @@ func _merge_event_payloads(merged_event: CombatEvent, next_ev: CombatEvent) -> v
 		if has_hp and has_pwr:
 			merged_payload.stat = "both"
 			merged_event.stat = "both"
+			# An HP-first pair starts as a HEAL event. Once it also carries PWR,
+			# it must use BuffAnimation so both number projectiles share its
+			# staggered launch path. HealAnimation only renders the HP portion.
+			merged_event.type = CombatEvent.Type.BUFF
 
 	if next_payload.hp_amount != 0:
 		merged_payload.hp_amount += next_payload.hp_amount
@@ -586,6 +608,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							var new_location = LocationIdentifier.new(container_tag, index)
 							new_view.populate(new_location, new_snapshot, false)
 							new_view.set_is_enemy(container_tag == &"EnemyLineup", new_snapshot.get("def_id", &""))
+							if container_tag == &"EnemyLineup":
+								new_view.set_interaction_context(&"INSPECTION_ONLY", new_snapshot.get("category", &"UNIT"), 0)
+							if not arc_completed:
+								new_view.modulate.a = 0.0
 							_visual_registry[new_unit_uuid] = new_view
 							
 							await get_tree().process_frame
@@ -723,7 +749,11 @@ func get_snapshot_position(uuid: String) -> Dictionary:
 		
 	var trinket_view = _find_trinket_view(uuid, &"", false)
 	if not is_instance_valid(trinket_view):
+		trinket_view = _find_trinket_view(uuid, &"", true)
+	if not is_instance_valid(trinket_view):
 		trinket_view = _find_trinket_view("", StringName(uuid), false)
+	if not is_instance_valid(trinket_view):
+		trinket_view = _find_trinket_view("", StringName(uuid), true)
 		
 	if is_instance_valid(trinket_view):
 		var rect = trinket_view.get_global_rect()
@@ -843,10 +873,11 @@ func _get_trinket_views_from_tree() -> Array[GachaBallView]:
 # Animation waiting now delegated to AnimationCompletionTracker
 # All signal connect/disconnect and callback methods removed
 func wait_for_animation_completion(animation_type: String, expected_uuid: String) -> void:
-	if not expected_uuid.is_empty() and _visual_registry.has(expected_uuid):
-		var view = _visual_registry.get(expected_uuid)
-		if not is_instance_valid(view):
-			return
+	if expected_uuid.is_empty() or not _visual_registry.has(expected_uuid):
+		return
+	var view = _visual_registry.get(expected_uuid)
+	if not is_instance_valid(view):
+		return
 	# Map string type to enum
 	var anim_type: AnimationCompletionTracker.AnimationType
 	match animation_type:

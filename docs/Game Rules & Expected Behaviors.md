@@ -167,7 +167,8 @@ Battles resolve in a structured, four-phase turn loop:
 
 1. **Start of Turn**:
    * **The Sprint**: The player plays the timed Flashcard mini-game to earn Gacha Tokens.
-   * **DOT Application**: Burn damage ticks first, ignoring Armor.
+   * **Turn 1 Enemy Entrance**: On Turn 1, enemy units do not appear on the battlefield until the Flashcard mini-game is finished. Once the player acknowledges their mini-game results, enemy units enter the board sequentially, starting from the backline down to the frontline. Each entering enemy unit displays its entrance animation, activates any board-entry effects (such as trinket buffs or stat scaling), and equips its items one by one before the phase transitions.
+   * **DOT Application**: Burn damage ticks first, ignoring Armor (from Turn 2 onward).
    * **Slot Actions**: Turn-start slot effects resolve (Burn Slot and Lightning Slot actions).
    * **Abilities & Traits**: Turn-start passive abilities, traits, and status effects resolve.
    * **First-Turn Suppression**: To allow players to draw and establish their lineup before taking damage, all start-of-turn hostile abilities, slot actions, and trait triggers are suppressed on Turn 1, activating normally from Turn 2 onward.
@@ -272,12 +273,13 @@ Merging combines two units to create a stronger unit:
   * **Stat Surplus Inheritance**: The upgraded unit inherits all stat surplus, level bonuses (+1 stat point per level gained), and active stat components from both parents via a persistent `MergeInheritance` component.
   * **Soul Inheritance**: Surplus elemental souls from both parents are summed, the base souls of the new unit definition are subtracted, and the difference is preserved as inherited soul tags.
   * **Status & Buff Preservation**: Existing stacks of Armor, Spikes, Burn, and active component tags from both parents are combined and transferred to the result.
-  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: When two duplicate units merge to level up, the newly created leveled-up unit pre-inherits the post-merge battle pool scaling bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus (e.g., 6 units merging to 5 units drops the bonus from +3 to +2; 3 units merging to 2 units maintains a +1 bonus), the bonus is baked into the new unit without firing an extraneous duplicate buff projectile. If the post-merge copy count drops below the threshold (e.g., 2 units merging into 1 unit drops count to 1, threshold 2/2 = 0), the bonus is 0 and no buff is granted. **Note: This pre-baking of scaling passives applies strictly to evolutionary level-up merges (`is_level_up`), never to tier evolutions (merging two different units to create a higher-tier unit).**
+  * **Conditional Trinket Re-evaluation**: Temporary or conditional bonuses from trinkets (such as the unequipped bonus from *Rusty Ring*) and board-entry trinket buffs (such as *Royal Insignia* and *Veteran Insignia*) are not inherited or stacked across merges. The resulting merged unit is treated as a newly created unit entering the board. For example, merging two Level 1 units creates a Level 2 unit, which qualifies for and receives the *Veteran Insignia* bonus (+1 HP, +1 PWR) rather than carrying over the *Royal Insignia* bonus from its parents.
+  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: When two duplicate units merge to level up, the newly created leveled-up unit pre-inherits the post-merge battle pool scaling bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus (e.g., 6 units merging to 5 units drops the bonus from +3 to +2; 3 units merging to 2 units maintains a +1 bonus), the bonus is baked into the new unit without firing an extraneous duplicate buff projectile. If the post-merge copy count drops below the threshold (e.g., 2 units merging into 1 unit drops count to 1, threshold 2/2 = 0), the bonus is 0 and no buff is granted. **Note: This pre-baking of scaling passives applies strictly to evolutionary level-up merges, never to tier evolutions (merging two different units to create a higher-tier unit).**
 * **Recipe Merge (Tiering Up)**: Merging different specific units according to an unlocked recipe evolves them into a higher-tier unit.
   * The evolved unit starts at Level 1, inheriting the combined stat surplus from its parents.
   * Dynamic scaling passives do NOT carry over from parents during tier evolutions; the evolved unit is treated as a brand-new entity entering the board.
 * **Item Transfer Priority**: During any merge, only one equipped item is carried over to the result. The target unit's item takes priority; if empty, the source unit's item is transferred. Any secondary equipped item that is not transferred is sent directly to the **Battle Discard Pile** (`DiscardPile`) and launches into the Discard Pile button via the exact same GachaBall capsule discard animation (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.5` over a 500px arc, `coin_land` SFX, and button bump).
-* **Bench Item Merging**: Dragging an item onto another item on the bench checks for item recipes via `MergeManager` and opens a confirmation preview.
+* **Bench Item Merging**: Dragging an item onto another item on the bench checks for item recipes and opens a confirmation preview.
 
 ## 7.8 Physics Inventory & Discard Drawers (Battle Only)
 During battle, the drawer-based inventory (Battle Inventory) and side-drawer discard pile are **Read-Only Physics Visualizations**:
@@ -469,21 +471,35 @@ At the start of each combat turn, the game takes a snapshot of active souls in t
 | **Air** | Disruption | 2 / 4 / 6 / 8 | Steals Power (PWR) from mirrored enemy slots. |
 
 ## 10.3 Trinket Integration Rules
-* **Broadcasting Priority**: In combat broadcast chains, trinket reactions resolve in the third band: **Unit $\rightarrow$ Item $\rightarrow$ Trinket**.
+* **Reaction Priority**: When abilities react during combat, they resolve in an orderly hierarchy: Units act first, followed by Items, followed by Trinkets.
 * **Turn-Start Trinkets**: Resolved during the Start of Turn phase, subject to First-Turn Suppression on Turn 1.
 * **Mini-Game Interceptors**: Trinkets like *Beginner's Charm* inspect reviewed card mastery to award bonus tokens.
+* **Board-Entry Insignia Trinkets (*Royal Insignia* & *Veteran Insignia*)**:
+  * **Royal Insignia**: Grants +1 HP and +1 PWR permanently to any Level 1 unit entering the board (drawn from the gacha machine, summoned by abilities, merged, or present at battle start). Operates strictly on unit level and ignores unit tier completely. The Hero has no level or tier and is strictly unaffected.
+  * **Veteran Insignia**: Follows the exact same behavior as Royal Insignia, but applies strictly to Level 2 units. Grants +1 HP and +1 PWR permanently to any Level 2 unit entering the board (drawn, summoned, merged, or present at battle start), regardless of tier. The Hero is strictly unaffected.
+  * Neither insignia modifies stats conditionally or revokes buffs; bonuses are permanent stat increases applied upon board entry.
+* **Conditional Equipment Trinkets (*Rusty Ring*)**:
+  * Grants +1 HP and +1 PWR to all units with no equipment.
+  * Equipping an item immediately cancels this buff; if the unit loses its equipped item (such as via *Potion of Plunder*), the buff is restored.
+  * When units merge, the ring's bonus is recalculated fresh based on whether the resulting unit holds an item.
+* **Death-Reactive Stat Trinkets (*Vengeance Charm*)**:
+  * When an ally dies, grants +1 HP and +1 PWR to a random surviving ally.
+* **Armor Preservation (*Polished Plate*)**:
+  * Armor does not decay at the end of the turn.
+* **Elemental Trait Trinkets (*Fire, Earth, Water, Air Trait Trinkets*)**:
+  * Activates elemental traits when the team holds the required elemental soul count. Can appear on both player and enemy loadouts.
 * **Trinket Buff Delivery (*Twin Charm*)**:
-  * Evaluates unit copy thresholds across the team's entire Battle Pool (+1 PWR for every 2 duplicate copies of that unit definition).
-  * When a threshold is newly reached (via draw, summon, or board entry), the trinket activates on the HUD, firing directional buff projectiles from the trinket bar directly to each eligible unit on the board.
-  * During evolutionary level-up merges (`is_level_up`), the new unit pre-inherits its post-merge bonus directly into its baseline stats, suppressing extraneous buff projectiles.
+  * Evaluates unit copy thresholds across the team's entire Battle Pool (+1 PWR for every 2 duplicate copies of that unit).
+  * When a threshold is reached (via draw, summon, or board entry), the trinket activates on the HUD, firing directional buff projectiles from the trinket bar directly to each eligible unit on the board.
+  * During level-up merges, the new unit incorporates its post-merge bonus directly into its baseline stats, preventing duplicate buff animations.
 * **Death-Reactive Trinkets (*Token Return Charm*)**:
-  * Triggers on the death of the first non-Hero player unit each round (`on_ally_death`).
-  * Refunds battle tokens equal to the deceased unit's tier (Tier 1 = +1 token, Tier 2 = +2 tokens, Tier 3 = +3 tokens).
-  * Emits a `TOKEN_GAIN` combat event animating tokens bursting from the deceased unit and flying into the HUD token counter with `token_land` SFX and counter bump.
-  * Strictly rate-limited to once per turn/round via `_turn_metadata["death_token_refund_done"]`.
+  * Triggers on the death of the first non-Hero player unit each round.
+  * Refunds battle tokens equal to the deceased unit's tier (Tier 1 = 1 token, Tier 2 = 2 tokens, Tier 3 = 3 tokens).
+  * Plays an animation of tokens bursting from the fallen unit and flying into the token counter.
+  * Strictly limited to once per round.
 * **Draw Discount Trinkets (*Bargain Charm*)**:
-  * Reduces the token cost of the first gacha draw of each tier per battle by 1 token (min 1).
-  * Emits a `CombatTrinketActivation` event highlighting the trinket on the HUD when the discount applies.
+  * Reduces the token cost of the first gacha draw of each tier per battle by 1 token (minimum 1 token cost).
+  * The trinket highlights on the HUD when the discount is applied.
 
 ---
 

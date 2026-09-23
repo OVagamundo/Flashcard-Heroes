@@ -210,6 +210,7 @@ static func handle_burn_stacks(
 class DamageResult:
 	var events: Array[CombatEvent] = []
 	var damaged_uuids: Array[String] = [] # For trigger_on_hurt/on_kill callbacks
+	var reflected_hits: Array[Dictionary] = [] # {target_uuid, source_uuid, damage_amount}
 	var should_return: bool = false # If true, BattleManager should return early
 	
 	func _init():
@@ -389,6 +390,11 @@ static func handle_damage_effect(
 		# Collect Spikes data for animation (will be applied at damage impact moment)
 		if damage_result.has("spikes_data"):
 			var spikes = damage_result["spikes_data"]
+			result.reflected_hits.append({
+				"target_uuid": String(spikes["attacker_uuid"]),
+				"source_uuid": String(spikes["defender_uuid"]),
+				"damage_amount": int(spikes["spikes_damage"])
+			})
 			var attacker_inst = battle_manager.get_instance_by_uuid(spikes["attacker_uuid"])
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):
@@ -504,6 +510,7 @@ static func handle_damage_effect(
 class CascadeResult:
 	var events: Array[CombatEvent] = []
 	var hit_targets: Array[Dictionary] = [] # {uuid, amount, was_killed} for Phase 2 reactions
+	var reflected_hits: Array[Dictionary] = [] # {target_uuid, source_uuid, damage_amount}
 	
 	func _init():
 		pass
@@ -621,6 +628,11 @@ static func handle_cascade_damage(
 		var spikes_data_list: Array[Dictionary] = []
 		if damage_result.has("spikes_data"):
 			var spikes = damage_result["spikes_data"]
+			result.reflected_hits.append({
+				"target_uuid": String(spikes["attacker_uuid"]),
+				"source_uuid": String(spikes["defender_uuid"]),
+				"damage_amount": int(spikes["spikes_damage"])
+			})
 			var attacker_inst = battle_manager.get_instance_by_uuid(spikes["attacker_uuid"])
 			var attacker_max_hp := 0
 			if is_instance_valid(attacker_inst):

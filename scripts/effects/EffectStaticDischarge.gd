@@ -53,6 +53,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.damage(source_uuid, 1, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	}))
+	# Static damage is applied directly, so expose its combat consequences to
+	# EventsOnlyCommand. This restores on_hurt effects such as Aegis and lets
+	# the command defer kill credit until those reactions finish.
+	result.mark_damaged(target_uuid)
+	if new_hp <= 0:
+		result.mark_killed(target_uuid)
 	
 	result.state_applied = true
 	return result
