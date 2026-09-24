@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectModifyStat"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "BUFF",
 "ability_id": "ability_boss_1_draw_drain",
 "base_value": 1,
 "log_format": "%s drains energy from your draw (+%d HP)",

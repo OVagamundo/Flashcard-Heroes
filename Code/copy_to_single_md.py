@@ -14,10 +14,6 @@ def get_file_list():
     for path in Path("resources").glob("**/*.tres"):
         files.append((path, "ini"))
 
-    # Scene files
-    for path in Path("scenes").glob("**/*.tscn"):
-        files.append((path, "ini"))
-
     # Project file
     project_file = Path("project.godot")
     if project_file.exists():

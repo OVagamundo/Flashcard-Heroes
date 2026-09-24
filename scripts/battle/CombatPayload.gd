@@ -1,12 +1,17 @@
 class_name CombatPayload
 extends RefCounted
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Typed, presentation-only data carried by a CombatEvent.
 ##
 ## Every field below corresponds to a former visual_payload dictionary key.  A
 ## payload is intentionally sparse: a DAMAGE event only fills damage fields,
 ## while a SUMMON event only fills summon fields.  This preserves the old
 ## optional-field behaviour without allowing misspelled dynamic keys.
+
+# Semantic action classification
+var action_type: StringName = &""
 
 # Shared stat / damage fields.
 var source_uuid: String = ""
@@ -132,9 +137,35 @@ static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, 
 
 static func damage(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_armor: Array = [], p_targets_new_armor: Array = [], p_armor_consumed: Array = []) -> CombatPayload:
 	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
+	payload.action_type = C.ACTION_DAMAGE
 	payload.targets_old_armor.assign(p_targets_old_armor)
 	payload.targets_new_armor.assign(p_targets_new_armor)
 	payload.armor_consumed.assign(p_armor_consumed)
+	return payload
+
+static func heal(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
+	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp, p_targets_max_hp)
+	payload.action_type = C.ACTION_HEAL
+	return payload
+
+static func hp_buff(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
+	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp, p_targets_max_hp)
+	payload.action_type = C.ACTION_BUFF
+	return payload
+
+static func hp_debuff(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = []) -> CombatPayload:
+	var payload := hp_change(p_source_uuid, p_amount, p_targets_old_hp, p_targets_new_hp)
+	payload.action_type = C.ACTION_DEBUFF
+	return payload
+
+static func pwr_buff(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
+	var payload := pwr_change(p_source_uuid, p_amount, p_targets_old_pwr, p_targets_new_pwr)
+	payload.action_type = C.ACTION_BUFF
+	return payload
+
+static func pwr_debuff(p_source_uuid: String, p_amount: int, p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
+	var payload := pwr_change(p_source_uuid, p_amount, p_targets_old_pwr, p_targets_new_pwr)
+	payload.action_type = C.ACTION_DEBUFF
 	return payload
 
 static func guardian_intercept(p_guardian_uuid: String, p_original_target_uuid: String) -> CombatPayload:
@@ -159,6 +190,7 @@ static func item_discard(p_source_uuid: String, p_item_uuid: String, p_icon: Tex
 
 func deep_clone() -> CombatPayload:
 	var copy := CombatPayload.new()
+	copy.action_type = action_type
 	copy.source_uuid = source_uuid
 	copy.amount = amount
 	copy.stat = stat

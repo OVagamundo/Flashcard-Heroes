@@ -8,6 +8,8 @@ extends EffectDefinition
 ## Applies to both player and enemy Templars, scaling with the player's current token count.
 ## Preserves outside-battle training upgrades and existing base stats.
 
+const C = preload("res://scripts/Constants.gd")
+
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source) or source.current_hp <= 0:
@@ -33,15 +35,17 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		source.add_status_effect_silent(status_key, target_bonus)
 
 	var old_pwr: int = source.current_pwr
-	var new_pwr: int = battle_manager.apply_stat_delta(source, "pwr", delta, source_uuid)
+	var action_type := C.ACTION_BUFF if delta > 0 else C.ACTION_DEBUFF
+	var new_pwr: int = battle_manager.apply_stat_delta(source, "pwr", delta, source_uuid, action_type, false)
 
 	var visual_source_uuid := source_uuid
-	var payload := CombatPayload.pwr_change(visual_source_uuid, delta, [old_pwr], [new_pwr])
+	var payload := CombatPayload.pwr_buff(visual_source_uuid, delta, [old_pwr], [new_pwr]) if delta > 0 else CombatPayload.pwr_debuff(visual_source_uuid, delta, [old_pwr], [new_pwr])
 
-	var event := CombatEvent.new(CombatEvent.Type.BUFF, {
+	var event := CombatEvent.new(CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DEBUFF, {
 		"source_uuid": visual_source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": context.get("ability_id", ""),
+		"action_type": action_type,
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": payload
 	})

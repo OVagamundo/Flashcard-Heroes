@@ -4,7 +4,12 @@
 > **Authority & Scope:**
 > This document is the authoritative **Single Source of Truth (SSOT)** for all gameplay rules, player-facing mechanics, interaction models, economic systems, and expected behavioral contracts across *Flashcard Heroes*.
 > 
-> It merges and supersedes the legacy specifications (`MechanicalSpecification.md` and `GameplayDocument.md`). Technical architecture documents (such as [CombatSystem.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/CombatSystem.md), [InventoryManager.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/InventoryManager.md), [EncounterSystem.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/EncounterSystem.md), and [TDD V9.0](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/Flashcard%20Heroes%20TDD%20(Technichal%20Design%20Document)%20V9.0.md)) define implementation details, class structures, and data pipelines. All game design rules, mechanical equations, and expected behaviors are defined authoritatively herein.
+> **Natural Language Standard (Non-Technical):**
+> This is a game rules and behavioral design document, written in clear, natural language so that non-programmers (designers, QA testers, writers, and producers) can easily read and understand every system. All AI agents and human contributors must preserve this standard:
+> * Describe mechanics in terms of player-facing concepts, rules, triggers, and concrete game interactions rather than code syntax.
+> * **Do NOT** include code snippets, internal class names, function signatures (e.g., `apply_stat_delta()`), variable names, or technical engine jargon in this document.
+> * All technical architecture, class structures, engineering patterns, and data pipelines belong strictly in dedicated technical documents such as [CombatSystem.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/CombatSystem.md), [InventoryManager.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/InventoryManager.md), [EncounterSystem.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/EncounterSystem.md), and the [TDD V9.0](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/Flashcard%20Heroes%20TDD%20(Technichal%20Design%20Document)%20V9.0.md).
+
 
 ---
 
@@ -452,6 +457,63 @@ Special slots placed on the battlefield grid apply persistent or turn-start effe
 | `armor` | Armor | Absorbs incoming direct HP damage (1 point of Armor blocks 1 point of HP damage). Does not block Burn or Static damage. | Decays to 0 at the end of each turn unless preserved by specific abilities or trinkets (e.g. Polished Plate). |
 | `spikes` | Spikes | Deals PWR damage back to attackers when hit by a direct attack. | Does not decay. |
 | `static` | Static | Consumed stack-by-stack whenever the unit suffers any core stat change (HP damage, healing, or power modification). Consuming a stack deals 1 armor-ignoring damage to the unit. Damage dealt by Static itself does not trigger further Static consumption. | Does not decay. Stacks are only consumed by stat changes. |
+
+## 9.7 Semantic Action Typing in the Combat & Stat Engine
+
+In *Flashcard Heroes*, units do not have a maximum stat cap; they have their starting base stats and their current in-combat stats. Every stat alteration is classified by its gameplay intent so that reactive abilities and defensive systems trigger strictly when appropriate without unintended cross-firing:
+
+### 9.7.1 Core Action Categories & Behavioral Rules
+
+| Action Category | Affected Stats | Reactive Trigger Fired | Interaction with Armor & Spikes | Gameplay Rule & Usage |
+| :--- | :--- | :--- | :--- | :--- |
+| **Healing (`HEAL`)** | Health (HP) | When Healed (`on_healed`) | Does not interact with Armor or Spikes | Restorative recovery (such as drinking potions, lifesteal recovery, or regenerative passives). Strictly triggers "When Healed" reaction abilities (like Mud Wretch's *Mud Coating* or Steam Wisp's *Scald*). **Never** counts as a stat buff and never triggers "When a Stat Increases". |
+| **Stat Buffs (`BUFF`)** | Health (HP), Power (PWR) | When a Stat Increases (`on_stat_increased`) | Does not interact with Armor or Spikes | Stat empowerment, level scaling, and conditional enhancements (such as ally death bonuses, merge stat increases, or aura growth). Strictly triggers "When a Stat Increases". **Never** counts as healing and never triggers "When Healed". |
+| **Attack Damage (`DAMAGE`)** | Health (HP) | When Hurt by an Attack (`on_hurt`), On Damage Dealt (`on_damage_dealt`) | Mitigated by Armor; Melee triggers Spikes | Direct combat strikes dealt by an attacker. Mitigated by the defender's Armor. Melee attacks trigger counter-damage from Spikes. Direct attacks trigger both "When Hurt by an Attack" on the victim and "On Damage Dealt" on the attacker. |
+| **Stat Debuffs (`DEBUFF`)** | Health (HP), Power (PWR) | When a Stat Decreases (`on_stat_decreased`) | Completely bypasses Armor and Spikes | Direct stat penalties. Directly reduces Health or Power, completely bypasses Armor, ignores Spikes, and **never** triggers "When Hurt by an Attack" or "On Damage Dealt". |
+
+### 9.7.2 Damage Origins & Defensive Rules
+
+Direct combat attacks and non-attack damage sources interact differently with defensive attributes:
+
+| Damage Source | Mitigated by Armor? | Triggers Spikes Counter? | Triggers Counter-Attacks? | Triggers Self/Ally Hurt Reactions? | Triggers "On Damage Dealt"? |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Melee Attacks** | **Yes** (1 Armor blocks 1 damage) | **Yes** (deals defender's PWR back to attacker) | **Yes** | **Yes** | **Yes** |
+| **Ranged Attacks** | **Yes** (1 Armor blocks 1 damage) | **No** | **Yes** | **Yes** | **Yes** |
+| **Trinket Damage** | **Yes** (1 Armor blocks 1 damage) | **No** | **No** (Trinkets cannot be attacked) | **Yes** (Self/ally heals on taking damage) | **No** |
+| **Kamikaze Damage** | **Yes** (1 Armor blocks 1 damage) | **No** | **No** (Attacker is deceased; no retaliation) | **Yes** (Self/ally heals on taking damage) | **No** |
+| **Burn Damage** | **No** (Bypasses Armor completely) | **No** | **No** | **No** | **No** |
+| **Static Discharge** | **No** (Bypasses Armor completely) | **No** | **No** | **No** | **No** |
+| **Spikes Reflection** | **Yes** (1 Armor blocks 1 damage) | **No** (Cannot reflect off Spikes) | **No** | **No** | **No** |
+| **Health Debuffs (`DEBUFF`)** | **No** (Bypasses Armor completely) | **No** | **No** | **No** | **No** |
+
+> [!NOTE]
+> **Damage Classification & Reactions**:
+> * Direct combat attacks by units are classified as **Melee** (targeting frontmost positions, triggering Spikes) or **Ranged** (targeting arbitrary enemy slots, bypassing Spikes).
+> * **Trinket Damage** (e.g. *Fusion Spark*) originates systemically from equipped trinkets rather than a unit strike. It is mitigated by Armor and can be intercepted by Guardian Sentinel leaps, but cannot trigger counter-attacks against the trinket or Spikes reflection. It still triggers self-sustain or ally-protection abilities that react to suffering damage.
+> * **Kamikaze Damage** (e.g. *Death's Bargain*) is an attack where the attacking unit perishes upon executing the attack. It is mitigated by Armor and can be intercepted by Guardian Sentinel leaps, but does not allow targeted retaliation since the attacker has already died.
+> * Non-attack environmental damage sources (Burn decay, Static discharge, and Spikes reflection) do not count as attacks and do not trigger attack-reactive abilities.
+
+### 9.7.3 Trigger Separation Guarantees
+
+The game guarantees complete separation between triggers:
+1. **Healing vs. Health Buffs**:
+   - Restoring Health (`HEAL`) only triggers healing-reactive abilities (e.g. Mud Wretch's *Mud Coating*).
+   - Increasing Health through a buff (`BUFF`) only triggers stat-growth abilities. Healing reactions will completely ignore Health buffs.
+2. **Direct Damage vs. Health Debuffs**:
+   - Direct attacks deal damage through the combat system, reduce Armor, and trigger "When Hurt by an Attack" reactions.
+   - Health debuffs (`DEBUFF`) directly lower Health without touching Armor or Spikes, triggering only "When a Stat Decreases".
+3. **Power Modifications**:
+   - Power gains count as stat buffs and trigger "When a Stat Increases".
+   - Power reductions count as stat debuffs and trigger "When a Stat Decreases".
+
+### 9.7.4 Buff Echo Behavior (Shadow Cloner)
+
+* **Ability Owner**: Belongs to the **Shadow Cloner** unit (*Buff Echo* ability).
+* **Trigger**: Activates whenever an adjacent ally's stat increases in combat ("When a Stat Increases").
+* **Temporary Buffs Only**: Buff Echo only copies temporary, stackable in-combat stat buffs. Permanent base upgrades (such as Dojo training or permanent base stat rewards) are never copied.
+* **Buff Delivery**: When repeating Health bonuses, Buff Echo delivers them strictly as a Health Buff (never as Healing). This ensures that copied Health bonuses never trigger healing-reactive abilities or create infinite feedback loops.
+
+
 
 ---
 

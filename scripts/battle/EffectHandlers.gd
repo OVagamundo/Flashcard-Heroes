@@ -324,7 +324,7 @@ static func handle_damage_effect(
 		var tgt_is_player_unit = battle_manager._is_player_unit(tgt)
 		var is_ally_damage = (tgt_is_player_unit != is_player_source)
 		
-		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
+		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED or damage_type == C.DamageType.TRINKET or damage_type == C.DamageType.KAMIKAZE)
 		
 		if would_be_lethal and is_ally_damage and can_intercept:
 			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
@@ -470,7 +470,7 @@ static func handle_damage_effect(
 			bump_dir = Vector2(-1, 0)
 			
 	var attack_type := "trinket" if is_trinket else "melee"
-	if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+	if not is_trinket and damage_type == C.DamageType.RANGED:
 		attack_type = "ranged"
 	
 	var t_acts: Array[CombatTrinketActivation] = []
@@ -690,7 +690,7 @@ static func handle_cascade_damage(
 				bump_dir = Vector2(-1, 0)
 		
 		var attack_type := "trinket" if is_trinket else "melee"
-		if not is_trinket and (damage_type == C.DamageType.RANGED or damage_type == C.DamageType.MAGIC):
+		if not is_trinket and damage_type == C.DamageType.RANGED:
 			attack_type = "ranged"
 		
 		var t_acts: Array[CombatTrinketActivation] = []

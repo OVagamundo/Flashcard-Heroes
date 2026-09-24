@@ -5,12 +5,12 @@
 
 [sub_resource type="Resource" id="EffectModifyStat_BuffHP_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "hp", "base_value": 1 }
+parameters = { "action_type": "BUFF", "stat": "hp", "base_value": 1 }
 target_type = &"ADJACENT_ALLIES"
 
 [sub_resource type="Resource" id="EffectModifyStat_BuffPWR_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "pwr", "base_value": 1 }
+parameters = { "action_type": "BUFF", "stat": "pwr", "base_value": 1 }
 target_type = &"ADJACENT_ALLIES"
 
 [resource]

@@ -24,7 +24,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	# Set re-entrancy guard in battle_manager to avoid infinite loops
 	battle_manager._is_applying_static_damage = true
-	var hp_res = battle_manager.apply_damage(target_unit, 1, C.DamageType.RANGED, source_uuid)
+	var hp_res = battle_manager.apply_damage(target_unit, 1, C.DamageType.STATIC, source_uuid)
 	battle_manager._is_applying_static_damage = false
 	
 	var new_hp = target_unit.current_hp
@@ -53,10 +53,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.damage(source_uuid, 1, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	}))
-	# Static damage is applied directly, so expose its combat consequences to
-	# EventsOnlyCommand. This restores on_hurt effects such as Aegis and lets
-	# the command defer kill credit until those reactions finish.
-	result.mark_damaged(target_uuid)
+	# Static damage is not an attack and does not trigger on_hurt.
+	# If lethal, mark killed for kill credit tracking.
 	if new_hp <= 0:
 		result.mark_killed(target_uuid)
 	

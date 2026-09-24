@@ -5,6 +5,8 @@ extends EffectDefinition
 ## Grants +1 PWR to the target (ally behind the source unit).
 ## Used by the Windy unit's Empathic Link ability.
 
+const C = preload("res://scripts/Constants.gd")
+
 func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
@@ -23,15 +25,16 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_simulation:
 		var old_pwr: int = target.current_pwr
 		# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
-		var new_pwr: int = battle_manager.apply_stat_delta(target, "pwr", buff_amount)
+		var new_pwr: int = battle_manager.apply_stat_delta(target, "pwr", buff_amount, source_uuid, C.ACTION_BUFF, true)
 		
 		var result := EffectResult.new()
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": source_uuid,
 			"target_uuids": [target_uuid],
 			"ability_id": context.get("ability_id", &"empathic_link"),
+			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": source_uuid,
-			"visual_payload": CombatPayload.pwr_change(source_uuid, buff_amount, [old_pwr], [new_pwr])
+			"visual_payload": CombatPayload.pwr_buff(source_uuid, buff_amount, [old_pwr], [new_pwr])
 		}))
 		return result
 	

@@ -64,17 +64,8 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	if damage_result.should_return:
 		return
 	
-	# Trigger on_hurt for damaged units
+	# Trigger on_hurt for directly attacked units (Spikes does not trigger on_hurt)
 	var on_hurt_start_index = combat_sim._pending_reactions.size()
-	for reflected_hit in damage_result.reflected_hits:
-		battle_manager.trigger_on_hurt(
-			reflected_hit.target_uuid,
-			reflected_hit.damage_amount,
-			reflected_hit.source_uuid,
-			C.CAUSE_ABILITY,
-			&"",
-			false
-		)
 	for tgt_uuid in damage_result.damaged_uuids:
 		battle_manager.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, damage_request.cause)
 	

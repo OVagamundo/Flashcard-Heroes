@@ -2,9 +2,14 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## A generic stat modification effect. 
-## For Healing Amulet we use { stat: "hp", base_value: 2 }.
-## For PWR-based healing we use { stat: "hp", use_source_pwr: true }.
+## Explicitly classifies modifications by semantic action_type:
+## - "HEAL": Restorative healing (+HP).
+## - "BUFF": Stat enhancement (+HP or +PWR).
+## - "DAMAGE": Direct combat damage (-HP).
+## - "DEBUFF": Stat penalty (-HP or -PWR).
 func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
@@ -24,6 +29,11 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	elif stat == "burn" or stat == "spikes" or stat == "armor":
 		stat = stat + "_stacks"
 	
+	var action_type_str: String = String(parameters.get("action_type", ""))
+	var action_type: StringName = StringName(action_type_str)
+	if stat in ["hp", "pwr"]:
+		assert(not action_type_str.is_empty(), "EffectModifyStat: stat '%s' requires explicit 'action_type' in parameters ('HEAL', 'BUFF', 'DAMAGE', or 'DEBUFF')" % stat)
+
 	# Use centralized stat-scaling utility
 	# Supports: base_value, pwr_multiplier, hp_multiplier, use_source_pwr, context_multiplier_key
 	var amount: int = StatScaling.calculate(parameters, context, "EffectModifyStat")
@@ -41,36 +51,42 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		if valid_targets.is_empty():
 			return EffectResult.empty()
 		
-		# DAMAGE (negative HP) - use EffectResult with damage_request marker
-		# The on_hurt/on_kill trigger logic is handled by CombatSimulator via EffectHandlers
-		if stat == "hp" and amount < 0:
+		# DIRECT DAMAGE (negative HP with ACTION_DAMAGE) - use EffectResult with damage_request marker
+		if action_type == C.ACTION_DAMAGE:
+			assert(stat == "hp" and amount < 0, "EffectModifyStat: ACTION_DAMAGE requires stat 'hp' and negative amount")
 			var damage_result := EffectResult.new()
 			var damage_type = parameters.get("damage_type", -1)
+			var cause = C.CAUSE_ABILITY
 			if damage_type == -1:
 				var src_inst = battle_manager.get_instance_by_uuid(_source_uuid) if _source_uuid != "" else null
 				if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
 					var src_cat = src_inst.get_definition().category
 					if src_cat == &"TRINKET":
-						damage_type = C.DamageType.MAGIC
+						damage_type = C.DamageType.TRINKET
+						cause = C.CAUSE_TRINKET
 					else:
 						# Unit or Item on a Unit
 						if self.target_type == C.TARGET_FRONTMOST_ENEMY:
 							damage_type = C.DamageType.MELEE
+							cause = C.CAUSE_ATTACK
 						else:
 							damage_type = C.DamageType.RANGED
+							cause = C.CAUSE_ATTACK
 				else:
-					damage_type = C.DamageType.MAGIC
+					damage_type = C.DamageType.RANGED
+			elif damage_type == C.DamageType.TRINKET:
+				cause = C.CAUSE_TRINKET
 			
 			damage_result.damage_request = EffectResult.DamageRequest.new(
 				abs(amount),
 				damage_type,
 				valid_targets,
 				false,
-				C.CAUSE_ABILITY
+				cause
 			)
 			return damage_result
 		
-		# HEALS (positive HP) and BUFFS (positive PWR) use new EffectResult path
+		# HEALS, BUFFS, DEBUFFS, and STATUS EFFECTS
 		# MULTI-TARGET BATCHING: Collect all target data first, then create ONE event
 		# This enables simultaneous projectile animations for multi-target abilities
 		var result := EffectResult.new()
@@ -105,6 +121,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			
 			var tgt_stat = stat
 			var tgt_amount = amount
+			var tgt_action_type = action_type
 			
 			# SPECIAL: PWR->HP Conversion (e.g., Templar)
 			# Redirect positive PWR buffs to HP if unit has specific tag
@@ -112,27 +129,26 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			if stat == "pwr" and amount > 0:
 				if tgt.has_tag(&"CONVERT_PWR_TO_HP"):
 					tgt_stat = "hp"
-					# Amount remains the same (1:1 conversion)
+					tgt_action_type = C.ACTION_BUFF # Converted PWR buff is an HP BUFF, not a Heal!
 					
-					# Process this target individually to ensure correct visuals (HP Heal event instead of PWR Buff)
 					var old_hp = tgt.current_hp
 					var max_hp = tgt_def.base_hp if is_instance_valid(tgt_def) and "base_hp" in tgt_def else tgt.current_hp
-					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount)
+					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount, _source_uuid, tgt_action_type, true)
 					
 					# Log message for conversion
 					var conv_log = "%s converts PWR buff to +%d HP" % [BattleHelpers.get_instance_display_name(tgt), tgt_amount]
 					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": conv_log}))
 					
-					# HEAL Event
-					var conversion_payload := CombatPayload.hp_change(visual_source_uuid, tgt_amount, [old_hp], [new_hp], [max_hp])
-					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+					# BUFF Event (not HEAL)
+					var conversion_payload := CombatPayload.hp_buff(visual_source_uuid, tgt_amount, [old_hp], [new_hp], [max_hp])
+					result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 						"source_uuid": _source_uuid,
 						"target_uuids": [target_uuid],
 						"ability_id": context.get("ability_id", &"modify_stat"),
 						"trigger_type": context.get("trigger_type", ""),
+						"action_type": tgt_action_type,
 						"visual_payload": conversion_payload
 					}))
-					result.mark_healed(target_uuid, tgt_amount)
 					continue # Skip adding to batched list
 			
 			# Capture old stat
@@ -140,7 +156,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var tgt_max_hp: int = tgt_def.base_hp if is_instance_valid(tgt_def) else 0
 			
 			# Apply stat change
-			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount)
+			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount, _source_uuid, tgt_action_type, true)
 			
 			# Collect data
 			all_target_uuids.append(target_uuid)
@@ -148,101 +164,94 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			all_new_vals.append(new_val)
 			all_max_hp.append(tgt_max_hp)
 			target_names.append(BattleHelpers.get_instance_display_name(tgt))
-			
-			if tgt_stat == "hp":
-				result.mark_healed(target_uuid, tgt_amount)
 		
-		# Create batched event for all targets at once (enables simultaneous projectiles)
+		# Create batched event for all targets at once
 		if not all_target_uuids.is_empty():
-			if stat == "hp":
+			var custom_fmt: String = parameters.get("log_format", "")
+			var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
+			if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+			var targets_label: String = target_names[0] if target_names.size() == 1 else " and ".join(target_names)
+			
+			if action_type == C.ACTION_HEAL:
 				var log_text: String
-				var custom_fmt: String = parameters.get("log_format", "")
-				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
-				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
-				
-				if amount > 0:
-					# HEAL
-					if not custom_fmt.is_empty():
-						log_text = custom_fmt % [source_name, abs(amount)]
-					elif target_names.size() == 1:
-						log_text = "%s heals %s for %d HP" % [source_name, target_names[0], amount]
-					else:
-						log_text = "%s heals %s for %d HP" % [source_name, " and ".join(target_names), amount]
-					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
-
-					var heal_payload := CombatPayload.hp_change(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
-					heal_payload.skip_bump = parameters.get("skip_bump", false)
-					result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-						"source_uuid": _source_uuid,
-						"target_uuids": all_target_uuids,
-						"ability_id": aid,
-						"trigger_type": context.get("trigger_type", ""),
-						"ability_holder_uuid": _source_uuid,
-						"visual_payload": heal_payload
-					}))
-				else:
-					# DAMAGE
-					if not custom_fmt.is_empty():
-						log_text = custom_fmt % [source_name, abs(amount)]
-					elif target_names.size() == 1:
-						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), target_names[0]]
-					else:
-						log_text = "%s deals %d damage to %s" % [source_name, abs(amount), " and ".join(target_names)]
-					result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
-
-					var damage_payload := CombatPayload.damage(visual_source_uuid, amount, all_old_vals, all_new_vals)
-					damage_payload.stat = stat
-					damage_payload.attack_type = parameters.get("attack_type", "ranged")
-					damage_payload.skip_bump = parameters.get("skip_bump", true)
-					var projectile_data: Dictionary = parameters.get("projectile_data", {"stat": "hp", "amount": abs(amount), "color": "red"})
-					damage_payload.projectile = CombatProjectile.new(String(projectile_data.get("stat", "hp")), int(projectile_data.get("amount", abs(amount))), String(projectile_data.get("color", "red")))
-					result.add_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-						"source_uuid": _source_uuid,
-						"target_uuids": all_target_uuids,
-						"ability_id": aid,
-						"trigger_type": context.get("trigger_type", ""),
-						"ability_holder_uuid": _source_uuid,
-						"visual_payload": damage_payload
-					}))
-			elif stat == "pwr":
-				# Log message with all target names
-				var log_text: String
-				var custom_fmt: String = parameters.get("log_format", "")
 				if not custom_fmt.is_empty():
 					log_text = custom_fmt % [source_name, abs(amount)]
-				elif target_names.size() == 1:
-					log_text = "%s grants %s +%d PWR" % [source_name, target_names[0], amount]
 				else:
-					log_text = "%s grants %s +%d PWR" % [source_name, " and ".join(target_names), amount]
+					log_text = "%s heals %s for %d HP" % [source_name, targets_label, amount]
+				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+
+				var heal_payload := CombatPayload.heal(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
+				heal_payload.skip_bump = parameters.get("skip_bump", false)
+				result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+					"source_uuid": _source_uuid,
+					"target_uuids": all_target_uuids,
+					"ability_id": aid,
+					"trigger_type": context.get("trigger_type", ""),
+					"action_type": C.ACTION_HEAL,
+					"ability_holder_uuid": _source_uuid,
+					"visual_payload": heal_payload
+				}))
+				
+			elif action_type == C.ACTION_BUFF:
+				var stat_label: String = "HP" if stat == "hp" else "PWR"
+				var log_text: String
+				if not custom_fmt.is_empty():
+					log_text = custom_fmt % [source_name, abs(amount)]
+				else:
+					log_text = "%s grants %s +%d %s" % [source_name, targets_label, amount, stat_label]
 				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 				
-				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
-				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
-
-				# Single BUFF event with all targets batched
-				var pwr_payload := CombatPayload.pwr_change(visual_source_uuid, amount, all_old_vals, all_new_vals)
+				var buff_payload: CombatPayload
+				if stat == "hp":
+					buff_payload = CombatPayload.hp_buff(visual_source_uuid, amount, all_old_vals, all_new_vals, all_max_hp)
+				else:
+					buff_payload = CombatPayload.pwr_buff(visual_source_uuid, amount, all_old_vals, all_new_vals)
+				buff_payload.skip_bump = parameters.get("skip_bump", false)
+				
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
 					"trigger_type": context.get("trigger_type", ""),
+					"action_type": C.ACTION_BUFF,
 					"ability_holder_uuid": _source_uuid,
-					"visual_payload": pwr_payload
+					"visual_payload": buff_payload
 				}))
+				
+			elif action_type == C.ACTION_DEBUFF:
+				var stat_label: String = "HP" if stat == "hp" else "PWR"
+				var log_text: String
+				if not custom_fmt.is_empty():
+					log_text = custom_fmt % [source_name, abs(amount)]
+				else:
+					log_text = "%s reduces %s's %s by %d" % [source_name, targets_label, stat_label, abs(amount)]
+				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
+				
+				var debuff_payload: CombatPayload
+				if stat == "hp":
+					debuff_payload = CombatPayload.hp_debuff(visual_source_uuid, amount, all_old_vals, all_new_vals)
+				else:
+					debuff_payload = CombatPayload.pwr_debuff(visual_source_uuid, amount, all_old_vals, all_new_vals)
+				debuff_payload.skip_bump = parameters.get("skip_bump", true)
+				
+				result.add_event(CombatEvent.new(CombatEvent.Type.DEBUFF, {
+					"source_uuid": _source_uuid,
+					"target_uuids": all_target_uuids,
+					"ability_id": aid,
+					"trigger_type": context.get("trigger_type", ""),
+					"action_type": C.ACTION_DEBUFF,
+					"ability_holder_uuid": _source_uuid,
+					"visual_payload": debuff_payload
+				}))
+				
 			else:
 				# Generic Stat / Status Effect (e.g. armor_stacks)
 				var log_text: String
-				var custom_fmt: String = parameters.get("log_format", "")
 				if not custom_fmt.is_empty():
 					log_text = custom_fmt % [source_name, abs(amount)]
-				elif target_names.size() == 1:
-					log_text = "%s grants %s +%d %s" % [source_name, target_names[0], amount, stat]
 				else:
-					log_text = "%s grants %s +%d %s" % [source_name, " and ".join(target_names), amount, stat]
+					log_text = "%s grants %s +%d %s" % [source_name, targets_label, amount, stat]
 				result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
-				
-				var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
-				if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
 
 				# STATUS_EFFECT event
 				var status_payload := CombatPayload.status_change(visual_source_uuid, amount, stat, all_old_vals, all_new_vals)
@@ -264,7 +273,11 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			battle_manager.apply_stat_delta(inst, stat, amount)
+			if action_type == C.ACTION_DAMAGE:
+				var damage_type = parameters.get("damage_type", C.DamageType.RANGED)
+				battle_manager.apply_damage(inst, abs(amount), damage_type, _source_uuid)
+			else:
+				battle_manager.apply_stat_delta(inst, stat, amount, _source_uuid, action_type, true)
 	var non_sim_result := EffectResult.new()
 	non_sim_result.state_applied = true
 	return non_sim_result

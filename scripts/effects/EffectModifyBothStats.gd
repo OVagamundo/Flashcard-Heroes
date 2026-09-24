@@ -2,6 +2,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Applies both +HP and +PWR to the same target(s) in a single atomic operation.
 ## Parameters:
 ##   hp_value: int — amount of HP to grant (default 1)
@@ -54,8 +56,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var old_pwr: int = tgt.current_pwr
 
 			# Apply both stat deltas to the same target
-			var new_hp = battle_manager.apply_stat_delta(tgt, "hp", hp_value, _source_uuid)
-			var new_pwr = battle_manager.apply_stat_delta(tgt, "pwr", pwr_value, _source_uuid)
+			var new_hp = battle_manager.apply_stat_delta(tgt, "hp", hp_value, _source_uuid, C.ACTION_BUFF, true)
+			var new_pwr = battle_manager.apply_stat_delta(tgt, "pwr", pwr_value, _source_uuid, C.ACTION_BUFF, true)
 
 			batched_uuids.append(target_uuid)
 			batched_names.append(BattleHelpers.get_instance_display_name(tgt))
@@ -82,6 +84,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			batched_old_pwr,
 			batched_new_pwr
 		)
+		payload.action_type = C.ACTION_BUFF
 
 		var ability_id: StringName = context.get("ability_id", &"modify_both_stats")
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -89,6 +92,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			"target_uuids": batched_uuids,
 			"ability_id": ability_id,
 			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": _source_uuid,
 			"visual_payload": payload
 		}))
@@ -101,8 +105,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var inst: GachaBallInstance = battle_manager.get_instance_by_uuid(t)
 			if not is_instance_valid(inst):
 				continue
-			battle_manager.apply_stat_delta(inst, "hp", hp_value)
-			battle_manager.apply_stat_delta(inst, "pwr", pwr_value)
+			battle_manager.apply_stat_delta(inst, "hp", hp_value, _source_uuid, C.ACTION_BUFF, true)
+			battle_manager.apply_stat_delta(inst, "pwr", pwr_value, _source_uuid, C.ACTION_BUFF, true)
 		var non_sim_result := EffectResult.new()
 		non_sim_result.state_applied = true
 		return non_sim_result

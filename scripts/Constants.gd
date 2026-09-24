@@ -27,12 +27,20 @@ const CONTAINER_SHOP = &"Shop"
 
 # --- Combat & Damage ---
 enum DamageType {
-	MELEE,   # Mitigated by Armor, Triggers Spikes, Triggers on_hurt
-	RANGED,  # Mitigated by Armor, NO Spikes, Triggers on_hurt
-	MAGIC,   # Mitigated by Armor, NO Spikes, Triggers on_hurt
-	BURN,    # NO Armor, NO Spikes, Triggers on_hurt (Requires CAUSE_STATUS_EFFECT)
-	SPIKES   # Mitigated by Armor, NO Spikes, Triggers on_hurt
+	MELEE,    # Mitigated by Armor, Triggers Spikes, Triggers on_hurt, Triggers on_damage_dealt
+	RANGED,   # Mitigated by Armor, NO Spikes, Triggers on_hurt, Triggers on_damage_dealt
+	TRINKET,  # Mitigated by Armor, NO Spikes, Triggers self/ally on_hurt, NO counter-attacks, NO on_damage_dealt
+	KAMIKAZE, # Mitigated by Armor, NO Spikes, Triggers self/ally on_hurt, NO targeted retaliation, NO on_damage_dealt
+	BURN,     # NO Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
+	SPIKES,   # Mitigated by Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
+	STATIC    # NO Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
 }
+
+# --- Semantic Action Types ---
+const ACTION_DAMAGE = &"DAMAGE"
+const ACTION_DEBUFF = &"DEBUFF"
+const ACTION_HEAL = &"HEAL"
+const ACTION_BUFF = &"BUFF"
 
 # --- Entity & Category Types ---
 const CATEGORY_UNIT = &"UNIT"
@@ -88,7 +96,9 @@ const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phas
 const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
 const TRIGGER_ON_MERGE = &"on_merge" # Any merge completed on the battle board (lineup/bench, unit/item)
 const TRIGGER_ON_ALLY_HURT = &"on_ally_hurt" # Another ally on the same team receives damage (reactive trigger)
-const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased (healed by any means)
+const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased by a Heal action
+const TRIGGER_ON_STAT_INCREASED = &"on_stat_increased" # This unit's HP or PWR increased by a Buff action
+const TRIGGER_ON_STAT_DECREASED = &"on_stat_decreased" # This unit's HP or PWR decreased by a Debuff action
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"
@@ -124,6 +134,8 @@ const CAUSE_TURN = &"CAUSE_TURN" # The game loop (e.g. Turn Start attack)
 const CAUSE_ABILITY = &"CAUSE_ABILITY" # An ability effect (e.g. Extra Attack, Retaliation)
 const CAUSE_ATTACK = &"CAUSE_ATTACK" # Direct result of an attack (e.g. Combat Damage)
 const CAUSE_STATUS_EFFECT = &"CAUSE_STATUS" # Passive effect (e.g. Poison damage)
+const CAUSE_TRINKET = &"CAUSE_TRINKET" # Direct damage originating from a Trinket
+const CAUSE_KAMIKAZE = &"CAUSE_KAMIKAZE" # Sacrifice attack without active attacker (e.g. Death's Bargain)
 const CAUSE_COST = &"CAUSE_COST" # Self-inflicted cost (e.g. Sacrifice HP)
 const CAUSE_GAME_OVER = &"CAUSE_GAME_OVER" # Cleanup phase
 const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization

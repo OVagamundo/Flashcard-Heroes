@@ -7,6 +7,8 @@ extends EffectDefinition
 ##   - hp_amount: int (default 1) - HP buff amount
 ##   - pwr_amount: int (default 1) - PWR buff amount  
 
+const C = preload("res://scripts/Constants.gd")
+
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
 	
@@ -66,7 +68,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	var raw_hp = parameters.get("hp_amount", 1)
 	var hp_amount: int = int(raw_hp) if raw_hp != null else 1
-	
 	var raw_pwr = parameters.get("pwr_amount", 1)
 	var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 	
@@ -77,7 +78,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		var max_hp: int = hero_instance.get_definition().base_hp if is_instance_valid(hero_instance.get_definition()) else hero_instance.current_hp
 		
 		# Apply HP buff
-		var hp_result = battle_manager.apply_stat_delta(hero_instance, "hp", hp_amount)
+		var hp_result = battle_manager.apply_stat_delta(hero_instance, "hp", hp_amount, _source_uuid, C.ACTION_BUFF, true)
 		var new_hp: int = hero_instance.current_hp
 		if hp_result is Dictionary:
 			new_hp = hp_result.get("new_hp", hero_instance.current_hp)
@@ -85,7 +86,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			new_hp = int(hp_result)
 		
 		# Apply PWR buff  
-		var pwr_result = battle_manager.apply_stat_delta(hero_instance, "pwr", pwr_amount)
+		var pwr_result = battle_manager.apply_stat_delta(hero_instance, "pwr", pwr_amount, _source_uuid, C.ACTION_BUFF, true)
 		var new_pwr: int = hero_instance.current_pwr
 		if pwr_result is Dictionary:
 			new_pwr = pwr_result.get("new_pwr", hero_instance.current_pwr)
@@ -114,8 +115,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"target_uuids": [hero_uuid],
 			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
 			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
+			"visual_payload": CombatPayload.hp_buff(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 		}))
 		
 		# PWR BUFF event
@@ -124,14 +126,15 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"target_uuids": [hero_uuid],
 			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
 			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
+			"visual_payload": CombatPayload.pwr_buff(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
 		}))
 		state_applied_any = true
 	else:
 		# Non-simulation: apply immediately
-		battle_manager.apply_stat_delta(hero_instance, "hp", hp_amount)
-		battle_manager.apply_stat_delta(hero_instance, "pwr", pwr_amount)
+		battle_manager.apply_stat_delta(hero_instance, "hp", hp_amount, _source_uuid, C.ACTION_BUFF, true)
+		battle_manager.apply_stat_delta(hero_instance, "pwr", pwr_amount, _source_uuid, C.ACTION_BUFF, true)
 		state_applied_any = true
 
 	result.state_applied = true

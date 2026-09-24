@@ -61,9 +61,11 @@ graph TD
 2.  **Execution:** Runs the turn logic (Attacks, Abilities, Deaths, Summons) instantly.
 3.  **Recording:** Generates a `CombatEvent` for *every* significant state change.
 4.  **No Side Effects:** The simulation **must not** manipulate the SceneTree, play sounds, or spawn visual nodes directly. It only mutates data and records events.
-5.  **Unified Stat Modification:** All stat changes (HP, PWR, Status Effects) must go through `BattleManager.apply_stat_delta()`.
+5.  **Unified Stat Modification & Semantic Action Typing:** All stat changes (HP, PWR, Status Effects) must go through `BattleManager.apply_stat_delta()`.
     *   **Rule:** Effects must **NEVER** set properties (e.g., `current_hp`) directly.
-    *   **Purpose:** This function updates the data model *and* returns the absolute value required for the `CombatEvent` visual payload, ensuring the snapshot is accurate.
+    *   **Semantic Typing:** Any modification to `hp` or `pwr` requires an explicit `action_type` (`C.ACTION_HEAL`, `C.ACTION_BUFF`, or `C.ACTION_DEBUFF`). Direct combat damage must route exclusively through `BattleManager.apply_damage()`.
+    *   **Trigger Separation:** `apply_stat_delta()` centrally dispatches `TRIGGER_ON_HEALED` strictly for `ACTION_HEAL`, `TRIGGER_ON_STAT_INCREASED` strictly for `ACTION_BUFF`, and `TRIGGER_ON_STAT_DECREASED` strictly for `ACTION_DEBUFF`.
+
 
 ### Gold Coin VFX & Layering
 Currency animations follow strict directionality and layering rules:
@@ -583,16 +585,20 @@ Complex animations (like multi-hit attacks, chaining attacks, or intercepting bl
 The combat system enforces strict separation of logical damage categories based on their origin and targeting rules using the `DamageType` enum. 
 All abilities and effects must return a strictly typed `EffectResult` containing a `DamageRequest` with an explicit `damage_type: int`.
 
-*   **MELEE** (`C.DamageType.MELEE`): Originates from a **Unit**. Targets ONLY the **Frontmost Unit** (this includes Shockwave, which stems from a frontmost attack).
-    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Sentinel Intercept if lethal.
-*   **RANGED** (`C.DamageType.RANGED`): Originates from a **Unit**. Targets **Other Units** (e.g., Mirror Strike, Random enemies, All enemies, Bounces).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal.
-*   **MAGIC** (`C.DamageType.MAGIC`): Originates from a **Trinket** or has **No Unit Origin** (systemic).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Bypasses Guardian Sentinel Intercept.
-*   **BURN** (`C.DamageType.BURN`): Pure systemic damage from the Burn status effect.
-    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Triggers `C.CAUSE_STATUS_EFFECT` (bypassing counter-attacks).
-*   **SPIKES** (`C.DamageType.SPIKES`): Pure systemic damage from the Spikes status effect.
-    *   *Rules:* Mitigated by Armor but ignores Spikes.
+*   **MELEE** (`C.DamageType.MELEE`): Originates from a direct melee strike. Targets the frontmost enemy slot (including Shockwave melee hits).
+    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
+*   **RANGED** (`C.DamageType.RANGED`): Originates from a ranged strike or direct unit ability. Targets arbitrary or specific slots (e.g., Mirror Strike, Random enemies, All enemies, Kamikaze).
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
+*   **TRINKET** (`C.DamageType.TRINKET`): Originates systemically from equipped Trinkets (e.g., *Fusion Spark*).
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers self/ally hurt reactions (e.g., heals upon taking damage), but does NOT trigger counter-attacks (Trinkets cannot be attacked) or `on_damage_dealt`.
+*   **KAMIKAZE** (`C.DamageType.KAMIKAZE`): Originates from a self-sacrificing unit attack (e.g., *Death's Bargain*).
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers self/ally hurt reactions, but does NOT allow targeted counter-attacks/retaliation against the deceased attacker, and does NOT trigger `on_damage_dealt`.
+*   **BURN** (`C.DamageType.BURN`): Systemic damage from turn-start Burn stack decay.
+    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
+*   **SPIKES** (`C.DamageType.SPIKES`): Reactive damage reflected by a defender with Spikes when struck by a Melee attack.
+    *   *Rules:* Mitigated by the attacker's Armor. Does not trigger Spikes. Does NOT trigger `on_hurt` or `on_damage_dealt`.
+*   **STATIC** (`C.DamageType.STATIC`): Systemic damage from Static discharge when suffering a stat modification.
+    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
 
 ---
 

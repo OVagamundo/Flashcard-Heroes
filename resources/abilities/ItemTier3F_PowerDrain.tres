@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectReduceEnemyPWR"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "DEBUFF",
 "ability_id": "item_t3f_power_drain",
 "base_value": -1,
 "log_format": "%s drains the target's power (-%d PWR)",
@@ -16,6 +17,7 @@ target_type = &"DEFENDER"
 [sub_resource type="Resource" id="EffectIncreaseSourcePWR"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "BUFF",
 "ability_id": "item_t3f_power_drain",
 "base_value": 1,
 "log_format": "%s absorbs the stolen power (+%d PWR)",

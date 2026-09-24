@@ -2,6 +2,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Grants +HP and +PWR to the source unit equal to (Current PWR * Empty Slots in Lineup).
 ## Triggered on_pre_combat.
 
@@ -47,10 +49,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Apply Stat Deltas
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
-	var max_hp = source_unit.get_definition().base_hp # Approximate max HP for visualization
+	var max_hp = source_unit.get_definition().base_hp if is_instance_valid(source_unit.get_definition()) else source_unit.current_hp
 	
-	var new_hp = battle_manager.apply_stat_delta(source_unit, "hp", total_amount)
-	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", total_amount)
+	var new_hp = battle_manager.apply_stat_delta(source_unit, "hp", total_amount, source_uuid, C.ACTION_BUFF, true)
+	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", total_amount, source_uuid, C.ACTION_BUFF, true)
 	
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"grant_stats_per_empty")
@@ -59,16 +61,16 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var log_text = "%s gains +%d HP/PWR (%d empty slots)" % [BattleHelpers.get_instance_display_name(source_unit), total_amount, empty_slots_count]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
-	# Event 1: HP Gain (Heal)
-	result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+	# Event 1: HP Gain (Buff)
+	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
+		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.hp_change(source_uuid, total_amount, [old_hp], [new_hp], [max_hp])
+		"visual_payload": CombatPayload.hp_buff(source_uuid, total_amount, [old_hp], [new_hp], [max_hp])
 	}))
-	result.mark_healed(source_uuid, total_amount)
 	
 	# Event 2: PWR Gain (Buff)
 	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
@@ -76,8 +78,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
+		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.pwr_change(source_uuid, total_amount, [old_pwr], [new_pwr])
+		"visual_payload": CombatPayload.pwr_buff(source_uuid, total_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true

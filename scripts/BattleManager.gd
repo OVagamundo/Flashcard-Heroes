@@ -1500,8 +1500,8 @@ func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, at
 	var old_armor = 0
 	var new_armor = 0
 	
-	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless BURN)
-	if damage_type != C.DamageType.BURN:
+	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless non-attack: BURN, STATIC)
+	if damage_type not in [C.DamageType.BURN, C.DamageType.STATIC]:
 		old_armor = instance.get_status_effect_amount(&"armor")
 		if old_armor > 0:
 			armor_consumed = mini(old_armor, actual_damage)
@@ -1595,7 +1595,7 @@ func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, 
 		"Permanent stat increase"
 	)
 	
-	return apply_stat_delta(instance, stat_type, delta)
+	return apply_stat_delta(instance, stat_type, delta, source_id, C.ACTION_BUFF, false)
 
 ## Sets a non-stacking, condition-bound trinket bonus on one unit.
 ## Unlike ordinary permanent buffs, this component is intentionally excluded from
@@ -1628,54 +1628,115 @@ func set_conditional_trinket_bonus(instance: GachaBallInstance, source_id: Strin
 	if pwr_delta != 0:
 		instance.apply_pwr_delta(pwr_delta, {"silent": silent})
 
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "") -> Variant:
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true) -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
 	match stat_type:
 		"hp":
-			if delta < 0:
-				push_error("apply_stat_delta called for HP damage. Use apply_damage instead!")
-				return 0
+			if delta == 0:
+				return instance.current_hp
 				
-			var new_hp = instance.current_hp + delta
-			
-			var comp = StatComponent.new()
-			comp.id = &"battle_heal"
-			comp.category = &"COMBAT_STATE"
-			comp.modifiers = {"hp": delta}
-			instance.battle_components.append(comp)
-			
-			instance.set_current_hp_silent(new_hp)
-			
 			if delta > 0:
-				AbilityResolver.process_trigger(&"on_stat_increased", {
+				assert(action_type in [C.ACTION_HEAL, C.ACTION_BUFF], "apply_stat_delta: positive HP delta requires ACTION_HEAL or ACTION_BUFF, got '%s'" % action_type)
+				var new_hp = instance.current_hp + delta
+				
+				var comp = StatComponent.new()
+				comp.id = &"battle_heal" if action_type == C.ACTION_HEAL else &"battle_buff_hp"
+				comp.category = &"COMBAT_STATE"
+				comp.modifiers = {"hp": delta}
+				instance.battle_components.append(comp)
+				
+				instance.set_current_hp_silent(new_hp)
+				
+				if action_type == C.ACTION_HEAL:
+					AbilityResolver.process_trigger(C.TRIGGER_ON_HEALED, {
+						"healed_uuid": instance.ball_uuid,
+						"unit_uuid": instance.ball_uuid,
+						"triggering_uuid": instance.ball_uuid,
+						"source_uuid": source_uuid,
+						"healer_uuid": source_uuid,
+						"heal_amount": delta,
+						"amount": delta,
+						"is_stackable": is_stackable
+					})
+				elif action_type == C.ACTION_BUFF:
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+						"unit_uuid": instance.ball_uuid,
+						"triggering_uuid": instance.ball_uuid,
+						"source_uuid": source_uuid,
+						"stat": "hp",
+						"amount": delta,
+						"is_stackable": is_stackable
+					})
+				
+				if not _is_applying_static_damage:
+					_trigger_static_consumption(instance)
+					
+				return new_hp
+			else:
+				# delta < 0: HP debuff
+				assert(action_type == C.ACTION_DEBUFF, "apply_stat_delta: negative HP delta requires ACTION_DEBUFF, got '%s'. Direct damage must use apply_damage()!" % action_type)
+				var new_hp = instance.current_hp + delta
+				
+				var comp = StatComponent.new()
+				comp.id = &"battle_debuff_hp"
+				comp.category = &"COMBAT_STATE"
+				comp.modifiers = {"hp": delta}
+				instance.battle_components.append(comp)
+				
+				instance.set_current_hp_silent(new_hp)
+				
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
 					"unit_uuid": instance.ball_uuid,
 					"triggering_uuid": instance.ball_uuid,
+					"source_uuid": source_uuid,
 					"stat": "hp",
-					"amount": delta,
-					"source_uuid": source_uuid
+					"amount": abs(delta),
+					"is_stackable": is_stackable
 				})
 				
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
 					
-			return new_hp
+				return new_hp
+				
 		"pwr":
-			var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
-			
-			if delta != 0:
-				if delta > 0:
-					AbilityResolver.process_trigger(&"on_stat_increased", {
-						"unit_uuid": instance.ball_uuid,
-						"triggering_uuid": instance.ball_uuid,
-						"stat": "pwr",
-						"amount": delta,
-						"source_uuid": source_uuid
-					})
+			if delta == 0:
+				return instance.current_pwr
+				
+			if delta > 0:
+				assert(action_type == C.ACTION_BUFF, "apply_stat_delta: positive PWR delta requires ACTION_BUFF, got '%s'" % action_type)
+				var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
+				
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					"unit_uuid": instance.ball_uuid,
+					"triggering_uuid": instance.ball_uuid,
+					"source_uuid": source_uuid,
+					"stat": "pwr",
+					"amount": delta,
+					"is_stackable": is_stackable
+				})
+				
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
-			
-			return new_pwr
+				return new_pwr
+			else:
+				assert(action_type == C.ACTION_DEBUFF, "apply_stat_delta: negative PWR delta requires ACTION_DEBUFF, got '%s'" % action_type)
+				var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
+				
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+					"unit_uuid": instance.ball_uuid,
+					"triggering_uuid": instance.ball_uuid,
+					"source_uuid": source_uuid,
+					"stat": "pwr",
+					"amount": abs(delta),
+					"is_stackable": is_stackable
+				})
+				
+				if not _is_applying_static_damage:
+					_trigger_static_consumption(instance)
+				return new_pwr
+				
 		"burn_stacks":
 			instance.add_status_effect_silent(&"burn", delta)
 			return instance.status_effects.get(&"burn", 0)
@@ -2218,7 +2279,7 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			var old_armor: int = unit.get_status_effect_amount(&"armor")
 			
 			# apply_damage now returns dictionary for damage with armor mitigation data
-			var damage_type = C.DamageType.BURN if status_def.id == &"burn" else C.DamageType.MAGIC
+			var damage_type = C.DamageType.BURN
 			var damage_result = apply_damage(unit, damage, damage_type)
 			
 			# Extract data from dictionary return
@@ -2244,13 +2305,11 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				"target_uuids": [unit.ball_uuid],
 				"visual_payload": status_damage_payload
 			}))
-			
-			trigger_on_hurt(unit.ball_uuid, damage, "", C.CAUSE_STATUS_EFFECT, status_def.id)
 
 		elif status_def.turn_effect == "HEAL":
 			var heal: int = int(stacks * status_def.turn_effect_multiplier)
 			var old_hp: int = unit.current_hp
-			var new_hp = apply_stat_delta(unit, "hp", heal)
+			var new_hp = apply_stat_delta(unit, "hp", heal, "", C.ACTION_HEAL)
 			var max_hp: int = 0
 			var unit_def = unit.get_definition()
 			if is_instance_valid(unit_def):
@@ -2262,11 +2321,9 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 			all_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 				"source_uuid": "",
 				"target_uuids": [unit.ball_uuid],
-				"visual_payload": CombatPayload.hp_change("", heal, [old_hp], [new_hp], [max_hp])
+				"action_type": C.ACTION_HEAL,
+				"visual_payload": CombatPayload.heal("", heal, [old_hp], [new_hp], [max_hp])
 			}))
-			
-			if new_hp > old_hp:
-				TurnAbilities.trigger_on_healed(unit.ball_uuid, new_hp - old_hp, "")
 		
 		# Apply decay
 		var old_stacks: int = stacks
@@ -2828,7 +2885,7 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						continue
 					
 					var old_hp = ally.current_hp
-					var new_hp = apply_stat_delta(ally, "hp", 1)
+					var new_hp = apply_stat_delta(ally, "hp", 1, unit.ball_uuid, C.ACTION_HEAL)
 					
 					if new_hp > old_hp:
 						var ally_def = ally.get_definition()
@@ -2837,16 +2894,14 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 						water_old_hp.append(old_hp)
 						water_new_hp.append(new_hp)
 						water_max_hp.append(max_hp)
-						
-						# Trigger on_healed for reactions (e.g. Tier 1 Air units)
-						TurnAbilities.trigger_on_healed(ally.ball_uuid, 1, unit.ball_uuid)
 				
 				if not water_target_uuids.is_empty():
 					total_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
 						"source_uuid": unit.ball_uuid,
 						"target_uuids": water_target_uuids,
 						"ability_id": &"trait_water_heal",
-						"visual_payload": CombatPayload.hp_change(unit.ball_uuid, 1, water_old_hp, water_new_hp, water_max_hp)
+						"action_type": C.ACTION_HEAL,
+						"visual_payload": CombatPayload.heal(unit.ball_uuid, 1, water_old_hp, water_new_hp, water_max_hp)
 					}))
 		
 		# AIR TRAIT: 2+ Souls -> Air units steal 1 PWR from the opposite enemy
@@ -2906,21 +2961,23 @@ func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
 				
 				var enemy_old_pwr = enemy.current_pwr
 				var unit_old_pwr = unit.current_pwr
-				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1)
-				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1)
+				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1, enemy.ball_uuid, C.ACTION_BUFF)
+				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1, enemy.ball_uuid, C.ACTION_DEBUFF)
 				
-				total_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+				total_events.append(CombatEvent.new(CombatEvent.Type.DEBUFF, {
 					"source_uuid": enemy.ball_uuid,
 					"target_uuids": [enemy.ball_uuid],
 					"ability_id": &"trait_air_steal",
-					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
+					"action_type": C.ACTION_DEBUFF,
+					"visual_payload": CombatPayload.pwr_debuff(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
 				}))
 				
 				total_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": enemy.ball_uuid,
 					"target_uuids": [unit.ball_uuid],
 					"ability_id": &"trait_air_steal",
-					"visual_payload": CombatPayload.pwr_change(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
+					"action_type": C.ACTION_BUFF,
+					"visual_payload": CombatPayload.pwr_buff(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
 				}))
 
 	return total_events

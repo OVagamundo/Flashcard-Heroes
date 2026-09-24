@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectHealRandom1"]
 script = ExtResource("2_effect")
 parameters = {
+"action_type": "HEAL",
 "base_value": 2,
 "stat": "hp"
 }
@@ -14,6 +15,7 @@ target_type = &"RANDOM_ALLY"
 [sub_resource type="Resource" id="EffectHealRandom2"]
 script = ExtResource("2_effect")
 parameters = {
+"action_type": "HEAL",
 "base_value": 2,
 "stat": "hp"
 }

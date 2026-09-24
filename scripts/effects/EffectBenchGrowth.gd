@@ -1,6 +1,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Grants +3 HP and +3 PWR if the unit is on the Player Bench.
 ## Triggered on_turn_start.
 
@@ -47,14 +49,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var log_text = "%s meditates on the bench (+%d HP/+%d PWR)" % [BattleHelpers.get_instance_display_name(source_unit), hp_amount, pwr_amount]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
-	# Event 1: HP Gain (Heal visual)
-	result.add_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+	# Event 1: HP Gain (Buff visual)
+	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
+		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp])
+		"visual_payload": CombatPayload.hp_buff(source_uuid, hp_amount, [old_hp], [new_hp])
 	}))
 	
 	# Event 2: PWR Gain (Buff visual)
@@ -63,8 +66,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
 		"trigger_type": context.get("trigger_type", ""),
+		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.pwr_change(source_uuid, pwr_amount, [old_pwr], [new_pwr])
+		"visual_payload": CombatPayload.pwr_buff(source_uuid, pwr_amount, [old_pwr], [new_pwr])
 	}))
 	
 	result.state_applied = true

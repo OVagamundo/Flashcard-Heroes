@@ -23,20 +23,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	out_events.append_array(cascade_result.events)
 	
 	# Phase 2: Process reactions one target at a time (after all damage shown).
-	# Spikes is applied during Phase 1 too, so it must raise its own on_hurt
-	# reaction before lethal deaths are finalized.
-	var reflected_hurt_start = combat_sim._pending_reactions.size()
-	for reflected_hit in cascade_result.reflected_hits:
-		battle_manager.trigger_on_hurt(
-			reflected_hit.target_uuid,
-			reflected_hit.damage_amount,
-			reflected_hit.source_uuid,
-			C.CAUSE_ABILITY,
-			&"",
-			false
-		)
-	combat_sim.drain_reactions_inline(reflected_hurt_start, battle_manager)
-	out_events.append_array(combat_sim.collect_and_clear_inline_events())
+	# Spikes does not trigger on_hurt. Check for lethal deaths from reflected hits.
 
 	for reflected_hit in cascade_result.reflected_hits:
 		var reflected_target = battle_manager.get_instance_by_uuid(reflected_hit.target_uuid)
