@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectModifyHP"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "BUFF",
 "ability_id": "ability_boss_3_ally_growth",
 "base_value": 1,
 "log_format": "%s absorbs the soul of a fallen ally (+%d HP)",
@@ -16,6 +17,7 @@ target_type = &"SELF"
 [sub_resource type="Resource" id="EffectModifyPWR"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "BUFF",
 "ability_id": "ability_boss_3_ally_growth",
 "base_value": 1,
 "log_format": "%s grows stronger from death (+%d PWR)",

@@ -49,8 +49,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		dying_uuid,
 		target_uuid,
 		damage,
-		C.DamageType.RANGED,
-		target_inst.current_hp # dying_max_hp? It's just a dummy value or target HP
+		C.DamageType.KAMIKAZE,
+		target_inst.current_hp
 	)
 	
 	return result

@@ -5,7 +5,7 @@
 
 [sub_resource type="Resource" id="EffectModifyStat_TurnStartHeal_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "hp", "base_value": 2 }
+parameters = { "action_type": "HEAL", "stat": "hp", "base_value": 2 }
 target_type = &"HOLDER"
 
 [resource]

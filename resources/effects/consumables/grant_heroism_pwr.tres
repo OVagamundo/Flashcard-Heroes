@@ -6,6 +6,7 @@
 script = ExtResource("1_script")
 target_type = &"MANUAL"
 parameters = {
+"action_type": "BUFF",
 "base_value": 3,
 "stat": "pwr"
 }

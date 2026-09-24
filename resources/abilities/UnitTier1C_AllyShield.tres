@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectAllyShield"]
 script = ExtResource("2_effect_script")
 parameters = {
+"action_type": "HEAL",
 "ability_id": "unit_t1_c_ally_shield",
 "log_format": "%s shields their ally (+%d HP)",
 "stat": "hp",

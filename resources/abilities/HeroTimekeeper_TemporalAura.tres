@@ -5,12 +5,12 @@
 
 [sub_resource type="Resource" id="EffectModifyStat_TemporalAura_HP_1"]
 script = ExtResource("2_effect")
-parameters = { "stat": "hp", "base_value": 2 }
+parameters = { "action_type": "BUFF", "stat": "hp", "base_value": 2 }
 target_type = &"ALLIES_IN_FRONT"
 
 [sub_resource type="Resource" id="EffectModifyStat_TemporalAura_PWR_2"]
 script = ExtResource("2_effect")
-parameters = { "stat": "pwr", "base_value": 2 }
+parameters = { "action_type": "BUFF", "stat": "pwr", "base_value": 2 }
 target_type = &"ALLIES_BEHIND"
 
 [resource]

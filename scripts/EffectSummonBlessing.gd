@@ -3,6 +3,8 @@
 class_name EffectSummonBlessing
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Effect that buffs a newly summoned ally unit with HP.
 ## Used by the Tier 3 F unit's "Summon Blessing" ability.
 ##
@@ -38,7 +40,7 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 		max_hp = target_def.base_hp
 	
 	# Apply HP buff
-	var new_hp = battle_manager.apply_stat_delta(target_inst, "hp", hp_amount)
+	var new_hp = battle_manager.apply_stat_delta(target_inst, "hp", hp_amount, source_uuid, C.ACTION_BUFF, true)
 	
 	# Get source name for log
 	var source_name: String = ""
@@ -61,10 +63,10 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 		"target_uuids": [summoned_uuid],
 		"ability_id": context.get("ability_id", &"summon_blessing"),
 		"trigger_type": context.get("trigger_type", ""),
+		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.hp_change(source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
+		"visual_payload": CombatPayload.hp_buff(source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
 	}))
 	
-	result.mark_healed(summoned_uuid, hp_amount)
 	result.state_applied = true
 	return result

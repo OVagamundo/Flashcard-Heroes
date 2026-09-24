@@ -213,8 +213,8 @@ func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[Co
 	while i < raw_events.size():
 		var current = raw_events[i]
 		
-		# Check if current is a visual stat event (BUFF, HEAL, STATUS_EFFECT)
-		if current.type in [CombatEvent.Type.BUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
+		# Check if current is a visual stat event (BUFF, DEBUFF, HEAL, STATUS_EFFECT)
+		if current.type in [CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
 			var merged_event = current.deep_clone()
 			var merged_payload = merged_event.visual_payload
 			var source_uuid = merged_event.source_uuid
@@ -225,7 +225,7 @@ func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[Co
 				var next_ev = raw_events[j]
 				if next_ev.type == CombatEvent.Type.LOG_MESSAGE and not next_ev.trinket_activations.is_empty():
 					break
-				elif next_ev.type in [CombatEvent.Type.BUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
+				elif next_ev.type in [CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
 					# Match Rule: Events must originate from the SAME source_uuid. If both are passive (empty source_uuid), ability_id must match.
 					var is_same_source = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
 					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty() and next_ev.ability_id == ability_id)
@@ -452,13 +452,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				else:
 					push_error("[BattleAnimator] Heal animation not found in registry!")
 
-			CombatEvent.Type.BUFF:
+			CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF:
 				var anim = AnimationRegistry.get_animation("buff")
 				if anim:
 					Audio.play_sfx("combat_buff")
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
-					push_error("[BattleAnimator] Buff animation not found in registry!")
+					push_error("[BattleAnimator] Buff/Debuff animation not found in registry!")
 
 			CombatEvent.Type.STATUS_EFFECT:
 				var anim = AnimationRegistry.get_animation("status_effect")

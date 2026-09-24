@@ -62,7 +62,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var tgt_max_hp: int = tgt.get_definition().base_hp if is_instance_valid(tgt.get_definition()) else tgt.current_hp
 			
 			# Apply buff to model
-			var new_val = battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
+			var new_val = battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount, holder_uuid, C.ACTION_BUFF, true)
 			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(tgt))
@@ -81,17 +81,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 			var visual_payload: CombatPayload
 			if buff_stat == "pwr":
-				visual_payload = CombatPayload.pwr_change(holder_uuid, buff_amount, batched_old_vals, batched_new_vals)
+				visual_payload = CombatPayload.pwr_buff(holder_uuid, buff_amount, batched_old_vals, batched_new_vals)
 			else:
-				visual_payload = CombatPayload.hp_change(holder_uuid, buff_amount, batched_old_vals, batched_new_vals, batched_max_hp)
+				visual_payload = CombatPayload.hp_buff(holder_uuid, buff_amount, batched_old_vals, batched_new_vals, batched_max_hp)
 			
 			# Single batched BUFF event for all targets simultaneously
-			var event_type = CombatEvent.Type.HEAL if buff_stat == "hp" else CombatEvent.Type.BUFF
-			result.add_event(CombatEvent.new(event_type, {
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": context.get("ability_id", &"buff_two_random"),
 				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": holder_uuid,
 				"visual_payload": visual_payload
 			}))
@@ -103,7 +103,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		for target_uuid in buff_targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
-				battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount)
+				battle_manager.apply_stat_delta(tgt, buff_stat, buff_amount, holder_uuid, C.ACTION_BUFF, true)
 		var non_sim_result := EffectResult.new()
 		non_sim_result.state_applied = true
 		return non_sim_result

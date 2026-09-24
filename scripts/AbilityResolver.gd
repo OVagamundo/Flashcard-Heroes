@@ -134,7 +134,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 		
 		&"on_healed":
 			# Only the healed unit itself responds to its own healing
-			var healed_uuid = context.get("healed_uuid", "")
+			var healed_uuid = context.get("healed_uuid", context.get("unit_uuid", ""))
 			return unit.current_hp > 0 and unit_uuid == healed_uuid
 		
 		&"on_gacha_tokens_changed":
@@ -145,34 +145,29 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# All living units respond to any unit death
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
-		&"on_stat_increased":
-			# Units respond if they are adjacent to the unit that received the stat increase
-			# AND they are NOT the source of the stat increase (Loop Prevention)
+		&"on_stat_increased", &"on_stat_decreased":
+			# Units respond if they are on the battle board and alive
+			# Loop Prevention: Do not respond if this unit caused the stat modification
 			var target_uuid = context.get("unit_uuid", "")
 			var source_uuid = context.get("source_uuid", "")
 			
-			# Loop Prevention: Do not respond if this unit caused the buff
-			if unit_uuid == source_uuid:
-				return false
-			
-			# Must be alive
 			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
 				
-			# Check adjacency
-			# We use the BattleManager helper indirectly by checking raw locations
-			# Or we can just let process_trigger handle it? 
-			# Optimization: Filter here.
-			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
-			if not is_instance_valid(target_inst):
+			if not source_uuid.is_empty() and unit_uuid == source_uuid:
 				return false
-			
-			# Check if unit is adjacent to target
-			var adjacent_allies = battle_manager._get_adjacent_allies(target_inst)
-			for ally in adjacent_allies:
-				if ally.ball_uuid == unit_uuid:
-					return true
-					
+				
+			# The unit whose stat changed always responds (self-trigger)
+			if unit_uuid == target_uuid:
+				return true
+				
+			# Living allies on the same team also respond (e.g. team reaction abilities)
+			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
+			if is_instance_valid(target_inst):
+				var target_team = _get_instance_team(target_inst, battle_manager)
+				var unit_team = _get_instance_team(unit, battle_manager)
+				return unit_team == target_team
+				
 			return false
 	
 	# Default: respond (for any new triggers)
@@ -233,6 +228,13 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 		&"on_draw":
 			# Items don't respond to on_draw - only trinkets do
 			return false
+		
+		&"on_healed":
+			return holder_uuid == context.get("healed_uuid", context.get("unit_uuid", ""))
+		
+		&"on_stat_increased", &"on_stat_decreased":
+			var target_uuid = context.get("unit_uuid", "")
+			return holder_uuid == target_uuid
 	
 	return true
 
@@ -272,6 +274,13 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			# Trinkets only respond to ally summons on their own team
 			var summoned_team = context.get("summoned_team", "")
 			return trinket_team == summoned_team
+		
+		&"on_stat_increased", &"on_stat_decreased":
+			var target_uuid = context.get("unit_uuid", "")
+			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
+			if is_instance_valid(target_inst):
+				return trinket_team == _get_instance_team(target_inst, battle_manager)
+			return true
 	
 	# For other triggers, trinkets respond based on team context if available
 	return true

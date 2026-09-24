@@ -160,16 +160,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		spikes_data_list.append(damage_result["spikes_data"])
 		
 	var impact_start: int = battle_manager.get_pending_reactions_size()
-	if damage_result.has("spikes_data"):
-		var spikes = damage_result["spikes_data"]
-		battle_manager.trigger_on_hurt(
-			String(spikes["attacker_uuid"]),
-			int(spikes["spikes_damage"]),
-			String(spikes["defender_uuid"]),
-			C.CAUSE_ABILITY,
-			&"",
-			false
-		)
 	battle_manager.trigger_on_hurt(final_target_uuid, damage, attacker_uuid)
 		
 	var impact_events: Array[CombatEvent] = []

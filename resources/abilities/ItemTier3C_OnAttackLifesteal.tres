@@ -6,6 +6,7 @@
 [sub_resource type="Resource" id="EffectLifesteal"]
 script = ExtResource("2_effect")
 parameters = {
+"action_type": "HEAL",
 "min_value": 1,
 "scaling_context_key": "damage_dealt",
 "scaling_context_multiplier": 0.2,

@@ -10,6 +10,7 @@ enum Type {
 	DAMAGE_BURN, # End of turn burn damage
 	SUMMON, # Payload must contain snapshot of new unit
 	BUFF, # Payload: { "stat": "hp" or "pwr", "amount": int } - Core stats only
+	DEBUFF, # Payload: { "stat": "hp" or "pwr", "amount": int } - Core stat debuff
 	STATUS_EFFECT, # Payload: { "stat": "*_stacks", "amount": int } - burn, armor, etc.
 	MOVE, # Payload: { "from_slot": 1, "to_slot": 2 }
 	PROJECTILE, # Visual only: { "source_uuid": str, "target_uuid": str, "vfx_id": str }
@@ -29,6 +30,7 @@ enum Type {
 }
 
 var type: Type
+var action_type: StringName = &""
 var source_uuid: String = "" # Logic UUID or "SYSTEM" or "TRINKET_ID"
 var target_uuids: Array[String] = []
 
@@ -80,11 +82,16 @@ func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	self.ability_id = StringName(p_context.get("ability_id", ""))
 	self.trigger_type = StringName(p_context.get("trigger_type", ""))
 	self.ability_holder_uuid = String(p_context.get("ability_holder_uuid", ""))
+	self.action_type = StringName(p_context.get("action_type", ""))
 		
 	# Visual Payload (The new standard)
 	var supplied_payload = p_context.get("visual_payload", null)
 	if supplied_payload is CombatPayload:
 		self.visual_payload = supplied_payload
+		if self.action_type == &"" and self.visual_payload.action_type != &"":
+			self.action_type = self.visual_payload.action_type
+		elif self.action_type != &"" and self.visual_payload.action_type == &"":
+			self.visual_payload.action_type = self.action_type
 	
 	# Legacy field population for compatibility
 	self.text = String(p_context.get("text", ""))
@@ -120,6 +127,7 @@ func deep_clone() -> CombatEvent:
 	var copy = CombatEvent.new(self.type)
 	copy.event_id = self.event_id
 	copy.source_uuid = self.source_uuid
+	copy.action_type = self.action_type
 	copy.target_uuids = self.target_uuids.duplicate()
 	copy.ability_id = self.ability_id
 	copy.trigger_type = self.trigger_type

@@ -1,6 +1,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Effect: Gains HP equal to the current PWR of the first ally that dies each turn.
 ## Only triggers once per turn per team for the first unit to die.
 ## Resolves targets independently.
@@ -68,7 +70,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
-		"visual_payload": CombatPayload.hp_change(source_uuid, amount, [old_hp], [new_hp])
+		"action_type": C.ACTION_BUFF,
+		"visual_payload": CombatPayload.hp_buff(source_uuid, amount, [old_hp], [new_hp])
 	}))
 	
 	result.state_applied = true

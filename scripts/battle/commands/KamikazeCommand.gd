@@ -29,8 +29,8 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	var old_armor = tgt_inst.get_status_effect_amount(&"armor")
 	
 	# Actually apply the damage
-	var damage_type = C.DamageType.MAGIC
-	var dmg_res = battle_manager.apply_damage(tgt_inst, damage_amount, damage_type, attacker_uuid)
+	var damage_type = C.DamageType.KAMIKAZE
+	var dmg_res = battle_manager.apply_damage(tgt_inst, damage_amount, damage_type, "")
 	
 	var new_hp = tgt_inst.current_hp
 	var new_armor = tgt_inst.get_status_effect_amount(&"armor")
@@ -44,41 +44,15 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	var payload := CombatPayload.damage(attacker_uuid, damage_amount, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	payload.attack_type = "kamikaze"
 	
-	# Add spikes data if any
-	if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
-		var raw_spikes = dmg_res["spikes_data"]
-		var spikes_data := CombatSpikesData.new()
-		spikes_data.attacker_uuid = String(raw_spikes.get("attacker_uuid", ""))
-		spikes_data.defender_uuid = String(raw_spikes.get("defender_uuid", ""))
-		spikes_data.spikes_damage = int(raw_spikes.get("spikes_damage", 0))
-		spikes_data.attacker_old_hp = int(raw_spikes.get("attacker_old_hp", 0))
-		spikes_data.attacker_new_hp = int(raw_spikes.get("attacker_new_hp", 0))
-		spikes_data.attacker_max_hp = int(raw_spikes.get("attacker_max_hp", 0))
-		spikes_data.old_spikes = int(raw_spikes.get("old_spikes", 0))
-		spikes_data.new_spikes = int(raw_spikes.get("new_spikes", 0))
-		spikes_data.armor_consumed = int(raw_spikes.get("armor_consumed", 0))
-		spikes_data.new_armor = int(raw_spikes.get("new_armor", 0))
-		payload.spikes_data_list = [spikes_data] as Array[CombatSpikesData]
-	
 	out_events.append(CombatEvent.new(CombatEvent.Type.KAMIKAZE_ATTACK, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": [target_uuid],
 		"visual_payload": payload
 	}))
 	
-	# Trigger on_hurt and on_kill
+	# Trigger on_hurt (self and ally reactions only; no targeted retaliation against deceased attacker)
 	var kamikaze_hurt_start = combat_sim._pending_reactions.size()
-	if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
-		var spikes = dmg_res["spikes_data"]
-		battle_manager.trigger_on_hurt(
-			String(spikes["attacker_uuid"]),
-			int(spikes["spikes_damage"]),
-			String(spikes["defender_uuid"]),
-			C.CAUSE_ABILITY,
-			&"",
-			false
-		)
-	battle_manager.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
+	battle_manager.trigger_on_hurt(target_uuid, damage_amount, "", C.CAUSE_KAMIKAZE, &"", false)
 	
 	combat_sim.drain_reactions_inline(kamikaze_hurt_start, battle_manager)
 	var kamikaze_hurt_inline_evts = combat_sim.collect_and_clear_inline_events()
@@ -86,10 +60,5 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	if new_hp <= 0:
 		battle_manager.trigger_on_kill(request.source_uuid, target_uuid)
-	if not dmg_res.is_empty() and dmg_res.has("spikes_data"):
-		var spikes = dmg_res["spikes_data"]
-		var reflected_target = battle_manager.get_instance_by_uuid(String(spikes["attacker_uuid"]))
-		if is_instance_valid(reflected_target) and reflected_target.current_hp <= 0:
-			battle_manager.trigger_on_kill(String(spikes["defender_uuid"]), reflected_target.ball_uuid)
 	
 	battle_manager._check_for_deaths_with_counter_delay(true, out_events, death_tracking)

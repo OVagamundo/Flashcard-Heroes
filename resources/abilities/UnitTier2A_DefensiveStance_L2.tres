@@ -6,7 +6,7 @@
 [sub_resource type="Resource" id="EffectModifyStat_DefensiveStance_2"]
 script = ExtResource("2_effect")
 target_type = &"SELF"
-parameters = { "stat": "hp", "base_value": 4 }
+parameters = { "action_type": "HEAL", "stat": "hp", "base_value": 4 }
 
 [resource]
 script = ExtResource("1_ability")

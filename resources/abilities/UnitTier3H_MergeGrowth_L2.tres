@@ -5,12 +5,12 @@
 
 [sub_resource type="Resource" id="EffectModifyStat_GainHP_2"]
 script = ExtResource("2_effect")
-parameters = { "stat": "hp", "base_value": 3 }
+parameters = { "action_type": "BUFF", "stat": "hp", "base_value": 3 }
 target_type = &"SELF"
 
 [sub_resource type="Resource" id="EffectModifyStat_GainPWR_2"]
 script = ExtResource("2_effect")
-parameters = { "stat": "pwr", "base_value": 3 }
+parameters = { "action_type": "BUFF", "stat": "pwr", "base_value": 3 }
 target_type = &"SELF"
 
 [resource]

@@ -164,11 +164,11 @@ func _on_animation_event(event: CombatEvent) -> void:
 				amount = abs(new_hp - old_hp)
 			log_heal(source_name, primary_target, amount, old_hp, new_hp, String(event.ability_id), String(event.trigger_type))
 		
-		CombatEvent.Type.BUFF:
+		CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF:
 			var payload = event.visual_payload
 			var stat = payload.stat if not payload.stat.is_empty() else "stat"
 			var amount = payload.amount if payload.amount != 0 else event.amount
-			var is_debuff = amount < 0
+			var is_debuff = (event.type == CombatEvent.Type.DEBUFF) or (amount < 0)
 			log_buff(source_name, primary_target, stat, abs(amount), is_debuff, String(event.ability_id), String(event.trigger_type))
 		
 		CombatEvent.Type.DEATH:

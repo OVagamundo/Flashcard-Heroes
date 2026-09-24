@@ -6,6 +6,8 @@ extends EffectDefinition
 ## Sets the source unit's PWR equal to the current Gold count.
 ## Used for the Tier 2 unit "Merchant".
 
+const C = preload("res://scripts/Constants.gd")
+
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
@@ -34,8 +36,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# Store the new total bonus applied
 	source.set_meta("gold_pwr_bonus", required_bonus)
 	
+	var action_type := C.ACTION_BUFF if delta > 0 else C.ACTION_DEBUFF
 	# Apply change via BattleManager
-	var pwr_result = battle_manager.apply_stat_delta(source, "pwr", delta)
+	var pwr_result = battle_manager.apply_stat_delta(source, "pwr", delta, source_uuid, action_type, false)
 	var _new_pwr: int = source.current_pwr
 	if pwr_result is Dictionary:
 		_new_pwr = pwr_result.get("new_pwr", source.current_pwr)

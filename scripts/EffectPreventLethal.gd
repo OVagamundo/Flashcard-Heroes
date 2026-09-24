@@ -2,6 +2,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Effect: Prevent lethal damage once per turn by setting HP to 1.
 ## Triggers on on_hurt, checks if damage was lethal (HP <= 0) and heals to 1 HP.
 ## Uses turn metadata to ensure once-per-turn limit per team.
@@ -75,7 +77,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			return EffectResult.empty()
 		
 		# Apply heal to model
-		battle_manager.apply_stat_delta(victim, "hp", heal_amount)
+		battle_manager.apply_stat_delta(victim, "hp", heal_amount, _source_uuid, C.ACTION_HEAL, true)
 		
 		# Get display name
 		var victim_name: String = BattleHelpers.get_instance_display_name(victim)
@@ -90,17 +92,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"source_uuid": _source_uuid,
 			"target_uuids": [victim_uuid],
 			"ability_id": context.get("ability_id", &"aegis_charm"),
+			"action_type": C.ACTION_HEAL,
 			"visual_payload": _make_lethal_save_payload(victim_uuid, heal_amount)
 		}))
 		
-		result.mark_healed(victim_uuid, heal_amount)
 		result.state_applied = true
 		return result
 	else:
 		# Non-simulation: apply heal directly
 		var victim = battle_manager.get_instance_by_uuid(victim_uuid)
 		if is_instance_valid(victim):
-			battle_manager.apply_stat_delta(victim, "hp", heal_amount)
+			battle_manager.apply_stat_delta(victim, "hp", heal_amount, _source_uuid, C.ACTION_HEAL, true)
 		var non_sim_result := EffectResult.new()
 		non_sim_result.state_applied = true
 		return non_sim_result

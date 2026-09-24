@@ -2,6 +2,8 @@
 @tool
 extends EffectDefinition
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Cascading buff that travels down the lineup based on depth.
 ## Gives PWR to the unit behind it, then halves it for the next, and so on.
 ## Minimum PWR given is 1.
@@ -32,14 +34,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		if is_simulation:
 			var old_pwr: int = current_target.current_pwr
 			# CENTRALIZED STAT MANAGEMENT: Use apply_stat_delta to ensure triggers propagate correctly
-			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff)
+			var new_pwr: int = battle_manager.apply_stat_delta(current_target, "pwr", apply_buff, source_uuid, C.ACTION_BUFF, true)
 			
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": source_uuid,
 				"target_uuids": [current_target.ball_uuid],
 				"ability_id": context.get("ability_id", &"empathic_link"),
+				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": source_uuid,
-				"visual_payload": CombatPayload.pwr_change(source_uuid, apply_buff, [old_pwr], [new_pwr])
+				"visual_payload": CombatPayload.pwr_buff(source_uuid, apply_buff, [old_pwr], [new_pwr])
 			}))
 			
 		current_target = battle_manager._get_ally_behind(current_target)

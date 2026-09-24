@@ -5,6 +5,7 @@
 [resource]
 script = ExtResource("1_script")
 parameters = {
+"action_type": "DAMAGE",
 "base_value": -3,
 "stat": "hp"
 }
