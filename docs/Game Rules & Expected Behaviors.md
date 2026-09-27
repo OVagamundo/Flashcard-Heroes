@@ -126,8 +126,8 @@ The game operates on a dual-economy system that separates long-term strategy fro
 
 The Spaced Repetition System (SRS) powers tactical resource generation:
 
-## 5.1 In-Battle Sprint Mechanics
-* **Timed Sprint**: A fast-paced timed sprint at the start of each turn.
+## 5.1 In-Battle Mini-Game Mechanics
+* **Timed Mini-Game**: A fast-paced timed mini-game at the start of each turn.
 * **Correct Answer**: Awards $+1\text{ Token}$, $+1\text{ Card Mastery}$, $+0.5\text{s Timer Extension}$, increments the consecutive correct answer streak, and triggers escalating sound pitch and visual effects.
 * **Incorrect Answer**: Awards $0\text{ Tokens}$, $-1\text{ Card Mastery}$, resets the streak to $0$, and resets the BGM pitch to $1.0$.
 * **Skip**: Awards $0\text{ Tokens}$, $-1\text{ Card Mastery}$, $+0.5\text{s Timer Extension}$, but **preserves** the active consecutive correct answer streak and audio pitch without penalty.
@@ -159,6 +159,29 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
   * Renders behind the parent panel (`show_behind_parent = true`) to maintain text legibility.
 * **Token Pop & Spin**: Correct answer currency pop-up animations scale their particle amount, size, and spin velocity with the current streak tier.
 
+## 5.4 Mid-Mini Game Flashcard Unlock (3-Streak Progression)
+
+During active mini game play, consecutive correct answers can unlock additional cards from the deck pool mid-session:
+
+* **Trigger Condition**: Achieving a **3-question consecutive correct answer streak** during an active mini game session.
+  * **Session Limit**: Can trigger **strictly once per mini game session**. Subsequent 3-streaks within the same session will not trigger another unlock.
+  * **Pool Requirement**: Requires locked cards remaining in the run's deck pool (`ordered_deck_pool`). If all cards in the deck are already unlocked, reaching a 3-streak triggers no unlock or timer bonus.
+* **Immediate Presentation Contract**:
+  * The next locked card from `ordered_deck_pool` is unlocked and appended to `active_deck_ids`.
+  * The newly unlocked card is **queued immediately as the very next question displayed** in the current mini game.
+* **Timer & Resource Rules**:
+  * **+1.0s Timer Extension**: Awards an immediate $+1.0\text{s}$ bonus time extension directly to `session_timer` (in addition to the standard $+0.5\text{s}$ for a correct answer, yielding $+1.5\text{s}$ on the triggering question).
+  * **Standard Token Yield**: Answering the triggering question awards standard tokens (no additional tokens are awarded for the unlock itself).
+* **Audio-Visual Feedback**:
+  * **Celebratory Fireworks (`FireworksCelebrationVFX`)**: Triggers staggered multi-point radial particle explosions with additive blending across the top, sides, and center of the mini game window.
+  * **Golden Window Shimmer**: The main mini game panel flashes in radiant gold (`Color(1.8, 1.6, 0.7)`) before smoothly settling to the unlocked card's mastery color.
+  * **Timer Bar Flash & White Buff Pop**: The timer bar flashes bright white (`Color.WHITE`) with a 0.4s fade, while a glowing white `+1.0s` buff popup bounces elastically over the timer label, floats upward, and the timer label pops to $1.35\times$ scale.
+  * **Celebration Banner**: An animated floating banner (`★ NEW CARD UNLOCKED! ★` / `+1.0s TIME BONUS!`) pops over the main panel with elastic overshoot and floats upward without blocking gameplay input.
+  * **Audio & Screen Shake**: Plays a triumphant chime (`ui_merge`) and triggers screen shake ($0.2\text{s}$).
+* **Deck Synchronization Contract**:
+  * The mid-mini game unlocked card is marked as already presented (`cards_presented_count` increments in sync with `active_deck_ids`).
+  * At the start of subsequent mini games, the start-of-game review popup introduces the next locked card in the deck pool, resulting in up to 2 cards unlocked per mini game encounter (1 at the start review popup + 1 mid-mini game).
+
 ---
 
 # 6. Battle Structure & Flow
@@ -172,7 +195,7 @@ Battles resolve in a structured, four-phase turn loop:
 ```
 
 1. **Start of Turn**:
-   * **The Sprint**: The player plays the timed Flashcard mini-game to earn Gacha Tokens.
+   * **Flashcard Mini-Game**: The player plays the timed Flashcard mini-game to earn Gacha Tokens.
    * **Turn 1 Enemy Entrance**: On Turn 1, enemy units do not appear on the battlefield until the Flashcard mini-game is finished. Once the player acknowledges their mini-game results, enemy units enter the board sequentially, starting from the backline down to the frontline. Each entering enemy unit displays its entrance animation, activates any board-entry effects (such as trinket buffs or stat scaling), and equips its items one by one before the phase transitions.
    * **DOT Application**: Burn damage ticks first, ignoring Armor (from Turn 2 onward).
    * **Slot Actions**: Turn-start slot effects resolve (Burn Slot and Lightning Slot actions).
@@ -215,7 +238,7 @@ Units with token-scaling abilities (such as the Templar, `unit_t2_d`, *Token Pow
 
 1. **Dynamic Real-Time Scaling**:
    * Templar's PWR bonus is not fixed upon draw; it dynamically modulates in real time based on the player's **current Gacha Token amount**.
-   * Any change in the player's token count—positive (answering sprint flashcards, receiving room token rewards, death token refunds) or negative (spending tokens on draws or rerolls)—immediately updates the Templar's PWR up or down via delta tracking:
+   * Any change in the player's token count—positive (answering flashcards in the mini-game, receiving room token rewards, death token refunds) or negative (spending tokens on draws or rerolls)—immediately updates the Templar's PWR up or down via delta tracking:
      $$\text{Target Bonus} = \lfloor \text{Current Player Tokens} \times \text{Multiplier} \rfloor$$
      $$\Delta = \text{Target Bonus} - \text{Previous Token Bonus}$$
    * **Level Multipliers**:
@@ -709,6 +732,25 @@ Surprise encounters randomly select from a pool of classic resource sites:
 * **Training Grounds**: The Hero can study and spend Tokens to draw PWR buff capsules.
 * Applying drawn capsules permanently upgrades the Hero. Leaving the scene automatically applies any uncollected capsules.
 
+### Training & Resource Site Reward Distributions
+Both Hero Training (Rest Site HP, Training Grounds PWR, Gambling Den Gold) and Unit Training Ground (Unit HP/PWR) share a unified, middle-weighted bell curve distribution with rare 0s and rare top prizes:
+* **Tier 1 (1 Token)**: Range 0–2
+  * `0`: 10% (rare miss)
+  * `1`: 80% (middle)
+  * `2`: 10% (jackpot)
+* **Tier 2 (2 Tokens)**: Range 0–3
+  * `0`: 10% (rare miss)
+  * `1`: 40% (middle)
+  * `2`: 40% (middle)
+  * `3`: 10% (jackpot)
+* **Tier 3 (3 Tokens)**: Range 0–5
+  * `0`: 5% (rare miss)
+  * `1`: 15%
+  * `2`: 30% (middle)
+  * `3`: 30% (middle)
+  * `4`: 15%
+  * `5`: 5% (jackpot)
+
 ### Study Session Activation Rules
 * Activating a study session at non-combat nodes requires exactly **5 Gold**.
 * Spending gold triggers a visual VFX of gold coins transferring from the player's gold bank to the study button.
@@ -817,7 +859,7 @@ To preserve game balance and strategic solvability, the following principles gov
 
 The following variables serve as safe tuning levers that affect game difficulty without altering the deterministic combat contract:
 * **Token gain rate** (flashcard rewards)
-* **Flashcard timer length** (sprint duration)
+* **Flashcard timer length** (mini-game duration)
 * **Tier draw costs** (1, 2, 3 token baseline)
 * **Encounter budget scaling** (daily budget formula)
 * **Base unit stats** (HP and PWR per tier/definition)

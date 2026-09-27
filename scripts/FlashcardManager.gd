@@ -31,6 +31,7 @@ var total_answers: int = 0
 var current_streak: int = 0
 var tokens_earned: int = 0
 var current_question: Dictionary = {}
+var has_unlocked_midgame_card: bool = false
 
 ## TDD Section 9.3: The Weighted SRS Algorithm
 func _select_card_via_srs() -> StringName:
@@ -122,6 +123,7 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	total_answers = 0
 	current_streak = 0
 	tokens_earned = 0
+	has_unlocked_midgame_card = false
 	is_session_active = true
 	
 	# Determine if introducing a new card
@@ -183,6 +185,7 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 	submit_answer(question_id, was_correct)
 	
 	var tokens_to_give: int = 0
+	var midgame_unlocked_card_id: StringName = &""
 	if was_correct:
 		correct_answers += 1
 		current_streak += 1
@@ -190,6 +193,17 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		
 		var has_charm: bool = GameManager.has_trinket(&"trinket_beginners_charm")
 		tokens_to_give = 2 if (mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm) else 1
+		
+		# Mid-minigame card unlock on 3-question streak
+		if not has_unlocked_midgame_card and current_streak == 3:
+			if is_instance_valid(_run_state_ref) and _run_state_ref.has_locked_cards():
+				var unlocked_id = _run_state_ref.unlock_next_deck_card()
+				if not unlocked_id.is_empty():
+					has_unlocked_midgame_card = true
+					midgame_unlocked_card_id = unlocked_id
+					_active_deck_ids = _run_state_ref.active_deck_ids.duplicate()
+					session_timer += 1.0 # Bonus time alongside the unlock per user choice
+		
 		tokens_earned += tokens_to_give
 		
 		if is_instance_valid(_run_state_ref):
@@ -204,7 +218,10 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		current_streak = 0
 		
 	session_timer_updated.emit(session_timer, session_duration)
-	current_question = get_next_question()
+	if not midgame_unlocked_card_id.is_empty():
+		current_question = get_question_for_card(midgame_unlocked_card_id)
+	else:
+		current_question = get_next_question()
 	session_question_changed.emit(current_question)
 	
 	return {
@@ -213,7 +230,8 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		"current_streak": current_streak,
 		"correct_answers": correct_answers,
 		"total_answers": total_answers,
-		"next_question": current_question
+		"next_question": current_question,
+		"midgame_unlocked_card_id": midgame_unlocked_card_id
 	}
 
 func skip_minigame_question(question_id: StringName, think_time: float = 0.0) -> Dictionary:
@@ -271,6 +289,31 @@ func get_next_question() -> Dictionary:
 	
 	return {
 		"question_id": question_card_id,
+		"choices": choices
+	}
+
+func get_question_for_card(card_id: StringName) -> Dictionary:
+	"""Constructs a question for a specific card, with 5 distractors from active deck"""
+	if not is_instance_valid(_run_state_ref):
+		push_error("[FlashcardManager] _run_state_ref is invalid!")
+		return {}
+	
+	if _active_deck_ids.size() < 6:
+		push_error("[FlashcardManager] Not enough cards in active deck! Size is: " + str(_active_deck_ids.size()))
+		return {}
+	
+	_last_shown_card_id = card_id
+	
+	var distractors = _active_deck_ids.duplicate()
+	distractors.erase(card_id)
+	RNGManager.map_rng.shuffle(distractors)
+	
+	var choices: Array[StringName] = [card_id]
+	choices.append_array(distractors.slice(0, 5))
+	RNGManager.map_rng.shuffle(choices)
+	
+	return {
+		"question_id": card_id,
 		"choices": choices
 	}
 

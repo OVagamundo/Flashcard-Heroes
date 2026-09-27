@@ -283,12 +283,7 @@ func _try_draw_tier(tier: int, cost: int, machine: Control, pre_rolled_prize: Di
 		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _roll_value_for_tier(tier: int) -> int:
-	"""Roll prize value based on tier (1: 0-1, 2: 0-3, 3: 0-5)"""
-	match tier:
-		1: return RNGManager.reward_rng.randi_range(0, 1)
-		2: return RNGManager.reward_rng.randi_range(0, 3)
-		3: return RNGManager.reward_rng.randi_range(0, 5)
-	return 0
+	return GameManager.roll_training_reward(tier)
 
 func _find_next_prize_slot() -> int:
 	for i in range(4):

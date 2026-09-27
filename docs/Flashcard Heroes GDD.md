@@ -19,6 +19,30 @@ Timed mini-game that generates **Gacha Tokens** for use in the current encounter
 - **The Mini-Game**: A timed session of multiple-choice questions. Correct answers increase card "Mastery" and earn tokens. Incorrect answers decrease mastery.
 - **Spaced Repetition**: An *Anki*-style weighted algorithm ensures cards with lower Mastery and more time since last used appear more frequently. The same card will not appear twice in a row and there's a small random factor to keep it from being too predictable.
 
+### 4.1 Mid-Mini Game Card Unlock (3-Streak Progression)
+While playing the mini game, answering 3 questions correctly one after the other triggers an immediate mid-mini game card unlock:
+- **Mechanic**:
+  - The next locked card from the deck pool is unlocked and immediately queued as the very next question displayed.
+  - Grants an immediate **+1.0s Bonus Time** extension directly to the mini game timer.
+  - Celebrated with multi-point fireworks, golden window flash, bright white timer bar flash with a glowing white `+1.0s` buff popup over the timer label, and an animated announcement banner.
+  - Can only trigger once per minigame session.
+  - The unlocked card is marked as already presented, allowing the next minigame's start popup to introduce the subsequent locked card—effectively doubling deck progression rate (1 card at the start review popup + 1 card mid-mini game).
+
+### 4.2 Design Rationale: Pacing, Economics & Natural Difficulty Balancing
+This mechanic was introduced to solve three core game design challenges:
+1. **Pacing & Run Duration for Mastered Players**:
+   - Players who have already mastered a substantial portion of the flashcard deck in prior runs shouldn't be forced to unlock cards at the same slow, beginner pace.
+   - Unlocking an additional card mid-mini game on a 3-streak allows knowledgeable players to progress through familiar cards twice as fast, reaching their unfamiliar, focus-study material in half the run time.
+   - This keeps run duration tight, prevents early runs from feeling repetitive, and accelerates engagement with meaningful study content.
+2. **Systemic Difficulty Economics & Snowball Mitigation**:
+   - In *Flashcard Heroes*, the daily enemy team budget scales linearly by day, whereas a player with high flashcard mastery answers questions rapidly and earns maximum tokens and gold every single encounter.
+   - If runs take too many days to reach new cards, knowledgeable players snowball exponentially ahead of the encounter generator's budget curve, eliminating tactical tension in combat.
+   - Introducing new cards faster naturally exposes the player to unfamiliar cards earlier in the run, curbing excessive token generation before their lineup outpaces the game's economic difficulty curve.
+3. **Natural Dynamic Difficulty Balancing (Organic Risk/Reward)**:
+   - For beginners, pacing remains deliberate, measured, and approachable: novice players rarely achieve 3-question streaks, allowing them to learn cards at a comfortable, gradual pace.
+   - For experienced players, rapid card unlocks introduce an elegant dilemma: an expert trying to deliberately delay card expansion would have to intentionally skip or miss questions. Intentionally missing or skipping questions directly sacrifices Gacha Tokens, yielding fewer resources for battle and making subsequent combat encounters harder.
+   - This creates an organic, systemic difficulty balance dictated naturally by player knowledge and confidence without artificial handicap sliders.
+
 5. GachaBall System
 **GachaBalls** are the core collectible tokens (Units and Items) that form your collection, functioning similarly to cards in a deckbuilding game.
 - **Units**: Characters with HP (Health) and PWR (Power) stats, along with unique passive or active abilities. HP and PWR scale upwards through leveling, equipment, or training.
