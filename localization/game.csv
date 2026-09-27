@@ -281,6 +281,8 @@ ui.skip,SKIP,PULAR
 ui.priority_cards,Priority Cards (click to preview):,Cartas de Prioridade (clique para prÃ©via):
 ui.ready,Ready!,Pronto!
 ui.intro_new_card,New Card Introduction,IntroduÃ§Ã£o de Nova Carta
+ui.midgame_card_unlocked,"★ NEW CARD UNLOCKED! ★","★ NOVA CARTA DESBLOQUEADA! ★"
+ui.midgame_bonus_info,"+1.0s TIME BONUS!","+1.0s TEMPO BÔNUS!"
 ui.play,Play,Jogar
 tutorial.loadout,Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.,Escolha seu herÃ³i e deck de flashcards. HerÃ³is tÃªm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck Ã© o baralho de flashcards que serÃ¡ usado por toda a jogatina.
 tutorial.path_choice_intro.title,Path choice,Escolha do caminho

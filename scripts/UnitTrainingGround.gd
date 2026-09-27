@@ -440,7 +440,7 @@ func _spend_tokens_and_train(cost: int, pre_rolled_value: int = -1) -> void:
 	if roll == -1:
 		if _tokens < cost: return
 		_tokens -= cost
-		roll = RNGManager.reward_rng.randi_range(0, cost)
+		roll = GameManager.roll_training_reward(cost)
 		var unit_uuid = _training_unit_data.get("uuid", "")
 		if unit_uuid != "" and is_instance_valid(GameManager.run_state) and roll > 0:
 			var hp_delta = roll if _training_stat == "hp" else 0

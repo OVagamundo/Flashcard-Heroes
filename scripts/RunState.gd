@@ -904,6 +904,29 @@ func _get_starters_for_hero(_hero_id: StringName) -> Array[StringName]:
 		&"item_t1_b", &"item_t1_b"
 	]
 
+func has_locked_cards() -> bool:
+	if deck_def_id == &"":
+		return false
+	return active_deck_ids.size() < ordered_deck_pool.size()
+
+func unlock_next_deck_card() -> StringName:
+	"""Unlocks the next card from the ordered deck pool and marks it as presented."""
+	if not has_locked_cards():
+		return &""
+	
+	for card_id in ordered_deck_pool:
+		if not active_deck_ids.has(card_id):
+			active_deck_ids.append(card_id)
+			if not flashcard_progress.has(card_id):
+				var progress = FlashcardProgress.new()
+				progress.mastery_level = FlashcardProgress.MASTERY_MIN
+				flashcard_progress[card_id] = progress
+			cards_presented_count += 1
+			SignalBus.emit_signal("run_data_changed")
+			return card_id
+			
+	return &""
+
 func check_deck_expansion() -> bool:
 	"""Every time this is called, add EXACTLY ONE new card if available.
 	The mastery check has been removed as per user request for linear progression."""

@@ -24,6 +24,7 @@ const PANEL_TEXTURE = preload("res://assets/Realistic/ui/textures/panel_v4.png")
 const BUTTON_NORMAL_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_normal.png")
 const BUTTON_HOVER_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_hover.png")
 const BUTTON_PRESSED_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_pressed.png")
+const FireworksCelebrationVFXScene = preload("res://scripts/vfx/FireworksCelebrationVFX.gd")
 
 @onready var main_panel: PanelContainer = %MainPanel
 @onready var question_label: Label = %QuestionLabel
@@ -693,6 +694,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 	_input_locked = true
 	var was_correct: bool = selected_answer_id == _current_question_id
 	var tokens_to_give: int = 1
+	var midgame_unlocked_card_id: StringName = &""
 	var res: Dictionary = {}
 	
 	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
@@ -703,6 +705,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		_session_timer = FlashcardManager.session_timer
 		_tokens_earned = FlashcardManager.tokens_earned
 		tokens_to_give = res.get("tokens_to_give", 1)
+		midgame_unlocked_card_id = res.get("midgame_unlocked_card_id", &"")
 	else:
 		_total_answers += 1
 		FlashcardManager.submit_answer(_current_question_id, was_correct)
@@ -737,7 +740,11 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		_update_aura_vfx()
 			
 		_flash_button_correct(selected_answer_id, tokens_to_give)
-		_flash_timer_bar_correct()
+		if not midgame_unlocked_card_id.is_empty():
+			_flash_timer_bar_bonus(Color.WHITE)
+			_show_timer_buff_popup("+1.0s")
+		else:
+			_flash_timer_bar_correct()
 		
 		# Update BGM tempo/pitch based on streak
 		Audio.set_music_pitch(1.0 + minf(_current_streak, 10) * 0.02)
@@ -804,9 +811,87 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			return
 			
 		_show_next_question_with_data(next_question)
+		if not midgame_unlocked_card_id.is_empty():
+			_trigger_midgame_unlock_fanfare(midgame_unlocked_card_id, next_mastery_color)
 		if is_instance_valid(ActionQueue):
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
+
+func _trigger_midgame_unlock_fanfare(_unlocked_card_id: StringName, target_mastery_color: Color) -> void:
+	# 1. Celebratory Fireworks VFX
+	var fireworks = FireworksCelebrationVFXScene.new()
+	add_child(fireworks)
+	if is_instance_valid(main_panel):
+		fireworks.play(main_panel.get_global_rect())
+	else:
+		fireworks.play(get_global_rect())
+	
+	# 2. Window Celebration Flash
+	_flash_window_celebration(target_mastery_color)
+	
+	# 3. Audio & screen shake
+	Audio.play_sfx("ui_merge")
+	SignalBus.screen_shake_requested.emit(0.2)
+	
+	# 4. Floating Celebratory Banner
+	_show_midgame_unlock_banner()
+
+func _flash_window_celebration(target_color: Color) -> void:
+	if not is_instance_valid(_panel_style):
+		return
+	var prop = "modulate_color" if _panel_style is StyleBoxTexture else "bg_color"
+	_panel_style.set(prop, Color(1.8, 1.6, 0.7, 1.0))
+	var tween = create_tween()
+	tween.tween_property(_panel_style, prop, target_color, 0.35).set_delay(0.1)
+
+func _show_midgame_unlock_banner() -> void:
+	var banner_container := VBoxContainer.new()
+	banner_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	banner_container.alignment = BoxContainer.ALIGNMENT_CENTER
+	banner_container.add_theme_constant_override("separation", 4)
+	
+	var title := Label.new()
+	title.text = tr("ui.midgame_card_unlocked")
+	title.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	title.add_theme_font_override("font", JAPANESE_FONT)
+	title.add_theme_font_size_override("font_size", 38)
+	title.add_theme_color_override("font_color", Color(1.0, 0.95, 0.3))
+	title.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
+	title.add_theme_constant_override("outline_size", 8)
+	banner_container.add_child(title)
+	
+	var subtitle := Label.new()
+	subtitle.text = tr("ui.midgame_bonus_info")
+	subtitle.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	subtitle.add_theme_font_override("font", BUTTON_FONT)
+	subtitle.add_theme_font_size_override("font_size", 26)
+	subtitle.add_theme_color_override("font_color", Color(0.4, 1.0, 0.6))
+	subtitle.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
+	subtitle.add_theme_constant_override("outline_size", 6)
+	banner_container.add_child(subtitle)
+	
+	add_child(banner_container)
+	
+	var rect = main_panel.get_global_rect() if is_instance_valid(main_panel) else get_global_rect()
+	var banner_width = 600.0
+	banner_container.custom_minimum_size = Vector2(banner_width, 80)
+	banner_container.global_position = Vector2(rect.get_center().x - (banner_width / 2.0), rect.position.y - 75.0)
+	banner_container.pivot_offset = Vector2(banner_width / 2.0, 40.0)
+	banner_container.scale = Vector2(0.4, 0.4)
+	banner_container.modulate.a = 0.0
+	
+	var tween = create_tween()
+	tween.set_parallel(true)
+	tween.tween_property(banner_container, "modulate:a", 1.0, 0.15)
+	tween.tween_property(banner_container, "scale", Vector2(1.1, 1.1), 0.25).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(banner_container, "global_position:y", rect.position.y - 85.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	
+	tween.chain().tween_property(banner_container, "scale", Vector2(1.0, 1.0), 0.1)
+	tween.chain().tween_interval(0.8)
+	tween.chain().set_parallel(true)
+	tween.tween_property(banner_container, "global_position:y", rect.position.y - 120.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.tween_property(banner_container, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(banner_container.queue_free)
 
 func _flash_panel_and_transition(flash_color: Color, target_color: Color) -> void:
 	"""Flash the panel with feedback color, then transition to target color"""
@@ -829,6 +914,62 @@ func _flash_timer_bar_correct() -> void:
 func _flash_timer_bar_incorrect() -> void:
 	"""Flash the timer bar red"""
 	_flash_timer_bar(COLOR_FLASH_INCORRECT)
+
+func _flash_timer_bar_bonus(color: Color = Color.WHITE) -> void:
+	if not is_instance_valid(timer_bar):
+		return
+	var style: StyleBoxFlat = timer_bar.get_theme_stylebox("fill")
+	if not is_instance_valid(style):
+		return
+	style.bg_color = color
+	var tween = create_tween()
+	var base_color = Color(0.2, 0.8, 0.2)
+	tween.tween_property(style, "bg_color", base_color, 0.4).set_delay(0.08)
+
+func _show_timer_buff_popup(text_val: String = "+1.0s") -> void:
+	if not is_instance_valid(timer_label):
+		return
+	
+	var buff_label := Label.new()
+	buff_label.text = text_val
+	buff_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	buff_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	buff_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	buff_label.add_theme_font_override("font", JAPANESE_FONT)
+	buff_label.add_theme_font_size_override("font_size", 42)
+	buff_label.add_theme_color_override("font_color", Color.WHITE)
+	buff_label.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
+	buff_label.add_theme_constant_override("outline_size", 6)
+	
+	add_child(buff_label)
+	
+	var label_rect = timer_label.get_global_rect()
+	var center = label_rect.get_center()
+	buff_label.custom_minimum_size = Vector2(160, 50)
+	buff_label.pivot_offset = Vector2(80, 25)
+	buff_label.global_position = center - Vector2(80, 25)
+	buff_label.scale = Vector2(0.2, 0.2)
+	buff_label.modulate = Color(1.5, 1.5, 1.5, 1.0)
+	
+	var tween = create_tween()
+	# Pop in with snappy elasticity
+	tween.set_parallel(true)
+	tween.tween_property(buff_label, "scale", Vector2(1.5, 1.5), 0.15).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	tween.tween_property(buff_label, "global_position:y", center.y - 60.0, 0.7).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	
+	# Settle scale
+	tween.chain().tween_property(buff_label, "scale", Vector2(1.2, 1.2), 0.1)
+	
+	# Fade out
+	tween.chain().tween_interval(0.2)
+	tween.chain().tween_property(buff_label, "modulate:a", 0.0, 0.25).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	tween.chain().tween_callback(buff_label.queue_free)
+	
+	# Also punch timer_label scale and color
+	timer_label.pivot_offset = timer_label.size / 2.0
+	var label_tween = create_tween()
+	label_tween.tween_property(timer_label, "scale", Vector2(1.35, 1.35), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	label_tween.tween_property(timer_label, "scale", Vector2(1.0, 1.0), 0.2).set_trans(Tween.TRANS_SINE)
 
 func _flash_timer_bar(color: Color) -> void:
 	if not is_instance_valid(timer_bar):

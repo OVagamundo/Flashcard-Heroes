@@ -878,6 +878,34 @@ func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
 			
 	return instance
 
+## Rolls a training reward value (stat increase or gold) for a given tier (1, 2, or 3 tokens).
+## Uses a middle-weighted bell curve distribution with rare 0s and rare top prizes:
+## - Tier 1 (Cost 1): Range 0-2 (0: 10%, 1: 80%, 2: 10%)
+## - Tier 2 (Cost 2): Range 0-3 (0: 10%, 1: 40%, 2: 40%, 3: 10%)
+## - Tier 3 (Cost 3): Range 0-5 (0: 5%, 1: 15%, 2: 30%, 3: 30%, 4: 15%, 5: 5%)
+func roll_training_reward(tier: int) -> int:
+	var roll_pct = RNGManager.reward_rng.randi_range(1, 100)
+	match tier:
+		1:
+			if roll_pct <= 10: return 0
+			if roll_pct <= 90: return 1
+			return 2
+		2:
+			if roll_pct <= 10: return 0
+			if roll_pct <= 50: return 1
+			if roll_pct <= 90: return 2
+			return 3
+		3:
+			if roll_pct <= 5: return 0
+			if roll_pct <= 20: return 1
+			if roll_pct <= 50: return 2
+			if roll_pct <= 80: return 3
+			if roll_pct <= 95: return 4
+			return 5
+		_:
+			assert(false, "roll_training_reward: Invalid tier %d" % tier)
+			return 0
+
 ## Simulates and executes an atomic Rest Site draw transaction.
 ## Returns a structured event log for presentation playback.
 func simulate_rest_site_draw(tier: int) -> Dictionary:
@@ -888,11 +916,7 @@ func simulate_rest_site_draw(tier: int) -> Dictionary:
 		return {"success": false, "error": "Insufficient room tokens"}
 	run_state.spend_room_tokens(cost)
 	
-	var value = 0
-	match tier:
-		1: value = RNGManager.reward_rng.randi_range(0, 1)
-		2: value = RNGManager.reward_rng.randi_range(0, 3)
-		3: value = RNGManager.reward_rng.randi_range(0, 5)
+	var value = roll_training_reward(tier)
 	
 	var slot_index = -1
 	for i in range(4):
@@ -947,7 +971,7 @@ func simulate_dojo_training(token_cost: int) -> Dictionary:
 		return {"success": false, "error": "Insufficient room tokens"}
 		
 	run_state.spend_room_tokens(token_cost)
-	var roll = RNGManager.reward_rng.randi_range(0, token_cost)
+	var roll = roll_training_reward(token_cost)
 	var uuid = run_state.training_unit_uuid
 	var stat = run_state.training_stat
 	var hp_delta = 0
