@@ -20,7 +20,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	# Phase 1: Apply all damage via EffectHandlers
 	var cascade_result := EffectHandlers.handle_cascade_damage(request, cascade_request, source, battle_manager)
-	out_events.append_array(cascade_result.events)
+	CombatCommand.append_unified_events(out_events, cascade_result.events)
 	
 	# Phase 2: Process reactions one target at a time (after all damage shown).
 	# Spikes does not trigger on_hurt. Check for lethal deaths from reflected hits.
@@ -36,13 +36,12 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 		var was_killed: bool = hit_data.was_killed
 		
 		# Trigger on_hurt for counter-attacks
-		var cascade_hurt_start = combat_sim._pending_reactions.size()
+		var cascade_hurt_scope = combat_sim.begin_reaction_scope()
 		battle_manager.trigger_on_hurt(target_uuid, damage_amount, request.source_uuid, C.CAUSE_ABILITY)
 		
 		# Drain on_hurt reactions for THIS target
-		combat_sim.drain_reactions_inline(cascade_hurt_start, battle_manager)
-		var cascade_hurt_inline_evts = combat_sim.collect_and_clear_inline_events()
-		out_events.append_array(cascade_hurt_inline_evts)
+		var cascade_hurt_inline_evts = combat_sim.drain_reaction_scope(cascade_hurt_scope, battle_manager)
+		CombatCommand.append_unified_events(out_events, cascade_hurt_inline_evts)
 		
 		# Trigger on_kill if killed
 		if was_killed:

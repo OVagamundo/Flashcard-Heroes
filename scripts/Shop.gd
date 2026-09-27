@@ -253,6 +253,16 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 		else:
 			execute_buy_visuals(selected_loc.index, actual_cost)
 
+func play_transaction_log(event_log: Dictionary) -> void:
+	if not event_log.get("success", false):
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+	var slot_index: int = int(event_log.get("slot_index", -1))
+	var cost: int = int(event_log.get("cost", 0))
+	var instance: GachaBallInstance = event_log.get("purchased_instance", null)
+	execute_buy_visuals(slot_index, cost, instance)
+
 func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance = null) -> void:
 	if not is_instance_valid(instance):
 		instance = _find_instance_for_slot(slot_index)
@@ -346,57 +356,7 @@ func execute_reroll_visuals(cost: int = -1) -> void:
 	)
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	"""Animate gold coins flying from gold counter to target position"""
-	# Find gold counter in Main
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		on_complete.call()
-		return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		on_complete.call()
-		return
-	
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon):
-		# Fallback to group if icon is missing
-		gold_icon = gold_group
-		
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	# target_pos is already in screen coordinates (passed from caller)
-	
-	# Spawn gold coins with stagger
-	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		effects_layer.add_child(coin_vfx)
-		
-		# Connect to trigger counter pop and landing sound
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-			# No target button feedback here anymore as we might be targeting a point in space
-		)
-		
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-		# AUDIO HOOK: Coin Spawn
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05)) # Pitch up slightly for each coin
-
-	
-	# Wait for animations then call completion callback
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	var wait_tween = create_tween()
-	wait_tween.tween_interval(total_wait)
-	wait_tween.tween_callback(on_complete)
+	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallView:
 	"""Create a static VFX gachaball at a specific screen position."""

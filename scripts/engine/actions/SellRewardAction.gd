@@ -16,15 +16,15 @@ func validate() -> bool:
 	return GameManager._temporary_reward_master_dict.has(instance_uuid)
 
 func execute() -> void:
+	# Synchronous authoritative data mutation
+	var gold_yield := GameManager.sell_reward_instance(instance_uuid)
+
 	var reward_view = Engine.get_main_loop().root.find_child("Reward", true, false)
 	if not is_instance_valid(reward_view):
 		reward_view = Engine.get_main_loop().root.find_child("RewardElite", true, false)
 		
 	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode() and reward_view.has_method("execute_sell_visuals"):
-		reward_view.execute_sell_visuals(instance_uuid)
-	else:
-		# Authoritative data mutation in headless or decoupled mode
-		GameManager.sell_reward_instance(instance_uuid)
+		reward_view.execute_sell_visuals(instance_uuid, gold_yield)
 
 func yields_for_visuals() -> bool:
 	var reward_view = Engine.get_main_loop().root.find_child("Reward", true, false)

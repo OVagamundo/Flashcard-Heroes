@@ -1,0 +1,83 @@
+{
+  "encounter_name": "08_multi_stat_buff_projectiles",
+  "end_snapshot": {
+    "__discard_count__": 0,
+    "player_buffed_unit": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 7,
+      "pwr": 5,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    }
+  },
+  "start_snapshot": {
+    "__discard_count__": 0,
+    "player_buffed_unit": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 5,
+      "pwr": 2,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    }
+  },
+  "turn_log": [
+    {
+      "action_type": "",
+      "event_id": 0,
+      "payload": {
+
+      },
+      "source_uuid": "",
+      "target_uuids": [],
+      "type": "LOG_MESSAGE"
+    },
+    {
+      "ability_holder_uuid": "player_buffed_unit",
+      "ability_id": "modify_both_stats",
+      "action_type": "BUFF",
+      "event_id": 1,
+      "payload": {
+        "action_type": "BUFF",
+        "amount": 2,
+        "hp_amount": 2,
+        "pwr_amount": 3,
+        "stat": "both",
+        "targets_new_hp": [
+          7
+        ],
+        "targets_new_pwr": [
+          5
+        ],
+        "targets_old_hp": [
+          5
+        ],
+        "targets_old_pwr": [
+          2
+        ]
+      },
+      "source_uuid": "player_buffed_unit",
+      "target_uuids": [
+        "player_buffed_unit"
+      ],
+      "type": "BUFF"
+    }
+  ]
+}

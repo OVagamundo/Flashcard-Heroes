@@ -144,7 +144,7 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 	# Drag Start: handled separately to initialize drag state
 	# ROBUSTNESS: Check both StringName and string to avoid type issues
 	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
-		if is_vcr_playing(): 
+		if is_vcr_playing() or _is_drag_active: 
 			return
 		start_drag(context)
 		return

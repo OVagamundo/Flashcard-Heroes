@@ -109,27 +109,43 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, unit_name, hp_amount, pwr_amount]
 		}))
 		
-		# HP BUFF event
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": [hero_uuid],
-			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
-			"trigger_type": context.get("trigger_type", ""),
-			"action_type": C.ACTION_BUFF,
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_buff(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
-		}))
-		
-		# PWR BUFF event
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": [hero_uuid],
-			"ability_id": context.get("ability_id", &"ability_trinket_hero_catalyst"),
-			"trigger_type": context.get("trigger_type", ""),
-			"action_type": C.ACTION_BUFF,
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_buff(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
-		}))
+		# Unified BUFF event
+		var ability_id = context.get("ability_id", &"ability_trinket_hero_catalyst")
+		if hp_amount > 0 and pwr_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": [hero_uuid],
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.both_stats_change(
+					_source_uuid, hp_amount, pwr_amount,
+					[old_hp], [new_hp],
+					[old_pwr], [new_pwr],
+					[max_hp]
+				)
+			}))
+		elif hp_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": [hero_uuid],
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.hp_buff(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
+			}))
+		elif pwr_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": [hero_uuid],
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.pwr_buff(_source_uuid, pwr_amount, [old_pwr], [new_pwr])
+			}))
 		state_applied_any = true
 	else:
 		# Non-simulation: apply immediately

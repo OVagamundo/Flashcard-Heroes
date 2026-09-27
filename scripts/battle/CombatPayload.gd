@@ -87,6 +87,18 @@ var item_icon: Texture2D = null
 var item_icon_path: String = ""
 var item_name: String = "Item"
 var message: String = ""
+var merge_parent_uuids: Array[String] = []
+var merge_recipe_id: StringName = &""
+
+static func merge_payload(p_source_uuid: String, p_target_uuid: String, p_new_unit_uuid: String, p_new_snapshot: Dictionary, p_recipe_id: StringName = &"") -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_source_uuid
+	payload.new_unit_uuid = p_new_unit_uuid
+	payload.merge_parent_uuids = [p_source_uuid, p_target_uuid]
+	payload.new_unit_snapshot = p_new_snapshot
+	payload.merge_recipe_id = p_recipe_id
+	payload.action_type = &"MERGE"
+	return payload
 
 static func hp_change(p_source_uuid: String, p_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
@@ -109,7 +121,7 @@ static func pwr_change(p_source_uuid: String, p_amount: int, p_targets_old_pwr: 
 	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
 	return payload
 
-static func both_stats_change(p_source_uuid: String, p_hp_amount: int, p_pwr_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = []) -> CombatPayload:
+static func both_stats_change(p_source_uuid: String, p_hp_amount: int, p_pwr_amount: int, p_targets_old_hp: Array = [], p_targets_new_hp: Array = [], p_targets_old_pwr: Array = [], p_targets_new_pwr: Array = [], p_targets_max_hp: Array = []) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
 	payload.amount = p_hp_amount
@@ -120,9 +132,91 @@ static func both_stats_change(p_source_uuid: String, p_hp_amount: int, p_pwr_amo
 	payload.targets_new_hp.assign(p_targets_new_hp)
 	payload.targets_old_pwr.assign(p_targets_old_pwr)
 	payload.targets_new_pwr.assign(p_targets_new_pwr)
+	payload.targets_max_hp.assign(p_targets_max_hp)
 	payload.new_hp = payload.targets_new_hp[0] if not payload.targets_new_hp.is_empty() else 0
 	payload.new_pwr = payload.targets_new_pwr[0] if not payload.targets_new_pwr.is_empty() else 0
+	payload.action_type = C.ACTION_BUFF
 	return payload
+
+func merge_with(next_payload: CombatPayload, target_uuids: Array[String], next_targets: Array[String]) -> void:
+	for t_idx in range(next_targets.size()):
+		var t_uuid = next_targets[t_idx]
+		var existing_idx = target_uuids.find(t_uuid)
+		
+		if existing_idx >= 0:
+			# Target is already in target_uuids: update its NEW values in-place (net accumulation)
+			if t_idx < next_payload.targets_new_pwr.size():
+				while targets_new_pwr.size() <= existing_idx:
+					targets_new_pwr.append(0)
+				while targets_old_pwr.size() <= existing_idx:
+					targets_old_pwr.append(0)
+				if t_idx < next_payload.targets_old_pwr.size() and targets_old_pwr[existing_idx] == 0:
+					targets_old_pwr[existing_idx] = next_payload.targets_old_pwr[t_idx]
+				targets_new_pwr[existing_idx] = next_payload.targets_new_pwr[t_idx]
+
+			if t_idx < next_payload.targets_new_hp.size():
+				while targets_new_hp.size() <= existing_idx:
+					targets_new_hp.append(0)
+				while targets_old_hp.size() <= existing_idx:
+					targets_old_hp.append(0)
+				if t_idx < next_payload.targets_old_hp.size() and targets_old_hp[existing_idx] == 0:
+					targets_old_hp[existing_idx] = next_payload.targets_old_hp[t_idx]
+				targets_new_hp[existing_idx] = next_payload.targets_new_hp[t_idx]
+
+			if t_idx < next_payload.targets_max_hp.size():
+				while targets_max_hp.size() <= existing_idx:
+					targets_max_hp.append(0)
+				targets_max_hp[existing_idx] = next_payload.targets_max_hp[t_idx]
+
+			if t_idx < next_payload.targets_new_val.size():
+				while targets_new_val.size() <= existing_idx:
+					targets_new_val.append(0)
+				while targets_old_val.size() <= existing_idx:
+					targets_old_val.append(0)
+				if t_idx < next_payload.targets_old_val.size() and targets_old_val[existing_idx] == 0:
+					targets_old_val[existing_idx] = next_payload.targets_old_val[t_idx]
+				targets_new_val[existing_idx] = next_payload.targets_new_val[t_idx]
+		else:
+			target_uuids.append(t_uuid)
+			if t_idx < next_payload.targets_old_hp.size():
+				targets_old_hp.append(next_payload.targets_old_hp[t_idx])
+				targets_new_hp.append(next_payload.targets_new_hp[t_idx])
+			if t_idx < next_payload.targets_max_hp.size():
+				targets_max_hp.append(next_payload.targets_max_hp[t_idx])
+			if t_idx < next_payload.targets_old_pwr.size():
+				targets_old_pwr.append(next_payload.targets_old_pwr[t_idx])
+				targets_new_pwr.append(next_payload.targets_new_pwr[t_idx])
+			if t_idx < next_payload.targets_old_val.size():
+				targets_old_val.append(next_payload.targets_old_val[t_idx])
+				targets_new_val.append(next_payload.targets_new_val[t_idx])
+
+	# Initialize amounts from original stat before stat mutation
+	if stat == "hp" and hp_amount == 0:
+		hp_amount = amount
+	elif stat == "pwr" and pwr_amount == 0:
+		pwr_amount = amount
+
+	# Merge stat descriptors and amounts
+	if stat != next_payload.stat:
+		var has_hp = stat == "hp" or next_payload.stat == "hp" or stat == "both" or next_payload.stat == "both"
+		var has_pwr = stat == "pwr" or next_payload.stat == "pwr" or stat == "both" or next_payload.stat == "both"
+		if has_hp and has_pwr:
+			stat = "both"
+
+	if next_payload.hp_amount != 0:
+		hp_amount += next_payload.hp_amount
+	elif next_payload.stat == "hp":
+		hp_amount += next_payload.amount
+
+	if next_payload.pwr_amount != 0:
+		pwr_amount += next_payload.pwr_amount
+	elif next_payload.stat == "pwr":
+		pwr_amount += next_payload.amount
+
+	if next_payload.new_hp != 0:
+		new_hp = next_payload.new_hp
+	if next_payload.new_pwr != 0:
+		new_pwr = next_payload.new_pwr
 
 static func status_change(p_source_uuid: String, p_amount: int, p_stat: String, p_targets_old_val: Array = [], p_targets_new_val: Array = [], p_status_color: Color = Color.WHITE) -> CombatPayload:
 	var payload := CombatPayload.new()
@@ -182,6 +276,16 @@ static func container_payload(p_container_tag: StringName) -> CombatPayload:
 static func item_discard(p_source_uuid: String, p_item_uuid: String, p_icon: Texture2D = null, p_icon_path: String = "", p_item_name: String = "Item") -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
+	payload.item_uuid = p_item_uuid
+	payload.item_icon = p_icon
+	payload.item_icon_path = p_icon_path
+	payload.item_name = p_item_name
+	return payload
+
+static func item_equip(p_target_uuid: String, p_item_uuid: String, p_icon: Texture2D = null, p_icon_path: String = "", p_item_name: String = "Item") -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_target_uuid
+	payload.main_target_uuid = p_target_uuid
 	payload.item_uuid = p_item_uuid
 	payload.item_icon = p_icon
 	payload.item_icon_path = p_icon_path
@@ -260,4 +364,6 @@ func deep_clone() -> CombatPayload:
 	copy.item_icon_path = item_icon_path
 	copy.item_name = item_name
 	copy.message = message
+	copy.merge_parent_uuids = merge_parent_uuids.duplicate()
+	copy.merge_recipe_id = merge_recipe_id
 	return copy

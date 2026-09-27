@@ -526,7 +526,8 @@ Effects receive ALL data via the `context` parameter:
     "fainting_ally_uuid": "unit_abc",      # The dying unit
     "fainting_ally_location": <LocationIdentifier>,
     "fainting_ally_slot": 2,
-    "fainting_ally_team": "PLAYER"
+    "fainting_ally_team": "PLAYER",
+    "fainting_ally_pwr": 6                 # Dynamic combat PWR snapshot at death
 }
 
 # Context for on_before_turn_action trigger

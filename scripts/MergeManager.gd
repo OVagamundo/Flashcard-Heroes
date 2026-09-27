@@ -23,17 +23,27 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Determine if this is a "Level Up" (Self-Merge with same result) or a "Tier Evolution"
 	var is_level_up: bool = recipe.is_self_merge and recipe.result_id == instance_a.definition_id
 	
-	# Calculate initial combined stats using ONLY permanent stats.
-	# This ensures temporary battle buffs (like Doppleganger scaling) and item bonuses
-	# are NOT permanently baked into the merged unit's base stats.
-	var total_hp: int = instance_a.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_a, &"hp", all_instances_db) + \
-						instance_b.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_b, &"hp", all_instances_db)
-	var total_pwr: int = instance_a.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_a, &"pwr", all_instances_db) + \
-						 instance_b.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_b, &"pwr", all_instances_db)
-	
 	# Determine items to transfer (items will be re-equipped and their stats re-applied later)
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
 	var target_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_b, all_instances_db)
+	var items_to_equip: Array[GachaBallInstance] = []
+	var items_to_discard: Array[GachaBallInstance] = []
+	var target_item: GachaBallInstance = target_items[0] if not target_items.is_empty() else null
+	var source_item: GachaBallInstance = source_items[0] if not source_items.is_empty() else null
+	if is_instance_valid(target_item):
+		items_to_equip.append(target_item)
+		if is_instance_valid(source_item):
+			items_to_discard.append(source_item)
+	elif is_instance_valid(source_item):
+		items_to_equip.append(source_item)
+
+	# Calculate combined stats combining base stats and ALL valid accumulated stackable stats
+	# (Dojo training, prior merge surplus, prismatic rarity, permanent buffs, and in-combat ability buffs).
+	# Unique and conditional buffs (items, Rusty Ring, Royal/Veteran Insignia, dynamic scaling) are excluded.
+	var total_hp: int = instance_a.get_definition_base_hp() + _get_mergeable_stackable_modifier(instance_a, &"hp", all_instances_db) + \
+						instance_b.get_definition_base_hp() + _get_mergeable_stackable_modifier(instance_b, &"hp", all_instances_db)
+	var total_pwr: int = instance_a.get_definition_base_pwr() + _get_mergeable_stackable_modifier(instance_a, &"pwr", all_instances_db) + \
+						 instance_b.get_definition_base_pwr() + _get_mergeable_stackable_modifier(instance_b, &"pwr", all_instances_db)
 
 	# Apply New Stat Logic
 	var final_hp: int
@@ -45,8 +55,6 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		# Inherent_Extra = Total_Inherent - ParentA_Base - ParentA_LevelBonus - ParentB_Base - ParentB_LevelBonus
 		var base_a = instance_a.get_definition_base_hp()
 		var level_bonus_a = int(instance_a.get_attribute(&"level")) - 1
-		var base_b = instance_b.get_definition_base_hp()
-		var level_bonus_b = int(instance_b.get_attribute(&"level")) - 1
 		
 		# Formula: Result = Result_Base + (Extras_A + Extras_B) + (Result_Level - 1)
 		# Which simplifies to: total_hp - Parent_Base - Parent_LevelBonus + 1
@@ -63,7 +71,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
 	
-	# Merge status effects: sum up stacks of each status effect.
+	# Merge status effects: sum up stacks of each status effect (Armor, Burn, Spikes, Static, etc.).
 	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
 	# These are used to calculate dynamic deltas. Summing them creates artificially massive trackers 
 	# that cause catastrophic negative deltas (debuffs) when the board re-evaluates the unit.
@@ -112,7 +120,31 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	if is_level_up:
 		_apply_level_up_scaling_trackers(instance_a, instance_b, merged_instance, all_instances_db)
 
-	# Inherit surplus souls
+		# Rusty Ring Level-Up Evaluation:
+		# The leveled-up unit is considered the "same" unit. If it holds no item,
+		# Rusty Ring applies once pre-baked without firing an extraneous visual cast.
+		var team: String = _get_instance_team(instance_a, all_instances_db)
+		var rusty_ring_uuid := _get_trinket_uuid(all_instances_db, &"trinket_rusty_ring", team)
+		if not rusty_ring_uuid.is_empty():
+			if items_to_equip.is_empty():
+				# Resulting unit holds no item: Rusty Ring applies once pre-baked
+				merged_instance.current_hp += 1
+				merged_instance.current_pwr += 1
+				merged_instance.add_tag(&"rusty_ring_buffed")
+				merged_instance.add_or_update_stat_component(
+					StringName(rusty_ring_uuid + "_conditional"),
+					&"CONDITIONAL_TRINKET",
+					rusty_ring_uuid,
+					1, 1, false,
+					"Conditional Trinket Bonus", "Conditional trinket stat bonus"
+				)
+			else:
+				# Resulting unit holds an item: debuffed state (no bonus)
+				merged_instance.add_tag(&"rusty_ring_buffed")
+				merged_instance.add_tag(&"rusty_ring_debuffed")
+
+	# Direct Additive Soul Inheritance:
+	# All merges (both Level-Up and Tier-Up) add up all elemental souls from both parents.
 	var parent_a_souls = instance_a.get_trait_soul_counts(all_instances_db)
 	var parent_b_souls = instance_b.get_trait_soul_counts(all_instances_db)
 	var result_base_souls = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
@@ -123,36 +155,29 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 			elif tag == &"SOUL_WATER": result_base_souls["WATER"] += 1
 			elif tag == &"SOUL_AIR": result_base_souls["AIR"] += 1
 
-	var inherited_tags: Array = []
+	var inherited_tags_to_add: Array = []
+	var inherited_tags_to_remove: Array = []
 	for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
-		var total_parent_souls = parent_a_souls[soul_type] + parent_b_souls[soul_type]
-		var surplus = total_parent_souls - result_base_souls[soul_type]
-		if surplus > 0:
-			var tag_name = StringName("SOUL_" + soul_type)
-			for i in range(surplus):
-				inherited_tags.append(tag_name)
+		var total_parent_souls: int = parent_a_souls[soul_type] + parent_b_souls[soul_type]
+		var base_souls: int = result_base_souls[soul_type]
+		var tag_name = StringName("SOUL_" + soul_type)
+		if total_parent_souls > base_souls:
+			for i in range(total_parent_souls - base_souls):
+				inherited_tags_to_add.append(tag_name)
+		elif total_parent_souls < base_souls:
+			for i in range(base_souls - total_parent_souls):
+				inherited_tags_to_remove.append(tag_name)
 				
-	if not inherited_tags.is_empty():
+	if not inherited_tags_to_add.is_empty() or not inherited_tags_to_remove.is_empty():
 		merged_instance.add_or_update_tag_component(
 			&"merge_inheritance_souls",
 			&"MERGE_INHERITANCE",
 			String(recipe.id),
 			{},
-			inherited_tags
+			inherited_tags_to_add,
+			inherited_tags_to_remove
 		)
 
-	# Target item has priority. If target is empty, inherit source item.
-	var items_to_equip: Array[GachaBallInstance] = []
-	var items_to_discard: Array[GachaBallInstance] = []
-	var target_item: GachaBallInstance = target_items[0] if not target_items.is_empty() else null
-	var source_item: GachaBallInstance = source_items[0] if not source_items.is_empty() else null
-	if is_instance_valid(target_item):
-		items_to_equip.append(target_item)
-		if is_instance_valid(source_item):
-			items_to_discard.append(source_item)
-	elif is_instance_valid(source_item):
-		items_to_equip.append(source_item)
-		
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 
 	return {
@@ -249,28 +274,63 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instance
 
 	return equipped_items
 
-## Conditional trinket bonuses (Rusty Ring and the two Insignias) are a single
-## unit-state modifier, not earned stats. They must be re-evaluated after every
-## merge instead of being summed from both parents.
-func _get_mergeable_persistent_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
+## Calculates all valid accumulated stackable stats (Dojo training, prior merge surplus,
+## prismatic rarity, permanent buffs, and in-combat ability buffs like Vengeance Charm and Convergence Surge).
+## Excludes unique and conditional buffs (items, Rusty Ring, Royal/Veteran Insignia, dynamic scaling).
+func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
 	var total := 0
+	
+	# 1. Persistent components on the instance (Dojo training, previous merge surplus, prismatic rarity, permanent buffs)
 	for component in instance.components:
 		if not component is StatComponent:
 			continue
 		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
 			continue
 		total += int(component.modifiers.get(String(stat), 0))
+		
+	# 2. In-combat active ability buffs (Convergence Surge, Vengeance Charm, mid-battle reactive buffs) and consumable buffs
+	for component in instance.battle_components:
+		if not component is StatComponent:
+			continue
+		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
+			continue
+		if component.source_type == &"CONSUMABLE" or component.category == &"CONSUMABLE":
+			total += int(component.modifiers.get(String(stat), 0))
+			continue
+		var comp_id: StringName = component.id
+		if comp_id == &"battle_buff_hp" and stat == &"hp":
+			total += int(component.modifiers.get("hp", 0))
+		elif comp_id == &"battle_buff_pwr" and stat == &"pwr":
+			total += int(component.modifiers.get("pwr", 0))
+
 	return total
+
+func _get_trinket_uuid(all_instances_db: Dictionary, trinket_id: StringName, team: String) -> String:
+	for uuid in all_instances_db:
+		var inst: GachaBallInstance = all_instances_db[uuid]
+		if not is_instance_valid(inst):
+			continue
+		if inst.definition_id == trinket_id:
+			if team.is_empty() or _get_instance_team(inst, all_instances_db) == team:
+				return inst.ball_uuid
+				
+	if is_instance_valid(GameManager.run_state):
+		for uuid in GameManager.run_state.get_all_instances():
+			var inst: GachaBallInstance = GameManager.run_state.get_all_instances()[uuid]
+			if is_instance_valid(inst) and inst.definition_id == trinket_id:
+				if team.is_empty() or team == "PLAYER":
+					return inst.ball_uuid
+	return ""
 
 func _is_conditional_trinket_component(component: StatComponent, all_instances_db: Dictionary) -> bool:
 	if component.source_type == &"CONDITIONAL_TRINKET":
 		return true
-	# Compatibility with saves created before conditional bonuses had their own
-	# component type. The source instance identifies the three affected trinkets.
+	if component.id == &"rusty_ring_conditional" or String(component.id).ends_with("_conditional"):
+		return true
 	var source_instance: GachaBallInstance = all_instances_db.get(component.source_id)
-	if not is_instance_valid(source_instance):
-		return false
-	return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+	if is_instance_valid(source_instance):
+		return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+	return false
 
 func _is_conditional_trinket_tag(tag: StringName) -> bool:
 	var value := String(tag)

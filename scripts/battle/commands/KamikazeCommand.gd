@@ -51,12 +51,11 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	}))
 	
 	# Trigger on_hurt (self and ally reactions only; no targeted retaliation against deceased attacker)
-	var kamikaze_hurt_start = combat_sim._pending_reactions.size()
+	var kamikaze_hurt_scope = combat_sim.begin_reaction_scope()
 	battle_manager.trigger_on_hurt(target_uuid, damage_amount, "", C.CAUSE_KAMIKAZE, &"", false)
 	
-	combat_sim.drain_reactions_inline(kamikaze_hurt_start, battle_manager)
-	var kamikaze_hurt_inline_evts = combat_sim.collect_and_clear_inline_events()
-	out_events.append_array(kamikaze_hurt_inline_evts)
+	var kamikaze_hurt_inline_evts = combat_sim.drain_reaction_scope(kamikaze_hurt_scope, battle_manager)
+	CombatCommand.append_unified_events(out_events, kamikaze_hurt_inline_evts)
 	
 	if new_hp <= 0:
 		battle_manager.trigger_on_kill(request.source_uuid, target_uuid)

@@ -98,9 +98,9 @@ func _ready() -> void:
 
 	# Connect to all relevant state change signals
 	SignalBus.battle_inventory_changed.connect(_redraw_board)
-
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
 	SignalBus.gacha_draw_animated.connect(_on_gacha_draw_animated)
+	battle_manager.management_animation_queue_completed.connect(_on_turn_animation_finished_redraw)
 	
 	# NOTE: Unit death tutorial is handled directly in BattleAnimator._animate_events
 	# to properly block combat until the tutorial is dismissed.
@@ -311,8 +311,7 @@ func _redraw_board() -> void:
 	if current_phase == BattleManager.Phases.COMBAT or \
 	   current_phase == BattleManager.Phases.START_OF_TURN or \
 	   current_phase == BattleManager.Phases.END_OF_TURN or \
-	   (is_instance_valid(_battle_animator) and _battle_animator.has_method("is_playing_sequence") and _battle_animator.is_playing_sequence()) or \
-	   battle_manager.is_processing_effect():
+	   battle_manager.is_animations_playing():
 		_pending_board_redraw = true
 		return
 	
@@ -838,6 +837,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	
 	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
 	anim_ball.force_inventory_mode = true
+	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	anim_ball.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	

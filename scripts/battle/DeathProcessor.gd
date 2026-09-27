@@ -201,7 +201,8 @@ static func process_deferred_ally_death(dying_uuid: String, team: String, bm) ->
 		var ally_death_ctx := {
 			"fainting_ally_uuid": dying_uuid,
 			"fainting_ally_location": death_location,
-			"fainting_ally_team": team
+			"fainting_ally_team": team,
+			"fainting_ally_pwr": entry.get("current_pwr", 0)
 		}
 		AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 	
@@ -334,7 +335,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				var ally_death_context: Dictionary = {
 					"fainting_ally_uuid": unit.ball_uuid,
 					"fainting_ally_location": death_location,
-					"fainting_ally_team": "PLAYER"
+					"fainting_ally_team": "PLAYER",
+					"fainting_ally_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
@@ -371,7 +373,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				var ally_death_context: Dictionary = {
 					"fainting_ally_uuid": unit.ball_uuid,
 					"fainting_ally_location": death_location,
-					"fainting_ally_team": "ENEMY"
+					"fainting_ally_team": "ENEMY",
+					"fainting_ally_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
@@ -410,8 +413,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	
 	# CAUSALITY FIX: Drain ONLY execute_on_lethal reactions BEFORE processing death
 	if is_simulation and out_events != null and not bm._pending_reactions.is_empty():
-		bm.drain_lethal_reactions_only(0)
-		var lethal_evts: Array[CombatEvent] = bm.collect_inline_events()
+		var lethal_evts: Array[CombatEvent] = bm.drain_lethal_counters()
 		for evt in lethal_evts:
 			out_events.append(evt)
 
@@ -519,7 +521,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			var ally_death_ctx := {
 				"fainting_ally_uuid": data.unit.ball_uuid,
 				"fainting_ally_location": data.death_location,
-				"fainting_ally_team": data.team
+				"fainting_ally_team": data.team,
+				"fainting_ally_pwr": data.unit.current_pwr
 			}
 			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 			
@@ -550,34 +553,27 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	if is_simulation and out_events != null:
 		var cascade_evts: Array[CombatEvent] = []
 		if not bm._pending_reactions.is_empty():
-			bm.drain_pending_reactions_inline(0)
-			cascade_evts = bm.collect_inline_events()
+			cascade_evts = bm.drain_cascade()
 			
-		var insert_index = cascade_evts.size()
-		for i in range(cascade_evts.size()):
-			var type = cascade_evts[i].type
-			var is_gacha_summon = false
-			if type == CombatEvent.Type.SUMMON and cascade_evts[i].visual_payload != null and cascade_evts[i].visual_payload.old_unit_location != null:
-				if String(cascade_evts[i].visual_payload.old_unit_location.container).begins_with("BattleInventoryT"):
-					is_gacha_summon = true
-					
-			if (type == CombatEvent.Type.SUMMON and not is_gacha_summon) or type == CombatEvent.Type.TRANSFORM:
-				insert_index = i
-				break
+		var pre_death_slice: Array[CombatEvent] = []
+		var post_death_slice: Array[CombatEvent] = []
+
+		for evt in cascade_evts:
+			var type = evt.type
+			var is_gacha_summon = (type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null and String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"))
+			
+			var is_post_death = (type == CombatEvent.Type.SUMMON and not is_gacha_summon) \
+				or type == CombatEvent.Type.TRANSFORM \
+				or evt.trigger_type == &"on_ally_death" \
+				or evt.trigger_type == &"on_unit_death"
 				
-		var pre_death_slice = cascade_evts.slice(0, insert_index)
-		var post_death_slice = cascade_evts.slice(insert_index, cascade_evts.size())
-		
-		# Ensure Gacha Machine duplication summons always happen BEFORE the death animation
-		for i in range(post_death_slice.size() - 1, -1, -1):
-			var evt = post_death_slice[i]
-			if evt.type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null:
-				if String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"):
-					pre_death_slice.append(evt)
-					post_death_slice.remove_at(i)
-				
-		# Insert DEATH events between VFX reactions (like BUFF/HEAL) and physical replacements (SUMMON/TRANSFORM)
-		# This ensures the Animator plays the dying unit's buffs BEFORE the fade-out, but plays summons AFTER the fade-out.
+			if is_post_death:
+				post_death_slice.append(evt)
+			else:
+				pre_death_slice.append(evt)
+
+		# Insert DEATH events between pre-death reactions (like Gacha duplication) and post-death consequences (summons, ally death buffs like Knight)
+		# This ensures the Animator plays the dying unit's fade-out BEFORE surviving allies react to its death.
 		out_events.append_array(pre_death_slice)
 		out_events.append_array(pending_death_events)
 		out_events.append_array(post_death_slice)
@@ -633,7 +629,8 @@ static func _defer_ally_death(bm, unit: GachaBallInstance, death_location, team_
 		"uuid": unit.ball_uuid,
 		"location": death_location,
 		"slot": unit.location_slot_index,
-		"def_id": unit.definition_id
+		"def_id": unit.definition_id,
+		"current_pwr": unit.current_pwr
 	})
 	bm.set_meta(meta_key, deferred_list)
 
@@ -649,6 +646,7 @@ static func _emit_immediate_death(bm, unit: GachaBallInstance, death_location, t
 	var ally_death_ctx := {
 		"fainting_ally_uuid": unit.ball_uuid,
 		"fainting_ally_location": death_location,
-		"fainting_ally_team": team
+		"fainting_ally_team": team,
+		"fainting_ally_pwr": unit.current_pwr
 	}
 	AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)

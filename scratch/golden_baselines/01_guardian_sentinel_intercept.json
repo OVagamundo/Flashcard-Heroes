@@ -1,0 +1,300 @@
+{
+  "encounter_name": "01_guardian_sentinel_intercept",
+  "end_snapshot": {
+    "__discard_count__": 0,
+    "enemy_attacker": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 10,
+      "pwr": 4,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_ally": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 3,
+      "pwr": 1,
+      "slot_index": 1,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_guardian": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t3_b",
+      "display_name_key": "unit_t3_b.name",
+      "hp": 1,
+      "pwr": 1,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 3
+    }
+  },
+  "start_snapshot": {
+    "__discard_count__": 0,
+    "enemy_attacker": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 10,
+      "pwr": 4,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_ally": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 3,
+      "pwr": 1,
+      "slot_index": 1,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_guardian": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t3_b",
+      "display_name_key": "unit_t3_b.name",
+      "hp": 5,
+      "pwr": 1,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 3
+    }
+  },
+  "turn_log": [
+    {
+      "action_type": "DAMAGE",
+      "event_id": 2,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 1,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 0,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "enemy_attacker",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 1,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                10
+              ],
+              "targets_old_hp": [
+                9
+              ]
+            },
+            "source_uuid": "enemy_attacker",
+            "target_uuids": [
+              "enemy_attacker"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          9
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          10
+        ]
+      },
+      "source_uuid": "player_ally",
+      "target_uuids": [
+        "enemy_attacker"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 5,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 1,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 3,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "enemy_attacker",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 4,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                10
+              ],
+              "targets_old_hp": [
+                9
+              ]
+            },
+            "source_uuid": "enemy_attacker",
+            "target_uuids": [
+              "enemy_attacker"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          9
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          10
+        ]
+      },
+      "source_uuid": "player_guardian",
+      "target_uuids": [
+        "enemy_attacker"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 7,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 4,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "pre_impact_events": [
+          {
+            "action_type": "",
+            "event_id": 6,
+            "payload": {
+              "guardian_uuid": "player_guardian",
+              "original_target_uuid": "player_ally"
+            },
+            "source_uuid": "player_guardian",
+            "target_uuids": [
+              "player_ally"
+            ],
+            "type": "GUARDIAN_INTERCEPT"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          1
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          5
+        ]
+      },
+      "source_uuid": "enemy_attacker",
+      "target_uuids": [
+        "player_guardian"
+      ],
+      "type": "DAMAGE"
+    }
+  ]
+}

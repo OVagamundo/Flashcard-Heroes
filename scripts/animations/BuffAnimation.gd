@@ -21,7 +21,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	elif payload.hp_amount != 0:
 		hp_delta = payload.hp_amount
 	elif stat == "hp" or stat == "both" or stat == "hp_and_pwr":
-		hp_delta = payload.amount
+		hp_delta = payload.amount if payload.action_type != C.ACTION_DEBUFF else -payload.amount
 		
 	var pwr_delta = 0
 	if not payload.targets_new_pwr.is_empty() and not payload.targets_old_pwr.is_empty():
@@ -29,13 +29,21 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	elif payload.pwr_amount != 0:
 		pwr_delta = payload.pwr_amount
 	elif stat == "pwr" or stat == "both" or stat == "hp_and_pwr":
-		pwr_delta = payload.amount
+		pwr_delta = payload.amount if payload.action_type != C.ACTION_DEBUFF else -payload.amount
 
 	var has_hp_buff = hp_delta > 0
 	var has_pwr_buff = pwr_delta > 0
 	var has_hp_debuff = hp_delta < 0
 	var has_pwr_debuff = pwr_delta < 0
 	
+	# Ensure any visual equipped icon from payload is displayed on targets if view is valid
+	if payload is CombatPayload and is_instance_valid(payload.item_icon):
+		for target_uuid in targets:
+			var target_view = animator._visual_registry.get(target_uuid)
+			if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
+				if target_view.get("_visual_equipped_item_icon") == null:
+					target_view.set_visual_equipped_item_icon(payload.item_icon)
+
 	# 1. Launch Projectiles ONLY for BUFFS
 	var hp_projectiles = []
 	var pwr_projectiles = []

@@ -339,15 +339,14 @@ static func handle_damage_effect(
 				
 				# Trigger Guardian passive effects (e.g., gain Armor)
 				var combat_sim = battle_manager._combat
-				var intercept_start = combat_sim._pending_reactions.size()
+				var intercept_scope = combat_sim.begin_reaction_scope()
 				
 				AbilityResolver.process_trigger(&"passive_intercept", {
 					"source_uuid": guardian.ball_uuid,
 					"is_simulation": true
 				})
 				
-				combat_sim.drain_reactions_inline(intercept_start, battle_manager)
-				var guardian_results = combat_sim.collect_and_clear_inline_events()
+				var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
 				result.events.append_array(guardian_results)
 		
 		original_target_uuids.append(original_tgt_uuid)

@@ -113,7 +113,7 @@ func initialize_from_trinket(trinket_def: Resource) -> void:
 # --- Equipment Stat Modification (Component-Aware Delta) ---
 # These compute the stat delta by comparing effective totals before/after the equipment
 # change. This preserves battle damage while deriving values from the component system.
-func equip_item_bonus(item_instance: GachaBallInstance) -> void:
+func equip_item_bonus(item_instance: GachaBallInstance, options: Dictionary = {"silent": true}) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
@@ -121,11 +121,11 @@ func equip_item_bonus(item_instance: GachaBallInstance) -> void:
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
 	
 	if hp_delta != 0:
-		apply_hp_delta(hp_delta, {"silent": false})
+		apply_hp_delta(hp_delta, options)
 	if pwr_delta != 0:
-		apply_pwr_delta(pwr_delta, {"silent": false})
+		apply_pwr_delta(pwr_delta, options)
 
-func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
+func unequip_item_bonus(item_instance: GachaBallInstance, options: Dictionary = {"silent": true}) -> void:
 	if not is_instance_valid(item_instance): return
 	var item_def = item_instance.get_definition()
 	if not is_instance_valid(item_def): return
@@ -133,9 +133,27 @@ func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	var pwr_delta: int = int(item_def.bonus_pwr) if "bonus_pwr" in item_def else 0
 	
 	if hp_delta != 0:
-		apply_hp_delta(-hp_delta, {"silent": false})
+		apply_hp_delta(-hp_delta, options)
 	if pwr_delta != 0:
-		apply_pwr_delta(-pwr_delta, {"silent": false})
+		apply_pwr_delta(-pwr_delta, options)
+
+func replace_item_bonus(old_item: GachaBallInstance, new_item: GachaBallInstance, options: Dictionary = {"silent": true}) -> Dictionary:
+	var old_def = old_item.get_definition() if is_instance_valid(old_item) else null
+	var new_def = new_item.get_definition() if is_instance_valid(new_item) else null
+	var old_hp: int = int(old_def.bonus_hp) if (old_def and "bonus_hp" in old_def) else 0
+	var old_pwr: int = int(old_def.bonus_pwr) if (old_def and "bonus_pwr" in old_def) else 0
+	var new_hp: int = int(new_def.bonus_hp) if (new_def and "bonus_hp" in new_def) else 0
+	var new_pwr: int = int(new_def.bonus_pwr) if (new_def and "bonus_pwr" in new_def) else 0
+	
+	var delta_hp: int = new_hp - old_hp
+	var delta_pwr: int = new_pwr - old_pwr
+	
+	if delta_hp != 0:
+		apply_hp_delta(delta_hp, options)
+	if delta_pwr != 0:
+		apply_pwr_delta(delta_pwr, options)
+		
+	return {"delta_hp": delta_hp, "delta_pwr": delta_pwr}
 
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
@@ -372,7 +390,12 @@ func get_active_tags(all_instances_db: Dictionary = {}) -> Array[StringName]:
 			if not remove_tags.has(tag):
 				remove_tags.append(tag)
 	for tag in remove_tags:
-		if tags.has(tag):
+		if String(tag).begins_with("SOUL_"):
+			var soul_counts = get_trait_soul_counts(all_instances_db)
+			var soul_name = String(tag).trim_prefix("SOUL_")
+			if soul_counts.get(soul_name, 0) == 0 and tags.has(tag):
+				tags.erase(tag)
+		elif tags.has(tag):
 			tags.erase(tag)
 	return tags
 
@@ -398,6 +421,15 @@ func get_trait_soul_counts(all_instances_db: Dictionary = {}) -> Dictionary:
 				counts["WATER"] += 1
 			elif tag == &"SOUL_AIR":
 				counts["AIR"] += 1
+		for tag in tag_component.tags_to_remove:
+			if tag == &"SOUL_FIRE":
+				counts["FIRE"] = maxi(0, counts["FIRE"] - 1)
+			elif tag == &"SOUL_EARTH":
+				counts["EARTH"] = maxi(0, counts["EARTH"] - 1)
+			elif tag == &"SOUL_WATER":
+				counts["WATER"] = maxi(0, counts["WATER"] - 1)
+			elif tag == &"SOUL_AIR":
+				counts["AIR"] = maxi(0, counts["AIR"] - 1)
 	return counts
 
 func get_attribute(attribute_name: StringName, all_instances_db: Dictionary = {}) -> Variant:
@@ -626,10 +658,10 @@ func add_or_update_tag_component(component_id: StringName, source_type: StringNa
 	for key in attributes:
 		tag_component.attributes[key] = attributes[key]
 	for tag in tags_to_add:
-		if not tag in tag_component.tags_to_add:
+		if String(tag).begins_with("SOUL_") or not tag in tag_component.tags_to_add:
 			tag_component.tags_to_add.append(tag)
 	for tag in tags_to_remove:
-		if not tag in tag_component.tags_to_remove:
+		if String(tag).begins_with("SOUL_") or not tag in tag_component.tags_to_remove:
 			tag_component.tags_to_remove.append(tag)
 
 func remove_component_by_id(component_id: StringName) -> void:

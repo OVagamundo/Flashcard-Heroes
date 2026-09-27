@@ -12339,7 +12339,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	elif payload.hp_amount != 0:
 		hp_delta = payload.hp_amount
 	elif stat == "hp" or stat == "both" or stat == "hp_and_pwr":
-		hp_delta = payload.amount
+		hp_delta = payload.amount if payload.action_type != C.ACTION_DEBUFF else -payload.amount
 		
 	var pwr_delta = 0
 	if not payload.targets_new_pwr.is_empty() and not payload.targets_old_pwr.is_empty():
@@ -12347,13 +12347,21 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	elif payload.pwr_amount != 0:
 		pwr_delta = payload.pwr_amount
 	elif stat == "pwr" or stat == "both" or stat == "hp_and_pwr":
-		pwr_delta = payload.amount
+		pwr_delta = payload.amount if payload.action_type != C.ACTION_DEBUFF else -payload.amount
 
 	var has_hp_buff = hp_delta > 0
 	var has_pwr_buff = pwr_delta > 0
 	var has_hp_debuff = hp_delta < 0
 	var has_pwr_debuff = pwr_delta < 0
 	
+	# Ensure any visual equipped icon from payload is displayed on targets if view is valid
+	if payload is CombatPayload and is_instance_valid(payload.item_icon):
+		for target_uuid in targets:
+			var target_view = animator._visual_registry.get(target_uuid)
+			if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
+				if target_view.get("_visual_equipped_item_icon") == null:
+					target_view.set_visual_equipped_item_icon(payload.item_icon)
+
 	# 1. Launch Projectiles ONLY for BUFFS
 	var hp_projectiles = []
 	var pwr_projectiles = []
@@ -16243,6 +16251,16 @@ static func item_discard(p_source_uuid: String, p_item_uuid: String, p_icon: Tex
 	payload.item_name = p_item_name
 	return payload
 
+static func item_equip(p_target_uuid: String, p_item_uuid: String, p_icon: Texture2D = null, p_icon_path: String = "", p_item_name: String = "Item") -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.source_uuid = p_target_uuid
+	payload.main_target_uuid = p_target_uuid
+	payload.item_uuid = p_item_uuid
+	payload.item_icon = p_icon
+	payload.item_icon_path = p_icon_path
+	payload.item_name = p_item_name
+	return payload
+
 func deep_clone() -> CombatPayload:
 	var copy := CombatPayload.new()
 	copy.action_type = action_type
@@ -17842,7 +17860,8 @@ static func process_deferred_ally_death(dying_uuid: String, team: String, bm) ->
 		var ally_death_ctx := {
 			"fainting_ally_uuid": dying_uuid,
 			"fainting_ally_location": death_location,
-			"fainting_ally_team": team
+			"fainting_ally_team": team,
+			"fainting_ally_pwr": entry.get("current_pwr", 0)
 		}
 		AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 	
@@ -17975,7 +17994,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				var ally_death_context: Dictionary = {
 					"fainting_ally_uuid": unit.ball_uuid,
 					"fainting_ally_location": death_location,
-					"fainting_ally_team": "PLAYER"
+					"fainting_ally_team": "PLAYER",
+					"fainting_ally_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
@@ -18012,7 +18032,8 @@ static func check_for_deaths(is_simulation: bool, out_events, bm) -> bool:
 				var ally_death_context: Dictionary = {
 					"fainting_ally_uuid": unit.ball_uuid,
 					"fainting_ally_location": death_location,
-					"fainting_ally_team": "ENEMY"
+					"fainting_ally_team": "ENEMY",
+					"fainting_ally_pwr": unit.current_pwr
 				}
 				AbilityResolver.process_trigger(&"on_ally_death", ally_death_context)
 				
@@ -18160,7 +18181,8 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			var ally_death_ctx := {
 				"fainting_ally_uuid": data.unit.ball_uuid,
 				"fainting_ally_location": data.death_location,
-				"fainting_ally_team": data.team
+				"fainting_ally_team": data.team,
+				"fainting_ally_pwr": data.unit.current_pwr
 			}
 			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 			
@@ -18274,7 +18296,8 @@ static func _defer_ally_death(bm, unit: GachaBallInstance, death_location, team_
 		"uuid": unit.ball_uuid,
 		"location": death_location,
 		"slot": unit.location_slot_index,
-		"def_id": unit.definition_id
+		"def_id": unit.definition_id,
+		"current_pwr": unit.current_pwr
 	})
 	bm.set_meta(meta_key, deferred_list)
 
@@ -18290,7 +18313,8 @@ static func _emit_immediate_death(bm, unit: GachaBallInstance, death_location, t
 	var ally_death_ctx := {
 		"fainting_ally_uuid": unit.ball_uuid,
 		"fainting_ally_location": death_location,
-		"fainting_ally_team": team
+		"fainting_ally_team": team,
+		"fainting_ally_pwr": unit.current_pwr
 	}
 	AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
 
@@ -19660,6 +19684,8 @@ class OperationResult:
 	var replaced_item_icon_path: String = ""
 	var replaced_item_name: String = ""
 	var replaced_from_unit_uuid: String = ""
+	var delta_hp: int = 0
+	var delta_pwr: int = 0
 	 
 	func add_unit_change(uuid: String) -> void:
 		if not uuid.is_empty() and not changed_unit_uuids.has(uuid):
@@ -19784,6 +19810,10 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	if not is_instance_valid(item) or not is_instance_valid(unit):
 		return result
 	
+	var item_def = item.get_definition()
+	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
+		return result
+	
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
@@ -19812,10 +19842,11 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	
 	# If slot occupied, move existing to discard pile (original game behavior)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
+	var existing: GachaBallInstance = null
 	if not existing_uuid.is_empty():
-		var existing := state.get_instance(existing_uuid)
+		existing = state.get_instance(existing_uuid)
 		if is_instance_valid(existing):
-			var discard_result := move_instance_to_discard(state, existing)
+			var discard_result := move_instance_to_discard(state, existing, false)
 			if not discard_result.success:
 				return result
 			result.replaced_item_uuid = discard_result.replaced_item_uuid
@@ -19834,7 +19865,9 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	unit.equip_item_bonus(item)
+	var deltas := unit.replace_item_bonus(existing, item)
+	result.delta_hp = deltas.get("delta_hp", 0)
+	result.delta_pwr = deltas.get("delta_pwr", 0)
 	result.inventory_changed = true
 	
 	result.add_unit_change(unit.ball_uuid)
@@ -20142,7 +20175,7 @@ static func remove_instance_from_container(state: BattleState, instance: GachaBa
 
 ## Move an instance to the discard pile. Handles equipped items and containers.
 ## Returns OperationResult.
-static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance) -> OperationResult:
+static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance, unequip_bonus: bool = true) -> OperationResult:
 	var result := OperationResult.new()
 	assert(is_instance_valid(instance), "move_instance_to_discard: instance is null")
 	
@@ -20165,7 +20198,8 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
 					# Clear the parent's slot mapping if it points to this instance
 					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
-						parent.unequip_item_bonus(instance)
+						if unequip_bonus:
+							parent.unequip_item_bonus(instance)
 						parent.equipped_item_uuids[loc.index] = ""
 						result.add_unit_change(parent.ball_uuid)
 			# Clear equipped linkage on the item itself
@@ -21701,6 +21735,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				if has_method("_animate_item_discard"):
 					await _animate_item_discard(source_uuid, payload)
 
+			CombatEvent.Type.ITEM_EQUIP:
+				var payload = event.visual_payload
+				var target_uuid = event.target_uuids[0] if not event.target_uuids.is_empty() else event.source_uuid
+				await _animate_item_equip(target_uuid, payload)
+
 			CombatEvent.Type.SLOT_EFFECT_CHANGE:
 				var payload = event.visual_payload
 				var container_tag: StringName = payload.container_tag
@@ -22334,6 +22373,34 @@ func animate_player_death_departure(dead_uuid: String, death_pos: Vector2, paylo
 				if is_instance_valid(idef) and "icon" in idef:
 					item_snap["icon"] = idef.icon
 			await _animate_gachaball_to_discard(death_pos, item_snap)
+
+## Animates equipped item graphic appearing on target unit view with landing bounce and SFX.
+func _animate_item_equip(target_uuid: String, payload: CombatPayload) -> void:
+	if target_uuid.is_empty():
+		return
+	var target_view = _visual_registry.get(target_uuid)
+	if not is_instance_valid(target_view):
+		return
+		
+	var item_texture: Texture2D = payload.item_icon
+	if not is_instance_valid(item_texture) and not payload.item_icon_path.is_empty():
+		item_texture = load(payload.item_icon_path) as Texture2D
+	if not is_instance_valid(item_texture) and not payload.item_uuid.is_empty():
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("get_instance"):
+			var item_inst = bm.get_instance(payload.item_uuid)
+			if is_instance_valid(item_inst):
+				var idef = item_inst.get_definition()
+				if is_instance_valid(idef) and "icon" in idef and is_instance_valid(idef.icon):
+					item_texture = idef.icon
+	
+	if is_instance_valid(item_texture) and target_view.has_method("set_visual_equipped_item_icon"):
+		target_view.set_visual_equipped_item_icon(item_texture)
+		
+	Audio.play_sfx("coin_land")
+	if target_view.has_method("play_landing_bounce"):
+		target_view.play_landing_bounce()
+	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
 
 ```
 
@@ -23523,22 +23590,100 @@ func _generate_inventory_stat_events(pre_stats: Dictionary) -> Dictionary:
 		
 		if delta_hp != 0 or delta_pwr != 0:
 			pre_stats_override[uuid] = {"hp": old_hp, "pwr": old_pwr}
-			var payload := CombatPayload.both_stats_change(
-				uuid,
-				delta_hp,
-				delta_pwr,
-				[old_hp],
-				[new_hp],
-				[old_pwr],
-				[new_pwr]
-			)
-			var event := CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": uuid,
-				"target_uuids": [uuid],
-				"ability_holder_uuid": uuid,
-				"visual_payload": payload
-			})
-			extra_events.append(event)
+			
+			if delta_hp > 0:
+				var hp_payload := CombatPayload.hp_buff(
+					uuid,
+					delta_hp,
+					[old_hp],
+					[new_hp]
+				)
+				var hp_event := CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": hp_payload,
+					"action_type": C.ACTION_BUFF
+				})
+				extra_events.append(hp_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "hp",
+					"amount": delta_hp,
+					"is_simulation": true
+				})
+			elif delta_hp < 0:
+				var hp_payload := CombatPayload.hp_debuff(
+					uuid,
+					abs(delta_hp),
+					[old_hp],
+					[new_hp]
+				)
+				var hp_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": hp_payload,
+					"action_type": C.ACTION_DEBUFF
+				})
+				extra_events.append(hp_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "hp",
+					"amount": abs(delta_hp),
+					"is_simulation": true
+				})
+				
+			if delta_pwr > 0:
+				var pwr_payload := CombatPayload.pwr_buff(
+					uuid,
+					delta_pwr,
+					[old_pwr],
+					[new_pwr]
+				)
+				var pwr_event := CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": pwr_payload,
+					"action_type": C.ACTION_BUFF
+				})
+				extra_events.append(pwr_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "pwr",
+					"amount": delta_pwr,
+					"is_simulation": true
+				})
+			elif delta_pwr < 0:
+				var pwr_payload := CombatPayload.pwr_debuff(
+					uuid,
+					abs(delta_pwr),
+					[old_pwr],
+					[new_pwr]
+				)
+				var pwr_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": pwr_payload,
+					"action_type": C.ACTION_DEBUFF
+				})
+				extra_events.append(pwr_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "pwr",
+					"amount": abs(delta_pwr),
+					"is_simulation": true
+				})
 			
 	return {
 		"events": extra_events,
@@ -23880,6 +24025,23 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 			if out_events != null:
 				out_events.append(discard_event)
 
+		var new_item := get_instance(item_uuid)
+		var new_item_def = new_item.get_definition() if is_instance_valid(new_item) else null
+		var equip_payload := CombatPayload.item_equip(
+			unit_uuid,
+			item_uuid,
+			new_item_def.icon if (is_instance_valid(new_item_def) and "icon" in new_item_def) else null,
+			new_item_def.icon_path if (is_instance_valid(new_item_def) and "icon_path" in new_item_def) else "",
+			new_item_def.name if (is_instance_valid(new_item_def) and "name" in new_item_def) else "Item"
+		)
+		var equip_event := CombatEvent.new(CombatEvent.Type.ITEM_EQUIP, {
+			"source_uuid": unit_uuid,
+			"target_uuids": [unit_uuid],
+			"visual_payload": equip_payload
+		})
+		if out_events != null:
+			out_events.append(equip_event)
+
 		if not silent:
 			for uuid in result.changed_unit_uuids:
 				SignalBus.emit_signal("unit_inventory_changed", uuid)
@@ -23895,7 +24057,13 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 							"equipped_items": old_equipped_items_data,
 							"equipped_item_icon": old_equipped_items_data[0]["icon"]
 						}
+				else:
+					pre_equipped_override[unit_uuid] = {
+						"equipped_items": [],
+						"equipped_item_icon": null
+					}
 				
+				extra_events.append(equip_event)
 				extra_events.append_array(stat_data.events)
 				_emit_battle_inventory_changed(extra_events, stat_data.pre_stats, pre_equipped_override)
 				SignalBus.emit_signal("inventory_ui_refresh_requested")
@@ -24972,11 +25140,14 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				assert(action_type in [C.ACTION_HEAL, C.ACTION_BUFF], "apply_stat_delta: positive HP delta requires ACTION_HEAL or ACTION_BUFF, got '%s'" % action_type)
 				var new_hp = instance.current_hp + delta
 				
-				var comp = StatComponent.new()
-				comp.id = &"battle_heal" if action_type == C.ACTION_HEAL else &"battle_buff_hp"
-				comp.category = &"COMBAT_STATE"
-				comp.modifiers = {"hp": delta}
-				instance.battle_components.append(comp)
+				if is_stackable or action_type == C.ACTION_HEAL:
+					var comp = StatComponent.new()
+					comp.id = &"battle_heal" if action_type == C.ACTION_HEAL else &"battle_buff_hp"
+					comp.category = &"COMBAT_STATE"
+					comp.source_type = &"BATTLE_BUFF" if action_type == C.ACTION_BUFF else &"COMBAT_STATE"
+					comp.source_id = source_uuid
+					comp.modifiers = {"hp": delta}
+					instance.battle_components.append(comp)
 				
 				instance.set_current_hp_silent(new_hp)
 				
@@ -25039,6 +25210,13 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 			if delta > 0:
 				assert(action_type == C.ACTION_BUFF, "apply_stat_delta: positive PWR delta requires ACTION_BUFF, got '%s'" % action_type)
 				var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
+				
+				if is_stackable and not instance.battle_components.is_empty():
+					var last_comp = instance.battle_components[-1]
+					if last_comp is StatComponent and last_comp.id == &"battle_pwr_gain":
+						last_comp.id = &"battle_buff_pwr"
+						last_comp.source_type = &"BATTLE_BUFF"
+						last_comp.source_id = source_uuid
 				
 				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
 					"unit_uuid": instance.ball_uuid,
@@ -25512,7 +25690,8 @@ func _process_registered_death(unit: GachaBallInstance, phase: StringName, death
 	AbilityResolver.process_trigger(&"on_ally_death", {
 		"fainting_ally_uuid": unit.ball_uuid,
 		"fainting_ally_location": death_location,
-		"fainting_ally_team": death_team
+		"fainting_ally_team": death_team,
+		"fainting_ally_pwr": unit.current_pwr
 	})
 	AbilityResolver.process_trigger(&"on_unit_death", {
 		"dying_uuid": unit.ball_uuid,
@@ -25955,21 +26134,54 @@ func execute_enemy_entrance_sequence() -> void:
 			
 			var equip_result := InventoryOperations.equip_item(_state, item_inst.ball_uuid, enemy_inst.ball_uuid)
 			if equip_result.success:
+				var discard_event: CombatEvent = null
+				if not equip_result.replaced_item_uuid.is_empty():
+					var discard_payload := CombatPayload.item_discard(
+						equip_result.replaced_from_unit_uuid,
+						equip_result.replaced_item_uuid,
+						equip_result.replaced_item_icon,
+						equip_result.replaced_item_icon_path,
+						equip_result.replaced_item_name
+					)
+					discard_event = CombatEvent.new(CombatEvent.Type.ITEM_DISCARD, {
+						"source_uuid": equip_result.replaced_from_unit_uuid,
+						"target_uuids": [equip_result.replaced_item_uuid],
+						"visual_payload": discard_payload
+					})
+
+				var equip_payload := CombatPayload.item_equip(
+					enemy_inst.ball_uuid,
+					item_inst.ball_uuid,
+					item_def.icon if (is_instance_valid(item_def) and "icon" in item_def) else null,
+					item_def.icon_path if (is_instance_valid(item_def) and "icon_path" in item_def) else "",
+					item_def.name if (is_instance_valid(item_def) and "name" in item_def) else "Item"
+				)
+				var equip_event := CombatEvent.new(CombatEvent.Type.ITEM_EQUIP, {
+					"source_uuid": enemy_inst.ball_uuid,
+					"target_uuids": [enemy_inst.ball_uuid],
+					"visual_payload": equip_payload
+				})
+
 				AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 				var equip_reaction_events := _combat.process_reaction_queue(self, {})
 				
 				var stat_data := _generate_inventory_stat_events(equip_pre_stats)
 				var equip_events: Array[CombatEvent] = []
+				if discard_event != null:
+					equip_events.append(discard_event)
+				equip_events.append(equip_event)
 				equip_events.append_array(stat_data.events)
 				equip_events.append_array(equip_reaction_events)
 				
-				if not equip_events.is_empty():
-					if is_instance_valid(_animator):
-						var eq_snapshot = get_board_snapshot(equip_pre_stats)
-						if not old_equipped_items_data.is_empty():
-							eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
-							eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
-						await _animator.play_turn_sequence(eq_snapshot, equip_events)
+				if is_instance_valid(_animator):
+					var eq_snapshot = get_board_snapshot(equip_pre_stats)
+					if not old_equipped_items_data.is_empty():
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
+					else:
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = []
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = null
+					await _animator.play_turn_sequence(eq_snapshot, equip_events)
 				else:
 					if is_inside_tree() and is_instance_valid(get_tree()):
 						await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
@@ -25998,8 +26210,8 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
 	return bm_swap_instances(source_loc, target_loc)
 
-func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
-	return bm_equip_item(item_uuid, unit_uuid, slot_index)
+func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
+	return bm_equip_item(item_uuid, unit_uuid, slot_index, silent)
 func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
 	var trinkets = get_instances_in_container(container_tag)
@@ -28258,7 +28470,8 @@ enum Type {
 	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
 	TOKEN_GAIN,
 	DRAW, # New for Async Draw Chains
-	ITEM_DISCARD # Replaced/discarded item arcs to Discard Pile button
+	ITEM_DISCARD, # Replaced/discarded item arcs to Discard Pile button
+	ITEM_EQUIP # Equipped item appears on unit view
 }
 
 var type: Type
@@ -29724,21 +29937,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var old_pwr: int = target_instance.current_pwr
 			var max_hp: int = target_def.base_hp
 			
-			# Apply HP buff
-			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			# Apply HP & PWR buff as conditional trinket bonus
+			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, true)
 			var new_hp: int = target_instance.current_hp
-			if hp_result is Dictionary:
-				new_hp = hp_result.get("new_hp", target_instance.current_hp)
-			elif hp_result != null:
-				new_hp = int(hp_result)
-			
-			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
-			if pwr_result is Dictionary:
-				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
-			elif pwr_result != null:
-				new_pwr = int(pwr_result)
 			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
@@ -29751,8 +29953,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
-			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
+			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, false)
 			state_applied_any = true
 
 	if is_simulation and not batched_target_uuids.is_empty():
@@ -30073,21 +30274,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			var old_pwr: int = target_instance.current_pwr
 			var max_hp: int = target_def.base_hp
 			
-			# Apply HP buff
-			var hp_result = battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
+			# Apply HP & PWR buff as conditional trinket bonus
+			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, true)
 			var new_hp: int = target_instance.current_hp
-			if hp_result is Dictionary:
-				new_hp = hp_result.get("new_hp", target_instance.current_hp)
-			elif hp_result != null:
-				new_hp = int(hp_result)
-			
-			# Apply PWR buff  
-			var pwr_result = battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
 			var new_pwr: int = target_instance.current_pwr
-			if pwr_result is Dictionary:
-				new_pwr = pwr_result.get("new_pwr", target_instance.current_pwr)
-			elif pwr_result != null:
-				new_pwr = int(pwr_result)
 			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
@@ -30100,8 +30290,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			
 		else:
 			# Non-simulation: apply immediately
-			battle_manager.apply_permanent_stat_delta(target_instance, "hp", hp_amount, _source_uuid)
-			battle_manager.apply_permanent_stat_delta(target_instance, "pwr", pwr_amount, _source_uuid)
+			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, false)
 			state_applied_any = true
 
 	if is_simulation and not batched_target_uuids.is_empty():
@@ -32727,63 +32916,41 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-## Effect: Gains HP equal to the current PWR of the first ally that dies each turn.
-## Only triggers once per turn per team for the first unit to die.
-## Resolves targets independently.
+## Effect: Gains HP equal to half of the dead ally's current combat PWR (min 1).
+## Triggers on_ally_death for the Starter Hero.
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
-	
-	# Determine team from context - the fainting ally's team is our team
-	var fainting_ally_team: String = context.get("fainting_ally_team", "")
-	if fainting_ally_team.is_empty():
-		return EffectResult.empty()
-		
-	var is_player_team := (fainting_ally_team == "PLAYER")
-	
-	# Check if we already harvested a soul for this team this turn
-	var harvest_flag_key := "starter_harvest_done_player" if is_player_team else "starter_harvest_done_enemy"
-	if battle_manager._turn_metadata.get(harvest_flag_key, false):
-		return EffectResult.empty()
-		
-	# Verify this is actually the first unit killed for the team
-	var first_killed_key := "first_killed_player_unit" if is_player_team else "first_killed_enemy_unit"
-	var first_killed_data: Dictionary = battle_manager._turn_metadata.get(first_killed_key, {})
-	
-	if first_killed_data.is_empty():
-		return EffectResult.empty()
-		
-	var fainting_uuid = context.get("fainting_ally_uuid", "")
-	if fainting_uuid != first_killed_data.get("uuid", ""):
+	var fainting_uuid: String = context.get("fainting_ally_uuid", "")
+	if fainting_uuid.is_empty() or fainting_uuid == source_uuid:
 		return EffectResult.empty()
 		
 	# Get source unit (the hero)
-	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
+	var source_unit: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_unit) or source_unit.current_hp <= 0:
 		return EffectResult.empty()
 		
-	# Read the dead ally's PWR from the context's source_pwr (if available via on_death triggering)
-	# Wait, on_ally_death doesn't pass source_pwr directly, but it's triggered during the death check.
-	# The dead unit is still in the registry with 0 HP, but retaining its current_pwr!
-	var dead_ally = battle_manager.get_instance_by_uuid(fainting_uuid)
+	var dead_ally: GachaBallInstance = battle_manager.get_instance_by_uuid(fainting_uuid)
 	if not is_instance_valid(dead_ally):
 		return EffectResult.empty()
 		
-	var amount: int = dead_ally.current_pwr
-	if amount <= 0:
-		return EffectResult.empty()
+	# Query the dying unit's dynamic combat Power at the moment of death
+	var current_pwr: int = dead_ally.current_pwr
+	if context.has("fainting_ally_pwr"):
+		current_pwr = int(context.get("fainting_ally_pwr"))
 		
-	if not is_simulation:
-		# Mark harvest as done
-		battle_manager._turn_metadata[harvest_flag_key] = true
-		
-	var old_hp = source_unit.current_hp
-	var new_hp = source_unit.current_hp + amount
-	if not is_simulation:
-		new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	# Formula: max(1, floor(current_pwr / 2.0))
+	var amount: int = maxi(1, int(floor(float(current_pwr) / 2.0)))
+	
+	var old_hp: int = source_unit.current_hp
+	var res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	var new_hp: int = old_hp + amount
+	if res is Dictionary:
+		new_hp = res.get("new_hp", new_hp)
+	elif res != null:
+		new_hp = int(res)
 		
 	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"hero_starter_ally_death_absorb")
+	var ability_id: StringName = context.get("ability_id", &"hero_starter_ally_death_absorb")
 	
 	var hero_name = BattleHelpers.get_instance_display_name(source_unit)
 	var dead_name = BattleHelpers.get_instance_display_name(dead_ally)
@@ -32794,7 +32961,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
+		"trigger_type": context.get("trigger_type", &"on_ally_death"),
 		"action_type": C.ACTION_BUFF,
+		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.hp_buff(source_uuid, amount, [old_hp], [new_hp])
 	}))
 	
@@ -39372,6 +39541,24 @@ func unequip_item_bonus(item_instance: GachaBallInstance) -> void:
 	if pwr_delta != 0:
 		apply_pwr_delta(-pwr_delta, {"silent": false})
 
+func replace_item_bonus(old_item: GachaBallInstance, new_item: GachaBallInstance) -> Dictionary:
+	var old_def = old_item.get_definition() if is_instance_valid(old_item) else null
+	var new_def = new_item.get_definition() if is_instance_valid(new_item) else null
+	var old_hp: int = int(old_def.bonus_hp) if (old_def and "bonus_hp" in old_def) else 0
+	var old_pwr: int = int(old_def.bonus_pwr) if (old_def and "bonus_pwr" in old_def) else 0
+	var new_hp: int = int(new_def.bonus_hp) if (new_def and "bonus_hp" in new_def) else 0
+	var new_pwr: int = int(new_def.bonus_pwr) if (new_def and "bonus_pwr" in new_def) else 0
+	
+	var delta_hp: int = new_hp - old_hp
+	var delta_pwr: int = new_pwr - old_pwr
+	
+	if delta_hp != 0:
+		apply_hp_delta(delta_hp, {"silent": false})
+	if delta_pwr != 0:
+		apply_pwr_delta(delta_pwr, {"silent": false})
+		
+	return {"delta_hp": delta_hp, "delta_pwr": delta_pwr}
+
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
 	var old_hp = self.current_hp
@@ -39607,7 +39794,12 @@ func get_active_tags(all_instances_db: Dictionary = {}) -> Array[StringName]:
 			if not remove_tags.has(tag):
 				remove_tags.append(tag)
 	for tag in remove_tags:
-		if tags.has(tag):
+		if String(tag).begins_with("SOUL_"):
+			var soul_counts = get_trait_soul_counts(all_instances_db)
+			var soul_name = String(tag).trim_prefix("SOUL_")
+			if soul_counts.get(soul_name, 0) == 0 and tags.has(tag):
+				tags.erase(tag)
+		elif tags.has(tag):
 			tags.erase(tag)
 	return tags
 
@@ -39633,6 +39825,15 @@ func get_trait_soul_counts(all_instances_db: Dictionary = {}) -> Dictionary:
 				counts["WATER"] += 1
 			elif tag == &"SOUL_AIR":
 				counts["AIR"] += 1
+		for tag in tag_component.tags_to_remove:
+			if tag == &"SOUL_FIRE":
+				counts["FIRE"] = maxi(0, counts["FIRE"] - 1)
+			elif tag == &"SOUL_EARTH":
+				counts["EARTH"] = maxi(0, counts["EARTH"] - 1)
+			elif tag == &"SOUL_WATER":
+				counts["WATER"] = maxi(0, counts["WATER"] - 1)
+			elif tag == &"SOUL_AIR":
+				counts["AIR"] = maxi(0, counts["AIR"] - 1)
 	return counts
 
 func get_attribute(attribute_name: StringName, all_instances_db: Dictionary = {}) -> Variant:
@@ -39861,10 +40062,10 @@ func add_or_update_tag_component(component_id: StringName, source_type: StringNa
 	for key in attributes:
 		tag_component.attributes[key] = attributes[key]
 	for tag in tags_to_add:
-		if not tag in tag_component.tags_to_add:
+		if String(tag).begins_with("SOUL_") or not tag in tag_component.tags_to_add:
 			tag_component.tags_to_add.append(tag)
 	for tag in tags_to_remove:
-		if not tag in tag_component.tags_to_remove:
+		if String(tag).begins_with("SOUL_") or not tag in tag_component.tags_to_remove:
 			tag_component.tags_to_remove.append(tag)
 
 func remove_component_by_id(component_id: StringName) -> void:
@@ -41393,6 +41594,14 @@ func set_visual_state(snapshot: Dictionary) -> void:
 	# Always sync spikes explicitly to match _visual_spikes_stacks
 	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
 	_update_dynamic_status_icons()
+	
+	if snapshot.has("equipped_item_icon"):
+		_visual_equipped_item_icon = snapshot["equipped_item_icon"]
+		_update_equipped_item_icon()
+	elif snapshot.has("equipped_items"):
+		if snapshot["equipped_items"].is_empty():
+			_visual_equipped_item_icon = null
+			_update_equipped_item_icon()
 	
 	_update_stats()
 
@@ -45082,9 +45291,21 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
 
 	# Case 2: Consumable usage on a specific unit
-	if sdef.category == C.CATEGORY_CONSUMABLE and is_instance_valid(target_instance):
-		if target_def.category == C.CATEGORY_UNIT:
-			_use_consumable(source_instance, target_instance)
+	if sdef.category == C.CATEGORY_CONSUMABLE:
+		var target_unit: GachaBallInstance = null
+		if is_instance_valid(target_instance) and is_instance_valid(target_def) and target_def.category == C.CATEGORY_UNIT:
+			target_unit = target_instance
+		elif target_loc.container == C.CONTAINER_EQUIPPED_ITEM and not target_loc.unit_uuid.is_empty():
+			var data_owner = _get_data_owner()
+			if is_instance_valid(data_owner):
+				target_unit = data_owner.get_all_instances().get(target_loc.unit_uuid)
+		elif is_instance_valid(target_instance) and not target_instance.equipped_on_uuid.is_empty():
+			var data_owner = _get_data_owner()
+			if is_instance_valid(data_owner):
+				target_unit = data_owner.get_all_instances().get(target_instance.equipped_on_uuid)
+
+		if is_instance_valid(target_unit):
+			_use_consumable(source_instance, target_unit)
 			return
 
 	# Case 3: Equipping an ITEM onto a UNIT directly
@@ -45465,7 +45686,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		for i in range(min(all_parent_items.size(), max_slots)):
 			var it: GachaBallInstance = all_parent_items[i]
 			if is_instance_valid(it):
-				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i, true)
 
 	for discarded_item in parent_items_to_discard:
 		if is_instance_valid(discarded_item):
@@ -45601,6 +45822,8 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 	#    from PlayerBench or InventoryGrid (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
+		if def.category != &"ITEM":
+			return false
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid" or s_group == &"EquippedGrid"
 
@@ -49127,17 +49350,27 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	# Determine if this is a "Level Up" (Self-Merge with same result) or a "Tier Evolution"
 	var is_level_up: bool = recipe.is_self_merge and recipe.result_id == instance_a.definition_id
 	
-	# Calculate initial combined stats using ONLY permanent stats.
-	# This ensures temporary battle buffs (like Doppleganger scaling) and item bonuses
-	# are NOT permanently baked into the merged unit's base stats.
-	var total_hp: int = instance_a.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_a, &"hp", all_instances_db) + \
-						instance_b.get_definition_base_hp() + _get_mergeable_persistent_modifier(instance_b, &"hp", all_instances_db)
-	var total_pwr: int = instance_a.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_a, &"pwr", all_instances_db) + \
-						 instance_b.get_definition_base_pwr() + _get_mergeable_persistent_modifier(instance_b, &"pwr", all_instances_db)
-	
 	# Determine items to transfer (items will be re-equipped and their stats re-applied later)
 	var source_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_a, all_instances_db)
 	var target_items: Array[GachaBallInstance] = _get_equipped_item_instances(instance_b, all_instances_db)
+	var items_to_equip: Array[GachaBallInstance] = []
+	var items_to_discard: Array[GachaBallInstance] = []
+	var target_item: GachaBallInstance = target_items[0] if not target_items.is_empty() else null
+	var source_item: GachaBallInstance = source_items[0] if not source_items.is_empty() else null
+	if is_instance_valid(target_item):
+		items_to_equip.append(target_item)
+		if is_instance_valid(source_item):
+			items_to_discard.append(source_item)
+	elif is_instance_valid(source_item):
+		items_to_equip.append(source_item)
+
+	# Calculate combined stats combining base stats and ALL valid accumulated stackable stats
+	# (Dojo training, prior merge surplus, prismatic rarity, permanent buffs, and in-combat ability buffs).
+	# Unique and conditional buffs (items, Rusty Ring, Royal/Veteran Insignia, dynamic scaling) are excluded.
+	var total_hp: int = instance_a.get_definition_base_hp() + _get_mergeable_stackable_modifier(instance_a, &"hp", all_instances_db) + \
+						instance_b.get_definition_base_hp() + _get_mergeable_stackable_modifier(instance_b, &"hp", all_instances_db)
+	var total_pwr: int = instance_a.get_definition_base_pwr() + _get_mergeable_stackable_modifier(instance_a, &"pwr", all_instances_db) + \
+						 instance_b.get_definition_base_pwr() + _get_mergeable_stackable_modifier(instance_b, &"pwr", all_instances_db)
 
 	# Apply New Stat Logic
 	var final_hp: int
@@ -49149,8 +49382,6 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		# Inherent_Extra = Total_Inherent - ParentA_Base - ParentA_LevelBonus - ParentB_Base - ParentB_LevelBonus
 		var base_a = instance_a.get_definition_base_hp()
 		var level_bonus_a = int(instance_a.get_attribute(&"level")) - 1
-		var base_b = instance_b.get_definition_base_hp()
-		var level_bonus_b = int(instance_b.get_attribute(&"level")) - 1
 		
 		# Formula: Result = Result_Base + (Extras_A + Extras_B) + (Result_Level - 1)
 		# Which simplifies to: total_hp - Parent_Base - Parent_LevelBonus + 1
@@ -49167,7 +49398,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_hp = final_hp
 	merged_instance.current_pwr = final_pwr
 	
-	# Merge status effects: sum up stacks of each status effect.
+	# Merge status effects: sum up stacks of each status effect (Armor, Burn, Spikes, Static, etc.).
 	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
 	# These are used to calculate dynamic deltas. Summing them creates artificially massive trackers 
 	# that cause catastrophic negative deltas (debuffs) when the board re-evaluates the unit.
@@ -49216,7 +49447,31 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	if is_level_up:
 		_apply_level_up_scaling_trackers(instance_a, instance_b, merged_instance, all_instances_db)
 
-	# Inherit surplus souls
+		# Rusty Ring Level-Up Evaluation:
+		# The leveled-up unit is considered the "same" unit. If it holds no item,
+		# Rusty Ring applies once pre-baked without firing an extraneous visual cast.
+		var team: String = _get_instance_team(instance_a, all_instances_db)
+		var rusty_ring_uuid := _get_trinket_uuid(all_instances_db, &"trinket_rusty_ring", team)
+		if not rusty_ring_uuid.is_empty():
+			if items_to_equip.is_empty():
+				# Resulting unit holds no item: Rusty Ring applies once pre-baked
+				merged_instance.current_hp += 1
+				merged_instance.current_pwr += 1
+				merged_instance.add_tag(&"rusty_ring_buffed")
+				merged_instance.add_or_update_stat_component(
+					StringName(rusty_ring_uuid + "_conditional"),
+					&"CONDITIONAL_TRINKET",
+					rusty_ring_uuid,
+					1, 1, false,
+					"Conditional Trinket Bonus", "Conditional trinket stat bonus"
+				)
+			else:
+				# Resulting unit holds an item: debuffed state (no bonus)
+				merged_instance.add_tag(&"rusty_ring_buffed")
+				merged_instance.add_tag(&"rusty_ring_debuffed")
+
+	# Direct Additive Soul Inheritance:
+	# All merges (both Level-Up and Tier-Up) add up all elemental souls from both parents.
 	var parent_a_souls = instance_a.get_trait_soul_counts(all_instances_db)
 	var parent_b_souls = instance_b.get_trait_soul_counts(all_instances_db)
 	var result_base_souls = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
@@ -49227,36 +49482,29 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 			elif tag == &"SOUL_WATER": result_base_souls["WATER"] += 1
 			elif tag == &"SOUL_AIR": result_base_souls["AIR"] += 1
 
-	var inherited_tags: Array = []
+	var inherited_tags_to_add: Array = []
+	var inherited_tags_to_remove: Array = []
 	for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
-		var total_parent_souls = parent_a_souls[soul_type] + parent_b_souls[soul_type]
-		var surplus = total_parent_souls - result_base_souls[soul_type]
-		if surplus > 0:
-			var tag_name = StringName("SOUL_" + soul_type)
-			for i in range(surplus):
-				inherited_tags.append(tag_name)
+		var total_parent_souls: int = parent_a_souls[soul_type] + parent_b_souls[soul_type]
+		var base_souls: int = result_base_souls[soul_type]
+		var tag_name = StringName("SOUL_" + soul_type)
+		if total_parent_souls > base_souls:
+			for i in range(total_parent_souls - base_souls):
+				inherited_tags_to_add.append(tag_name)
+		elif total_parent_souls < base_souls:
+			for i in range(base_souls - total_parent_souls):
+				inherited_tags_to_remove.append(tag_name)
 				
-	if not inherited_tags.is_empty():
+	if not inherited_tags_to_add.is_empty() or not inherited_tags_to_remove.is_empty():
 		merged_instance.add_or_update_tag_component(
 			&"merge_inheritance_souls",
 			&"MERGE_INHERITANCE",
 			String(recipe.id),
 			{},
-			inherited_tags
+			inherited_tags_to_add,
+			inherited_tags_to_remove
 		)
 
-	# Target item has priority. If target is empty, inherit source item.
-	var items_to_equip: Array[GachaBallInstance] = []
-	var items_to_discard: Array[GachaBallInstance] = []
-	var target_item: GachaBallInstance = target_items[0] if not target_items.is_empty() else null
-	var source_item: GachaBallInstance = source_items[0] if not source_items.is_empty() else null
-	if is_instance_valid(target_item):
-		items_to_equip.append(target_item)
-		if is_instance_valid(source_item):
-			items_to_discard.append(source_item)
-	elif is_instance_valid(source_item):
-		items_to_equip.append(source_item)
-		
 	var parents_to_remove: Array[GachaBallInstance] = [instance_a, instance_b]
 
 	return {
@@ -49353,28 +49601,60 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instance
 
 	return equipped_items
 
-## Conditional trinket bonuses (Rusty Ring and the two Insignias) are a single
-## unit-state modifier, not earned stats. They must be re-evaluated after every
-## merge instead of being summed from both parents.
-func _get_mergeable_persistent_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
+## Calculates all valid accumulated stackable stats (Dojo training, prior merge surplus,
+## prismatic rarity, permanent buffs, and in-combat ability buffs like Vengeance Charm and Convergence Surge).
+## Excludes unique and conditional buffs (items, Rusty Ring, Royal/Veteran Insignia, dynamic scaling).
+func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
 	var total := 0
+	
+	# 1. Persistent components on the instance (Dojo training, previous merge surplus, prismatic rarity, permanent buffs)
 	for component in instance.components:
 		if not component is StatComponent:
 			continue
 		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
 			continue
 		total += int(component.modifiers.get(String(stat), 0))
+		
+	# 2. In-combat active ability buffs (Convergence Surge, Vengeance Charm, mid-battle reactive buffs)
+	for component in instance.battle_components:
+		if not component is StatComponent:
+			continue
+		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
+			continue
+		var comp_id: StringName = component.id
+		if comp_id == &"battle_buff_hp" and stat == &"hp":
+			total += int(component.modifiers.get("hp", 0))
+		elif comp_id == &"battle_buff_pwr" and stat == &"pwr":
+			total += int(component.modifiers.get("pwr", 0))
+
 	return total
+
+func _get_trinket_uuid(all_instances_db: Dictionary, trinket_id: StringName, team: String) -> String:
+	for uuid in all_instances_db:
+		var inst: GachaBallInstance = all_instances_db[uuid]
+		if not is_instance_valid(inst):
+			continue
+		if inst.definition_id == trinket_id:
+			if team.is_empty() or _get_instance_team(inst, all_instances_db) == team:
+				return inst.ball_uuid
+				
+	if is_instance_valid(GameManager.run_state):
+		for uuid in GameManager.run_state.get_all_instances():
+			var inst: GachaBallInstance = GameManager.run_state.get_all_instances()[uuid]
+			if is_instance_valid(inst) and inst.definition_id == trinket_id:
+				if team.is_empty() or team == "PLAYER":
+					return inst.ball_uuid
+	return ""
 
 func _is_conditional_trinket_component(component: StatComponent, all_instances_db: Dictionary) -> bool:
 	if component.source_type == &"CONDITIONAL_TRINKET":
 		return true
-	# Compatibility with saves created before conditional bonuses had their own
-	# component type. The source instance identifies the three affected trinkets.
+	if component.id == &"rusty_ring_conditional" or String(component.id).ends_with("_conditional"):
+		return true
 	var source_instance: GachaBallInstance = all_instances_db.get(component.source_id)
-	if not is_instance_valid(source_instance):
-		return false
-	return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+	if is_instance_valid(source_instance):
+		return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+	return false
 
 func _is_conditional_trinket_tag(tag: StringName) -> bool:
 	var value := String(tag)
@@ -53824,13 +54104,16 @@ func increase_black_market_remove_cost() -> void:
 	SignalBus.emit_signal("run_data_changed")
 
 
-func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
+func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
 	# Equips an item onto a unit. Units now use a single slot, so default equips replace.
 	if item_uuid.is_empty() or unit_uuid.is_empty():
 		return false
 	var item := get_instance_by_uuid(item_uuid)
 	var unit := get_instance_by_uuid(unit_uuid)
 	if not is_instance_valid(item) or not is_instance_valid(unit):
+		return false
+	var item_def = item.get_definition()
+	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
 		return false
 	# Determine slot
 	var target_slot := slot_index
@@ -53857,10 +54140,10 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 			src_container.set_uuid(item_loc.index, "")
 	# If target slot occupied, unequip existing item to PlayerBench (fallback: first empty)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
+	var existing_item: GachaBallInstance = null
 	if not existing_uuid.is_empty():
-		var existing_item := get_instance_by_uuid(existing_uuid)
+		existing_item = get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
-			unit.unequip_item_bonus(existing_item)
 			existing_item.equipped_on_uuid = ""
 			existing_item.equipped_slot_index = -1
 			# Place into PlayerBench (or any available appropriate container)
@@ -53878,9 +54161,11 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	# Apply item bonuses (equip_item_bonus emits granular unit_stat_changed)
-	unit.equip_item_bonus(item)
-	# NOTE: equip_item_bonus() already emits granular unit_stat_changed signals
+	# Apply item bonuses (replace_item_bonus calculates net delta directly)
+	if is_instance_valid(existing_item):
+		unit.replace_item_bonus(existing_item, item)
+	else:
+		unit.equip_item_bonus(item)
 	SignalBus.emit_signal("run_data_changed")
 	SignalBus.emit_signal("inventory_ui_refresh_requested")
 	if OS.is_debug_build():

@@ -40,7 +40,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		trigger_cause = &"CAUSE_ABILITY"
 	
 	# WIND-UP PHASE
-	var windup_start: int = battle_manager.get_pending_reactions_size()
+	var windup_scope: int = battle_manager.begin_reaction_scope()
 	if not _context.get("on_attack_already_triggered", false):
 		var attack_context: Dictionary = {
 			"attacker_uuid": attacker_uuid,
@@ -54,10 +54,12 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		
 	var windup_events: Array[CombatEvent] = []
 	if is_simulation:
-		windup_events = battle_manager.drain_and_capture_reactions_inline(windup_start)
+		windup_events = battle_manager.drain_reaction_scope(windup_scope)
+	else:
+		battle_manager.drain_reaction_scope(windup_scope)
 
 	# PRE-IMPACT PHASE
-	var pre_impact_start: int = battle_manager.get_pending_reactions_size()
+	var pre_impact_scope: int = battle_manager.begin_reaction_scope()
 	var before_attack_context: Dictionary = {
 		"source_uuid": target_instance.ball_uuid,
 		"defender_uuid": target_instance.ball_uuid,
@@ -69,7 +71,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	var pre_impact_events: Array[CombatEvent] = []
 	if is_simulation:
-		pre_impact_events = battle_manager.drain_and_capture_reactions_inline(pre_impact_start)
+		pre_impact_events = battle_manager.drain_reaction_scope(pre_impact_scope)
+	else:
+		battle_manager.drain_reaction_scope(pre_impact_scope)
 
 	# -------------------------------------------------------------------------
 	# TRAIT & TRINKET LOGIC
@@ -118,16 +122,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			
 			# Trigger Guardian passive effects (e.g., gain Armor)
 			var combat_sim = battle_manager._combat
-			var intercept_start = combat_sim._pending_reactions.size()
+			var intercept_scope = combat_sim.begin_reaction_scope()
 			
 			AbilityResolver.process_trigger(&"passive_intercept", {
 				"source_uuid": guardian.ball_uuid,
 				"is_simulation": true
 			})
 			
-			combat_sim.drain_reactions_inline(intercept_start, battle_manager)
-			var guardian_results = combat_sim.collect_and_clear_inline_events()
-			pre_impact_events.append_array(guardian_results)
+			var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
+			CombatCommand.append_unified_events(pre_impact_events, guardian_results)
 
 	# IMPACT PHASE (Damage Application)
 	var old_hp = final_target.current_hp
@@ -159,12 +162,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if not damage_result.is_empty() and damage_result.has("spikes_data"):
 		spikes_data_list.append(damage_result["spikes_data"])
 		
-	var impact_start: int = battle_manager.get_pending_reactions_size()
+	var impact_scope: int = battle_manager.begin_reaction_scope()
 	battle_manager.trigger_on_hurt(final_target_uuid, damage, attacker_uuid)
 		
 	var impact_events: Array[CombatEvent] = []
 	if is_simulation:
-		impact_events = battle_manager.drain_and_capture_reactions_inline(impact_start)
+		impact_events = battle_manager.drain_reaction_scope(impact_scope)
+	else:
+		battle_manager.drain_reaction_scope(impact_scope)
 
 	# A lethal save resolves in the on_hurt reaction window, so determine kills only
 	# after that window closes.

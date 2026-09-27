@@ -108,48 +108,46 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 					if is_instance_valid(main_node) and "player_trinket_bar" in main_node:
 						lineup_container = main_node.player_trinket_bar
 				
+				var gacha_view: GachaBallView = null
 				if is_instance_valid(lineup_container) and index >= 0:
 					var children = lineup_container.get_children()
-					
 					if index < children.size():
 						var slot_view = children[index]
-						
 						if is_instance_valid(slot_view) and slot_view.get_child_count() > 0:
-							# Find GachaBallView among children (indicator TextureRect may also be present).
-							# Prefer a UUID match to avoid selecting stale views that are queued_free this frame.
-							var gacha_view: GachaBallView = null
-							var fallback_view: GachaBallView = null
+							# Find GachaBallView among children matching this exact UUID.
 							for child in slot_view.get_children():
 								if child.is_queued_for_deletion():
 									continue
 								if child is GachaBallView:
 									var candidate: GachaBallView = child
-									if not is_instance_valid(fallback_view):
-										fallback_view = candidate
 									if candidate.has_method("get_instance_uuid") and candidate.get_instance_uuid() == uuid:
 										gacha_view = candidate
 										break
-							if not is_instance_valid(gacha_view):
-								gacha_view = fallback_view
-							
-							if is_instance_valid(gacha_view):
-								# Register and initialize view from snapshot VALUES
-								_visual_registry[uuid] = gacha_view
-								
-								# DECOUPLING: Capture position NOW - animations will use this snapshot
-								# instead of querying views at animation time
-								var rect = gacha_view.get_global_rect()
-								_position_snapshot[uuid] = {
-									"position": rect.position,
-									"size": rect.size,
-									"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
-								}
-								
-								# Inject uuid into snapshot so set_visual_state can update _instance_uuid
-								snapshot_data["uuid"] = uuid
-								gacha_view.set_visual_state(snapshot_data)
-				else:
-					pass
+
+				# If not found directly in expected slot, search all views in the scene by exact UUID
+				if not is_instance_valid(gacha_view):
+					for node in get_tree().get_nodes_in_group("gachaball_view"):
+						if node is GachaBallView and not node.is_queued_for_deletion():
+							if node.has_method("get_instance_uuid") and node.get_instance_uuid() == uuid:
+								gacha_view = node
+								break
+
+				if is_instance_valid(gacha_view):
+					# Register and initialize view from snapshot VALUES
+					_visual_registry[uuid] = gacha_view
+					
+					# DECOUPLING: Capture position NOW - animations will use this snapshot
+					# instead of querying views at animation time
+					var rect = gacha_view.get_global_rect()
+					_position_snapshot[uuid] = {
+						"position": rect.position,
+						"size": rect.size,
+						"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+					}
+					
+					# Inject uuid into snapshot so set_visual_state can update _instance_uuid
+					snapshot_data["uuid"] = uuid
+					gacha_view.set_visual_state(snapshot_data)
 		
 		# Also scan EffectsLayer for in-flight views (Gacha Draws)
 		# This handles race conditions where a unit is targeted while still animating/flying
@@ -198,165 +196,18 @@ func play_turn(events: Array[CombatEvent]) -> void:
 		return
 	
 	_dead_units.clear()
+	_pending_guardian_return = ""
 	
-	# SYSTEMIC CONSOLIDATION: Merge consecutive stat/status events from same source
-	var consolidated_events = _consolidate_consecutive_events(events)
-	await _animate_events(consolidated_events)
+	await _animate_events(events)
 
-## Systemically consolidates consecutive visual events originating from the same source
-func _consolidate_consecutive_events(raw_events: Array[CombatEvent]) -> Array[CombatEvent]:
-	if raw_events.size() <= 1:
-		return raw_events
-		
-	var consolidated: Array[CombatEvent] = []
-	var i = 0
-	while i < raw_events.size():
-		var current = raw_events[i]
-		
-		# Check if current is a visual stat event (BUFF, DEBUFF, HEAL, STATUS_EFFECT)
-		if current.type in [CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
-			var merged_event = current.deep_clone()
-			var merged_payload = merged_event.visual_payload
-			var source_uuid = merged_event.source_uuid
-			var ability_id = merged_event.ability_id
-			
-			var j = i + 1
-			while j < raw_events.size():
-				var next_ev = raw_events[j]
-				if next_ev.type == CombatEvent.Type.LOG_MESSAGE and not next_ev.trinket_activations.is_empty():
-					break
-				elif next_ev.type in [CombatEvent.Type.BUFF, CombatEvent.Type.DEBUFF, CombatEvent.Type.HEAL, CombatEvent.Type.STATUS_EFFECT]:
-					# Match Rule: Events must originate from the SAME source_uuid. If both are passive (empty source_uuid), ability_id must match.
-					var is_same_source = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
-					var is_both_passive = (source_uuid.is_empty() and next_ev.source_uuid.is_empty() and next_ev.ability_id == ability_id)
-					
-					# A combined stat animation can only reuse one target list when both
-					# effects affect exactly the same units. For example, Timekeeper's
-					# HP aura targets units in front while its PWR aura targets units
-					# behind, so merging them would send both projectile types to every
-					# unit in the combined list.
-					var has_matching_targets := _have_matching_target_sets(merged_event.target_uuids, next_ev.target_uuids)
-					if (is_same_source or is_both_passive) and has_matching_targets:
-						_merge_event_payloads(merged_event, next_ev)
-						j += 1
-						continue
-					else:
-						break
-				elif next_ev.type == CombatEvent.Type.LOG_MESSAGE:
-					j += 1
-					continue
-				else:
-					break
-			
-			consolidated.append(merged_event)
-			i = j
-		else:
-			consolidated.append(current)
-			i += 1
-			
-	return consolidated
+func return_pending_guardian() -> void:
+	if not _pending_guardian_return.is_empty():
+		var guardian_uuid = _pending_guardian_return
+		_pending_guardian_return = ""
+		var guardian_view = _visual_registry.get(guardian_uuid)
+		if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
+			await guardian_view.animate_leap_return()
 
-
-## Stat payloads are indexed by their event's target list, so they can only be
-## merged when their target membership is identical. Ordering may differ, as
-## _merge_event_payloads matches entries by UUID.
-func _have_matching_target_sets(first_targets: Array[String], second_targets: Array[String]) -> bool:
-	if first_targets.size() != second_targets.size():
-		return false
-	for target_uuid in first_targets:
-		if not second_targets.has(target_uuid):
-			return false
-	return true
-
-
-func _merge_event_payloads(merged_event: CombatEvent, next_ev: CombatEvent) -> void:
-	var merged_payload = merged_event.visual_payload
-	var next_payload = next_ev.visual_payload
-	
-	for t_idx in range(next_ev.target_uuids.size()):
-		var t_uuid = next_ev.target_uuids[t_idx]
-		var existing_idx = merged_event.target_uuids.find(t_uuid)
-		
-		if existing_idx >= 0:
-			# Target is already in merged_event: update its NEW values in-place (net accumulation)
-			if t_idx < next_payload.targets_new_pwr.size():
-				while merged_payload.targets_new_pwr.size() <= existing_idx:
-					merged_payload.targets_new_pwr.append(0)
-				while merged_payload.targets_old_pwr.size() <= existing_idx:
-					merged_payload.targets_old_pwr.append(0)
-				if t_idx < next_payload.targets_old_pwr.size() and merged_payload.targets_old_pwr[existing_idx] == 0:
-					merged_payload.targets_old_pwr[existing_idx] = next_payload.targets_old_pwr[t_idx]
-				merged_payload.targets_new_pwr[existing_idx] = next_payload.targets_new_pwr[t_idx]
-
-			if t_idx < next_payload.targets_new_hp.size():
-				while merged_payload.targets_new_hp.size() <= existing_idx:
-					merged_payload.targets_new_hp.append(0)
-				while merged_payload.targets_old_hp.size() <= existing_idx:
-					merged_payload.targets_old_hp.append(0)
-				if t_idx < next_payload.targets_old_hp.size() and merged_payload.targets_old_hp[existing_idx] == 0:
-					merged_payload.targets_old_hp[existing_idx] = next_payload.targets_old_hp[t_idx]
-				merged_payload.targets_new_hp[existing_idx] = next_payload.targets_new_hp[t_idx]
-
-			if t_idx < next_payload.targets_max_hp.size():
-				while merged_payload.targets_max_hp.size() <= existing_idx:
-					merged_payload.targets_max_hp.append(0)
-				merged_payload.targets_max_hp[existing_idx] = next_payload.targets_max_hp[t_idx]
-
-			if t_idx < next_payload.targets_new_val.size():
-				while merged_payload.targets_new_val.size() <= existing_idx:
-					merged_payload.targets_new_val.append(0)
-				while merged_payload.targets_old_val.size() <= existing_idx:
-					merged_payload.targets_old_val.append(0)
-				if t_idx < next_payload.targets_old_val.size() and merged_payload.targets_old_val[existing_idx] == 0:
-					merged_payload.targets_old_val[existing_idx] = next_payload.targets_old_val[t_idx]
-				merged_payload.targets_new_val[existing_idx] = next_payload.targets_new_val[t_idx]
-		else:
-			# Target is new: append target_uuid and its old/new payloads
-			merged_event.target_uuids.append(t_uuid)
-			if t_idx < next_payload.targets_old_hp.size():
-				merged_payload.targets_old_hp.append(next_payload.targets_old_hp[t_idx])
-				merged_payload.targets_new_hp.append(next_payload.targets_new_hp[t_idx])
-			if t_idx < next_payload.targets_max_hp.size():
-				merged_payload.targets_max_hp.append(next_payload.targets_max_hp[t_idx])
-			if t_idx < next_payload.targets_old_pwr.size():
-				merged_payload.targets_old_pwr.append(next_payload.targets_old_pwr[t_idx])
-				merged_payload.targets_new_pwr.append(next_payload.targets_new_pwr[t_idx])
-			if t_idx < next_payload.targets_old_val.size():
-				merged_payload.targets_old_val.append(next_payload.targets_old_val[t_idx])
-				merged_payload.targets_new_val.append(next_payload.targets_new_val[t_idx])
-
-	# Initialize merged_payload amounts from its original stat before stat mutation
-	if merged_payload.stat == "hp" and merged_payload.hp_amount == 0:
-		merged_payload.hp_amount = merged_payload.amount
-	elif merged_payload.stat == "pwr" and merged_payload.pwr_amount == 0:
-		merged_payload.pwr_amount = merged_payload.amount
-
-	# Merge stat descriptors and amounts
-	if merged_payload.stat != next_payload.stat:
-		var has_hp = merged_payload.stat == "hp" or next_payload.stat == "hp" or merged_payload.stat == "both" or next_payload.stat == "both"
-		var has_pwr = merged_payload.stat == "pwr" or next_payload.stat == "pwr" or merged_payload.stat == "both" or next_payload.stat == "both"
-		if has_hp and has_pwr:
-			merged_payload.stat = "both"
-			merged_event.stat = "both"
-			# An HP-first pair starts as a HEAL event. Once it also carries PWR,
-			# it must use BuffAnimation so both number projectiles share its
-			# staggered launch path. HealAnimation only renders the HP portion.
-			merged_event.type = CombatEvent.Type.BUFF
-
-	if next_payload.hp_amount != 0:
-		merged_payload.hp_amount += next_payload.hp_amount
-	elif next_payload.stat == "hp":
-		merged_payload.hp_amount += next_payload.amount
-
-	if next_payload.pwr_amount != 0:
-		merged_payload.pwr_amount += next_payload.pwr_amount
-	elif next_payload.stat == "pwr":
-		merged_payload.pwr_amount += next_payload.amount
-
-	if next_payload.new_hp != 0:
-		merged_payload.new_hp = next_payload.new_hp
-	if next_payload.new_pwr != 0:
-		merged_payload.new_pwr = next_payload.new_pwr
 
 func _animate_events(events: Array[CombatEvent]) -> void:
 	for event in events:
@@ -437,12 +288,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					await anim.execute(self, event.target_uuids, event.visual_payload)
 				else:
 					push_error("[BattleAnimator] Damage animation not found in registry!")
-				
-				if not _pending_guardian_return.is_empty():
-					var guardian_view = _visual_registry.get(_pending_guardian_return)
-					if is_instance_valid(guardian_view) and guardian_view.has_method("animate_leap_return"):
-						await guardian_view.animate_leap_return()
-					_pending_guardian_return = ""
+				await return_pending_guardian()
 
 			CombatEvent.Type.HEAL:
 				var anim = AnimationRegistry.get_animation("heal")
@@ -688,6 +534,11 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				if has_method("_animate_item_discard"):
 					await _animate_item_discard(source_uuid, payload)
 
+			CombatEvent.Type.ITEM_EQUIP:
+				var payload = event.visual_payload
+				var target_uuid = event.target_uuids[0] if not event.target_uuids.is_empty() else event.source_uuid
+				await _animate_item_equip(target_uuid, payload)
+
 			CombatEvent.Type.SLOT_EFFECT_CHANGE:
 				var payload = event.visual_payload
 				var container_tag: StringName = payload.container_tag
@@ -700,6 +551,14 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					elif is_instance_valid(slot_view) and slot_view.has_method("set_slot_effect"):
 						slot_view.set_slot_effect(to_effect)
 						await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.2)).timeout
+
+			CombatEvent.Type.MERGE:
+				var payload = event.visual_payload
+				var target_uuid = event.target_uuids[0] if not event.target_uuids.is_empty() else event.source_uuid
+				var target_view = _visual_registry.get(target_uuid)
+				if is_instance_valid(target_view) and target_view.has_method("play_landing_bounce"):
+					target_view.play_landing_bounce()
+				await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
 
 		await get_tree().process_frame
 	
@@ -934,67 +793,21 @@ func play_continuous(speed: float) -> void:
 	_is_paused = false
 	set_combat_speed(speed)
 
-func _animate_gold_gain(origin_uuid: String, amount: int, target_gold_amount: int = -1) -> void:
-	"""Animate gold coins flying from a unit to the gold counter at the top"""
-	# 1. Get origin position from snapshot
+func _animate_gold_gain(origin_uuid: String, amount: int, _target_gold_amount: int = -1) -> void:
 	var pos_data = _position_snapshot.get(origin_uuid, {})
-	if pos_data.is_empty():
-		return
-	var start_pos = pos_data["center"]
-	
-	# 2. Get target position (GoldGroup in Main)
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		return
-	
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon):
-		gold_icon = gold_group
-		
-	var gold_rect = gold_icon.get_global_rect()
-	var target_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	# Spawn gold coins with stagger
-	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		
-		# Set position before add_child to prevent one-frame flash at (0,0)
-		coin_vfx.position = start_pos
-		effects_layer.add_child(coin_vfx)
-		
-		# Connect to trigger counter reaction
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-			if is_instance_valid(gold_group):
-				var tween = gold_group.create_tween()
-				gold_group.pivot_offset = gold_group.size / 2.0
-				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), AnimationConstants.scaled(0.05))
-				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.1))
-				
-				if target_gold_amount != -1:
-					SignalBus.emit_signal("gold_changed", target_gold_amount)
-		)
-		
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
+	var start_pos = Vector2.ZERO
+	if not pos_data.is_empty():
+		start_pos = pos_data["center"]
+	else:
+		var view = _visual_registry.get(origin_uuid)
+		if is_instance_valid(view) and view.is_inside_tree():
+			start_pos = view.get_global_rect().get_center()
+	if start_pos == Vector2.ZERO:
+		var window_size = get_viewport().get_visible_rect().size
+		start_pos = window_size / 2.0
+	await CurrencyAnimator.animate_gold_gain(amount, start_pos)
 
-	# Wait for animations
-	var total_wait = (coins_to_spawn - 1) * AnimationConstants.scaled(stagger_delay) + AnimationConstants.scaled(0.45)
-	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
-
-func _animate_token_gain(origin_uuid: String, amount: int, target_token_amount: int = -1) -> void:
+func _animate_token_gain(origin_uuid: String, amount: int, _target_token_amount: int = -1) -> void:
 	# 1. Get origin position from snapshot
 	var pos_data = _position_snapshot.get(origin_uuid, {})
 	var start_pos = Vector2.ZERO
@@ -1013,69 +826,7 @@ func _animate_token_gain(origin_uuid: String, amount: int, target_token_amount: 
 		var window_size = get_viewport().get_visible_rect().size
 		start_pos = window_size / 2.0
 		
-	# 2. Get target position (TokenGroup in Main)
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		return
-		
-	var token_group = main_node.get_node_or_null("%TokenGroup")
-	if not is_instance_valid(token_group):
-		return
-	
-	var token_icon = token_group.get_node_or_null("TokenIcon")
-	if not is_instance_valid(token_icon):
-		token_icon = token_group
-		
-	var token_rect = token_icon.get_global_rect()
-	var target_pos = Vector2(
-		token_rect.position.x + token_rect.size.x / 2,
-		token_rect.position.y + token_rect.size.y / 2
-	)
-	
-	# Spawn tokens with stagger
-	var tokens_to_spawn = mini(amount, 5) # Cap at 5 tokens for visual clarity
-	var stagger_delay = 0.08
-	
-	var total_coins_landed = 0
-	
-	for i in range(tokens_to_spawn):
-		var token_vfx = TokenPopVFXScene.instantiate()
-		var effects_layer = WindowManager.get_vfx_layer()
-		
-		# Set position before add_child to prevent one-frame flash at (0,0)
-		token_vfx.position = start_pos
-		effects_layer.add_child(token_vfx)
-		
-		token_vfx.setup(start_pos, target_pos)
-		
-		token_vfx.animation_finished.connect(func():
-			Audio.play_sfx("coin_land")
-			total_coins_landed += 1
-			
-			if is_instance_valid(token_group):
-				var tween = token_group.create_tween()
-				token_group.pivot_offset = token_group.size / 2.0
-				tween.tween_property(token_group, "scale", Vector2(1.2, 1.2), AnimationConstants.scaled(0.05))
-				tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.1))
-			
-			if target_token_amount != -1:
-				SignalBus.emit_signal("gacha_tokens_changed", target_token_amount)
-			else:
-				var bm = GameManager._active_battle_manager
-				if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
-					SignalBus.emit_signal("gacha_tokens_changed", bm.get_gacha_tokens())
-		)
-		
-		if i > 0:
-			await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(stagger_delay)).timeout
-		
-		if is_instance_valid(token_vfx):
-			token_vfx.play(target_pos)
-			Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-
-	# Wait for animations to complete
-	var total_wait_token = AnimationConstants.scaled(0.5 + (tokens_to_spawn * stagger_delay))
-	await AnimationConstants.create_pausable_timer(get_tree(), total_wait_token).timeout
+	await CurrencyAnimator.animate_token_gain(amount, start_pos)
 
 func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: CombatPayload) -> void:
 	var source_view = _visual_registry.get(source_uuid)
@@ -1321,3 +1072,31 @@ func animate_player_death_departure(dead_uuid: String, death_pos: Vector2, paylo
 				if is_instance_valid(idef) and "icon" in idef:
 					item_snap["icon"] = idef.icon
 			await _animate_gachaball_to_discard(death_pos, item_snap)
+
+## Animates equipped item graphic appearing on target unit view with landing bounce and SFX.
+func _animate_item_equip(target_uuid: String, payload: CombatPayload) -> void:
+	if target_uuid.is_empty():
+		return
+	var target_view = _visual_registry.get(target_uuid)
+	if not is_instance_valid(target_view):
+		return
+		
+	var item_texture: Texture2D = payload.item_icon
+	if not is_instance_valid(item_texture) and not payload.item_icon_path.is_empty():
+		item_texture = load(payload.item_icon_path) as Texture2D
+	if not is_instance_valid(item_texture) and not payload.item_uuid.is_empty():
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("get_instance"):
+			var item_inst = bm.get_instance(payload.item_uuid)
+			if is_instance_valid(item_inst):
+				var idef = item_inst.get_definition()
+				if is_instance_valid(idef) and "icon" in idef and is_instance_valid(idef.icon):
+					item_texture = idef.icon
+	
+	if is_instance_valid(item_texture) and target_view.has_method("set_visual_equipped_item_icon"):
+		target_view.set_visual_equipped_item_icon(item_texture)
+		
+	Audio.play_sfx("coin_land")
+	if target_view.has_method("play_landing_bounce"):
+		target_view.play_landing_bounce()
+	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout

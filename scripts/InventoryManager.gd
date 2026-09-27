@@ -34,9 +34,21 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
 
 	# Case 2: Consumable usage on a specific unit
-	if sdef.category == C.CATEGORY_CONSUMABLE and is_instance_valid(target_instance):
-		if target_def.category == C.CATEGORY_UNIT:
-			_use_consumable(source_instance, target_instance)
+	if sdef.category == C.CATEGORY_CONSUMABLE:
+		var target_unit: GachaBallInstance = null
+		if is_instance_valid(target_instance) and is_instance_valid(target_def) and target_def.category == C.CATEGORY_UNIT:
+			target_unit = target_instance
+		elif target_loc.container == C.CONTAINER_EQUIPPED_ITEM and not target_loc.unit_uuid.is_empty():
+			var data_owner = _get_data_owner()
+			if is_instance_valid(data_owner):
+				target_unit = data_owner.get_all_instances().get(target_loc.unit_uuid)
+		elif is_instance_valid(target_instance) and not target_instance.equipped_on_uuid.is_empty():
+			var data_owner = _get_data_owner()
+			if is_instance_valid(data_owner):
+				target_unit = data_owner.get_all_instances().get(target_instance.equipped_on_uuid)
+
+		if is_instance_valid(target_unit):
+			_use_consumable(source_instance, target_unit)
 			return
 
 	# Case 3: Equipping an ITEM onto a UNIT directly
@@ -211,8 +223,10 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		
 		# Create minimal context for the request
 		var trig_context = {
-			"source_category": &"ITEM",
+			"source_category": C.CATEGORY_CONSUMABLE,
 			"source_holder_uuid": target_unit.ball_uuid,
+			"source_consumable_id": def.id,
+			"consumable_uuid": consumable_uuid,
 		}
 		
 		# Construct Request
@@ -247,9 +261,55 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		if bm.has_method("unblock_ui_updates"):
 			bm.unblock_ui_updates()
 
-func _use_consumable_simple(_consumable_instance: GachaBallInstance, _target_unit: GachaBallInstance) -> void:
-	# Fallback for non-battle state (rare)
-	pass
+func _use_consumable_simple(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
+	var def = consumable_instance.get_definition()
+	if not def or def.ability_definitions.is_empty():
+		GlobalInteractionRouter.end_drag(false)
+		return
+	
+	var ability = def.ability_definitions[0]
+	var owner = _get_data_owner()
+	var any_applied := false
+	
+	for effect in ability.effects:
+		if not is_instance_valid(effect):
+			continue
+		if "parameters" in effect and effect.parameters is Dictionary:
+			var stat: String = String(effect.parameters.get("stat", ""))
+			if stat in ["hp", "health", "current_hp"]:
+				stat = "hp"
+			elif stat in ["pwr", "power", "current_pwr"]:
+				stat = "pwr"
+			var amount: int = int(effect.parameters.get("base_value", 0))
+			if amount > 0 and (stat == "hp" or stat == "pwr"):
+				target_unit.add_or_update_stat_component(
+					StringName("consumable_buff_" + stat + "_" + consumable_instance.ball_uuid),
+					&"CONSUMABLE",
+					String(def.id),
+					amount if stat == "hp" else 0,
+					amount if stat == "pwr" else 0,
+					true
+				)
+				if stat == "hp":
+					target_unit.set_current_hp(target_unit.current_hp + amount)
+				elif stat == "pwr":
+					target_unit.apply_pwr_delta(amount)
+				any_applied = true
+			var effect_id: StringName = StringName(effect.parameters.get("status_id", effect.parameters.get("effect_id", "")))
+			var stacks: int = int(effect.parameters.get("amount", effect.parameters.get("stacks", 0)))
+			if not effect_id.is_empty() and stacks > 0:
+				target_unit.add_status_effect(effect_id, stacks)
+				any_applied = true
+				
+	if any_applied:
+		Audio.play_sfx("ui_heal")
+		if is_instance_valid(owner):
+			owner.remove_instance(consumable_instance.ball_uuid)
+		GlobalInteractionRouter.end_drag(true)
+		SignalBus.emit_signal("inventory_action_completed", [target_unit.ball_uuid])
+	else:
+		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
+		GlobalInteractionRouter.end_drag(false)
 
 # --- Core Logic Functions ---
 
@@ -354,6 +414,32 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 				_finish_merge_action_if_active()
 				return
 
+	# In battle, route through BattleManager's atomic merge simulation
+	if GameManager.is_in_battle and data_owner.has_method("bm_merge_instances"):
+		var sim_res: Dictionary = data_owner.bm_merge_instances(source_loc, target_loc, recipe_id)
+		if sim_res.is_empty() or not sim_res.get("success", false):
+			_finish_merge_action_if_active()
+			return
+		
+		var merged_inst: GachaBallInstance = sim_res["merged_instance"]
+		SignalBus.emit_signal("merge_animation_requested", {
+			"merged_uuid": merged_inst.ball_uuid,
+			"source_loc": source_loc,
+			"target_loc": target_loc,
+			"final_loc": sim_res["final_loc"],
+			"start_pos": start_pos,
+			"new_instance": merged_inst,
+			"is_merge_encounter": false,
+			"merge_encounter_cost": 0,
+			"should_trigger_on_merge": sim_res["should_trigger_on_merge"],
+			"merge_context": sim_res["merge_context"],
+			"snapshot": sim_res["snapshot"],
+			"events": sim_res["events"],
+			"reaction_events": sim_res["reaction_events"]
+		})
+		SignalBus.emit_signal("selection_clear_requested")
+		return
+
 	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if merge_result.is_empty():
 		_finish_merge_action_if_active()
@@ -417,7 +503,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		for i in range(min(all_parent_items.size(), max_slots)):
 			var it: GachaBallInstance = all_parent_items[i]
 			if is_instance_valid(it):
-				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i)
+				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i, true)
 
 	for discarded_item in parent_items_to_discard:
 		if is_instance_valid(discarded_item):
@@ -553,6 +639,8 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 	#    from PlayerBench or InventoryGrid (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
+		if def.category != &"ITEM":
+			return false
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
 		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid" or s_group == &"EquippedGrid"
 

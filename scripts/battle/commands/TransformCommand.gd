@@ -17,7 +17,7 @@ func _init(p_request: EffectRequest, p_combat_sim: CombatSimulator, p_bm: Node, 
 func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
 	var transform_result := EffectHandlers.handle_mirror_transform(request, transform_request, battle_manager)
 	battle_manager._apply_summon_result(transform_result)
-	out_events.append_array(transform_result.events)
+	CombatCommand.append_unified_events(out_events, transform_result.events)
 	# CombatSimulator natively handles resuming the turn for swapped units
 	
 	# A transformation counts as a summon for reaction purposes

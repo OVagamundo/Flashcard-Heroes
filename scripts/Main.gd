@@ -32,6 +32,12 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var machine_2_count_label: Label = %GachaMachine2.get_count_label() if %GachaMachine2.has_method("get_count_label") else %GachaMachine2.get_node_or_null("CountLabel")
 @onready var machine_3_count_label: Label = %GachaMachine3.get_count_label() if %GachaMachine3.has_method("get_count_label") else %GachaMachine3.get_node_or_null("CountLabel")
 
+# Local Presentation State (Strict Simulation/Presentation Decoupling)
+var _visual_gold: int = 0
+var _visual_tokens: int = 0
+var _gold_animations_in_flight: int = 0
+var _token_animations_in_flight: int = 0
+
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
 const BATTLE_SCENE = preload("res://scenes/Battle.tscn")
@@ -137,6 +143,8 @@ func _ready() -> void:
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
 	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.queue_idle.connect(_on_action_queue_idle)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
 	SignalBus.run_data_changed.connect(_on_run_data_changed)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
@@ -168,6 +176,8 @@ func _ready() -> void:
 
 func _exit_tree() -> void:
 	GameManager.unregister_main_node()
+	if is_instance_valid(ActionQueue) and ActionQueue.queue_idle.is_connected(_on_action_queue_idle):
+		ActionQueue.queue_idle.disconnect(_on_action_queue_idle)
 	# Cleanup drop zone signals
 	if SignalBus.selection_changed.is_connected(_on_selection_changed_for_drop_zone):
 		SignalBus.selection_changed.disconnect(_on_selection_changed_for_drop_zone)
@@ -429,24 +439,6 @@ func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
 
 func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 	"""Animate tokens flying from counter to gacha machine before drawing"""
-	const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
-	
-	# Get token counter position (source)
-	var token_group = get_node_or_null("%TokenGroup")
-	if not is_instance_valid(token_group):
-		SignalBus.emit_signal("draw_gacha_requested", tier)
-		_is_drawing_token = false
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
-	
-	var token_rect = token_group.get_global_rect()
-	var start_pos = Vector2(
-		token_rect.position.x + token_rect.size.x / 2,
-		token_rect.position.y + token_rect.size.y / 2
-	)
-	
-	# Get target gacha machine
 	var target_machine: Control = null
 	match tier:
 		1: target_machine = gacha_machine_1
@@ -454,8 +446,11 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 		3: target_machine = gacha_machine_3
 	
 	if not is_instance_valid(target_machine):
-		SignalBus.emit_signal("draw_gacha_requested", tier)
 		_is_drawing_token = false
+		SignalBus.emit_signal("draw_gacha_requested", tier)
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
+			await bm.management_animation_queue_completed
 		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
@@ -466,36 +461,19 @@ func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
 		machine_rect.position.y + machine_rect.size.y * 0.4 # Aim for coin slot area
 	)
 	
-	# Spawn tokens with stagger - each one triggers machine reaction on landing
-	var tokens_to_spawn = cost
-	var stagger_delay = AnimationConstants.scaled(0.12) # Increased delay for more dramatic sequential tosses
+	var on_token_landed := func(_pos: Vector2):
+		_on_coin_landed_on_machine(_pos, target_machine)
 	
-	for i in range(tokens_to_spawn):
-		var token_vfx = TokenSpendScene.instantiate()
-		if WindowManager.has_method("get_vfx_layer"):
-			WindowManager.get_vfx_layer().add_child(token_vfx)
-		else:
-			add_child(token_vfx)
-		
-		# Connect to coin_landed to trigger machine reaction
-		token_vfx.coin_landed.connect(_on_coin_landed_on_machine.bind(target_machine))
-		
-		# AUDIO HOOK: Token spend (play for each token)
-		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
-		
-		# Slight random offset to start position for natural feel
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-20, 20), RNGManager.cosmetic_rng.randf_range(-10, 10))
-		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
+	var on_complete := func():
+		_is_drawing_token = false
+		SignalBus.emit_signal("draw_gacha_requested", tier)
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
+			await bm.management_animation_queue_completed
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 	
-	# Wait for all animations to complete, then trigger draw
-	# TokenSpendVFX.TOSS_DURATION = 0.45
-	var total_wait = (tokens_to_spawn - 1) * stagger_delay + AnimationConstants.scaled(0.55)
-	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
-	
-	SignalBus.emit_signal("draw_gacha_requested", tier)
-	_is_drawing_token = false
-	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-		ActionQueue.finish_action(ActionQueue.get_active_action())
+	CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed, on_complete)
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
@@ -578,28 +556,71 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	
 	# Reset token counter to 0 when leaving battle (tokens don't persist between encounters)
 	if not is_in_battle:
-		if is_instance_valid(tokens_label):
-			tokens_label.text = "0"
+		set_visual_tokens(0, false)
 	else:
 		# Entering battle - snap visual counters to model state
 		call_deferred("sync_visual_machine_counts_with_model")
 		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and is_instance_valid(tokens_label):
-			tokens_label.text = "%d" % bm.get_gacha_tokens()
+		if is_instance_valid(bm):
+			set_visual_tokens(bm.get_gacha_tokens(), false)
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
 	if phase_name != &"COMBAT":
 		_populate_player_trinkets()
 
-func _on_gold_changed(new_amount: int) -> void:
+func get_visual_gold() -> int:
+	return _visual_gold
+
+func get_visual_tokens() -> int:
+	return _visual_tokens
+
+func set_visual_gold(new_amount: int, animate_pop: bool = true) -> void:
+	var old_amount = _visual_gold
+	_visual_gold = new_amount
 	if is_instance_valid(gold_label):
-		var old_text = gold_label.text
-		gold_label.text = "%d" % new_amount
-		
-		# Only animate if value actually changed (not initial load)
-		if old_text != gold_label.text:
+		gold_label.text = "%d" % _visual_gold
+		if old_amount != _visual_gold and animate_pop:
 			_animate_gold_counter_pop()
+
+func modify_visual_gold(delta: int, animate_pop: bool = true) -> void:
+	set_visual_gold(maxi(0, _visual_gold + delta), animate_pop)
+
+func set_visual_tokens(new_amount: int, animate_pop: bool = true) -> void:
+	var old_amount = _visual_tokens
+	_visual_tokens = new_amount
+	if is_instance_valid(tokens_label):
+		tokens_label.text = "%d" % _visual_tokens
+		if old_amount != _visual_tokens and animate_pop:
+			_animate_token_counter_pop()
+
+func modify_visual_tokens(delta: int, animate_pop: bool = true) -> void:
+	set_visual_tokens(maxi(0, _visual_tokens + delta), animate_pop)
+
+func begin_gold_animation() -> void:
+	_gold_animations_in_flight += 1
+
+func end_gold_animation() -> void:
+	_gold_animations_in_flight = maxi(0, _gold_animations_in_flight - 1)
+	if _gold_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		assert(_visual_gold == GameManager.run_state.gold, "HUD visual gold (%d) desynced from authoritative gold (%d)!" % [_visual_gold, GameManager.run_state.gold])
+
+func begin_token_animation() -> void:
+	_token_animations_in_flight += 1
+
+func end_token_animation() -> void:
+	_token_animations_in_flight = maxi(0, _token_animations_in_flight - 1)
+	if _token_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		var auth_tokens = GameManager.run_state.get_room_tokens()
+		assert(_visual_tokens == auth_tokens, "HUD visual tokens (%d) desynced from authoritative tokens (%d)!" % [_visual_tokens, auth_tokens])
+
+func _on_gold_changed(new_amount: int) -> void:
+	if _gold_animations_in_flight > 0 or (is_instance_valid(ActionQueue) and ActionQueue.is_busy()):
+		return
+	set_visual_gold(new_amount, true)
+
+func set_gold_display(new_amount: int, animate_pop: bool = true) -> void:
+	set_visual_gold(new_amount, animate_pop)
 
 func _animate_gold_counter_pop() -> void:
 	"""Juicy pop animation for the gold counter when it updates"""
@@ -636,13 +657,18 @@ func _animate_gold_counter_pop() -> void:
 	pop_tween.tween_property(gold_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
 
 func _on_gacha_tokens_changed(new_amount: int) -> void:
-	if is_instance_valid(tokens_label):
-		var old_text = tokens_label.text
-		tokens_label.text = "%d" % new_amount
-		
-		# Only animate if value actually changed (not initial load)
-		if old_text != tokens_label.text:
-			_animate_token_counter_pop()
+	if _token_animations_in_flight > 0 or (is_instance_valid(ActionQueue) and ActionQueue.is_busy()):
+		return
+	set_visual_tokens(new_amount, true)
+
+func _on_action_queue_idle() -> void:
+	if _gold_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		set_visual_gold(GameManager.run_state.gold, false)
+	if _token_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		set_visual_tokens(GameManager.run_state.get_room_tokens(), false)
+
+func set_token_display(new_amount: int, animate_pop: bool = true) -> void:
+	set_visual_tokens(new_amount, animate_pop)
 
 func _animate_token_counter_pop() -> void:
 	"""Juicy pop animation for the token counter when it updates"""

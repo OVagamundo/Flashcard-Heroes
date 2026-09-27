@@ -20,8 +20,10 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	var merge_context: Dictionary = context.get("merge_context", {})
 
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc) or not is_instance_valid(new_instance):
-		_finish_merge_action_if_active()
+		_finish_merge_action_if_active(true)
 		return
+
+	var bm = get_tree().get_first_node_in_group("battle_manager")
 
 	# Locate views
 	var source_view = WindowManager.find_view_for_location(source_loc)
@@ -34,7 +36,6 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	_set_unit_view_visible(target_view, false)
 
 	# Ensure the target/final slot is populated with the new unit's view
-	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(final_view) and final_view.has_method("set_content"):
 		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
 		var db = bm.get_all_instances() if is_instance_valid(bm) else (GameManager.run_state.get_all_instances() if is_instance_valid(GameManager.run_state) else {})
@@ -53,16 +54,10 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	# Hide the real result unit so we can animate the VFX ball
 	_set_unit_view_visible(final_view, false)
 
-	var snapshot: Dictionary = {}
-	if should_trigger_on_merge and is_instance_valid(bm):
-		# Capture snapshot BEFORE stats are modified, so the VCR can play from this base state
+	var snapshot: Dictionary = context.get("snapshot", {})
+	var reaction_events: Array = context.get("reaction_events", [])
+	if snapshot.is_empty() and should_trigger_on_merge and is_instance_valid(bm):
 		snapshot = bm.get_board_snapshot()
-		# Note: UI updates are already blocked by InventoryManager before _merge
-		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": merged_uuid})
-		AbilityResolver.process_trigger(&"on_merge", merge_context)
-		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
-		
-		# new_instance now has its fully calculated passive stats!
 
 	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
 	if is_instance_valid(vfx_ball):
@@ -89,18 +84,26 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		# Let queue_free/redraw settle so animator registers the latest merged views.
 		await get_tree().process_frame
 		
-		var pending_count: int = 0
-		if bm.has_method("get_pending_reactions_size"):
-			pending_count = int(bm.get_pending_reactions_size())
+		var typed_events: Array[CombatEvent] = []
+		for ev in reaction_events:
+			if ev is CombatEvent:
+				typed_events.append(ev)
+				
+		if not typed_events.is_empty():
+			bm.enqueue_management_animation(snapshot, typed_events)
+			if bm.get("_is_animating_management_queue"):
+				await bm.management_animation_queue_completed
 		else:
-			pending_count = int(bm._pending_reactions.size())
+			var pending_count: int = 0
+			if bm.has_method("get_pending_reactions_size"):
+				pending_count = int(bm.get_pending_reactions_size())
+			elif "_pending_reactions" in bm:
+				pending_count = int(bm._pending_reactions.size())
+				
+			if pending_count > 0:
+				await bm.resolve_management_effects_and_animate(snapshot)
 			
-		if pending_count > 0:
-			await bm.resolve_management_effects_and_animate(snapshot)
-			
-		if bm.has_method("unblock_ui_updates"):
-			bm.unblock_ui_updates()
-	elif is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
+	if is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
 		bm.unblock_ui_updates()
 
 	final_view = WindowManager.find_view_for_location(final_loc)
@@ -111,7 +114,11 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 
 	_finish_merge_action_if_active()
 
-func _finish_merge_action_if_active() -> void:
+func _finish_merge_action_if_active(unblock_bm: bool = false) -> void:
+	if unblock_bm:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
+			bm.unblock_ui_updates()
 	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
@@ -228,44 +235,8 @@ func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: G
 func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
 	var target_view = WindowManager.find_view_for_location(target_loc)
 	if not is_instance_valid(target_view): return
-	
 	var end_pos = target_view.get_global_rect().get_center()
-	
-	var GameManager = get_node_or_null("/root/GameManager")
-	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
-	if not is_instance_valid(main_node): return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group): return
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon): gold_icon = gold_group
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	var GoldCoinVFXScript = load("res://scripts/vfx/GoldCoinVFX.gd")
-	if not GoldCoinVFXScript: return
-	
-	var coins_to_spawn = 5
-	var stagger_delay = 0.08
-	
-	var Audio = get_node_or_null("/root/Audio")
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScript.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		effects_layer.add_child(coin_vfx)
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
-				Audio.play_sfx("coin_land")
-		)
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
-		if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
-			Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-		
-	# Await completion (stagger + flight time)
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
+	var cost = 5
+	if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		cost = GameManager.run_state.merge_encounter_cost
+	await CurrencyAnimator.animate_gold_spend(cost, end_pos)

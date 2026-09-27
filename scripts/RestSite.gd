@@ -226,6 +226,15 @@ func _request_draw_tier(tier: int) -> void:
 	else:
 		execute_draw_tier_visuals(tier)
 
+func play_transaction_log(event_log: Dictionary) -> void:
+	if not event_log.get("success", false):
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+	var tier: int = int(event_log.get("tier", 1))
+	var prize_data: Dictionary = event_log.get("prize_data", {})
+	execute_draw_tier_visuals(tier, prize_data)
+
 func execute_draw_tier_visuals(tier: int, pre_rolled_prize: Dictionary = {}) -> void:
 	var cost = COST_TIER1 if tier == 1 else (COST_TIER2 if tier == 2 else COST_TIER3)
 	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
@@ -294,27 +303,12 @@ func _find_next_prize_slot() -> int:
 
 # --- Animations ---
 
-func _animate_token_spend(target_machine: Control, cost: int, token_group: Control) -> void:
-	var start_pos: Vector2
-	if is_instance_valid(token_group):
-		var token_rect = token_group.get_global_rect()
-		start_pos = token_rect.get_center()
-	else:
-		start_pos = Vector2(get_viewport_rect().size.x / 2, 60)
-	
+func _animate_token_spend(target_machine: Control, cost: int, _token_group: Control = null) -> void:
 	var machine_rect = target_machine.get_global_rect()
 	var target_pos = Vector2(machine_rect.get_center().x, machine_rect.position.y + machine_rect.size.y * 0.4)
-	
-	var stagger_delay = 0.12
-	for i in range(cost):
-		var token_vfx = TokenSpendScene.instantiate()
-		effects_layer.add_child(token_vfx)
-		token_vfx.coin_landed.connect(_on_coin_landed.bind(target_machine))
-		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-	
-	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
+	var on_token_landed := func(land_pos: Vector2):
+		_on_coin_landed(land_pos, target_machine)
+	await CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed)
 
 func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	if not is_instance_valid(machine): return
@@ -357,42 +351,7 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	anim_ball.queue_free()
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		on_complete.call()
-		return
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		on_complete.call()
-		return
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon):
-		gold_icon = gold_group
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	var end_pos = target_pos
-	var coins_to_spawn = mini(amount, 5)
-	var stagger_delay = 0.08
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		var vfx_layer = WindowManager.get_vfx_layer()
-		if is_instance_valid(vfx_layer):
-			vfx_layer.add_child(coin_vfx)
-		else:
-			effects_layer.add_child(coin_vfx)
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-		)
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	var wait_tween = create_tween()
-	wait_tween.tween_interval(total_wait)
-	wait_tween.tween_callback(on_complete)
+	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
 	var icon_tex = preload("res://assets/Realistic/ui/textures/gachaballcapsule.png")

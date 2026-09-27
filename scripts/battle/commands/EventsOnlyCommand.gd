@@ -16,21 +16,20 @@ func _init(p_request: EffectRequest, p_combat_sim: CombatSimulator, p_bm: Node, 
 	effect_result = p_effect_result
 
 func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
-	out_events.append_array(effect_result.events)
+	CombatCommand.append_unified_events(out_events, effect_result.events)
 	
 	# Determine if any trigger fields are populated
 	var has_damaged = not effect_result.damaged_uuids.is_empty()
 	var has_killed = not effect_result.killed_uuids.is_empty()
 	
 	if has_damaged:
-		var events_hurt_start = combat_sim._pending_reactions.size()
+		var events_hurt_scope = combat_sim.begin_reaction_scope()
 		for damaged_uuid in effect_result.damaged_uuids:
 			var amount := _get_damage_amount(damaged_uuid)
 			battle_manager.trigger_on_hurt(damaged_uuid, abs(amount), request.source_uuid, C.CAUSE_ABILITY)
 		
-		combat_sim.drain_reactions_inline(events_hurt_start, battle_manager)
-		var events_hurt_inline_evts = combat_sim.collect_and_clear_inline_events()
-		out_events.append_array(events_hurt_inline_evts)
+		var events_hurt_inline_evts = combat_sim.drain_reaction_scope(events_hurt_scope, battle_manager)
+		CombatCommand.append_unified_events(out_events, events_hurt_inline_evts)
 		
 	if has_killed:
 		for target_uuid in effect_result.killed_uuids:

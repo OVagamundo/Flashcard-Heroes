@@ -276,9 +276,10 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_sell_visuals(instance.ball_uuid)
+		var gold_yield = GameManager.sell_reward_instance(instance.ball_uuid)
+		execute_sell_visuals(instance.ball_uuid, gold_yield)
 
-func execute_sell_visuals(uuid: String) -> void:
+func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		for i in range(_reward_instances.size()):
@@ -316,8 +317,8 @@ func execute_sell_visuals(uuid: String) -> void:
 	var screen_pos = _get_absolute_screen_pos(raw_pos)
 	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
 	
-	await _animate_gold_receive(_gold_amount, vfx_start_pos)
-	GameManager.sell_reward_instance(uuid)
+	var amt = gold_yield if gold_yield > 0 else _gold_amount
+	await _animate_gold_receive(amt, vfx_start_pos)
 	
 	_complete_choice()
 	_action_in_progress = false
@@ -429,24 +430,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.queue_free()
 
 func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node): return
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group): return
-	
-	var target_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(gold_group.get_global_rect().get_center(), gold_group.get_viewport()))
-	var coins = mini(amount, 5)
-	for i in range(coins):
-		var coin = GoldCoinVFXScene.new()
-		WindowManager.get_vfx_layer().add_child(coin)
-		coin.coin_landed.connect(func(_p):
-			var t = gold_group.create_tween()
-			gold_group.pivot_offset = gold_group.size / 2.0
-			t.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
-			t.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
-		)
-		coin.play(start_pos + Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8)), target_pos, i * 0.08)
-	await AnimationConstants.create_pausable_timer(get_tree(), (coins - 1) * 0.08 + 0.55).timeout
+	await CurrencyAnimator.animate_gold_gain(amount, start_pos)
 
 func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:
 	var vfx_layer = WindowManager.get_vfx_layer()

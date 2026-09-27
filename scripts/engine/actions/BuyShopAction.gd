@@ -39,10 +39,17 @@ func execute() -> void:
 				effective_cost = GameManager.get_item_cost(inst.get_definition())
 
 	# Synchronous authoritative data mutation
-	GameManager._on_shop_purchase_requested(uuid, effective_cost)
+	var event_log: Dictionary = GameManager.simulate_shop_purchase(uuid, effective_cost)
+	if event_log.get("slot_index", -1) == -1:
+		event_log["slot_index"] = slot_index
+	if not event_log.has("purchased_instance") and is_instance_valid(inst):
+		event_log["purchased_instance"] = inst
 
-	if is_instance_valid(shop) and not ActionQueue.is_headless_mode() and shop.has_method("execute_buy_visuals"):
-		shop.execute_buy_visuals(slot_index, effective_cost, inst)
+	if is_instance_valid(shop) and not ActionQueue.is_headless_mode():
+		if shop.has_method("play_transaction_log"):
+			shop.play_transaction_log(event_log)
+		elif shop.has_method("execute_buy_visuals"):
+			shop.execute_buy_visuals(slot_index, effective_cost, inst)
 
 func yields_for_visuals() -> bool:
 	var shop = Engine.get_main_loop().root.find_child("Shop", true, false)

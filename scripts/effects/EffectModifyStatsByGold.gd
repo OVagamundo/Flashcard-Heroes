@@ -65,27 +65,41 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
-	# Event 1: HP Gain (Buff visual)
-	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": source_uuid,
-		"target_uuids": [source_uuid],
-		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
-		"action_type": C.ACTION_BUFF,
-		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.hp_buff(source_uuid, hp_amount, [old_hp], [new_hp])
-	}))
-	
-	# Event 2: PWR Gain (Buff visual)
-	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": source_uuid,
-		"target_uuids": [source_uuid],
-		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
-		"action_type": C.ACTION_BUFF,
-		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.pwr_buff(source_uuid, pwr_amount, [old_pwr], [new_pwr])
-	}))
+	# Unified BUFF visual
+	if hp_amount > 0 and pwr_amount > 0:
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_id": ability_id,
+			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.both_stats_change(
+				source_uuid, hp_amount, pwr_amount,
+				[old_hp], [new_hp],
+				[old_pwr], [new_pwr]
+			)
+		}))
+	elif hp_amount > 0:
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_id": ability_id,
+			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.hp_buff(source_uuid, hp_amount, [old_hp], [new_hp])
+		}))
+	elif pwr_amount > 0:
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_id": ability_id,
+			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.pwr_buff(source_uuid, pwr_amount, [old_pwr], [new_pwr])
+		}))
 	
 	result.state_applied = true
 	return result

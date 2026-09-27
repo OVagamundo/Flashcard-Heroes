@@ -795,6 +795,8 @@ func _can_begin_drag() -> bool:
 		return false
 	if GlobalInteractionRouter and GlobalInteractionRouter.is_vcr_playing():
 		return false
+	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		return false
 	if is_instance_valid(_location):
 		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
 		if context_group == &"InspectionOnly":
@@ -843,6 +845,15 @@ func _prepare_drag_payload() -> Dictionary:
 	GlobalInteractionRouter.set_drag_overlay_preview(drag_visual)
 	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
 	GlobalInteractionRouter.start_drag(origin_ctx)
+
+	if not GlobalInteractionRouter.is_drag_active():
+		GlobalInteractionRouter.end_drag_visuals(false)
+		if is_instance_valid(drag_visual):
+			drag_visual.queue_free()
+		_drag_preview = null
+		_is_dragging = false
+		_drag_initiated_for_click = false
+		return {}
 
 	return {
 		"data": {"source_loc": _location},
@@ -1120,7 +1131,15 @@ func set_visual_state(snapshot: Dictionary) -> void:
 			
 	# Always sync spikes explicitly to match _visual_spikes_stacks
 	_visual_status_effects[&"spikes"] = _visual_spikes_stacks
-	_update_dynamic_status_icons()
+	_update_dynamic_status_icons(false)
+	
+	if snapshot.has("equipped_item_icon"):
+		_visual_equipped_item_icon = snapshot["equipped_item_icon"]
+		_update_equipped_item_icon()
+	elif snapshot.has("equipped_items"):
+		if snapshot["equipped_items"].is_empty():
+			_visual_equipped_item_icon = null
+			_update_equipped_item_icon()
 	
 	_update_stats()
 
@@ -1619,9 +1638,13 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 		return
 	
 	# ARCHITECTURE: Puppet Mode Guard
-	# If BattleManager is playing a VCR sequence, we MUST ignore "Truth" signals.
+	# If BattleManager or BattleAnimator is playing a sequence, views are pure puppets.
+	# Visual updates are driven strictly by animation events at their exact impact beat.
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_processing_effect") and bm.is_processing_effect():
+	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return
+	var animator = get_tree().get_first_node_in_group("battle_animator")
+	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
 		return
 	
 	# Update ONLY the specific stat that changed
@@ -1817,7 +1840,10 @@ func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void
 
 	# ARCHITECTURE: Puppet Mode Guard
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_processing_effect") and bm.is_processing_effect():
+	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return
+	var animator = get_tree().get_first_node_in_group("battle_animator")
+	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
 		return
 		
 	if stat == "hp":
@@ -1874,8 +1900,11 @@ func _notification(what: int) -> void:
 
 	# Fallback: if a drag ends without any drop target handling it, restore visuals
 	if what == NOTIFICATION_DRAG_END:
-		var godot_successful = is_drag_successful()
 		var was_dragging_me = _is_dragging # Capture local state before reset
+		if not was_dragging_me:
+			return
+
+		var godot_successful = is_drag_successful()
 		
 		# Combine Godot's mechanical success with our logical success (from inventory)
 		# If we dropped on a slot (Godot success) but Inventory rejected it (logic fail),
@@ -1891,7 +1920,7 @@ func _notification(what: int) -> void:
 			modulate.a = 1.0
 		
 		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
-		if was_dragging_me and not combined_success:
+		if not combined_success:
 			if GlobalInteractionRouter.is_drag_active():
 				GlobalInteractionRouter.end_drag(false)
 			

@@ -38,6 +38,7 @@ A run is lost immediately if the **Hero's health (HP) reaches zero**.
   * The Hero participates directly on the active battle board alongside standard units and behaves as a combatant (subject to damage, healing, buffs, and attacking).
   * **Board Restriction**: The Hero can only exist in the active `PlayerLineup` container and **cannot** be moved to the bench or inventory.
   * **Item Slot**: Like all other units, the Hero possesses strictly **one item slot**.
+  * **Starter Hero Passive (*Soul Harvest*)**: Whenever an ally dies in battle, the Starter Hero absorbs their power to gain Health equal to half of the fallen ally's current in-combat Power rounded down, with a guaranteed minimum of at least 1 Health gained ($\text{HP Gain} = \max(1, \lfloor \text{dying\_unit.current\_pwr} / 2 \rfloor)$). This calculation queries the ally's live dynamic combat Power at the moment of death (including all active buffs, equipment bonuses, and level scaling) rather than its default base stats, and is delivered strictly as a stat Buff (`on_stat_increased`).
 
 ---
 
@@ -247,24 +248,43 @@ Units with token-scaling abilities (such as the Templar, `unit_t2_d`, *Token Pow
 ## 7.5 Equipping Items
 * **In-Battle Bench Origin Only**: Items can **ONLY** be equipped from the `PlayerBench` onto a unit on the `PlayerLineup` or `PlayerBench`. Items **cannot** be equipped directly from the battle inventory drawer (which is read-only) and **cannot** be equipped outside of battle in the run inventory.
 * **Unified Single Item Slot Constraint**: All units (including the Hero) possess strictly **one item slot**.
-* **Item Replacement**:
+* **Item Replacement & Net Stat Deltas**:
   * Equipping an item onto a unit that already has an equipped item triggers an **Item Replacement**.
   * **Discard Destination**: The existing equipped item is immediately removed and sent directly to the **Battle Discard Pile** (`DiscardPile`). It does **NOT** return to the player bench or inventory.
-  * **Discard Animation**: To communicate clearly where the replaced item went, the old item launches from the unit along a parabolic arc directly into the Discard Pile button (`discard_pile_button`). The visual representation instantiates the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling smoothly from `0.3` to `1.5` over a 500px arc) and concludes with the `coin_land` sound effect and a responsive button bump animation, precisely mirroring the departure animation used when units and items exit the board (e.g. Echoing Orb) but directed into the Discard Pile.
-  * **Sequential Visual Resolution**: The discard animation resolves first in sequence. Once the old item arcs into the Discard Pile, the unit's item icon updates to the new item and any net delta stat effects (projectiles or debuff numbers) trigger.
-  * **Unified Ability Equip Parity (Standard Bearer)**: When an item is equipped or transferred onto a unit via an in-game ability (such as the Standard Bearer's death ability, *Standard's Legacy*), it executes through the exact same equip pipeline as manual player equipping. If the recipient ally already has an equipped item, that existing item is replaced, moved to the Discard Pile, and animated via the exact same GachaBall capsule discard animation before the transferred item lands.
-  * **Net Delta Stat Evaluation**: The system calculates the net stat difference between the old and new item:
-    $$\Delta \text{HP} = \text{new\_item.bonus\_hp} - \text{old\_item.bonus\_hp}$$
-    $$\Delta \text{PWR} = \text{new\_item.bonus\_pwr} - \text{old\_item.bonus\_pwr}$$
-  * **Visual Synchronization**: Positive stat increases launch a parabolic self-cast projectile from the unit onto itself; negative stat reductions display floating debuff text (`-X` in red for HP, black for PWR) upon impact, resolving the replacement cleanly following the discard animation.
+  * **Independent Net Stat Differences**: When an equipped item is replaced, the unit's stats are evaluated independently for HP and PWR based on the net difference between the new item and the old item:
+    $$\Delta\text{HP} = \text{new\_item.hp} - \text{old\_item.hp}$$
+    $$\Delta\text{PWR} = \text{new\_item.pwr} - \text{old\_item.pwr}$$
+  * **Semantic Action Dispatch**:
+    * **Positive Delta ($\Delta > 0$)**: Handled as a **BUFF** action, triggering `on_stat_increased` abilities and launching a self-targeted projectile to the unit.
+    * **Negative Delta ($\Delta < 0$)**: Handled as a **DEBUFF** action, triggering `on_stat_decreased` abilities and displaying floating debuff text (`-X` in red for HP, black for PWR).
+    * **Simultaneous Buff and Debuff**: A single replacement can simultaneously buff one stat while debuffing another. For example, replacing a $+1\text{ HP} / +2\text{ PWR}$ item with a $+2\text{ HP} / +1\text{ PWR}$ item triggers a net $+1\text{ HP}$ Buff and a $-1\text{ PWR}$ Debuff at the same time.
+* **Visual Equip Timing**:
+  * Passive stat buffs and debuffs from equipped items only animate and play out *at the exact moment the item graphic visually appears on the unit view*.
+  * **Universal Application**: This synchronization applies equally to:
+    1. Player manual item equipping during the Management Phase.
+    2. Enemy units entering the battlefield pre-equipped with items during entrance/summon sequences.
+  * Floating numbers, stat projectiles, or debuff popups must never play before the item graphic is visibly rendered on the unit view.
+  * **Sequential Animation Order**: When an item replacement occurs, the sequence resolves in strict beats:
+    1. The old item capsule arcs into the Battle Discard Pile and disappears from the unit view.
+    2. The new item graphic appears on the unit view with a tactile landing bounce and landing sound effect.
+    3. The net stat Buff and/or Debuff animations play on the unit view.
+* **Unified Ability Equip Parity (Standard Bearer)**: When an item is equipped or transferred onto a unit via an in-game ability (such as the Standard Bearer's death ability, *Standard's Legacy*), it executes through the exact same equip pipeline as manual player equipping. If the recipient ally already has an equipped item, that existing item is replaced, moved to the Discard Pile, and animated via the exact same GachaBall capsule discard animation before the transferred item lands.
 * **Bench Unit Item Passives**: Items equipped on bench units provide their passive stat bonuses immediately, but their reactive combat abilities do not trigger until the unit enters the active `PlayerLineup`.
 
 ## 7.6 Consumable Items
 Consumable items are one-time tactical tools that differ fundamentally from standard equipment:
 * **Usage Origin**: Consumables can **only** be dragged and used from the `PlayerBench`.
 * **Targeting (Allies & Enemies)**: Unlike equippable items, consumables can target **both Player units and Enemy units**.
-* **Instant Consumption**: Consumables trigger their effect immediately upon being dropped on a valid target. They are **never equipped** onto the target unit.
+* **Instant Consumption & No Item Swapping**:
+  * Dragging a consumable onto a unit (or dropping it directly over a unit's equipped item slot) applies its effect **immediately**.
+  * Consumables are **never equipped** onto target units and do **not** enter the equipment swap pipeline.
+  * Dropping a consumable onto a unit holding an equipped item will **never** trigger an item swap, replace the held item, or unequip the unit's existing gear.
 * **Disappearance from Battle Pool**: Once used, consumables **do NOT go to the Discard Pile**. They are permanently consumed and disappear from the active battle pool. (The engine tracks used consumables in a dedicated ledger for analytics and potential consumable-synergy traits).
+* **Stackable Regular Buffs Across Merges**:
+  * Consumable items grant **stackable regular buffs** (HP bonuses, PWR bonuses, restorative healing amounts, and status effects).
+  * All consumable stat modifications are tagged with granular origin `source_type = &"CONSUMABLE"` (with `source_id` tracking the consumable's definition ID) and are marked `allow_stacking = true`.
+  * Unlike equippable item buffs—which are unique and conditional to the unit currently holding that piece of equipment—consumable buffs become direct, permanent/tactical enhancements of the recipient unit.
+  * When units merge (both Evolutionary Level-ups and Recipe Tier-ups), all consumable buffs from both parent units are fully conserved and added together into the resulting unit's stats and merge inheritance surplus (`MERGE_INHERITANCE`).
 * **Item-Stripping Consumables (*Potion of Plunder*)**:
   * When *Potion of Plunder* is used on any unit (player or enemy), it removes a random equipped item from that unit without replacing it.
   * The stripped item is unequipped and sent directly to the player's **Gacha Machine** of the corresponding tier (`BattleInventoryT{tier}`), making it available to be drawn by the player in subsequent turns.
@@ -272,18 +292,81 @@ Consumable items are one-time tactical tools that differ fundamentally from stan
   * Standard unequip stat reductions apply immediately to the stripped unit upon departure.
 
 ## 7.7 Merging GachaBalls
-Merging combines two units to create a stronger unit:
+Merging combines two units to create a stronger unit, whether through evolutionary leveling up (merging identical units) or recipe tier evolutions (merging two distinct units into a higher tier):
 * **Recipe Discovery & Unlocks**: Recipes are locked at the start of a run. Acquiring a unit or item through rewards, events, or in-combat summons unlocks its recipe for the remainder of that run.
-* **Evolutionary Merge (Leveling Up)**: Merging two duplicate units of the same level upgrades the unit to the next level (up to Level 3).
-  * **Stat Surplus Inheritance**: The upgraded unit inherits all stat surplus, level bonuses (+1 stat point per level gained), and active stat components from both parents via a persistent `MergeInheritance` component.
-  * **Soul Inheritance**: Surplus elemental souls from both parents are summed, the base souls of the new unit definition are subtracted, and the difference is preserved as inherited soul tags.
-  * **Status & Buff Preservation**: Existing stacks of Armor, Spikes, Burn, and active component tags from both parents are combined and transferred to the result.
-  * **Conditional Trinket Re-evaluation**: Temporary or conditional bonuses from trinkets (such as the unequipped bonus from *Rusty Ring*) and board-entry trinket buffs (such as *Royal Insignia* and *Veteran Insignia*) are not inherited or stacked across merges. The resulting merged unit is treated as a newly created unit entering the board. For example, merging two Level 1 units creates a Level 2 unit, which qualifies for and receives the *Veteran Insignia* bonus (+1 HP, +1 PWR) rather than carrying over the *Royal Insignia* bonus from its parents.
-  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: When two duplicate units merge to level up, the newly created leveled-up unit pre-inherits the post-merge battle pool scaling bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus (e.g., 6 units merging to 5 units drops the bonus from +3 to +2; 3 units merging to 2 units maintains a +1 bonus), the bonus is baked into the new unit without firing an extraneous duplicate buff projectile. If the post-merge copy count drops below the threshold (e.g., 2 units merging into 1 unit drops count to 1, threshold 2/2 = 0), the bonus is 0 and no buff is granted. **Note: This pre-baking of scaling passives applies strictly to evolutionary level-up merges, never to tier evolutions (merging two different units to create a higher-tier unit).**
+
+### 7.7.1 Merge Stat & Soul Inheritance Contract
+When two units merge, the game categorizes all attributes, stats, and modifiers into **Stackable Stats**, **Elemental Souls**, **Status Effects**, and **Unique / Conditional Buffs**:
+
+1. **Stackable Stats (HP & PWR)**:
+   * **What counts as stackable**:
+     * Inherent level-up bonuses (+1 HP and +1 PWR per level gained).
+     * Permanent Dojo training gains (`PERMANENT_UPGRADE`).
+     * Consumable item buffs (healing potions, stat potions, scrolls) tagged with `source_type = &"CONSUMABLE"` (all stat gains and restorative healing from consumables combine additively into merge inheritance).
+     * In-combat permanent growth and reactive buffs (e.g., *Vengeance Charm*, *Convergence Surge*, and mid-battle ability buffs).
+     * Rarity bonuses (e.g., Prismatic rarity).
+     * Surplus stats inherited from prior merges (`MERGE_INHERITANCE`).
+   * **Merge Contract**:
+     * In all merges (both Evolutionary Level-ups and Recipe Tier-ups), all accumulated stackable HP and PWR bonuses from **both** parent units combine and carry over into the resulting unit's stats.
+     * A unit never loses its accumulated battle buffs, consumable enhancements, or training gains simply because it leveled up or merged.
+
+2. **Elemental Souls (Direct Additive Inheritance)**:
+   * **What counts as souls**:
+     * All elemental souls (Fire, Earth, Water, Air) possessed by both parent units, including innate definition souls and souls accumulated from prior merges.
+   * **Merge Contract**:
+     * Elemental souls are strictly cumulative and fully conserved across all merges. All souls from both parent units add together directly onto the resulting unit:
+       $$\text{Result Souls} = \text{Parent A Souls} + \text{Parent B Souls}$$
+     * **Evolutionary Level-Up Example**:
+       * Two Level 1 units (1 Fire soul each) merge into a Level 2 unit with **2 Fire souls** ($1 + 1 = 2$).
+       * Two Level 2 units (2 Fire souls each) merge into a Level 3 unit with **4 Fire souls** ($2 + 2 = 4$).
+     * **Recipe Tier-Up Example**:
+       * Merging a Level 3 Rocky (**4 Earth souls**) with a Level 1 Dewey (**1 Water soul**) produces a Tier 2 unit with **5 souls** (4 Earth + 1 Water).
+       * Merging a Level 3 Rocky (**4 Earth souls**) with a Level 3 Sparky (**4 Fire souls**) produces a Tier 2 unit with **8 souls** (4 Earth + 4 Fire).
+     * No souls are ever subtracted or lost during a merge.
+
+3. **Status Effects (Armor, Burn, Spikes, Static, etc.)**:
+   * All active status effect stacks on both parent units are stackable.
+   * When two units merge, all existing stacks of Armor, Burn, Spikes, Static, and other status effects from both parents are summed together onto the resulting unit.
+
+4. **Unique & Conditional Buffs (Non-Stackable Across Merges)**:
+   * **What counts as unique / conditional**:
+     * Stats granted by an equipped item (active only while holding that item; stripped/re-evaluated upon merge so only one item is inherited and its stats re-applied fresh, unlike consumable buffs which stack additively).
+     * *Rusty Ring* (+1 HP / +1 PWR, active only while holding NO item).
+     * *Royal Insignia* (+1 HP / +1 PWR, active only for Level 1 units).
+     * *Veteran Insignia* (+1 HP / +1 PWR, active only for Level 2 units).
+     * *Twin Charm* (scaled dynamically based on duplicate copy counts in the battle pool).
+   * **Merge Contract**:
+     * Unique and conditional buffs must **never** be baked into the inherited stats of a merged unit.
+     * When two units merge:
+       1. All unique/conditional buffs are cleanly stripped from the parent units so they are completely excluded from the inherited stat total.
+       2. Base stats, stackable buffs, elemental souls, and status effects are combined onto the new unit.
+       3. The new unit is evaluated fresh for eligible unique/conditional buffs based on its new state. If the unit inherits an equipped item, the item is equipped silently with its stats pre-baked into the unit's starting stats without emitting extra floating buff numbers or self-buff projectiles.
+
+### 7.7.2 Level Combinations, Variations & Visual Presentation
+The game distinguishes between leveling up an existing unit and synthesizing a completely new higher-tier entity:
+
+* **Evolutionary Merge (Leveling Up)**: Merging two duplicate units of the same type upgrades the unit to the next level (up to Level 3).
+  * **Level Requirement**: Strictly restricted to **matching levels** (Level 1 + Level 1 $\to$ Level 2, and Level 2 + Level 2 $\to$ Level 3). Units of different levels cannot self-merge, and Level 3 units cannot merge with other duplicate units.
+  * The leveled-up unit is considered the **same continuous unit** advancing in power.
+  * **Rusty Ring**: If the resulting leveled-up unit holds no item, *Rusty Ring* (+1 HP / +1 PWR) applies once and is pre-baked into the new unit's starting stats without firing an additional visual cast or projectile animation that might be perceived as a duplicate proc of the same trinket.
+  * **Insignia Re-evaluation**: If two Level 1 units merge into a Level 2 unit, the Level 1 *Royal Insignia* bonus is stripped. If the player owns *Veteran Insignia*, the unit receives the Level 2 bonus fresh upon leveling up.
+  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: The leveled-up unit pre-inherits the post-merge battle pool copy bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus, the bonus is baked into the new unit without firing an additional duplicate buff projectile if the amount of buff changes because of the merge (since the twin charm and doppleganger or echoing orb if equipped on one or both the merging units should have already triggered with the correct values in the game loop during the simulation of the merge).
+
 * **Recipe Merge (Tiering Up)**: Merging different specific units according to an unlocked recipe evolves them into a higher-tier unit.
-  * The evolved unit starts at Level 1, inheriting the combined stat surplus from its parents.
-  * Dynamic scaling passives do NOT carry over from parents during tier evolutions; the evolved unit is treated as a brand-new entity entering the board.
-* **Item Transfer Priority**: During any merge, only one equipped item is carried over to the result. The target unit's item takes priority; if empty, the source unit's item is transferred. Any secondary equipped item that is not transferred is sent directly to the **Battle Discard Pile** (`DiscardPile`) and launches into the Discard Pile button via the exact same GachaBall capsule discard animation (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.5` over a 500px arc, `coin_land` SFX, and button bump).
+  * **Flexible Level Combinations**: Recipe Tier-Up merges allow **any combination of unit levels** (e.g., Level 1 + Level 1, Level 1 + Level 2, Level 1 + Level 3, Level 2 + Level 3, or Level 3 + Level 3).
+  * **Always Starts at Level 1**: Regardless of the levels of the parent units, the resulting higher-tier unit is treated as a **brand-new entity** entering the board and always begins at **Level 1**.
+  * **Wide Stat & Soul Variations on Level 1 Higher-Tier Units**:
+    * Because parents can be any level combination with prior merge histories, the starting stats and elemental soul counts on the freshly crafted Level 1 higher-tier unit will vary significantly based on the parent units used:
+      * **L1 + L1 Merge**: Inherits baseline Level 1 stats and 2 souls ($1 + 1$).
+      * **L3 + L1 Merge**: Inherits the Level 3 parent's accumulated level bonuses, Dojo training, prior merge surplus, and 5 souls ($4 + 1$).
+      * **L3 + L3 Merge**: Inherits immense accumulated stats from both parents and up to 8 souls ($4 + 4$).
+    * **Future Level-Up Potential**: Because this newly created higher-tier unit starts at **Level 1**, it can subsequently be merged with another matching Level 1 higher-tier unit to level up to Level 2 and Level 3, compounding its inherited power and soul synergies even further.
+  * **Visual Presentation**: The new higher-tier unit spawns onto the board without conditional trinket buffs pre-baked. Instead, conditional trinkets (such as *Rusty Ring* if unequipped, or *Royal Insignia* for Level 1) evaluate fresh on board entry (`on_board_enter`/`on_merge`) with full visual presentation—firing flying buff projectiles and animations from the trinket bar onto the new unit as it arrives on the board.
+  * Dynamic scaling passives (*Twin Charm*) do not carry over from parents; the new unit evaluates fresh according to its new unit definition.
+
+* **Item Transfer Priority & Pre-Baked Stats**: 
+  * During any merge, only one equipped item is carried over to the result. The target unit's item takes priority; if empty, the source unit's item is transferred. Any secondary equipped item that is not transferred is sent directly to the **Battle Discard Pile** (`DiscardPile`) via the standard GachaBall capsule discard animation.
+  * **Seamless Pre-Baked Equips**: The inherited item is equipped silently onto the resulting unit. Its stat bonuses (e.g., +1 HP from *Koi's Blessing* or +1 PWR from *Tiger's Spirit*) are pre-baked into the new unit's initial stats upon spawning on the board, preventing redundant self-buff animations or floating numbers from firing over the freshly merged unit.
 * **Bench Item Merging**: Dragging an item onto another item on the bench checks for item recipes and opens a confirmation preview.
 
 ## 7.8 Physics Inventory & Discard Drawers (Battle Only)
@@ -513,7 +596,17 @@ The game guarantees complete separation between triggers:
 * **Temporary Buffs Only**: Buff Echo only copies temporary, stackable in-combat stat buffs. Permanent base upgrades (such as Dojo training or permanent base stat rewards) are never copied.
 * **Buff Delivery**: When repeating Health bonuses, Buff Echo delivers them strictly as a Health Buff (never as Healing). This ensures that copied Health bonuses never trigger healing-reactive abilities or create infinite feedback loops.
 
+### 9.7.5 Starter Hero Soul Harvest (Ally Death Stat Absorption)
 
+* **Ability Owner**: Belongs to the **Starter Hero** (*Soul Harvest* ability).
+* **Trigger**: Activates whenever any allied unit falls in combat ("When an Ally Dies" / `on_ally_death`).
+* **Dynamic In-Combat Power Evaluation**: The health gained by the Starter Hero is calculated from the fallen ally's **current in-combat Power** at the moment of death. This fully accounts for all active combat buffs, permanent upgrades, level stat bonuses, and equipped item stats, rather than relying on the unit's static template definition base Power.
+* **Calculation Formula**:
+  $$\text{HP Gain} = \max\left(1, \left\lfloor \frac{\text{dying\_unit.current\_pwr}}{2} \right\rfloor\right)$$
+  The Starter Hero gains Health equal to half of the fallen ally's current combat Power rounded down, with a strict guarantee of at least 1 Health gained. Even if the fallen ally possessed 0 or 1 Power, the Starter Hero still gains 1 Health.
+* **Action Type & Event Classification**:
+  * The health increase is applied as a permanent stat increase and dispatched strictly as a **BUFF** (`on_stat_increased`).
+  * Because it is classified as a stat Buff rather than Healing, it interacts exclusively with stat-increase reactions and never triggers healing-reactive abilities.
 
 ---
 
@@ -537,13 +630,15 @@ At the start of each combat turn, the game takes a snapshot of active souls in t
 * **Turn-Start Trinkets**: Resolved during the Start of Turn phase, subject to First-Turn Suppression on Turn 1.
 * **Mini-Game Interceptors**: Trinkets like *Beginner's Charm* inspect reviewed card mastery to award bonus tokens.
 * **Board-Entry Insignia Trinkets (*Royal Insignia* & *Veteran Insignia*)**:
-  * **Royal Insignia**: Grants +1 HP and +1 PWR permanently to any Level 1 unit entering the board (drawn from the gacha machine, summoned by abilities, merged, or present at battle start). Operates strictly on unit level and ignores unit tier completely. The Hero has no level or tier and is strictly unaffected.
-  * **Veteran Insignia**: Follows the exact same behavior as Royal Insignia, but applies strictly to Level 2 units. Grants +1 HP and +1 PWR permanently to any Level 2 unit entering the board (drawn, summoned, merged, or present at battle start), regardless of tier. The Hero is strictly unaffected.
-  * Neither insignia modifies stats conditionally or revokes buffs; bonuses are permanent stat increases applied upon board entry.
+  * **Royal Insignia**: Grants +1 HP and +1 PWR to any Level 1 unit entering the board (drawn from the gacha machine, summoned by abilities, merged via tier evolution, or present at battle start). Operates strictly on unit level and ignores unit tier completely. The Hero has no level or tier and is strictly unaffected.
+  * **Veteran Insignia**: Applies strictly to Level 2 units. Grants +1 HP and +1 PWR to any Level 2 unit entering the board or advancing to Level 2 via merge, regardless of tier. The Hero is strictly unaffected.
+  * **Merge Contract**: Both insignia bonuses are conditional upon unit level and are strictly non-stackable across merges. When units merge, parent insignia buffs are cleanly stripped and never baked into inherited stats. When two Level 1 units merge into a Level 2 unit, the Level 1 *Royal Insignia* bonus is stripped, and the resulting unit qualifies for and receives the *Veteran Insignia* bonus fresh if owned by the player.
 * **Conditional Equipment Trinkets (*Rusty Ring*)**:
   * Grants +1 HP and +1 PWR to all units with no equipment.
   * Equipping an item immediately cancels this buff; if the unit loses its equipped item (such as via *Potion of Plunder*), the buff is restored.
-  * When units merge, the ring's bonus is recalculated fresh based on whether the resulting unit holds an item.
+  * **Merge Contract**: The ring's bonus is strictly non-stackable across merges and is never baked into inherited stats. When units merge:
+    * For an **Evolutionary Level-Up**, if the resulting unit holds no item, the bonus is applied once pre-baked into its stats without triggering an extraneous visual cast (since it is considered the same continuous unit).
+    * For a **Recipe Tier Evolution**, the higher-tier unit enters the board as a brand-new entity without pre-baked trinket stats, receiving the *Rusty Ring* buff fresh on board arrival with the complete visual projectile and animation.
 * **Death-Reactive Stat Trinkets (*Vengeance Charm*)**:
   * When an ally dies, grants +1 HP and +1 PWR to a random surviving ally.
 * **Armor Preservation (*Polished Plate*)**:

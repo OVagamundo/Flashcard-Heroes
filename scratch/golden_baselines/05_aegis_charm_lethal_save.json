@@ -1,0 +1,207 @@
+{
+  "encounter_name": "05_aegis_charm_lethal_save",
+  "end_snapshot": {
+    "__discard_count__": 0,
+    "enemy_boss": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 21,
+      "pwr": 10,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_hero": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 1,
+      "pwr": 0,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    }
+  },
+  "start_snapshot": {
+    "__discard_count__": 0,
+    "enemy_boss": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 20,
+      "pwr": 10,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_hero": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 3,
+      "pwr": 0,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    }
+  },
+  "turn_log": [
+    {
+      "action_type": "DAMAGE",
+      "event_id": 2,
+      "payload": {
+        "action_type": "DAMAGE",
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 0,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "enemy_boss",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 1,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                21
+              ],
+              "targets_old_hp": [
+                20
+              ]
+            },
+            "source_uuid": "enemy_boss",
+            "target_uuids": [
+              "enemy_boss"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          20
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          20
+        ]
+      },
+      "source_uuid": "player_hero",
+      "target_uuids": [
+        "enemy_boss"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 5,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 10,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 3,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_id": "ability_trinket_aegis",
+            "action_type": "HEAL",
+            "event_id": 4,
+            "payload": {
+              "action_type": "HEAL",
+              "saved_uuid": "player_hero"
+            },
+            "source_uuid": "dyn_trinket_aegis_1",
+            "target_uuids": [
+              "player_hero"
+            ],
+            "type": "LETHAL_SAVE"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          -7
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          3
+        ]
+      },
+      "source_uuid": "enemy_boss",
+      "target_uuids": [
+        "player_hero"
+      ],
+      "type": "DAMAGE"
+    }
+  ]
+}
