@@ -483,53 +483,7 @@ func _animate_transform_to_slot_vfx(vfx_ball: GachaBallView, _visual_data: Dicti
 			real_ball_view.play_landing_bounce()
 
 func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	"""Animate gold coins flying from gold counter to target position"""
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		on_complete.call()
-		return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		on_complete.call()
-		return
-	
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon):
-		gold_icon = gold_group
-		
-	var gold_rect = gold_icon.get_global_rect()
-	var start_pos = Vector2(
-		gold_rect.position.x + gold_rect.size.x / 2,
-		gold_rect.position.y + gold_rect.size.y / 2
-	)
-	
-	var end_pos = target_pos # Already in screen coordinates
-	
-	# Spawn gold coins with stagger
-	var coins_to_spawn = mini(amount, 5) # Cap at 5 coins for visual clarity
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		var effects_layer = WindowManager.get_vfx_layer()
-		effects_layer.add_child(coin_vfx)
-		
-		# Connect to trigger counter pop and landing sound
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-			# No target control reaction here anymore as we might be targeting a point in space
-		)
-		
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, end_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-
-	# Wait for animations then call completion callback
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	var wait_tween = create_tween()
-	wait_tween.tween_interval(total_wait)
-	wait_tween.tween_callback(on_complete)
+	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _on_open_inventory_pressed() -> void:
 	if WindowManager.is_any_inspection_window_open():

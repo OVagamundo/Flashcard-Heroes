@@ -3,63 +3,41 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-## Effect: Gains HP equal to the current PWR of the first ally that dies each turn.
-## Only triggers once per turn per team for the first unit to die.
-## Resolves targets independently.
+## Effect: Gains HP equal to half of the dead ally's current combat PWR (min 1).
+## Triggers on_ally_death for the Starter Hero.
 
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
-	
-	# Determine team from context - the fainting ally's team is our team
-	var fainting_ally_team: String = context.get("fainting_ally_team", "")
-	if fainting_ally_team.is_empty():
-		return EffectResult.empty()
-		
-	var is_player_team := (fainting_ally_team == "PLAYER")
-	
-	# Check if we already harvested a soul for this team this turn
-	var harvest_flag_key := "starter_harvest_done_player" if is_player_team else "starter_harvest_done_enemy"
-	if battle_manager._turn_metadata.get(harvest_flag_key, false):
-		return EffectResult.empty()
-		
-	# Verify this is actually the first unit killed for the team
-	var first_killed_key := "first_killed_player_unit" if is_player_team else "first_killed_enemy_unit"
-	var first_killed_data: Dictionary = battle_manager._turn_metadata.get(first_killed_key, {})
-	
-	if first_killed_data.is_empty():
-		return EffectResult.empty()
-		
-	var fainting_uuid = context.get("fainting_ally_uuid", "")
-	if fainting_uuid != first_killed_data.get("uuid", ""):
+	var fainting_uuid: String = context.get("fainting_ally_uuid", "")
+	if fainting_uuid.is_empty() or fainting_uuid == source_uuid:
 		return EffectResult.empty()
 		
 	# Get source unit (the hero)
-	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
+	var source_unit: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_unit) or source_unit.current_hp <= 0:
 		return EffectResult.empty()
 		
-	# Read the dead ally's PWR from the context's source_pwr (if available via on_death triggering)
-	# Wait, on_ally_death doesn't pass source_pwr directly, but it's triggered during the death check.
-	# The dead unit is still in the registry with 0 HP, but retaining its current_pwr!
-	var dead_ally = battle_manager.get_instance_by_uuid(fainting_uuid)
+	var dead_ally: GachaBallInstance = battle_manager.get_instance_by_uuid(fainting_uuid)
 	if not is_instance_valid(dead_ally):
 		return EffectResult.empty()
 		
-	var amount: int = dead_ally.current_pwr
-	if amount <= 0:
-		return EffectResult.empty()
+	# Query the dying unit's dynamic combat Power at the moment of death
+	var current_pwr: int = dead_ally.current_pwr
+	if context.has("fainting_ally_pwr"):
+		current_pwr = int(context.get("fainting_ally_pwr"))
 		
-	if not is_simulation:
-		# Mark harvest as done
-		battle_manager._turn_metadata[harvest_flag_key] = true
-		
-	var old_hp = source_unit.current_hp
-	var new_hp = source_unit.current_hp + amount
-	if not is_simulation:
-		new_hp = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	# Formula: max(1, floor(current_pwr / 2.0))
+	var amount: int = maxi(1, int(floor(float(current_pwr) / 2.0)))
+	
+	var old_hp: int = source_unit.current_hp
+	var res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", amount, source_uuid)
+	var new_hp: int = old_hp + amount
+	if res is Dictionary:
+		new_hp = res.get("new_hp", new_hp)
+	elif res != null:
+		new_hp = int(res)
 		
 	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"hero_starter_ally_death_absorb")
+	var ability_id: StringName = context.get("ability_id", &"hero_starter_ally_death_absorb")
 	
 	var hero_name = BattleHelpers.get_instance_display_name(source_unit)
 	var dead_name = BattleHelpers.get_instance_display_name(dead_ally)
@@ -70,7 +48,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
 		"ability_id": ability_id,
+		"trigger_type": context.get("trigger_type", &"on_ally_death"),
 		"action_type": C.ACTION_BUFF,
+		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.hp_buff(source_uuid, amount, [old_hp], [new_hp])
 	}))
 	

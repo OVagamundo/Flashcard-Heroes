@@ -37,7 +37,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	
 	# CRITICAL: Trigger on_before_damage for each target BEFORE damage
 	# This allows defensive abilities like Guardian's Defensive Stance to proc
-	var on_before_damage_start_index = combat_sim._pending_reactions.size()
+	var before_damage_scope = combat_sim.begin_reaction_scope()
 	
 	for tgt_uuid in resolved_targets:
 		var tgt = battle_manager.get_instance_by_uuid(tgt_uuid)
@@ -52,27 +52,25 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 			AbilityResolver.process_trigger(&"on_before_damage", before_ctx)
 	
 	# Drain on_before_damage reactions before damage is applied
-	combat_sim.drain_reactions_inline(on_before_damage_start_index, battle_manager)
-	var before_damage_evts = combat_sim.collect_and_clear_inline_events()
-	out_events.append_array(before_damage_evts)
+	var before_damage_evts = combat_sim.drain_reaction_scope(before_damage_scope, battle_manager)
+	CombatCommand.append_unified_events(out_events, before_damage_evts)
 	
 	var damage_result := EffectHandlers.handle_damage_effect(
 		request, damage_request, dmg_source, source_name, target_display_names, battle_manager
 	)
-	out_events.append_array(damage_result.events)
+	CombatCommand.append_unified_events(out_events, damage_result.events)
 	
 	if damage_result.should_return:
 		return
 	
 	# Trigger on_hurt for directly attacked units (Spikes does not trigger on_hurt)
-	var on_hurt_start_index = combat_sim._pending_reactions.size()
+	var on_hurt_scope = combat_sim.begin_reaction_scope()
 	for tgt_uuid in damage_result.damaged_uuids:
 		battle_manager.trigger_on_hurt(tgt_uuid, abs(amount), request.source_uuid, damage_request.cause)
 	
 	# Drain on_hurt reactions
-	combat_sim.drain_reactions_inline(on_hurt_start_index, battle_manager)
-	var hurt_inline_evts = combat_sim.collect_and_clear_inline_events()
-	out_events.append_array(hurt_inline_evts)
+	var hurt_inline_evts = combat_sim.drain_reaction_scope(on_hurt_scope, battle_manager)
+	CombatCommand.append_unified_events(out_events, hurt_inline_evts)
 	
 	# Trigger on_kill for killed units
 	for tgt_uuid in damage_result.damaged_uuids:

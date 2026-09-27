@@ -29,28 +29,42 @@ var is_training_active: bool = false
 var training_unit_uuid: String = ""
 var training_stat: String = ""
 
-# Room token helper methods
-func get_room_tokens() -> int:
+# Unified token helper methods
+func get_tokens() -> int:
 	return current_room_tokens
 
-func add_room_tokens(amount: int) -> void:
+func get_room_tokens() -> int:
+	return get_tokens()
+
+func add_tokens(amount: int, silent: bool = false) -> void:
 	if amount <= 0: return
 	current_room_tokens += amount
 	total_tokens_earned += amount
-	SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
+	if not silent:
+		SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
 	SignalBus.emit_signal("run_data_changed")
 
-func spend_room_tokens(amount: int) -> bool:
+func add_room_tokens(amount: int) -> void:
+	add_tokens(amount, false)
+
+func spend_tokens(amount: int, silent: bool = false) -> bool:
 	if current_room_tokens < amount:
 		return false
 	current_room_tokens -= amount
-	SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
+	if not silent:
+		SignalBus.emit_signal("gacha_tokens_changed", current_room_tokens)
 	SignalBus.emit_signal("run_data_changed")
 	return true
 
-func reset_room_tokens() -> void:
+func spend_room_tokens(amount: int) -> bool:
+	return spend_tokens(amount, false)
+
+func reset_tokens() -> void:
 	current_room_tokens = 0
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
+
+func reset_room_tokens() -> void:
+	reset_tokens()
 
 
 # Track when each encounter was last offered for pity system
@@ -228,6 +242,9 @@ func get_container(container_name: StringName) -> DataContainer:
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 		_containers[container_name] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
+		return _containers[container_name]
+	elif String(container_name).begins_with("RunInventoryT"):
+		_containers[container_name] = FixedArrayContainer.new(39)
 		return _containers[container_name]
 	
 	return null
@@ -620,13 +637,16 @@ func increase_black_market_remove_cost() -> void:
 	SignalBus.emit_signal("run_data_changed")
 
 
-func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
+func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
 	# Equips an item onto a unit. Units now use a single slot, so default equips replace.
 	if item_uuid.is_empty() or unit_uuid.is_empty():
 		return false
 	var item := get_instance_by_uuid(item_uuid)
 	var unit := get_instance_by_uuid(unit_uuid)
 	if not is_instance_valid(item) or not is_instance_valid(unit):
+		return false
+	var item_def = item.get_definition()
+	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
 		return false
 	# Determine slot
 	var target_slot := slot_index
@@ -653,10 +673,10 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 			src_container.set_uuid(item_loc.index, "")
 	# If target slot occupied, unequip existing item to PlayerBench (fallback: first empty)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
+	var existing_item: GachaBallInstance = null
 	if not existing_uuid.is_empty():
-		var existing_item := get_instance_by_uuid(existing_uuid)
+		existing_item = get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
-			unit.unequip_item_bonus(existing_item)
 			existing_item.equipped_on_uuid = ""
 			existing_item.equipped_slot_index = -1
 			# Place into PlayerBench (or any available appropriate container)
@@ -674,9 +694,11 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	# Apply item bonuses (equip_item_bonus emits granular unit_stat_changed)
-	unit.equip_item_bonus(item)
-	# NOTE: equip_item_bonus() already emits granular unit_stat_changed signals
+	# Apply item bonuses (replace_item_bonus calculates net delta directly)
+	if is_instance_valid(existing_item):
+		unit.replace_item_bonus(existing_item, item)
+	else:
+		unit.equip_item_bonus(item)
 	SignalBus.emit_signal("run_data_changed")
 	SignalBus.emit_signal("inventory_ui_refresh_requested")
 	if OS.is_debug_build():

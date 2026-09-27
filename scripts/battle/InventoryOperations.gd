@@ -29,6 +29,8 @@ class OperationResult:
 	var replaced_item_icon_path: String = ""
 	var replaced_item_name: String = ""
 	var replaced_from_unit_uuid: String = ""
+	var delta_hp: int = 0
+	var delta_pwr: int = 0
 	 
 	func add_unit_change(uuid: String) -> void:
 		if not uuid.is_empty() and not changed_unit_uuids.has(uuid):
@@ -153,6 +155,10 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	if not is_instance_valid(item) or not is_instance_valid(unit):
 		return result
 	
+	var item_def = item.get_definition()
+	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
+		return result
+	
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
@@ -181,10 +187,11 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	
 	# If slot occupied, move existing to discard pile (original game behavior)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
+	var existing: GachaBallInstance = null
 	if not existing_uuid.is_empty():
-		var existing := state.get_instance(existing_uuid)
+		existing = state.get_instance(existing_uuid)
 		if is_instance_valid(existing):
-			var discard_result := move_instance_to_discard(state, existing)
+			var discard_result := move_instance_to_discard(state, existing, false)
 			if not discard_result.success:
 				return result
 			result.replaced_item_uuid = discard_result.replaced_item_uuid
@@ -203,7 +210,9 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	unit.equip_item_bonus(item)
+	var deltas := unit.replace_item_bonus(existing, item)
+	result.delta_hp = deltas.get("delta_hp", 0)
+	result.delta_pwr = deltas.get("delta_pwr", 0)
 	result.inventory_changed = true
 	
 	result.add_unit_change(unit.ball_uuid)
@@ -511,7 +520,7 @@ static func remove_instance_from_container(state: BattleState, instance: GachaBa
 
 ## Move an instance to the discard pile. Handles equipped items and containers.
 ## Returns OperationResult.
-static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance) -> OperationResult:
+static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance, unequip_bonus: bool = true) -> OperationResult:
 	var result := OperationResult.new()
 	assert(is_instance_valid(instance), "move_instance_to_discard: instance is null")
 	
@@ -534,7 +543,8 @@ static func move_instance_to_discard(state: BattleState, instance: GachaBallInst
 				if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
 					# Clear the parent's slot mapping if it points to this instance
 					if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
-						parent.unequip_item_bonus(instance)
+						if unequip_bonus:
+							parent.unequip_item_bonus(instance)
 						parent.equipped_item_uuids[loc.index] = ""
 						result.add_unit_change(parent.ball_uuid)
 			# Clear equipped linkage on the item itself

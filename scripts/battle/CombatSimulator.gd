@@ -2,11 +2,12 @@
 class_name CombatSimulator
 extends RefCounted
 const C = preload("res://scripts/Constants.gd")
+const CausalReactionResolver = preload("res://scripts/battle/CausalReactionResolver.gd")
 
 ## CombatSimulator encapsulates the turn-based combat simulation data.
 ## This class is responsible for:
 ##   - Managing the actor queue (units that will act this turn)
-##   - Managing pending effect reactions (priority queue)
+##   - Managing pending effect reactions via CausalReactionResolver (CRR)
 ##   - Tracking inline events from on_before_attack processing
 ##
 ## NOTE: The actual combat logic remains in BattleManager for now due to
@@ -20,8 +21,13 @@ const C = preload("res://scripts/Constants.gd")
 ## Dynamic list of units to act this turn
 var _actor_queue: Array[GachaBallInstance] = []
 
-## Priority-driven reaction queue for abilities
-var _pending_reactions: Array[EffectRequest] = []
+## Authoritative Causal Reaction Resolver (CRR)
+var _crr: CausalReactionResolver = CausalReactionResolver.new()
+
+## Backward-compatible property forwarder for _pending_reactions
+var _pending_reactions: Array[EffectRequest]:
+	get: return _crr._pending_reactions
+	set(value): _crr._pending_reactions = value
 
 ## Events from on_before_attack processing
 var _inline_events: Array[CombatEvent] = []
@@ -183,62 +189,32 @@ func insert_summoned_unit(new_unit: GachaBallInstance, is_player: bool, is_playe
 # REACTION QUEUE MANAGEMENT
 # ============================================================================
 
+func get_crr() -> CausalReactionResolver:
+	return _crr
+
 func get_pending_reactions() -> Array[EffectRequest]:
-	return _pending_reactions
+	return _crr._pending_reactions
 
 func clear_pending_reactions() -> void:
-	_pending_reactions.clear()
+	_crr.clear()
 
 func has_pending_reactions() -> bool:
-	return not _pending_reactions.is_empty()
+	return not _crr.is_empty()
 
 func enqueue_reaction(request: EffectRequest) -> void:
-	_pending_reactions.append(request)
+	_crr.enqueue(request)
 
 func sort_reactions_by_priority() -> void:
-	_pending_reactions.sort_custom(_compare_reactions)
+	_crr.sort_pending()
 
 func _compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
-	# Layer 1: Execution Priority (Descending integer priority)
-	if a.priority != b.priority:
-		return a.priority > b.priority
-
-	# Layer 2: Category Tie-Breaker (UNIT -> ITEM -> TRINKET)
-	var rank_a := _get_category_rank(a.category)
-	var rank_b := _get_category_rank(b.category)
-	if rank_a != rank_b:
-		return rank_a < rank_b
-		
-	# Layer 3: Visual Direction / The Mirror Rule (Left-to-Right)
-	if a.is_player != b.is_player:
-		return a.is_player # Player (left side) before Enemy (right side)
-		
-	if a.is_player:
-		# Player team: Left-to-Right is slot 4 down to slot 0
-		if a.slot_index != b.slot_index:
-			return a.slot_index > b.slot_index
-	else:
-		# Enemy team: Left-to-Right is slot 0 up to slot 4
-		if a.slot_index != b.slot_index:
-			return a.slot_index < b.slot_index
-			
-	# Tie-breaker for multiple items/trinkets on same unit/slot
-	if a.sub_index != b.sub_index:
-		return a.sub_index < b.sub_index
-		
-	return String(a.ability_id) < String(b.ability_id)
+	return CausalReactionResolver.compare_reactions(a, b)
 
 func _get_category_rank(cat: StringName) -> int:
-	match cat:
-		&"UNIT": return 1
-		&"ITEM": return 2
-		&"TRINKET": return 3
-		_: return 4
+	return CausalReactionResolver.get_category_rank(cat)
 
 func pop_next_reaction() -> EffectRequest:
-	if _pending_reactions.is_empty():
-		return null
-	return _pending_reactions.pop_front()
+	return _crr.pop_front()
 
 # ============================================================================
 # INLINE EVENTS
@@ -295,7 +271,7 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		
 		# 1. Fire on_before_turn_action trigger (e.g. for Mimic transformation)
 		AbilityResolver.process_trigger(&"on_before_turn_action", {"actor_uuid": current_actor.ball_uuid})
-		turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
+		CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
 		
 		# 2. In case the unit was replaced (e.g. by Mimic), update current_actor
 		var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if _current_turn_is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -316,7 +292,7 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		battle_manager._enqueue_attack_for(current_actor)
 		
 		# Process all reactions (including on_kill triggers from the attack)
-		turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
+		CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
 		
 		# Check battle-over AFTER all reactions for this actor
 		if battle_manager._is_battle_over():
@@ -325,7 +301,7 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 			break
 	
 	# Final reaction drain - process remaining reactions after all actors
-	turn_log.append_array(process_reaction_queue(battle_manager, death_tracking))
+	CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
 	
 	# FINAL DEATH CHECK + FLUSH: Ensure any skipped deaths (e.g. from inline Thorns on last action)
 	# are caught and released immediately.
@@ -340,10 +316,8 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array[CombatEvent]:
 	var events: Array[CombatEvent] = []
 	
-	while not _pending_reactions.is_empty():
-		# Always re-sort as new reactions might have been added (e.g. on_death triggers)
-		_pending_reactions.sort_custom(_compare_reactions)
-		var current_reaction = _pending_reactions.pop_front()
+	while not _crr.is_empty():
+		var current_reaction = _crr.pop_front()
 		
 		var reaction_events: Array[CombatEvent] = []
 		resolve_effect_request(current_reaction, reaction_events, death_tracking, battle_manager)
@@ -351,14 +325,14 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 		
 		# Collect inline events (e.g. self-damage, heals, lethal saves triggered during resolution)
 		var inline_evts = collect_and_clear_inline_events()
-		events.append_array(inline_evts)
+		CombatCommand.append_unified_events(events, inline_evts)
 		
-		events.append_array(reaction_events)
+		CombatCommand.append_unified_events(events, reaction_events)
 		
 		# Process deferred deaths immediately to ensure correct ordering (e.g. before next reaction)
 		var deferred_death_events: Array[CombatEvent] = []
 		battle_manager._process_completed_counter_deaths(deferred_death_events, death_tracking)
-		events.append_array(deferred_death_events)
+		CombatCommand.append_unified_events(events, deferred_death_events)
 		
 	return events
 
@@ -505,7 +479,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			var stat_provider = source # Default: use source's own stats
 			
 			if is_instance_valid(source_def):
-				sim_ctx["source_category"] = source_def.category
+				if not sim_ctx.has("source_category") or sim_ctx["source_category"] == &"":
+					sim_ctx["source_category"] = source_def.category
 				
 				# For items, use the HOLDER's stats (not the item's stats which are 0)
 				# Also include holder UUID so effects can identify the attacker
@@ -514,7 +489,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		# Context enrichment
 		var stat_provider = bm.get_instance_by_uuid(request.source_uuid)
 		if is_instance_valid(stat_provider):
-			sim_ctx["source_category"] = stat_provider.get_definition().category if is_instance_valid(stat_provider.get_definition()) else &""
+			if not sim_ctx.has("source_category") or sim_ctx["source_category"] == &"":
+				sim_ctx["source_category"] = stat_provider.get_definition().category if is_instance_valid(stat_provider.get_definition()) else &""
 			sim_ctx["source_holder_uuid"] = stat_provider.equipped_on_uuid if sim_ctx["source_category"] == &"ITEM" else ""
 			if stat_provider.current_hp <= 0 and request.trigger_context.has("source_pwr"):
 				sim_ctx["source_pwr"] = request.trigger_context["source_pwr"]
@@ -526,7 +502,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		var res = request.effect_definition.execute(request.source_uuid, exec_targets, bm, sim_ctx)
 		
 		var before_attack_inline_evts = collect_and_clear_inline_events()
-		out_events.append_array(before_attack_inline_evts)
+		CombatCommand.append_unified_events(out_events, before_attack_inline_evts)
 		
 		# --- NEW: COMMAND PATTERN ---
 		var effect_result: EffectResult = res as EffectResult
@@ -540,86 +516,129 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		if not effect_result.skip_death_check and commands.is_empty():
 			bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
 
-## Drain pending reactions inline during effect execution.
-## Used to process on_before_attack defensive abilities BEFORE damage is calculated.
-## @param start_index: Only process reactions at index >= start_index
-## @param bm: BattleManager reference
-func drain_reactions_inline(start_index: int, bm) -> void:
-	# Only process reactions that were added AFTER start_index
-	if start_index >= _pending_reactions.size():
-		return # No new reactions to process
+# ============================================================================
+# CRR PHASE-AWARE & SCOPED REACTION DRAINING
+# ============================================================================
+
+## Begin a reaction scope. Any reactions enqueued after this call will belong
+## to this scope until drained via drain_reaction_scope().
+func begin_reaction_scope() -> int:
+	return _crr.begin_scope()
+
+## Drain and resolve all reactions enqueued within the specified scope.
+## Handles cascades recursively and returns the captured CombatEvents.
+func drain_reaction_scope(scope_id: int, bm) -> Array[CombatEvent]:
+	var requests = _crr.drain_scope(scope_id)
+	if requests.is_empty():
+		return []
 	
-	# Extract only the new reactions (from start_index to end)
-	var reactions_to_process: Array[EffectRequest] = []
-	for i in range(start_index, _pending_reactions.size()):
-		reactions_to_process.append(_pending_reactions[i])
-	
-	# Remove them from the main queue to process them locally
-	_pending_reactions.resize(start_index)
-	
-	# Sort by priority before processing
-	reactions_to_process.sort_custom(_compare_reactions)
-	
-	for request in reactions_to_process:
-		# Capture events to _inline_events so they can be collected by the outer loop
-		# IMPORTANT: Pass a special death_tracking that disables death checking
-		var inline_start_index := _inline_events.size()
-		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
-		_tag_trinket_events(_inline_events, request, bm, inline_start_index)
+	var captured_events: Array[CombatEvent] = []
+	for request in requests:
+		var inline_start_index := captured_events.size()
+		var nested_scope = _crr.begin_scope()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
 		
-		# RECURSIVE PROCESSING: If this effect triggered new reactions, process them immediately
-		if not _pending_reactions.is_empty():
-			# Recursively drain reactions starting from the CURRENT local start_index
-			# This is correct because we resized the global queue to start_index, so any newly
-			# appended reactions start at start_index.
-			drain_reactions_inline(start_index, bm)
+		var nested_events = drain_reaction_scope(nested_scope, bm)
+		if not nested_events.is_empty():
+			CombatCommand.append_unified_events(captured_events, nested_events)
+			
+	return captured_events
+
+## Drain all Interception reactions (Priority >= 300) using CRR.
+## Returns generated CombatEvents.
+func drain_interceptions(bm) -> Array[CombatEvent]:
+	var intercept_requests = _crr.drain_interceptions()
+	if intercept_requests.is_empty():
+		return []
+	
+	var captured_events: Array[CombatEvent] = []
+	for request in intercept_requests:
+		var inline_start_index := captured_events.size()
+		var nested_scope = _crr.begin_scope()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
+		
+		var nested_events = drain_reaction_scope(nested_scope, bm)
+		if not nested_events.is_empty():
+			CombatCommand.append_unified_events(captured_events, nested_events)
+			
+	return captured_events
+
+## Drain ONLY execute_on_lethal reactions using CRR.
+## Returns the generated CombatEvents directly.
+func drain_lethal_counters(bm) -> Array[CombatEvent]:
+	var lethal_requests = _crr.drain_lethal_counters(bm)
+	if lethal_requests.is_empty():
+		return []
+	
+	var captured_events: Array[CombatEvent] = []
+	for request in lethal_requests:
+		var inline_start_index := captured_events.size()
+		var nested_scope = _crr.begin_scope()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
+		
+		var nested_events = drain_reaction_scope(nested_scope, bm)
+		if not nested_events.is_empty():
+			CombatCommand.append_unified_events(captured_events, nested_events)
+			
+	return captured_events
+
+## Drain all remaining reactions in the queue in strict 3-Layer priority order.
+## Returns generated CombatEvents.
+func drain_cascade(bm) -> Array[CombatEvent]:
+	var captured_events: Array[CombatEvent] = []
+	while not _crr.is_empty():
+		var request = _crr.pop_front()
+		if request == null:
+			break
+		var inline_start_index := captured_events.size()
+		var nested_scope = _crr.begin_scope()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
+		
+		var nested_events = drain_reaction_scope(nested_scope, bm)
+		if not nested_events.is_empty():
+			CombatCommand.append_unified_events(captured_events, nested_events)
+			
+	return captured_events
+
+# ============================================================================
+# LEGACY DRAIN BRIDGES (Deprecated: preserved for backward-compatibility)
+# ============================================================================
+
+## Drain pending reactions inline during effect execution (legacy wrapper).
+func drain_reactions_inline(start_index: int, bm) -> void:
+	var evts = drain_and_capture_reactions_inline(start_index, bm)
+	_inline_events.append_array(evts)
 
 func drain_and_capture_reactions_inline(start_index: int, bm) -> Array[CombatEvent]:
-	var captured_events: Array[CombatEvent] = []
-	if start_index >= _pending_reactions.size():
-		return captured_events
+	if start_index >= _crr.size():
+		return []
 	
 	var reactions_to_process: Array[EffectRequest] = []
-	for i in range(start_index, _pending_reactions.size()):
-		reactions_to_process.append(_pending_reactions[i])
+	for i in range(start_index, _crr.size()):
+		reactions_to_process.append(_crr._pending_reactions[i])
 	
-	_pending_reactions.resize(start_index)
-	reactions_to_process.sort_custom(_compare_reactions)
+	_crr._pending_reactions.resize(start_index)
+	reactions_to_process.sort_custom(CausalReactionResolver.compare_reactions)
 	
+	var captured_events: Array[CombatEvent] = []
 	for request in reactions_to_process:
 		var inline_start_index := captured_events.size()
 		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
 		_tag_trinket_events(captured_events, request, bm, inline_start_index)
 		
-		if not _pending_reactions.is_empty():
+		if not _crr.is_empty():
 			captured_events.append_array(drain_and_capture_reactions_inline(start_index, bm))
 			
 	return captured_events
 
-## Drain ONLY execute_on_lethal reactions WITHOUT recursive cascade processing.
-## @param start_index: Only process reactions at index >= start_index
-## @param bm: BattleManager reference
+## Drain ONLY execute_on_lethal reactions (legacy wrapper).
 func drain_lethal_reactions(start_index: int, bm) -> void:
-	if start_index >= _pending_reactions.size():
-		return # No reactions to process
-	
-	# Extract reactions from start_index to end
-	var reactions_to_process: Array[EffectRequest] = []
-	for i in range(start_index, _pending_reactions.size()):
-		reactions_to_process.append(_pending_reactions[i])
-	
-	# Clear the processed range
-	_pending_reactions.resize(start_index)
-	
-	# Sort by priority
-	reactions_to_process.sort_custom(_compare_reactions)
-	
-	# Process ONLY these reactions - do NOT recursively drain new ones
-	for request in reactions_to_process:
-		var inline_start_index := _inline_events.size()
-		resolve_effect_request(request, _inline_events, {"__skip_death_triggers__": true}, bm)
-		_tag_trinket_events(_inline_events, request, bm, inline_start_index)
-		# NOTE: We intentionally do NOT call drain_reactions_inline(0, bm) here
+	var evts = drain_lethal_counters(bm)
+	_inline_events.append_array(evts)
 
 ## Collect and clear inline events. Returns the collected events.
 func collect_and_clear_inline_events() -> Array[CombatEvent]:
@@ -664,16 +683,15 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			summoned_location.container = summon_result.container_updates[i].container_tag
 			summoned_location.index = summon_result.container_updates[i].slot
 		
-		# Trigger on_enemy_summon ONLY during combat phase (for abilities like Ambush Predator)
-		if is_combat_phase:
-			TurnAbilities.trigger_on_enemy_summon(new_inst.ball_uuid, summoned_team, summoned_location)
-		
-		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing)
+		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing, Royal/Veteran Insignia)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
-
 
 		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+
+		# Trigger on_enemy_summon ONLY during combat phase (for abilities like Ambush Predator)
+		if is_combat_phase:
+			TurnAbilities.trigger_on_enemy_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
 		# Drain reactions immediately so summon abilities execute before the summoned unit acts
 		while not _pending_reactions.is_empty():
@@ -686,8 +704,8 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			
 			# Collect inline events
 			var inline_evts = collect_and_clear_inline_events()
-			out_events.append_array(inline_evts)
-			out_events.append_array(reaction_events)
+			CombatCommand.append_unified_events(out_events, inline_evts)
+			CombatCommand.append_unified_events(out_events, reaction_events)
 
 func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
 	if request.source_uuid.is_empty():
@@ -742,6 +760,6 @@ func _make_spikes_payloads(raw_spikes_data: Array[Dictionary]) -> Array[CombatSp
 
 func clear() -> void:
 	_actor_queue.clear()
-	_pending_reactions.clear()
+	_crr.clear()
 	_inline_events.clear()
 	_processing_effect_count = 0

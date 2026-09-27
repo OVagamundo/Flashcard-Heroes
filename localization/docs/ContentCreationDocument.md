@@ -19,7 +19,11 @@
 3.  [System Responsibilities](#3-system-responsibilities)
 
 ### Part II: Ability Implementation (Simulation)
-4.  [The Priority System](#4-the-priority-system)
+4.  [The Priority System (Causal Reaction Resolver)](#4-the-priority-system-causal-reaction-resolver--crr)
+    *   [4.1 The 3-Layer Priority & Tie-Breaking Hierarchy](#41-the-3-layer-priority--tie-breaking-hierarchy)
+    *   [4.2 Priority Band Reference](#42-priority-band-reference)
+    *   [4.3 Causal Lineage & Event IDs](#43-causal-lineage--event-ids)
+    *   [4.4 Summon Restrictions](#44-summon-restrictions)
 5.  [The Context Contract & Triggers](#5-the-context-contract--triggers)
     *   [Full Trigger Table](#51-full-trigger-table)
     *   [Attack Type Triggers](#52-attack-type-triggers)
@@ -38,11 +42,14 @@
 12. [Interaction Animations (Drag/Drop/Select)](#12-interaction-animations)
 
 ### Part IV: Technical Deep Dives
-13. [The Ability Execution Pipeline (17 Steps)](#13-the-ability-execution-pipeline)
+13. [The Ability Execution Pipeline](#13-the-ability-execution-pipeline)
     *   [Critical Blocking Points (Debugging)](#131-critical-blocking-points)
 14. [Complex Interaction Pitfalls](#14-complex-interaction-pitfalls)
     *   [Death Tracking](#141-death-tracking-architecture)
     *   [Board Space Priority](#142-board-space-and-summon-slot-priority)
+15. [Universal Non-Combat Adaptation & Room Transactions](#15-universal-non-combat-adaptation--room-transactions)
+    *   [15.1 Management Actions (Draw, Merge, Equip)](#151-management-actions-draw-merge-equip)
+    *   [15.2 Room Transactions (Shop, Rest Site, Dojo)](#152-room-transactions-shop-rest-site-dojo)
 
 ---
 
@@ -71,8 +78,8 @@ Content design should move away from generic "Weak vs. Strong" tiers toward func
 1.  **The Instance is King**: If `GachaBallInstance` says HP is 50, and the UI says 40, the Instance is right.
 2.  **Atomic Transactions**: Any operation moving an instance (move, swap, equip) must update both the **Index** (`DataContainer`) and the **Truth** (`GachaBallInstance` location property) in a single underlying transaction.
 3.  **Simulation First, Presentation Second**:
-    *   **Simulation** (`BattleManager`) calculates the *entire* result of an interaction instantly.
-    *   **Presentation** (`BattleAnimator`) replays that result over time.
+    *   **Simulation** (`BattleManager`, `CombatSimulator`) calculates the *entire* result of an interaction instantly.
+    *   **Presentation** (`BattleAnimator`) replays that result over time as a pure VCR.
     *   **NEVER** let an animation change the state of the simulation.
 
 ### 3. System Responsibilities
@@ -80,7 +87,7 @@ Content design should move away from generic "Weak vs. Strong" tiers toward func
 | System | Role | Key Components |
 |--------|------|----------------|
 | **Data Domain** | The raw state of the game. | `RunState`, `GachaBallDefinition`, `GachaBallInstance`, `GachaBallComponent` |
-| **Battle System** | Simulation and Orchestration. | `BattleManager`, `CombatSimulator`, `EffectHandlers` |
+| **Battle System** | Simulation and Orchestration. | `BattleManager`, `CombatSimulator`, `CausalReactionResolver`, `EffectHandlers` |
 | **Ability System** | Unified trigger processing and Effect execution. | `AbilityResolver` (Unified Query), `EffectDefinition` |
 | **Presentation** | Visual feedback and User Interface. | `BattleAnimator`, `GachaBallView`, `BattleView`, `VisualDataAdapter` |
 
@@ -88,31 +95,48 @@ Content design should move away from generic "Weak vs. Strong" tiers toward func
 
 ## Part II: Ability Implementation (Simulation)
 
-### 4. The Priority System
+### 4. The Priority System (Causal Reaction Resolver — CRR)
 
-The `BattleManager` processes reactions using a priority queue. **Higher Priority = Executed First.**
-All constants are in `scripts/Constants.gd`.
+The `BattleManager` and `CombatSimulator` resolve reactions using the deterministic 3-Layer Priority Hierarchy implemented in `CausalReactionResolver.gd`. **Higher Priority = Executed First.**
+All constants are defined in `scripts/Constants.gd`.
+
+#### 4.1 The 3-Layer Priority & Tie-Breaking Hierarchy
+
+When multiple reactions trigger simultaneously in response to a game event, their execution order is determined by three strict layers:
+
+| Layer | Criteria | Rule / Description |
+|-------|----------|--------------------|
+| **Layer 1** | **Execution Priority** | Sorted descending by integer value. Higher values execute before lower values. |
+| **Layer 2** | **Category Rank (Tie-Breaker)** | If priorities are identical, abilities execute by origin type: **Unit Abilities (Rank 1)** $\to$ **Item Abilities (Rank 2)** $\to$ **Trinket Abilities (Rank 3)**. |
+| **Layer 3** | **Positional Order (The Mirror Rule)** | If category ranks are identical, spatial board position breaks the tie: <br>• **Player Team**: Front-to-Back (Slot 4 down to Slot 0).<br>• **Enemy Team**: Front-to-Back (Slot 0 up to Slot 4).<br>• **Intra-Unit Item Tie-Breaker**: Item slot index ($0 \to N$). |
+
+#### 4.2 Priority Band Reference
 
 | Priority | Constant | Usage | Examples |
 |----------|----------|-------|----------|
-| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
-| 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
-| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
-| 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
-| 100 | `PRIORITY_BUFF_HEAL` | Standard Buffs/Heals | Resilient Aura |
-| 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
-| 10 | `PRIORITY_MODIFY_ATTACK` | Attack modifiers | Shockwave |
-| 0 | `PRIORITY_STANDARD` | Default abilities | Most abilities |
-| -50 | `PRIORITY_BOSS_REINFORCEMENT`| End-of-turn spawns | Boss waves |
-| -100 | `PRIORITY_EXTRA_ACTION` | Grant extra turns | Bloodlust Edge |
+| **300+** | `PRIORITY_GUARDIAN_INTERCEPT` | Damage Interception | Guardian Sentinel |
+| **210** | `PRIORITY_SOUL_ECHO` | High-priority Trinket Resurrections | Soul Echo |
+| **205** | `PRIORITY_UNIT_SUMMON` | Innate Unit On-Death Summons | Sakura Spirit, Soul Caller |
+| **200** | `PRIORITY_ITEM_SUMMON` | Item On-Death Summons | Last Wish, Summoning Scroll |
+| **100–199**| `PRIORITY_BUFF_HEAL` | Standard Buffs, Heals & Reactions | Resilient Aura, Vengeance |
+| **50–99** | `PRIORITY_COUNTER_ATTACK` | Retaliation & Counter-attacks | Retaliate, Spike armor |
+| **1–49** | `PRIORITY_MODIFY_ATTACK` | Attack Modifiers & Splash | Shockwave, Cleave |
+| **0** | `PRIORITY_STANDARD` | Default abilities & Basic Attacks | Most abilities |
+| **-50** | `PRIORITY_BOSS_REINFORCEMENT`| End-of-turn Boss Spawns | Boss waves |
+| **-100** | `PRIORITY_EXTRA_ACTION` | Extra turn grants | Bloodlust Edge |
 
 > [!TIP]
-> **Instructor Dropdown**: You don't need to remember these integers. The `AbilityDefinition.tres` Inspector now provides a labeled dropdown for selecting these priority tiers directly.
+> **Linear Complexity for Content Designers**: When creating new content, pick the appropriate priority band above. The 3-layer tie-breaker guarantees that your ability will resolve deterministically without needing to check or audit every other ability in the game.
 
 > [!TIP]
 > **Summon Logic:** High priority summons (Trinkets) claim slots first. If `Soul Echo` resurrects a unit into its own slot, `Last Wish` (lower priority) will look for a *different* open slot.
 
-#### 4.1 Summon Restrictions
+#### 4.3 Causal Lineage & Event IDs
+Every event emitted by the simulation has a unique, monotonically increasing `event_id`. Whenever a root event (such as an Attack, Draw, Merge, or Equip) triggers passive or active reactions, the CRR stamps the resulting reaction events with:
+`reaction_event.cause_event_id = root_event.event_id`
+This enables the presentation layer (`BattleAnimator`) to visualize causal chains cleanly (e.g. tracking floating text, projectile origin, or buff hop back to the root action).
+
+#### 4.4 Summon Restrictions
 
 To maintain balance and logical consistency in encounters and summons, the following strict rules apply across the entire combat system:
 - **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (such as the `Soul Caller` unit) or item abilities (such as the `Summoning Scroll` item).
@@ -357,6 +381,24 @@ When multiple summons occur simultaneously (e.g. Soul Echo + Last Wish):
 1.  Original Slot.
 2.  Alternative Slots (Back-to-Front).
 3.  Discard Pile (Player only).
+
+### 15. Universal Non-Combat Adaptation & Room Transactions
+
+All non-combat actions follow the exact same **atomic simulation $\to$ event log $\to$ playback** architecture as combat:
+
+#### 15.1 Management Actions (Draw, Merge, Equip)
+1. **Atomic Simulation**: State mutations (adding instances, swapping, calculating merge inheritance, equipping items) resolve in zero logical time.
+2. **Causal Lineage Stamping**: Triggers (`on_board_enter`, `on_board_changed`, `on_merge`, `on_draw`) pass through the CRR reaction queue with cascading death drains. All passive reaction events receive `cause_event_id` pointing to the root management action event (`DRAW`, `MERGE`, or `ITEM_EQUIP`).
+3. **Decoupled Playback**: Presentation animators (`BattleAnimator`, `MergeAnimator`) are pure VCR engines that receive pre-computed snapshots and event logs without modifying state or querying live data during flight.
+
+#### 15.2 Room Transactions (Shop, Rest Site, Dojo)
+Room transactions are standardized through dedicated simulation methods on `GameManager`:
+- **Shop Purchases**: `GameManager.simulate_shop_purchase(uuid, cost) -> Dictionary`
+  - Validates gold, deducts gold, registers purchased instance in RunState, unlocks recipes, and emits `SHOP_PURCHASE` event log to `Shop.play_transaction_log(event_log)`.
+- **Rest Site Draws**: `GameManager.simulate_rest_site_draw(tier) -> Dictionary`
+  - Validates tokens, deducts tokens, rolls RNG reward, manages prize slots, and emits `REST_SITE_DRAW` event log to `RestSite.play_transaction_log(event_log)`.
+- **Dojo Training**: `GameManager.simulate_dojo_training(token_cost) -> Dictionary`
+  - Validates tokens, deducts tokens, rolls stat delta, applies base stat modifications to the selected unit, and emits `DOJO_TRAIN` event log to `UnitTrainingGround.play_transaction_log(event_log)`.
 
 ---
 

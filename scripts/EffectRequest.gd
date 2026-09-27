@@ -23,7 +23,18 @@ var slot_index: int = -1
 ## Sub-index (such as equipped item slot index on a unit) for deterministic tie-breaking.
 var sub_index: int = 0
 
-func _init(p_source_uuid: String, p_ability_id: StringName, p_effect_definition: EffectDefinition, p_resolved_targets: Array[String], p_trigger_context: Dictionary = {}, p_priority: int = 0, p_category: StringName = &"", p_is_player: bool = false, p_slot_index: int = -1, p_sub_index: int = 0) -> void:
+func _init(
+	p_source_uuid: String = "",
+	p_ability_id: StringName = &"",
+	p_effect_definition: EffectDefinition = null,
+	p_resolved_targets: Array[String] = [],
+	p_trigger_context: Dictionary = {},
+	p_priority: int = 0,
+	p_category: StringName = &"",
+	p_is_player: bool = false,
+	p_slot_index: int = -1,
+	p_sub_index: int = 0
+) -> void:
 	source_uuid = p_source_uuid
 	ability_id = p_ability_id
 	effect_definition = p_effect_definition

@@ -9,5 +9,5 @@ id = &"ability_trinket_veteran_insignia_summon"
 name_key = ""
 description_key = ""
 trigger = &"on_ally_summon"
-priority = 50
+priority = 120
 effects = Array[Resource]([ExtResource("2_effect")])

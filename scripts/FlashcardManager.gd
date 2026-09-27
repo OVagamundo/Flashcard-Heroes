@@ -192,14 +192,14 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		tokens_to_give = 2 if (mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm) else 1
 		tokens_earned += tokens_to_give
 		
-		if GameManager.is_in_battle:
+		if is_instance_valid(_run_state_ref):
+			_run_state_ref.add_tokens(tokens_to_give, true)
+		elif GameManager.is_in_battle:
 			var bm = GameManager.get_battle_manager()
 			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
 				bm.add_gacha_tokens(tokens_to_give, true)
 			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
 				bm.add_gacha_token(tokens_to_give, true)
-		elif is_instance_valid(_run_state_ref):
-			_run_state_ref.add_room_tokens(tokens_to_give)
 	else:
 		current_streak = 0
 		
@@ -302,21 +302,25 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	# Starter hero minimum guarantee: guarantee at least 3 tokens
 	if is_instance_valid(_run_state_ref) and _is_starter_hero(_run_state_ref) and correct < 3:
 		var bonus = 3 - correct
-		if GameManager.is_in_battle:
+		if is_instance_valid(_run_state_ref):
+			_run_state_ref.add_tokens(bonus, true)
+		elif GameManager.is_in_battle:
 			var bm = GameManager.get_battle_manager()
 			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
 				bm.add_gacha_tokens(bonus, true)
 			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
 				bm.add_gacha_token(bonus, true)
-		else:
-			_run_state_ref.add_room_tokens(bonus)
 		correct = 3
 		tokens_earned += bonus
 	
-	if GameManager.is_in_battle:
+	var final_tokens = 0
+	if is_instance_valid(_run_state_ref):
+		final_tokens = _run_state_ref.current_room_tokens
+	elif GameManager.is_in_battle:
 		var bm = GameManager.get_battle_manager()
 		if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
-			SignalBus.emit_signal("gacha_tokens_changed", bm.get_gacha_tokens())
+			final_tokens = bm.get_gacha_tokens()
+	SignalBus.emit_signal("gacha_tokens_changed", final_tokens)
 	
 	var results: Dictionary = {
 		"correct_answers": correct,

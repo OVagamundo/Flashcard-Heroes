@@ -60,7 +60,6 @@ var _panel_style: StyleBox = null
 var _token_group: Control = null
 var _token_group_original_parent: Node = null
 var _token_group_original_index: int = -1
-var _tokens_pending: int = 0 # Tokens that are mid-animation
 
 # Input lock to prevent race conditions with rapid clicking
 var _input_locked: bool = false
@@ -519,7 +518,6 @@ func _start_minigame_session() -> void:
 	_tokens_earned = 0
 	_current_streak = 0
 	_total_answers = 0
-	_tokens_pending = 0
 	_update_aura_vfx()
 	
 	_update_localized_text() # Refresh UI state to hide title
@@ -688,6 +686,8 @@ func _update_panel_color(color: Color) -> void:
 func _on_choice_selected(selected_answer_id: StringName) -> void:
 	"""Handle when a player selects an answer"""
 	if _input_locked or _session_timer <= 0:
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is SubmitFlashcardAnswerAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 		
 	_input_locked = true
@@ -925,16 +925,8 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) 
 				button_rect.position.y + button_rect.size.y / 2.0
 			)
 			
-			for j in range(token_count):
-				if j == 0:
-					_spawn_token_pop_at_pos(spawn_pos)
-				else:
-					# Use SceneTree timer instead of Tween for robust lambda execution
-					var delay = 0.15 * j
-					AnimationConstants.create_pausable_timer(get_tree(), delay).timeout.connect(func():
-						if is_instance_valid(self) and is_inside_tree():
-							_spawn_token_pop_at_pos(spawn_pos)
-					)
+			if token_count > 0:
+				CurrencyAnimator.animate_token_gain(token_count, spawn_pos, Callable(), _current_streak)
 			break
 
 func _on_skip_pressed() -> void:
@@ -998,50 +990,7 @@ func execute_skip() -> void:
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
-func _get_token_counter_target_position() -> Vector2:
-	"""Get the global position of the token counter icon for animation target"""
-	if not is_instance_valid(_token_group):
-		# Fallback: return screen center top area
-		return Vector2(get_viewport_rect().size.x / 2, 60)
-	
-	# Get center of the TokenGroup
-	var token_rect = _token_group.get_global_rect()
-	return Vector2(
-		token_rect.position.x + token_rect.size.x / 2,
-		token_rect.position.y + token_rect.size.y / 2
-	)
 
-func _spawn_token_pop_at_pos(spawn_pos: Vector2) -> void:
-	"""Spawn a token pop VFX at the given position that flies to token counter"""
-	const TokenPopScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
-	
-	var token_pop = TokenPopScene.instantiate()
-	
-	# Get target position (token counter)
-	var target_pos = _get_token_counter_target_position()
-	
-	# Track pending token
-	_tokens_pending += 1
-	
-	# Connect to animation_finished to update counter when token lands
-	token_pop.animation_finished.connect(_on_token_landed)
-	
-	# Add to scene and play with target
-	add_child(token_pop)
-	token_pop.global_position = spawn_pos
-	token_pop.play(target_pos, _current_streak)
-
-func _on_token_landed() -> void:
-	"""Called when a token animation completes - update the visual counter live"""
-	_tokens_pending -= 1
-	
-	# In battle context, update visual gacha tokens for the landing animation
-	if GameManager.is_in_battle:
-		var bm = GameManager.get_battle_manager() if is_instance_valid(GameManager) else null
-		if not is_instance_valid(bm):
-			bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
-			SignalBus.emit_signal("gacha_tokens_changed", bm.get_gacha_tokens())
 
 func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 	"""Flash the incorrect answer button red"""
@@ -1072,7 +1021,7 @@ func _end_minigame() -> void:
 		"correct_answers": _correct_answers,
 		"total_answers": _total_answers,
 		"incorrect_answers": _total_answers - _correct_answers,
-		"tokens_already_awarded": _tokens_earned - _tokens_pending # Tokens that completed animation
+		"tokens_already_awarded": _tokens_earned
 	}
 	minigame_complete.emit(results)
 	

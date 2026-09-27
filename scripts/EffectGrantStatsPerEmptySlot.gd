@@ -61,27 +61,22 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var log_text = "%s gains +%d HP/PWR (%d empty slots)" % [BattleHelpers.get_instance_display_name(source_unit), total_amount, empty_slots_count]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
-	# Event 1: HP Gain (Buff)
-	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": source_uuid,
-		"target_uuids": [source_uuid],
-		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
-		"action_type": C.ACTION_BUFF,
-		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.hp_buff(source_uuid, total_amount, [old_hp], [new_hp], [max_hp])
-	}))
-	
-	# Event 2: PWR Gain (Buff)
-	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-		"source_uuid": source_uuid,
-		"target_uuids": [source_uuid],
-		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
-		"action_type": C.ACTION_BUFF,
-		"ability_holder_uuid": source_uuid,
-		"visual_payload": CombatPayload.pwr_buff(source_uuid, total_amount, [old_pwr], [new_pwr])
-	}))
+	# Unified BUFF event
+	if total_amount > 0:
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": source_uuid,
+			"target_uuids": [source_uuid],
+			"ability_id": ability_id,
+			"trigger_type": context.get("trigger_type", ""),
+			"action_type": C.ACTION_BUFF,
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.both_stats_change(
+				source_uuid, total_amount, total_amount,
+				[old_hp], [new_hp],
+				[old_pwr], [new_pwr],
+				[max_hp]
+			)
+		}))
 	
 	result.state_applied = true
 	return result

@@ -551,36 +551,54 @@ func _generate_shop_stock() -> void:
 		_temporary_shop_master_dict[inst.ball_uuid] = inst
 		_temporary_shop_container.set_uuid(i, inst.ball_uuid)
 
-func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
-	if not _temporary_shop_master_dict.has(instance_uuid): return
-	if not run_state.spend_gold(cost): return
+## Simulates and executes an atomic shop purchase transaction.
+## Returns a structured event log for presentation playback.
+func simulate_shop_purchase(instance_uuid: String, cost: int) -> Dictionary:
+	if not _temporary_shop_master_dict.has(instance_uuid):
+		return {"success": false, "error": "Instance not found in shop"}
+	if not is_instance_valid(run_state) or not run_state.spend_gold(cost):
+		return {"success": false, "error": "Insufficient gold"}
 
-	var purchased_instance = _temporary_shop_master_dict[instance_uuid]
+	var purchased_instance: GachaBallInstance = _temporary_shop_master_dict[instance_uuid]
 	var def = purchased_instance.get_definition()
-	# Route based on category/type; Trinkets go to dedicated player trinkets container
 	var container_name: StringName
 	if is_instance_valid(def) and def.category == &"TRINKET":
 		container_name = RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
 	else:
 		var tier_val: int = (int(def.tier) if (def is GachaBallDefinition) else 1)
 		container_name = &"RunInventoryT%d" % tier_val
-	# Atomic add handles container slot selection and registry updates
+
 	run_state.add_instance(purchased_instance, container_name, -1)
-	
-	# Unlock recipes for this acquired gachaball
+
 	if is_instance_valid(def):
 		run_state.unlock_recipe_for_result(def.id)
 
+	var slot_index: int = -1
+	if is_instance_valid(_temporary_shop_container):
+		slot_index = _temporary_shop_container.get_all_uuids().find(instance_uuid)
+		if slot_index != -1:
+			_temporary_shop_container.set_uuid(slot_index, "")
+
 	_temporary_shop_master_dict.erase(instance_uuid)
-	var temp_slot = _temporary_shop_container.get_all_uuids().find(instance_uuid)
-	if temp_slot != -1:
-		_temporary_shop_container.set_uuid(temp_slot, "")
 
 	SignalBus.emit_signal("selection_clear_requested")
 
-	# Avoid duplicate run_data_changed; atomic APIs already emitted above
 	var context: Dictionary = {"shop_instances": _temporary_shop_master_dict.values(), "reroll_cost": _reroll_cost}
 	SignalBus.emit_signal("shop_stock_refreshed", context)
+
+	return {
+		"success": true,
+		"transaction_type": &"SHOP_PURCHASE",
+		"instance_uuid": instance_uuid,
+		"purchased_instance": purchased_instance,
+		"cost": cost,
+		"slot_index": slot_index,
+		"target_container": container_name,
+		"remaining_gold": run_state.gold
+	}
+
+func _on_shop_purchase_requested(instance_uuid: String, cost: int) -> void:
+	simulate_shop_purchase(instance_uuid, cost)
 
 func _on_shop_reroll_requested() -> void:
 	if not run_state.spend_gold(_reroll_cost): return
@@ -860,12 +878,14 @@ func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
 			
 	return instance
 
-func roll_rest_site_prize(tier: int) -> Dictionary:
+## Simulates and executes an atomic Rest Site draw transaction.
+## Returns a structured event log for presentation playback.
+func simulate_rest_site_draw(tier: int) -> Dictionary:
 	if not is_instance_valid(run_state):
-		return {}
+		return {"success": false, "error": "No active run_state"}
 	var cost = tier
 	if run_state.get_room_tokens() < cost:
-		return {}
+		return {"success": false, "error": "Insufficient room tokens"}
 	run_state.spend_room_tokens(cost)
 	
 	var value = 0
@@ -904,7 +924,50 @@ func roll_rest_site_prize(tier: int) -> Dictionary:
 		"gold_value": value if current_rest_site_type == 2 else 0
 	}
 	_temporary_rest_site_prizes.append(prize_data)
-	return prize_data
+	return {
+		"success": true,
+		"transaction_type": &"REST_SITE_DRAW",
+		"tier": tier,
+		"cost": cost,
+		"prize_data": prize_data,
+		"remaining_tokens": run_state.get_room_tokens(),
+		"prizes_snapshot": _temporary_rest_site_prizes.duplicate(true)
+	}
+
+func roll_rest_site_prize(tier: int) -> Dictionary:
+	var res = simulate_rest_site_draw(tier)
+	return res.get("prize_data", {})
+
+## Simulates and executes an atomic Dojo training transaction.
+## Returns a structured event log for presentation playback.
+func simulate_dojo_training(token_cost: int) -> Dictionary:
+	if not is_instance_valid(run_state):
+		return {"success": false, "error": "No active run_state"}
+	if run_state.get_room_tokens() < token_cost:
+		return {"success": false, "error": "Insufficient room tokens"}
+		
+	run_state.spend_room_tokens(token_cost)
+	var roll = RNGManager.reward_rng.randi_range(0, token_cost)
+	var uuid = run_state.training_unit_uuid
+	var stat = run_state.training_stat
+	var hp_delta = 0
+	var pwr_delta = 0
+	if uuid != "" and roll > 0:
+		hp_delta = roll if stat == "hp" else 0
+		pwr_delta = roll if stat == "pwr" else 0
+		run_state.modify_unit_base_stats(uuid, hp_delta, pwr_delta)
+		
+	return {
+		"success": true,
+		"transaction_type": &"DOJO_TRAIN",
+		"token_cost": token_cost,
+		"roll": roll,
+		"unit_uuid": uuid,
+		"training_stat": stat,
+		"hp_delta": hp_delta,
+		"pwr_delta": pwr_delta,
+		"remaining_tokens": run_state.get_room_tokens()
+	}
 
 func claim_rest_site_prize(slot_index: int) -> Dictionary:
 	for i in range(_temporary_rest_site_prizes.size()):

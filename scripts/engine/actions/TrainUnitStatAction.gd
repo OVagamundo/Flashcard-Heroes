@@ -16,18 +16,13 @@ func validate() -> bool:
 	return GameManager.run_state.get_room_tokens() >= token_cost
 
 func execute() -> void:
-	var roll = RNGManager.reward_rng.randi_range(0, token_cost)
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.spend_room_tokens(token_cost)
-		var uuid = GameManager.run_state.training_unit_uuid
-		if uuid != "" and roll > 0:
-			var hp_delta = roll if GameManager.run_state.training_stat == "hp" else 0
-			var pwr_delta = roll if GameManager.run_state.training_stat == "pwr" else 0
-			GameManager.run_state.modify_unit_base_stats(uuid, hp_delta, pwr_delta)
-			
+	var event_log: Dictionary = GameManager.simulate_dojo_training(token_cost)
 	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)
-	if is_instance_valid(utg) and not ActionQueue.is_headless_mode() and utg.has_method("execute_train_visuals"):
-		utg.execute_train_visuals(token_cost, roll)
+	if is_instance_valid(utg) and not ActionQueue.is_headless_mode():
+		if utg.has_method("play_transaction_log"):
+			utg.play_transaction_log(event_log)
+		elif utg.has_method("execute_train_visuals"):
+			utg.execute_train_visuals(token_cost, event_log.get("roll", -1))
 
 func yields_for_visuals() -> bool:
 	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)

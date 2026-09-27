@@ -26,7 +26,9 @@ enum Type {
 	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
 	TOKEN_GAIN,
 	DRAW, # New for Async Draw Chains
-	ITEM_DISCARD # Replaced/discarded item arcs to Discard Pile button
+	ITEM_DISCARD, # Replaced/discarded item arcs to Discard Pile button
+	ITEM_EQUIP, # Equipped item appears on unit view
+	MERGE # Merge action on battle board
 }
 
 var type: Type
@@ -37,6 +39,9 @@ var target_uuids: Array[String] = []
 # Unique event ID for simulation-presentation verification
 static var _next_event_id: int = 0
 var event_id: int = 0
+
+# Causal linkage: ID of root event that triggered this reaction (-1 for root actions)
+var cause_event_id: int = -1
 
 # Ability/Trigger Context - enables descriptive logging
 var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_bloodlust"
@@ -49,6 +54,31 @@ var trinket_activations: Array[CombatTrinketActivation] = []
 # The Absolute Truth Payload.  Sparse typed fields replace untyped dictionary
 # keys; see CombatPayload for the event-family contracts.
 var visual_payload: CombatPayload = CombatPayload.new()
+
+# Sub-phase keyframe events (enables rich choreography without simulation delays)
+var windup_events: Array[CombatEvent]:
+	get:
+		return visual_payload.windup_events if is_instance_valid(visual_payload) else []
+	set(val):
+		if visual_payload == null:
+			visual_payload = CombatPayload.new()
+		visual_payload.windup_events = val
+
+var pre_impact_events: Array[CombatEvent]:
+	get:
+		return visual_payload.pre_impact_events if is_instance_valid(visual_payload) else []
+	set(val):
+		if visual_payload == null:
+			visual_payload = CombatPayload.new()
+		visual_payload.pre_impact_events = val
+
+var impact_events: Array[CombatEvent]:
+	get:
+		return visual_payload.impact_events if is_instance_valid(visual_payload) else []
+	set(val):
+		if visual_payload == null:
+			visual_payload = CombatPayload.new()
+		visual_payload.impact_events = val
 
 # Legacy fields for backward compatibility during refactor (marked for removal)
 var text: String = ""
@@ -68,6 +98,7 @@ func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	
 	# Standard fields
 	self.source_uuid = String(p_context.get("source_uuid", ""))
+	self.cause_event_id = int(p_context.get("cause_event_id", -1))
 	
 	# Handle targets
 	self.target_uuids = []
@@ -126,6 +157,7 @@ static func reset_event_counter() -> void:
 func deep_clone() -> CombatEvent:
 	var copy = CombatEvent.new(self.type)
 	copy.event_id = self.event_id
+	copy.cause_event_id = self.cause_event_id
 	copy.source_uuid = self.source_uuid
 	copy.action_type = self.action_type
 	copy.target_uuids = self.target_uuids.duplicate()
@@ -144,3 +176,43 @@ func deep_clone() -> CombatEvent:
 	
 	copy.visual_payload = visual_payload.deep_clone()
 	return copy
+
+## Determines whether next_ev can be merged with this event into a unified multi-stat event.
+func can_merge_with(next_ev: CombatEvent) -> bool:
+	if next_ev == null:
+		return false
+	if not (type in [Type.BUFF, Type.DEBUFF, Type.HEAL, Type.STATUS_EFFECT] and next_ev.type in [Type.BUFF, Type.DEBUFF, Type.HEAL, Type.STATUS_EFFECT]):
+		return false
+	
+	# Match Rule: Events must originate from the SAME source_uuid. If both are passive (empty source_uuid), ability_id must match.
+	var is_same_source: bool = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())
+	var is_both_passive: bool = (source_uuid.is_empty() and next_ev.source_uuid.is_empty() and next_ev.ability_id == ability_id)
+	if not (is_same_source or is_both_passive):
+		return false
+	
+	# Matching targets
+	if target_uuids.size() != next_ev.target_uuids.size():
+		return false
+	for target_uuid in target_uuids:
+		if not next_ev.target_uuids.has(target_uuid):
+			return false
+	return true
+
+## Merges next_ev's payload into this event.
+func merge_with(next_ev: CombatEvent) -> void:
+	if visual_payload == null:
+		visual_payload = CombatPayload.new()
+	if next_ev.visual_payload == null:
+		return
+	
+	visual_payload.merge_with(next_ev.visual_payload, target_uuids, next_ev.target_uuids)
+	
+	# Sync event-level stat and action type
+	if visual_payload.stat == "both":
+		stat = "both"
+		type = Type.BUFF
+		action_type = &"BUFF"
+	if not next_ev.trinket_activations.is_empty():
+		for activation in next_ev.trinket_activations:
+			trinket_activations.append(activation)
+

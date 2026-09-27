@@ -113,25 +113,43 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
 		}))
 		
-		# Batched HP BUFF event (all projectiles launched simultaneously)
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
-		}))
-		
-		# Batched PWR BUFF event (all projectiles launched simultaneously)
-		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-			"source_uuid": _source_uuid,
-			"target_uuids": batched_target_uuids,
-			"ability_id": context.get("ability_id", &"ability_trinket_rusty_ring"),
-			"trigger_type": context.get("trigger_type", ""),
-			"ability_holder_uuid": _source_uuid,
-			"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
-		}))
+		# Unified BUFF event (all projectiles launched simultaneously)
+		var ability_id = context.get("ability_id", &"ability_trinket_rusty_ring")
+		if hp_amount > 0 and pwr_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": batched_target_uuids,
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.both_stats_change(
+					_source_uuid, hp_amount, pwr_amount,
+					batched_old_hp, batched_new_hp,
+					batched_old_pwr, batched_new_pwr,
+					batched_max_hp
+				)
+			}))
+		elif hp_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": batched_target_uuids,
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
+			}))
+		elif pwr_amount > 0:
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": _source_uuid,
+				"target_uuids": batched_target_uuids,
+				"ability_id": ability_id,
+				"trigger_type": context.get("trigger_type", ""),
+				"action_type": C.ACTION_BUFF,
+				"ability_holder_uuid": _source_uuid,
+				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
+			}))
 
 	result.state_applied = true
 	return result

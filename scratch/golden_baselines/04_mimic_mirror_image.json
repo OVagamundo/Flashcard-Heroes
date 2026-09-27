@@ -1,0 +1,261 @@
+{
+  "encounter_name": "04_mimic_mirror_image",
+  "end_snapshot": {
+    "__discard_count__": 0,
+    "dyn_unit_t1_a_1": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 2,
+      "pwr": 1,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "enemy_mirror_target": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 10,
+      "pwr": 1,
+      "slot_index": 4,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    }
+  },
+  "start_snapshot": {
+    "__discard_count__": 0,
+    "enemy_mirror_target": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 10,
+      "pwr": 1,
+      "slot_index": 4,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_mimic": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t3_mimic",
+      "display_name_key": "unit_t3_mimic.name",
+      "hp": 5,
+      "pwr": 1,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 3
+    }
+  },
+  "turn_log": [
+    {
+      "action_type": "",
+      "event_id": 0,
+      "payload": {
+
+      },
+      "source_uuid": "",
+      "target_uuids": [],
+      "type": "LOG_MESSAGE"
+    },
+    {
+      "action_type": "",
+      "event_id": 1,
+      "payload": {
+
+      },
+      "source_uuid": "",
+      "target_uuids": [
+        "player_mimic"
+      ],
+      "type": "TRANSFORM"
+    },
+    {
+      "action_type": "",
+      "event_id": 2,
+      "payload": {
+        "new_unit_uuid": "dyn_unit_t1_a_1"
+      },
+      "source_uuid": "",
+      "target_uuids": [
+        "dyn_unit_t1_a_1"
+      ],
+      "type": "SUMMON"
+    },
+    {
+      "action_type": "",
+      "event_id": 3,
+      "payload": {
+
+      },
+      "source_uuid": "",
+      "target_uuids": [],
+      "type": "LOG_MESSAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 6,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 1,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 4,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "enemy_mirror_target",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 5,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                10
+              ],
+              "targets_old_hp": [
+                9
+              ]
+            },
+            "source_uuid": "enemy_mirror_target",
+            "target_uuids": [
+              "enemy_mirror_target"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          9
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          10
+        ]
+      },
+      "source_uuid": "dyn_unit_t1_a_1",
+      "target_uuids": [
+        "enemy_mirror_target"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 9,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 1,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 7,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "dyn_unit_t1_a_1",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 8,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                2
+              ],
+              "targets_old_hp": [
+                1
+              ]
+            },
+            "source_uuid": "dyn_unit_t1_a_1",
+            "target_uuids": [
+              "dyn_unit_t1_a_1"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          1
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          2
+        ]
+      },
+      "source_uuid": "enemy_mirror_target",
+      "target_uuids": [
+        "dyn_unit_t1_a_1"
+      ],
+      "type": "DAMAGE"
+    }
+  ]
+}

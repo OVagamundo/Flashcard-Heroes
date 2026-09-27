@@ -12,23 +12,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	var is_burn_damage = payload.is_burn_damage
 	var attack_type = payload.attack_type
 	var main_target_uuid = payload.main_target_uuid
-	
-	var _raw_wind = payload.windup_events
-	var windup_events: Array[CombatEvent] = []
-	for e in _raw_wind: windup_events.append(e as CombatEvent)
-	var _raw_pre = payload.pre_impact_events
-	var pre_impact_events: Array[CombatEvent] = []
-	for e in _raw_pre: pre_impact_events.append(e as CombatEvent)
-	var _raw_imp = payload.impact_events
-	var impact_events: Array[CombatEvent] = []
-	for e in _raw_imp: impact_events.append(e as CombatEvent)
-	
 	# Ensure this is always a coroutine (GDScript quirk)
 	await animator.get_tree().process_frame
-	
-	
-	# Get visual registry - ONLY used for view updates, NOT position lookups
-	# Position data comes from animator.get_snapshot_position() for decoupling
 	
 	# Determine main target (first target if not specified)
 	# GUARDIAN SENTINEL FIX: When Guardian intercepts, use original target position for melee lunge
@@ -45,6 +30,17 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		elif not targets.is_empty():
 			main_target_uuid = targets[0]
 	
+	# ==================================================================
+	# KEYFRAME 1: WIND-UP & PRE-IMPACT
+	# ==================================================================
+	if not payload.windup_events.is_empty():
+		await animator._animate_events(payload.windup_events)
+	if not payload.pre_impact_events.is_empty():
+		await animator._animate_events(payload.pre_impact_events)
+	
+	# ==================================================================
+	# KEYFRAME 2: CONTACT & IMPACT
+	# ==================================================================
 	# ------------------------------------------------------------------
 	# MELEE ATTACK ANIMATION
 	# ------------------------------------------------------------------
@@ -76,13 +72,6 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 				# Align attacker's 1/4 point (between left edge and center) with target's 3/4 point (between center and right edge)
 				target_position = Vector2(tgt_snap.position.x + (0.75 * tgt_width) - (0.25 * src_width), head_y)
 		
-		# KEYFRAME 1: WIND-UP
-		# Execute windup events before lunge
-		if not windup_events.is_empty():
-			await animator._animate_events(windup_events)
-		if not pre_impact_events.is_empty():
-			await animator._animate_events(pre_impact_events)
-		
 		# 1. Melee Lunge - attacker jumps to target
 		if target_position != Vector2.ZERO:
 			# AUDIO HOOK: Attack lunge whoosh (before movement starts)
@@ -97,17 +86,13 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# 3. Return - attacker jumps back to original position
 		SignalBus.emit_signal("unit_melee_return", source_uuid)
 		await animator.wait_for_animation_completion("melee_return", source_uuid)
+		if animator.has_method("return_pending_guardian"):
+			await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# TRINKET ACTIVATION AND PROJECTILE ANIMATION
 	# ------------------------------------------------------------------
 	elif attack_type == "trinket":
-		# KEYFRAME 1: WIND-UP
-		if not windup_events.is_empty():
-			await animator._animate_events(windup_events)
-		if not pre_impact_events.is_empty():
-			await animator._animate_events(pre_impact_events)
-			
 		# 1. Activate the trinket view (play hop/bounce animation)
 		if animator.has_method("play_trinket_activation"):
 			animator.play_trinket_activation(source_uuid)
@@ -130,17 +115,13 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		
 		# 3. Apply damage impact (recoil, flashes, numbers)
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+		if animator.has_method("return_pending_guardian"):
+			await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# RANGED ATTACK ANIMATION (Future - uses projectiles)
 	# ------------------------------------------------------------------
 	elif attack_type == "ranged":
-		# KEYFRAME 1: WIND-UP
-		if not windup_events.is_empty():
-			await animator._animate_events(windup_events)
-		if not pre_impact_events.is_empty():
-			await animator._animate_events(pre_impact_events)
-			
 		# Trigger Bump (if applicable)
 		var should_bump = (not skip_bump) and (not source_uuid.is_empty())
 		if should_bump:
@@ -174,23 +155,23 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# Wait for bump to fully return
 		if should_bump:
 			await animator.wait_for_animation_completion("bump", source_uuid)
+		if animator.has_method("return_pending_guardian"):
+			await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# NO SOURCE (Burn damage, environmental) - just flash
 	# ------------------------------------------------------------------
 	else:
-		# KEYFRAME 1: WIND-UP
-		if not windup_events.is_empty():
-			await animator._animate_events(windup_events)
-		if not pre_impact_events.is_empty():
-			await animator._animate_events(pre_impact_events)
-			
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+		if animator.has_method("return_pending_guardian"):
+			await animator.return_pending_guardian()
 
+	# ==================================================================
 	# KEYFRAME 3: POST-RETURN (Impact Callback)
+	# ==================================================================
 	# Execute on_hurt and on_kill events AFTER the primary attack sequence completes
-	if not impact_events.is_empty():
-		await animator._animate_events(impact_events)
+	if not payload.impact_events.is_empty():
+		await animator._animate_events(payload.impact_events)
 
 func _apply_damage_effects(animator: Node, targets: Array[String], payload: CombatPayload, apply_burn: bool, is_burn_damage: bool, amount: int) -> void:
 	var targets_new_hp = payload.targets_new_hp

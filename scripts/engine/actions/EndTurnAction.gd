@@ -9,7 +9,11 @@ func validate() -> bool:
 	var bm = GameManager.get_battle_manager()
 	if not is_instance_valid(bm):
 		return false
-	return bm.get_current_phase() == BattleManager.Phases.MANAGEMENT
+	if bm.get_current_phase() != BattleManager.Phases.MANAGEMENT:
+		return false
+	if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return false
+	return true
 
 func execute() -> void:
 	SignalBus.emit_signal("end_turn_requested")

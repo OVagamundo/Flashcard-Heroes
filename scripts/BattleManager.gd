@@ -58,8 +58,14 @@ var _turn_metadata: Dictionary:
 	set(value): _state._turn_metadata = value
 # Note: _dead_this_turn access is via DeathProcessor.is_dead_this_turn()
 var _gacha_tokens: int:
-	get: return _state._gacha_tokens
-	set(value): _state._gacha_tokens = value
+	get:
+		if is_instance_valid(GameManager.run_state):
+			return GameManager.run_state.current_room_tokens
+		return _state._gacha_tokens
+	set(value):
+		if is_instance_valid(GameManager.run_state):
+			GameManager.run_state.current_room_tokens = value
+		_state._gacha_tokens = value
 
 const _FixedArrayContainer = preload("res://scripts/FixedArrayContainer.gd")
 const _GrowableGridContainer = preload("res://scripts/GrowableGridContainer.gd")
@@ -171,8 +177,29 @@ func _capture_all_unit_stats() -> Dictionary:
 	for uuid in _battle_instances:
 		var inst = _battle_instances[uuid]
 		if _is_unit_instance(inst):
-			stats[uuid] = {"hp": inst.current_hp, "pwr": inst.current_pwr}
+			stats[uuid] = {
+				"hp": inst.current_hp,
+				"pwr": inst.current_pwr,
+				"burn_stacks": inst.get_status_effect_amount(&"burn"),
+				"armor_stacks": inst.get_status_effect_amount(&"armor"),
+				"spikes_stacks": inst.get_status_effect_amount(&"spikes"),
+				"status_effects": inst.status_effects.duplicate(true)
+			}
 	return stats
+
+static func _apply_unit_stat_override(snapshot_unit: Dictionary, unit_override: Dictionary) -> void:
+	if unit_override.has("hp"):
+		snapshot_unit["hp"] = unit_override["hp"]
+	if unit_override.has("pwr"):
+		snapshot_unit["pwr"] = unit_override["pwr"]
+	if unit_override.has("burn_stacks"):
+		snapshot_unit["burn_stacks"] = unit_override["burn_stacks"]
+	if unit_override.has("armor_stacks"):
+		snapshot_unit["armor_stacks"] = unit_override["armor_stacks"]
+	if unit_override.has("spikes_stacks"):
+		snapshot_unit["spikes_stacks"] = unit_override["spikes_stacks"]
+	if unit_override.has("status_effects"):
+		snapshot_unit["status_effects"] = unit_override["status_effects"].duplicate(true)
 
 func _generate_inventory_stat_events(pre_stats: Dictionary) -> Dictionary:
 	var extra_events: Array[CombatEvent] = []
@@ -190,23 +217,171 @@ func _generate_inventory_stat_events(pre_stats: Dictionary) -> Dictionary:
 		var delta_pwr: int = new_pwr - old_pwr
 		
 		if delta_hp != 0 or delta_pwr != 0:
-			pre_stats_override[uuid] = {"hp": old_hp, "pwr": old_pwr}
-			var payload := CombatPayload.both_stats_change(
-				uuid,
-				delta_hp,
-				delta_pwr,
-				[old_hp],
-				[new_hp],
-				[old_pwr],
-				[new_pwr]
-			)
-			var event := CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": uuid,
-				"target_uuids": [uuid],
-				"ability_holder_uuid": uuid,
-				"visual_payload": payload
-			})
-			extra_events.append(event)
+			pre_stats_override[uuid] = pre_stats[uuid].duplicate(true)
+			
+			if delta_hp > 0 and delta_pwr > 0:
+				var both_payload := CombatPayload.both_stats_change(
+					uuid,
+					delta_hp,
+					delta_pwr,
+					[old_hp],
+					[new_hp],
+					[old_pwr],
+					[new_pwr]
+				)
+				var both_event := CombatEvent.new(CombatEvent.Type.BUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": both_payload,
+					"action_type": C.ACTION_BUFF
+				})
+				extra_events.append(both_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "hp",
+					"amount": delta_hp,
+					"is_simulation": true
+				})
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "pwr",
+					"amount": delta_pwr,
+					"is_simulation": true
+				})
+			elif delta_hp < 0 and delta_pwr < 0:
+				var both_payload := CombatPayload.both_stats_change(
+					uuid,
+					delta_hp,
+					delta_pwr,
+					[old_hp],
+					[new_hp],
+					[old_pwr],
+					[new_pwr]
+				)
+				both_payload.action_type = C.ACTION_DEBUFF
+				var both_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+					"source_uuid": uuid,
+					"target_uuids": [uuid],
+					"ability_holder_uuid": uuid,
+					"visual_payload": both_payload,
+					"action_type": C.ACTION_DEBUFF
+				})
+				extra_events.append(both_event)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "hp",
+					"amount": abs(delta_hp),
+					"is_simulation": true
+				})
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+					"unit_uuid": uuid,
+					"triggering_uuid": uuid,
+					"source_uuid": uuid,
+					"stat": "pwr",
+					"amount": abs(delta_pwr),
+					"is_simulation": true
+				})
+			else:
+				if delta_hp > 0:
+					var hp_payload := CombatPayload.hp_buff(
+						uuid,
+						delta_hp,
+						[old_hp],
+						[new_hp]
+					)
+					var hp_event := CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": uuid,
+						"target_uuids": [uuid],
+						"ability_holder_uuid": uuid,
+						"visual_payload": hp_payload,
+						"action_type": C.ACTION_BUFF
+					})
+					extra_events.append(hp_event)
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+						"unit_uuid": uuid,
+						"triggering_uuid": uuid,
+						"source_uuid": uuid,
+						"stat": "hp",
+						"amount": delta_hp,
+						"is_simulation": true
+					})
+				elif delta_hp < 0:
+					var hp_payload := CombatPayload.hp_debuff(
+						uuid,
+						abs(delta_hp),
+						[old_hp],
+						[new_hp]
+					)
+					var hp_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+						"source_uuid": uuid,
+						"target_uuids": [uuid],
+						"ability_holder_uuid": uuid,
+						"visual_payload": hp_payload,
+						"action_type": C.ACTION_DEBUFF
+					})
+					extra_events.append(hp_event)
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+						"unit_uuid": uuid,
+						"triggering_uuid": uuid,
+						"source_uuid": uuid,
+						"stat": "hp",
+						"amount": abs(delta_hp),
+						"is_simulation": true
+					})
+					
+				if delta_pwr > 0:
+					var pwr_payload := CombatPayload.pwr_buff(
+						uuid,
+						delta_pwr,
+						[old_pwr],
+						[new_pwr]
+					)
+					var pwr_event := CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": uuid,
+						"target_uuids": [uuid],
+						"ability_holder_uuid": uuid,
+						"visual_payload": pwr_payload,
+						"action_type": C.ACTION_BUFF
+					})
+					extra_events.append(pwr_event)
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+						"unit_uuid": uuid,
+						"triggering_uuid": uuid,
+						"source_uuid": uuid,
+						"stat": "pwr",
+						"amount": delta_pwr,
+						"is_simulation": true
+					})
+				elif delta_pwr < 0:
+					var pwr_payload := CombatPayload.pwr_debuff(
+						uuid,
+						abs(delta_pwr),
+						[old_pwr],
+						[new_pwr]
+					)
+					var pwr_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+						"source_uuid": uuid,
+						"target_uuids": [uuid],
+						"ability_holder_uuid": uuid,
+						"visual_payload": pwr_payload,
+						"action_type": C.ACTION_DEBUFF
+					})
+					extra_events.append(pwr_event)
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, {
+						"unit_uuid": uuid,
+						"triggering_uuid": uuid,
+						"source_uuid": uuid,
+						"stat": "pwr",
+						"amount": abs(delta_pwr),
+						"is_simulation": true
+					})
 			
 	return {
 		"events": extra_events,
@@ -219,11 +394,32 @@ func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_s
 	
 	if _current_battle_phase == Phases.MANAGEMENT:
 		if not _is_processing_effect:
-			# Process passive updates (e.g. Twin Charm scaling) via VCR animations so UI reflects changes
+			# Process passive updates (e.g. Twin Charm, Echoing Orb scaling) via CRR so UI reflects changes
 			var events: Array[CombatEvent] = []
 			if not extra_events.is_empty():
 				events.append_array(extra_events)
-			var passive_events = _combat.process_reaction_queue(self, {})
+			
+			var death_tracking: Dictionary = {}
+			var passive_events: Array[CombatEvent] = []
+			passive_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+			var safety := 20
+			while safety > 0 and not _combat.get_crr().is_empty():
+				_check_for_deaths_with_counter_delay(true, passive_events, death_tracking)
+				_process_completed_counter_deaths(passive_events, death_tracking)
+				if _combat.get_crr().is_empty():
+					break
+				passive_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+				safety -= 1
+			
+			var root_cause_id: int = -1
+			for ev in extra_events:
+				if is_instance_valid(ev) and ev.type in [CombatEvent.Type.ITEM_EQUIP, CombatEvent.Type.ITEM_DISCARD, CombatEvent.Type.MOVE, CombatEvent.Type.MERGE]:
+					root_cause_id = ev.event_id
+					break
+			if root_cause_id >= 0:
+				CausalReactionResolver.stamp_cause_id(passive_events, root_cause_id)
+				CausalReactionResolver.stamp_cause_id(extra_events, root_cause_id)
+			
 			if not passive_events.is_empty():
 				events.append_array(passive_events)
 			
@@ -235,10 +431,7 @@ func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_s
 				for unit_uuid in pre_stats_override:
 					if snapshot.has(unit_uuid):
 						var unit_override: Dictionary = pre_stats_override[unit_uuid]
-						if unit_override.has("hp"):
-							snapshot[unit_uuid]["hp"] = unit_override["hp"]
-						if unit_override.has("pwr"):
-							snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+						_apply_unit_stat_override(snapshot[unit_uuid], unit_override)
 				for unit_uuid in pre_equipped_override:
 					if snapshot.has(unit_uuid):
 						var eq_override: Dictionary = pre_equipped_override[unit_uuid]
@@ -257,10 +450,7 @@ func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_s
 				for unit_uuid in pre_stats_override:
 					if snapshot.has(unit_uuid):
 						var unit_override: Dictionary = pre_stats_override[unit_uuid]
-						if unit_override.has("hp"):
-							snapshot[unit_uuid]["hp"] = unit_override["hp"]
-						if unit_override.has("pwr"):
-							snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+						_apply_unit_stat_override(snapshot[unit_uuid], unit_override)
 				for unit_uuid in pre_equipped_override:
 					if snapshot.has(unit_uuid):
 						var eq_override: Dictionary = pre_equipped_override[unit_uuid]
@@ -548,6 +738,23 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 			if out_events != null:
 				out_events.append(discard_event)
 
+		var new_item := get_instance(item_uuid)
+		var new_item_def = new_item.get_definition() if is_instance_valid(new_item) else null
+		var equip_payload := CombatPayload.item_equip(
+			unit_uuid,
+			item_uuid,
+			new_item_def.icon if (is_instance_valid(new_item_def) and "icon" in new_item_def) else null,
+			new_item_def.icon_path if (is_instance_valid(new_item_def) and "icon_path" in new_item_def) else "",
+			new_item_def.name if (is_instance_valid(new_item_def) and "name" in new_item_def) else "Item"
+		)
+		var equip_event := CombatEvent.new(CombatEvent.Type.ITEM_EQUIP, {
+			"source_uuid": unit_uuid,
+			"target_uuids": [unit_uuid],
+			"visual_payload": equip_payload
+		})
+		if out_events != null:
+			out_events.append(equip_event)
+
 		if not silent:
 			for uuid in result.changed_unit_uuids:
 				SignalBus.emit_signal("unit_inventory_changed", uuid)
@@ -563,7 +770,14 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 							"equipped_items": old_equipped_items_data,
 							"equipped_item_icon": old_equipped_items_data[0]["icon"]
 						}
+				else:
+					pre_equipped_override[unit_uuid] = {
+						"equipped_items": [],
+						"equipped_item_icon": null
+					}
 				
+				CausalReactionResolver.stamp_cause_id(stat_data.events, equip_event.event_id)
+				extra_events.append(equip_event)
 				extra_events.append_array(stat_data.events)
 				_emit_battle_inventory_changed(extra_events, stat_data.pre_stats, pre_equipped_override)
 				SignalBus.emit_signal("inventory_ui_refresh_requested")
@@ -571,6 +785,12 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 			# Even when silent (e.g. during combat simulation), we must trigger the passive scaling
 			# updates to guarantee holder stats are dynamically updated instantly.
 			AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+			var death_tracking: Dictionary = {}
+			var passive_events: Array[CombatEvent] = []
+			passive_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+			CausalReactionResolver.stamp_cause_id(passive_events, equip_event.event_id)
+			if out_events != null:
+				out_events.append_array(passive_events)
 			_pending_inventory_refresh = true
 	
 	return result.success
@@ -578,6 +798,177 @@ func bm_equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, s
 # ------------------------------------------------------------------
 # Composite atomic mutation API (Battle)
 # ------------------------------------------------------------------
+
+func _is_battle_board_container(container_tag: StringName) -> bool:
+	return (
+		container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+		or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+	)
+
+func _get_team_for_board_container(container_tag: StringName) -> String:
+	if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		return "PLAYER"
+	if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+		return "ENEMY"
+	return ""
+
+## Atomically simulates a merge in battle, applying state mutations,
+## triggering merge passives, routing reactions through CRR,
+func _resolve_instance_at_loc(loc: LocationIdentifier) -> GachaBallInstance:
+	if not is_instance_valid(loc):
+		return null
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent_unit = _battle_instances.get(loc.unit_uuid)
+		if is_instance_valid(parent_unit) and loc.index >= 0 and loc.index < parent_unit.equipped_item_uuids.size():
+			var item_uuid = parent_unit.equipped_item_uuids[loc.index]
+			return _battle_instances.get(item_uuid)
+		return null
+	return get_instance_by_location(loc)
+
+## and returning a structured result with causal event logs.
+func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName = &"") -> Dictionary:
+	var source_instance: GachaBallInstance = _resolve_instance_at_loc(source_loc)
+	if not is_instance_valid(source_instance):
+		source_instance = GameManager.get_instance_from_location(source_loc)
+	var target_instance: GachaBallInstance = _resolve_instance_at_loc(target_loc)
+	if not is_instance_valid(target_instance):
+		target_instance = GameManager.get_instance_from_location(target_loc)
+	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance):
+		return {}
+
+	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, _battle_instances)
+	if merge_result.is_empty():
+		return {}
+
+	var new_instance: GachaBallInstance = merge_result["merged_instance"]
+	var result_def = new_instance.get_definition()
+	if not is_instance_valid(result_def):
+		return {}
+
+	var all_parent_items: Array = merge_result.get("items_to_equip", [])
+	var parent_items_to_discard: Array = merge_result.get("items_to_discard", [])
+
+	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
+	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
+	var is_board_merge = target_loc.container == C.CONTAINER_PLAYER_LINEUP or target_loc.container == C.CONTAINER_PLAYER_BENCH
+	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
+
+	if not is_same_unit_item_merge:
+		remove_instance(source_instance.ball_uuid)
+		remove_instance(target_instance.ball_uuid)
+
+	var placed_container: StringName = &""
+	var placed_index: int = -1
+
+	if target_is_equipped:
+		if is_same_unit_item_merge:
+			remove_instance(source_instance.ball_uuid)
+			remove_instance(target_instance.ball_uuid)
+		add_instance(new_instance, &"PlayerBench", -1)
+		equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
+		placed_container = C.CONTAINER_EQUIPPED_ITEM
+		placed_index = target_loc.index
+	elif is_board_merge:
+		add_instance(new_instance, target_loc.container, target_loc.index)
+		placed_container = target_loc.container
+		placed_index = target_loc.index
+	elif ("tier" in result_def) and ("tier" in source_instance.get_definition()) and result_def.tier > source_instance.get_definition().tier:
+		var new_container_tag = &"BattleInventoryT%d" % result_def.tier
+		add_instance(new_instance, new_container_tag, -1)
+		placed_container = new_container_tag
+		placed_index = -1
+	else:
+		add_instance(new_instance, target_loc.container, target_loc.index)
+		placed_container = target_loc.container
+		placed_index = target_loc.index
+
+	if result_def.category == &"UNIT":
+		var max_slots = new_instance.equipped_item_uuids.size()
+		for i in range(min(all_parent_items.size(), max_slots)):
+			var it: GachaBallInstance = all_parent_items[i]
+			if is_instance_valid(it):
+				equip_item(it.ball_uuid, new_instance.ball_uuid, i, true)
+
+	for discarded_item in parent_items_to_discard:
+		if is_instance_valid(discarded_item):
+			bm_move_instance_to_discard(discarded_item.ball_uuid)
+
+	var should_trigger_on_merge: bool = false
+	var merge_container_tag: StringName = &""
+	if is_same_unit_item_merge:
+		var parent_unit: GachaBallInstance = get_instance(target_loc.unit_uuid)
+		if is_instance_valid(parent_unit) and _is_battle_board_container(parent_unit.location_container_tag):
+			should_trigger_on_merge = true
+			merge_container_tag = parent_unit.location_container_tag
+	elif _is_battle_board_container(target_loc.container):
+		should_trigger_on_merge = true
+		merge_container_tag = target_loc.container
+
+	var merge_team: String = _get_team_for_board_container(merge_container_tag)
+	var merge_context: Dictionary = {
+		"merged_uuid": new_instance.ball_uuid,
+		"merged_team": merge_team,
+		"merge_container": merge_container_tag,
+		"merge_category": result_def.category
+	}
+
+	var merge_payload := CombatPayload.merge_payload(
+		source_instance.ball_uuid,
+		target_instance.ball_uuid,
+		new_instance.ball_uuid,
+		VisualDataAdapter.create_visual_data(new_instance, get_all_instances()),
+		recipe_id
+	)
+	var merge_event := CombatEvent.new(CombatEvent.Type.MERGE, {
+		"source_uuid": source_instance.ball_uuid,
+		"target_uuids": [new_instance.ball_uuid],
+		"visual_payload": merge_payload
+	})
+
+	var reaction_events: Array[CombatEvent] = []
+	var post_merge_snapshot := VisualDataAdapter.create_board_snapshot(get_all_instances())
+	if should_trigger_on_merge:
+		var scope_id = _combat.get_crr().begin_scope()
+		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": new_instance.ball_uuid})
+		AbilityResolver.process_trigger(&"on_merge", merge_context)
+		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+
+		var death_tracking: Dictionary = {}
+		reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+		var safety := 20
+		while safety > 0 and not _combat.get_crr().is_empty():
+			_check_for_deaths_with_counter_delay(true, reaction_events, death_tracking)
+			_process_completed_counter_deaths(reaction_events, death_tracking)
+			if _combat.get_crr().is_empty():
+				break
+			reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+			safety -= 1
+
+		CausalReactionResolver.stamp_cause_id(reaction_events, merge_event.event_id)
+
+	var all_events: Array[CombatEvent] = [merge_event]
+	all_events.append_array(reaction_events)
+
+	var final_loc = LocationIdentifier.new(new_instance.location_container_tag, new_instance.location_slot_index)
+	if new_instance.location_container_tag == C.CONTAINER_EQUIPPED_ITEM:
+		final_loc.unit_uuid = new_instance.equipped_on_uuid
+
+	return {
+		"success": true,
+		"merged_instance": new_instance,
+		"source_loc": source_loc,
+		"target_loc": target_loc,
+		"final_loc": final_loc,
+		"snapshot": post_merge_snapshot,
+		"events": all_events,
+		"reaction_events": reaction_events,
+		"merge_event": merge_event,
+		"should_trigger_on_merge": should_trigger_on_merge,
+		"merge_context": merge_context
+	}
+
 
 func bm_move_instance_to_discard(uuid: String, out_events: Array[CombatEvent] = []) -> bool:
 	assert(not uuid.is_empty(), "bm_move_instance_to_discard: uuid is empty")
@@ -660,6 +1051,9 @@ func is_animations_playing() -> bool:
 		return true
 	return false
 
+func is_animating_management_queue() -> bool:
+	return _is_animating_management_queue
+
 func can_draw_gacha_instance(tier: int, pending_cost: int = 0) -> bool:
 	if _current_battle_phase != Phases.MANAGEMENT:
 		return false
@@ -729,18 +1123,9 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	var drawn_instance = get_instance(draw_result.drawn_uuid)
 	var new_unit_snapshot = {}
 	if is_instance_valid(drawn_instance):
-
 		var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
 		new_unit_snapshot = VisualDataAdapter.create_visual_data(drawn_instance, get_all_instances())
-		
-	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
-	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
-	AbilityResolver.process_trigger(&"on_draw", context)
-	AbilityResolver.process_trigger(&"on_token_spent", context)
-	
-	# Process resulting reactions (e.g. passive scaling, on-draw buffs)
-	var reaction_events = _combat.process_reaction_queue(self, {})
-	
+
 	# Create the draw event with the base stats snapshot
 	var draw_event = CombatEvent.new(CombatEvent.Type.DRAW)
 	var draw_payload := CombatPayload.new()
@@ -748,15 +1133,35 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 	draw_payload.new_unit_snapshot = new_unit_snapshot
 	draw_payload.target_token_amount = _gacha_tokens
 	draw_event.visual_payload = draw_payload
-	
-	# Append the draw event first, then any resulting reactions
+	draw_event.source_uuid = "PLAYER"
+	var draw_targets: Array[String] = [draw_result.drawn_uuid]
+	draw_event.target_uuids = draw_targets
 	chain_events.append(draw_event)
-	chain_events.append_array(reaction_events)
+
+	# Trigger passive updates (like Trinkets) so they enter the CRR reaction queue
+	var scope_id = _combat.get_crr().begin_scope()
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": draw_result.drawn_uuid})
+	AbilityResolver.process_trigger(&"on_draw", context)
+	AbilityResolver.process_trigger(&"on_token_spent", context)
 	
-	# If pool emptied, trigger reshuffle for next draw
-	# If pool emptied, next draw will fail until/if a retrieval mechanic is added.
-	if draw_result.pool_emptied:
-		pass
+	# Process resulting reactions (e.g. passive scaling, on-draw buffs) via CRR
+	var death_tracking: Dictionary = {}
+	var reaction_events: Array[CombatEvent] = []
+	reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+	
+	var safety := 20
+	while safety > 0 and not _combat.get_crr().is_empty():
+		_check_for_deaths_with_counter_delay(true, reaction_events, death_tracking)
+		_process_completed_counter_deaths(reaction_events, death_tracking)
+		if _combat.get_crr().is_empty():
+			break
+		reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
+		safety -= 1
+
+	# Stamp causal lineage: reactions were caused by the draw
+	CausalReactionResolver.stamp_cause_id(reaction_events, draw_event.event_id)
+	chain_events.append_array(reaction_events)
 	
 	_is_drawing = false
 	return chain_events
@@ -777,11 +1182,13 @@ func add_gacha_token(amount: int = 1, silent: bool = false) -> void:
 
 func add_gacha_tokens(amount: int, silent: bool = false) -> void:
 	"""Add gacha tokens to authoritative state. If not silent, emits gacha_tokens_changed."""
-	_gacha_tokens += amount
-	if amount > 0 and is_instance_valid(GameManager.run_state):
-		GameManager.run_state.total_tokens_earned += amount
-	if not silent:
-		SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
+	if is_instance_valid(GameManager.run_state):
+		GameManager.run_state.add_tokens(amount, silent)
+		_state._gacha_tokens = GameManager.run_state.current_room_tokens
+	else:
+		_state._gacha_tokens += amount
+		if not silent:
+			SignalBus.emit_signal("gacha_tokens_changed", _state._gacha_tokens)
 
 func get_current_phase_name() -> StringName:
 	var phase_name: StringName
@@ -1017,24 +1424,22 @@ func get_board_snapshot(pre_stats_override: Dictionary = {}) -> Dictionary:
 	for unit_uuid in pre_stats_override:
 		if snapshot.has(unit_uuid):
 			var unit_override: Dictionary = pre_stats_override[unit_uuid]
-			if unit_override.has("hp"):
-				snapshot[unit_uuid]["hp"] = unit_override["hp"]
-			if unit_override.has("pwr"):
-				snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+			_apply_unit_stat_override(snapshot[unit_uuid], unit_override)
 	var discard_c = get_container(&"DiscardPile")
 	if is_instance_valid(discard_c):
 		snapshot["__discard_count__"] = discard_c.get_all_non_empty_uuids().size()
 	return snapshot
 
 func _resolve_combat_phase() -> void:
-	if _is_processing_effect: return
 	_resolve_animator()
 	
 	# Wait for any in-flight management-phase async animation chains to finish.
 	# Without this, a management Twin Charm buff projectile could still be in flight
 	# when play_turn_sequence clears the visual registry, causing apply_pwr_delta
 	# to find a null view for the management chain's targets.
-	if _animator.is_playing_sequence():
+	if _is_animating_management_queue:
+		await management_animation_queue_completed
+	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
 		await _animator.turn_animation_finished
 	
 	_populate_actor_queue()
@@ -1074,6 +1479,14 @@ func _trigger_pre_combat_abilities() -> void:
 	call_deferred("_resolve_pending_reactions_only")
 
 func _on_turn_animation_finished() -> void:
+	if _is_animating_management_queue:
+		# Management queue animations are orchestrated exclusively by _process_management_animation_queue
+		if _is_battle_over():
+			if not _battle_over_emitted:
+				_battle_over_deferred = false
+				_emit_battle_over()
+		return
+
 	# This signal is the single source of truth for when animations are complete.
 	# It is safe to proceed to the next phase.
 	_is_processing_effect = false
@@ -1082,6 +1495,7 @@ func _on_turn_animation_finished() -> void:
 	_finalize_deaths()
 	
 	if _pending_inventory_refresh:
+		_pending_inventory_refresh = false
 		_emit_battle_inventory_changed()
 	
 	# ALWAYS check for battle over FIRST after animations finish in ANY phase
@@ -1303,10 +1717,7 @@ func _on_gacha_tokens_changed(_new_amount: int) -> void:
 			for unit_uuid in pre_stats:
 				if snapshot.has(unit_uuid):
 					var unit_override: Dictionary = pre_stats[unit_uuid]
-					if unit_override.has("hp"):
-						snapshot[unit_uuid]["hp"] = unit_override["hp"]
-					if unit_override.has("pwr"):
-						snapshot[unit_uuid]["pwr"] = unit_override["pwr"]
+					_apply_unit_stat_override(snapshot[unit_uuid], unit_override)
 			enqueue_management_animation(snapshot, passive_events)
 			_pending_inventory_refresh = true
 
@@ -1339,22 +1750,36 @@ func check_condition(condition_def: ConditionDefinition, source_uuid: String, co
 ## Enqueue an effect request for processing.
 ## @param effect_request: EffectRequest - The effect request to enqueue
 func enqueue_effect_request(request: EffectRequest) -> void:
-	## New priority-driven system: requests are added to _pending_reactions
-	## and sorted by priority before execution. Higher priority = executes first.
-	_pending_reactions.push_back(request)
+	## Route request through CRR to ensure proper priority and scope tracking
+	_combat.enqueue_reaction(request)
 
 ## Get the current size of the pending reactions queue.
 ## Used by BasicAttackEffect to capture the queue state before triggering on_before_attack.
 func get_pending_reactions_size() -> int:
 	return _pending_reactions.size()
 
+func begin_reaction_scope() -> int:
+	return _combat.begin_reaction_scope()
+
+func drain_reaction_scope(scope_id: int) -> Array[CombatEvent]:
+	return _combat.drain_reaction_scope(scope_id, self)
+
+func drain_interceptions() -> Array[CombatEvent]:
+	return _combat.drain_interceptions(self)
+
+func drain_lethal_counters() -> Array[CombatEvent]:
+	return _combat.drain_lethal_counters(self)
+
+func drain_cascade() -> Array[CombatEvent]:
+	return _combat.drain_cascade(self)
+
 func drain_pending_reactions_inline(start_index: int) -> void:
 	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_reactions_inline(start_index, self )
+	_combat.drain_reactions_inline(start_index, self)
 
 func drain_and_capture_reactions_inline(start_index: int) -> Array[CombatEvent]:
 	# THIN WRAPPER: Delegates to CombatSimulator
-	return _combat.drain_and_capture_reactions_inline(start_index, self )
+	return _combat.drain_and_capture_reactions_inline(start_index, self)
 
 func collect_inline_events() -> Array[CombatEvent]:
 	# THIN WRAPPER: Delegates to CombatSimulator
@@ -1362,7 +1787,7 @@ func collect_inline_events() -> Array[CombatEvent]:
 
 func drain_lethal_reactions_only(start_index: int) -> void:
 	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_lethal_reactions(start_index, self )
+	_combat.drain_lethal_reactions(start_index, self)
 
 
 ## Get an instance by UUID.
@@ -1628,9 +2053,16 @@ func set_conditional_trinket_bonus(instance: GachaBallInstance, source_id: Strin
 	if pwr_delta != 0:
 		instance.apply_pwr_delta(pwr_delta, {"silent": silent})
 
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true) -> Variant:
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true, source_category: StringName = &"", source_def_id: StringName = &"") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
+	if source_category.is_empty() and not source_uuid.is_empty():
+		var src_inst = get_instance_by_uuid(source_uuid)
+		if is_instance_valid(src_inst) and is_instance_valid(src_inst.get_definition()):
+			source_category = src_inst.get_definition().category
+			if source_def_id.is_empty():
+				source_def_id = src_inst.definition_id
+
 	match stat_type:
 		"hp":
 			if delta == 0:
@@ -1640,11 +2072,21 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				assert(action_type in [C.ACTION_HEAL, C.ACTION_BUFF], "apply_stat_delta: positive HP delta requires ACTION_HEAL or ACTION_BUFF, got '%s'" % action_type)
 				var new_hp = instance.current_hp + delta
 				
-				var comp = StatComponent.new()
-				comp.id = &"battle_heal" if action_type == C.ACTION_HEAL else &"battle_buff_hp"
-				comp.category = &"COMBAT_STATE"
-				comp.modifiers = {"hp": delta}
-				instance.battle_components.append(comp)
+				if is_stackable or action_type == C.ACTION_HEAL:
+					var comp = StatComponent.new()
+					if source_category == C.CATEGORY_CONSUMABLE:
+						comp.id = StringName("consumable_buff_hp_" + str(instance.battle_components.size()))
+						comp.category = &"CONSUMABLE"
+						comp.source_type = &"CONSUMABLE"
+						comp.source_id = String(source_def_id) if not source_def_id.is_empty() else source_uuid
+						comp.allow_stacking = true
+					else:
+						comp.id = &"battle_heal" if action_type == C.ACTION_HEAL else &"battle_buff_hp"
+						comp.category = &"COMBAT_STATE"
+						comp.source_type = &"BATTLE_BUFF" if action_type == C.ACTION_BUFF else &"COMBAT_STATE"
+						comp.source_id = source_uuid
+					comp.modifiers = {"hp": delta}
+					instance.battle_components.append(comp)
 				
 				instance.set_current_hp_silent(new_hp)
 				
@@ -1707,6 +2149,20 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 			if delta > 0:
 				assert(action_type == C.ACTION_BUFF, "apply_stat_delta: positive PWR delta requires ACTION_BUFF, got '%s'" % action_type)
 				var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
+				
+				if is_stackable and not instance.battle_components.is_empty():
+					var last_comp = instance.battle_components[-1]
+					if last_comp is StatComponent and last_comp.id == &"battle_pwr_gain":
+						if source_category == C.CATEGORY_CONSUMABLE:
+							last_comp.id = StringName("consumable_buff_pwr_" + str(instance.battle_components.size()))
+							last_comp.category = &"CONSUMABLE"
+							last_comp.source_type = &"CONSUMABLE"
+							last_comp.source_id = String(source_def_id) if not source_def_id.is_empty() else source_uuid
+							last_comp.allow_stacking = true
+						else:
+							last_comp.id = &"battle_buff_pwr"
+							last_comp.source_type = &"BATTLE_BUFF"
+							last_comp.source_id = source_uuid
 				
 				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
 					"unit_uuid": instance.ball_uuid,
@@ -1988,9 +2444,12 @@ func _advance_team_death_slots(slot_effects: Array[StringName], active_death_slo
 ## Process pending reactions without populating the actor queue
 ## Used for turn start abilities that shouldn't trigger combat
 func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> void:
-	if _is_processing_effect: return
-	_is_processing_effect = true
 	_resolve_animator()
+	if _is_animating_management_queue:
+		await management_animation_queue_completed
+	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+		await _animator.turn_animation_finished
+	_is_processing_effect = true
 	
 	# Process only pending reactions (turn start abilities), don't populate actor queue
 	var all_events_for_animator: Array[CombatEvent] = []
@@ -2030,6 +2489,7 @@ func block_ui_updates() -> void:
 func unblock_ui_updates() -> void:
 	_is_processing_effect = false
 	if _pending_inventory_refresh:
+		_pending_inventory_refresh = false
 		_emit_battle_inventory_changed()
 		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
@@ -2082,25 +2542,35 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 		await management_animation_queue_completed
 
 func _process_management_animation_queue() -> void:
+	if _is_animating_management_queue:
+		return
 	_is_animating_management_queue = true
 	_is_processing_effect = true
 	
-	while not _management_animation_queue.is_empty():
-		var payload = _management_animation_queue.pop_front()
-		if is_instance_valid(_animator):
-			await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
+	while true:
+		while not _management_animation_queue.is_empty():
+			var payload = _management_animation_queue.pop_front()
+			if is_instance_valid(_animator):
+				await _animator.play_turn_sequence(payload["snapshot"], payload["events"])
 		
-	# Finalize any deaths that occurred during the management sequence (e.g. from Fusion Spark)
-	# NOW that the death animations have finished playing.
-	_finalize_deaths()
+		# Finalize any deaths that occurred during the management sequence (e.g. from Fusion Spark)
+		# NOW that the death animations have finished playing.
+		_finalize_deaths()
+		
+		if _pending_inventory_refresh:
+			_pending_inventory_refresh = false
+			_is_processing_effect = false
+			_emit_battle_inventory_changed()
+			SignalBus.emit_signal("inventory_ui_refresh_requested")
+			if not _management_animation_queue.is_empty():
+				_is_processing_effect = true
+				continue
+		else:
+			_is_processing_effect = false
+		
+		break
 			
-	_is_processing_effect = false
 	_is_animating_management_queue = false
-
-	if _pending_inventory_refresh:
-		_pending_inventory_refresh = false
-		_emit_battle_inventory_changed()
-		SignalBus.emit_signal("inventory_ui_refresh_requested")
 
 	management_animation_queue_completed.emit()
 
@@ -2180,7 +2650,8 @@ func _process_registered_death(unit: GachaBallInstance, phase: StringName, death
 	AbilityResolver.process_trigger(&"on_ally_death", {
 		"fainting_ally_uuid": unit.ball_uuid,
 		"fainting_ally_location": death_location,
-		"fainting_ally_team": death_team
+		"fainting_ally_team": death_team,
+		"fainting_ally_pwr": unit.current_pwr
 	})
 	AbilityResolver.process_trigger(&"on_unit_death", {
 		"dying_uuid": unit.ball_uuid,
@@ -2451,9 +2922,9 @@ func _on_end_turn_requested() -> void:
 		pass
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	# CRITICAL: Do not recalculate stats during COMBAT phase
-	# This would emit unit_stat_changed which triggers SlotView updates, destroying registered views
-	if _current_battle_phase == Phases.COMBAT:
+	# CRITICAL: Do not recalculate stats during COMBAT phase or when animations are actively playing.
+	# Ambient unit_stat_changed emissions would bypass the animation queue and desync visual stats.
+	if _current_battle_phase == Phases.COMBAT or is_animations_playing():
 		return
 	
 	# Only recalculate stats for the specific unit that changed
@@ -2623,21 +3094,54 @@ func execute_enemy_entrance_sequence() -> void:
 			
 			var equip_result := InventoryOperations.equip_item(_state, item_inst.ball_uuid, enemy_inst.ball_uuid)
 			if equip_result.success:
+				var discard_event: CombatEvent = null
+				if not equip_result.replaced_item_uuid.is_empty():
+					var discard_payload := CombatPayload.item_discard(
+						equip_result.replaced_from_unit_uuid,
+						equip_result.replaced_item_uuid,
+						equip_result.replaced_item_icon,
+						equip_result.replaced_item_icon_path,
+						equip_result.replaced_item_name
+					)
+					discard_event = CombatEvent.new(CombatEvent.Type.ITEM_DISCARD, {
+						"source_uuid": equip_result.replaced_from_unit_uuid,
+						"target_uuids": [equip_result.replaced_item_uuid],
+						"visual_payload": discard_payload
+					})
+
+				var equip_payload := CombatPayload.item_equip(
+					enemy_inst.ball_uuid,
+					item_inst.ball_uuid,
+					item_def.icon if (is_instance_valid(item_def) and "icon" in item_def) else null,
+					item_def.icon_path if (is_instance_valid(item_def) and "icon_path" in item_def) else "",
+					item_def.name if (is_instance_valid(item_def) and "name" in item_def) else "Item"
+				)
+				var equip_event := CombatEvent.new(CombatEvent.Type.ITEM_EQUIP, {
+					"source_uuid": enemy_inst.ball_uuid,
+					"target_uuids": [enemy_inst.ball_uuid],
+					"visual_payload": equip_payload
+				})
+
 				AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 				var equip_reaction_events := _combat.process_reaction_queue(self, {})
 				
 				var stat_data := _generate_inventory_stat_events(equip_pre_stats)
 				var equip_events: Array[CombatEvent] = []
+				if discard_event != null:
+					equip_events.append(discard_event)
+				equip_events.append(equip_event)
 				equip_events.append_array(stat_data.events)
 				equip_events.append_array(equip_reaction_events)
 				
-				if not equip_events.is_empty():
-					if is_instance_valid(_animator):
-						var eq_snapshot = get_board_snapshot(equip_pre_stats)
-						if not old_equipped_items_data.is_empty():
-							eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
-							eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
-						await _animator.play_turn_sequence(eq_snapshot, equip_events)
+				if is_instance_valid(_animator):
+					var eq_snapshot = get_board_snapshot(equip_pre_stats)
+					if not old_equipped_items_data.is_empty():
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
+					else:
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = []
+						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = null
+					await _animator.play_turn_sequence(eq_snapshot, equip_events)
 				else:
 					if is_inside_tree() and is_instance_valid(get_tree()):
 						await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
@@ -2666,8 +3170,8 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
 	return bm_swap_instances(source_loc, target_loc)
 
-func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> bool:
-	return bm_equip_item(item_uuid, unit_uuid, slot_index)
+func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
+	return bm_equip_item(item_uuid, unit_uuid, slot_index, silent)
 func _has_team_trinket(is_player_team: bool, trinket_id: StringName) -> bool:
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
 	var trinkets = get_instances_in_container(container_tag)

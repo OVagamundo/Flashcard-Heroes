@@ -1,0 +1,240 @@
+{
+  "encounter_name": "06_melee_suicide_spikes",
+  "end_snapshot": {
+    "__discard_count__": 0,
+    "enemy_attacker": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": -2,
+      "pwr": 3,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_spikes_defender": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 8,
+      "pwr": 0,
+      "slot_index": 0,
+      "spikes_stacks": 4,
+      "status_effects": {
+        "spikes": 4
+      },
+      "tier": 1
+    }
+  },
+  "start_snapshot": {
+    "__discard_count__": 0,
+    "enemy_attacker": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "EnemyLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 2,
+      "pwr": 3,
+      "slot_index": 0,
+      "spikes_stacks": 0,
+      "status_effects": {
+
+      },
+      "tier": 1
+    },
+    "player_spikes_defender": {
+      "armor_stacks": 0,
+      "burn_stacks": 0,
+      "category": "UNIT",
+      "container_tag": "PlayerLineup",
+      "def_id": "unit_t1_a",
+      "display_name_key": "unit_t1_a.name",
+      "hp": 10,
+      "pwr": 0,
+      "slot_index": 0,
+      "spikes_stacks": 5,
+      "status_effects": {
+        "spikes": 5
+      },
+      "tier": 1
+    }
+  },
+  "turn_log": [
+    {
+      "action_type": "DAMAGE",
+      "event_id": 2,
+      "payload": {
+        "action_type": "DAMAGE",
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 0,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "enemy_attacker",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 1,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                3
+              ],
+              "targets_old_hp": [
+                2
+              ]
+            },
+            "source_uuid": "enemy_attacker",
+            "target_uuids": [
+              "enemy_attacker"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          2
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          2
+        ]
+      },
+      "source_uuid": "player_spikes_defender",
+      "target_uuids": [
+        "enemy_attacker"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "DAMAGE",
+      "event_id": 5,
+      "payload": {
+        "action_type": "DAMAGE",
+        "amount": 3,
+        "armor_consumed": [
+          0
+        ],
+        "attack_type": "melee",
+        "impact_events": [
+          {
+            "action_type": "",
+            "event_id": 3,
+            "payload": {
+
+            },
+            "source_uuid": "",
+            "target_uuids": [],
+            "type": "LOG_MESSAGE"
+          },
+          {
+            "ability_holder_uuid": "player_spikes_defender",
+            "ability_id": "unit_tier1a_passive_heal",
+            "action_type": "HEAL",
+            "event_id": 4,
+            "payload": {
+              "action_type": "HEAL",
+              "amount": 1,
+              "stat": "hp",
+              "targets_new_hp": [
+                8
+              ],
+              "targets_old_hp": [
+                7
+              ]
+            },
+            "source_uuid": "player_spikes_defender",
+            "target_uuids": [
+              "player_spikes_defender"
+            ],
+            "trigger_type": "on_hurt",
+            "type": "HEAL"
+          }
+        ],
+        "spikes_data": [
+          {
+            "armor_consumed": 0,
+            "attacker_new_hp": -2,
+            "attacker_old_hp": 3,
+            "attacker_uuid": "enemy_attacker",
+            "defender_uuid": "player_spikes_defender",
+            "new_spikes": 4,
+            "old_spikes": 5,
+            "spikes_damage": 5
+          }
+        ],
+        "stat": "hp",
+        "targets_new_armor": [
+          0
+        ],
+        "targets_new_burn": [
+          0
+        ],
+        "targets_new_hp": [
+          7
+        ],
+        "targets_old_armor": [
+          0
+        ],
+        "targets_old_burn": [
+          0
+        ],
+        "targets_old_hp": [
+          10
+        ]
+      },
+      "source_uuid": "enemy_attacker",
+      "target_uuids": [
+        "player_spikes_defender"
+      ],
+      "type": "DAMAGE"
+    },
+    {
+      "action_type": "",
+      "event_id": 6,
+      "payload": {
+
+      },
+      "source_uuid": "",
+      "target_uuids": [
+        "enemy_attacker"
+      ],
+      "type": "DEATH"
+    }
+  ]
+}

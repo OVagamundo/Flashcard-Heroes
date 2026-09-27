@@ -254,10 +254,6 @@ func _try_draw_tier(tier: int, cost: int, machine: Control, pre_drawn_instance: 
 		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _animate_trinity_token_gain() -> void:
-	var TokenPopVFXScene = preload("res://scenes/vfx/TokenPopVFX.tscn")
-	var token_vfx = TokenPopVFXScene.instantiate()
-	var effects_layer_vfx = WindowManager.get_vfx_layer()
-	
 	var trinket_view = null
 	for node in get_tree().get_nodes_in_group("trinket_view"):
 		if node.has_method("get_definition") and is_instance_valid(node.get_definition()):
@@ -269,30 +265,7 @@ func _animate_trinity_token_gain() -> void:
 	if is_instance_valid(trinket_view):
 		start_pos = trinket_view.get_global_rect().get_center()
 		
-	var main_node = GameManager._active_main_node
-	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
-	var target_pos = start_pos
-	if is_instance_valid(token_group):
-		var token_icon = token_group.get_node_or_null("TokenIcon")
-		if is_instance_valid(token_icon):
-			target_pos = token_icon.get_global_rect().get_center()
-		else:
-			target_pos = token_group.get_global_rect().get_center()
-	
-	token_vfx.position = start_pos
-	effects_layer_vfx.add_child(token_vfx)
-	token_vfx.setup(start_pos, target_pos)
-	
-	token_vfx.animation_finished.connect(func():
-		Audio.play_sfx("coin_land")
-		if is_instance_valid(token_group):
-			var tween = create_tween()
-			token_group.pivot_offset = token_group.size / 2.0
-			tween.tween_property(token_group, "scale", Vector2(1.2, 1.2), 0.05)
-			tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), 0.1)
-	)
-	token_vfx.play(target_pos)
-	Audio.play_sfx("coin_spawn", 1.0)
+	await CurrencyAnimator.animate_token_gain(1, start_pos)
 
 func _draw_definition_for_tier(tier: int) -> GachaBallDefinition:
 	var eligible: Array[GachaBallDefinition] = []
@@ -313,33 +286,12 @@ func _find_next_prize_slot() -> int:
 
 # --- Animations ---
 
-func _animate_token_spend(target_machine: Control, cost: int, token_group: Control) -> void:
-	var start_pos: Vector2
-	if is_instance_valid(token_group):
-		var token_rect = token_group.get_global_rect()
-		start_pos = token_rect.get_center()
-	else:
-		start_pos = Vector2(get_viewport_rect().size.x / 2, 60)
-	
+func _animate_token_spend(target_machine: Control, cost: int, _token_group: Control = null) -> void:
 	var machine_rect = target_machine.get_global_rect()
 	var target_pos = Vector2(machine_rect.get_center().x, machine_rect.position.y + machine_rect.size.y * 0.4)
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		var content_area = main_node.get_node_or_null("%ContentArea")
-		if is_instance_valid(content_area):
-			target_pos += content_area.global_position
-	
-	
-	var stagger_delay = 0.12
-	for i in range(cost):
-		var token_vfx = TokenSpendScene.instantiate()
-		WindowManager.get_vfx_layer().add_child(token_vfx)
-		token_vfx.coin_landed.connect(_on_coin_landed.bind(target_machine))
-		Audio.play_sfx("token_spend", 1.0 + (i * 0.05))
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		token_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-	
-	await AnimationConstants.create_pausable_timer(get_tree(), (cost - 1) * stagger_delay + 0.55).timeout
+	var on_token_landed := func(land_pos: Vector2):
+		_on_coin_landed(land_pos, target_machine)
+	await CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed)
 
 func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
 	if not is_instance_valid(machine): return
@@ -524,9 +476,10 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_sell_visuals(uuid)
+		var gold_yield = GameManager.sell_reward_instance(uuid)
+		execute_sell_visuals(uuid, gold_yield)
 
-func execute_sell_visuals(uuid: String) -> void:
+func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		for i in range(_prizes.size()):
@@ -546,8 +499,9 @@ func execute_sell_visuals(uuid: String) -> void:
 	var loc = prize_data.location
 	var instance = prize_data.instance
 	
-	var unit_value = instance.get_gold_value()
-	var gold_yield = max(1, int(unit_value * 0.5))
+	if gold_yield <= 0 and is_instance_valid(instance):
+		var unit_value = instance.get_gold_value()
+		gold_yield = max(1, int(unit_value * 0.5))
 	
 	_clear_prize_slot(loc.index)
 	SignalBus.emit_signal("selection_clear_requested")
@@ -565,7 +519,6 @@ func execute_sell_visuals(uuid: String) -> void:
 		_transient_drop_pos = Vector2.ZERO
 	
 	await _animate_gold_receive(gold_yield, start_pos)
-	GameManager.sell_reward_instance(uuid)
 	_action_in_progress = false
 
 	if is_instance_valid(ActionQueue):
@@ -701,43 +654,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance_uuid})
 
 func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node):
-		await get_tree().process_frame
-		return
-	
-	var gold_group = main_node.get_node_or_null("%GoldGroup")
-	if not is_instance_valid(gold_group):
-		await get_tree().process_frame
-		return
-	
-	var gold_icon = gold_group.get_node_or_null("GoldIcon")
-	if not is_instance_valid(gold_icon): gold_icon = gold_group
-	
-	# Target is outside ContentArea, so target_pos is already in screen coordinates
-	var gold_rect = gold_icon.get_global_rect()
-	var target_pos = gold_rect.get_center()
-	
-	var coins_to_spawn = mini(amount, 5)
-	var stagger_delay = 0.08
-	
-	for i in range(coins_to_spawn):
-		var coin_vfx = GoldCoinVFXScene.new()
-		WindowManager.get_vfx_layer().add_child(coin_vfx)
-		coin_vfx.coin_landed.connect(func(_pos: Vector2):
-			Audio.play_sfx("coin_land")
-			if is_instance_valid(gold_group):
-				var tween = gold_group.create_tween()
-				gold_group.pivot_offset = gold_group.size / 2.0
-				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
-				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
-		)
-		var offset = Vector2(RNGManager.cosmetic_rng.randf_range(-15, 15), RNGManager.cosmetic_rng.randf_range(-8, 8))
-		coin_vfx.play(start_pos + offset, target_pos, i * stagger_delay)
-		Audio.play_sfx("coin_spawn", 1.0 + (i * 0.05))
-	
-	var total_wait = (coins_to_spawn - 1) * stagger_delay + 0.55
-	await AnimationConstants.create_pausable_timer(get_tree(), total_wait).timeout
+	await CurrencyAnimator.animate_gold_gain(amount, start_pos)
 
 func _on_leave_pressed() -> void:
 	if _action_in_progress: return

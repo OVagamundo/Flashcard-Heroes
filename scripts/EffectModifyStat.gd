@@ -12,6 +12,8 @@ const C = preload("res://scripts/Constants.gd")
 ## - "DEBUFF": Stat penalty (-HP or -PWR).
 func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
+	var source_category: StringName = context.get("source_category", &"")
+	var source_consumable_id: StringName = context.get("source_consumable_id", &"")
 	
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -133,7 +135,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					
 					var old_hp = tgt.current_hp
 					var max_hp = tgt_def.base_hp if is_instance_valid(tgt_def) and "base_hp" in tgt_def else tgt.current_hp
-					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount, _source_uuid, tgt_action_type, true)
+					var new_hp = battle_manager.apply_stat_delta(tgt, "hp", tgt_amount, _source_uuid, tgt_action_type, true, source_category, source_consumable_id)
 					
 					# Log message for conversion
 					var conv_log = "%s converts PWR buff to +%d HP" % [BattleHelpers.get_instance_display_name(tgt), tgt_amount]
@@ -156,7 +158,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			var tgt_max_hp: int = tgt_def.base_hp if is_instance_valid(tgt_def) else 0
 			
 			# Apply stat change
-			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount, _source_uuid, tgt_action_type, true)
+			var new_val = battle_manager.apply_stat_delta(tgt, tgt_stat, tgt_amount, _source_uuid, tgt_action_type, true, source_category, source_consumable_id)
 			
 			# Collect data
 			all_target_uuids.append(target_uuid)
@@ -277,7 +279,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				var damage_type = parameters.get("damage_type", C.DamageType.RANGED)
 				battle_manager.apply_damage(inst, abs(amount), damage_type, _source_uuid)
 			else:
-				battle_manager.apply_stat_delta(inst, stat, amount, _source_uuid, action_type, true)
+				battle_manager.apply_stat_delta(inst, stat, amount, _source_uuid, action_type, true, source_category, source_consumable_id)
 	var non_sim_result := EffectResult.new()
 	non_sim_result.state_applied = true
 	return non_sim_result
