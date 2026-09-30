@@ -80,6 +80,18 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Dynamic Outlines:** Trait Trinkets (Fire, Earth, Water, Air) use a dynamically thick outline shader (up to 30.0px) that cycles through metallic gradient colors when their synergy threshold is met.
 - **Soul Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls of that element in the battle lineup.
 
+**GachaBall Outlines & Affordances:**
+- **Selection**: 3.0px crisp white outline shader on selected entity accompanied by hop animation.
+- **Level-Up Target**: 3.0px cyan outline (`Color(0.0, 0.95, 1.0)`) on matching identical units (< Lv. 3).
+- **Recipe Tier-Up & Item Target**: 3.0px magenta outline (`Color(1.0, 0.1, 0.9)`) on unlocked recipe combinations.
+- **Recipe Discovery**: 3.0px violet outline (`Color(0.82, 0.38, 1.0)`) on shop and reward units offering undiscovered recipes.
+- **Outline Priority Hierarchy**:
+    1. **Selection Outline (White)**: Active player focus takes highest priority.
+    2. **Merge Target Outline (Cyan / Magenta)**: Active merge affordances override background discovery outlines while dragging or selecting.
+    3. **Recipe Discovery Outline (Violet)**: Displays on unselected reward and shop candidates with undiscovered merge recipes.
+    4. **Trait Synergy Outline (Metallic)**: Displays on trait trinkets meeting threshold criteria during battle.
+    5. **Disabled**: Inactive if no criteria are met.
+
 **Status Effects:**
 - **Burn:**
     - **Visual:** Instant opaque **Orange** flash on the entire unit sprite.

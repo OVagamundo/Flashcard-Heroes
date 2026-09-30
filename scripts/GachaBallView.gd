@@ -46,6 +46,24 @@ var _is_interactive: bool = true
 var definition_id: StringName = &""
 var is_enemy: bool = false
 
+# Recipe unlock highlight constants and state
+const RECIPE_LOCKED_OUTLINE_COLOR := Color(0.82, 0.38, 1.0) # Violet / Purple recipe discovery outline
+const RECIPE_LOCKED_OUTLINE_WIDTH := 3.0
+var _has_locked_recipe: bool = false
+
+# Merge target highlight constants and state
+const MERGE_LEVEL_UP_OUTLINE_COLOR := Color(0.0, 0.95, 1.0) # Cyan outline for leveling up
+const MERGE_RECIPE_TIER_UP_OUTLINE_COLOR := Color(1.0, 0.1, 0.9) # Magenta outline for recipe tier up / items
+const MERGE_TARGET_OUTLINE_WIDTH := 3.0
+var _merge_target_type: StringName = &""
+
+const TRAIT_OUTLINE_COLORS = [
+	Color(0.8, 0.5, 0.2), # Bronze
+	Color(0.75, 0.75, 0.75), # Silver
+	Color(1.0, 0.84, 0.0), # Gold
+	Color(0.5, 1.0, 1.0) # Prismatic/Cyan
+]
+
 # Local input state to disambiguate click vs drag
 var _pressed_pending_click: bool = false
 var _drag_initiated_for_click: bool = false
@@ -144,6 +162,18 @@ func _ready() -> void:
 		if bus.has_signal("battle_inventory_changed"):
 			if not bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
 				bus.connect("battle_inventory_changed", _on_battle_inventory_changed)
+
+		if bus.has_signal("run_data_changed"):
+			if not bus.is_connected("run_data_changed", _on_run_data_changed):
+				bus.connect("run_data_changed", _on_run_data_changed)
+
+		if bus.has_signal("show_merge_target_indicators"):
+			if not bus.is_connected("show_merge_target_indicators", _on_show_merge_target_indicators):
+				bus.connect("show_merge_target_indicators", _on_show_merge_target_indicators)
+
+		if bus.has_signal("hide_merge_target_indicators"):
+			if not bus.is_connected("hide_merge_target_indicators", _on_hide_merge_target_indicators):
+				bus.connect("hide_merge_target_indicators", _on_hide_merge_target_indicators)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 	
 	# Connect click handlers for status effect icons (burn/armor)
@@ -258,6 +288,12 @@ func _exit_tree() -> void:
 	if is_instance_valid(bus):
 		if bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
 			bus.disconnect("battle_inventory_changed", _on_battle_inventory_changed)
+		if bus.is_connected("run_data_changed", _on_run_data_changed):
+			bus.disconnect("run_data_changed", _on_run_data_changed)
+		if bus.has_signal("show_merge_target_indicators") and bus.is_connected("show_merge_target_indicators", _on_show_merge_target_indicators):
+			bus.disconnect("show_merge_target_indicators", _on_show_merge_target_indicators)
+		if bus.has_signal("hide_merge_target_indicators") and bus.is_connected("hide_merge_target_indicators", _on_hide_merge_target_indicators):
+			bus.disconnect("hide_merge_target_indicators", _on_hide_merge_target_indicators)
 
 	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
@@ -293,6 +329,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_stop_touch_long_press()
 	_touch_hover_override_active = false
 	_is_selected = false
+	_merge_target_type = &""
 	_is_hovered = false
 	_set_hover_amount(0.0)
 	_set_press_amount(0.0)
@@ -311,6 +348,8 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	if visual_data.is_empty():
 		definition_id = &""
 		_entity_type = &""
+		_has_locked_recipe = false
+		_update_recipe_unlock_outline()
 		_update_view_groups()
 		visible = false
 		return
@@ -352,6 +391,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	var attributes = visual_data.get("attributes", {})
 	_visual_level = str(attributes.get(&"level", 1)).to_int()
 	_visual_tier = str(attributes.get(&"tier", visual_data.get("tier", 1))).to_int()
+	_has_locked_recipe = visual_data.get("has_locked_recipe", false)
 	
 	if icon_rect:
 		icon_rect.texture = visual_data.get("icon")
@@ -495,6 +535,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	
 	_update_item_slots()
 	_apply_selection_feedback()
+	_update_recipe_unlock_outline()
 	_apply_inventory_brightness(HoverFxMode.OFF)
 	
 	_update_trait_trinket_visuals(false)
@@ -546,37 +587,7 @@ func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
 	_last_trait_level = level
 	_last_soul_count = current_souls
 	
-	# Set outline color
-	var outline_mat = null
-	if icon_rect and icon_rect.material:
-		outline_mat = icon_rect.material as ShaderMaterial
-		
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite") if icon_rect else null
-	var unit_sprite_mat = unit_sprite.material as ShaderMaterial if unit_sprite and unit_sprite.material else null
-		
-	if level > 0:
-		var colors = [
-			Color(0.8, 0.5, 0.2), # Bronze
-			Color(0.75, 0.75, 0.75), # Silver
-			Color(1.0, 0.84, 0.0), # Gold
-			Color(0.5, 1.0, 1.0) # Prismatic/Cyan
-		]
-		var color_idx = min(level - 1, colors.size() - 1)
-		var outline_color = colors[color_idx]
-		
-		if outline_mat:
-			outline_mat.set_shader_parameter("outline_enabled", true)
-			outline_mat.set_shader_parameter("outline_color", outline_color)
-			outline_mat.set_shader_parameter("outline_width", 18.0)
-		if unit_sprite_mat:
-			unit_sprite_mat.set_shader_parameter("outline_enabled", true)
-			unit_sprite_mat.set_shader_parameter("outline_color", outline_color)
-			unit_sprite_mat.set_shader_parameter("outline_width", 18.0)
-	else:
-		if outline_mat:
-			outline_mat.set_shader_parameter("outline_enabled", false)
-		if unit_sprite_mat:
-			unit_sprite_mat.set_shader_parameter("outline_enabled", false)
+	_update_outline_visuals()
 
 
 func update_visuals(visual_data: Dictionary) -> void:
@@ -603,6 +614,9 @@ func update_visuals(visual_data: Dictionary) -> void:
 	var attributes = visual_data.get("attributes", {})
 	_visual_level = int(attributes.get(&"level", _visual_level))
 	_visual_tier = int(attributes.get(&"tier", visual_data.get("tier", _visual_tier)))
+	if visual_data.has("has_locked_recipe"):
+		_has_locked_recipe = visual_data.get("has_locked_recipe", _has_locked_recipe)
+		_update_recipe_unlock_outline()
 	_update_stats()
 	_update_dynamic_status_icons(false) # explicit: do not animate on hard refresh
 	_update_item_slots()
@@ -1879,6 +1893,94 @@ func _apply_selection_feedback() -> void:
 		var mat = icon_rect.material as ShaderMaterial
 		if mat:
 			mat.set_shader_parameter("outline_enabled", _is_selected)
+
+	_update_outline_visuals()
+
+func _is_reward_or_shop_context() -> bool:
+	if is_instance_valid(_location):
+		if _location.container == C.CONTAINER_REWARDS or _location.container == C.CONTAINER_SHOP:
+			return true
+	var p = get_parent()
+	while is_instance_valid(p):
+		if p.name.begins_with("Reward") or p.is_in_group("reward_scene") or p.name.begins_with("Shop"):
+			return true
+		p = p.get_parent()
+	return false
+
+func _on_show_merge_target_indicators(merge_targets: Dictionary) -> void:
+	var my_uuid := get_instance_uuid()
+	var new_type: StringName = merge_targets.get(my_uuid, &"")
+	if new_type != _merge_target_type:
+		_merge_target_type = new_type
+		_update_outline_visuals()
+
+func _on_hide_merge_target_indicators() -> void:
+	if not _merge_target_type.is_empty():
+		_merge_target_type = &""
+		_update_outline_visuals()
+
+func _set_shader_outline(mat: ShaderMaterial, enabled: bool, color: Color = Color.WHITE, width: float = 3.0) -> void:
+	if not is_instance_valid(mat):
+		return
+	mat.set_shader_parameter("outline_enabled", enabled)
+	if enabled:
+		mat.set_shader_parameter("outline_color", color)
+		mat.set_shader_parameter("outline_width", width)
+
+func _update_outline_visuals() -> void:
+	if not is_instance_valid(icon_rect):
+		return
+
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	var unit_sprite_mat = unit_sprite.material as ShaderMaterial if is_instance_valid(unit_sprite) and is_instance_valid(unit_sprite.material) else null
+	var icon_mat = icon_rect.material as ShaderMaterial if is_instance_valid(icon_rect.material) else null
+
+	var outline_enabled: bool = false
+	var outline_color: Color = Color.WHITE
+	var outline_width: float = 3.0
+
+	# Priority 1: Selection outline on the selected ball (White)
+	if _is_selected:
+		outline_enabled = true
+		outline_color = Color.WHITE
+		outline_width = 3.0
+	# Priority 2: Merge target highlight (Cyan for Level Up, Magenta for Recipe Tier Up / Items)
+	elif _merge_target_type == &"LEVEL_UP":
+		outline_enabled = true
+		outline_color = MERGE_LEVEL_UP_OUTLINE_COLOR
+		outline_width = MERGE_TARGET_OUTLINE_WIDTH
+	elif _merge_target_type == &"RECIPE_TIER_UP":
+		outline_enabled = true
+		outline_color = MERGE_RECIPE_TIER_UP_OUTLINE_COLOR
+		outline_width = MERGE_TARGET_OUTLINE_WIDTH
+	# Priority 3: Locked recipe discovery highlight (Violet in Shop / Rewards)
+	elif _has_locked_recipe and _is_reward_or_shop_context():
+		outline_enabled = true
+		outline_color = RECIPE_LOCKED_OUTLINE_COLOR
+		outline_width = RECIPE_LOCKED_OUTLINE_WIDTH
+	# Priority 4: In-battle trait level outline (Bronze / Silver / Gold / Prismatic)
+	elif _last_trait_level > 0 and GameManager.is_in_battle:
+		outline_enabled = true
+		var color_idx = min(_last_trait_level - 1, TRAIT_OUTLINE_COLORS.size() - 1)
+		outline_color = TRAIT_OUTLINE_COLORS[color_idx]
+		outline_width = 18.0
+	else:
+		outline_enabled = false
+
+	_set_shader_outline(unit_sprite_mat, outline_enabled, outline_color, outline_width)
+	_set_shader_outline(icon_mat, outline_enabled, outline_color, outline_width)
+
+func _update_recipe_unlock_outline() -> void:
+	_update_outline_visuals()
+
+func _on_run_data_changed() -> void:
+	if not definition_id.is_empty() and _is_reward_or_shop_context():
+		var run_state = GameManager.run_state if is_instance_valid(GameManager) else null
+		if is_instance_valid(run_state):
+			var new_locked = run_state.has_locked_recipe_for_result(definition_id)
+			if new_locked != _has_locked_recipe:
+				_has_locked_recipe = new_locked
+				_update_recipe_unlock_outline()
 
 func _notification(what: int) -> void:
 	# Signal Drag Start to GIR (Critical for State Management)

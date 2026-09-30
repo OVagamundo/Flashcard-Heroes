@@ -327,8 +327,10 @@ When two units merge, the game categorizes all attributes, stats, and modifiers 
      * Permanent Dojo training gains (`PERMANENT_UPGRADE`).
      * Consumable item buffs (healing potions, stat potions, scrolls) tagged with `source_type = &"CONSUMABLE"` (all stat gains and restorative healing from consumables combine additively into merge inheritance).
      * In-combat permanent growth and reactive buffs (e.g., *Vengeance Charm*, *Convergence Surge*, and mid-battle ability buffs).
+     * **Completed HP/PWR changes applied by an ability**, including heals and buffs from units, equipped items, or trinkets, whether the ability targets its holder or another unit. Once applied, the gain belongs to the recipient and is stackable across that recipient's later merges. For example, *Koi's Blessing*'s +2 turn-start heal and *Phoenix Elixir*'s healing and PWR gain are inherited by a holder that later merges; an ally's ability-granted gain is inherited if that ally later merges.
      * Rarity bonuses (e.g., Prismatic rarity).
      * Surplus stats inherited from prior merges (`MERGE_INHERITANCE`).
+   * **Equipment distinction**: Only an item's passive `bonus_hp` / `bonus_pwr` granted by equipping it is conditional on holding that item and is excluded from parent inheritance. The retained item reapplies that passive bonus to the result. A completed stat change caused by the item's triggered ability is a separate, recipient-owned gain and follows the stackable rule above, unless that effect is explicitly identified as conditional/dynamic.
    * **Merge Contract**:
      * In all merges (both Evolutionary Level-ups and Recipe Tier-ups), all accumulated stackable HP and PWR bonuses from **both** parent units combine and carry over into the resulting unit's stats.
      * A unit never loses its accumulated battle buffs, consumable enhancements, or training gains simply because it leveled up or merged.
@@ -357,9 +359,9 @@ When two units merge, the game categorizes all attributes, stats, and modifiers 
      * *Rusty Ring* (+1 HP / +1 PWR, active only while holding NO item).
      * *Royal Insignia* (+1 HP / +1 PWR, active only for Level 1 units).
      * *Veteran Insignia* (+1 HP / +1 PWR, active only for Level 2 units).
-     * *Twin Charm* (scaled dynamically based on duplicate copy counts in the battle pool).
+     * *Twin Charm* (scaled dynamically based on duplicate copy counts in the battle pool), *Echoing Orb* (scaled dynamically by the number of copies), and other explicitly marked passive/dynamic effects whose value is recalculated from current state.
    * **Merge Contract**:
-     * Unique and conditional buffs must **never** be baked into the inherited stats of a merged unit.
+     * Unique and conditional buffs must **never** be baked into the inherited stats of a merged unit. Conditional status is explicit: passive equipment bonuses and dynamic values that are recalculated from current state are excluded; ordinary ability-applied HP/PWR gains, including heals, are not conditional merely because the ability came from equipment or a trinket.
      * When two units merge:
        1. All unique/conditional buffs are cleanly stripped from the parent units so they are completely excluded from the inherited stat total.
        2. Base stats, stackable buffs, elemental souls, and status effects are combined onto the new unit.
@@ -391,6 +393,16 @@ The game distinguishes between leveling up an existing unit and synthesizing a c
   * During any merge, only one equipped item is carried over to the result. The target unit's item takes priority; if empty, the source unit's item is transferred. Any secondary equipped item that is not transferred is sent directly to the **Battle Discard Pile** (`DiscardPile`) via the standard GachaBall capsule discard animation.
   * **Seamless Pre-Baked Equips**: The inherited item is equipped silently onto the resulting unit. Its stat bonuses (e.g., +1 HP from *Koi's Blessing* or +1 PWR from *Tiger's Spirit*) are pre-baked into the new unit's initial stats upon spawning on the board, preventing redundant self-buff animations or floating numbers from firing over the freshly merged unit.
 * **Bench Item Merging**: Dragging an item onto another item on the bench checks for item recipes and opens a confirmation preview.
+
+### 7.7.3 Contextual Merge Target Highlighting
+* **Activation**:
+  * Selecting or dragging a friendly GachaBall highlights all valid merge targets within the active context:
+    * **Level-Up Targets**: Identical units of matching level (below Level 3).
+    * **Recipe Tier-Up Targets**: Units that combine with the active unit via an unlocked recipe.
+    * **Item Merge Targets**: Items (loose on the bench or equipped to a friendly unit) that combine with the active item via an unlocked recipe.
+* **Lifetime**:
+  * Highlights remain active strictly while a GachaBall is being dragged or actively selected.
+  * Highlights clear immediately upon releasing the drag, dropping, or deselecting.
 
 ## 7.8 Physics Inventory & Discard Drawers (Battle Only)
 During battle, the drawer-based inventory (Battle Inventory) and side-drawer discard pile are **Read-Only Physics Visualizations**:
@@ -473,6 +485,7 @@ The presentation system enforces a strict **Visual Clarity Contract**: the playe
    * The unit immediately displays floating stat debuff text (`-X`), strictly color-coded:
      * **Red (`Color(1.0, 0.0, 0.0)`)**: Health reduction (`-X HP`).
      * **Black (`Color(0.0, 0.0, 0.0)`)**: Power reduction (`-X PWR`).
+
 
 ---
 
@@ -699,6 +712,7 @@ Difficulty scales as the player resolves nodes and advances the Day counter, cau
 * **Regular Battles**: Standard budget-based combat encounters.
 * **Shop Node**:
   * **Stock**: 3 random GachaBalls drawn exclusively from the World Pool of unlocked definitions.
+  * **Recipe Discovery Indicator**: Units offered in the shop that have undiscovered merge recipes for the current run are marked as undiscovered recipes.
   * **Reroll Cost**:
     * Base cost: **1 Gold**.
     * Escalation: **+1 Gold** for each subsequent reroll during the same visit.
@@ -711,6 +725,7 @@ Difficulty scales as the player resolves nodes and advances the Day counter, cau
     * Flat fee: **5 Gold** (does not escalate).
 * **Post-Battle Reward Sequence (`PrizeLineup`)**:
   * **Lineup**: 5 random reward capsules are presented.
+  * **Recipe Discovery Indicator**: Reward capsules containing units that have undiscovered merge recipes for the current run are marked as undiscovered recipes.
   * **Collect Drop Zone**: Free; adds the capsule to the Run Inventory.
   * **Sell Drop Zone**: Sells the capsule for Gold (standard items sell for tier value; Elite rewards grant a flat **10 Gold**).
   * **Auto-Collection**: Leaving the scene with uncollected items triggers automatic sequential collection of all remaining prizes.

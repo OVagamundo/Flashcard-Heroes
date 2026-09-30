@@ -210,6 +210,24 @@ func return_pending_guardian() -> void:
 
 
 func _animate_events(events: Array[CombatEvent]) -> void:
+	# Outer brackets: prevent the per-animation desync assertion from firing
+	# prematurely when multiple GOLD_GAIN / TOKEN_GAIN events exist in the same
+	# turn.  Combat simulation pre-applies ALL gold/token mutations to RunState
+	# before ANY animation plays.  Without the outer bracket the assertion in
+	# end_gold_animation / end_token_animation would compare the partially-
+	# animated visual counter against the fully-mutated authoritative value and
+	# crash.  The bracket keeps _gold/_token_animations_in_flight > 0 until every
+	# currency event in the turn has been animated, so the assertion fires only
+	# once — after visual and authoritative are guaranteed to match.
+	var _currency_main = GameManager._active_main_node if is_instance_valid(GameManager) else null
+	var _has_gold_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.GOLD_GAIN)
+	var _has_token_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.TOKEN_GAIN)
+
+	if _has_gold_events and is_instance_valid(_currency_main):
+		_currency_main.begin_gold_animation()
+	if _has_token_events and is_instance_valid(_currency_main):
+		_currency_main.begin_token_animation()
+
 	for event in events:
 		SignalBus.log_animation_event.emit(event)
 		
@@ -563,6 +581,13 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		await get_tree().process_frame
 	
 	_is_paused = false
+
+	# Close the outer currency-animation brackets so the desync assertion fires
+	# now that every GOLD_GAIN / TOKEN_GAIN event in this turn has been animated.
+	if _has_gold_events and is_instance_valid(_currency_main):
+		_currency_main.end_gold_animation()
+	if _has_token_events and is_instance_valid(_currency_main):
+		_currency_main.end_token_animation()
 
 func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
 	var view = _visual_registry.get(target_uuid)

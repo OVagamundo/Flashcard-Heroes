@@ -144,11 +144,17 @@ func _set_scaling(unit: GachaBallInstance, status_key: StringName, last_bonus: i
 		_clear_status(unit, status_key, last_bonus, is_simulation)
 	if new_bonus > 0:
 		unit.add_status_effect_silent(status_key, new_bonus)
-	unit.apply_pwr_delta(delta, {"silent": is_simulation})
+	unit.apply_pwr_delta(delta, {
+		"silent": is_simulation,
+		"merge_source_type": &"CONDITIONAL_ABILITY"
+	})
 
 func _clear_scaling(unit: GachaBallInstance, status_key: StringName, last_bonus: int, is_simulation: bool) -> void:
 	_clear_status(unit, status_key, last_bonus, is_simulation)
-	unit.apply_pwr_delta(-last_bonus, {"silent": is_simulation})
+	unit.apply_pwr_delta(-last_bonus, {
+		"silent": is_simulation,
+		"merge_source_type": &"CONDITIONAL_ABILITY"
+	})
 
 func _clear_status(unit: GachaBallInstance, status_key: StringName, last_bonus: int, is_simulation: bool) -> void:
 	if is_simulation:

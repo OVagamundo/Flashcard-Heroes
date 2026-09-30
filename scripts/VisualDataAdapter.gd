@@ -57,6 +57,10 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 
 	var visual_layers := _create_visual_layers(instance, all_instances)
 
+	var has_locked_recipe := false
+	if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		has_locked_recipe = GameManager.run_state.has_locked_recipe_for_result(instance.definition_id)
+
 	var data = {
 		"uuid": instance.ball_uuid,
 		"definition_id": instance.definition_id,
@@ -65,6 +69,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		"icon": def.icon,
 		"display_name_key": display_name_key,
 		"description_key": description_key,
+		"has_locked_recipe": has_locked_recipe,
 		
 		# Stats
 		"hp": instance.current_hp,
