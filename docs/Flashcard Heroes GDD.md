@@ -138,6 +138,12 @@ We distinguish between two distinct merging pathways:
   - **Tier Evolution**: Parents' stats are added together.
   - **Leveling**: Unit keeps its original base stats plus a flat **+1 Stat Point per level gained**, and sums only the "Extra Stats" (inheritance/buffs) from parents.
 
+### 8.5 Visual Affordances & Merge Indicators
+- **Contextual Merge Highlights**: When dragging or selecting a GachaBall:
+  - **Cyan Outline**: Marks target units that will self-merge to Level Up (matching level < Lv. 3).
+  - **Magenta Outline**: Marks target units or items that will combine via an unlocked recipe to Tier Up into a higher-tier entity.
+- **Recipe Discovery Cues**: Units in Shop and Post-Battle Reward scenes that produce unacquired/locked recipes are outlined in **Violet**, signaling recipe discovery potential.
+
 9. Core Entities & Systems
 - **Hero Unit**: Your central character. HP = Run Health. restricted to the PlayerLineup.
 - **Trinkets**: Non-GachaBall items providing run-wide passive bonuses.

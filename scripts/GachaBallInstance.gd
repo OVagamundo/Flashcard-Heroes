@@ -592,6 +592,7 @@ func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 			var comp = StatComponent.new()
 			comp.id = &"battle_pwr_gain"
 			comp.category = &"COMBAT_STATE"
+			comp.source_type = StringName(context.get("merge_source_type", ""))
 			comp.modifiers = {"pwr": actual_gain}
 			battle_components.append(comp)
 		
@@ -1054,4 +1055,3 @@ func _deserialize_tags(data: Array) -> void:
 # --- Utilities ---
 func get_definition() -> Resource:
 	return Database.get_definition(definition_id)
-

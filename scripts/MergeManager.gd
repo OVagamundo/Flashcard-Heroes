@@ -250,6 +250,80 @@ func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, s
 				
 	return null
 
+## Returns the merge type between two instances (&"LEVEL_UP", &"RECIPE_TIER_UP", or &"").
+## Returns &"" if no valid unlocked merge exists.
+func get_merge_type_between(instance_a: GachaBallInstance, instance_b: GachaBallInstance) -> StringName:
+	if not is_instance_valid(instance_a) or not is_instance_valid(instance_b):
+		return &""
+	if instance_a.ball_uuid == instance_b.ball_uuid:
+		return &""
+
+	var is_battle = GameManager.is_in_battle if is_instance_valid(GameManager) else false
+	var is_merge_encounter = is_merge_encounter_active()
+	if not is_battle and not is_merge_encounter:
+		return &""
+
+	var def_a = instance_a.get_definition()
+	var def_b = instance_b.get_definition()
+	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
+		return &""
+
+	if def_a.category != def_b.category:
+		return &""
+
+	# Unit Merges
+	if def_a.category == &"UNIT":
+		# Level Up: same definition ID, same level, level < 3
+		if instance_a.definition_id == instance_b.definition_id:
+			if instance_a.level == instance_b.level and instance_a.level < 3:
+				return &"LEVEL_UP"
+			else:
+				return &""
+
+		# Recipe Tier Up
+		for recipe_key in Database.recipes:
+			var recipe: MergeRecipe = Database.recipes[recipe_key]
+			if not is_instance_valid(recipe) or recipe.merge_type != &"UNIT":
+				continue
+			if (instance_a.definition_id == recipe.ingredient_a_id and instance_b.definition_id == recipe.ingredient_b_id) or \
+			   (instance_a.definition_id == recipe.ingredient_b_id and instance_b.definition_id == recipe.ingredient_a_id):
+				if is_merge_encounter or _is_recipe_unlocked(recipe.id):
+					return &"RECIPE_TIER_UP"
+		return &""
+
+	# Item Merges
+	if def_a.category == &"ITEM":
+		for recipe_key in Database.recipes:
+			var recipe: MergeRecipe = Database.recipes[recipe_key]
+			if not is_instance_valid(recipe) or recipe.merge_type != &"ITEM":
+				continue
+			if recipe.is_self_merge:
+				if instance_a.definition_id == recipe.ingredient_a_id and instance_a.definition_id == instance_b.definition_id:
+					if is_merge_encounter or _is_recipe_unlocked(recipe.id):
+						return &"RECIPE_TIER_UP"
+			else:
+				if (instance_a.definition_id == recipe.ingredient_a_id and instance_b.definition_id == recipe.ingredient_b_id) or \
+				   (instance_a.definition_id == recipe.ingredient_b_id and instance_b.definition_id == recipe.ingredient_a_id):
+					if is_merge_encounter or _is_recipe_unlocked(recipe.id):
+						return &"RECIPE_TIER_UP"
+		return &""
+
+	return &""
+
+## Helper to check if an item can merge with any item equipped on a unit
+func get_merge_type_with_unit_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, all_instances_db: Dictionary) -> StringName:
+	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
+		return &""
+	for equipped_uuid in unit_instance.equipped_item_uuids:
+		if equipped_uuid.is_empty():
+			continue
+		var equipped_item = all_instances_db.get(equipped_uuid)
+		if is_instance_valid(equipped_item):
+			var m_type = get_merge_type_between(item_instance, equipped_item)
+			if not m_type.is_empty():
+				return m_type
+	return &""
+
 func _is_recipe_unlocked(recipe_id: StringName) -> bool:
 	var run_state = GameManager.run_state
 	if not is_instance_valid(run_state):
@@ -288,20 +362,24 @@ func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: String
 			continue
 		total += int(component.modifiers.get(String(stat), 0))
 		
-	# 2. In-combat active ability buffs (Convergence Surge, Vengeance Charm, mid-battle reactive buffs) and consumable buffs
+	# 2. In-combat stat gains from abilities and consumables.
+	# Ability results belong to the recipient once applied, even when the ability came
+	# from equipped gear. Passive/conditional equipment and scaling bonuses are tagged
+	# separately and are deliberately not inherited.
 	for component in instance.battle_components:
 		if not component is StatComponent:
 			continue
 		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
 			continue
-		if component.source_type == &"CONSUMABLE" or component.category == &"CONSUMABLE":
-			total += int(component.modifiers.get(String(stat), 0))
+		if component.source_type == &"CONDITIONAL_ABILITY":
 			continue
-		var comp_id: StringName = component.id
-		if comp_id == &"battle_buff_hp" and stat == &"hp":
-			total += int(component.modifiers.get("hp", 0))
-		elif comp_id == &"battle_buff_pwr" and stat == &"pwr":
-			total += int(component.modifiers.get("pwr", 0))
+		if component.source_type == &"CONSUMABLE" or component.category == &"CONSUMABLE":
+			total += maxi(0, int(component.modifiers.get(String(stat), 0)))
+			continue
+		# HEAL is a separate action type from BUFF, but its completed positive HP
+		# gain is still part of the recipient's accumulated stats for merge purposes.
+		if component.source_type == &"BATTLE_BUFF" or component.id == &"battle_heal":
+			total += maxi(0, int(component.modifiers.get(String(stat), 0)))
 
 	return total
 
@@ -390,7 +468,10 @@ func _apply_level_up_scaling_trackers(instance_a: GachaBallInstance, instance_b:
 		var post_merge_bonus: int = int(post_merge_count / 2)
 		if post_merge_bonus > 0:
 			merged_instance.status_effects[twin_charm_key] = post_merge_bonus
-			merged_instance.apply_pwr_delta(post_merge_bonus, {"silent": true})
+			merged_instance.apply_pwr_delta(post_merge_bonus, {
+				"silent": true,
+				"merge_source_type": &"CONDITIONAL_ABILITY"
+			})
 
 	# 2. Doppleganger scaling
 	if instance_a.status_effects.has(&"doppleganger_scaling") or instance_b.status_effects.has(&"doppleganger_scaling"):
@@ -419,7 +500,10 @@ func _apply_level_up_scaling_trackers(instance_a: GachaBallInstance, instance_b:
 		var post_merge_bonus: int = maxi(0, (post_merge_count - 1) * scale_amount)
 		if post_merge_bonus > 0:
 			merged_instance.status_effects[&"doppleganger_scaling"] = post_merge_bonus
-			merged_instance.apply_pwr_delta(post_merge_bonus, {"silent": true})
+			merged_instance.apply_pwr_delta(post_merge_bonus, {
+				"silent": true,
+				"merge_source_type": &"CONDITIONAL_ABILITY"
+			})
 
 func _get_instance_team(inst: GachaBallInstance, all_instances_db: Dictionary) -> String:
 	if not is_instance_valid(inst):

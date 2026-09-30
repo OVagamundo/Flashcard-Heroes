@@ -54,7 +54,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					inst.clear_status_effect(status_key)
 				if target_bonus > 0: 
 					inst.add_status_effect_silent(status_key, target_bonus)
-				inst.apply_pwr_delta(holder_delta, {"silent": is_simulation})
+				inst.apply_pwr_delta(holder_delta, {
+					"silent": is_simulation,
+					"merge_source_type": &"CONDITIONAL_ABILITY"
+				})
 				holder_updated = true
 				
 				if is_simulation and _is_on_board(inst):
@@ -71,7 +74,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		elif inst_last_scaling > 0:
 			# This unit was previously holding this orb, but is no longer the holder
 			inst.clear_status_effect(status_key)
-			inst.apply_pwr_delta(-inst_last_scaling, {"silent": is_simulation})
+			inst.apply_pwr_delta(-inst_last_scaling, {
+				"silent": is_simulation,
+				"merge_source_type": &"CONDITIONAL_ABILITY"
+			})
 			holder_updated = true
 			if is_simulation and _is_on_board(inst):
 				var visual_source_uuid = uuid

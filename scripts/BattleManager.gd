@@ -2148,21 +2148,28 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				
 			if delta > 0:
 				assert(action_type == C.ACTION_BUFF, "apply_stat_delta: positive PWR delta requires ACTION_BUFF, got '%s'" % action_type)
+				var battle_component_count := instance.battle_components.size()
 				var new_pwr = instance.apply_pwr_delta(delta, {"silent": true})
 				
-				if is_stackable and not instance.battle_components.is_empty():
-					var last_comp = instance.battle_components[-1]
-					if last_comp is StatComponent and last_comp.id == &"battle_pwr_gain":
+				if instance.battle_components.size() > battle_component_count:
+					var gain_component = instance.battle_components[-1]
+					if gain_component is StatComponent and gain_component.id == &"battle_pwr_gain":
 						if source_category == C.CATEGORY_CONSUMABLE:
-							last_comp.id = StringName("consumable_buff_pwr_" + str(instance.battle_components.size()))
-							last_comp.category = &"CONSUMABLE"
-							last_comp.source_type = &"CONSUMABLE"
-							last_comp.source_id = String(source_def_id) if not source_def_id.is_empty() else source_uuid
-							last_comp.allow_stacking = true
+							gain_component.id = StringName("consumable_buff_pwr_" + str(instance.battle_components.size()))
+							gain_component.category = &"CONSUMABLE"
+							gain_component.source_type = &"CONSUMABLE"
+							gain_component.source_id = String(source_def_id) if not source_def_id.is_empty() else source_uuid
+							gain_component.allow_stacking = true
+						elif is_stackable:
+							gain_component.id = &"battle_buff_pwr"
+							gain_component.source_type = &"BATTLE_BUFF"
+							gain_component.source_id = source_uuid
 						else:
-							last_comp.id = &"battle_buff_pwr"
-							last_comp.source_type = &"BATTLE_BUFF"
-							last_comp.source_id = source_uuid
+							# Non-stackable deltas are either recalculated from an external
+							# condition (such as tokens or gold) or represented by a separate
+							# persistent component. Do not inherit this runtime delta too.
+							gain_component.source_type = &"CONDITIONAL_ABILITY"
+							gain_component.source_id = source_uuid
 				
 				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
 					"unit_uuid": instance.ball_uuid,

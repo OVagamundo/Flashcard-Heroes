@@ -43,7 +43,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		source.add_status_effect_silent(status_key, bonus_pwr)
 		
 	# Apply standard PWR modification
-	source.apply_pwr_delta(delta, {"silent": is_simulation})
+	source.apply_pwr_delta(delta, {
+		"silent": is_simulation,
+		"merge_source_type": &"CONDITIONAL_ABILITY"
+	})
 
 	var result := EffectResult.new()
 	if is_simulation and _is_on_board(source):

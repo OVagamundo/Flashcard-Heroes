@@ -324,6 +324,13 @@ signal show_slot_indicators(locations: Array)
 ## Emitted to hide all slot indicators
 signal hide_slot_indicators
 
+## Emitted to show merge highlight outlines on target gachaballs
+## @param merge_targets: Dictionary - Key: uuid (String), Value: merge_type (StringName: &"LEVEL_UP" or &"RECIPE_TIER_UP")
+signal show_merge_target_indicators(merge_targets: Dictionary)
+
+## Emitted to clear merge highlight outlines from all target gachaballs
+signal hide_merge_target_indicators
+
 ## Emitted when a drag operation starts (for slot indicators)
 ## @param origin_context: InteractionContext - The dragged item's context
 signal drag_started(origin_context: InteractionContext)

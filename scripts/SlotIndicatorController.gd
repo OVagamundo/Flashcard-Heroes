@@ -47,7 +47,8 @@ func _on_selection_changed(new_location: LocationIdentifier) -> void:
 	if valid_targets.size() > 0:
 		SignalBus.emit_signal("show_slot_indicators", valid_targets)
 	else:
-		_hide_indicators()
+		SignalBus.emit_signal("hide_slot_indicators")
+	_update_merge_target_indicators()
 
 func _on_selection_clear_requested() -> void:
 	_hide_indicators()
@@ -66,6 +67,9 @@ func _on_drag_started(origin_context: InteractionContext) -> void:
 	var valid_targets = _compute_valid_targets(_source_instance, _source_location)
 	if valid_targets.size() > 0:
 		SignalBus.emit_signal("show_slot_indicators", valid_targets)
+	else:
+		SignalBus.emit_signal("hide_slot_indicators")
+	_update_merge_target_indicators()
 
 func _on_drag_ended(_was_handled: bool) -> void:
 	_hide_indicators()
@@ -74,6 +78,58 @@ func _hide_indicators() -> void:
 	_source_instance = null
 	_source_location = null
 	SignalBus.emit_signal("hide_slot_indicators")
+	SignalBus.emit_signal("hide_merge_target_indicators")
+
+func _update_merge_target_indicators() -> void:
+	if not is_instance_valid(_source_instance):
+		SignalBus.emit_signal("hide_merge_target_indicators")
+		return
+
+	var is_battle = GameManager.is_in_battle if is_instance_valid(GameManager) else false
+	var is_merge_encounter = MergeManager.is_merge_encounter_active() if is_instance_valid(MergeManager) else false
+	if not is_battle and not is_merge_encounter:
+		SignalBus.emit_signal("hide_merge_target_indicators")
+		return
+
+	var data_owner = _get_data_owner()
+	var all_instances: Dictionary = data_owner.get_all_instances() if is_instance_valid(data_owner) and data_owner.has_method("get_all_instances") else {}
+
+	var merge_targets: Dictionary = {}
+	var views = get_tree().get_nodes_in_group("gachaball_view")
+	for view in views:
+		if not is_instance_valid(view) or not view is GachaBallView:
+			continue
+		if not view.is_inside_tree() or not view.visible:
+			continue
+		if view.is_enemy:
+			continue
+		var target_uuid: String = view.get_instance_uuid()
+		if target_uuid.is_empty() or target_uuid == _source_instance.ball_uuid:
+			continue
+
+		if is_instance_valid(view._location) and is_instance_valid(_source_location):
+			var src_group := GlobalInteractionRouter.get_context_group(_source_location.container)
+			var tgt_group := GlobalInteractionRouter.get_context_group(view._location.container)
+			if src_group != tgt_group:
+				continue
+
+		var target_instance: GachaBallInstance = all_instances.get(target_uuid)
+		if not is_instance_valid(target_instance) and is_instance_valid(view._location):
+			target_instance = GameManager.get_instance_from_location(view._location)
+		if not is_instance_valid(target_instance):
+			continue
+
+		var m_type: StringName = MergeManager.get_merge_type_between(_source_instance, target_instance)
+		if m_type.is_empty() and _source_instance.get_definition().category == &"ITEM" and target_instance.get_definition().category == &"UNIT":
+			m_type = MergeManager.get_merge_type_with_unit_item(_source_instance, target_instance, all_instances)
+
+		if not m_type.is_empty():
+			merge_targets[target_uuid] = m_type
+
+	if merge_targets.size() > 0:
+		SignalBus.emit_signal("show_merge_target_indicators", merge_targets)
+	else:
+		SignalBus.emit_signal("hide_merge_target_indicators")
 
 # --- Valid Target Computation ---
 

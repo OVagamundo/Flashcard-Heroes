@@ -231,6 +231,17 @@ func is_recipe_unlocked(recipe_id: StringName) -> bool:
 	"""Returns true if the given recipe is unlocked for the current run."""
 	return unlocked_recipes.get(recipe_id, false)
 
+func has_locked_recipe_for_result(result_definition_id: StringName) -> bool:
+	"""Returns true if there is at least one recipe that produces this definition
+	which has not yet been unlocked for the current run."""
+	if result_definition_id.is_empty():
+		return false
+	for recipe in Database.recipes.values():
+		if is_instance_valid(recipe) and recipe.result_id == result_definition_id:
+			if not is_recipe_unlocked(recipe.id):
+				return true
+	return false
+
 func get_container(container_name: StringName) -> DataContainer:
 	# Check if container exists
 	if _containers.has(container_name):

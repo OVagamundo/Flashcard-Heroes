@@ -136,11 +136,13 @@ func _get_active_material() -> ShaderMaterial:
 # In Battle mode, this is UnitSprite child; otherwise icon_rect itself
 # =============================================================================
 func _get_sprite() -> TextureRect:
-	if is_instance_valid(_sprite):
-		return _sprite
+	if not is_instance_valid(_icon_rect) and is_instance_valid(_view):
+		_icon_rect = _view.icon_rect
 	if not is_instance_valid(_icon_rect):
 		return null
-	# Try UnitSprite child first (Battle mode has sprite at (32,32))
+	if is_instance_valid(_sprite) and _sprite != _icon_rect:
+		return _sprite
+	# Try UnitSprite child first (Battle mode has sprite at (32,32), inventory mode has centered child)
 	var unit_sprite = _icon_rect.get_node_or_null("UnitSprite")
 	if is_instance_valid(unit_sprite):
 		_sprite = unit_sprite
