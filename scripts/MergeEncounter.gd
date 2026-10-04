@@ -60,10 +60,10 @@ func _update_localized_text() -> void:
 	leave_button.text = tr("ui.leave")
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
+	if WindowManager.is_run_inventory_window_open():
+		ActionQueue.request(CloseInventoryAction.new("RUN"))
 	else:
-		SignalBus.emit_signal("inspect_inventory_requested")
+		ActionQueue.request(OpenInventoryAction.new("RUN"))
 
 func _on_leave_pressed() -> void:
 	var action := LeaveMergeEncounterAction.new()

@@ -54,9 +54,12 @@ func serialize() -> Dictionary:
 	return {
 		"name": String(_name),
 		"seed": _rng.seed,
-		"state": _rng.state,
+		# RNG state is uint64. Encoding it as a decimal string avoids precision
+		# loss when it passes through JSON's number representation.
+		"state": str(_rng.state),
 	}
 
 func deserialize(data: Dictionary) -> void:
 	_rng.seed = data.get("seed", 0)
-	_rng.state = data.get("state", 0)
+	var saved_state: Variant = data.get("state", 0)
+	_rng.state = int(saved_state) if saved_state is String else saved_state

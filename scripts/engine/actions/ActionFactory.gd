@@ -46,7 +46,17 @@ static func _get_action_map() -> Dictionary:
 			"TransformBlackMarketAction": TransformBlackMarketAction,
 			"LeaveBlackMarketAction": LeaveBlackMarketAction,
 			"LeaveMergeEncounterAction": LeaveMergeEncounterAction,
-			"AcknowledgeRunCompleteAction": AcknowledgeRunCompleteAction
+			"AcknowledgeRunCompleteAction": AcknowledgeRunCompleteAction,
+			"OpenInventoryAction": OpenInventoryAction,
+			"CloseInventoryAction": CloseInventoryAction,
+			"InspectEntityAction": InspectEntityAction,
+			"CloseInspectionAction": CloseInspectionAction,
+			"AdvanceTutorialPageAction": AdvanceTutorialPageAction,
+			"OpenDiscardPileAction": OpenDiscardPileAction,
+			"CloseDiscardPileAction": CloseDiscardPileAction,
+			"CancelDragAction": CancelDragAction,
+			"SelectEntityAction": SelectEntityAction,
+			"DeselectAction": DeselectAction
 		}
 	return _action_map
 

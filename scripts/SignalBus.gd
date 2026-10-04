@@ -20,6 +20,13 @@ signal new_game_requested
 ## @param deck_size: String - The size of the deck to use ("FULL", "HALF")
 signal start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String, deck_size: String)
 
+## Emitted after a run has reached its initial path-map state or a saved run resumes.
+## metadata contains the original loadout/options needed by replay headers.
+signal run_initialized(run_state: RunState, metadata: Dictionary, continuing: bool)
+
+## Emitted before GameManager clears the current run when returning to Title.
+signal run_ending(reason: String)
+
 ## Emitted when loadout scene is requested
 signal loadout_scene_requested
 

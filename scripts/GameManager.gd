@@ -24,9 +24,13 @@ var _temporary_reward_master_dict: Dictionary = {}
 var _temporary_reward_container: DataContainer = null # Will hold a FixedArrayContainer for rewards
 var _temporary_gold_reward: int = 0
 var _reward_reroll_cost: int = 1 # Reward reroll cost (resets per battle)
+var _reward_room_active: bool = false
+var _reward_study_used: bool = false
 
 var _temporary_rest_site_prizes: Array[Dictionary] = []
 var current_rest_site_type: int = 0 # 0: HP, 1: PWR, 2: GOLD
+var _rest_site_active: bool = false
+var _rest_site_study_used: bool = false
 var _trinity_t1_drawn: bool = false
 var _trinity_t2_drawn: bool = false
 var _trinity_t3_drawn: bool = false
@@ -39,6 +43,8 @@ var _reroll_cost: int = 1
 
 var _active_main_node: Node = null # ADD THIS LINE
 var loading_from_save: bool = false # Flag to prevent double day increment on load
+var is_replay_run: bool = false
+var run_metadata: Dictionary = {}
 
 var test_starting_items: Array[StringName] = []
 
@@ -89,22 +95,330 @@ func get_pending_rewards() -> Dictionary:
 		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
+## Returns logical and flow state used to verify each completed replay action.
+## Presentation-only timing and cosmetic RNG are deliberately excluded.
+func get_replay_state_snapshot() -> Dictionary:
+	var run_snapshot: Dictionary = {}
+	if is_instance_valid(run_state):
+		run_snapshot = run_state.to_save_dict()
+		run_snapshot.erase("elapsed_simulation_time")
+		var rng_state: Dictionary = run_snapshot.get("rng_state", {}).duplicate(true)
+		var rng_streams: Dictionary = rng_state.get("streams", {}).duplicate(true)
+		rng_streams.erase("cosmetic")
+		rng_state["streams"] = rng_streams
+		run_snapshot["rng_state"] = rng_state
+
+	var snapshot := {
+		"run_state": run_snapshot,
+		"is_in_battle": is_in_battle,
+		"combat_speed_factor": AnimationConstants.speed_factor,
+		"gacha_discounts_used": gacha_discounts_used.duplicate(true),
+		"temporary_rewards": _snapshot_temporary_instances(_temporary_reward_master_dict),
+		"temporary_shop": _snapshot_temporary_instances(_temporary_shop_master_dict),
+		"temporary_gold_reward": _temporary_gold_reward,
+		"reward_reroll_cost": _reward_reroll_cost,
+		"reward_room_active": _reward_room_active,
+		"reward_study_used": _reward_study_used,
+		"shop_reroll_cost": _reroll_cost,
+		"rest_site_type": current_rest_site_type,
+		"rest_site_active": _rest_site_active,
+		"rest_site_study_used": _rest_site_study_used,
+		"rest_site_prizes": _temporary_rest_site_prizes.duplicate(true),
+		"trinity_drawn": [_trinity_t1_drawn, _trinity_t2_drawn, _trinity_t3_drawn, _trinity_rewarded],
+		"director_run_state": _snapshot_director_run_state_for_replay(director_run_state),
+		"encounter_director_run_state": _snapshot_director_run_state_for_replay(EncounterGenerator.director_run_state),
+		"tutorial_state": TutorialManager.get_state_snapshot() if is_instance_valid(TutorialManager) else {},
+		"flashcard_state": FlashcardManager.get_replay_state_snapshot() if is_instance_valid(FlashcardManager) and FlashcardManager.has_method("get_replay_state_snapshot") else {},
+		"battle_state": _active_battle_manager.get_replay_state_snapshot() if is_instance_valid(_active_battle_manager) and _active_battle_manager.has_method("get_replay_state_snapshot") else {}
+	}
+	return snapshot
+
+func _snapshot_temporary_instances(instances: Dictionary) -> Array[Dictionary]:
+	var result: Array[Dictionary] = []
+	var uuids: Array = instances.keys()
+	uuids.sort()
+	for uuid in uuids:
+		var instance: Variant = instances[uuid]
+		if is_instance_valid(instance) and instance.has_method("to_save_dict"):
+			result.append({"uuid": String(uuid), "instance": instance.to_save_dict()})
+	return result
+
+## Captures non-RunState data needed to continue a replay from a save checkpoint.
+func get_replay_manager_state() -> Dictionary:
+	return {
+		"gacha_discounts_used": gacha_discounts_used.duplicate(true),
+		"temporary_rewards": _snapshot_temporary_instances(_temporary_reward_master_dict),
+		"temporary_reward_container_size": _temporary_reward_container.get_size() if is_instance_valid(_temporary_reward_container) else 0,
+		"temporary_shop": _snapshot_temporary_instances(_temporary_shop_master_dict),
+		"temporary_shop_container_size": _temporary_shop_container.get_size() if is_instance_valid(_temporary_shop_container) else 0,
+		"temporary_gold_reward": _temporary_gold_reward,
+		"reward_reroll_cost": _reward_reroll_cost,
+		"reward_room_active": _reward_room_active,
+		"reward_study_used": _reward_study_used,
+		"shop_reroll_cost": _reroll_cost,
+		"rest_site_type": current_rest_site_type,
+		"rest_site_active": _rest_site_active,
+		"rest_site_study_used": _rest_site_study_used,
+		"rest_site_prizes": _temporary_rest_site_prizes.duplicate(true),
+		"trinity_drawn": [_trinity_t1_drawn, _trinity_t2_drawn, _trinity_t3_drawn, _trinity_rewarded],
+		"is_in_battle": is_in_battle,
+		"combat_speed_factor": AnimationConstants.speed_factor,
+		"tutorial_state": TutorialManager.get_state_snapshot() if is_instance_valid(TutorialManager) else {},
+		"director_run_state": _snapshot_director_run_state_for_replay(director_run_state),
+		"encounter_director_run_state": _snapshot_director_run_state_for_replay(EncounterGenerator.director_run_state)
+	}
+
+func restore_replay_manager_state(data: Dictionary) -> void:
+	_reset_replay_transient_state()
+	var saved_discounts: Dictionary = data.get("gacha_discounts_used", {})
+	gacha_discounts_used = {}
+	for tier in [1, 2, 3]:
+		gacha_discounts_used[tier] = bool(saved_discounts.get(str(tier), saved_discounts.get(tier, false)))
+	_restore_temporary_instances(data.get("temporary_rewards", []), int(data.get("temporary_reward_container_size", 0)), true)
+	_restore_temporary_instances(data.get("temporary_shop", []), int(data.get("temporary_shop_container_size", 0)), false)
+	_temporary_gold_reward = int(data.get("temporary_gold_reward", 0))
+	_reward_reroll_cost = int(data.get("reward_reroll_cost", 1))
+	_reward_room_active = bool(data.get("reward_room_active", false))
+	_reward_study_used = bool(data.get("reward_study_used", false))
+	_reroll_cost = int(data.get("shop_reroll_cost", 1))
+	current_rest_site_type = int(data.get("rest_site_type", 0))
+	_rest_site_active = bool(data.get("rest_site_active", false))
+	_rest_site_study_used = bool(data.get("rest_site_study_used", false))
+	_temporary_rest_site_prizes.clear()
+	for prize in data.get("rest_site_prizes", []):
+		if prize is Dictionary:
+			_temporary_rest_site_prizes.append(prize.duplicate(true))
+	var trinity_state: Array = data.get("trinity_drawn", [false, false, false, false])
+	_trinity_t1_drawn = bool(trinity_state[0]) if trinity_state.size() > 0 else false
+	_trinity_t2_drawn = bool(trinity_state[1]) if trinity_state.size() > 1 else false
+	_trinity_t3_drawn = bool(trinity_state[2]) if trinity_state.size() > 2 else false
+	_trinity_rewarded = bool(trinity_state[3]) if trinity_state.size() > 3 else false
+	is_in_battle = bool(data.get("is_in_battle", false))
+	AnimationConstants.speed_factor = float(data.get("combat_speed_factor", 1.0))
+	var tutorial_state: Variant = data.get("tutorial_state", {})
+	if is_instance_valid(TutorialManager) and tutorial_state is Dictionary and not tutorial_state.is_empty():
+		TutorialManager.set_temporary_replay_state(tutorial_state)
+	director_run_state = _restore_director_run_state_from_replay(data.get("director_run_state", {}))
+	EncounterGenerator.director_run_state = _restore_director_run_state_from_replay(data.get("encounter_director_run_state", {}))
+
+func _restore_temporary_instances(serialized: Array, container_size: int, is_reward: bool) -> void:
+	var instances: Dictionary = {}
+	var container: DataContainer = null
+	if container_size > 0:
+		container = preload("res://scripts/FixedArrayContainer.gd").new(container_size)
+	for entry in serialized:
+		if not entry is Dictionary:
+			continue
+		var uuid := String(entry.get("uuid", ""))
+		var instance_data: Variant = entry.get("instance", {})
+		if uuid.is_empty() or not instance_data is Dictionary:
+			continue
+		var instance := GachaBallInstance.new()
+		instance.from_save_dict(instance_data)
+		instances[uuid] = instance
+		if is_instance_valid(container):
+			var slot := instance.location_slot_index
+			if slot >= 0 and slot < container.get_size():
+				container.set_uuid(slot, uuid)
+	if is_reward:
+		_temporary_reward_master_dict = instances
+		_temporary_reward_container = container
+	else:
+		_temporary_shop_master_dict = instances
+		_temporary_shop_container = container
+
+func _snapshot_director_run_state_for_replay(state: DirectorRunState) -> Dictionary:
+	if not is_instance_valid(state):
+		return {}
+	return {
+		"current_purpose": int(state.current_purpose),
+		"current_day": state.current_day,
+		"player_gold": state.player_gold,
+		"flashcard_mastery": state.flashcard_mastery,
+		"unlock_percentage": state.unlock_percentage,
+		"unlocked_recipes": state.unlocked_recipes.duplicate(),
+		"encountered_bosses": state.encountered_bosses.duplicate(),
+		"excluded_entity_ids": state.excluded_entity_ids.duplicate()
+	}
+
+func _restore_director_run_state_from_replay(data: Dictionary) -> DirectorRunState:
+	var state := DirectorRunState.new()
+	match int(data.get("current_purpose", DirectorRunState.Purpose.ANY)):
+		DirectorRunState.Purpose.ENCOUNTER:
+			state.current_purpose = DirectorRunState.Purpose.ENCOUNTER
+		DirectorRunState.Purpose.SHOP:
+			state.current_purpose = DirectorRunState.Purpose.SHOP
+		DirectorRunState.Purpose.REWARD:
+			state.current_purpose = DirectorRunState.Purpose.REWARD
+		DirectorRunState.Purpose.NODE_GENERATION:
+			state.current_purpose = DirectorRunState.Purpose.NODE_GENERATION
+		_:
+			state.current_purpose = DirectorRunState.Purpose.ANY
+	state.current_day = int(data.get("current_day", 1))
+	state.player_gold = int(data.get("player_gold", 0))
+	state.flashcard_mastery = float(data.get("flashcard_mastery", 0.0))
+	state.unlock_percentage = float(data.get("unlock_percentage", 0.0))
+	for recipe_id in data.get("unlocked_recipes", []):
+		state.unlocked_recipes.append(String(recipe_id))
+	for boss_id in data.get("encountered_bosses", []):
+		state.encountered_bosses.append(String(boss_id))
+	for entity_id in data.get("excluded_entity_ids", []):
+		state.excluded_entity_ids.append(StringName(entity_id))
+	return state
+
 func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
+	start_run_with_seed(hero_def_id, deck_id, deck_order, deck_size)
+
+## Starts a normal run, or a deterministic replay fallback, using the same setup path.
+## A seed of -1 preserves the existing random-seed behavior.
+func start_run_with_seed(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL", seed: int = -1, for_replay: bool = false, replay_run_id: String = "") -> void:
 	# User Requirement: Start fresh tutorials every run if enabled
-	if TutorialManager:
+	if TutorialManager and not for_replay:
 		TutorialManager.reset_all_tutorials()
-		
-	RNGManager.initialize()
+
+	is_replay_run = for_replay
+	loading_from_save = false
+	var serialized_test_items: Array[String] = []
+	for item_id in test_starting_items:
+		serialized_test_items.append(String(item_id))
+	run_metadata = {
+		"hero_def_id": String(hero_def_id),
+		"deck_id": String(deck_id),
+		"deck_order": deck_order,
+		"deck_size": deck_size,
+		"run_options": {
+			"tutorials_enabled": TutorialManager.tutorials_enabled if is_instance_valid(TutorialManager) else true,
+			"is_test_mode": is_test_mode,
+			"test_starting_items": serialized_test_items
+		}
+	}
+	RNGManager.initialize(seed)
+	UUIDUtils.clear_run_scope()
+	_reset_replay_transient_state()
 	run_state = RunState.new()
 	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	run_state.run_seed = RNGManager.get_master_seed()
-	run_state.run_id = UUIDUtils.generate_uuid(&"run")
+	run_state.run_id = replay_run_id if not replay_run_id.is_empty() else UUIDUtils.generate_uuid(&"run")
+	UUIDUtils.begin_run_scope(run_state.run_id)
 	reset_gacha_discounts()
 	if is_instance_valid(ActionQueue):
 		ActionQueue.reset_global_run_timer()
 		ActionQueue.start_timer()
 	generate_path_nodes()
+	if not for_replay:
+		SignalBus.run_initialized.emit(run_state, run_metadata.duplicate(true), false)
 	SignalBus.emit_signal("main_scene_requested")
+
+## Restores the recorded initial state before requesting the normal Main scene.
+func start_replay_from_header(header: Dictionary) -> bool:
+	is_replay_run = true
+	loading_from_save = false
+	ActionQueue.set_headless_mode(false)
+	var options: Dictionary = header.get("run_options", {})
+	is_test_mode = bool(options.get("is_test_mode", false))
+	test_starting_items.clear()
+	for item_id in options.get("test_starting_items", []):
+		test_starting_items.append(StringName(item_id))
+	run_metadata = {
+		"hero_def_id": String(header.get("hero_def_id", header.get("hero_id", ""))),
+		"deck_id": String(header.get("deck_id", "")),
+		"deck_order": String(header.get("deck_order", "REGULAR")),
+		"deck_size": String(header.get("deck_size", "FULL")),
+		"run_options": options.duplicate(true)
+	}
+	if is_instance_valid(TutorialManager):
+		TutorialManager.tutorials_enabled = bool(options.get("tutorials_enabled", TutorialManager.tutorials_enabled))
+
+	_reset_replay_transient_state()
+	var initial_state: Variant = header.get("initial_state", {})
+	if initial_state is Dictionary and not initial_state.is_empty():
+		RNGManager.initialize(int(header.get("run_seed", header.get("seed", 0))))
+		run_state = RunState.new()
+		run_state.from_save_dict(initial_state)
+		if run_state.run_id.is_empty():
+			run_state.run_id = String(header.get("run_id", ""))
+		if run_state.run_seed == 0:
+			run_state.run_seed = int(header.get("run_seed", header.get("seed", 0)))
+		var initial_manager_state: Variant = header.get("initial_manager_state", {})
+		if initial_manager_state is Dictionary:
+			restore_replay_manager_state(initial_manager_state)
+		else:
+			reset_gacha_discounts()
+		var start_time := float(initial_state.get("elapsed_simulation_time", 0.0))
+		ActionQueue.reset_global_run_timer(start_time)
+		ActionQueue.start_timer()
+		SignalBus.emit_signal("main_scene_requested")
+		return true
+
+	# Backward-compatible path for older headers that only contain loadout and seed.
+	var hero_id := StringName(header.get("hero_def_id", header.get("hero_id", "")))
+	var deck_id := StringName(header.get("deck_id", ""))
+	if hero_id.is_empty() or deck_id.is_empty():
+		push_error("[GameManager] Replay header is missing its initial state and loadout.")
+		return false
+	start_run_with_seed(
+		hero_id,
+		deck_id,
+		String(header.get("deck_order", "REGULAR")),
+		String(header.get("deck_size", "FULL")),
+		int(header.get("run_seed", header.get("seed", 0))),
+		true,
+		String(header.get("run_id", ""))
+	)
+	return true
+
+func _reset_replay_transient_state() -> void:
+	if is_instance_valid(FlashcardManager) and FlashcardManager.has_method("reset_session_state"):
+		FlashcardManager.reset_session_state()
+	_temporary_reward_master_dict.clear()
+	_temporary_reward_container = null
+	_temporary_gold_reward = 0
+	_reward_reroll_cost = 1
+	_reward_room_active = false
+	_reward_study_used = false
+	_temporary_rest_site_prizes.clear()
+	current_rest_site_type = 0
+	_rest_site_active = false
+	_rest_site_study_used = false
+	_trinity_t1_drawn = false
+	_trinity_t2_drawn = false
+	_trinity_t3_drawn = false
+	_trinity_rewarded = false
+	_temporary_shop_master_dict.clear()
+	_temporary_shop_container = null
+	_reroll_cost = 1
+	reset_gacha_discounts()
+	director_run_state = DirectorRunState.new()
+	EncounterGenerator.director_run_state = DirectorRunState.new()
+	is_in_battle = false
+
+func resume_saved_run(loaded_state: RunState) -> void:
+	if not is_instance_valid(loaded_state):
+		return
+	run_state = loaded_state
+	is_replay_run = false
+	loading_from_save = true
+	run_metadata = {}
+	if is_instance_valid(ActionQueue):
+		ActionQueue.reset_global_run_timer(loaded_state.elapsed_simulation_time)
+		ActionQueue.start_timer()
+	SignalBus.run_initialized.emit(run_state, run_metadata, true)
+	SignalBus.emit_signal("main_scene_requested")
+
+## Replaces the live replay state at a recorded Continue checkpoint.
+func restore_replay_checkpoint(state_data: Dictionary, manager_state: Dictionary = {}) -> bool:
+	if state_data.is_empty():
+		return false
+	is_replay_run = true
+	loading_from_save = true
+	run_state = RunState.new()
+	run_state.from_save_dict(state_data)
+	if run_state.run_id.is_empty():
+		run_state.run_id = String(manager_state.get("run_id", ""))
+	restore_replay_manager_state(manager_state)
+	ActionQueue.reset_global_run_timer(run_state.elapsed_simulation_time)
+	ActionQueue.start_timer()
+	return true
 
 func _on_path_choice_scene_requested() -> void:
 	if is_instance_valid(run_state) and run_state.available_path_nodes.is_empty():
@@ -196,6 +510,7 @@ func _on_battle_won_rewards_pending() -> void:
 	
 	# Reset reward reroll cost for new rewards
 	_reward_reroll_cost = 1
+	_reward_study_used = false
 	
 	# Generate rewards for the victory and store them.
 	_temporary_reward_master_dict.clear()
@@ -242,14 +557,25 @@ func get_reward_instance(index: int) -> GachaBallInstance:
 
 func _on_return_to_title() -> void:
 	# Clear the run state and any pending rewards when returning to the title screen
+	SignalBus.run_ending.emit("returned_to_title")
+	if is_instance_valid(FlashcardManager) and FlashcardManager.has_method("reset_session_state"):
+		FlashcardManager.reset_session_state()
 	run_state = null
+	if not (is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode()):
+		is_replay_run = false
 	if is_instance_valid(ActionQueue):
 		ActionQueue.pause_timer()
 		ActionQueue.reset_global_run_timer()
+	if is_instance_valid(WindowManager):
+		WindowManager.close_all_windows()
 	# Clear any temporary rewards if the player quits or loses.
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
+	_reward_room_active = false
+	_reward_study_used = false
 	_temporary_rest_site_prizes.clear()
+	_rest_site_active = false
+	_rest_site_study_used = false
 	current_rest_site_type = 0
 	_trinity_t1_drawn = false
 	_trinity_t2_drawn = false
@@ -263,6 +589,7 @@ func _on_battle_victory_acknowledged() -> void:
 	
 	# Calculate gold reward based on reward type
 	var is_special = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
+	_reward_room_active = true
 			
 	if is_special:
 		_temporary_gold_reward = 10
@@ -276,8 +603,13 @@ func _on_battle_victory_acknowledged() -> void:
 		
 		_temporary_gold_reward = max(1, int(round(float(sum_costs) / 3.0)))
 
-	# Signal the UI to display the pre-generated rewards.
+	# The regular Reward scene draws fresh capsules. Prepare its data before
+	# requesting the scene so the same state exists in visual and headless runs.
+	# Preserve the existing generation/RNG calls above for behavior parity.
 	var context: Dictionary = get_pending_rewards()
+	if not is_special:
+		_temporary_reward_master_dict.clear()
+		_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(5)
 	SignalBus.emit_signal("reward_scene_requested", context)
 
 func _on_reward_chosen(payload) -> void:
@@ -501,11 +833,12 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/MergeEncounter.tscn"))
 		"DOJO":
+			if is_instance_valid(run_state):
+				run_state.current_room_tokens = 0
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/UnitTrainingGround.tscn"))
 		"GOLD":
-			current_rest_site_type = 2 # GOLD
-			_temporary_rest_site_prizes.clear()
+			_prepare_rest_site_entry(2) # GOLD
 			if is_instance_valid(_active_main_node):
 				var inst = _active_main_node.load_content(REST_SITE_SCENE)
 				if inst is ResourceSite:
@@ -513,14 +846,33 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 					inst.setup_site()
 		"SURPRISE":
 			var roll = RNGManager.map_rng.randi_range(0, 2)
-			current_rest_site_type = 0 if roll == 0 else (2 if roll == 1 else 1)
-			_temporary_rest_site_prizes.clear()
+			_prepare_rest_site_entry(0 if roll == 0 else (2 if roll == 1 else 1))
 			if is_instance_valid(_active_main_node):
 				var site_t = ResourceSite.SiteType.HP if roll == 0 else (ResourceSite.SiteType.GOLD if roll == 1 else ResourceSite.SiteType.PWR)
 				var inst = _active_main_node.load_content(REST_SITE_SCENE)
 				if inst is ResourceSite:
 					inst.site_type = site_t
 					inst.setup_site()
+
+func _prepare_rest_site_entry(site_type: int) -> void:
+	current_rest_site_type = site_type
+	_rest_site_active = true
+	_temporary_rest_site_prizes.clear()
+	_rest_site_study_used = false
+	if is_instance_valid(run_state) and is_instance_valid(run_state.hero_instance):
+		var hero_definition: Resource = run_state.hero_instance.get_definition()
+		if is_instance_valid(hero_definition) and hero_definition.id == &"hero_timekeeper":
+			run_state.current_room_tokens = 5
+
+func finish_rest_site_leave() -> void:
+	_rest_site_active = false
+	_rest_site_study_used = false
+	_temporary_rest_site_prizes.clear()
+	current_rest_site_type = 0
+
+func finish_reward_room_leave() -> void:
+	_reward_room_active = false
+	_reward_study_used = false
 
 func _enter_shop() -> void:
 	_reroll_cost = 1
@@ -829,7 +1181,8 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 			dict_key += "_" + node_def.subtype
 		run_state.encounter_last_offered_day[dict_key] = run_state.day
 
-	SaveManager.save_run(run_state)
+	if not is_replay_run:
+		SaveManager.save_run(run_state)
 
 	return selected_nodes
 

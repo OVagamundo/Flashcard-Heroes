@@ -50,10 +50,6 @@ func _ready() -> void:
 	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
 	
-	# Clear pre-generated rewards and setup for dynamic token draws
-	GameManager._temporary_reward_master_dict.clear()
-	GameManager._temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(5)
-	
 	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
 	tier2_draw_button.pressed.connect(_on_tier2_draw_pressed)
 	tier3_draw_button.pressed.connect(_on_tier3_draw_pressed)
@@ -168,8 +164,6 @@ func _on_study_pressed() -> void:
 func _execute_study() -> void:
 	_has_studied = true
 	study_button.disabled = true
-	if is_instance_valid(GameManager.run_state):
-		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	pass
@@ -389,18 +383,20 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	if prize_data.is_empty(): return
 	var uuid = prize_data.uuid
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := CollectRewardAction.new(uuid)
+	var action := CollectRewardAction.new(uuid, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_collect_visuals(uuid)
+		execute_collect_visuals(uuid, drop_pos)
 
-func execute_collect_visuals(uuid: String) -> void:
+func execute_collect_visuals(uuid: String, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		# Search by uuid in prizes
@@ -425,7 +421,9 @@ func execute_collect_visuals(uuid: String) -> void:
 	SignalBus.emit_signal("selection_clear_requested")
 	
 	var start_pos = _get_slot_global_center(loc.index)
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		start_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		start_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	
@@ -467,19 +465,21 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	if prize_data.is_empty(): return
 	var uuid = prize_data.uuid
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := SellRewardAction.new(uuid)
+	var action := SellRewardAction.new(uuid, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
 		var gold_yield = GameManager.sell_reward_instance(uuid)
-		execute_sell_visuals(uuid, gold_yield)
+		execute_sell_visuals(uuid, gold_yield, drop_pos)
 
-func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
+func execute_sell_visuals(uuid: String, gold_yield: int = -1, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		for i in range(_prizes.size()):
@@ -514,7 +514,9 @@ func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
 			main_node.show_action_instruction(tr("ui.reward_instruction"))
 	
 	var start_pos = _get_slot_global_center(loc.index)
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		start_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		start_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	

@@ -126,6 +126,58 @@ func get_current_phase() -> Phases:
 func get_battle_phase() -> Phases:
 	return _current_battle_phase
 
+## Provides the settled battle simulation state for replay verification.
+## Runtime nodes, animation tracks, and screen-space state are intentionally absent.
+func get_replay_state_snapshot() -> Dictionary:
+	var instances: Dictionary = {}
+	var instance_ids: Array = _battle_instances.keys()
+	instance_ids.sort()
+	for uuid in instance_ids:
+		var instance: Variant = _battle_instances[uuid]
+		if not is_instance_valid(instance):
+			continue
+		var instance_data: Dictionary = instance.to_save_dict()
+		var battle_components: Array[Dictionary] = []
+		for component in instance.battle_components:
+			if is_instance_valid(component) and component.has_method("to_save_dict"):
+				battle_components.append(component.to_save_dict())
+		instance_data["battle_components"] = battle_components
+		instances[String(uuid)] = instance_data
+
+	var containers: Dictionary = {}
+	var container_names: Array = _containers.keys()
+	container_names.sort()
+	for container_name in container_names:
+		var container: Variant = _containers[container_name]
+		if is_instance_valid(container):
+			containers[String(container_name)] = container.get_all_uuids()
+
+	var actor_queue: Array[String] = []
+	for actor in _actor_queue:
+		if is_instance_valid(actor):
+			actor_queue.append(actor.ball_uuid)
+	var enemy_trinket_ids: Array[String] = []
+	for trinket in enemy_trinkets:
+		if is_instance_valid(trinket):
+			enemy_trinket_ids.append(trinket.ball_uuid)
+
+	return {
+		"phase": int(_current_battle_phase),
+		"turn": _current_turn,
+		"turn_metadata": _turn_metadata.duplicate(true),
+		"dead_this_turn": _state._dead_this_turn.duplicate(true),
+		"gacha_tokens": _gacha_tokens,
+		"player_slot_effects": _state.player_slot_effects.duplicate(),
+		"enemy_slot_effects": _state.enemy_slot_effects.duplicate(),
+		"staged_enemy_placements": _state.staged_enemy_placements.duplicate(true),
+		"instances": instances,
+		"containers": containers,
+		"actor_queue": actor_queue,
+		"enemy_trinkets": enemy_trinket_ids,
+		"pending_reaction_count": _pending_reactions.size(),
+		"battle_over_emitted": _battle_over_emitted
+	}
+
 func is_processing_effect() -> bool:
 	return _is_processing_effect
 
@@ -493,7 +545,10 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	# Start the first turn with the mini-game
 	# In test mode, stay in MANAGEMENT to allow user to spawn trinkets/units first
 	if not is_test_mode:
-		call_deferred("_change_phase", Phases.START_OF_TURN)
+		_change_phase(Phases.START_OF_TURN)
+
+	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is SelectPathAction:
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	# Clear all state
@@ -1056,9 +1111,6 @@ func is_animating_management_queue() -> bool:
 
 func can_draw_gacha_instance(tier: int, pending_cost: int = 0) -> bool:
 	if _current_battle_phase != Phases.MANAGEMENT:
-		return false
-		
-	if is_animations_playing():
 		return false
 		
 	var cost := get_gacha_draw_cost(tier)
@@ -2686,7 +2738,7 @@ func _track_first_killed_non_hero(unit: GachaBallInstance, death_team: String) -
 				"uuid": unit.ball_uuid,
 				"def_id": unit.definition_id,
 				"team": death_team,
-				"location_snapshot": loc_snapshot
+				"location_snapshot": loc_snapshot.to_dict()
 			}
 
 ## Trigger on_turn_end abilities for all units.

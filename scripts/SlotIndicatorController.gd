@@ -119,9 +119,19 @@ func _update_merge_target_indicators() -> void:
 		if not is_instance_valid(target_instance):
 			continue
 
-		var m_type: StringName = MergeManager.get_merge_type_between(_source_instance, target_instance)
-		if m_type.is_empty() and _source_instance.get_definition().category == &"ITEM" and target_instance.get_definition().category == &"UNIT":
-			m_type = MergeManager.get_merge_type_with_unit_item(_source_instance, target_instance, all_instances)
+		var m_type: StringName = &""
+		var src_def = _source_instance.get_definition()
+		var tgt_def = target_instance.get_definition()
+		var src_cat: StringName = src_def.category if is_instance_valid(src_def) else &""
+		var tgt_cat: StringName = tgt_def.category if is_instance_valid(tgt_def) else &""
+
+		if is_battle and src_cat == &"ITEM" and tgt_cat == &"UNIT":
+			# Items can be equipped onto friendly units (white outline)
+			if _source_instance.equipped_on_uuid != target_instance.ball_uuid:
+				m_type = &"EQUIP"
+		else:
+			# Standard merge evaluation (Unit+Unit or Item+Item)
+			m_type = MergeManager.get_merge_type_between(_source_instance, target_instance)
 
 		if not m_type.is_empty():
 			merge_targets[target_uuid] = m_type

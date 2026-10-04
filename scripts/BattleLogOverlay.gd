@@ -55,31 +55,32 @@ func _input(event: InputEvent) -> void:
 	
 	# Handle dragging
 	if _is_dragging:
-		if event is InputEventMouseMotion:
-			window_container.position = get_viewport().get_mouse_position() - _drag_offset
-		elif event is InputEventMouseButton and not event.pressed:
+		if InputUtils.is_primary_pointer_motion(event):
+			var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+			window_container.position = pointer_pos - _drag_offset
+		elif InputUtils.is_primary_pointer_release(event):
 			_is_dragging = false
 	
 	# Handle resizing
 	if _is_resizing:
-		if event is InputEventMouseMotion:
-			var mouse_pos = get_viewport().get_mouse_position()
-			var new_size = mouse_pos - window_container.position
+		if InputUtils.is_primary_pointer_motion(event):
+			var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+			var new_size = pointer_pos - window_container.position
 			new_size.x = max(_min_size.x, new_size.x)
 			new_size.y = max(_min_size.y, new_size.y)
 			window_container.size = new_size
 			if not _is_collapsed:
 				_expanded_size = new_size
-		elif event is InputEventMouseButton and not event.pressed:
+		elif InputUtils.is_primary_pointer_release(event):
 			_is_resizing = false
 
 func _on_Header_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_is_dragging = true
-			_drag_offset = get_viewport().get_mouse_position() - window_container.position
-		else:
-			_is_dragging = false
+	if InputUtils.is_primary_pointer_press(event):
+		_is_dragging = true
+		var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+		_drag_offset = pointer_pos - window_container.position
+	elif InputUtils.is_primary_pointer_release(event):
+		_is_dragging = false
 
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_READY:
@@ -88,11 +89,10 @@ func _notification(what: int) -> void:
 		resize_handle.gui_input.connect(_on_ResizeHandle_gui_input)
 
 func _on_ResizeHandle_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
-		if event.pressed:
-			_is_resizing = true
-		else:
-			_is_resizing = false
+	if InputUtils.is_primary_pointer_press(event):
+		_is_resizing = true
+	elif InputUtils.is_primary_pointer_release(event):
+		_is_resizing = false
 
 func _toggle_collapse() -> void:
 	_is_collapsed = not _is_collapsed

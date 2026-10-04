@@ -32,6 +32,7 @@ var current_streak: int = 0
 var tokens_earned: int = 0
 var current_question: Dictionary = {}
 var has_unlocked_midgame_card: bool = false
+var _cached_review_priority_cards: Array[Dictionary] = []
 
 ## TDD Section 9.3: The Weighted SRS Algorithm
 func _select_card_via_srs() -> StringName:
@@ -103,9 +104,9 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 			push_error("[FlashcardManager] Card definition missing for: " + str(card_id))
 			return
 	
-	# NEW: Expand deck at START of minigame session
-	# This ensures +1 card is introduced every time the player studies.
-	run_state.check_deck_expansion()
+	# Expand deck at START of minigame session via single source of truth
+	# This unlocks exactly one new card from the ordered deck pool if available.
+	var newly_unlocked_id: StringName = run_state.unlock_next_deck_card()
 	
 	self._run_state_ref = run_state
 	self._active_deck_ids = run_state.active_deck_ids.duplicate()
@@ -127,14 +128,16 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	is_session_active = true
 	
 	# Determine if introducing a new card
-	if run_state.cards_presented_count < run_state.active_deck_ids.size():
-		introduced_card_id = run_state.active_deck_ids[run_state.cards_presented_count]
+	if not newly_unlocked_id.is_empty():
+		introduced_card_id = newly_unlocked_id
 		is_introducing_new_card = true
 		is_sprint_active = false
+		_cached_review_priority_cards = get_review_priority_cards(run_state, 6)
 	else:
 		introduced_card_id = &""
 		is_introducing_new_card = false
 		is_sprint_active = true
+		_cached_review_priority_cards.clear()
 		
 	current_question = get_next_question()
 	session_question_changed.emit(current_question)
@@ -147,10 +150,29 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 			"active_deck": self._active_deck_ids
 		}, true)
 
+func reset_session_state() -> void:
+	if is_instance_valid(_minigame_instance):
+		_minigame_instance.queue_free()
+	_minigame_instance = null
+	_run_state_ref = null
+	_active_deck_ids.clear()
+	_last_shown_card_id = &""
+	is_session_active = false
+	is_sprint_active = false
+	is_introducing_new_card = false
+	introduced_card_id = &""
+	session_timer = 0.0
+	session_duration = 7.0
+	correct_answers = 0
+	total_answers = 0
+	current_streak = 0
+	tokens_earned = 0
+	current_question = {}
+	has_unlocked_midgame_card = false
+	_cached_review_priority_cards.clear()
+
 func acknowledge_intro() -> void:
 	"""Transitions from card introduction to active sprint"""
-	if is_instance_valid(_run_state_ref) and is_introducing_new_card:
-		_run_state_ref.cards_presented_count += 1
 	is_introducing_new_card = false
 	is_sprint_active = true
 
@@ -292,6 +314,31 @@ func get_next_question() -> Dictionary:
 		"choices": choices
 	}
 
+## Returns logical session fields for replay checks. The countdown value is
+## omitted because it advances every frame and varies slightly with frame rate.
+func get_replay_state_snapshot() -> Dictionary:
+	var question_choices: Array[String] = []
+	for choice in current_question.get("choices", []):
+		question_choices.append(String(choice))
+	var active_deck: Array[String] = []
+	for card_id in _active_deck_ids:
+		active_deck.append(String(card_id))
+	return {
+		"is_session_active": is_session_active,
+		"is_sprint_active": is_sprint_active,
+		"is_introducing_new_card": is_introducing_new_card,
+		"introduced_card_id": String(introduced_card_id),
+		"active_deck_ids": active_deck,
+		"last_shown_card_id": String(_last_shown_card_id),
+		"current_question_id": String(current_question.get("question_id", "")),
+		"current_question_choices": question_choices,
+		"correct_answers": correct_answers,
+		"total_answers": total_answers,
+		"current_streak": current_streak,
+		"tokens_earned": tokens_earned,
+		"has_unlocked_midgame_card": has_unlocked_midgame_card
+	}
+
 func get_question_for_card(card_id: StringName) -> Dictionary:
 	"""Constructs a question for a specific card, with 5 distractors from active deck"""
 	if not is_instance_valid(_run_state_ref):
@@ -386,6 +433,7 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	_minigame_instance = null
 	_run_state_ref = null
 	_active_deck_ids.clear()
+	_cached_review_priority_cards.clear()
 	
 	# Emit signal after cleanup to prevent any callbacks from accessing freed objects
 	emit_signal("minigame_finished", results)
@@ -428,3 +476,54 @@ func get_deck_statistics() -> Dictionary:
 		stats.average_mastery = float(total_mastery) / float(cards_counted)
 	
 	return stats
+
+func get_cached_review_priority_cards() -> Array[Dictionary]:
+	return _cached_review_priority_cards
+
+func get_review_priority_cards(run_state: RunState, max_count: int = 6) -> Array[Dictionary]:
+	"""Returns up to max_count cards from active_deck_ids prioritized strictly by lowest mastery.
+	Ties within the same mastery level are randomly chosen, and the final list is shuffled."""
+	if not is_instance_valid(run_state):
+		return []
+	
+	# Bucket cards by mastery level (1 to 5)
+	var tiers: Dictionary = {1: [], 2: [], 3: [], 4: [], 5: []}
+	for card_id in run_state.active_deck_ids:
+		var mastery_level: int = FlashcardProgress.MASTERY_MIN
+		if run_state.flashcard_progress.has(card_id):
+			var prog: FlashcardProgress = run_state.flashcard_progress[card_id]
+			if is_instance_valid(prog):
+				mastery_level = clampi(prog.mastery_level, FlashcardProgress.MASTERY_MIN, FlashcardProgress.MASTERY_MAX)
+		tiers[mastery_level].append({
+			"id": card_id,
+			"mastery_level": mastery_level
+		})
+	
+	var selected_cards: Array[Dictionary] = []
+	for level in range(FlashcardProgress.MASTERY_MIN, FlashcardProgress.MASTERY_MAX + 1):
+		var tier_cards: Array = tiers[level]
+		if tier_cards.is_empty():
+			continue
+		
+		var needed: int = max_count - selected_cards.size()
+		if needed <= 0:
+			break
+		
+		if tier_cards.size() <= needed:
+			selected_cards.append_array(tier_cards)
+		else:
+			# More candidates than remaining slots on this mastery rank: randomly select among them
+			if is_instance_valid(RNGManager) and is_instance_valid(RNGManager.map_rng):
+				RNGManager.map_rng.shuffle(tier_cards)
+			else:
+				tier_cards.shuffle()
+			selected_cards.append_array(tier_cards.slice(0, needed))
+			break
+	
+	# Final shuffle so the presentation order does not match the mini game question order
+	if is_instance_valid(RNGManager) and is_instance_valid(RNGManager.map_rng):
+		RNGManager.map_rng.shuffle(selected_cards)
+	else:
+		selected_cards.shuffle()
+		
+	return selected_cards

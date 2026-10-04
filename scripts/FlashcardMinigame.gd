@@ -56,6 +56,7 @@ var _current_question_id: StringName = &""
 var _current_choices: Array[StringName] = []
 var _current_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 var _panel_style: StyleBox = null
+var _priority_card_list: Array[Dictionary] = []
 
 # Token counter references for live update
 var _token_group: Control = null
@@ -69,6 +70,7 @@ var _aura_vfx: Control = null
 func _ready() -> void:
 	# Connect to the FlashcardManager's minigame_finished signal
 	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
+	FlashcardManager.session_timer_updated.connect(_on_session_timer_updated)
 	got_it_button.pressed.connect(_on_got_it_pressed)
 	skip_button.pressed.connect(_on_skip_pressed)
 	
@@ -244,16 +246,8 @@ func _check_for_new_card() -> void:
 		_new_card_id = FlashcardManager.introduced_card_id
 		return
 	
-	if not is_instance_valid(_run_state):
-		_is_introducing_new_card = false
-		return
-	
-	if _run_state.cards_presented_count < _run_state.active_deck_ids.size():
-		_new_card_id = _run_state.active_deck_ids[_run_state.cards_presented_count]
-		_is_introducing_new_card = true
-		return
-	
 	_is_introducing_new_card = false
+	_new_card_id = &""
 
 func _show_card_introduction() -> void:
 	"""Show the new card introduction screen"""
@@ -270,7 +264,8 @@ func _show_card_introduction() -> void:
 	_displayed_card_id = _new_card_id
 	_update_displayed_card_info(_displayed_card_id)
 	
-	# Populate the priority cards at the bottom
+	# Populate the priority cards at the bottom using cached lowest-mastery selection
+	_priority_card_list = _get_priority_sorted_cards()
 	_populate_priority_cards()
 	
 	_update_localized_text() # Refresh text after setting state
@@ -305,42 +300,14 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 	_update_panel_color(mastery_color)
 
 func _get_priority_sorted_cards() -> Array[Dictionary]:
-	"""Get the active deck cards sorted by SRS priority (without RNG factor)"""
-	if not is_instance_valid(_run_state):
-		return []
-	
-	var weighted_cards: Array[Dictionary] = []
-	
-	for i in range(_run_state.active_deck_ids.size()):
-		var card_id: StringName = _run_state.active_deck_ids[i]
-		var mastery_level: int = FlashcardProgress.MASTERY_MIN
-		var last_review_day: int = 0
-		
-		if _run_state.flashcard_progress.has(card_id):
-			var progress: FlashcardProgress = _run_state.flashcard_progress[card_id]
-			mastery_level = progress.mastery_level
-			last_review_day = progress.last_review_day
-		
-		# SRS priority calculation (without RNG)
-		# Priority 1: Mastery Level (lower = higher priority)
-		var mastery_component: float = pow(6 - mastery_level, FlashcardManager.SRS_MASTERY_WEIGHT_POWER)
-		# Priority 2: Recency (longer since review = higher priority)
-		var time_component: float = float(_run_state.day - last_review_day) * FlashcardManager.SRS_RECENCY_WEIGHT
-		# Priority 3: Deck order (lower index = tiebreaker)
-		var order_component: float = float(i) * 0.001 # Small factor to preserve deck order for ties
-		
-		var weight: float = mastery_component + time_component - order_component
-		
-		weighted_cards.append({
-			"id": card_id,
-			"weight": weight,
-			"mastery_level": mastery_level
-		})
-	
-	# Sort descending by weight (higher weight = higher priority)
-	weighted_cards.sort_custom(func(a, b): return a.weight > b.weight)
-	
-	return weighted_cards
+	"""Get the lowest-mastery active deck cards for the review popup window"""
+	if is_instance_valid(FlashcardManager):
+		var cached = FlashcardManager.get_cached_review_priority_cards()
+		if not cached.is_empty():
+			return cached
+		if is_instance_valid(_run_state):
+			return FlashcardManager.get_review_priority_cards(_run_state, 6)
+	return []
 
 func _update_localized_text() -> void:
 	if not is_inside_tree(): return
@@ -386,16 +353,17 @@ func _update_localized_text() -> void:
 			_update_displayed_card_info(_displayed_card_id)
 
 func _populate_priority_cards() -> void:
-	"""Create buttons for the top 10 priority cards"""
+	"""Create buttons for the lowest mastery review cards"""
 	# Clear existing buttons
 	for child in priority_cards_container.get_children():
 		child.queue_free()
 	
-	var priority_cards = _get_priority_sorted_cards()
-	var count = mini(6, priority_cards.size())
+	if _priority_card_list.is_empty():
+		_priority_card_list = _get_priority_sorted_cards()
+	var count = mini(6, _priority_card_list.size())
 	
 	for i in range(count):
-		var card_info = priority_cards[i]
+		var card_info = _priority_card_list[i]
 		var card_id: StringName = card_info.id
 		var mastery_level: int = card_info.mastery_level
 		
@@ -460,7 +428,7 @@ func _on_priority_card_clicked(card_id: StringName) -> void:
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_select_intro_card(card_id)
+		push_error("[FlashcardMinigame] ActionQueue is unavailable; intro-card input was ignored.")
 
 func execute_select_intro_card(card_id: StringName) -> void:
 	_displayed_card_id = card_id
@@ -484,11 +452,10 @@ func _on_got_it_pressed() -> void:
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_acknowledge_intro()
+		push_error("[FlashcardMinigame] ActionQueue is unavailable; intro acknowledgement was ignored.")
 
 func execute_acknowledge_intro() -> void:
-	if is_instance_valid(FlashcardManager):
-		FlashcardManager.acknowledge_intro()
+	# The action commits the manager transition before this presentation callback.
 	_is_introducing_new_card = false
 	card_intro_container.hide()
 	_start_minigame_session()
@@ -519,6 +486,7 @@ func _start_minigame_session() -> void:
 	_tokens_earned = 0
 	_current_streak = 0
 	_total_answers = 0
+	_priority_card_list.clear()
 	_update_aura_vfx()
 	
 	_update_localized_text() # Refresh UI state to hide title
@@ -535,19 +503,14 @@ func _start_minigame_session() -> void:
 	_update_timer_display()
 	_show_next_question()
 
-func _process(delta: float) -> void:
-	"""Update the session timer"""
-	if not _is_introducing_new_card and _session_timer > 0:
-		if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
-			FlashcardManager.advance_session_timer(delta)
-			_session_timer = FlashcardManager.session_timer
-		else:
-			_session_timer -= delta
-			
-		_update_timer_display()
-		
-		if _session_timer <= 0:
-			_end_minigame()
+func _process(_delta: float) -> void:
+	# Authoritative timer countdown is stepped in lockstep with simulation time
+	# via FlashcardManager and reflected through _on_session_timer_updated.
+	pass
+
+func _on_session_timer_updated(p_timer: float, _duration: float) -> void:
+	_session_timer = p_timer
+	_update_timer_display()
 
 func _update_timer_display() -> void:
 	"""Update the timer display"""
@@ -644,10 +607,17 @@ func _on_choice_button_pressed(selected_answer_id: StringName) -> void:
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_choice_selected(selected_answer_id)
+		push_error("[FlashcardMinigame] ActionQueue is unavailable; answer input was ignored.")
 
-func execute_choice_selected(selected_answer_id: StringName) -> void:
-	_on_choice_selected(selected_answer_id)
+func get_current_question_id() -> StringName:
+	return _current_question_id
+
+## Presentation callback used after SubmitFlashcardAnswerAction commits the result.
+func execute_choice_selected(question_id: StringName, selected_answer_id: StringName, result: Dictionary) -> void:
+	if result.is_empty():
+		push_error("[FlashcardMinigame] Refusing to present an uncommitted answer result.")
+		return
+	_present_choice_result(selected_answer_id, question_id, result)
 
 func _update_panel_to_mastery_color(card_id: StringName) -> void:
 	"""Update the panel color based on the card's current mastery level"""
@@ -684,41 +654,32 @@ func _update_panel_color(color: Color) -> void:
 	elif _panel_style is StyleBoxFlat:
 		_panel_style.bg_color = color
 
-func _on_choice_selected(selected_answer_id: StringName) -> void:
-	"""Handle when a player selects an answer"""
+func _present_choice_result(selected_answer_id: StringName, question_id: StringName, committed_result: Dictionary) -> void:
+	"""Present an answer after SubmitFlashcardAnswerAction commits it."""
 	if _input_locked or _session_timer <= 0:
 		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is SubmitFlashcardAnswerAction:
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 		
 	_input_locked = true
-	var was_correct: bool = selected_answer_id == _current_question_id
-	var tokens_to_give: int = 1
+	var was_correct: bool = selected_answer_id == question_id
+	var tokens_to_give: int = int(committed_result.get("tokens_to_give", 0))
 	var midgame_unlocked_card_id: StringName = &""
-	var res: Dictionary = {}
+	var res: Dictionary = committed_result.duplicate(true)
 	
 	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
-		res = FlashcardManager.submit_minigame_answer(_current_question_id, selected_answer_id, 0.0)
 		_correct_answers = FlashcardManager.correct_answers
 		_total_answers = FlashcardManager.total_answers
 		_current_streak = FlashcardManager.current_streak
 		_session_timer = FlashcardManager.session_timer
 		_tokens_earned = FlashcardManager.tokens_earned
-		tokens_to_give = res.get("tokens_to_give", 1)
-		midgame_unlocked_card_id = res.get("midgame_unlocked_card_id", &"")
 	else:
-		_total_answers += 1
-		FlashcardManager.submit_answer(_current_question_id, was_correct)
-		if was_correct:
-			_correct_answers += 1
-			_current_streak += 1
-			_session_timer += 0.5
-			var mastery_level: int = FlashcardProgress.MASTERY_MIN
-			if is_instance_valid(_run_state) and _run_state.flashcard_progress.has(_current_question_id):
-				mastery_level = _run_state.flashcard_progress[_current_question_id].mastery_level
-			if mastery_level <= FlashcardProgress.MASTERY_MIN and _has_trinket(&"trinket_beginners_charm"):
-				tokens_to_give = 2
-			_tokens_earned += tokens_to_give
+		_correct_answers = int(res.get("correct_answers", _correct_answers))
+		_total_answers = int(res.get("total_answers", _total_answers))
+		_current_streak = int(res.get("current_streak", 0))
+		_tokens_earned += tokens_to_give
+		_session_timer = float(res.get("session_timer", _session_timer))
+	midgame_unlocked_card_id = StringName(res.get("midgame_unlocked_card_id", ""))
 	
 	# Play pronunciation of selected answer
 	if selected_answer_id.begins_with("KANJI_") or selected_answer_id.begins_with("KOR_") or selected_answer_id.begins_with("THAI_"):
@@ -761,7 +722,7 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 			
 		_flash_button_incorrect(selected_answer_id)
 		_flash_timer_bar_incorrect()
-		_flash_button_correct(_current_question_id, 0) # Reveal correct answer, no token
+		_flash_button_correct(question_id, 0) # Reveal correct answer, no token
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
 		
@@ -769,10 +730,10 @@ func _on_choice_selected(selected_answer_id: StringName) -> void:
 		var correct_delay_tween = create_tween()
 		correct_delay_tween.tween_interval(0.4)
 		correct_delay_tween.tween_callback(func():
-			if _current_question_id.begins_with("KANJI_") or _current_question_id.begins_with("KOR_") or _current_question_id.begins_with("THAI_"):
-				Audio.play_sfx("pronunciation_" + _current_question_id)
+			if question_id.begins_with("KANJI_") or question_id.begins_with("KOR_") or question_id.begins_with("THAI_"):
+				Audio.play_sfx("pronunciation_" + question_id)
 			else:
-				var correct_data = Database.get_flashcard_definition(_current_question_id)
+				var correct_data = Database.get_flashcard_definition(question_id)
 				if not correct_data.is_empty():
 					var correct_romaji = correct_data.get("answer", "").to_lower()
 					Audio.play_sfx("pronunciation_" + correct_romaji)
@@ -1077,29 +1038,30 @@ func _on_skip_pressed() -> void:
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_skip()
+		push_error("[FlashcardMinigame] ActionQueue is unavailable; skip input was ignored.")
 
-func execute_skip() -> void:
+func execute_skip(question_id: StringName, committed_result: Dictionary) -> void:
+	if committed_result.is_empty():
+		push_error("[FlashcardMinigame] Refusing to present an uncommitted skip result.")
+		return
 	if _input_locked or _session_timer <= 0:
 		if is_instance_valid(ActionQueue):
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
 	_input_locked = true
-	var res: Dictionary = {}
+	var res: Dictionary = committed_result.duplicate(true)
 	
 	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
-		res = FlashcardManager.skip_minigame_question(_current_question_id, 0.0)
 		_total_answers = FlashcardManager.total_answers
 		_current_streak = FlashcardManager.current_streak
 		_session_timer = FlashcardManager.session_timer
 	else:
-		_total_answers += 1
-		FlashcardManager.submit_answer(_current_question_id, false)
-		_current_streak = 0
-		_session_timer += 0.5
+		_total_answers = int(res.get("total_answers", _total_answers))
+		_current_streak = int(res.get("current_streak", 0))
+		_session_timer = float(res.get("session_timer", _session_timer))
 	
-	_flash_button_correct(_current_question_id, 0)
+	_flash_button_correct(question_id, 0)
 	_update_timer_display()
 	_flash_timer_bar_correct() 
 	
@@ -1145,6 +1107,9 @@ func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 
 func _end_minigame() -> void:
 	"""End the mini-game when timer expires"""
+	if not is_instance_valid(FlashcardManager) or not FlashcardManager.is_session_active:
+		return
+	
 	# AUDIO HOOK: Restore previous scene's BGM when minigame ends
 	# Context-aware: restore Battle BGM if in combat, RestSite BGM otherwise
 	if GameManager.is_in_battle:
@@ -1180,6 +1145,14 @@ func _exit_tree() -> void:
 	
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
+	if FlashcardManager.session_timer_updated.is_connected(_on_session_timer_updated):
+		FlashcardManager.session_timer_updated.disconnect(_on_session_timer_updated)
+	
+	# Context-aware: restore Battle BGM if in combat, RestSite BGM otherwise
+	if GameManager.is_in_battle:
+		Audio.play_music(SoundRegistry.BGM_BATTLE)
+	else:
+		Audio.play_music(SoundRegistry.BGM_REST)
 	
 	# Clean up any lingering flashcard action if the minigame node was freed while an action was active
 	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():

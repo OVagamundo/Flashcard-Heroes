@@ -222,7 +222,11 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 		# Check if any windows are open
 		if WindowManager.is_any_inspection_window_open():
 			# Close all open windows - this is the "click outside window" behavior
-			WindowManager.close_all_inspection_windows()
+			if WindowManager.is_run_inventory_window_open() or WindowManager.is_any_inventory_window_open():
+				var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
+				ActionQueue.request(CloseInventoryAction.new(kind))
+			else:
+				ActionQueue.request(CloseInspectionAction.new(true))
 			# Don't open inventory - the close action was the intent
 		else:
 			var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -233,7 +237,8 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 					accept_event()
 				return
 			# No windows open - open inventory
-			SignalBus.emit_signal("inspect_inventory_requested")
+			var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
+			ActionQueue.request(OpenInventoryAction.new(kind))
 		get_viewport().set_input_as_handled()
 		if InputUtils.is_touch_pointer_event(event):
 			accept_event()
@@ -282,6 +287,11 @@ func clear_content_area() -> void:
 		_current_content_node.queue_free()
 	_current_content_node = null
 
+func get_replay_content_scene_id() -> String:
+	if not is_instance_valid(_current_content_node):
+		return ""
+	return _current_content_node.scene_file_path if not _current_content_node.scene_file_path.is_empty() else String(_current_content_node.name)
+
 func load_content(scene_resource: PackedScene) -> Node:
 	clear_content_area()
 	var instance = scene_resource.instantiate()
@@ -298,10 +308,13 @@ func _notify_scene_transition_complete(instance: Node) -> void:
 	if not instance.is_node_ready():
 		await instance.ready
 	await get_tree().process_frame
+	if not is_instance_valid(instance): return
 	
 	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if is_instance_valid(act):
+			if act is SelectPathAction and instance.get_node_or_null("BattleManager") != null:
+				return # Handled authoritatively by BattleManager.start_battle once battle setup is complete
 			if act is SelectPathAction or act is LeaveShopAction or act is LeaveRewardAction or act is LeaveRestSiteAction or act is LeaveTrainingAction or act is LeaveBlackMarketAction or act is LeaveMergeEncounterAction or act is AcknowledgeBattleResultsAction:
 				ActionQueue.finish_action(act)
 
@@ -323,9 +336,8 @@ func _sync_scene_background(scene_instance: Node) -> void:
 func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	load_content(BATTLE_SCENE)
 	# Snap visuals to model on screen transition
-	call_deferred("sync_visual_machine_counts_with_model")
-	# Use call_deferred to ensure the BattleManager is ready before calling it
-	call_deferred("_start_battle_with_encounter", encounter_def)
+	sync_visual_machine_counts_with_model()
+	_start_battle_with_encounter(encounter_def)
 
 func _on_path_choice_scene_requested() -> void:
 	load_content(PATH_CHOICE_SCENE)
@@ -372,6 +384,9 @@ func get_knob_button(tier: int) -> BaseButton:
 	return null
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		return
 	var action := DrawGachaAction.new(tier)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
@@ -379,12 +394,9 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 		execute_draw_gacha_visuals(button, tier)
 
 func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
-	# PRE-VALIDATION: Check if player has enough tokens BEFORE animating
 	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
+	while _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		await get_tree().process_frame
 	var effective_cost := tier
 	if is_instance_valid(bm):
 		if bm.has_method("get_gacha_draw_cost"):
@@ -1112,11 +1124,11 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 	if _confirm_drop_zone_mode == &"":
 		return
 	
-	# Check if mouse is over the drop zone rect
+	# Check if pointer is over the drop zone rect
 	if is_instance_valid(_confirm_drop_zone) and _confirm_drop_zone.visible:
-		var mouse_pos = get_viewport().get_mouse_position()
+		var pointer_pos: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_viewport().get_mouse_position()
 		var zone_rect = _confirm_drop_zone.get_global_rect()
-		if zone_rect.has_point(mouse_pos) and saved_ctx != null:
+		if zone_rect.has_point(pointer_pos) and saved_ctx != null:
 			# CRITICAL: GIR.end_drag() already cleared the selection before
 			# this signal fired. Restore it so Reward/Shop confirm handlers
 			# can find the selected item via get_current_selection().
@@ -1124,7 +1136,7 @@ func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 			SignalBus.emit_signal("selection_changed", saved_ctx.location)
 			
 			# Drag ended over the drop zone — trigger confirm!
-			SignalBus.emit_signal("confirm_drop_zone_activated", true, mouse_pos)
+			SignalBus.emit_signal("confirm_drop_zone_activated", true, pointer_pos)
 			Audio.play_sfx("ui_click")
 			return
 	
@@ -1421,22 +1433,22 @@ func _check_action_drag_drop_on_zones_with_context(context: InteractionContext) 
 	if context == null:
 		return false
 	
-	var mouse_pos = get_viewport().get_mouse_position()
+	var pointer_pos: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_viewport().get_mouse_position()
 	
 	# Check Remove zone
-	if is_instance_valid(_action_zone_2) and _action_zone_2.get_global_rect().has_point(mouse_pos):
+	if is_instance_valid(_action_zone_2) and _action_zone_2.get_global_rect().has_point(pointer_pos):
 		# Restore selection so handlers can find the item
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("action_drop_zone_2_activated", true, mouse_pos)
+		SignalBus.emit_signal("action_drop_zone_2_activated", true, pointer_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	
 	# Check Transform zone
-	if is_instance_valid(_action_zone_1) and _action_zone_1.get_global_rect().has_point(mouse_pos):
+	if is_instance_valid(_action_zone_1) and _action_zone_1.get_global_rect().has_point(pointer_pos):
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("action_drop_zone_1_activated", true, mouse_pos)
+		SignalBus.emit_signal("action_drop_zone_1_activated", true, pointer_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	
@@ -1550,21 +1562,21 @@ func _check_reward_drag_drop_on_zones_with_context(context: InteractionContext) 
 	if context == null:
 		return false
 	
-	var mouse_pos = get_viewport().get_mouse_position()
+	var pointer_pos: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_viewport().get_mouse_position()
 	
 	# Check Collect zone
-	if is_instance_valid(_reward_collect_zone) and _reward_collect_zone.get_global_rect().has_point(mouse_pos):
+	if is_instance_valid(_reward_collect_zone) and _reward_collect_zone.get_global_rect().has_point(pointer_pos):
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("reward_collect_zone_activated", true, mouse_pos)
+		SignalBus.emit_signal("reward_collect_zone_activated", true, pointer_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	
 	# Check Sell zone
-	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.visible and _reward_sell_zone.get_global_rect().has_point(mouse_pos):
+	if is_instance_valid(_reward_sell_zone) and _reward_sell_zone.visible and _reward_sell_zone.get_global_rect().has_point(pointer_pos):
 		GlobalInteractionRouter.set_current_selection(context)
 		SignalBus.emit_signal("selection_changed", context.location)
-		SignalBus.emit_signal("reward_sell_zone_activated", true, mouse_pos)
+		SignalBus.emit_signal("reward_sell_zone_activated", true, pointer_pos)
 		Audio.play_sfx("ui_click")
 		return true
 	

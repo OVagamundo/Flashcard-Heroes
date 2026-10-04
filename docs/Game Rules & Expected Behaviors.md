@@ -137,6 +137,12 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
     2. *Recency (Medium)*: $\text{Weight} = (\text{current\_day} - \text{last\_review\_day}) \times 1.0$
     3. *Randomizer (Low)*: $\text{randf}() \times 0.1$
   * Lower mastery cards are prioritized; the same card **never** appears twice in a row.
+* **Review Popup Window (New Card Introduction)**:
+  * Triggers at the start of a mini game session when a new card is unlocked into the active deck.
+  * Features the newly unlocked card in the main view (question, answer, audio pronunciation, and explanation).
+  * Displays a bottom row of up to 6 clickable priority cards strictly representing the **lowest-mastery cards** currently unlocked in the deck.
+  * Cards are filled by lowest mastery rank first (e.g. Red Level 1 before Orange Level 2). When more cards exist in a tier than remaining slots, candidates are selected randomly from that tier.
+  * The selected collection is shuffled so button display order does not mirror the mini game's SRS question sequence.
 
 ## 5.2 Rest Site Flashcard Mechanics
 * **Correct Answer**: Earns Rest Site Tokens that can be spent at Rest Site machines for permanent Hero base stat increases.
@@ -178,9 +184,10 @@ During active mini game play, consecutive correct answers can unlock additional 
   * **Timer Bar Flash & White Buff Pop**: The timer bar flashes bright white (`Color.WHITE`) with a 0.4s fade, while a glowing white `+1.0s` buff popup bounces elastically over the timer label, floats upward, and the timer label pops to $1.35\times$ scale.
   * **Celebration Banner**: An animated floating banner (`★ NEW CARD UNLOCKED! ★` / `+1.0s TIME BONUS!`) pops over the main panel with elastic overshoot and floats upward without blocking gameplay input.
   * **Audio & Screen Shake**: Plays a triumphant chime (`ui_merge`) and triggers screen shake ($0.2\text{s}$).
-* **Deck Synchronization Contract**:
-  * The mid-mini game unlocked card is marked as already presented (`cards_presented_count` increments in sync with `active_deck_ids`).
-  * At the start of subsequent mini games, the start-of-game review popup introduces the next locked card in the deck pool, resulting in up to 2 cards unlocked per mini game encounter (1 at the start review popup + 1 mid-mini game).
+* **Deck Synchronization Contract (Single Source of Truth)**:
+  * Unlocking uses `RunState.unlock_next_deck_card()` as the single source of truth for run progression regardless of whether a card is unlocked at the start of a mini game or mid-mini game.
+  * The mid-mini game unlocked card is appended to `active_deck_ids` and initialized in `flashcard_progress`.
+  * At the start of subsequent mini games, `RunState.unlock_next_deck_card()` unlocks the next locked card from `ordered_deck_pool`, and the review popup window displays that newly unlocked card—never repeating cards already unlocked mid-mini game.
 
 ---
 
@@ -303,16 +310,59 @@ Consumable items are one-time tactical tools that differ fundamentally from stan
   * Consumables are **never equipped** onto target units and do **not** enter the equipment swap pipeline.
   * Dropping a consumable onto a unit holding an equipped item will **never** trigger an item swap, replace the held item, or unequip the unit's existing gear.
 * **Disappearance from Battle Pool**: Once used, consumables **do NOT go to the Discard Pile**. They are permanently consumed and disappear from the active battle pool. (The engine tracks used consumables in a dedicated ledger for analytics and potential consumable-synergy traits).
-* **Stackable Regular Buffs Across Merges**:
-  * Consumable items grant **stackable regular buffs** (HP bonuses, PWR bonuses, restorative healing amounts, and status effects).
-  * All consumable stat modifications are tagged with granular origin `source_type = &"CONSUMABLE"` (with `source_id` tracking the consumable's definition ID) and are marked `allow_stacking = true`.
-  * Unlike equippable item buffs—which are unique and conditional to the unit currently holding that piece of equipment—consumable buffs become direct, permanent/tactical enhancements of the recipient unit.
-  * When units merge (both Evolutionary Level-ups and Recipe Tier-ups), all consumable buffs from both parent units are fully conserved and added together into the resulting unit's stats and merge inheritance surplus (`MERGE_INHERITANCE`).
 * **Item-Stripping Consumables (*Potion of Plunder*)**:
   * When *Potion of Plunder* is used on any unit (player or enemy), it removes a random equipped item from that unit without replacing it.
   * The stripped item is unequipped and sent directly to the player's **Gacha Machine** of the corresponding tier (`BattleInventoryT{tier}`), making it available to be drawn by the player in subsequent turns.
   * Animates along a parabolic arc into the player's corresponding tier Gacha Machine (`%GachaMachine{tier}`) using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.5` over a 500px arc) with `coin_land` SFX, bouncing the target Gacha Machine and incrementing its count badge.
   * Standard unequip stat reductions apply immediately to the stripped unit upon departure.
+
+### 7.6.1 Buff Granular Tagging & Merge Inheritance Contract (Consumables vs. Equipment)
+Consumable items and equippable items occupy fundamentally distinct mechanical roles in the combat and progression pipeline:
+
+1. **The Purpose of Buff Granular Tagging**:
+   * The engine implements a strict **Buff Granular Tagging System** (`source_type`, `category`, `source_id`, `allow_stacking`).
+   * The explicit architectural purpose of this granular tagging is to unambiguously identify the origin and permanence of every buff/modifier so the engine can reliably differentiate between **buffs that stack additively across merges** and **buffs that are conditional/unique**.
+
+2. **Universal Application to All Current and Future Consumables**:
+   * This contract applies universally to **all current and future consumable items** in the game (including *Minor Healing Potion*, *Heroism Potion*, *Thorn Potion*, *Mutagen Elixirs*, *Stat Scrolls*, and any future consumable types).
+   * It applies regardless of whether the consumable modifies HP, PWR, applies restorative healing (`ACTION_HEAL`), grants stat buffs (`ACTION_BUFF`), or applies status effect stacks (Armor, Spikes, etc.).
+
+3. **Consumables (Stackable Regular Buffs)**:
+   * When a consumable is used on a unit, the physical item is permanently consumed and disappears from the game pool. Its effects become **direct, inherent enhancements** of the recipient unit.
+   * Every stat modification from a consumable is tagged with granular origin `source_type = &"CONSUMABLE"` (with `source_id` tracking the consumable's definition ID, e.g. `"item_potion_t1"` or `"item_potion_heroism"`) and marked `allow_stacking = true`.
+   * **Merge Contract (Additive Consolidation)**: In all merges—both **Evolutionary Level-ups** (merging identical units) and **Recipe Tier-ups** (synthesizing higher-tier units)—all consumable buffs from **both parent units are fully conserved and added together additively**:
+     $$\text{Inherited Consumable Modifiers} = \text{Parent A Consumable Modifiers} + \text{Parent B Consumable Modifiers}$$
+   * These accumulated consumable modifiers are baked directly into the merged unit's final stats and recorded into its merge inheritance surplus component (`MERGE_INHERITANCE`). A unit never loses its accumulated consumable investments when leveling up or tiering up.
+
+4. **Equipped Items (Conditional & Unique Buffs)**:
+   * By contrast, equippable items grant **conditional buffs** that are unique to the unit *only while that specific item is equipped* (`source_type = &"EQUIPMENT"`).
+   * A unit can hold at most **one** equipped item.
+   * **Merge Contract (No Additive Equipment Baking)**: When two units merge, equipped item stats from parent units are **never** added together and **never** baked into the unit's base or inherited stats. Instead:
+     1. Equipment rules select at most **one** item to carry over to the resulting unit (the target unit's item takes priority, or the source unit's item if the target had none).
+     2. Any secondary non-transferred item is discarded directly to the Battle Discard Pile.
+     3. The single retained item is equipped fresh on the resulting unit, applying its conditional passive bonus (`bonus_hp`, `bonus_pwr`) dynamically based on holding that item.
+
+5. **Concrete Merge Examples**:
+   * **Example A (Consumable Heals in Evolutionary Level-Up)**:
+     * Unit 1 (base 2 HP / 1 PWR) drinks a *Minor Healing Potion* (+4 HP heal/buff) $\to$ 6 HP / 1 PWR.
+     * Unit 2 (base 2 HP / 1 PWR) is unbuffed $\to$ 2 HP / 1 PWR.
+     * When Unit 1 and Unit 2 merge into Level 2 (definition base 2 HP / 1 PWR, inherent level bonus +1 HP / +1 PWR $\to$ baseline 3 HP / 2 PWR):
+       * Consumable surplus inherited: $+4\text{ HP}, +0\text{ PWR}$.
+       * Resulting Level 2 unit stats: **7 HP / 2 PWR** (component `merge_inheritance` holds `{"hp": 4, "pwr": 0}`).
+     * If Unit 2 had *also* drunk a *Minor Healing Potion* (+4 HP), the resulting Level 2 unit would inherit $+8\text{ HP}$, resulting in **11 HP / 2 PWR** ($3 + 4 + 4$).
+   * **Example B (Consumable Stat Boosts in Recipe Tier-Up)**:
+     * Parent A (Tier 1, base 2 HP / 1 PWR) drinks a *Heroism Potion* (+3 HP, +3 PWR, 3 Armor) $\to$ 5 HP / 4 PWR / 3 Armor.
+     * Parent B (Tier 1, base 1 HP / 1 PWR) is unbuffed.
+     * Recipe Tier-Up synthesizes Tier 2 Unit (definition base 3 HP / 2 PWR):
+       * Base stats and consumable surplus add together additively:
+         $$\text{Final HP} = 2 + 3 + 1 = 6\text{ HP}$$
+         $$\text{Final PWR} = 1 + 3 + 1 = 5\text{ PWR}$$
+         $$\text{Final Armor} = 3\text{ Armor}$$
+       * Resulting Tier 2 unit spawns at **6 HP / 5 PWR / 3 Armor** (surplus component `merge_inheritance` holds `{"hp": 3, "pwr": 3}`).
+   * **Contrast Example (Equipment Buffs on Merge)**:
+     * Parent A holds *Iron Sword* (+2 PWR).
+     * Parent B holds *Iron Sword* (+2 PWR).
+     * When Parent A and Parent B merge, the resulting unit retains **one** *Iron Sword* (+2 PWR while equipped), and the other *Iron Sword* is sent to the Discard Pile. The resulting unit does **NOT** get $+4\text{ PWR}$ baked into its base stats.
 
 ## 7.7 Merging GachaBalls
 Merging combines two units to create a stronger unit, whether through evolutionary leveling up (merging identical units) or recipe tier evolutions (merging two distinct units into a higher tier):
@@ -325,7 +375,7 @@ When two units merge, the game categorizes all attributes, stats, and modifiers 
    * **What counts as stackable**:
      * Inherent level-up bonuses (+1 HP and +1 PWR per level gained).
      * Permanent Dojo training gains (`PERMANENT_UPGRADE`).
-     * Consumable item buffs (healing potions, stat potions, scrolls) tagged with `source_type = &"CONSUMABLE"` (all stat gains and restorative healing from consumables combine additively into merge inheritance).
+     * **Consumable item buffs** (all current and future healing potions, stat potions, scrolls, elixirs) tagged with granular origin `source_type = &"CONSUMABLE"` (all stat gains, restorative healing amounts, and stat increases from consumables combine additively into merge inheritance).
      * In-combat permanent growth and reactive buffs (e.g., *Vengeance Charm*, *Convergence Surge*, and mid-battle ability buffs).
      * **Completed HP/PWR changes applied by an ability**, including heals and buffs from units, equipped items, or trinkets, whether the ability targets its holder or another unit. Once applied, the gain belongs to the recipient and is stackable across that recipient's later merges. For example, *Koi's Blessing*'s +2 turn-start heal and *Phoenix Elixir*'s healing and PWR gain are inherited by a holder that later merges; an ally's ability-granted gain is inherited if that ally later merges.
      * Rarity bonuses (e.g., Prismatic rarity).
@@ -355,7 +405,7 @@ When two units merge, the game categorizes all attributes, stats, and modifiers 
 
 4. **Unique & Conditional Buffs (Non-Stackable Across Merges)**:
    * **What counts as unique / conditional**:
-     * Stats granted by an equipped item (active only while holding that item; stripped/re-evaluated upon merge so only one item is inherited and its stats re-applied fresh, unlike consumable buffs which stack additively).
+     * Stats granted by an equipped item (`source_type = &"EQUIPMENT"`, active only while holding that item; stripped/re-evaluated upon merge so only one item is inherited and its stats re-applied fresh, unlike consumable buffs which stack additively).
      * *Rusty Ring* (+1 HP / +1 PWR, active only while holding NO item).
      * *Royal Insignia* (+1 HP / +1 PWR, active only for Level 1 units).
      * *Veteran Insignia* (+1 HP / +1 PWR, active only for Level 2 units).
@@ -394,12 +444,13 @@ The game distinguishes between leveling up an existing unit and synthesizing a c
   * **Seamless Pre-Baked Equips**: The inherited item is equipped silently onto the resulting unit. Its stat bonuses (e.g., +1 HP from *Koi's Blessing* or +1 PWR from *Tiger's Spirit*) are pre-baked into the new unit's initial stats upon spawning on the board, preventing redundant self-buff animations or floating numbers from firing over the freshly merged unit.
 * **Bench Item Merging**: Dragging an item onto another item on the bench checks for item recipes and opens a confirmation preview.
 
-### 7.7.3 Contextual Merge Target Highlighting
+### 7.7.3 Contextual Merge & Equip Target Highlighting
 * **Activation**:
-  * Selecting or dragging a friendly GachaBall highlights all valid merge targets within the active context:
+  * Selecting or dragging a friendly GachaBall highlights all valid targets within the active context:
     * **Level-Up Targets**: Identical units of matching level (below Level 3).
     * **Recipe Tier-Up Targets**: Units that combine with the active unit via an unlocked recipe.
-    * **Item Merge Targets**: Items (loose on the bench or equipped to a friendly unit) that combine with the active item via an unlocked recipe.
+    * **Item Merge Targets**: Items on the bench that combine with the active item via an unlocked recipe.
+    * **Equip Targets**: Friendly units eligible to equip the active item.
 * **Lifetime**:
   * Highlights remain active strictly while a GachaBall is being dragged or actively selected.
   * Highlights clear immediately upon releasing the drag, dropping, or deselecting.
@@ -1030,22 +1081,98 @@ Clarity is a non-negotiable design pillar.
 
 ---
 
-# 18. Game Actions & Input Gating (Player Contract)
+# 18. Player Actions by Game Context
 
-The game follows a strict **Command Pattern** (modeled after *Slay the Spire 2*):
+This section lists the choices available to the player and the behavior a replay must preserve. It separates menu and loadout choices from the run, which begins when the player starts or resumes one. A replay must reproduce the same accepted gameplay choices, resulting game state, and meaningful screen and input flow. It does not need to reproduce identical pixels, audio, or animation frames.
 
-## 18.1 The Single Pipeline Rule
-Every player input that alters game state, advances game flow, dismisses a gating modal, or progresses a room **MUST** instantiate a validated `GameAction` and submit it to `ActionQueue.request(action)`:
-* **Battle Actions**: `DrawGachaAction`, `MoveInventoryAction`, `ConfirmMergeAction`, `ConfirmSwapAction`, `EndTurnAction`.
-* **Flow & Modals**: `AcknowledgeBattleResultsAction`, `AcknowledgeFlashcardIntroAction`, `DismissTutorialAction`, `PauseRunAction`, `SetCombatSpeedAction`.
-* **Room Transactions**: `BuyShopAction`, `RerollShopAction`, `CollectRewardAction`, `SellRewardAction`, `TrainUnitStatAction`, `RemoveBlackMarketAction`, `TransformBlackMarketAction`, `LeaveShopAction`, `LeaveRewardAction`, `LeaveTrainingAction`, `LeaveRestSiteAction`, `LeaveBlackMarketAction`.
+Every player choice that changes run data or advances a room, battle, minigame, or blocking prompt must enter the same validated gameplay-action path whether it came from a person or a replay. Explicit interface choices that change what the player can see or do next—such as opening inventory, closing an inspection, or advancing a tutorial page—must also be replayable in order. Pure cursor movement, hover highlight, sound variation, and decorative animation do not need to be recorded unless they change gameplay or the available choices.
 
-## 18.2 Presentation-Only Inputs
-Inputs that do **NOT** alter game data or gate progress are presentation-only and bypass `ActionQueue`:
-* Passive mouse movement and hover highlights.
-* Hover peeking to inspect unit/item tooltips (`WindowManager.open_inspection_window`).
-* Toggling gacha machine inventory previews.
-* Audio volume slider adjustments in settings.
+## 18.1 Before the Run: Title Screen
 
-## 18.3 Input Gating
-While `ActionQueue` is processing an action and its visual animations (`is_busy() == true`), all player input is physically blocked. This guarantees zero race conditions, prevents duplicate item glitches, and enables flawless deterministic session replays and headless QA bot testing.
+The player can:
+
+* Start a new run and proceed to Loadout.
+* Continue a saved run. This resumes the saved run state rather than creating a new run.
+* Open and close Options. Options include language, art style, fullscreen, master/music/effects volume, and card-pronunciation settings.
+* Enable or disable tutorials.
+* Open Replays, select a recording, and use spectator controls (pause, 1×/2×/4×/8× playback, or exit replay). These controls belong to the viewer and are not run decisions.
+* Exit the game.
+
+The development-only tutorial reset shortcut is not a normal player action and is outside the gameplay replay contract.
+
+## 18.2 Loadout: Choices Before the Run Starts
+
+Before starting, the player can:
+
+* Browse and select a hero and a deck.
+* Choose deck order (Regular, Inverted, or Random) and deck size (Full or Half).
+* In test-start mode, add or clear configured starting items and trinkets.
+* Start a normal run or start in test mode.
+
+These choices define the initial run. A replay may initialize from the resulting post-loadout state, but its recording header must preserve the selected hero, deck, deck order and size, test setup, and run seed so the run can be identified and initialized consistently.
+
+## 18.3 Shared Run Inventory and Inspection
+
+Outside battle, the player can open or close the persistent run inventory from the machine area or the room's inventory control. The inventory is available on the map and in non-battle rooms, including the shop, reward rooms, merge encounter, training ground, black market, and resource sites. Opening it changes the screen and available interactions; closing it restores the current room view. Escape, clicking outside an inspection group, or using the room's inventory toggle can close the open window or window chain.
+
+The player can select and inspect GachaBalls, units, items, trinkets, traits, and effects. A click can lock an inspection open; clicking another eligible object changes the inspected object, and clicking the inspected object again or closing its window dismisses it. Hover-only previews are temporary. Inspection can open related detail windows where available.
+
+In the run inventory, the player can drag a GachaBall to a legal slot to move it, or onto another GachaBall to request a swap or a valid merge. Legal placement and item type rules still apply. These changes affect the persistent run collection only when the applicable room rules permit them. A consumable can be used on a valid unit when that room and interaction allow it.
+
+Opening, closing, selecting, and locking an inspection are explicit interactions for replay purposes even when they do not change a unit's stats or the run's inventory. The replay must preserve these interactions when they determine which window is open, which object is inspected, or which input is available next.
+
+## 18.4 Map Navigation
+
+On the map, the player can choose one of the currently available path nodes. The selected node determines which encounter or room opens. Unavailable nodes cannot be selected. Map generation and the encounter associated with each available node must be consistent with the recorded run seed and prior gameplay results.
+
+## 18.5 Non-Battle Rooms and Encounters
+
+| Context | Player choices |
+|---|---|
+| **Shop** | Inspect stock; buy an offered GachaBall; reroll the stock for the displayed gold cost; open/close inventory; leave for the map. A purchase may be confirmed by the purchase control or the supported drag-to-purchase interaction. |
+| **Reward room** | Start the available study session; draw a reward by tier using tokens; inspect a reward; collect it or sell it; open/close inventory; leave. Leaving applies the room's stated handling of remaining rewards. |
+| **Elite reward** | Inspect the offered trinkets; keep a selected trinket or sell a selected reward if that choice is available; return to the map after completing the choice. The current screen hides its “Take Gold” button and its callback does nothing, so that option is not currently playable. |
+| **Rest/resource site** | Start the available study session; draw a capsule by tier; inspect a prize; apply the prize to the Hero or claim its gold when the site offers gold; open/close inventory; leave. Leaving applies remaining prizes according to that site's rules. |
+| **Merge encounter** | Open inventory; choose two eligible GachaBalls; confirm a valid permanent merge or confirm a swap when the choice window offers it; leave. The encounter merge spends its stated gold cost and permanently unlocks the resulting recipe for the run. |
+| **Unit training ground** | Open inventory; select and place an eligible unit in the HP or Power training target; start the paid study session; after it, choose a token tier to train the selected stat; close the training result popup; leave. |
+| **Black market** | Open inventory; select an eligible GachaBall; remove it or transform it for the displayed cost; leave. The resulting change is permanent for the run. |
+
+The room's visible controls and legal targets define which of these choices are currently available. A rejected purchase, invalid drag, unavailable draw, or invalid target does not commit a gameplay change.
+
+## 18.6 Flashcard, Review, and Tutorial Prompts
+
+During a study session, the player can:
+
+* When a new card introduction is shown, select one of the presented priority cards when prompted, then acknowledge the introduction with “Got It”/“Ready”.
+* Select an answer for the current question or skip it.
+
+The countdown can end the session without another player choice. Timeout, answer, skip, next-question selection, earned tokens, mastery changes, and session completion must resolve consistently in a replay. The current game advances from a completed battle flashcard session automatically; there is no currently reachable separate battle-results review popup.
+
+When a blocking tutorial is shown, the player can advance through its pages with Next and dismiss it on the final page with Got It. Dismissing it resumes the paused game. Each page advance and dismissal changes the visible prompt and available input and must be represented in the replayable interaction sequence.
+
+## 18.7 Battle: Player Actions by Phase
+
+Battle has one player decision phase and several automatic resolution phases:
+
+| Battle context | What the player can do |
+|---|---|
+| **Turn-start flashcard** | Complete the new-card introduction when shown; answer or skip questions. The session timer can also end the minigame automatically. |
+| **Management** | Draw from a tiered battle machine using tokens; move eligible units between the active lineup and bench; equip, replace, or move eligible items; use valid consumables; merge eligible units; confirm swaps; inspect units, items, trinkets, traits, effects, the battle inventory, and the discard pile when those controls are available; open/close inspection windows; change combat speed or pause; end the turn. |
+| **Pre-combat, combat, and end-of-turn resolution** | Combat, abilities, reactions, damage, deaths, and turn progression resolve automatically. The player cannot edit the board or draw. During combat animations, only pause and inspection are available. Inspection of an open battle-inventory drawer is read-only; the drawer cannot be opened during COMBAT. |
+| **Battle result** | After victory, acknowledge the result to proceed to the reward room. After defeat, acknowledge the result to leave the lost run. |
+
+The battle inventory and discard pile are read-only inspection views: the player cannot move, equip, merge, or swap GachaBalls directly from them. The battle inventory drawer cannot be opened during COMBAT animations; the player can pause and inspect entities already available on screen. The current UI disables the inventory-inspection button during COMBAT. The battle speed controls are still exposed in every phase in the current code, which conflicts with the stated rule that only pause and inspection are available during automatic combat animations; resolve this implementation discrepancy before treating the action list as complete.
+
+Pressing End Turn is the player's last board decision for that turn. Pre-combat setup, combat actions, end-of-turn effects, and the next turn's start then proceed automatically until the next player decision or the battle result.
+
+## 18.8 Run Completion
+
+When a run ends, the player can acknowledge the completion screen to return to the title screen. This closes the run; it is not an in-run choice.
+
+## 18.9 Replay Coverage and Fidelity
+
+A replay must preserve the selected loadout and seed, every accepted gameplay choice, the resulting inventory and trinkets, currencies, unit stats, rewards, room selections, battle board and phase outcomes, flashcard results, and the order of explicit inventory, inspection, tutorial, and modal interactions. Time-driven outcomes that affect those results must be reproduced from the same recorded schedule or as deterministic consequences of the same state.
+
+Replay does not promise the same rendered pixels at every frame, identical animation duration, identical cosmetic random choices, or identical audio waveform. It must preserve meaningful gameplay results and the sequence of choices/screens needed to reach them. Presentation-only differences are acceptable only when they do not change game state, the next available choice, or the player's ability to make the recorded choice.
+
+All interactions with visible impact (including inspections, drawer toggles, and cancelled drags) route through the discrete `GameAction` pipeline. Pointer interactions unify touch and mouse inputs without tracking continuous coordinates per frame. Discrete actions committed via drag-and-drop record `interaction_type = "DRAG"` and the release point `drop_pos: Vector2`, whereas click/tap commitments record `interaction_type = "CLICK"`. Replay reproduces identical animation origins from these discrete action payloads across both mouse and touch inputs, while state verification hashes decouple pure simulation data from ephemeral UI presentation nodes.

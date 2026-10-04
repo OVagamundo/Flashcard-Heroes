@@ -6,9 +6,10 @@ func _init() -> void:
 	super._init(&"LeaveRewardAction")
 
 func validate() -> bool:
-	return true
+	return GameManager._reward_room_active
 
 func execute() -> void:
+	GameManager.finish_reward_room_leave()
 	var reward = Engine.get_main_loop().root.find_child("Reward", true, false)
 	if not is_instance_valid(reward):
 		reward = Engine.get_main_loop().root.find_child("RewardElite", true, false)

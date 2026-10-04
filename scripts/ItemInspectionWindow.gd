@@ -393,10 +393,20 @@ func _on_description_meta_clicked(meta) -> void:
 	if _locked_meta == meta:
 		# Toggle off: close child and unlock
 		_locked_meta = null
-		WindowManager.close_children_of(self )
+		if is_instance_valid(ActionQueue):
+			ActionQueue.request(CloseInspectionAction.new(false))
+		else:
+			WindowManager.close_children_of(self )
 	else:
 		_locked_meta = meta
-		_handle_effect_meta_interaction(meta)
+		if is_instance_valid(ActionQueue):
+			if str(meta).begins_with("effect_"):
+				var effect_type = str(meta).replace("effect_", "")
+				ActionQueue.request(InspectEntityAction.new(null, true, &"EffectInspection", StringName(effect_type)))
+			else:
+				_handle_effect_meta_interaction(meta)
+		else:
+			_handle_effect_meta_interaction(meta)
 
 func _on_description_meta_hover_started(meta) -> void:
 	if _locked_meta != null:

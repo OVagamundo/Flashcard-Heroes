@@ -254,7 +254,8 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
 - **Merge Target Highlighting (Selection & Dragging):**
   - **Level-Up Targets (Cyan)**: Identical units of matching level (< Lv. 3) display a bright Cyan outline (`Color(0.0, 0.95, 1.0)`, `outline_width=3.0`).
   - **Recipe Tier-Up Targets (Magenta)**: Units combining via an unlocked merge recipe display a vibrant Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`).
-  - **Item Merge Targets (Magenta)**: Loose bench items or equipped unit items combining via an unlocked item recipe display the Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`).
+  - **Item Merge Targets (Magenta)**: Loose bench items combining via an unlocked item recipe display the Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`).
+  - **Equip Targets (White)**: Friendly units eligible to receive an item when selecting or dragging an equippable item display a crisp White outline (`Color.WHITE`, `outline_width=3.0`).
   - **Orchestration**: Managed by `SlotIndicatorController`, which listens to `SignalBus.selection_changed` and `SignalBus.drag_started`. Emits `SignalBus.show_merge_target_indicators(merge_targets)` to update active `GachaBallView` instances.
   - **Dismissal**: On drag end (`drag_ended`) or selection clear (`selection_changed(null)`), emits `SignalBus.hide_merge_target_indicators` to instantly clear target outlines.
 
@@ -265,7 +266,7 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
 - **Outline Precedence Hierarchy:**
   When multiple outline states could apply to a single view, shaders resolve deterministically:
   1. `_is_selected` $\rightarrow$ White selection outline (source focus).
-  2. `_merge_target_type` $\rightarrow$ Cyan (`LEVEL_UP`) or Magenta (`RECIPE_TIER_UP`) merge indicator.
+  2. `_merge_target_type` $\rightarrow$ Cyan (`LEVEL_UP`), Magenta (`RECIPE_TIER_UP`), or White (`EQUIP`) indicator.
   3. `_has_locked_recipe and is_reward_or_shop` $\rightarrow$ Violet discovery outline.
   4. `_last_trait_level > 0 and is_in_battle` $\rightarrow$ Trait synergy metallic outline (18.0px).
   5. Default $\rightarrow$ Outline disabled.

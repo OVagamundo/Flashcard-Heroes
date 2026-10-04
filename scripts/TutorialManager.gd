@@ -12,6 +12,7 @@ var tutorials_enabled: bool = true
 
 ## Dictionary of completed tutorial IDs (StringName -> true)
 var _completed_tutorials: Dictionary = {}
+var _temporary_replay_context: bool = false
 
 
 func _ready() -> void:
@@ -29,7 +30,30 @@ func is_completed(tutorial_id: StringName) -> bool:
 ## Mark a tutorial as completed and save
 func mark_completed(tutorial_id: StringName) -> void:
 	_completed_tutorials[tutorial_id] = true
-	save_settings()
+	if not _temporary_replay_context:
+		save_settings()
+
+func get_state_snapshot() -> Dictionary:
+	var completed: Array[String] = []
+	for tutorial_id in _completed_tutorials.keys():
+		completed.append(String(tutorial_id))
+	completed.sort()
+	return {"tutorials_enabled": tutorials_enabled, "completed_tutorials": completed}
+
+## Applies replay-local tutorial state without changing the player's settings file.
+func set_temporary_replay_state(data: Dictionary) -> void:
+	_temporary_replay_context = true
+	tutorials_enabled = bool(data.get("tutorials_enabled", tutorials_enabled))
+	_completed_tutorials.clear()
+	for tutorial_id in data.get("completed_tutorials", []):
+		_completed_tutorials[StringName(tutorial_id)] = true
+
+func restore_state_snapshot(data: Dictionary) -> void:
+	_temporary_replay_context = false
+	tutorials_enabled = bool(data.get("tutorials_enabled", tutorials_enabled))
+	_completed_tutorials.clear()
+	for tutorial_id in data.get("completed_tutorials", []):
+		_completed_tutorials[StringName(tutorial_id)] = true
 
 
 ## Show a tutorial popup if enabled and not yet completed

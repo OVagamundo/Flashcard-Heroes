@@ -44,6 +44,8 @@ VFXFactory="*res://scripts/vfx/VFXFactory.gd"
 SlotIndicatorController="*res://scripts/SlotIndicatorController.gd"
 TutorialManager="*res://scripts/TutorialManager.gd"
 SaveManager="*res://scripts/SaveManager.gd"
+GameplayRecorder="*res://scripts/engine/recorder/GameplayRecorder.gd"
+ReplayController="*res://scripts/engine/replay/ReplayController.gd"
 CursorManager="*res://scripts/CursorManager.gd"
 MergeAnimator="*res://scripts/MergeAnimator.gd"
 

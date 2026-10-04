@@ -1,6 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://test_crr_scene_01"]
-
-[ext_resource type="Script" path="res://scratch/test_crr.gd" id="1_crr_test"]
-
-[node name="TestCRR" type="Node"]
-script = ExtResource("1_crr_test")

@@ -22,7 +22,8 @@ func execute() -> void:
 	if is_victory:
 		SignalBus.emit_signal("battle_victory_acknowledged")
 	else:
-		SaveManager.clear_save()
+		if not GameManager.is_replay_run:
+			SaveManager.clear_save()
 		SignalBus.emit_signal("title_scene_requested")
 
 func yields_for_visuals() -> bool:

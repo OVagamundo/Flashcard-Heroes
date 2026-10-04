@@ -1,49 +1,37 @@
-# Architectural Mandate: Game Action Pipeline & Deterministic Command Engine
+# Architectural Mandate: Game Action Pipeline & Deterministic Event-Driven Machine
 
-## 1. Prime Directive
+## 1. Prime Directive: The Pure Event-Driven Machine (The Slay the Spire 2 Model)
 
-Transform the game's player interaction layer into a **unified, input-gated command pipeline** modeled after the core architecture of *Slay the Spire*:
+The game's runtime architecture is fundamentally a **pure deterministic event-driven state machine**, modeled after the core engine design of *Slay the Spire 2*:
 
-> **Every player input that generates a game state change MUST create a `GameAction` and pass through `ActionQueue.request()`. Nothing that alters game state may bypass this pipeline.**
+> **The game does not possess a free-running continuous gameplay loop that mutates state or presentation behind the scenes. The game advances strictly and exclusively through an ordered sequence of discrete Actions.**
+> 
+> **ANY player input or system trigger that produces ANY visual or gamestate consequence—including UI window opening/closing, card/entity inspections, tutorial page progression, valid gameplay transactions, and even failed/rejected attempts (such as an invalid drag drop that snaps back with rejection VFX)—MUST enter the pipeline as an ordered `GameAction`.**
 
-This refactor establishes the architectural prerequisite for upcoming systems (**Deterministic Session Replays** and **Headless QA Bot Testing**). It does **not** implement the replay recorder or the QA bot directly; rather, it guarantees that all runtime state mutations and state machine transitions are driven exclusively by discrete `GameAction`s.
+When this architectural rule is strictly honored with **zero bypasses**, recording and deterministic playback become fundamentally trivial:
+* **Recording is trivial:** Every action that enters the pipeline is serialized to the `.mcr` stream upon acceptance.
+* **Playback is trivial:** Replay reads the serialized actions and feeds them directly back into `ActionQueue.request()`. Because every visual and state consequence in the game is driven by an Action, replaying the action stream reproduces the identical game session—both visually and logically—without ad-hoc playback shims or desync workarounds.
 
 ---
 
 ## 2. Core Architectural Principles
 
-### 1. The Single Pipeline Rule (Zero-Bypass)
-- **Comprehensive Definition of Game State:** Game state is the complete state machine of the entire game. It includes not only core numerical data (`RunState` gold, health, tokens, items, deck sizes), but also **room states, phase transitions, and modal lifecycles**.
-- Any player input that **alters game data, advances game flow, dismisses a gating modal/popup (e.g. "Got It!" flashcard introduction, tutorial dialogs, battle results), or unlocks subsequent interactions MUST instantiate a `GameAction` and pass through `ActionQueue.request()`**.
-- If an input does not change game state or gate progress (e.g. raw mouse cursor movement across empty space, hover highlights, passive tooltips, non-blocking entity inspections), it is client-side presentation. But the moment **any input moves the game state machine forward**, it MUST enter the pipeline as a `GameAction`.
-- UI controllers, room scenes, and `GlobalInteractionRouter` have zero authority to mutate state, deduct currencies, grant items, advance phases, or close gating windows directly. Their sole role upon receiving user input is to construct and request a `GameAction`.
+### 1. The Zero-Bypass Universal Pipeline
+- **No Background Mutations:** No scene script, UI node, signal listener, or free-running `_process` timer may independently alter game data or change visible UI state outside an active `GameAction` transaction.
+- **Universal Scope:** Every player decision with an observable effect enters the pipeline:
+  - **State Mutations:** Spending gold, moving inventory, merging, drafting, rolling stats, answering flashcards, choosing paths.
+  - **Interface & Visibility Changes:** Opening/closing the inventory drawer, opening/closing the discard pile, opening/closing inspection windows, advancing tutorial pages.
+  - **Failed / Rejected Attempts:** Dropping an item in an illegal slot or attempting an action without sufficient resources (which produces visual snap-back or error feedback) is an action transaction that resolves with the appropriate presentation feedback.
+- **Universal Execution Path:** Live play, automated QA bots, and replay playback use the exact same validation and execution path through `ActionQueue`. The core engine has zero knowledge of the input source.
 
-### 2. Input Gating (The Slay the Spire Model)
-- While `ActionQueue` is busy processing an action and its visual consequences (`is_busy() == true`), **player inputs are blocked**.
-- No new player input can fire, corrupt state, or cause race conditions while animations or events are resolving.
-- When the action and its cascaded visual events finish, the action signals completion (`finish_visuals()`), resetting `is_busy() = false` and enabling player input for the next decision.
+### 2. Input Gating & Visual Choreography
+- When an action is resolving or playing its visual presentation, incoming conflicting player input is gated.
+- Once the action's visual choreography concludes, the action signals completion, resetting queue state and enabling player input for the next decision.
+- In headless mode, visual animations are skipped while state mutations resolve synchronously on frame 0.
 
-### 3. 100% Behavioral & Visual Preservation
-- The game must look, feel, sound, and play **identically** to the pre-refactor baseline (`Code/AllProjectFiles.md`).
-- Visual timing, pacing (e.g. coins flying before transactions commit), button disabling, sound effects, and animations must be preserved completely. The refactor wraps player decisions into `GameAction`s; it does not change how the game plays or feels.
-
-### 4. Absolute Execution Equivalence (The Universal Action Path)
-- Real gameplay, replay playback, and headless bot execution must follow the **100% identical command execution path**.
-- The core engine, `ActionQueue`, and `GameAction`s have zero knowledge of who submitted an action. The only difference across all three modes is the input source:
-  - **Real Gameplay:** Mouse, keyboard, or touch inputs generate a `GameAction` -> `ActionQueue.request(action)`.
-  - **Replay Playback:** Replay file deserializer reads an action -> `ActionQueue.request(action)`.
-  - **Headless Bot:** Automated decision agent selects an action -> `ActionQueue.request(action)`.
-- Never branch or alter gameplay logic based on whether the game is replaying or being played live.
-
-### 5. Grounded Timeline via Authoritative Global Run Timer
-- All timed events and recorded action timestamps must be grounded in an authoritative **Global Run Timer** (elapsed simulation time since run start, tracked in the core run state).
-- Relying exclusively on relative think times or local delays causes small processing lags and frame variations to accumulate into severe desynchronizations over long runs. A global run clock guarantees absolute time grounding across recording, narrative logging, telemetry, and playback.
-
-### 6. Pause Fidelity & Speed Compounding
-- **Pause Reproduction:** Pausing during gameplay is a state change that is recorded and **faithfully reproduced in replay playback** so that the replay unfolds 100% identically to the real playthrough. Spectators can use the replay viewer's speed controls to fast-forward through pauses if desired.
-- **Multiplicative Speed Compounding:** In-game speed settings (such as combat speed toggles: 1x, 2x, 4x) compound multiplicatively with global replay playback speed controls:
-  $$\text{Effective Speed} = \text{Base Gameplay Speed} \times \text{Replay Playback Multiplier}$$
-  For example, a combat recorded at 2x base speed, watched at 2x replay playback speed, plays back at 4x effective speed. Outside of combat (at 1x base speed), it plays back at 2x speed. Because Godot's `Engine.time_scale` universally scales deltas, tweens, and timers, synchronization is preserved perfectly across all compounding factors.
+### 3. Absolute Causality & Presentation Decoupling
+- **Decoupled Architecture:** The data model (`RunState`, `GameManager`, subsystem rules) is strictly decoupled from presentation views (`WindowManager`, room views, visual tweens).
+- `GameAction.execute()` owns the logical transaction and drives the presentation. Views react to resolved action results to play animations, sound effects, and UI movements. No view may independently repeat the transaction or trigger side-effect mutations.
 
 ---
 
@@ -125,26 +113,90 @@ The following player decisions represent the interactions across the game that a
 | **Black Market** | `RemoveBlackMarketAction` | Pay gold to purge a unit/item from the run. |
 | **Black Market** | `TransformBlackMarketAction` | Pay gold to reroll a unit/item into a new instance. |
 | **Black Market** | `LeaveBlackMarketAction` | Exit the black market and return to map navigation. |
+| **Inventory / Drawer** | `OpenInventoryAction` | Open and populate the Run or Battle inventory drawer (`kind`: `"RUN"` or `"BATTLE"`). |
+| **Inventory / Drawer** | `CloseInventoryAction` | Close the open inventory drawer and dismiss inventory drop zones. |
+| **Inspection UI** | `InspectEntityAction` | Open contextual inspection window for an entity (`entity_uuid`, `definition_id`, `window_kind`). |
+| **Inspection UI** | `CloseInspectionAction` | Dismiss one or all active inspection windows (`window_id`, `close_all: bool`). |
+| **Battle Views** | `OpenDiscardPileAction` | Open the battle discard pile inspection drawer. |
+| **Battle Views** | `CloseDiscardPileAction` | Close the battle discard pile inspection drawer. |
+| **Entity Selection** | `SelectEntityAction` | Select an entity at a given location, displaying selection highlights, merge indicators, and drop targets (`location: LocationIdentifier`, `entity_uuid: String`). |
+| **Entity Selection** | `DeselectAction` | Clear current entity selection, dismiss confirm drop zones, and clear selection highlights. |
+| **Tutorial System** | `AdvanceTutorialPageAction` | Advance to the next page of an active multi-page tutorial popup (`tutorial_id`, `target_page: int`). |
+| **Drag & Drop** | `CancelDragAction` | Handle drag cancellation or failed drop attempt (empty drop, invalid target, ESC key), playing landing bounce, deselect audio, and resetting drag state. |
 
 ---
 
-## 5. Input Gating & Visual Settling Contract
+## 4.1 First-Class Interface Action Contract & Implementation Specifications
 
-1. **Submission (`request`)**: UI interactions instantiate and submit a `GameAction` to `ActionQueue.request(action)`.
-2. **Gating**: If the queue is currently busy (`is_busy() == true`), incoming requests are dropped or rejected to prevent race conditions and concurrent input execution.
-3. **Execution & Visuals**:
-   - In UI mode: the action and view coordinate playback. `ActionQueue` remains busy while visual feedback runs.
-   - In headless mode: the action executes state changes instantly without waiting for tweens or visual timers.
-4. **Settling**: When animations and cascaded events conclude, the action signals completion (`finish_visuals()`), resetting `is_busy() = false` and emitting `queue_idle` so the next player input can be accepted.
+In accordance with the Prime Directive and Single Pipeline Rule, interface actions that change the visible interaction context, expose legal drop targets, or alter what the player can inspect or choose next are **first-class `GameAction`s**. They are not optional presentation shims:
+
+1. **`OpenInventoryAction`**:
+   - **Payload**: `kind: String` (`"RUN"` or `"BATTLE"`).
+   - **Validation**:
+     - Cannot open if queue is busy with a conflicting transaction.
+     - Battle inventory drawer cannot open during `COMBAT` phase animations.
+     - Cannot open if the requested inventory is already open and interactive.
+   - **Execution**:
+     - Tells `WindowManager` to open and populate the respective inventory container (`win.populate()`), instantiating slot views and updating interaction drop zones.
+   - **Settling**: Yields for visual drawer slide animation to complete before subsequent drag or selection inputs are accepted.
+
+2. **`CloseInventoryAction`**:
+   - **Payload**: `kind: String` (`"RUN"` or `"BATTLE"`).
+   - **Validation**: Cannot close if the inventory is already closed or in the middle of closing.
+   - **Execution**: Tells `WindowManager` to close the inventory window, clearing drop zones in `Main` and resetting interaction states cleanly.
+
+3. **`SelectEntityAction` & `DeselectAction`**:
+   - **`SelectEntityAction` Payload**: `location: LocationIdentifier`, `entity_uuid: String`.
+     - **Validation**: Target location is valid or entity UUID is non-empty.
+     - **Execution**: Authoritatively sets entity selection in `GlobalInteractionRouter.apply_select_entity(loc, uuid)`. This triggers selection visual highlights, displays contextual confirmation drop zones (e.g. Reward Collect/Sell zones, Black Market Transform/Remove zones), and computes merge recipe indicators.
+   - **`DeselectAction` Payload**: none.
+     - **Validation**: Always valid.
+     - **Execution**: Authoritatively clears entity selection in `GlobalInteractionRouter.apply_deselect_entity()`, unhighlighting views and dismissing confirmation drop zones.
+
+4. **`InspectEntityAction` & `CloseInspectionAction`**:
+   - **Payload**: `entity_uuid: String`, `definition_id: String`, `context: String`.
+   - **Validation**: Entity exists or is inspectable from current room state.
+   - **Execution**: Opens or closes contextual inspection cards through `WindowManager`, guaranteeing that locked inspection state is identical across live and replay sessions.
+
+5. **`AdvanceTutorialPageAction` & `DismissTutorialAction`**:
+   - **`AdvanceTutorialPageAction` Payload**: `tutorial_id: String`, `page_index: int`. Advances tutorial pages.
+   - **`DismissTutorialAction` Payload**: `tutorial_id: String`. Authoritatively completes and dismisses tutorial modals.
+
+6. **`AcknowledgeBattleResultsAction` & `AcknowledgeRunCompleteAction`**:
+   - **`AcknowledgeBattleResultsAction` Payload**: `is_victory: bool`. Dismisses the end battle popup (`EndBattlePopup`) and settles when the destination scene (Reward or Title) finishes transitioning and loading.
+   - **`AcknowledgeRunCompleteAction` Payload**: none. Dismisses `RunCompletePopup` and transitions to the title screen.
+
+7. **`CancelDragAction`**:
+   - **Payload**: `source_location: LocationIdentifier`, `target_location: LocationIdentifier`, `reason: String`.
+   - **Validation**: Drag cancellation or failed attempt is always valid to process.
+   - **Execution**: Restores visibility of the source view at `source_location`, plays landing bounce animation, triggers deselect audio, and terminates drag state in `GlobalInteractionRouter`. Replay playback faithfully reproduces the failed drag attempt and snap-back visual.
+
+### Modal & Contextual Choice Lifecycle Contract
+* **Prompt Windows (`ChoiceWindow`)**: When a player drops an item or unit onto another compatible entity, `ChoiceWindow` opens to present options (e.g. Merge vs. Swap). Choosing an option dispatches `ConfirmMergeAction`, `MergeEncounterAction`, or `ConfirmSwapAction`. **The action execution itself authoritatively closes the prompt window (`WindowManager.close_choice_window()`)** so that live play and replay playback maintain identical window states.
+* **Deterministic State Digest Serialization**: State digests must never contain raw Godot `Object` or `Resource` memory pointer strings (`():<Resource#-922337... >`), as heap addresses fluctuate between runs. All game state snapshots and `_turn_metadata` entries must serialize `LocationIdentifier` and entity references to dictionaries (`.to_dict()`) before hashing.
+
+### Distinction: Transient Presentation vs. Discrete Player Actions
+* **Continuous Mouse Movement & Transient Hover**: Moving the mouse cursor and hovering briefly over a unit or item to see a transient tooltip or inspection card is a continuous presentation effect. It does NOT mutate gamestate or lock interface context. Transient hover windows open and close locally in `WindowManager` and are suppressed during replay playback (`is_vcr_playing() == true`).
+* **Discrete Actions**: In contrast, **clicking to select an entity (`SelectEntityAction`)**, **clicking away to deselect (`DeselectAction`)**, **clicking to lock an inspection window (`InspectEntityAction`)**, and **closing an inspection window (`CloseInspectionAction`)** are discrete player decisions that alter visual interaction context and must enter the pipeline as `GameAction`s.
+
+### Elimination of UI Bypasses
+All UI buttons (such as `%OpenInventoryButton`, machine clicks in `Main.gd`, and room leave buttons) and global background dismiss clicks **MUST NOT** directly emit mutation signals or call `WindowManager` methods directly. They must instantiate the corresponding `GameAction` and submit it to `ActionQueue.request()`. Replay and live play both execute through this identical sequence.
+
+## 5. Input Gating & Resolution Boundary
+
+1. **Submission:** Gameplay and replay-relevant interface actions enter through one ordered action boundary.
+2. **Contextual gating:** Reject conflicting gameplay actions while their transaction is active. Explicit meta-actions such as pause/speed and supported inspection controls follow their own validated rules and ordering; queue busy alone does not define all legal input.
+3. **Resolution:** An action owns one authoritative result. The view presents that result; headless execution skips presentation while resolving the same state.
+4. **Settling:** Wait for every causal consequence that can affect state or next input availability. Decorative animation completion is not a gameplay checkpoint unless the game deliberately gates the next choice on it. The action finishes only its own transaction, not whichever action happens to be active.
 
 ---
 
 ## 6. Definition of Done
 
-1. **100% Action Routing:** All player inputs that alter game state, advance progression, or dismiss gating modals are routed through `GameAction` and `ActionQueue`.
-2. **Zero Bypass:** No UI button callback, scene script, or untracked signal directly mutates run state, inventory, or modal states.
-3. **Zero Presentation Leakage:** No `GameAction` requires or stores screen coordinates, pixel offsets, or UI node references.
-4. **Visual & Behavioral Parity:** The game looks, feels, and plays identically to the pre-refactor state. Animations and visual pacing are fully preserved.
-5. **Clean Drag-and-Drop Lifecycle:** Dropping items on invalid targets cleanly cancels the interaction without freezing UI state.
-6. **Headless Integrity:** In headless mode, all actions mutate state deterministically without crashing or relying on UI elements.
-7. **Pause & Speed Parity:** Pauses are faithfully reproduced in replay playback, and replay playback speeds compound multiplicatively with base in-game speeds.
+1. **Complete Action Coverage:** Gameplay choices and explicit replay-relevant interface choices are listed by context and use the shared ordered action boundary.
+2. **Zero Bypass:** No UI callback, scene script, timer, or legacy signal commits an authoritative mutation outside its owning action transaction or typed system-origin consequence.
+3. **Stable Payloads:** Actions use logical IDs and values, never screen coordinates, pixel offsets, or UI node references.
+4. **Outcome Parity:** Live and replay execution of the same action from the same state produces the same authoritative result. Pixel, audio, and decorative-animation identity are not required.
+5. **Clean Drag-and-Drop Lifecycle:** Invalid drops cancel cleanly and do not mutate state.
+6. **Headless Integrity:** Headless mode resolves the same gameplay transactions without requiring UI nodes.
+7. **Time/RNG Integrity:** Automatic timeouts, gameplay RNG, pause, and speed controls preserve the same results and legal action order in every supported playback speed.

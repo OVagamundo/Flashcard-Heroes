@@ -11,8 +11,6 @@ func validate() -> bool:
 		return false
 	if bm.get_current_phase() != BattleManager.Phases.MANAGEMENT:
 		return false
-	if bm.has_method("is_animations_playing") and bm.is_animations_playing():
-		return false
 	return true
 
 func execute() -> void:

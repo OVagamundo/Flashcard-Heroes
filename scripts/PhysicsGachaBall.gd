@@ -208,6 +208,8 @@ func _emit_interaction(event_type: StringName) -> void:
 	context.entity_type = entity_type
 	context.interaction_mode = &"FULLY_INTERACTIVE" # FIX: enables standard selection behavior
 	context.window_group_id = 0
+	if is_instance_valid(GlobalInteractionRouter):
+		context.pointer_position = GlobalInteractionRouter.get_last_pointer_position()
 	SignalBus.emit_signal("interaction_context_received", context)
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier) -> void:

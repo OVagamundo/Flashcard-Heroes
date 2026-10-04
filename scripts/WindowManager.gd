@@ -128,6 +128,14 @@ func _on_battle_state_changed_wm(is_in_battle: bool) -> void:
 
 # --- PUBLIC API ---
 
+func get_replay_modal_stack() -> Array[String]:
+	var result: Array[String] = []
+	for window in _modal_stack:
+		if not is_instance_valid(window) or window.is_queued_for_deletion():
+			continue
+		result.append(String(window.get_meta("window_type", window.name)))
+	return result
+
 # This function is ONLY for true "Hermetic Modals" that halt game flow.
 func open_modal_window(type: StringName, context: Dictionary = {}, preserve_windows: bool = false) -> Control:
 	if not _window_scenes.has(type):
@@ -137,6 +145,7 @@ func open_modal_window(type: StringName, context: Dictionary = {}, preserve_wind
 		_close_all_windows() # True modals are exclusive.
 
 	var window_instance = _window_scenes[type].instantiate()
+	window_instance.set_meta("window_type", type)
 	_get_modal_layer().add_child(window_instance)
 	window_instance.z_index = 100 # Ensure modal renders above elevated local z-indexes
 	_modal_stack.push_back(window_instance)
@@ -167,6 +176,7 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 	
 	# Do NOT close existing windows - tutorials overlay on top
 	var window_instance = _window_scenes[&"TutorialPopup"].instantiate()
+	window_instance.set_meta("window_type", &"TutorialPopup")
 	_get_modal_layer().add_child(window_instance)
 	window_instance.z_index = 100 # Ensure tutorial renders above all
 	# Add to modal stack so it can be properly cleaned up
@@ -396,11 +406,20 @@ func is_any_inspection_window_open() -> bool:
 			_active_inspection_group.remove_at(i)
 	return not _active_inspection_group.is_empty()
 
+func get_top_contextual_window() -> Control:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var win = _active_inspection_group[i]
+		if is_instance_valid(win):
+			return win
+	return null
+
 # Public API: check if ANY base inventory window (Battle, Run, or Discard Pile) is currently open
 func is_any_inventory_window_open() -> bool:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
 		var win = _active_inspection_group[i]
 		if not is_instance_valid(win):
+			continue
+		if win.has_meta(_WM_META_CLOSING) and bool(win.get_meta(_WM_META_CLOSING)):
 			continue
 		if win.has_meta("window_type"):
 			var type = win.get_meta("window_type")
@@ -834,7 +853,7 @@ func _on_window_freed(window_id: int, was_modal: bool) -> void:
 		var act = ActionQueue.get_active_action()
 		if act is AcknowledgeFlashcardIntroAction or act is SelectFlashcardIntroCardAction \
 			or act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction \
-			or act is DismissTutorialAction or act is AcknowledgeBattleResultsAction \
+			or act is DismissTutorialAction \
 			or act is AcknowledgeRunCompleteAction:
 			ActionQueue.finish_action(act)
 
@@ -844,6 +863,14 @@ func _close_top_modal() -> void:
 		if is_instance_valid(window):
 			window.queue_free()
 		return
+
+func close_choice_window() -> void:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if is_instance_valid(w) and (w is ChoiceWindow or (w.has_meta("window_type") and w.get_meta("window_type") == &"ChoiceWindow")):
+			stop_tracking_window(w.get_instance_id())
+			_active_inspection_group.remove_at(i)
+			_queue_free_with_optional_inventory_animation(w)
 
 func close_top_contextual_window() -> void:
 	if not _active_inspection_group.is_empty():
@@ -858,6 +885,9 @@ func close_top_contextual_window() -> void:
 				if type == &"Inventory" or type == &"DiscardPile":
 					return
 			_queue_free_with_optional_inventory_animation(top_window)
+
+func close_all_windows() -> void:
+	_close_all_windows()
 
 func _close_all_windows() -> void:
 	close_all_inspection_windows()
@@ -1236,6 +1266,9 @@ func _queue_free_with_optional_inventory_animation(window: Control) -> void:
 		_animate_battle_inventory_close(window)
 		return
 	if window == _persistent_inventory_window:
+		var idx = _active_inspection_group.find(window)
+		if idx != -1:
+			_active_inspection_group.remove_at(idx)
 		_animate_inventory_window_close(window)
 		return
 	if window == _persistent_discard_pile_window:

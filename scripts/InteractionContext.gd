@@ -21,3 +21,6 @@ class_name InteractionContext extends Resource
 
 ## A unique ID for the chain of inspection windows this element belongs to (0 if on the main board)
 @export var window_group_id: int = 0 
+
+## Screen/viewport position of the pointer at the time of interaction
+@export var pointer_position: Vector2 = Vector2.ZERO

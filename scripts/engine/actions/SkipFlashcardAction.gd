@@ -11,18 +11,27 @@ func _init(p_question_id: StringName = &"", p_think_time: float = 0.0) -> void:
 	think_time = p_think_time
 
 func validate() -> bool:
-	return not question_id.is_empty()
+	if question_id.is_empty() or not is_instance_valid(FlashcardManager):
+		return false
+	if not FlashcardManager.is_session_active or not FlashcardManager.is_sprint_active or FlashcardManager.session_timer <= 0.0:
+		return false
+	if StringName(FlashcardManager.current_question.get("question_id", "")) != question_id:
+		return false
+	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
+	if is_instance_valid(minigame) and minigame.has_method("get_current_question_id"):
+		if minigame.get_current_question_id() != question_id:
+			return false
+	return think_time >= 0.0
 
 func execute() -> void:
+	var result: Dictionary = FlashcardManager.skip_minigame_question(question_id, think_time)
+	if result.is_empty():
+		push_error("[SkipFlashcardAction] Flashcard session rejected an accepted skip.")
+		finish_visuals()
+		return
 	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
 	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode() and minigame.has_method("execute_skip"):
-		minigame.execute_skip()
-	else:
-		var sim_think_time = think_time if think_time > 0.0 else 0.5
-		if is_instance_valid(ActionQueue):
-			ActionQueue.advance_simulation_time(sim_think_time)
-		if is_instance_valid(FlashcardManager):
-			FlashcardManager.skip_minigame_question(question_id, sim_think_time)
+		minigame.execute_skip(question_id, result)
 
 func yields_for_visuals() -> bool:
 	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)

@@ -26,12 +26,7 @@ var _extra_lines: Array[Line2D] = []
 
 
 func _ready() -> void:
-	# Ensure popup handles input while game is paused
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# Pause the game
-	get_tree().paused = true
-	
 	next_button.pressed.connect(_on_next_pressed)
 	got_it_button.pressed.connect(_on_got_it_pressed)
 	
@@ -314,35 +309,34 @@ func _draw_line_to_target(line: Line2D, popup_rect: Rect2, popup_center: Vector2
 	line.add_point(target_center)
 
 
-func _on_next_pressed() -> void:
-	Audio.play_sfx("ui_button_click")
+func set_page(page: int) -> void:
+	_current_page = page
+	_update_page_display()
+	_update_pointer()
+
+func _advance_page() -> void:
 	_current_page += 1
 	_update_page_display()
 	_update_pointer()
 
+func _on_next_pressed() -> void:
+	Audio.play_sfx("ui_button_click")
+	var action := AdvanceTutorialPageAction.new(_tutorial_id, _current_page + 1)
+	ActionQueue.request(action)
 
 func _on_got_it_pressed() -> void:
 	if modulate.a < 1.0: return # Prevent early clicks during animation
 	Audio.play_sfx("ui_button_click")
 	var action := DismissTutorialAction.new(_tutorial_id)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		TutorialManager.mark_completed(_tutorial_id)
-		SignalBus.emit_signal("tutorial_dismissed", _tutorial_id)
-		_close_popup()
+	ActionQueue.request(action)
 
 
 func _close_popup() -> void:
-	if get_tree() and get_tree().paused:
-		get_tree().paused = false
 	queue_free()
 
 
 func _exit_tree() -> void:
-	# Ensure game unpauses when popup is removed (closed or scene change)
-	if get_tree() and get_tree().paused:
-		get_tree().paused = false
+	pass
 
 
 func get_window_to_animate() -> Control:

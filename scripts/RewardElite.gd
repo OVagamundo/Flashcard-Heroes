@@ -195,18 +195,20 @@ func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZER
 	if prize_data.is_empty(): return
 	var instance = prize_data.instance
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := CollectRewardAction.new(instance.ball_uuid)
+	var action := CollectRewardAction.new(instance.ball_uuid, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_collect_visuals(instance.ball_uuid)
+		execute_collect_visuals(instance.ball_uuid, drop_pos)
 
-func execute_collect_visuals(uuid: String) -> void:
+func execute_collect_visuals(uuid: String, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		for i in range(_reward_instances.size()):
@@ -230,7 +232,9 @@ func execute_collect_visuals(uuid: String) -> void:
 	SignalBus.emit_signal("selection_clear_requested")
 	
 	var raw_pos = _get_slot_global_center(loc.index)
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		raw_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		raw_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	
