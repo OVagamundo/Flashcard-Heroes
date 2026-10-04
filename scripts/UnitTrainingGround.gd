@@ -130,37 +130,37 @@ func _get_selected_inventory_unit() -> Dictionary:
 func _on_train_hp_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	var item_data = _get_selected_inventory_unit()
 	if item_data.is_empty(): return
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
-	var action := StartTrainingAction.new(item_data.uuid, "hp")
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
+	var action := StartTrainingAction.new(item_data.uuid, "hp", interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_start_training_visuals(item_data.uuid, "hp")
+		execute_start_training_visuals(item_data.uuid, "hp", drop_pos)
 
 func _on_train_pwr_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
 	var item_data = _get_selected_inventory_unit()
 	if item_data.is_empty(): return
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
-	var action := StartTrainingAction.new(item_data.uuid, "pwr")
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
+	var action := StartTrainingAction.new(item_data.uuid, "pwr", interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_start_training_visuals(item_data.uuid, "pwr")
+		execute_start_training_visuals(item_data.uuid, "pwr", drop_pos)
 
-func execute_start_training_visuals(target_uuid: String, stat: String) -> void:
-	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.training_unit_uuid = target_uuid
-		GameManager.run_state.training_stat = stat
-		GameManager.run_state.is_training_active = true
-	_start_training(stat, target_uuid)
+func execute_start_training_visuals(target_uuid: String, stat: String, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
+	_start_training(stat, target_uuid, p_drop_pos)
 
-func _start_training(stat: String, target_uuid: String = "") -> void:
+func _start_training(stat: String, target_uuid: String = "", p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	if _action_in_progress: return
 	var item_data = _get_selected_inventory_unit()
 	if item_data.is_empty() or (not target_uuid.is_empty() and item_data.get("uuid", "") != target_uuid):
@@ -198,7 +198,9 @@ func _start_training(stat: String, target_uuid: String = "") -> void:
 
 	# Determine interaction position
 	var interaction_pos = Vector2.ZERO
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		interaction_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		interaction_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	else:
@@ -206,8 +208,6 @@ func _start_training(stat: String, target_uuid: String = "") -> void:
 		if is_instance_valid(slot_view):
 			interaction_pos = slot_view.get_global_rect().get_center()
 
-	# Reset local tokens
-	_tokens = 0
 	_update_token_display()
 
 	# Clear selection immediately to fall inside the drag suppression window
@@ -638,10 +638,10 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 # --- Standard UI handlers ---
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
+	if WindowManager.is_run_inventory_window_open():
+		ActionQueue.request(CloseInventoryAction.new("RUN"))
 	else:
-		SignalBus.emit_signal("inspect_inventory_requested")
+		ActionQueue.request(OpenInventoryAction.new("RUN"))
 
 func _on_leave_pressed() -> void:
 	var action := LeaveTrainingAction.new()

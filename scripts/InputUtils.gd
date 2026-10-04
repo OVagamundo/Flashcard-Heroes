@@ -51,3 +51,11 @@ static func get_event_position(event: InputEvent) -> Vector2:
 	if event is InputEventScreenDrag:
 		return event.position
 	return Vector2.ZERO
+
+
+static func get_event_global_position(event: InputEvent) -> Vector2:
+	if "global_position" in event:
+		return event.global_position
+	if "position" in event:
+		return event.position
+	return Vector2.ZERO

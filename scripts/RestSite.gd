@@ -54,9 +54,6 @@ func _ready() -> void:
 	# AUDIO HOOK: Rest Site BGM
 	Audio.play_music(SoundRegistry.BGM_REST)
 	
-	GameManager.current_rest_site_type = int(site_type)
-	GameManager._temporary_rest_site_prizes.clear()
-	
 	# Connect buttons
 	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
 	tier2_draw_button.pressed.connect(_on_tier2_draw_pressed)
@@ -71,10 +68,6 @@ func _ready() -> void:
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
 	
-	# Timekeeper hero bonus: Start with 5 tokens for easy testing
-	if _is_timekeeper_hero():
-		_tokens = 5
-	
 	# Initialize token display
 	_update_token_display()
 	_update_button_states()
@@ -83,7 +76,6 @@ func _ready() -> void:
 
 func setup_site() -> void:
 	"""Call this after setting site_type to correctly initialize visuals and tutorials"""
-	GameManager.current_rest_site_type = int(site_type)
 	_update_localized_text()
 	_setup_machine_visuals()
 
@@ -195,8 +187,6 @@ func _on_study_pressed() -> void:
 func _execute_study() -> void:
 	_has_studied = true
 	study_button.disabled = true
-	if is_instance_valid(GameManager.run_state):
-		FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 
 func _on_flashcard_completed(_results: Dictionary) -> void:
 	pass
@@ -495,7 +485,8 @@ func execute_leave_visuals() -> void:
 		var prize = _prizes[0]
 		# Use the slot_index stored in the prize dictionary
 		await _apply_prize(prize.slot_index)
-	
+	GameManager.finish_rest_site_leave()
+
 	SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
@@ -503,7 +494,3 @@ func execute_leave_visuals() -> void:
 func _exit_tree() -> void:
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
-
-func _is_timekeeper_hero() -> bool:
-	if not is_instance_valid(GameManager.run_state.hero_instance): return false
-	return GameManager.run_state.hero_instance.get_definition().id == &"hero_timekeeper"

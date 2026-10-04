@@ -921,7 +921,9 @@ func has_locked_cards() -> bool:
 	return active_deck_ids.size() < ordered_deck_pool.size()
 
 func unlock_next_deck_card() -> StringName:
-	"""Unlocks the next card from the ordered deck pool and marks it as presented."""
+	"""Authoritative single source of truth for deck unlocking.
+	Unlocks the next locked card from the ordered deck pool, initializes its progress,
+	synchronizes active_deck_ids and cards_presented_count, and returns the unlocked card ID."""
 	if not has_locked_cards():
 		return &""
 	
@@ -932,7 +934,7 @@ func unlock_next_deck_card() -> StringName:
 				var progress = FlashcardProgress.new()
 				progress.mastery_level = FlashcardProgress.MASTERY_MIN
 				flashcard_progress[card_id] = progress
-			cards_presented_count += 1
+			cards_presented_count = active_deck_ids.size()
 			SignalBus.emit_signal("run_data_changed")
 			return card_id
 			
@@ -940,22 +942,8 @@ func unlock_next_deck_card() -> StringName:
 
 func check_deck_expansion() -> bool:
 	"""Every time this is called, add EXACTLY ONE new card if available.
-	The mastery check has been removed as per user request for linear progression."""
-	if deck_def_id == &"":
-		return false
-	
-	var full_deck = ordered_deck_pool
-	if full_deck.is_empty() or active_deck_ids.size() >= full_deck.size():
-		return false
-	
-	for i in range(full_deck.size()):
-		var card_id = full_deck[i]
-		if not active_deck_ids.has(card_id):
-			active_deck_ids.append(card_id)
-			SignalBus.emit_signal("run_data_changed")
-			return true
-	
-	return false
+	Delegates to unlock_next_deck_card() as the single source of truth."""
+	return not unlock_next_deck_card().is_empty()
 
 func prismatize_unit(instance: GachaBallInstance) -> void:
 	"""POC Helper: Transforms a unit instance into a Prismatic variant with boosted stats and abilities."""
@@ -997,6 +985,7 @@ func to_save_dict() -> Dictionary:
 		"elite_encounter_history": _serialize_elite_encounter_history(),
 		"available_path_nodes": _serialize_available_path_nodes(),
 		"rng_state": RNGManager.serialize() if is_instance_valid(RNGManager) else {},
+		"uuid_state": UUIDUtils.serialize_state() if is_instance_valid(UUIDUtils) else {},
 		# Serialize all instances
 		"instances": {},
 		# Serialize container UUIDs
@@ -1024,6 +1013,12 @@ func to_save_dict() -> Dictionary:
 func from_save_dict(data: Dictionary) -> void:
 	run_id = data.get("run_id", "")
 	run_seed = data.get("run_seed", 0)
+	if is_instance_valid(UUIDUtils):
+		var uuid_state: Variant = data.get("uuid_state", {})
+		if uuid_state is Dictionary:
+			UUIDUtils.restore_state(uuid_state, run_id)
+		else:
+			UUIDUtils.begin_run_scope(run_id)
 	gold = data.get("gold", 0)
 	day = data.get("day", 1)
 	current_boss_level = data.get("current_boss_level", 0)
@@ -1052,19 +1047,6 @@ func from_save_dict(data: Dictionary) -> void:
 		if not rng_dict.is_empty():
 			RNGManager.deserialize(rng_dict)
 	
-	# Clear and restore instances
-	run_instances.clear()
-	hero_instance = null
-	var inst_data: Dictionary = data.get("instances", {})
-	for uuid in inst_data.keys():
-		var inst := GachaBallInstance.new()
-		inst.from_save_dict(inst_data[uuid])
-		run_instances[uuid] = inst
-		# Identify hero instance
-		var def_id := String(inst.definition_id)
-		if def_id == "hero" or def_id.begins_with("hero_"):
-			hero_instance = inst
-	
 	# Clear and restore containers
 	_containers.clear()
 	var cont_data: Dictionary = data.get("containers", {})
@@ -1086,6 +1068,37 @@ func from_save_dict(data: Dictionary) -> void:
 			if i < container.get_size():
 				container.set_uuid(i, uuids[i])
 		_containers[cname] = container
+
+	# Clear and restore instances in deterministic container order
+	run_instances.clear()
+	hero_instance = null
+	var inst_data: Dictionary = data.get("instances", {})
+	var restored_uuids := {}
+	
+	for cname in [RUN_CONTAINER_TAGS.PLAYER_LINEUP, RUN_CONTAINER_TAGS.PLAYER_BENCH, &"RunInventoryT1", &"RunInventoryT2", &"RunInventoryT3", RUN_CONTAINER_TAGS.PLAYER_TRINKETS]:
+		var uuids: Array = cont_data.get(String(cname), [])
+		for uuid in uuids:
+			if not uuid.is_empty() and inst_data.has(uuid) and not restored_uuids.has(uuid):
+				var inst := GachaBallInstance.new()
+				inst.from_save_dict(inst_data[uuid])
+				run_instances[uuid] = inst
+				restored_uuids[uuid] = true
+				var def_id := String(inst.definition_id)
+				if def_id == "hero" or def_id.begins_with("hero_"):
+					hero_instance = inst
+
+	var remaining_uuids: Array = []
+	for uuid in inst_data.keys():
+		if not restored_uuids.has(uuid):
+			remaining_uuids.append(uuid)
+	remaining_uuids.sort()
+	for uuid in remaining_uuids:
+		var inst := GachaBallInstance.new()
+		inst.from_save_dict(inst_data[uuid])
+		run_instances[uuid] = inst
+		var def_id := String(inst.definition_id)
+		if def_id == "hero" or def_id.begins_with("hero_"):
+			hero_instance = inst
 	
 	# Restore flashcard progress
 	_deserialize_flashcard_progress(data.get("flashcard_progress", {}))
@@ -1117,7 +1130,7 @@ func _serialize_encounter_last_offered_day() -> Dictionary:
 func _deserialize_encounter_last_offered_day(data: Dictionary) -> void:
 	encounter_last_offered_day.clear()
 	for key_str in data.keys():
-		encounter_last_offered_day[String(key_str)] = data[key_str]
+		encounter_last_offered_day[String(key_str)] = int(data[key_str])
 
 func _serialize_elite_encounter_history() -> Dictionary:
 	var result: Dictionary = {}
@@ -1128,7 +1141,7 @@ func _serialize_elite_encounter_history() -> Dictionary:
 func _deserialize_elite_encounter_history(data: Dictionary) -> void:
 	elite_encounter_history.clear()
 	for key_str in data.keys():
-		elite_encounter_history[StringName(key_str)] = data[key_str]
+		elite_encounter_history[StringName(key_str)] = int(data[key_str])
 
 func _serialize_flashcard_progress() -> Dictionary:
 	var result: Dictionary = {}

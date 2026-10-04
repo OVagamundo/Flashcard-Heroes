@@ -55,6 +55,8 @@ var _has_locked_recipe: bool = false
 const MERGE_LEVEL_UP_OUTLINE_COLOR := Color(0.0, 0.95, 1.0) # Cyan outline for leveling up
 const MERGE_RECIPE_TIER_UP_OUTLINE_COLOR := Color(1.0, 0.1, 0.9) # Magenta outline for recipe tier up / items
 const MERGE_TARGET_OUTLINE_WIDTH := 3.0
+const EQUIP_TARGET_OUTLINE_COLOR := Color.WHITE # White outline for equipping items to units
+const EQUIP_TARGET_OUTLINE_WIDTH := 3.0
 var _merge_target_type: StringName = &""
 
 const TRAIT_OUTLINE_COLORS = [
@@ -214,7 +216,7 @@ func _update_drag_deformation(delta: float) -> void:
 	if not _is_dragging: return
 	if not is_instance_valid(_drag_preview): return
 	
-	var mouse_pos = get_global_mouse_position()
+	var mouse_pos = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_global_mouse_position()
 	
 	# Skip velocity calculation on first frame to prevent initial spike
 	if _drag_first_frame:
@@ -709,7 +711,7 @@ func set_interaction_context(interaction_mode: StringName, entity_type: StringNa
 	_window_group_id = window_group_id
 
 ## Create and emit InteractionContext for this view
-func _create_interaction_context(event_type: StringName) -> InteractionContext:
+func _create_interaction_context(event_type: StringName, pointer_pos: Vector2 = Vector2.ZERO) -> InteractionContext:
 	var context = InteractionContext.new()
 	context.source_view_instance_id = get_instance_id()
 	context.event_type = event_type
@@ -718,6 +720,10 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.entity_type = _entity_type
 	context.interaction_mode = _interaction_mode
 	context.window_group_id = _window_group_id
+	if not pointer_pos.is_zero_approx():
+		context.pointer_position = pointer_pos
+	elif is_instance_valid(GlobalInteractionRouter):
+		context.pointer_position = GlobalInteractionRouter.get_last_pointer_position()
 	return context
 
 func _get_hover_fx_mode() -> int:
@@ -836,7 +842,8 @@ func _prepare_drag_payload() -> Dictionary:
 	# --- Drag Deformation: Start tracking ---
 	_is_dragging = true
 	_drag_first_frame = true
-	_last_mouse_pos = get_global_mouse_position()
+	var current_pointer: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_global_mouse_position()
+	_last_mouse_pos = current_pointer
 	_drag_velocity = Vector2.ZERO
 	if is_instance_valid(icon_rect):
 		_original_icon_scale = icon_rect.scale
@@ -848,7 +855,7 @@ func _prepare_drag_payload() -> Dictionary:
 	_drag_preview = drag_visual
 	_drag_preview.scale = Vector2.ONE
 	_drag_preview.pivot_offset = Vector2.ZERO
-	_last_mouse_pos = get_global_mouse_position()
+	_last_mouse_pos = current_pointer
 
 	var placeholder = Control.new()
 	placeholder.custom_minimum_size = self.size
@@ -1482,6 +1489,10 @@ func _on_armor_container_clicked(event: InputEvent) -> void:
 
 ## Open a tooltip window for a status effect
 func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void:
+	if is_instance_valid(ActionQueue):
+		var action := InspectEntityAction.new(_location, false, &"EffectInspection", status_id)
+		ActionQueue.request(action)
+		return
 	var status_def = StatusEffectRegistry.get_definition(status_id)
 	if not is_instance_valid(status_def):
 		return
@@ -1545,21 +1556,23 @@ func _apply_level_label_style() -> void:
 ## Handle click on an equipped item icon
 func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		# Find the item instance and open its inspection window
-		var all_instances = _get_all_instances_db()
-		if all_instances.has(item_uuid):
-			var item_instance = all_instances[item_uuid]
-			var item_loc = LocationIdentifier.new()
-			item_loc.container = C.CONTAINER_EQUIPPED_ITEM
-			item_loc.unit_uuid = _instance_uuid
-			
-			var populate_ctx = {
-				"source_view": anchor,
-				"instance": item_instance,
-				"location": item_loc
-			}
-			
-			WindowManager.open_child_contextual_window(&"ItemInspection", anchor, populate_ctx)
+		var item_loc = LocationIdentifier.new()
+		item_loc.container = C.CONTAINER_EQUIPPED_ITEM
+		item_loc.unit_uuid = _instance_uuid
+		if is_instance_valid(ActionQueue):
+			var action := InspectEntityAction.new(item_loc, false, &"ItemInspection", &"", item_uuid)
+			ActionQueue.request(action)
+		else:
+			# Find the item instance and open its inspection window
+			var all_instances = _get_all_instances_db()
+			if all_instances.has(item_uuid):
+				var item_instance = all_instances[item_uuid]
+				var populate_ctx = {
+					"source_view": anchor,
+					"instance": item_instance,
+					"location": item_loc
+				}
+				WindowManager.open_child_contextual_window(&"ItemInspection", anchor, populate_ctx)
 		get_viewport().set_input_as_handled()
 
 ## Get all instances database from the appropriate game state
@@ -1743,7 +1756,8 @@ func _gui_input(event: InputEvent) -> void:
 			if long_press_was_triggered:
 				_end_touch_hover_peek()
 			elif _pressed_pending_click and not _drag_initiated_for_click:
-				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK")
+				var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
 			_pressed_pending_click = false
 			_drag_initiated_for_click = false
@@ -1766,7 +1780,8 @@ func _gui_input(event: InputEvent) -> void:
 			_animate_press_to(0.0, 0.14)
 			# On release: only emit SINGLE_CLICK if no drag was initiated
 			if _pressed_pending_click and not _drag_initiated_for_click:
-				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK")
+				var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
 			if not get_global_rect().has_point(get_global_mouse_position()):
 				_set_hover_state(false, false)
@@ -1809,7 +1824,8 @@ func _drop_data(_at_position, _data) -> void:
 	# For drag and drop, we need to handle this as a direct action
 	# since the source location comes from the drag data, not the current view
 	# Create a target interaction context and route via GIR
-	var target_ctx = _create_interaction_context(&"DROP")
+	var drop_pos: Vector2 = get_global_transform() * _at_position
+	var target_ctx = _create_interaction_context(&"DROP", drop_pos)
 	SignalBus.emit_signal("interaction_context_received", target_ctx)
 	
 	# Do not end drag visuals here. The InventoryManager will decide whether the
@@ -1953,6 +1969,10 @@ func _update_outline_visuals() -> void:
 		outline_enabled = true
 		outline_color = MERGE_RECIPE_TIER_UP_OUTLINE_COLOR
 		outline_width = MERGE_TARGET_OUTLINE_WIDTH
+	elif _merge_target_type == &"EQUIP":
+		outline_enabled = true
+		outline_color = EQUIP_TARGET_OUTLINE_COLOR
+		outline_width = EQUIP_TARGET_OUTLINE_WIDTH
 	# Priority 3: Locked recipe discovery highlight (Violet in Shop / Rewards)
 	elif _has_locked_recipe and _is_reward_or_shop_context():
 		outline_enabled = true
@@ -2023,10 +2043,18 @@ func _notification(what: int) -> void:
 		
 		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
 		if not combined_success:
-			if GlobalInteractionRouter.is_drag_active():
-				GlobalInteractionRouter.end_drag(false)
-			
-			play_landing_bounce()
+			var drop_pos: Vector2 = _last_mouse_pos
+			if drop_pos.is_zero_approx() and is_instance_valid(GlobalInteractionRouter):
+				drop_pos = GlobalInteractionRouter.get_last_pointer_position()
+			if not godot_successful and is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
+				ActionQueue.request(CancelDragAction.new(_location, null, "empty_drop", drop_pos))
+			else:
+				if GlobalInteractionRouter.is_drag_active():
+					GlobalInteractionRouter.end_drag(false)
+				if not drop_pos.is_zero_approx():
+					play_snap_back_from(drop_pos)
+				else:
+					play_landing_bounce()
 		
 		# Reset local drag flag
 		_drag_initiated_for_click = false
@@ -2125,6 +2153,30 @@ func play_trinket_activation_bounce() -> void:
 	tween.tween_property(icon_rect, "scale", Vector2(0.85, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.tween_property(icon_rect, "scale", Vector2(1.1, 0.9), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(icon_rect, "scale", original_scale, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+
+func play_snap_back_from(origin_pos: Vector2) -> void:
+	if not is_instance_valid(icon_rect):
+		play_landing_bounce()
+		return
+	
+	visible = true
+	modulate.a = 1.0
+	if is_instance_valid(get_parent()):
+		get_parent().visible = true
+		
+	var target_global_pos = global_position + (size / 2.0)
+	if origin_pos.is_zero_approx() or origin_pos.distance_to(target_global_pos) < 6.0:
+		play_landing_bounce()
+		return
+		
+	var offset = origin_pos - target_global_pos
+	var original_pos = icon_rect.position
+	icon_rect.position = original_pos + offset
+	
+	Audio.play_sfx("unit_hop")
+	var tween = create_tween()
+	tween.tween_property(icon_rect, "position", original_pos, AnimationConstants.scaled(0.16)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	tween.tween_callback(play_landing_bounce)
 
 func play_landing_bounce() -> void:
 	if not is_instance_valid(icon_rect): return

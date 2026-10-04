@@ -84,10 +84,11 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Selection**: 3.0px crisp white outline shader on selected entity accompanied by hop animation.
 - **Level-Up Target**: 3.0px cyan outline (`Color(0.0, 0.95, 1.0)`) on matching identical units (< Lv. 3).
 - **Recipe Tier-Up & Item Target**: 3.0px magenta outline (`Color(1.0, 0.1, 0.9)`) on unlocked recipe combinations.
+- **Equip Target**: 3.0px crisp white outline (`Color.WHITE`) on eligible friendly units when selecting or dragging an equippable item.
 - **Recipe Discovery**: 3.0px violet outline (`Color(0.82, 0.38, 1.0)`) on shop and reward units offering undiscovered recipes.
 - **Outline Priority Hierarchy**:
     1. **Selection Outline (White)**: Active player focus takes highest priority.
-    2. **Merge Target Outline (Cyan / Magenta)**: Active merge affordances override background discovery outlines while dragging or selecting.
+    2. **Merge & Equip Target Outline (Cyan / Magenta / White)**: Active merge affordances and equip targets override background discovery outlines while dragging or selecting.
     3. **Recipe Discovery Outline (Violet)**: Displays on unselected reward and shop candidates with undiscovered merge recipes.
     4. **Trait Synergy Outline (Metallic)**: Displays on trait trinkets meeting threshold criteria during battle.
     5. **Disabled**: Inactive if no criteria are met.

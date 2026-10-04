@@ -242,16 +242,18 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 			RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
 			return
 
+		var drop_pos := Vector2.ZERO
+		var interaction_type := "CLICK"
 		if is_drag:
-			_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-		else:
-			_transient_drop_pos = Vector2.ZERO
+			drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+			interaction_type = "DRAG"
+		_transient_drop_pos = drop_pos
 
-		var action := BuyShopAction.new(selected_loc.index, actual_cost)
+		var action := BuyShopAction.new(selected_loc.index, actual_cost, String(instance.definition_id), interaction_type, drop_pos)
 		if is_instance_valid(ActionQueue):
 			ActionQueue.request(action)
 		else:
-			execute_buy_visuals(selected_loc.index, actual_cost)
+			execute_buy_visuals(selected_loc.index, actual_cost, instance, drop_pos)
 
 func play_transaction_log(event_log: Dictionary) -> void:
 	if not event_log.get("success", false):
@@ -261,9 +263,10 @@ func play_transaction_log(event_log: Dictionary) -> void:
 	var slot_index: int = int(event_log.get("slot_index", -1))
 	var cost: int = int(event_log.get("cost", 0))
 	var instance: GachaBallInstance = event_log.get("purchased_instance", null)
-	execute_buy_visuals(slot_index, cost, instance)
+	var drop_pos: Vector2 = event_log.get("drop_pos", Vector2.ZERO)
+	execute_buy_visuals(slot_index, cost, instance, drop_pos)
 
-func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance = null) -> void:
+func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance = null, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	if not is_instance_valid(instance):
 		instance = _find_instance_for_slot(slot_index)
 	if not is_instance_valid(instance):
@@ -283,7 +286,9 @@ func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance
 				slot_center += content_area.global_position
 	
 	var interaction_pos = slot_center
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		interaction_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		interaction_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	

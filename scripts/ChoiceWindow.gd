@@ -60,14 +60,15 @@ func _exit_tree() -> void:
 		
 	# Restore visibility of source view if it was hidden (e.g. on Cancel)
 	if not _choice_made and _source_view_instance_id != -1:
-		var view = instance_from_id(_source_view_instance_id)
-		if is_instance_valid(view) and view is Control:
-			view.visible = true
-			view.modulate.a = 1.0
-			
-			# Trigger the standard "drop cancelled" bounce animation.
-			if view.has_method("play_landing_bounce"):
-				view.play_landing_bounce()
+		if is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
+			ActionQueue.request(CancelDragAction.new(_source_location, _target_location, "cancelled_choice"))
+		else:
+			var view = instance_from_id(_source_view_instance_id)
+			if is_instance_valid(view) and view is Control:
+				view.visible = true
+				view.modulate.a = 1.0
+				if view.has_method("play_landing_bounce"):
+					view.play_landing_bounce()
 
 
 func populate(context: Dictionary) -> void:
@@ -130,5 +131,4 @@ func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 			var action := ConfirmSwapAction.new(_source_location, _target_location)
 			ActionQueue.request(action)
 	else:
-		SignalBus.emit_signal("choice_made", choice, _source_location, _target_location, recipe_id)
-	SignalBus.emit_signal("close_top_contextual_requested")
+		push_error("[ChoiceWindow] ActionQueue unavailable for choice.")

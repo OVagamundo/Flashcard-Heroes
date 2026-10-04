@@ -10,7 +10,7 @@ func _ready() -> void:
 
 # --- Main Action Handler ---
 
-func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> void:
+func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier, interaction_type: String = "CLICK", drop_pos: Vector2 = Vector2.ZERO) -> void:
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		GlobalInteractionRouter.end_drag(false)
 		return
@@ -146,6 +146,8 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName) -> void:
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return
+	if is_instance_valid(WindowManager):
+		WindowManager.close_choice_window()
 	# Activate suppression via GIR for the parent inspection window of the target (or source) view
 	# to avoid premature closure during swap/merge execution triggered by ChoiceWindow.
 	var wm = WindowManager

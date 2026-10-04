@@ -6,7 +6,7 @@ func _init() -> void:
 	super._init(&"AcknowledgeFlashcardIntroAction")
 
 func validate() -> bool:
-	return true
+	return is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active and FlashcardManager.is_introducing_new_card
 
 func execute() -> void:
 	if is_instance_valid(FlashcardManager):

@@ -29,7 +29,8 @@ func _on_return_button_pressed() -> void:
 			SignalBus.emit_signal("battle_victory_acknowledged")
 		else:
 			# Clear save on game over (defeat)
-			SaveManager.clear_save()
+			if not GameManager.is_replay_run:
+				SaveManager.clear_save()
 			SignalBus.emit_signal("title_scene_requested")
 		queue_free()
 

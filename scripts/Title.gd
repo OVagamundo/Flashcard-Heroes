@@ -6,7 +6,10 @@ extends Control
 @onready var exit_button: Button = %ExitButton
 @onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
 @onready var continue_button: Button = %ContinueButton
+@onready var replays_button: Button = %ReplaysButton
 @onready var background: TextureRect = $Background
+
+const REPLAY_BROWSER_SCENE := preload("res://scenes/ui/ReplayBrowser.tscn")
 
 func _input(event: InputEvent) -> void:
 	# Debug Header: Reset tutorials with Shift+T
@@ -43,6 +46,8 @@ func _ready() -> void:
 		SignalBus.emit_signal("loadout_scene_requested")
 	)
 	options_button.pressed.connect(_on_options_pressed)
+	if is_instance_valid(replays_button):
+		replays_button.pressed.connect(_on_replays_pressed)
 	
 	if exit_button:
 		exit_button.pressed.connect(func():
@@ -67,6 +72,8 @@ func _update_localized_text() -> void:
 		exit_button.text = tr("ui.exit_game")
 	if continue_button:
 		continue_button.text = tr("ui.continue")
+	if replays_button:
+		replays_button.text = "Replays"
 	if tutorial_checkbox:
 		tutorial_checkbox.text = tr("ui.show_tutorials")
 
@@ -78,15 +85,14 @@ func _on_options_pressed() -> void:
 	}
 	WindowManager._open_contextual_window(context)
 
+func _on_replays_pressed() -> void:
+	var browser := REPLAY_BROWSER_SCENE.instantiate()
+	add_child(browser)
+
 func _on_continue_pressed() -> void:
 	var loaded_state: RunState = SaveManager.load_run()
 	if is_instance_valid(loaded_state):
-		GameManager.run_state = loaded_state
-		GameManager.loading_from_save = true
-		if is_instance_valid(ActionQueue):
-			ActionQueue.reset_global_run_timer(loaded_state.elapsed_simulation_time)
-			ActionQueue.start_timer()
-		SignalBus.emit_signal("main_scene_requested")
+		GameManager.resume_saved_run(loaded_state)
 	else:
 		push_error("[Title] Failed to load saved run")
 		continue_button.visible = false

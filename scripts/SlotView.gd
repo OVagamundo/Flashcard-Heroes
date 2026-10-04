@@ -403,7 +403,7 @@ func set_interaction_context(interaction_mode: StringName, window_group_id: int 
 	_window_group_id = window_group_id
 
 ## Create and emit InteractionContext for this slot
-func _create_interaction_context(event_type: StringName) -> InteractionContext:
+func _create_interaction_context(event_type: StringName, pointer_pos: Vector2 = Vector2.ZERO) -> InteractionContext:
 	var context = InteractionContext.new()
 	context.source_view_instance_id = get_instance_id()
 	context.event_type = event_type
@@ -412,6 +412,10 @@ func _create_interaction_context(event_type: StringName) -> InteractionContext:
 	context.entity_type = &"EMPTY_SLOT"
 	context.interaction_mode = _interaction_mode
 	context.window_group_id = _window_group_id
+	if not pointer_pos.is_zero_approx():
+		context.pointer_position = pointer_pos
+	elif is_instance_valid(GlobalInteractionRouter):
+		context.pointer_position = GlobalInteractionRouter.get_last_pointer_position()
 	return context
 
 func _has_point(point: Vector2) -> bool:
@@ -435,8 +439,8 @@ func _gui_input(event: InputEvent) -> void:
 		
 		# If this is an empty slot (no content), handle the click as EMPTY_SLOT interaction
 		if not has_content:
-			pass
-			var context = _create_interaction_context(&"SINGLE_CLICK")
+			var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+			var context = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 			SignalBus.emit_signal("interaction_context_received", context)
 			get_viewport().set_input_as_handled() # Stop propagation to Main/Battle
 			accept_event() # Explicitly stop control bubbling
@@ -459,8 +463,9 @@ func _drop_data(_at_position, _data) -> void:
 	if _interaction_mode == &"INSPECTION_ONLY":
 		return
 
-	# Create a target interaction context and route via GIR
-	var target_ctx = _create_interaction_context(&"DROP")
+	# Create a target interaction context with drop coordinates and route via GIR
+	var drop_pos: Vector2 = get_global_transform() * _at_position
+	var target_ctx = _create_interaction_context(&"DROP", drop_pos)
 	
 	# IMMEDIATE VISUAL FEEDBACK: Hide indicator now.
 	_hide_indicator()

@@ -18,8 +18,8 @@ Implement an **Automatic Session Recorder & Replay Engine** that captures gamepl
 ### 1. The VCR Philosophy (Universal Action Pipeline)
 The replay engine relies on the game's deterministic command pipeline:
 - A run is completely defined by its **Master Seed** + **The Sequence of Player `GameAction`s**.
-- Replay playback and live gameplay execute through the **exact same code paths**: the replay engine does not simulate mouse clicks, physics, or UI states. It simply loads the initial run state and feeds the recorded `GameAction`s back into `ActionQueue.request(action)`.
-- All non-mutating UI elements (tooltips, inspection popups, tutorial dialogs) are bypassed or ignored during replay.
+- Replay playback and live gameplay execute through the **exact same event-driven code paths (STS2 model)**: the game is a pure state machine driven by Actions. It does not possess a free-running continuous game loop.
+- ANY input or event that produces ANY visual or state consequence (including opening/closing inventory drawers, inspection windows, tutorial page progression, and failed drag attempts with rejection feedback) enters the pipeline as an ordered `GameAction`. Because everything with visual consequence is an action, recording and replaying the game becomes trivial.
 
 ### 2. State-Gated Intent Queuing (Input Gates)
 Replays must **never** fire actions on a continuous wall-clock timer (`playback_time += delta`), because animation runtimes, frame rates, and scene loading vary across machines:

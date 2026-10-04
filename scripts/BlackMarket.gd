@@ -50,6 +50,9 @@ func _process(_delta: float) -> void:
 		var main_node = GameManager._active_main_node
 		if is_instance_valid(main_node):
 			if is_open:
+				var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
+				var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
+				main_node.set_action_zone_texts(transform_text, remove_text)
 				if main_node.has_method("show_action_instruction"):
 					main_node.show_action_instruction()
 			else:
@@ -106,20 +109,33 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 		return
 	var cost := _get_remove_cost()
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := RemoveBlackMarketAction.new(item_data.uuid, cost)
+	var action := RemoveBlackMarketAction.new(item_data.uuid, cost, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_remove_visuals(item_data.uuid, cost)
+		execute_remove_visuals(item_data.uuid, cost, drop_pos)
 
-func execute_remove_visuals(target_uuid: String, cost: int) -> void:
+func execute_remove_visuals(target_uuid: String, cost: int, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var item_data = _get_selected_inventory_item()
 	if item_data.is_empty() or item_data.uuid != target_uuid:
+		if not target_uuid.is_empty() and is_instance_valid(GameManager.run_state):
+			var inst = GameManager.run_state.get_instance_by_uuid(target_uuid)
+			var loc = GameManager.run_state.get_location_for_uuid(target_uuid)
+			if is_instance_valid(inst) and is_instance_valid(loc):
+				item_data = {
+					"uuid": target_uuid,
+					"instance": inst,
+					"location": loc,
+					"definition": inst.get_definition()
+				}
+	if item_data.is_empty():
 		if is_instance_valid(ActionQueue):
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
@@ -141,7 +157,9 @@ func execute_remove_visuals(target_uuid: String, cost: int) -> void:
 	
 	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		interaction_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		interaction_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	else:
@@ -202,20 +220,33 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 
 	var transform_cost = GameManager.get_black_market_transform_cost()
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := TransformBlackMarketAction.new(item_data.uuid, transform_cost)
+	var action := TransformBlackMarketAction.new(item_data.uuid, transform_cost, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_transform_visuals(item_data.uuid, transform_cost)
+		execute_transform_visuals(item_data.uuid, transform_cost, drop_pos)
 
-func execute_transform_visuals(target_uuid: String, cost: int) -> void:
+func execute_transform_visuals(target_uuid: String, cost: int, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var item_data = _get_selected_inventory_item()
 	if item_data.is_empty() or item_data.uuid != target_uuid:
+		if not target_uuid.is_empty() and is_instance_valid(GameManager.run_state):
+			var inst = GameManager.run_state.get_instance_by_uuid(target_uuid)
+			var loc = GameManager.run_state.get_location_for_uuid(target_uuid)
+			if is_instance_valid(inst) and is_instance_valid(loc):
+				item_data = {
+					"uuid": target_uuid,
+					"instance": inst,
+					"location": loc,
+					"definition": inst.get_definition()
+				}
+	if item_data.is_empty():
 		if is_instance_valid(ActionQueue):
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
@@ -247,7 +278,9 @@ func execute_transform_visuals(target_uuid: String, cost: int) -> void:
 
 	# Determine interaction point: drop point for drag, slot center for click
 	var interaction_pos = Vector2.ZERO
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		interaction_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		interaction_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	else:
@@ -486,16 +519,10 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _on_open_inventory_pressed() -> void:
-	if WindowManager.is_any_inspection_window_open():
-		WindowManager.close_all_inspection_windows()
+	if WindowManager.is_run_inventory_window_open():
+		ActionQueue.request(CloseInventoryAction.new("RUN"))
 	else:
-		var main_node = GameManager._active_main_node
-		if is_instance_valid(main_node) and main_node.has_method("set_action_zone_texts"):
-			var transform_text = tr("ui.bm_drop_transform").format({"cost": str(GameManager.get_black_market_transform_cost())})
-			var remove_text = tr("ui.bm_drop_remove").format({"cost": str(_get_remove_cost())})
-			main_node.set_action_zone_texts(transform_text, remove_text)
-			
-		SignalBus.emit_signal("inspect_inventory_requested")
+		ActionQueue.request(OpenInventoryAction.new("RUN"))
 
 func _on_leave_pressed() -> void:
 	var action := LeaveBlackMarketAction.new()

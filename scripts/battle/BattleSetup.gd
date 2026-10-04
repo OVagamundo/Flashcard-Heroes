@@ -40,9 +40,54 @@ static func is_unit_definition(def: Resource) -> bool:
 # SETUP FROM RUN STATE
 # ============================================================================
 
+static func get_ordered_run_state_instances() -> Array[GachaBallInstance]:
+	var result: Array[GachaBallInstance] = []
+	var seen: Dictionary = {}
+	if not is_instance_valid(GameManager.run_state):
+		return result
+		
+	var containers_to_check: Array[StringName] = [
+		RunState.RUN_CONTAINER_TAGS.PLAYER_LINEUP,
+		RunState.RUN_CONTAINER_TAGS.PLAYER_BENCH,
+		&"RunInventoryT1",
+		&"RunInventoryT2",
+		&"RunInventoryT3",
+		RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+	]
+	
+	for cname in containers_to_check:
+		var container = GameManager.run_state.get_container(cname)
+		if is_instance_valid(container):
+			for uuid in container.get_all_uuids():
+				if not uuid.is_empty() and not seen.has(uuid):
+					var inst = GameManager.run_state.get_instance_by_uuid(uuid)
+					if is_instance_valid(inst):
+						result.append(inst)
+						seen[uuid] = true
+						for eq_uuid in inst.equipped_item_uuids:
+							if not eq_uuid.is_empty() and not seen.has(eq_uuid):
+								var eq_inst = GameManager.run_state.get_instance_by_uuid(eq_uuid)
+								if is_instance_valid(eq_inst):
+									result.append(eq_inst)
+									seen[eq_uuid] = true
+									
+	var all_insts: Dictionary = GameManager.run_state.get_all_instances()
+	var remaining_uuids: Array = []
+	for uuid in all_insts.keys():
+		if not seen.has(uuid):
+			remaining_uuids.append(uuid)
+	remaining_uuids.sort()
+	for uuid in remaining_uuids:
+		var inst = all_insts[uuid]
+		if is_instance_valid(inst):
+			result.append(inst)
+			seen[uuid] = true
+			
+	return result
+
 static func create_battle_copies_from_run_state(state: RefCounted) -> Dictionary:
 	var permanent_to_battle_uuid_map: Dictionary = {}
-	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
+	var run_state_instances: Array[GachaBallInstance] = get_ordered_run_state_instances()
 
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()
@@ -95,7 +140,7 @@ static func create_battle_copies_from_run_state(state: RefCounted) -> Dictionary
 	return permanent_to_battle_uuid_map
 
 static func place_instances_from_run_state(state: RefCounted, permanent_to_battle_uuid_map: Dictionary) -> void:
-	var run_state_instances: Array = GameManager.run_state.get_all_instances().values()
+	var run_state_instances: Array[GachaBallInstance] = get_ordered_run_state_instances()
 	
 	for perm_inst in run_state_instances:
 		var def = perm_inst.get_definition()

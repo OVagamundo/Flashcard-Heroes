@@ -54,15 +54,16 @@ Flashcard decks advance systematically across a run:
    - Card order is immutable throughout the run.
 2. **`active_deck_ids: Array[StringName]`**:
    - Unlocked cards available for question generation.
-   - Initialized with the first 6 cards at run start (5 starter cards + 1 card unlocked by the first minigame's start expansion).
-   - New cards append to this array either via start-of-minigame expansion or mid-mini game unlock.
+   - Initialized with 5 starter cards at run start.
+   - Single source of truth for unlocked cards in the run.
+   - New cards append to this array whenever unlocked (either at the start of a mini game or mid-mini game).
 3. **`cards_presented_count: int`**:
-   - Tracks how many active cards have been formally introduced to the player.
-   - If `cards_presented_count < active_deck_ids.size()`, the start-of-minigame review popup triggers.
-   - Mid-mini game unlocks increment `cards_presented_count` synchronously to ensure subsequent mini games introduce the *next* card in the pool.
-4. **Deck Expansion (`RunState.check_deck_expansion()`)**:
-   - Called at the start of every mini-game encounter.
-   - If `active_deck_ids.size() < ordered_deck_pool.size()`, unlocks `ordered_deck_pool[active_deck_ids.size()]`, initializes its progress at `MASTERY_MIN`, appends it to `active_deck_ids`, and emits `run_data_changed`.
+   - Synchronized with `active_deck_ids.size()` upon each card unlock to maintain save data backward compatibility.
+4. **Authoritative Deck Unlocking (`RunState.unlock_next_deck_card() -> StringName`)**:
+   - The single source of truth for unlocking cards across the run.
+   - Called at the start of each mini game session by `FlashcardManager.start_minigame()`, and mid-mini game when a 3-question streak is achieved.
+   - If `active_deck_ids.size() < ordered_deck_pool.size()`, unlocks the next locked card from `ordered_deck_pool`, initializes its progress at `MASTERY_MIN`, appends it to `active_deck_ids`, synchronizes `cards_presented_count = active_deck_ids.size()`, emits `run_data_changed`, and returns the newly unlocked `card_id`.
+   - `RunState.check_deck_expansion() -> bool` delegates directly to `unlock_next_deck_card()`.
 
 ---
 
@@ -82,7 +83,7 @@ Flashcard decks advance systematically across a run:
 - `get_question_for_card(card_id: StringName) -> Dictionary`
   - Forces question generation for a specific card (used for mid-mini game unlocks) with 5 random distractors from `_active_deck_ids`.
 - `acknowledge_intro() -> void`
-  - Transitions from review popup to active question answering, increments `cards_presented_count`, and sets `is_sprint_active = true`.
+  - Transitions from review popup to active question answering and sets `is_sprint_active = true`.
 - `advance_session_timer(seconds: float) -> void`
   - Decrements countdown timer. Triggers session completion when reaching 0.
 - `get_deck_statistics() -> Dictionary`
@@ -117,9 +118,11 @@ The mini-game operates in four sequential phases:
 [start_minigame]
        │
        ▼
-[Phase 1: Card Introduction / Review Popup] (If cards_presented_count < active_deck_ids.size())
+[Phase 1: Card Introduction / Review Popup] (If newly unlocked card is present)
        │   - Displays card details & audio pronunciation
-       │   - Displays 10 clickable priority cards sorted by SRS weight (no RNG)
+       │   - Displays up to 6 clickable priority cards strictly representing the lowest-mastery unlocked cards
+       │   - Lowest mastery tiers (e.g. Red Level 1) are filled first; ties on the boundary tier are randomly selected
+       │   - The final collection is shuffled so the display order does not match the mini game's SRS question sequence
        │   - Clicking "Ready!" calls acknowledge_intro()
        ▼
 [Phase 2: Timed Question Loop]
@@ -180,10 +183,11 @@ The mini-game operates in four sequential phases:
    - **Audio**: Plays `ui_merge` celebratory chime.
    - **Celebration Banner (`_show_midgame_unlock_banner`)**: Non-blocking floating banner displaying `★ NEW CARD UNLOCKED! ★` (`ui.midgame_card_unlocked`) and `+1.0s TIME BONUS!` (`ui.midgame_bonus_info`), with elastic overshoot pop (`0.4 -> 1.1 -> 1.0`) and upward float.
 
-### Subsequent Mini-Game Progression Contract
-- Because `cards_presented_count` was incremented during the mid-mini game unlock, `cards_presented_count` matches `active_deck_ids.size()`.
-- At the start of the next mini-game, `check_deck_expansion()` adds the *following* card from the pool, which is introduced in the review popup.
-- Result: Up to 2 cards unlocked per mini-game encounter (1 at start review popup + 1 mid-mini game), cleanly doubling deck progression pace.
+### Subsequent Mini-Game Progression Contract (Single Source of Truth)
+- `RunState.unlock_next_deck_card()` serves as the authoritative unlock mechanism across both start-of-game expansion and mid-mini game unlocks.
+- When a card is unlocked mid-mini game, it is appended to `active_deck_ids`.
+- At the start of the next mini-game, `RunState.unlock_next_deck_card()` unlocks the *following* locked card in `ordered_deck_pool` and `FlashcardManager` directly assigns this newly unlocked card to `introduced_card_id` for display in the review popup window.
+- Result: Up to 2 cards unlocked per mini-game encounter (1 at start review popup + 1 mid-mini game), cleanly doubling deck progression pace without repeating cards already unlocked mid-mini game.
 
 ---
 

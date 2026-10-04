@@ -15,7 +15,8 @@ func execute() -> void:
 		popup.queue_free()
 	elif is_instance_valid(WindowManager) and WindowManager.has_method("_close_top_modal"):
 		WindowManager._close_top_modal()
-	SaveManager.clear_save()
+	if not GameManager.is_replay_run:
+		SaveManager.clear_save()
 	SignalBus.emit_signal("title_scene_requested")
 
 func yields_for_visuals() -> bool:

@@ -43,7 +43,14 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	if is_instance_valid(GameManager.run_state):
 		idx = GameManager.run_state.available_path_nodes.find(node_def)
 	if idx != -1 and is_instance_valid(ActionQueue):
-		var action := SelectPathAction.new(idx)
+		var expected_node := {
+			"node_type": String(node_def.node_type),
+			"subtype": String(node_def.subtype),
+			"encounter_id": String(node_def.encounter_id),
+			"boss_level": node_def.boss_level,
+			"difficulty": node_def.difficulty
+		}
+		var action := SelectPathAction.new(idx, expected_node)
 		ActionQueue.request(action)
 	else:
 		if is_instance_valid(GameManager.run_state):

@@ -45,6 +45,7 @@ var _drag_preview_layer: CanvasLayer = null
 var _suppress_close_parent_window_id: int = -1
 var _suppress_close_until_msec: int = 0
 var _is_ui_transitioning: bool = false
+var _last_pointer_pos: Vector2 = Vector2.ZERO
 
 ## Hover/Lock inspection state (SEPARATE from _current_selection)
 var _locked_entity_view_id: int = -1 # instance_id of view with locked inspection
@@ -170,18 +171,17 @@ func _on_interaction_context_received(context: InteractionContext) -> void:
 
 func _process(_delta: float) -> void:
 	if is_instance_valid(_drag_overlay_preview):
-		_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
+		_drag_overlay_preview.global_position = get_last_pointer_position()
 
 func _input(event: InputEvent) -> void:
+	if event is InputEventMouse or event is InputEventScreenTouch or event is InputEventScreenDrag:
+		_last_pointer_pos = InputUtils.get_event_global_position(event)
+
 	if not _is_inspection_locked:
 		return
 	if InputUtils.is_primary_pointer_press(event):
-		var pos: Vector2
-		if event is InputEventMouse:
-			pos = event.position
-		elif event is InputEventScreenTouch:
-			pos = event.position
-		else:
+		var pos: Vector2 = InputUtils.get_event_global_position(event)
+		if pos.is_zero_approx():
 			return
 		
 		# If the click is not inside any active inspection window AND not inside a drop zone, close them
@@ -212,8 +212,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		# 1) Cancel active drag if any
 		if _is_drag_active:
-			end_drag(false)
-			_end_drag_visuals(false)
+			var origin_loc = _drag_origin_context.location if _drag_origin_context else null
+			if is_instance_valid(ActionQueue):
+				ActionQueue.request(CancelDragAction.new(origin_loc, null, "cancelled_by_escape"))
+			else:
+				end_drag(false)
+				_end_drag_visuals(false)
 			return
 		# 2) Try to close a modal (WindowManager listens to this signal)
 		if SignalBus.has_signal("close_modal_requested"):
@@ -227,7 +231,10 @@ func _unhandled_input(event: InputEvent) -> void:
 		if not _is_close_suppressed_now():
 			_execute_close_all_inspection_windows()
 		if not is_vcr_playing() and not _is_combat_phase:
-			_execute_deselect()
+			if is_instance_valid(ActionQueue) and _current_selection != null:
+				ActionQueue.request(DeselectAction.new())
+			else:
+				_execute_deselect()
 		return
 
 	# True background click: left mouse press not handled by any Control
@@ -240,7 +247,10 @@ func _unhandled_input(event: InputEvent) -> void:
 			_hover_entity_view_id = -1
 			_execute_close_all_inspection_windows()
 		if not is_vcr_playing() and not _is_combat_phase:
-			_execute_deselect()
+			if is_instance_valid(ActionQueue) and _current_selection != null:
+				ActionQueue.request(DeselectAction.new())
+			else:
+				_execute_deselect()
 
 ## External signal handler: proactively clear selection when requested (e.g., scene transitions)
 func _on_selection_clear_requested() -> void:
@@ -322,9 +332,12 @@ func _generate_command_queue(context: InteractionContext, was_hover_promoted: bo
 			return commands
 		
 		# For other contexts: Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
+		var drop_pos: Vector2 = context.pointer_position if is_instance_valid(context) and not context.pointer_position.is_zero_approx() else get_last_pointer_position()
 		var req_ctx: Dictionary = {
 			"source_context": _drag_origin_context,
 			"target_context": context,
+			"interaction_type": "DRAG",
+			"drop_pos": drop_pos,
 		}
 		# Attach target parent window information for suppression
 		var tgt_parent_id := _resolve_parent_window_id_for_context(context)
@@ -560,6 +573,8 @@ func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
 			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
+				"interaction_type": "CLICK",
+				"drop_pos": Vector2.ZERO,
 			}
 			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
 			if tgt_parent_id != -1:
@@ -620,7 +635,8 @@ func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 			return commands
 	
 	# Default: always change selection in selection-only contexts
-	commands.append(Command.new(CommandType.DESELECT))
+	if _current_selection != null:
+		commands.append(Command.new(CommandType.DESELECT))
 	commands.append(Command.new(CommandType.SELECT, {"context": context}))
 	
 	# IMPROVEMENT: Also open the inspection window on the first click (matches fully interactive behavior).
@@ -653,6 +669,8 @@ func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Comman
 			var req_ctx: Dictionary = {
 				"source_context": _current_selection,
 				"target_context": context,
+				"interaction_type": "CLICK",
+				"drop_pos": Vector2.ZERO,
 			}
 			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
 			if tgt_parent_id != -1:
@@ -869,10 +887,16 @@ func _execute_command_queue(commands: Array[Command]) -> void:
 func _execute_command(command: Command) -> void:
 	match command.cmd:
 		CommandType.DESELECT:
-			_execute_deselect()
-			# No sound for deselect usually, or maybe a soft one
+			if is_instance_valid(ActionQueue):
+				ActionQueue.request(DeselectAction.new())
+			else:
+				_execute_deselect()
 		CommandType.SELECT:
-			_execute_select(command.context.get("context"))
+			var ctx: InteractionContext = command.context.get("context")
+			if is_instance_valid(ActionQueue) and is_instance_valid(ctx):
+				ActionQueue.request(SelectEntityAction.new(ctx.location, ctx.entity_uuid))
+			else:
+				_execute_select(ctx)
 			Audio.play_sfx("ui_select")
 		CommandType.OPEN_INSPECTION_WINDOW:
 			_execute_open_inspection_window(command.context)
@@ -881,7 +905,9 @@ func _execute_command(command: Command) -> void:
 		CommandType.CLOSE_CHILD_WINDOWS:
 			_execute_close_child_windows(command.context.get("window_group_id", 0), command.context.get("parent_window_id", -1))
 		CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW:
-			if _window_manager:
+			if is_instance_valid(ActionQueue) and WindowManager.is_any_inspection_window_open():
+				ActionQueue.request(CloseInspectionAction.new(false))
+			elif _window_manager:
 				_window_manager.close_top_contextual_window()
 		CommandType.REQUEST_ACTION:
 			_execute_request_action(command.context)
@@ -892,6 +918,9 @@ func _execute_command(command: Command) -> void:
 
 ## Execute deselect command
 func _execute_deselect() -> void:
+	apply_deselect_entity()
+
+func apply_deselect_entity() -> void:
 	# Only clear lock state if it is an INSPECTION lock (tied to a specific entity).
 	# If _locked_entity_view_id is -1 but _is_inspection_locked is true, it is a SYSTEM/MODAL lock 
 	# (e.g., ChoiceWindow) that must be preserved.
@@ -906,12 +935,30 @@ func _execute_deselect() -> void:
 
 ## Execute select command
 func _execute_select(context: InteractionContext) -> void:
-	# Update our selection state and emit signals
-	var view = _find_view_by_instance_id(context.source_view_instance_id)
-	_current_selection = context
-	if view:
-		SignalBus.emit_signal("view_selected", view, context.location)
-		_emit_selection_changed(context.location)
+	if context == null:
+		return
+	apply_select_entity(context.location, context.entity_uuid)
+
+func apply_select_entity(location: LocationIdentifier, entity_uuid: String = "") -> void:
+	var target_location = location
+	if not is_instance_valid(target_location) and not entity_uuid.is_empty():
+		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+			target_location = GameManager.run_state.get_location_for_uuid(entity_uuid)
+	
+	var view: Control = null
+	if is_instance_valid(target_location) and is_instance_valid(_window_manager):
+		view = _window_manager.find_view_for_location(target_location)
+	
+	var ctx = InteractionContext.new()
+	ctx.location = target_location
+	ctx.entity_uuid = entity_uuid
+	if is_instance_valid(view):
+		ctx.source_view_instance_id = view.get_instance_id()
+	
+	_current_selection = ctx
+	if is_instance_valid(view):
+		SignalBus.emit_signal("view_selected", view, target_location)
+	_emit_selection_changed(target_location)
 
 ## Execute open inspection window command
 func _execute_open_inspection_window(command_context: Dictionary) -> void:
@@ -919,24 +966,31 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 	var anchor_view_id: int = command_context.get("anchor_view_id", 0)
 	var should_lock: bool = command_context.get("lock", false)
 	
-	if _window_manager and context:
-		# Find the anchor view by instance ID
+	if context:
 		var anchor_view = _find_view_by_instance_id(anchor_view_id)
-		if anchor_view:
-			if should_lock:
+		if should_lock:
+			if is_instance_valid(ActionQueue):
+				var action := InspectEntityAction.new(context.location, should_lock)
+				ActionQueue.request(action)
+			elif _window_manager and anchor_view:
 				_is_inspection_locked = true
 				_locked_entity_view_id = anchor_view_id
-			# Use the public WindowManager API
-			_window_manager.open_inspection_window(context.location, anchor_view)
+				_window_manager.open_inspection_window(context.location, anchor_view)
+		else:
+			# Transient mouse hover preview: open directly without polluting ActionQueue
+			if _window_manager and anchor_view and is_instance_valid(context.location):
+				_window_manager.open_inspection_window(context.location, anchor_view)
 
 ## Execute close all inspection windows command
 func _execute_close_all_inspection_windows() -> void:
-	if _window_manager:
-		_window_manager.close_all_inspection_windows()
+	if WindowManager.is_any_inspection_window_open():
+		ActionQueue.request(CloseInspectionAction.new(true))
 
 ## Execute close child windows command
 func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
-	if _window_manager:
+	if is_instance_valid(ActionQueue) and WindowManager.is_any_inspection_window_open():
+		ActionQueue.request(CloseInspectionAction.new(false))
+	elif _window_manager:
 		_window_manager.close_child_windows(window_group_id, parent_window_id)
 
 ## Execute request action command
@@ -967,15 +1021,15 @@ func _execute_request_action(command_context: Dictionary) -> void:
 				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
 				if src_view:
 					_activate_close_suppression_for_view(src_view)
-		var move_action := MoveInventoryAction.new(source_context.location, target_context.location)
+		var interaction_type: String = command_context.get("interaction_type", "CLICK")
+		var drop_pos: Vector2 = command_context.get("drop_pos", Vector2.ZERO)
+		var move_action := MoveInventoryAction.new(source_context.location, target_context.location, interaction_type, drop_pos)
 		if is_instance_valid(ActionQueue):
 			var accepted = ActionQueue.request(move_action)
 			if not accepted:
-				end_drag(false)
+				ActionQueue.request(CancelDragAction.new(source_context.location, target_context.location, "action_rejected", drop_pos))
 		else:
-			SignalBus.emit_signal("try_inventory_action",
-				source_context.location,
-				target_context.location)
+			push_error("[GlobalInteractionRouter] ActionQueue unavailable for MoveInventoryAction.")
 
 ## Execute invalid action command
 func _execute_invalid_action() -> void:
@@ -1229,10 +1283,18 @@ func is_close_suppressed_now() -> bool:
 
 # --- Drag & Drop Accessors ---
 
+func get_last_pointer_position() -> Vector2:
+	if not _last_pointer_pos.is_zero_approx():
+		return _last_pointer_pos
+	var vp := get_viewport()
+	return vp.get_mouse_position() if is_instance_valid(vp) else Vector2.ZERO
+
 func get_drag_origin_context() -> InteractionContext:
 	return _drag_origin_context
 
 func is_vcr_playing() -> bool:
+	if is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode():
+		return true
 	var animator = get_tree().get_first_node_in_group("battle_animator")
 	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
 		return true

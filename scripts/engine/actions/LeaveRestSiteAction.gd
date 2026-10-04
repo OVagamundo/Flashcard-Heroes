@@ -6,7 +6,7 @@ func _init() -> void:
 	super._init(&"LeaveRestSiteAction")
 
 func validate() -> bool:
-	return true
+	return GameManager._rest_site_active
 
 func execute() -> void:
 	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)
@@ -16,6 +16,7 @@ func execute() -> void:
 		GameManager.auto_claim_all_rest_site_prizes()
 		if is_instance_valid(GameManager.run_state):
 			GameManager.run_state.reset_room_tokens()
+		GameManager.finish_rest_site_leave()
 		SignalBus.emit_signal("path_choice_scene_requested")
 
 func yields_for_visuals() -> bool:

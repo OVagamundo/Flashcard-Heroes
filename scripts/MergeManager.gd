@@ -310,19 +310,6 @@ func get_merge_type_between(instance_a: GachaBallInstance, instance_b: GachaBall
 
 	return &""
 
-## Helper to check if an item can merge with any item equipped on a unit
-func get_merge_type_with_unit_item(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, all_instances_db: Dictionary) -> StringName:
-	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance):
-		return &""
-	for equipped_uuid in unit_instance.equipped_item_uuids:
-		if equipped_uuid.is_empty():
-			continue
-		var equipped_item = all_instances_db.get(equipped_uuid)
-		if is_instance_valid(equipped_item):
-			var m_type = get_merge_type_between(item_instance, equipped_item)
-			if not m_type.is_empty():
-				return m_type
-	return &""
 
 func _is_recipe_unlocked(recipe_id: StringName) -> bool:
 	var run_state = GameManager.run_state

@@ -41,6 +41,7 @@ var _speed_buttons: Array[Button] = []
 var _battle_animator: Node = null
 var _pending_board_redraw: bool = false
 var _waiting_for_management_tutorial: bool = false
+var _waiting_for_first_draw_tutorial: bool = false
 
 # --- Node References ---
 var battle_manager: BattleManager
@@ -111,9 +112,18 @@ func _ready() -> void:
 	# Connect to SignalBus.results_acknowledged to show battle management tutorial
 	SignalBus.results_acknowledged.connect(_on_results_acknowledged)
 	
+	if is_instance_valid(ActionQueue):
+		ActionQueue.action_completed.connect(_on_action_completed)
+		ActionQueue.queue_idle.connect(_on_action_queue_idle)
+	
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(_on_end_turn_button_pressed)
-	discard_pile_button.pressed.connect(func(): SignalBus.emit_signal("display_discard_pile_requested"))
+	discard_pile_button.pressed.connect(func():
+		if is_instance_valid(WindowManager) and WindowManager.is_any_inventory_window_open():
+			ActionQueue.request(CloseDiscardPileAction.new())
+		else:
+			ActionQueue.request(OpenDiscardPileAction.new())
+	)
 	
 	# Connect to locale changes to update button text
 	SignalBus.locale_changed.connect(_update_localized_text)
@@ -937,23 +947,12 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	# Wait a second frame to ensure layout containers (HBoxContainer) have fully updated child positions
 	await get_tree().process_frame
 	
-	# Show first draw tutorial (2 pages) - only on first successful draw
-	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
-	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
-	
-	TutorialManager.show_tutorial(&"first_draw", [
-		{
-			"text": tr("tutorial.first_draw_1"),
-			"anchor_side": "TOP_RIGHT",
-			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
-		},
-		{
-			"title": tr("tutorial.first_draw_combat.title"),
-			"text": tr("tutorial.first_draw_2"),
-			"center": true,
-			"anchor_path": end_turn_button.get_path()
-		}
-	])
+	# Queue first draw tutorial if not already completed - shown once the draw action concludes
+	if not TutorialManager.is_completed(&"first_draw"):
+		if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+			_waiting_for_first_draw_tutorial = true
+		else:
+			call_deferred("_show_first_draw_tutorial")
 	
 	# Find the target slot
 	var target_ui_container: HBoxContainer = null
@@ -999,7 +998,40 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	
 	# Visual animation completes here. Logic and triggers are handled asynchronously by BattleManager.
 
+func _on_action_completed(action: GameAction) -> void:
+	if action is DrawGachaAction and _waiting_for_first_draw_tutorial:
+		_waiting_for_first_draw_tutorial = false
+		call_deferred("_show_first_draw_tutorial")
+
+func _on_action_queue_idle() -> void:
+	if _waiting_for_first_draw_tutorial:
+		_waiting_for_first_draw_tutorial = false
+		call_deferred("_show_first_draw_tutorial")
+
+func _show_first_draw_tutorial() -> void:
+	if TutorialManager.is_completed(&"first_draw"):
+		return
+	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
+	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
+	
+	TutorialManager.show_tutorial(&"first_draw", [
+		{
+			"text": tr("tutorial.first_draw_1"),
+			"anchor_side": "TOP_RIGHT",
+			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
+		},
+		{
+			"title": tr("tutorial.first_draw_combat.title"),
+			"text": tr("tutorial.first_draw_2"),
+			"center": true,
+			"anchor_path": end_turn_button.get_path()
+		}
+	])
+
 func _on_end_turn_button_pressed() -> void:
+	var bm = GameManager.get_battle_manager()
+	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+		return
 	var action := EndTurnAction.new()
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
