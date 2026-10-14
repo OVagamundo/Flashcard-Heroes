@@ -35,8 +35,16 @@ var _turn_metadata: Dictionary = {}
 ## Turn-scoped death registry: {uuid: {team, died_in_phase, def_id}}
 var _dead_this_turn: Dictionary = {}
 
-## Gacha tokens available for spending
-var _gacha_tokens: int = 0
+## Gacha tokens available for spending (synchronized with RunState if present)
+var _gacha_tokens: int = 0:
+	get:
+		if is_instance_valid(GameManager.run_state):
+			return GameManager.run_state.current_room_tokens
+		return _gacha_tokens
+	set(value):
+		if is_instance_valid(GameManager.run_state):
+			GameManager.run_state.current_room_tokens = value
+		_gacha_tokens = value
 
 ## Slot effects for player lineup slots (size 5, entries can be &"burn", &"lightning", etc., or empty &"")
 var player_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
@@ -46,6 +54,9 @@ var enemy_slot_effects: Array[StringName] = [&"", &"", &"", &"", &""]
 
 ## Staged enemy placements for sequential entrance
 var staged_enemy_placements: Array = []
+
+## Staged hero placement for entrance
+var staged_hero_placement: Dictionary = {}
 
 
 # ============================================================================
@@ -179,11 +190,18 @@ func get_gacha_tokens() -> int:
 
 func add_gacha_tokens(amount: int) -> void:
 	if amount <= 0: return
-	_gacha_tokens += amount
 	if is_instance_valid(GameManager.run_state):
-		GameManager.run_state.total_tokens_earned += amount
+		GameManager.run_state.add_tokens(amount, true)
+		_gacha_tokens = GameManager.run_state.current_room_tokens
+	else:
+		_gacha_tokens += amount
 
 func spend_gacha_tokens(amount: int) -> bool:
+	if is_instance_valid(GameManager.run_state):
+		var success: bool = GameManager.run_state.spend_tokens(amount, true)
+		if success:
+			_gacha_tokens = GameManager.run_state.current_room_tokens
+		return success
 	if _gacha_tokens < amount:
 		return false
 	_gacha_tokens -= amount
@@ -251,6 +269,7 @@ func clear() -> void:
 	player_slot_effects = [&"", &"", &"", &"", &""]
 	enemy_slot_effects = [&"", &"", &"", &"", &""]
 	staged_enemy_placements.clear()
+	staged_hero_placement.clear()
 
 
 func register_instance(instance: GachaBallInstance) -> void:

@@ -1,7 +1,7 @@
 class_name ReplayReader
 extends RefCounted
 
-const CURRENT_SCHEMA_VERSION := 3
+const CURRENT_SCHEMA_VERSION := 4
 
 ## Reads one JSON object per line. Errors retain the source line for diagnostics.
 static func read_file(path: String) -> Dictionary:

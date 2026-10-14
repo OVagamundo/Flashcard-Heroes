@@ -80,15 +80,15 @@ To ensure the UI presentation remains completely decoupled from the instantaneou
 | **S1** Singleton | Only one entity selected at a time |
 | **S2** Change of Focus | Click on non-target = move selection |
 | **S3** Selection-Only | Shop/Rewards: any click = change focus |
-| **S4** Re-Selection | Click selected item = lock inspection window |
-| **S5** Hover-to-Inspect | Hovering an entity transiently opens its inspection window (PC only) after a 1-second dwell-time delay. Hover is **disabled** during VCR playback and Combat phases to prevent conflicts; players must explicitly click to inspect during animations. |
-| **S5a** Touch Peek | On touch devices, long-press temporarily opens inspection; release closes it unless the interaction is promoted by a tap/selection flow |
-| **S6** Select-to-Lock | Single click selects entity. If no action is generated, the inspection window locks open. |
+| **S4** Selection Without Inspection | Outside combat, click/tap selects entity only; it does NOT open an inspection window. Quick click/tap (< 0.5s) suppresses hover re-arming on the clicked element until the cursor exits. |
+| **S5** Hover Peek | Hovering an inspectable entity opens a temporary inspection peek window after a `0.4s` delay (PC/mouse only). The peek stays open only while hovering and closes immediately when the cursor exits. Hover peek is disabled during Combat and VCR playback. |
+| **S5a** Long-Press Peek | Long-press (`0.5s`) opens a temporary inspection peek window (touch and mouse). The peek stays open only while held; releasing closes it immediately and suppresses click/tap selection. Drag movement > 24px cancels peek. |
+| **S6** Combat Click-to-Pin | During Combat / VCR playback, all gameplay input is blocked except for instant pause-and-inspect. Pressing on any inspectable unit immediately freezes playback and opens its inspection window on pointer press without playing click/press animations. Clicking another inspectable element while frozen switches inspection to that element; clicking outside on empty space or the same unit resumes playback. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
-| **S8** Hover Boundary | When a base inventory is open, hovers outside it are blocked |
-| **S9** Locked Inspection| Status effect keywords in descriptions can be clicked to "lock" their inspection window open. Clicking outside or re-toggling closes it. |
+| **S8** Hover Boundary | When an inventory window is open, hover/press peeks outside it are blocked |
+| **S9** Auto Child Windows & Display-Only | Inspection windows are display-only (`MOUSE_FILTER_IGNORE`). Root inspection automatically displays all child windows (keywords/status effects, equipped items) arranged around the root without overlapping the inspected source entity and clamped to the 1920x1080 viewport. |
 | **S10** Outcome Preview | Merge/Swap modals display a visual preview of the resulting unit/item to provide clear feedback before confirmation. |
-| **S11** Source-Aware Inspection | Unit and Item inspection windows now expose the underlying component stack. Components (Stats, Abilities, Tags, Visuals) are displayed with their source (Base Definition, Equipment, Merge Inheritance, Rarity, etc.). Modules can be clicked for nested inspection. |
+| **S11** Source-Aware Inspection | Unit and Item inspection windows display underlying stats, abilities, keywords, and equipped items cleanly formatted without clickable links. |
 
 ---
 
@@ -96,13 +96,13 @@ To ensure the UI presentation remains completely decoupled from the instantaneou
 
 | Rule | Description |
 |------|-------------|
-| **W1** Hierarchical | One window chain at a time, one child per parent |
-| **W2** Click-Through | Click outside windows = close all + select new target |
-| **W3** Pruning | Click window background = close descendants only |
-| **W4** Global Close | Click non-interactive area = close all + deselect |
+| **W1** Hierarchical | One window chain at a time, child windows auto-arranged alongside root |
+| **W2** Click-Through | Outside combat, click on non-target selects the target and does not open inspection |
+| **W3** Pruning | Windows are display-only; closing root closes all child windows |
+| **W4** Global Close | Pointer release (after press peek) or cursor exit (after hover peek) immediately closes all peek windows |
 | **W5** Escape | 1) Cancel drag → 2) Close windows → 3) Deselect |
-| **W6** Selection Persist | Parent entity stays selected when opening child windows |
-| **W7** Contextual Freeze | Locking an inspection window pauses the game state ONLY during battle contexts (normal, elite, boss) to allow VCR freeze. Outside of battle, inspecting does not freeze the game. |
+| **W6** Selection Persist & Decoupling | Selection is completely independent of inspection. Selecting an entity does not inspect, and inspecting an entity (hover or long-press) never modifies or cancels selection. Hovering in/out or pressing/releasing over an already-selected element strictly preserves its selected state. |
+| **W7** Contextual Freeze | In combat phase, click/tap pins an inspection window and pauses playback. Clicking anywhere non-inspectable closes inspection and resumes playback. Outside combat, peeks are transient and do not freeze the game. |
 | **W8** Transition Block | Interaction is completely blocked during drawer/inventory animations (Open/Close) |
 | **W9** Bounce Animation | Windows open with a subtle scale overshoot (bounce) and vanish instantly on close |
 

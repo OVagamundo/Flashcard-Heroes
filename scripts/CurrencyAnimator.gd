@@ -87,7 +87,9 @@ static func animate_gold_spend(
 	if on_complete.is_valid():
 		on_complete.call()
 	
-	main_node.end_gold_animation()
+	var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+	if is_instance_valid(active_main):
+		active_main.end_gold_animation()
 
 ## Animate earning/receiving gold flying into the HUD counter.
 ## Only increments and pops the HUD gold counter as each coin lands and is absorbed.
@@ -118,14 +120,17 @@ static func animate_gold_gain(
 		coin_vfx.coin_landed.connect(func(_pos: Vector2):
 			coins_landed += 1
 			Audio.play_sfx("coin_land")
-			if is_instance_valid(gold_group):
-				var tween = gold_group.create_tween()
-				gold_group.pivot_offset = gold_group.size / 2.0
-				tween.tween_property(gold_group, "scale", Vector2(1.2, 1.2), 0.05)
-				tween.tween_property(gold_group, "scale", Vector2(1.0, 1.0), 0.1)
-			var prev_chunk = int(round(float(amount) * (float(coins_landed - 1) / float(coins_to_spawn))))
-			var curr_chunk = int(round(float(amount) * (float(coins_landed) / float(coins_to_spawn))))
-			main_node.modify_visual_gold(curr_chunk - prev_chunk, false)
+			var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+			if is_instance_valid(active_main):
+				var group = active_main.get_node_or_null("%GoldGroup")
+				if is_instance_valid(group):
+					var tween = group.create_tween()
+					group.pivot_offset = group.size / 2.0
+					tween.tween_property(group, "scale", Vector2(1.2, 1.2), 0.05)
+					tween.tween_property(group, "scale", Vector2(1.0, 1.0), 0.1)
+				var prev_chunk = int(round(float(amount) * (float(coins_landed - 1) / float(coins_to_spawn))))
+				var curr_chunk = int(round(float(amount) * (float(coins_landed) / float(coins_to_spawn))))
+				active_main.modify_visual_gold(curr_chunk - prev_chunk, false)
 		)
 		var offset = Vector2(
 			RNGManager.cosmetic_rng.randf_range(-15, 15),
@@ -140,7 +145,9 @@ static func animate_gold_gain(
 	if on_complete.is_valid():
 		on_complete.call()
 	
-	main_node.end_gold_animation()
+	var active_main_end = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+	if is_instance_valid(active_main_end):
+		active_main_end.end_gold_animation()
 
 # ==============================================================================
 # TOKEN ANIMATIONS
@@ -194,7 +201,9 @@ static func animate_token_spend(
 	if on_complete.is_valid():
 		on_complete.call()
 	
-	main_node.end_token_animation()
+	var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+	if is_instance_valid(active_main):
+		active_main.end_token_animation()
 
 ## Animate earning/receiving tokens flying into the HUD counter.
 ## Only increments and pops the HUD token counter as each token lands and is absorbed.
@@ -228,14 +237,17 @@ static func animate_token_gain(
 		token_vfx.animation_finished.connect(func():
 			tokens_landed += 1
 			Audio.play_sfx("token_land")
-			if is_instance_valid(token_group):
-				var tween = token_group.create_tween()
-				token_group.pivot_offset = token_group.size / 2.0
-				tween.tween_property(token_group, "scale", Vector2(1.2, 1.2), 0.05)
-				tween.tween_property(token_group, "scale", Vector2(1.0, 1.0), 0.1)
-			var prev_chunk = int(round(float(amount) * (float(tokens_landed - 1) / float(tokens_to_spawn))))
-			var curr_chunk = int(round(float(amount) * (float(tokens_landed) / float(tokens_to_spawn))))
-			main_node.modify_visual_tokens(curr_chunk - prev_chunk, false)
+			var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+			if is_instance_valid(active_main):
+				var group = active_main.get_node_or_null("%TokenGroup")
+				if is_instance_valid(group):
+					var tween = group.create_tween()
+					group.pivot_offset = group.size / 2.0
+					tween.tween_property(group, "scale", Vector2(1.2, 1.2), 0.05)
+					tween.tween_property(group, "scale", Vector2(1.0, 1.0), 0.1)
+				var prev_chunk = int(round(float(amount) * (float(tokens_landed - 1) / float(tokens_to_spawn))))
+				var curr_chunk = int(round(float(amount) * (float(tokens_landed) / float(tokens_to_spawn))))
+				active_main.modify_visual_tokens(curr_chunk - prev_chunk, false)
 		)
 		
 		token_vfx.play(target_pos, streak)
@@ -250,4 +262,6 @@ static func animate_token_gain(
 	if on_complete.is_valid():
 		on_complete.call()
 	
-	main_node.end_token_animation()
+	var active_main_end = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+	if is_instance_valid(active_main_end):
+		active_main_end.end_token_animation()

@@ -2,6 +2,7 @@ class_name PhysicsGachaBall
 extends RigidBody2D
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
 
 # Shared across all balls
 static var next_allowed_clack_time: int = 0
@@ -20,9 +21,8 @@ var _pending_visual_layers: Array = []
 
 var _orig_capsule_scale: Vector2
 var _orig_icon_scale: Vector2
-var _touch_long_press_timer: Timer = null
+var _inspection_trigger: InspectionTrigger = null
 var _touch_press_active: bool = false
-var _touch_long_press_triggered: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
@@ -42,11 +42,12 @@ func _ready() -> void:
 	_adjust_capsule_scale()
 	_orig_icon_scale = icon_sprite.scale
 
-	_touch_long_press_timer = Timer.new()
-	_touch_long_press_timer.one_shot = true
-	_touch_long_press_timer.wait_time = InputUtils.TOUCH_LONG_PRESS_SEC
-	_touch_long_press_timer.timeout.connect(_on_touch_long_press_timeout)
-	add_child(_touch_long_press_timer)
+	_inspection_trigger = InspectionTrigger.new()
+	_inspection_trigger.setup(ui_anchor, func():
+		if not is_instance_valid(location):
+			return {}
+		return {"location": location}
+	)
 
 	if _pending_texture:
 		icon_sprite.texture = _pending_texture
@@ -59,7 +60,8 @@ func _ready() -> void:
 		_adjust_icon_scale()
 
 func _exit_tree() -> void:
-	_stop_touch_long_press()
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.cancel()
 
 func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, visual_layers: Array = []) -> void:
 	instance_uuid = uuid
@@ -148,55 +150,50 @@ func _on_gui_input(event: InputEvent) -> void:
 	if event is InputEventScreenTouch:
 		if event.pressed:
 			_touch_press_active = true
-			_touch_long_press_triggered = false
 			_touch_press_position = event.position
-			if is_instance_valid(_touch_long_press_timer):
-				_touch_long_press_timer.start()
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
 			ui_anchor.accept_event()
 		else:
-			var long_press_was_triggered := _touch_long_press_triggered
-			_stop_touch_long_press()
-			if long_press_was_triggered:
-				_emit_interaction(&"HOVER_EXIT")
-			else:
+			_touch_press_active = false
+			var peek_handled = false
+			if is_instance_valid(_inspection_trigger):
+				peek_handled = _inspection_trigger.on_pointer_released()
+			if not peek_handled:
 				_emit_interaction(&"SINGLE_CLICK")
 			ui_anchor.accept_event()
 		return
 
-	if event is InputEventScreenDrag and _touch_press_active and not _touch_long_press_triggered:
+	if event is InputEventScreenDrag and _touch_press_active:
 		if event.position.distance_to(_touch_press_position) > InputUtils.TOUCH_DRAG_THRESHOLD_PX:
-			_stop_touch_long_press()
+			_touch_press_active = false
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.cancel()
 		ui_anchor.accept_event()
 		return
 
-	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.is_pressed():
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if InputUtils.should_ignore_mouse_pointer_event(event):
 			return
-		_emit_interaction(&"SINGLE_CLICK")
-		ui_anchor.accept_event()
-
-func _stop_touch_long_press() -> void:
-	_touch_press_active = false
-	_touch_long_press_triggered = false
-	_touch_press_position = Vector2.ZERO
-	if is_instance_valid(_touch_long_press_timer):
-		_touch_long_press_timer.stop()
-
-func _on_touch_long_press_timeout() -> void:
-	if not _touch_press_active:
-		return
-	_touch_long_press_triggered = true
-	_emit_interaction(&"HOVER_ENTER")
+		if event.is_pressed():
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
+			ui_anchor.accept_event()
+		else:
+			var peek_handled = false
+			if is_instance_valid(_inspection_trigger):
+				peek_handled = _inspection_trigger.on_pointer_released()
+			if not peek_handled:
+				_emit_interaction(&"SINGLE_CLICK")
+			ui_anchor.accept_event()
 
 func _on_mouse_entered() -> void:
-	if InputUtils.prefers_touch_input():
-		return
-	_emit_interaction(&"HOVER_ENTER")
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_entered()
 
 func _on_mouse_exited() -> void:
-	if InputUtils.prefers_touch_input():
-		return
-	_emit_interaction(&"HOVER_EXIT")
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_exited()
 
 func _emit_interaction(event_type: StringName) -> void:
 	var context = InteractionContext.new()

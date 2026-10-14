@@ -34,7 +34,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	if use_projectiles and not projectiles.is_empty():
 		for proj in projectiles:
 			if is_instance_valid(proj):
-				await proj.impact
+				await proj.wait_for_impact()
 	elif use_projectiles:
 		# Fallback for missing snapshots
 		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.4)).timeout

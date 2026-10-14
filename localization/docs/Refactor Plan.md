@@ -97,14 +97,14 @@ The following player decisions represent the interactions across the game that a
 | **Shop** | `BuyShopAction` | Purchase an item/unit from a specific shop slot. |
 | **Shop** | `RerollShopAction` | Pay gold to reroll shop stock. |
 | **Shop** | `LeaveShopAction` | Leave the shop and return to map navigation. |
-| **Reward Room** | `DrawRewardAction` | Spend reward tokens to draw a capsule. |
+| **Reward Room** | `DrawRewardAction` | Spend tokens to draw a capsule. |
 | **Reward Room** | `CollectRewardAction` | Claim a drawn reward into inventory/trinkets. |
 | **Reward Room** | `SellRewardAction` | Sell a drawn reward for gold. |
-| **Reward Room** | `StudyRewardAction` | Initiate flashcard minigame to earn reward tokens. |
+| **Reward Room** | `StudyRewardAction` | Initiate flashcard minigame to earn tokens. |
 | **Reward Room** | `LeaveRewardAction` | Finalize remaining rewards and exit room. |
 | **Rest Site** | `DrawRestSiteAction` | Spend tokens to draw a stat capsule. |
 | **Rest Site** | `UpgradeRestSiteAction` | Apply a stat capsule to the Hero. |
-| **Rest Site** | `StudyRestSiteAction` | Initiate flashcard minigame to earn rest site tokens. |
+| **Rest Site** | `StudyRestSiteAction` | Initiate flashcard minigame to earn tokens. |
 | **Rest Site** | `LeaveRestSiteAction` | Auto-apply remaining capsules and exit rest site. |
 | **Dojo / Training** | `StartTrainingAction` | Spend gold/tokens to train a specific unit stat. |
 | **Dojo / Training** | `LeaveTrainingAction` | Exit the training ground. |

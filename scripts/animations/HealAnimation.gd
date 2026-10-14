@@ -25,7 +25,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	else:
 		for proj in projectiles:
 			if is_instance_valid(proj):
-				await proj.impact
+				await proj.wait_for_impact()
 			
 	# 2. Apply Heal (Flash + Label Update)
 	for i in range(targets.size()):

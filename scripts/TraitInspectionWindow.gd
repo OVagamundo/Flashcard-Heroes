@@ -8,7 +8,6 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 # It behaves as a standard inspection window (contextual, auto-closing).
 
 @onready var title_label: Label = %TitleLabel
-const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 @onready var icon_rect: TextureRect = %Icon
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var internal_background: ColorRect = $InternalBackground
@@ -17,72 +16,14 @@ const C = preload("res://scripts/Constants.gd")
 
 var _source_view: Control
 var _trait_id: String
-var _long_press_timer: Timer
-var _last_meta_at_pointer = null
-var _locked_meta = null
-var _last_child_window_id: int = -1
 
 func _ready() -> void:
-	description_label.meta_clicked.connect(_on_description_meta_clicked)
-	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
-	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
-	
-	_long_press_timer = Timer.new()
-	_long_press_timer.one_shot = true
-	_long_press_timer.wait_time = 0.32
-	_long_press_timer.timeout.connect(_on_long_press_timeout)
-	add_child(_long_press_timer)
-	
-	if WindowManager.has_signal("window_closed"):
-		WindowManager.window_closed.connect(_on_window_manager_window_closed)
-	
-	# Configure child controls to allow bubbling so the root can prune children on generic clicks
-	_configure_mouse_filters()
-
-## Recursively set mouse filters to PASS for child controls so clicks bubble to the root
-func _configure_mouse_filters() -> void:
-	var stack: Array = [self]
-	while not stack.is_empty():
-		var node = stack.pop_back()
-		for child in node.get_children():
-			if child is Control:
-				# Keep nodes with their own logic at STOP
-				if child == internal_background or child == description_label:
-					(child as Control).mouse_filter = MOUSE_FILTER_STOP
-				else:
-					(child as Control).mouse_filter = MOUSE_FILTER_PASS
-				stack.append(child)
-
-	
+	super._ready()
 	# Zero out internal minimums so they don't force a height from old .tscn values
 	for child in [description_label, title_label, icon_rect]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
-	
-	if is_instance_valid(internal_background):
-		internal_background.mouse_filter = MOUSE_FILTER_STOP
-		internal_background.gui_input.connect(_on_internal_background_gui_input)
-
-func _gui_input(event: InputEvent) -> void:
-	# Local background-click handling: prune only this window's descendants.
-	if _InputUtils.is_primary_pointer_press(event):
-		WindowManager.handle_inspection_background_click(self)
-		get_viewport().set_input_as_handled()
-
-func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if _InputUtils.is_primary_pointer_press(event):
-		_locked_meta = null
-		WindowManager.handle_inspection_background_click(self)
-		get_viewport().set_input_as_handled()
-		accept_event()
-
-func _on_description_gui_input(event: InputEvent) -> void:
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
-		if event.pressed:
-			_long_press_timer.start()
-		else:
-			_long_press_timer.stop()
-	pass
+	enforce_display_only()
 
 func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
@@ -95,12 +36,10 @@ func populate(context: Dictionary) -> void:
 
 	var def = C.TRAIT_DEFINITIONS[_trait_id]
 	title_label.text = tr(def.display_name_key)
-	title_label.add_theme_font_override("font", BOLD_FONT)
+	title_label.add_theme_font_override("font", Database.get_current_locale_font())
 	title_label.add_theme_font_size_override("font_size", 32)
 	
 	# Set icon (reusing internal preload logic or passing texture)
-	# For simplicity, we'll try to get it from the source view if it has one, or hardcode mapping
-	# ideally Constants would contain icon paths.
 	if is_instance_valid(_source_view) and _source_view.get("icon_texture"):
 		icon_rect.texture = _source_view.icon_texture
 	else:
@@ -134,9 +73,7 @@ func populate(context: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		# Enforce shrinking on EVERY container in the hierarchy
 		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 		var margin_container = get_node_or_null("MarginContainer")
 		if margin_container:
@@ -149,57 +86,28 @@ func _reset_window_size() -> void:
 		size = Vector2.ZERO # Force immediate recalculation of minimum size
 		reset_size()
 
-func _on_description_meta_clicked(meta) -> void:
-	if _locked_meta == meta:
-		_locked_meta = null
-		WindowManager.close_children_of(self )
-	else:
-		_locked_meta = meta
-		_handle_effect_meta_interaction(meta)
-
-func _on_description_meta_hover_started(meta) -> void:
-	if _locked_meta != null:
-		return
-	_last_meta_at_pointer = meta
-	_handle_effect_meta_interaction(meta)
-
-func _on_description_meta_hover_ended(_meta) -> void:
-	_last_meta_at_pointer = null
-
-func _on_long_press_timeout() -> void:
-	var meta = _last_meta_at_pointer
+func get_child_window_specs() -> Array[Dictionary]:
+	var specs: Array[Dictionary] = []
+	var text_to_search: String = ""
+	if is_instance_valid(description_label):
+		text_to_search += description_label.text + " "
 	
-	if meta:
-		_handle_effect_meta_interaction(meta)
-
-func _handle_effect_meta_interaction(meta) -> void:
-	if str(meta).begins_with("effect_"):
-		var effect_type = str(meta).replace("effect_", "")
-		var name_key = "STATUS_" + effect_type.to_upper()
-		var desc_key = "STATUS_" + effect_type.to_upper() + "_DESC"
-		
-		# Open EffectInspection as a CHILD contextual window anchored to this window.
-		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self )
-		var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
-		
-		var win = WindowManager.open_child_contextual_window(
-			&"EffectInspection",
-			self ,
-			{
-				"effect_definition": {
-					"name_key": name_key,
-					"description_key": desc_key
-				},
-				"is_inside_unit_inspection": false,
-				"target_parent_window_id": parent_id
-			}
-		)
-		if win:
-			_last_child_window_id = win.get_instance_id()
-		get_viewport().set_input_as_handled()
-		accept_event()
-
-func _on_window_manager_window_closed(window: Control) -> void:
-	if window.get_instance_id() == _last_child_window_id:
-		_locked_meta = null
-		_last_child_window_id = -1
+	var keywords = DescriptionParser.find_keywords(text_to_search)
+	var seen_effects: Dictionary = {}
+	for kw in keywords:
+		if not seen_effects.has(kw):
+			seen_effects[kw] = true
+			var name_key = "STATUS_" + kw.to_upper()
+			var desc_key = "STATUS_" + kw.to_upper() + "_DESC"
+			specs.append({
+				"window_type": &"EffectInspection",
+				"populate_context": {
+					"effect_definition": {
+						"name_key": name_key,
+						"description_key": desc_key
+					},
+					"is_inside_unit_inspection": true,
+					"target_parent_window_id": get_instance_id()
+				}
+			})
+	return specs

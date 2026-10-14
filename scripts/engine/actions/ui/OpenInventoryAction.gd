@@ -22,7 +22,7 @@ func validate() -> bool:
 		var gir = Engine.get_main_loop().root.find_child("GlobalInteractionRouter", true, false)
 		if is_instance_valid(gir) and gir.get("_is_combat_phase"):
 			return false
-		if WindowManager.is_any_inventory_window_open():
+		if WindowManager.is_battle_inventory_window_open():
 			return false
 	else:
 		if WindowManager.is_run_inventory_window_open():

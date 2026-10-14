@@ -15,6 +15,10 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Only stackable buffs are echoed (prevents infinite echoing and non-stacking stat inflation)
 	if not context.get("is_stackable", true):
 		return EffectResult.empty()
+		
+	# An echo must never echo another echo (prevents mutual and cascading echo recursion loops)
+	if context.get("is_echo", false):
+		return EffectResult.empty()
 	
 	# Extract the original buff details from context
 	var stat = context.get("stat")
@@ -67,7 +71,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			if is_instance_valid(def): max_hp = def.base_hp
 			
 			# Apply the echo buff
-			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid, C.ACTION_BUFF, true)
+			var new_val = battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid, C.ACTION_BUFF, true, &"", &"", {"is_echo": true})
 			if new_val == null:
 				new_val = old_val
 			
@@ -116,5 +120,5 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 				continue
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(tgt):
-				battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid, C.ACTION_BUFF, true)
+				battle_manager.apply_stat_delta(tgt, stat, amount, source_uuid, C.ACTION_BUFF, true, &"", &"", {"is_echo": true})
 		return EffectResult.empty()

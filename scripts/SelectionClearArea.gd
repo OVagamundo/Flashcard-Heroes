@@ -9,7 +9,7 @@ func _gui_input(event) -> void:
 		if is_instance_valid(ActionQueue) and WindowManager.is_any_inspection_window_open():
 			ActionQueue.request(CloseInspectionAction.new(true))
 		elif is_instance_valid(WindowManager):
-			WindowManager.close_all_inspection_windows()
+			WindowManager.close_all_inspection_windows(true)
 		# Also clear selection if an entity is currently selected
 		if is_instance_valid(GlobalInteractionRouter) and GlobalInteractionRouter.get_current_selection() != null:
 			if is_instance_valid(ActionQueue):

@@ -17,12 +17,12 @@ func validate() -> bool:
 	if not is_instance_valid(WindowManager):
 		return false
 	if kind == "BATTLE":
-		return WindowManager.is_any_inventory_window_open()
+		return (WindowManager.has_method("is_battle_inventory_window_open") and WindowManager.is_battle_inventory_window_open()) or WindowManager.is_any_inventory_window_open()
 	return WindowManager.is_run_inventory_window_open() or WindowManager.is_any_inventory_window_open()
 
 func execute() -> void:
 	if is_instance_valid(WindowManager):
-		WindowManager.close_all_inspection_windows()
+		WindowManager.close_inventory_window(kind == "BATTLE")
 
 func yields_for_visuals() -> bool:
 	return false

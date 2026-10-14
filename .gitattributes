@@ -1,2 +1,7 @@
 # Normalize EOL for all files that Git considers text files.
 * text=auto eol=lf
+
+# Enforce UTF-8 encoding for localization files
+*.csv text eol=lf working-tree-encoding=UTF-8
+*.po text eol=lf working-tree-encoding=UTF-8
+*.pot text eol=lf working-tree-encoding=UTF-8

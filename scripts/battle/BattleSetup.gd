@@ -17,8 +17,10 @@ static func is_hero_definition(def: Resource) -> bool:
 	if not def is GachaBallDefinition:
 		return false
 	var gbd := def as GachaBallDefinition
+	if gbd.is_hero:
+		return true
 	var id_str = String(gbd.id).to_lower()
-	if id_str == "hero":
+	if id_str == "hero" or id_str.begins_with("hero_"):
 		return true
 	if gbd.tags.has(&"hero"):
 		return true
@@ -152,9 +154,10 @@ static func place_instances_from_run_state(state: RefCounted, permanent_to_battl
 		if is_hero:
 			var hero_battle_uuid: String = permanent_to_battle_uuid_map.get(perm_inst.ball_uuid, "")
 			if hero_battle_uuid:
-				var hero_container = state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-				hero_container.set_uuid(0, hero_battle_uuid)
-				state.update_instance_location(hero_battle_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+				state.staged_hero_placement = {
+					"uuid": hero_battle_uuid,
+					"position": 0
+				}
 			continue
 		
 		if is_trinket_definition(def):

@@ -109,20 +109,29 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 						lineup_container = main_node.player_trinket_bar
 				
 				var gacha_view: GachaBallView = null
+				var slot_view_ref: Control = null
 				if is_instance_valid(lineup_container) and index >= 0:
 					var children = lineup_container.get_children()
 					if index < children.size():
 						var slot_view = children[index]
-						if is_instance_valid(slot_view) and slot_view.get_child_count() > 0:
-							# Find GachaBallView among children matching this exact UUID.
-							for child in slot_view.get_children():
-								if child.is_queued_for_deletion():
-									continue
-								if child is GachaBallView:
-									var candidate: GachaBallView = child
-									if candidate.has_method("get_instance_uuid") and candidate.get_instance_uuid() == uuid:
-										gacha_view = candidate
-										break
+						if is_instance_valid(slot_view):
+							slot_view_ref = slot_view as Control
+							if slot_view.get_child_count() > 0:
+								# Find GachaBallView among children matching this exact UUID.
+								# Prefer exact UUID match, but fallback to any non-queued GachaBallView in this slot
+								var fallback_view: GachaBallView = null
+								for child in slot_view.get_children():
+									if child.is_queued_for_deletion():
+										continue
+									if child is GachaBallView:
+										var candidate: GachaBallView = child
+										if not is_instance_valid(fallback_view):
+											fallback_view = candidate
+										if candidate.has_method("get_instance_uuid") and candidate.get_instance_uuid() == uuid:
+											gacha_view = candidate
+											break
+								if not is_instance_valid(gacha_view):
+									gacha_view = fallback_view
 
 				# If not found directly in expected slot, search all views in the scene by exact UUID
 				if not is_instance_valid(gacha_view):
@@ -148,6 +157,15 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 					# Inject uuid into snapshot so set_visual_state can update _instance_uuid
 					snapshot_data["uuid"] = uuid
 					gacha_view.set_visual_state(snapshot_data)
+				elif is_instance_valid(slot_view_ref):
+					# Even if GachaBallView is pending instantiation or not found,
+					# capture the slot's physical rect so projectile targeting never lacks spatial coordinates
+					var rect = slot_view_ref.get_global_rect()
+					_position_snapshot[uuid] = {
+						"position": rect.position,
+						"size": rect.size,
+						"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+					}
 		
 		# Also scan EffectsLayer for in-flight views (Gacha Draws)
 		# This handles race conditions where a unit is targeted while still animating/flying
@@ -375,7 +393,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var main_node = GameManager.get_main_node()
 				
 				var arc_completed = false
-				if not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
+				if is_inventory_summon and not spawn_source_uuid.is_empty() and is_instance_valid(main_node):
 					var source_pos_data = _position_snapshot.get(spawn_source_uuid, {})
 					var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % unit_tier)
 					var source_view = _visual_registry.get(spawn_source_uuid)
@@ -436,8 +454,36 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						if main_node.has_method("animate_machine_inventory_change"):
 							main_node.animate_machine_inventory_change(unit_tier, 1)
 						arc_completed = true
+				elif container_tag == &"DiscardPile" or container_tag == "DiscardPile":
+					var start_center: Vector2 = Vector2.ZERO
+					var source_uuid_to_use = spawn_source_uuid
+					if source_uuid_to_use.is_empty():
+						source_uuid_to_use = event.source_uuid
+					
+					if not source_uuid_to_use.is_empty():
+						var source_view = _visual_registry.get(source_uuid_to_use)
+						if is_instance_valid(source_view) and source_view.is_inside_tree():
+							start_center = source_view.global_position + (source_view.size / 2.0)
+						elif _position_snapshot.has(source_uuid_to_use):
+							start_center = _position_snapshot[source_uuid_to_use]["center"]
+						else:
+							var snap = get_snapshot_position(source_uuid_to_use)
+							if not snap.is_empty():
+								start_center = snap["center"]
+								
+					if start_center == Vector2.ZERO and "spawn_source_location" in payload and payload.spawn_source_location != null:
+						var slot_node = _get_slot_view(payload.spawn_source_location.container, payload.spawn_source_location.index)
+						if is_instance_valid(slot_node):
+							start_center = slot_node.get_global_rect().get_center()
+					
+					if start_center == Vector2.ZERO and is_instance_valid(battle_view) and is_instance_valid(battle_view.player_lineup):
+						start_center = battle_view.player_lineup.get_global_rect().get_center()
+						
+					if start_center != Vector2.ZERO:
+						await _animate_gachaball_to_discard(start_center, payload.new_unit_snapshot)
+						arc_completed = true
 
-				if not is_inventory_summon and is_instance_valid(battle_view):
+				if not is_inventory_summon and container_tag != &"DiscardPile" and container_tag != "DiscardPile" and is_instance_valid(battle_view):
 					var lineup_container: HBoxContainer = null
 					if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
 						lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
@@ -478,6 +524,12 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								new_view.modulate.a = 0.0
 							_visual_registry[new_unit_uuid] = new_view
 							
+							var slot_rect = slot_view.get_global_rect()
+							_position_snapshot[new_unit_uuid] = {
+								"position": slot_rect.position,
+								"size": slot_rect.size,
+								"center": Vector2(slot_rect.position.x + slot_rect.size.x / 2, slot_rect.position.y + slot_rect.size.y / 2)
+							}
 							await get_tree().process_frame
 							var rect = new_view.get_global_rect()
 							_position_snapshot[new_unit_uuid] = {
@@ -641,11 +693,76 @@ func get_snapshot_position(uuid: String) -> Dictionary:
 		
 	if is_instance_valid(trinket_view):
 		var rect = trinket_view.get_global_rect()
-		return {
+		var snap = {
 			"position": rect.position,
 			"size": rect.size,
 			"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
 		}
+		_position_snapshot[uuid] = snap
+		return snap
+
+	# Unit fallback 1: Check _start_snapshot to find slot in battle view
+	if _start_snapshot.has(uuid):
+		var snapshot_data = _start_snapshot[uuid]
+		if snapshot_data is Dictionary and snapshot_data.has("container_tag") and snapshot_data.has("slot_index"):
+			var slot_node = _get_slot_view(snapshot_data.get("container_tag"), snapshot_data.get("slot_index"))
+			if is_instance_valid(slot_node):
+				var target_rect = slot_node.get_global_rect()
+				for child in slot_node.get_children():
+					if child is GachaBallView and not child.is_queued_for_deletion():
+						target_rect = child.get_global_rect()
+						break
+				var snap = {
+					"position": target_rect.position,
+					"size": target_rect.size,
+					"center": Vector2(target_rect.position.x + target_rect.size.x / 2, target_rect.position.y + target_rect.size.y / 2)
+				}
+				_position_snapshot[uuid] = snap
+				return snap
+
+	# Unit fallback 2: Query BattleManager for location or origin_uuid
+	var bm = GameManager.get_battle_manager() if is_instance_valid(GameManager) and GameManager.has_method("get_battle_manager") else null
+	if not is_instance_valid(bm):
+		bm = get_tree().get_first_node_in_group("battle_manager")
+	var inst: GachaBallInstance = null
+	if is_instance_valid(bm) and bm.has_method("get_instance"):
+		inst = bm.get_instance(uuid)
+		if is_instance_valid(inst):
+			if not inst.origin_uuid.is_empty() and _position_snapshot.has(inst.origin_uuid):
+				var snap = _position_snapshot[inst.origin_uuid]
+				_position_snapshot[uuid] = snap
+				return snap
+			var loc = inst.get_location()
+			if is_instance_valid(loc):
+				var slot_node = _get_slot_view(loc.container, loc.index)
+				if is_instance_valid(slot_node):
+					var target_rect = slot_node.get_global_rect()
+					for child in slot_node.get_children():
+						if child is GachaBallView and not child.is_queued_for_deletion():
+							target_rect = child.get_global_rect()
+							break
+					var snap = {
+						"position": target_rect.position,
+						"size": target_rect.size,
+						"center": Vector2(target_rect.position.x + target_rect.size.x / 2, target_rect.position.y + target_rect.size.y / 2)
+					}
+					_position_snapshot[uuid] = snap
+					return snap
+
+	# Unit fallback 3: Search all gachaball_view nodes in tree for matching uuid or origin_uuid
+	for node in get_tree().get_nodes_in_group("gachaball_view"):
+		if node is GachaBallView and not node.is_queued_for_deletion():
+			if node.has_method("get_instance_uuid"):
+				var v_uuid = node.get_instance_uuid()
+				if v_uuid == uuid or (is_instance_valid(inst) and v_uuid == inst.origin_uuid):
+					var rect = node.get_global_rect()
+					var snap = {
+						"position": rect.position,
+						"size": rect.size,
+						"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
+					}
+					_position_snapshot[uuid] = snap
+					return snap
 		
 	return {}
 
@@ -891,8 +1008,10 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 		if is_instance_valid(source_view) and source_view.has_method("set_visual_equipped_item_icon"):
 			source_view.set_visual_equipped_item_icon(null)
 		if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
-			var item_texture = load(item_icon_path) as Texture2D
-			target_view.set_visual_equipped_item_icon(item_texture)
+			var fallback_item_texture: Texture2D = payload.item_icon
+			if not is_instance_valid(fallback_item_texture) and not item_icon_path.is_empty():
+				fallback_item_texture = load(item_icon_path) as Texture2D
+			target_view.set_visual_equipped_item_icon(fallback_item_texture)
 			
 			if hp_diff != 0 and target_view.has_method("animate_stat_change"):
 				target_view.animate_stat_change(new_hp, hp_diff, "hp")
@@ -901,7 +1020,9 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 		return
 		
 	# Load item texture
-	var item_texture = load(item_icon_path) as Texture2D
+	var item_texture: Texture2D = payload.item_icon
+	if not is_instance_valid(item_texture) and not item_icon_path.is_empty():
+		item_texture = load(item_icon_path) as Texture2D
 	if not is_instance_valid(item_texture):
 		return
 		
@@ -953,6 +1074,39 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 			target_view.animate_stat_change(new_hp, hp_diff, "hp")
 		if pwr_diff != 0 and target_view.has_method("animate_stat_change"):
 			target_view.animate_stat_change(new_pwr, pwr_diff, "pwr")
+
+	# If this transfer replaces an existing equipped item, animate the old item to the discard pile on impact
+	if not payload.replaced_item_uuid.is_empty():
+		var discard_start_pos := Vector2.ZERO
+		if is_instance_valid(target_view) and target_view.is_inside_tree():
+			if "equipped_item_icon_rect" in target_view and is_instance_valid(target_view.equipped_item_icon_rect) and target_view.equipped_item_icon_rect.is_inside_tree():
+				discard_start_pos = target_view.equipped_item_icon_rect.get_global_rect().get_center()
+			else:
+				discard_start_pos = target_view.global_position + (target_view.size / 2.0)
+		else:
+			var target_snap = get_snapshot_position(target_uuid)
+			if not target_snap.is_empty():
+				discard_start_pos = target_snap["center"]
+				
+		var replaced_texture: Texture2D = payload.replaced_item_icon
+		if not is_instance_valid(replaced_texture) and not payload.replaced_item_icon_path.is_empty():
+			replaced_texture = load(payload.replaced_item_icon_path) as Texture2D
+		if not is_instance_valid(replaced_texture):
+			var bm = get_tree().get_first_node_in_group("battle_manager")
+			if is_instance_valid(bm) and bm.has_method("get_instance"):
+				var rep_inst = bm.get_instance(payload.replaced_item_uuid)
+				if is_instance_valid(rep_inst):
+					var rdef = rep_inst.get_definition()
+					if is_instance_valid(rdef) and "icon" in rdef and is_instance_valid(rdef.icon):
+						replaced_texture = rdef.icon
+						
+		if discard_start_pos != Vector2.ZERO and is_instance_valid(replaced_texture):
+			var capsule_snapshot = {
+				"uuid": payload.replaced_item_uuid,
+				"category": "ITEM",
+				"icon": replaced_texture
+			}
+			await _animate_gachaball_to_discard(discard_start_pos, capsule_snapshot)
 
 func _animate_item_discard(source_uuid: String, payload: CombatPayload) -> void:
 	var source_view = _visual_registry.get(source_uuid)

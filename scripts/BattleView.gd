@@ -119,7 +119,7 @@ func _ready() -> void:
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(_on_end_turn_button_pressed)
 	discard_pile_button.pressed.connect(func():
-		if is_instance_valid(WindowManager) and WindowManager.is_any_inventory_window_open():
+		if is_instance_valid(WindowManager) and WindowManager.is_discard_pile_window_open():
 			ActionQueue.request(CloseDiscardPileAction.new())
 		else:
 			ActionQueue.request(OpenDiscardPileAction.new())

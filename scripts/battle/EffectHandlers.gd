@@ -315,39 +315,13 @@ static func handle_damage_effect(
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var original_tgt_uuid = tgt_uuid
 		var actual_damage = abs(damage_to_apply)
-		var predicted_hp_damage = actual_damage
-		if damage_type != C.DamageType.BURN:
-			var target_armor = tgt.get_status_effect_amount(&"armor")
-			predicted_hp_damage = max(0, actual_damage - target_armor)
-			
-		var would_be_lethal = tgt.current_hp - predicted_hp_damage <= 0
-		var tgt_is_player_unit = battle_manager._is_player_unit(tgt)
-		var is_ally_damage = (tgt_is_player_unit != is_player_source)
-		
-		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED or damage_type == C.DamageType.TRINKET or damage_type == C.DamageType.KAMIKAZE)
-		
-		if would_be_lethal and is_ally_damage and can_intercept:
-			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, tgt_uuid)
-			if is_instance_valid(guardian):
-				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-					"source_uuid": guardian.ball_uuid,
-					"target_uuids": [tgt_uuid],
-					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, tgt_uuid)
-				}))
-				tgt_uuid = guardian.ball_uuid
-				tgt = guardian
-				
-				# Trigger Guardian passive effects (e.g., gain Armor)
-				var combat_sim = battle_manager._combat
-				var intercept_scope = combat_sim.begin_reaction_scope()
-				
-				AbilityResolver.process_trigger(&"passive_intercept", {
-					"source_uuid": guardian.ball_uuid,
-					"is_simulation": true
-				})
-				
-				var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
-				result.events.append_array(guardian_results)
+		var intercept_res = BattleHelpers.resolve_guardian_intercept(
+			tgt, actual_damage, damage_type, is_player_source, battle_manager
+		)
+		if intercept_res.intercepted:
+			tgt = intercept_res.interceptor
+			tgt_uuid = tgt.ball_uuid
+			result.events.append_array(intercept_res.events)
 		
 		original_target_uuids.append(original_tgt_uuid)
 		targets_old_hp.append(tgt.current_hp)
@@ -570,27 +544,13 @@ static func handle_cascade_damage(
 					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
-		var predicted_hp_damage = cascade_amount
-		if damage_type != C.DamageType.BURN:
-			var target_armor = cascade_tgt.get_status_effect_amount(&"armor")
-			predicted_hp_damage = max(0, cascade_amount - target_armor)
-			
-		var would_be_lethal: bool = cascade_tgt.current_hp - predicted_hp_damage <= 0
-		var tgt_is_player_unit: bool = battle_manager._is_player_unit(cascade_tgt)
-		var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
-		
-		var can_intercept = (damage_type == C.DamageType.MELEE or damage_type == C.DamageType.RANGED)
-		
-		if would_be_lethal and is_ally_damage and can_intercept:
-			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, cascade_target_uuid)
-			if is_instance_valid(guardian):
-				result.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-					"source_uuid": guardian.ball_uuid,
-					"target_uuids": [cascade_target_uuid],
-					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, cascade_target_uuid)
-				}))
-				cascade_target_uuid = guardian.ball_uuid
-				cascade_tgt = guardian
+		var intercept_res = BattleHelpers.resolve_guardian_intercept(
+			cascade_tgt, cascade_amount, damage_type, is_player_source, battle_manager
+		)
+		if intercept_res.intercepted:
+			cascade_tgt = intercept_res.interceptor
+			cascade_target_uuid = cascade_tgt.ball_uuid
+			result.events.append_array(intercept_res.events)
 		
 		var old_hp := cascade_tgt.current_hp
 		var old_burn := cascade_tgt.get_status_effect_amount(&"burn")
@@ -795,21 +755,9 @@ static func handle_summon_unit(
 		return result
 	
 	# Create new instance
-	var new_inst: GachaBallInstance = null
-	
-	if effect_data.has("copy_from_uuid"):
-		var copy_source = battle_manager.get_instance_by_uuid(effect_data.get("copy_from_uuid"))
-		if is_instance_valid(copy_source):
-			new_inst = copy_source.create_battle_copy(battle_manager.get_all_instances())
-			new_inst.equipped_item_uuids.fill("") # Clones should not steal the original's items
-			new_inst.equipped_on_uuid = "" # Clones in inventories/gacha machines must be unequipped
-			new_inst.equipped_slot_index = -1
-			new_inst.reset_battle_stats_silent() # Restores HP/PWR to max base + persistent modifiers
-
-	if not is_instance_valid(new_inst):
-		new_inst = GachaBallInstance.new()
-		new_inst.initialize(unit_def)
-		new_inst.reset_battle_stats_silent()
+	var new_inst := GachaBallInstance.new()
+	new_inst.initialize(unit_def)
+	new_inst.reset_battle_stats_silent()
 	
 	# 2. Add to result for BattleManager to register
 	result.new_instances.append(new_inst)
@@ -892,7 +840,7 @@ static func handle_summon_unit(
 		"container_tag": final_location.container,
 		"slot": final_location.index,
 		"uuid": new_inst.ball_uuid,
-		"insert_into_queue": not is_replacing_holder_slot
+		"insert_into_queue": not is_replacing_holder_slot and final_location.container != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
 	})
 	
 	# Create SUMMON event
@@ -902,7 +850,27 @@ static func handle_summon_unit(
 	if final_location.container != holder_location.container or final_location.index != holder_location.index:
 		final_old_uuid = ""
 		
-	var summon_payload := _make_summon_payload(final_old_uuid, new_inst.ball_uuid, final_location, snapshot, String(effect_data.get("spawn_source_uuid", "")), int(effect_data.get("unit_tier", 1)))
+	var spawn_source_uuid: String = String(effect_data.get("spawn_source_uuid", ""))
+	if spawn_source_uuid.is_empty():
+		if request.trigger_context.has("fainting_ally_uuid") and not String(request.trigger_context.get("fainting_ally_uuid")).is_empty():
+			spawn_source_uuid = String(request.trigger_context.get("fainting_ally_uuid"))
+		elif request.trigger_context.has("dying_uuid") and not String(request.trigger_context.get("dying_uuid")).is_empty():
+			spawn_source_uuid = String(request.trigger_context.get("dying_uuid"))
+		elif not holder_uuid.is_empty():
+			spawn_source_uuid = holder_uuid
+		elif not request.source_uuid.is_empty():
+			spawn_source_uuid = request.source_uuid
+
+	var spawn_source_location: LocationIdentifier = effect_data.get("spawn_source_location")
+	if not is_instance_valid(spawn_source_location):
+		if request.trigger_context.has("fainting_ally_location") and is_instance_valid(request.trigger_context.get("fainting_ally_location")):
+			spawn_source_location = request.trigger_context.get("fainting_ally_location")
+		elif request.trigger_context.has("dying_location") and is_instance_valid(request.trigger_context.get("dying_location")):
+			spawn_source_location = request.trigger_context.get("dying_location")
+		elif is_instance_valid(holder_location):
+			spawn_source_location = holder_location
+
+	var summon_payload := _make_summon_payload(final_old_uuid, new_inst.ball_uuid, final_location, snapshot, spawn_source_uuid, int(effect_data.get("unit_tier", 1)), spawn_source_location)
 	result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
 		"source_uuid": request.source_uuid,
 		"target_uuids": [new_inst.ball_uuid],
@@ -1018,7 +986,7 @@ static func handle_summon_units(
 # ============================================================================
 
 ## Handle Mirror Transform (Mimic)
-## Discards equipped items, removes self, and prepares summon of target unit.
+## Preserves equipped items, permanent upgrades, and in-combat buffs, removes self, and prepares summon of target unit.
 static func handle_mirror_transform(
 	_request: EffectRequest,
 	transform_data: Dictionary,
@@ -1032,6 +1000,12 @@ static func handle_mirror_transform(
 	if not is_instance_valid(source):
 		return SummonResult.new() # Failed
 	
+	var my_loc = source.get_location()
+	if not is_instance_valid(my_loc) or my_loc.container.is_empty():
+		return SummonResult.new()
+	var my_container: StringName = my_loc.container
+	var my_slot: int = my_loc.index
+	
 	var result := SummonResult.new()
 	
 	# 1. Log Event
@@ -1042,8 +1016,6 @@ static func handle_mirror_transform(
 		"text": "%s transforms into %s!" % [source_display_name, target_name]
 	}))
 	
-	# 2. Visual Event (Vanish)
-	# 2. Visual Event (Transform: Hop & Vanish)
 	# 2. Visual Event (Transform: Hop & Vanish)
 	result.events.append(CombatEvent.new(CombatEvent.Type.TRANSFORM, {
 		"target_uuids": [self_uuid],
@@ -1064,46 +1036,97 @@ static func handle_mirror_transform(
 	# Clear on source
 	source.equipped_item_uuids.fill("")
 	
-	# 4. State Mutation: Remove Self (Vanish)
-	var my_loc = source.get_location()
+	# 4. State Mutation: Preserve permanent training and in-combat stat buffs
+	var persistent_components_to_transfer: Array[GachaBallComponent] = []
+	for comp in source.components:
+		if comp is StatComponent:
+			# Exclude conditional trinket components which will re-evaluate on board entry
+			if comp.source_type == &"CONDITIONAL_TRINKET" or String(comp.id).ends_with("_conditional") or String(comp.id).begins_with("rusty_ring_"):
+				continue
+			persistent_components_to_transfer.append(comp.duplicate(true))
 	
-	# CRITICAL FIX: Use bm_remove_instance (atomic) to fully unregister the unit from state and containers.
-	# InventoryOperations.remove_instance_from_container only clears the container slot but leaves
-	# the instance in _battle_instances with an empty location, causing Golden Rule violations.
+	var battle_components_to_transfer: Array[GachaBallComponent] = []
+	var in_combat_hp_delta := 0
+	var in_combat_pwr_delta := 0
+	for comp in source.battle_components:
+		if comp is StatComponent:
+			# Exclude conditional trinket or dynamic scaling trackers
+			if comp.source_type in [&"CONDITIONAL_ABILITY", &"CONDITIONAL_TRINKET"] \
+					or String(comp.id).ends_with("_conditional") or String(comp.id).begins_with("rusty_ring_"):
+				continue
+			# Only inherit true combat buffs (from abilities, consumables, etc.)
+			var is_battle_buff = comp.source_type in [&"BATTLE_BUFF", &"CONSUMABLE"] \
+					or comp.category == &"CONSUMABLE" \
+					or comp.id in [&"battle_buff_hp", &"battle_buff_pwr"]
+			if is_battle_buff:
+				var hp_val = int(comp.modifiers.get("hp", 0))
+				var pwr_val = int(comp.modifiers.get("pwr", 0))
+				if hp_val > 0 or pwr_val > 0:
+					battle_components_to_transfer.append(comp.duplicate(true))
+					if hp_val > 0:
+						in_combat_hp_delta += hp_val
+					if pwr_val > 0:
+						in_combat_pwr_delta += pwr_val
+	
+	# 5. State Mutation: Remove Self (Vanish)
 	battle_manager._state.bm_remove_instance(self_uuid)
 	
-	# 5. Determine Summon Location
-	# We want to summon EXACTLY where we were.
-	
+	# 6. Determine Summon Location & Instantiate New Unit
 	var target_level: int = transform_data.get("target_level", 1)
 
-	# Create the new instance
 	var new_def = Database.get_definition(target_unit_id)
 	if is_instance_valid(new_def):
 		var new_unit = GachaBallInstance.new()
 		new_unit.initialize(new_def)
 		new_unit.level = target_level
+		
+		# Add level bonus if target_level > 1
+		if target_level > 1:
+			var level_delta_bonus: int = target_level - 1
+			new_unit.add_or_update_stat_component(
+				&"level_bonus",
+				&"LEVEL_BONUS",
+				"level_scaling",
+				level_delta_bonus,
+				level_delta_bonus,
+				false
+			)
+		
+		# Inherit persistent training components from Mimic
+		for p_comp in persistent_components_to_transfer:
+			new_unit.components.append(p_comp)
+		
 		new_unit.reset_battle_stats_silent()
 		
 		# Place it in the container
-		# Use atomic API to register and place
-		battle_manager._state.bm_add_instance(new_unit, my_loc.container, my_loc.index)
+		battle_manager._state.bm_add_instance(new_unit, my_container, my_slot)
 		
 		# Transfer preserved items to the new unit
 		for transfer_data in items_to_transfer:
 			InventoryOperations.equip_item(battle_manager._state, transfer_data["uuid"], new_unit.ball_uuid, transfer_data["slot"])
 		
+		# Inherit in-combat buffs
+		for b_comp in battle_components_to_transfer:
+			new_unit.battle_components.append(b_comp)
+		if in_combat_hp_delta > 0:
+			new_unit.current_hp += in_combat_hp_delta
+		if in_combat_pwr_delta > 0:
+			new_unit.current_pwr += in_combat_pwr_delta
+		
 		# Populate result
 		result.new_instances.append(new_unit)
-		# NOTE: We do not use container_updates here because we already used atomic bm_add_instance
-		# which handles the placement immediately.
-		
-		# Events
-		# Events
-		var is_player = battle_manager._is_player_unit(new_unit)
+		result.container_updates.append({
+			"container_tag": my_container,
+			"slot": my_slot,
+			"uuid": new_unit.ball_uuid,
+			"insert_into_queue": false
+		})
 		
 		# Construct robust SUMMON event with visual style
-		var summon_payload := _make_summon_payload("", new_unit.ball_uuid, my_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
+		var new_loc := LocationIdentifier.new()
+		new_loc.container = my_container
+		new_loc.index = my_slot
+		var summon_payload := _make_summon_payload("", new_unit.ball_uuid, new_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
 		summon_payload.visual_style = "yellow_flash"
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
@@ -1116,13 +1139,14 @@ static func handle_mirror_transform(
 			
 	return result
 
-static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1) -> CombatPayload:
+static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1, spawn_source_location: LocationIdentifier = null) -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.old_unit_uuid = old_unit_uuid
 	payload.new_unit_uuid = new_unit_uuid
 	payload.old_unit_location = old_unit_location
 	payload.new_unit_snapshot = new_unit_snapshot
 	payload.spawn_source_uuid = spawn_source_uuid
+	payload.spawn_source_location = spawn_source_location
 	payload.unit_tier = unit_tier
 	return payload
 

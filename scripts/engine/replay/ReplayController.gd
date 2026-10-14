@@ -7,6 +7,7 @@ signal playback_error(message: String)
 signal playback_paused(is_paused: bool)
 signal playback_speed_changed(speed: float)
 signal action_executing(action_sequence: int, action_type: String)
+signal skip_idle_changed(enabled: bool)
 
 const ReplayReaderScript = preload("res://scripts/engine/replay/ReplayReader.gd")
 const ReplayViewerScene = preload("res://scenes/ui/ReplayViewer.tscn")
@@ -27,6 +28,7 @@ var _recorded_pause_elapsed := 0.0
 var _is_playing := false
 var _session_active := false
 var _viewer_paused := false
+var _skip_idle_pauses := false
 var _was_timer_running_before_viewer_pause := false
 var _playback_speed := 1.0
 var _base_engine_time_scale := 1.0
@@ -46,6 +48,7 @@ var _completed_digest_by_sequence: Dictionary = {}
 var _expected_result_sequences: Dictionary = {}
 var _legacy_initial_pre_digest_skipped := false
 var _current_waiting_action: GameAction = null
+var _waiting_action_start_msec: int = -1
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -76,6 +79,8 @@ func _process(delta: float) -> void:
 	if event_class == "Checkpoint":
 		if is_instance_valid(_pending_action) or ActionQueue.is_busy():
 			return
+		if _is_scene_busy_with_currency_animations():
+			return
 		_restore_checkpoint(event)
 		return
 	if event_class != "GameAction":
@@ -94,10 +99,20 @@ func _process(delta: float) -> void:
 			if _recorded_pause_elapsed < wall_target:
 				_recorded_pause_elapsed += _wall_delta_from_scaled_delta(delta)
 				return
-		elif ActionQueue.is_timer_running() and ActionQueue.get_global_run_timer() + 0.0001 < action.timestamp:
-			ActionQueue.set_replay_target_timestamp(action.timestamp)
-			return
+		elif ActionQueue.is_timer_running():
+			if _current_waiting_action != action:
+				_current_waiting_action = action
+				var allowed_idle := 0.5 if _skip_idle_pauses else action.idle_time
+				var ideal_start: float = action.timestamp - minf(action.idle_time, allowed_idle)
+				if ideal_start >= 0.0 and ActionQueue.get_global_run_timer() + 0.0001 < ideal_start:
+					ActionQueue.advance_simulation_time(ideal_start - ActionQueue.get_global_run_timer())
+			if ActionQueue.get_global_run_timer() + 0.0001 < action.timestamp:
+				ActionQueue.set_replay_target_timestamp(action.timestamp)
+				return
+			if ActionQueue.get_global_run_timer() < action.timestamp:
+				ActionQueue.advance_simulation_time(action.timestamp - ActionQueue.get_global_run_timer())
 		ActionQueue.set_replay_target_timestamp(-1.0)
+		_current_waiting_action = null
 		_dispatch_action(action, event, true)
 		return
 
@@ -109,7 +124,9 @@ func _process(delta: float) -> void:
 
 	if _current_waiting_action != action:
 		_current_waiting_action = action
-		var ideal_start: float = action.timestamp - action.idle_time
+		_waiting_action_start_msec = Time.get_ticks_msec()
+		var allowed_idle := 0.5 if _skip_idle_pauses else action.idle_time
+		var ideal_start: float = action.timestamp - minf(action.idle_time, allowed_idle)
 		if ideal_start >= 0.0 and ActionQueue.get_global_run_timer() + 0.0001 < ideal_start:
 			ActionQueue.advance_simulation_time(ideal_start - ActionQueue.get_global_run_timer())
 
@@ -119,13 +136,17 @@ func _process(delta: float) -> void:
 		ActionQueue.set_replay_target_timestamp(action.timestamp)
 		return
 
+
 	if _is_scene_busy_with_autonomous_work(action):
+		if _waiting_action_start_msec > 0 and Time.get_ticks_msec() - _waiting_action_start_msec > 5000:
+			_fail_playback("Timed out waiting for scene readiness for %s at line %d (waited > 5s)." % [action.action_type, int(event.get("_line_number", -1))], event)
 		return
 
 	if ActionQueue.get_global_run_timer() < action.timestamp:
 		ActionQueue.advance_simulation_time(action.timestamp - ActionQueue.get_global_run_timer())
 	ActionQueue.set_replay_target_timestamp(-1.0)
 	_current_waiting_action = null
+	_waiting_action_start_msec = -1
 	_dispatch_action(action, event, false)
 
 func play_file(path: String) -> void:
@@ -201,10 +222,30 @@ func play_file(path: String) -> void:
 					playback_error.emit("Replay contains duplicate results for action %d." % result_sequence)
 					return
 				result_sequences[result_sequence] = true
-		for action_sequence in action_sequences:
-			if not result_sequences.has(action_sequence):
-				playback_error.emit("Replay action %d has no completed-state record; the file may have ended during an action." % int(action_sequence))
-				return
+		for i in range(_events.size()):
+			var event: Dictionary = _events[i]
+			if String(event.get("event_class", "")) == "GameAction":
+				var action_sequence := int(event.get("sequence", -1))
+				if not result_sequences.has(action_sequence):
+					# An action without an ActionResult is valid if:
+					# 1. It is followed by a Checkpoint (game crashed during this action and was continued from save).
+					# 2. It is the final action of the recording (game crashed during this action).
+					var is_crash_boundary := false
+					var has_subsequent_action := false
+					for j in range(i + 1, _events.size()):
+						var next_class := String(_events[j].get("event_class", ""))
+						if next_class == "Checkpoint":
+							is_crash_boundary = true
+							break
+						elif next_class == "GameAction":
+							has_subsequent_action = true
+							break
+					if not has_subsequent_action:
+						is_crash_boundary = true
+					if not is_crash_boundary:
+						playback_error.emit("Replay action %d has no completed-state record before line %d." % [action_sequence, int(event.get("_line_number", -1))])
+						return
+					print("[ReplayController] Action %d at line %d has no completed-state record (crash/reload boundary). Allowing diagnostic playback." % [action_sequence, int(event.get("_line_number", -1))])
 		for result_sequence in result_sequences:
 			if not action_sequences.has(result_sequence):
 				playback_error.emit("Replay result %d has no matching action." % int(result_sequence))
@@ -296,6 +337,29 @@ func toggle_pause() -> void:
 		return
 	set_playback_paused(not _viewer_paused)
 
+func set_skip_idle_pauses(enabled: bool) -> void:
+	_skip_idle_pauses = enabled
+	skip_idle_changed.emit(_skip_idle_pauses)
+	if enabled:
+		skip_current_idle()
+
+func is_skip_idle_pauses() -> bool:
+	return _skip_idle_pauses
+
+func skip_current_idle() -> void:
+	if not _session_active or not _is_playing:
+		return
+	if is_instance_valid(_current_waiting_action):
+		var remaining := _current_waiting_action.timestamp - ActionQueue.get_global_run_timer()
+		if remaining > 0.0:
+			ActionQueue.advance_simulation_time(remaining)
+			ActionQueue.set_replay_target_timestamp(-1.0)
+
+func get_current_idle_remaining() -> float:
+	if is_instance_valid(_current_waiting_action):
+		return maxf(0.0, _current_waiting_action.timestamp - ActionQueue.get_global_run_timer())
+	return 0.0
+
 func set_playback_paused(paused: bool) -> void:
 	if not _session_active or not _is_playing or _viewer_paused == paused:
 		return
@@ -350,9 +414,10 @@ func _dispatch_action(action: GameAction, event: Dictionary, meta: bool) -> void
 	if not meta and not skip_legacy_initial_digest and not expected_pre_digest.is_empty():
 		var actual_pre_digest := ReplayStateDigestScript.current_digest()
 		if expected_pre_digest != actual_pre_digest:
-			print("[ReplayController] Pre-action state difference before %s (sequence %d): expected %s, got %s. Proceeding with execution..." % [
+			print("[ReplayController] Pre-action state difference before %s (sequence %d, line %d): expected %s, got %s. Proceeding with execution..." % [
 				String(action.action_type),
 				action_sequence,
+				line_number,
 				expected_pre_digest,
 				actual_pre_digest
 			])
@@ -419,6 +484,12 @@ func _restore_checkpoint(event: Dictionary) -> void:
 	_recorded_pause_wall_anchor = -1
 	_recorded_pause_elapsed = 0.0
 	_current_waiting_action = null
+	if is_instance_valid(WindowManager):
+		if WindowManager.has_method("clear_vfx_layer"):
+			WindowManager.clear_vfx_layer()
+		WindowManager.close_all_windows()
+	if is_instance_valid(FlashcardManager):
+		FlashcardManager.reset_session_state()
 	SignalBus.main_scene_requested.emit()
 	var wait_started := Time.get_ticks_msec()
 	while true:
@@ -465,9 +536,10 @@ func _process_action_result(event: Dictionary) -> void:
 	var expected_digest := String(event.get("state_digest", ""))
 	var actual_digest := String(_completed_digest_by_sequence[action_sequence])
 	if expected_digest.is_empty() or actual_digest.is_empty() or expected_digest != actual_digest:
-		print("[ReplayController] Post-action state difference after %s (sequence %d): expected %s, got %s." % [
+		print("[ReplayController] Post-action state difference after %s (sequence %d, line %d): expected %s, got %s." % [
 			String(event.get("action_type", "GameAction")),
 			action_sequence,
+			int(event.get("_line_number", -1)),
 			expected_digest,
 			actual_digest
 		])
@@ -494,6 +566,8 @@ func _fail_playback(message: String, event: Dictionary = {}) -> void:
 	print("[ReplayController FAIL] ", details)
 	push_error("[ReplayController FAIL] " + details)
 	playback_error.emit(details)
+	if ActionQueue.is_headless_mode():
+		get_tree().quit(1)
 
 func _finish_playback() -> void:
 	if not _is_playing:
@@ -506,6 +580,8 @@ func _finish_playback() -> void:
 	Engine.time_scale = _previous_engine_time_scale
 	AnimationConstants.speed_factor = _previous_animation_speed
 	playback_finished.emit()
+	if ActionQueue.is_headless_mode():
+		get_tree().quit(0)
 
 func _wall_delta_from_scaled_delta(delta: float) -> float:
 	var engine_scale := maxf(0.001, absf(Engine.time_scale))
@@ -554,6 +630,13 @@ static func _is_flashcard_action(action: GameAction) -> bool:
 		or action is SelectFlashcardIntroCardAction \
 		or action is AcknowledgeFlashcardIntroAction
 
+static func _is_battle_management_action(action: GameAction) -> bool:
+	return action is DrawGachaAction \
+		or action is MoveInventoryAction \
+		or action is EndTurnAction \
+		or action is ConfirmMergeAction \
+		or action is ConfirmSwapAction
+
 func _is_scene_busy_with_autonomous_work(action: GameAction) -> bool:
 	if ActionQueue.is_headless_mode() or (is_instance_valid(action) and action.is_meta_action()):
 		return false
@@ -562,7 +645,7 @@ func _is_scene_busy_with_autonomous_work(action: GameAction) -> bool:
 	if GameManager.is_in_battle:
 		var bm = GameManager.get_battle_manager()
 		if is_instance_valid(bm):
-			if action is DrawGachaAction or action is MoveInventoryAction or action is EndTurnAction:
+			if _is_battle_management_action(action):
 				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
 					return true
 				if bm.has_method("get_current_phase") and bm.get_current_phase() != bm.Phases.MANAGEMENT:
@@ -570,20 +653,41 @@ func _is_scene_busy_with_autonomous_work(action: GameAction) -> bool:
 			elif action is AcknowledgeBattleResultsAction:
 				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
 					return true
+			elif _is_flashcard_action(action):
+				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+					return true
 
-	# 2. Main screen token animations
+	# 2. Main screen token/gold animations
+	if _is_scene_busy_with_currency_animations():
+		return true
+
+	# 3. Flashcard session in progress: non-flashcard actions must wait for minigame to conclude
+	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
+		if is_instance_valid(action) and not _is_flashcard_action(action) and not (action is DismissTutorialAction or action is AdvanceTutorialPageAction):
+			return true
+
+	# 4. Flashcard actions: must wait until minigame session is active and in correct phase
+	if is_instance_valid(action) and _is_flashcard_action(action):
+		if not is_instance_valid(FlashcardManager) or not FlashcardManager.is_session_active:
+			return true
+		if action is AcknowledgeFlashcardIntroAction:
+			if not FlashcardManager.is_introducing_new_card:
+				return true
+		elif action is SubmitFlashcardAnswerAction or action is SkipFlashcardAction:
+			if not FlashcardManager.is_sprint_active or FlashcardManager.is_introducing_new_card:
+				return true
+
+	return false
+
+func _is_scene_busy_with_currency_animations() -> bool:
 	var main_node = GameManager.get_main_node()
 	if is_instance_valid(main_node):
 		if bool(main_node.get("_is_drawing_token")):
 			return true
 		if int(main_node.get("_token_animations_in_flight")) > 0:
 			return true
-
-	# 3. Flashcard session in progress: non-flashcard actions must wait for minigame to conclude
-	if is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active:
-		if not _is_flashcard_action(action) and not (action is DismissTutorialAction or action is AdvanceTutorialPageAction):
+		if int(main_node.get("_gold_animations_in_flight")) > 0:
 			return true
-
 	return false
 
 func _cleanup_replay_state() -> void:
@@ -594,6 +698,8 @@ func _cleanup_replay_state() -> void:
 	_recorded_pause_wall_anchor = -1
 	_pending_action = null
 	_current_waiting_action = null
+	_waiting_action_start_msec = -1
+	_skip_idle_pauses = false
 	_checkpoint_restore_in_progress = false
 	_action_sequence_by_instance.clear()
 	_completed_digest_by_sequence.clear()

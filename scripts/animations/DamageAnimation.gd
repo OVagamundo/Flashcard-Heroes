@@ -111,7 +111,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		else:
 			for proj in projectiles:
 				if is_instance_valid(proj):
-					await proj.impact
+					await proj.wait_for_impact()
 		
 		# 3. Apply damage impact (recoil, flashes, numbers)
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
@@ -147,7 +147,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		elif not projectiles.is_empty():
 			for proj in projectiles:
 				if is_instance_valid(proj):
-					await proj.impact
+					await proj.wait_for_impact()
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)

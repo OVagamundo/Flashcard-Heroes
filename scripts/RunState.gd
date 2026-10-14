@@ -10,6 +10,8 @@ extends Resource
 @export var current_elite_level: int = 0 # 0 = not in elite fight, 1+ = current elite
 @export var bosses_defeated: int = 0
 @export var elites_defeated: int = 0
+@export var elites_encountered_in_tier: int = 0
+@export var elite_milestones_offered: Array[int] = []
 @export var total_enemies_defeated: int = 0
 @export var total_gold_earned: int = 0
 @export var total_tokens_earned: int = 0
@@ -105,6 +107,30 @@ func get_deck_unlock_percentage() -> float:
 		return 0.0
 		
 	return float(active_deck_ids.size()) / float(ordered_deck_pool.size())
+
+func get_tier_progress() -> float:
+	"""Returns the progress (0.0 to 1.0) towards the upcoming mini boss in the current tier."""
+	var boss_level: int = bosses_defeated + 1
+	var threshold_per_boss: float = 0.3333 if is_half_deck else 0.2
+	var tier_target_pct: float = float(boss_level) * threshold_per_boss
+	var tier_start_pct: float = float(boss_level - 1) * threshold_per_boss
+	
+	var total_cards: int = ordered_deck_pool.size()
+	if total_cards <= 0:
+		return 0.0
+		
+	var tier_target_cards: int = int(ceil(float(total_cards) * tier_target_pct))
+	var tier_start_cards: int = 0
+	if boss_level == 1:
+		tier_start_cards = 5
+	else:
+		tier_start_cards = int(ceil(float(total_cards) * tier_start_pct))
+		
+	var cards_in_tier: int = max(1, tier_target_cards - tier_start_cards)
+	var current_cards: int = active_deck_ids.size()
+	var unlocked_in_tier: int = max(0, current_cards - tier_start_cards)
+	
+	return clampf(float(unlocked_in_tier) / float(cards_in_tier), 0.0, 1.0)
 
 ## Records an elite encounter in the history
 func record_elite_encounter(elite_id: StringName) -> void:
@@ -785,6 +811,8 @@ func start_new_run() -> void:
 	current_elite_level = 0
 	bosses_defeated = 0
 	elites_defeated = 0
+	elites_encountered_in_tier = 0
+	elite_milestones_offered.clear()
 	total_enemies_defeated = 0
 	total_gold_earned = 0
 	black_market_remove_cost = 5
@@ -969,6 +997,8 @@ func to_save_dict() -> Dictionary:
 		"current_elite_level": current_elite_level,
 		"bosses_defeated": bosses_defeated,
 		"elites_defeated": elites_defeated,
+		"elites_encountered_in_tier": elites_encountered_in_tier,
+		"elite_milestones_offered": elite_milestones_offered.duplicate(),
 		"total_enemies_defeated": total_enemies_defeated,
 		"total_gold_earned": total_gold_earned,
 		"total_tokens_earned": total_tokens_earned,
@@ -1025,6 +1055,10 @@ func from_save_dict(data: Dictionary) -> void:
 	current_elite_level = data.get("current_elite_level", 0)
 	bosses_defeated = data.get("bosses_defeated", 0)
 	elites_defeated = data.get("elites_defeated", 0)
+	elites_encountered_in_tier = data.get("elites_encountered_in_tier", 0)
+	elite_milestones_offered.clear()
+	for m in data.get("elite_milestones_offered", []):
+		elite_milestones_offered.append(int(m))
 	total_enemies_defeated = data.get("total_enemies_defeated", 0)
 	total_gold_earned = data.get("total_gold_earned", 0)
 	total_tokens_earned = data.get("total_tokens_earned", 0)

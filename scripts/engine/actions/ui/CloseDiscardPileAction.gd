@@ -5,12 +5,19 @@ extends GameAction
 func _init() -> void:
 	super._init(&"CloseDiscardPileAction")
 
+func is_meta_action() -> bool:
+	return true
+
 func validate() -> bool:
-	return is_instance_valid(WindowManager)
+	if not is_instance_valid(WindowManager):
+		return false
+	if WindowManager.has_method("is_discard_pile_window_open"):
+		return WindowManager.is_discard_pile_window_open()
+	return true
 
 func execute() -> void:
 	if is_instance_valid(WindowManager):
-		WindowManager.close_all_inspection_windows()
+		WindowManager.close_discard_pile_window()
 
 func yields_for_visuals() -> bool:
 	return false

@@ -8,6 +8,7 @@ var definition_id: String = ""
 var window_type: StringName = &""
 var effect_id: StringName = &""
 var should_lock: bool = true
+var anchor_view_id: int = 0
 
 func _init(
 	p_location: LocationIdentifier = null,
@@ -15,7 +16,8 @@ func _init(
 	p_window_type: StringName = &"",
 	p_effect_id: StringName = &"",
 	p_entity_uuid: String = "",
-	p_definition_id: String = ""
+	p_definition_id: String = "",
+	p_anchor_view_id: int = 0
 ) -> void:
 	super._init(&"InspectEntityAction")
 	location = p_location
@@ -24,10 +26,16 @@ func _init(
 	effect_id = p_effect_id
 	entity_uuid = p_entity_uuid
 	definition_id = p_definition_id
+	anchor_view_id = p_anchor_view_id
+
+func is_meta_action() -> bool:
+	return true
 
 func validate() -> bool:
 	if not is_instance_valid(WindowManager):
 		return false
+	if anchor_view_id > 0:
+		return true
 	if is_instance_valid(location):
 		return true
 	if not entity_uuid.is_empty() or not definition_id.is_empty() or not effect_id.is_empty():
@@ -39,7 +47,12 @@ func execute() -> void:
 		return
 
 	var anchor: Control = null
-	if is_instance_valid(location):
+	if anchor_view_id > 0:
+		var obj = instance_from_id(anchor_view_id)
+		if is_instance_valid(obj) and obj is Control:
+			anchor = obj as Control
+
+	if not is_instance_valid(anchor) and is_instance_valid(location):
 		anchor = WindowManager.find_view_for_location(location)
 
 	if not is_instance_valid(anchor) and not entity_uuid.is_empty():
@@ -48,6 +61,17 @@ func execute() -> void:
 			if is_instance_valid(loc):
 				location = loc
 				anchor = WindowManager.find_view_for_location(location)
+
+	if not is_instance_valid(anchor) and not entity_uuid.is_empty():
+		var tree = Engine.get_main_loop() as SceneTree
+		if is_instance_valid(tree):
+			var views = tree.get_nodes_in_group("gachaball_view")
+			for v in views:
+				if is_instance_valid(v) and v.has_method("get_instance_uuid") and v.get_instance_uuid() == entity_uuid:
+					anchor = v
+					if not is_instance_valid(location) and v.has_method("get_location"):
+						location = v.get_location()
+					break
 
 	if not is_instance_valid(anchor):
 		anchor = WindowManager.get_top_contextual_window()
@@ -116,6 +140,7 @@ func to_dict() -> Dictionary:
 	d["window_type"] = String(window_type)
 	d["effect_id"] = String(effect_id)
 	d["should_lock"] = should_lock
+	d["anchor_view_id"] = anchor_view_id
 	return d
 
 func from_dict(data: Dictionary) -> void:
@@ -127,3 +152,4 @@ func from_dict(data: Dictionary) -> void:
 	window_type = StringName(data.get("window_type", ""))
 	effect_id = StringName(data.get("effect_id", ""))
 	should_lock = bool(data.get("should_lock", true))
+	anchor_view_id = int(data.get("anchor_view_id", 0))

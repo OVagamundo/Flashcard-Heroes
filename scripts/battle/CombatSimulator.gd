@@ -410,7 +410,7 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	# Prepare execution targets from resolved targets. Only basic attacks may dynamically retarget.
 	var exec_targets: Array[String] = []
 	exec_targets.append_array(request.resolved_targets)
-	var is_basic_attack := (request.ability_id == &"basic_attack")
+	var is_basic_attack := (request.ability_id == &"basic_attack" or String(request.ability_id).begins_with("basic_attack"))
 	
 	# For ALL abilities (basic or triggered), validate targets are still alive AND in battle
 	# Filter out dead targets to prevent ghost attacks
@@ -452,16 +452,16 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	
 	exec_targets = valid_targets
 	
-	# For basic attacks only, apply retargeting to frontmost if needed
+	# For basic attacks only, apply retargeting if needed
 	if is_basic_attack and exec_targets.size() > 0:
 		var first_target = bm.get_instance_by_uuid(exec_targets[0])
 		if not is_instance_valid(first_target) or first_target.current_hp <= 0:
-			var attacker_is_player: bool = false
-			if is_instance_valid(source):
-				attacker_is_player = bm._is_player_unit(source)
-			var new_target_inst = bm._get_frontmost_target(attacker_is_player)
-			if is_instance_valid(new_target_inst):
-				exec_targets[0] = new_target_inst.ball_uuid
+			var target_type = C.TARGET_FRONTMOST_ENEMY
+			if is_instance_valid(request.effect_definition) and request.effect_definition.target_type != &"":
+				target_type = request.effect_definition.target_type
+			var new_targets = bm.resolve_target(request.source_uuid, target_type, request.trigger_context)
+			if not new_targets.is_empty():
+				exec_targets[0] = new_targets[0]
 			else:
 				return
 	# Execute without emitting UI; capture results for events

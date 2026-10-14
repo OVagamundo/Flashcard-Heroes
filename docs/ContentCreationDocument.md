@@ -391,7 +391,7 @@ All non-combat actions follow the exact same **atomic simulation $\to$ event log
 2. **Causal Lineage Stamping**: Triggers (`on_board_enter`, `on_board_changed`, `on_merge`, `on_draw`) pass through the CRR reaction queue with cascading death drains. All passive reaction events receive `cause_event_id` pointing to the root management action event (`DRAW`, `MERGE`, or `ITEM_EQUIP`).
 3. **Decoupled Playback**: Presentation animators (`BattleAnimator`, `MergeAnimator`) are pure VCR engines that receive pre-computed snapshots and event logs without modifying state or querying live data during flight.
 
-#### 15.2 Room Transactions (Shop, Rest Site, Dojo)
+#### 15.2 Room Transactions (Shop, Rest Site, Dojo, Reward Room)
 Room transactions are standardized through dedicated simulation methods on `GameManager`:
 - **Shop Purchases**: `GameManager.simulate_shop_purchase(uuid, cost) -> Dictionary`
   - Validates gold, deducts gold, registers purchased instance in RunState, unlocks recipes, and emits `SHOP_PURCHASE` event log to `Shop.play_transaction_log(event_log)`.
@@ -399,6 +399,15 @@ Room transactions are standardized through dedicated simulation methods on `Game
   - Validates tokens, deducts tokens, rolls RNG reward, manages prize slots, and emits `REST_SITE_DRAW` event log to `RestSite.play_transaction_log(event_log)`.
 - **Dojo Training**: `GameManager.simulate_dojo_training(token_cost) -> Dictionary`
   - Validates tokens, deducts tokens, rolls stat delta, applies base stat modifications to the selected unit, and emits `DOJO_TRAIN` event log to `UnitTrainingGround.play_transaction_log(event_log)`.
+- **Reward Room Draws**: `GameManager.simulate_reward_draw(tier, slot_index) -> Dictionary`
+  - Validates tokens, deducts tokens (accounting for Bargain Charm discount), rolls RNG reward, manages prize slots, records Trinity Charm triggers, and emits `REWARD_DRAW` event log to `Reward.play_transaction_log(event_log)`.
+
+#### 15.3 Currency Single Source of Truth (SSOT) & Simulation Contract
+- **Authoritative Currency Storage**: `GameManager.run_state` is the sole authoritative owner of both `gold` and `current_room_tokens`.
+- **Combat Simulation Synchronization**: When combat simulation modifies tokens or gold (e.g. `EffectDeathTokenRefund`, `EffectTrinityCharm`, `EffectGainGold`):
+  - State mutations MUST be pre-applied silently to `RunState` (`add_tokens(amount, true)` / `add_gold(amount, true)`) during zero-time simulation.
+  - `BattleState._gacha_tokens` bridges directly to `RunState.current_room_tokens` when `RunState` is present, maintaining strict parity with `BattleManager._gacha_tokens`.
+  - Presentation engines (`BattleAnimator`) play the currency gain/spend VFX using outer brackets (`begin_token_animation()` ... `end_token_animation()`). When all currency events settle, the visual counter is asserted against `RunState.get_room_tokens()`, guaranteeing zero desync.
 
 ---
 

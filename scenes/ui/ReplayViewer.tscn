@@ -34,7 +34,7 @@ shadow_color = Color(0, 0, 0, 0.6)
 shadow_size = 16
 
 [node name="ReplayViewer" type="CanvasLayer"]
-layer = 100
+layer = 200
 script = ExtResource("1_script")
 
 [node name="SpectatorBlocker" type="ColorRect" parent="."]
@@ -52,7 +52,7 @@ unique_name_in_owner = true
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -160.0
+offset_left = -300.0
 offset_bottom = 54.0
 grow_horizontal = 0
 mouse_filter = 2
@@ -100,7 +100,7 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="Card" type="PanelContainer" parent="PausePopup/Center"]
-custom_minimum_size = Vector2(420, 220)
+custom_minimum_size = Vector2(440, 280)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_popup")
 
@@ -143,6 +143,12 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 46)
 layout_mode = 2
 text = "Resume Playback"
+
+[node name="SkipIdleToggle" type="CheckButton" parent="PausePopup/Center/Card/Margin/VBox/ButtonsVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 36)
+layout_mode = 2
+text = "Skip Long Idle Pauses"
 
 [node name="ExitButton" type="Button" parent="PausePopup/Center/Card/Margin/VBox/ButtonsVBox"]
 unique_name_in_owner = true

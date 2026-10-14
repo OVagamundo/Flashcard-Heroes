@@ -33,6 +33,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_uuids": [target_uuid],
 			"ability_id": context.get("ability_id", &"empathic_link"),
 			"action_type": C.ACTION_BUFF,
+			"trigger_type": context.get("trigger_type", &"on_death"),
 			"ability_holder_uuid": source_uuid,
 			"visual_payload": CombatPayload.pwr_buff(source_uuid, buff_amount, [old_pwr], [new_pwr])
 		}))

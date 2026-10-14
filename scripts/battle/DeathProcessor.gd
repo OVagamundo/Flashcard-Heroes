@@ -435,7 +435,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 				if death_tracking != null:
 					if register_death(bm._state, unit, &"COMBAT"):
 						# Track first-killed for resurrection
-						_track_first_killed(bm, unit, "PLAYER")
+						track_first_killed(bm, unit, "PLAYER")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
 						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
@@ -465,7 +465,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 				if death_tracking != null:
 					if register_death(bm._state, unit, &"COMBAT"):
 						# Track first-killed for resurrection
-						_track_first_killed(bm, unit, "ENEMY")
+						track_first_killed(bm, unit, "ENEMY")
 						
 						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
 						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
@@ -559,18 +559,12 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		var post_death_slice: Array[CombatEvent] = []
 
 		for evt in cascade_evts:
-			var type = evt.type
-			var is_gacha_summon = (type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null and String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"))
+			var is_gacha_summon = (evt.type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null and String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"))
 			
-			var is_post_death = (type == CombatEvent.Type.SUMMON and not is_gacha_summon) \
-				or type == CombatEvent.Type.TRANSFORM \
-				or evt.trigger_type == &"on_ally_death" \
-				or evt.trigger_type == &"on_unit_death"
-				
-			if is_post_death:
-				post_death_slice.append(evt)
-			else:
+			if is_gacha_summon:
 				pre_death_slice.append(evt)
+			else:
+				post_death_slice.append(evt)
 
 		# Insert DEATH events between pre-death reactions (like Gacha duplication) and post-death consequences (summons, ally death buffs like Knight)
 		# This ensures the Animator plays the dying unit's fade-out BEFORE surviving allies react to its death.
@@ -602,10 +596,10 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 
 
 # ============================================================================
-# PRIVATE HELPERS FOR DEATH WITH COUNTER DELAY
+# HELPERS FOR DEATH PROCESSING
 # ============================================================================
 
-static func _track_first_killed(bm, unit: GachaBallInstance, team: String) -> void:
+static func track_first_killed(bm, unit: GachaBallInstance, team: String) -> void:
 	var key := "first_killed_player_unit" if team == "PLAYER" else "first_killed_enemy_unit"
 	if bm._turn_metadata.has(key):
 		return

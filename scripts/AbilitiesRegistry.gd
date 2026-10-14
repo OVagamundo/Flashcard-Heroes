@@ -29,6 +29,12 @@ const ABILITIES: Dictionary = {
 		"effect": "Deal PWR damage to front enemy",
 	},
 	
+	"basic_attack_ranged_mirror": {
+		"owner": "Burny (T1B), Windy (T1D)",
+		"trigger": "TURN_ACTION",
+		"effect": "Deal PWR ranged damage to mirror enemy (fallback backmost)",
+	},
+	
 	"unit_tier1a_passive_heal": {
 		"owner": "Rocky (T1A)",
 		"trigger": "on_hurt",

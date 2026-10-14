@@ -3,6 +3,7 @@ class_name GachaBallView
 extends PanelContainer
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
 
 # Size scale constants for different contexts
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
@@ -118,10 +119,8 @@ var _is_hovered: bool = false
 var _base_z_index: int = 0
 var _slot_view_ref: Control = null
 var _slot_base_z_index: int = 0
-var _touch_long_press_timer: Timer = null
+var _inspection_trigger: InspectionTrigger = null
 var _touch_press_active: bool = false
-var _touch_long_press_triggered: bool = false
-var _touch_hover_override_active: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
 
 
@@ -182,16 +181,14 @@ func _ready() -> void:
 	_setup_status_effect_click_handlers()
 		# are now handled by UnitAnimationController child node
 
-	# Hover-to-Inspect (PC only): emit HOVER events for GIR
+	_inspection_trigger = InspectionTrigger.new()
+	_inspection_trigger.setup(self, func():
+		if not _is_inspectable or not is_instance_valid(_location):
+			return {}
+		return {"location": _location}
+	)
 	mouse_entered.connect(_on_mouse_entered)
 	mouse_exited.connect(_on_mouse_exited)
-	
-
-	_touch_long_press_timer = Timer.new()
-	_touch_long_press_timer.one_shot = true
-	_touch_long_press_timer.wait_time = InputUtils.TOUCH_LONG_PRESS_SEC
-	_touch_long_press_timer.timeout.connect(_on_touch_long_press_timeout)
-	add_child(_touch_long_press_timer)
 
 
 
@@ -251,8 +248,8 @@ func _update_drag_deformation(delta: float) -> void:
 	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
 
 func _exit_tree() -> void:
-	_stop_touch_long_press()
-	_touch_hover_override_active = false
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.cancel()
 	_is_hovered = false
 	if is_instance_valid(_hover_tween):
 		_hover_tween.kill()
@@ -328,8 +325,8 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 		_hover_tween.kill()
 	if is_instance_valid(_press_tween):
 		_press_tween.kill()
-	_stop_touch_long_press()
-	_touch_hover_override_active = false
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.cancel()
 	_is_selected = false
 	_merge_target_type = &""
 	_is_hovered = false
@@ -731,7 +728,7 @@ func _get_hover_fx_mode() -> int:
 		return HoverFxMode.OFF
 	if not is_instance_valid(_location):
 		return HoverFxMode.OFF
-	if InputUtils.prefers_touch_input() and not _touch_hover_override_active:
+	if InputUtils.prefers_touch_input():
 		return HoverFxMode.OFF
 
 	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
@@ -756,57 +753,7 @@ func _set_hover_state(active: bool, play_sound: bool = false) -> void:
 	if not active:
 		_animate_press_to(0.0, 0.08)
 
-func _start_touch_long_press(local_pos: Vector2) -> void:
-	if not _is_inspectable:
-		return
-	if not is_instance_valid(_location):
-		return
-	_touch_press_active = true
-	_touch_long_press_triggered = false
-	_touch_press_position = local_pos
-	if is_instance_valid(_touch_long_press_timer):
-		_touch_long_press_timer.start()
-
-func _stop_touch_long_press() -> void:
-	_touch_press_active = false
-	_touch_long_press_triggered = false
-	_touch_press_position = Vector2.ZERO
-	if is_instance_valid(_touch_long_press_timer):
-		_touch_long_press_timer.stop()
-
-func _emit_hover_enter() -> void:
-	if not _is_inspectable:
-		return
-	if not is_instance_valid(_location):
-		return
-	var ctx = _create_interaction_context(&"HOVER_ENTER")
-	SignalBus.emit_signal("interaction_context_received", ctx)
-
-func _emit_hover_exit() -> void:
-	if not is_instance_valid(_location):
-		return
-	var ctx = _create_interaction_context(&"HOVER_EXIT")
-	SignalBus.emit_signal("interaction_context_received", ctx)
-
-func _begin_touch_hover_peek() -> void:
-	if _touch_long_press_triggered:
-		return
-	if not _touch_press_active:
-		return
-	_touch_long_press_triggered = true
-	_touch_hover_override_active = true
-	_set_hover_state(true, true)
-	_emit_hover_enter()
-
-func _end_touch_hover_peek() -> void:
-	if not _touch_hover_override_active:
-		return
-	_touch_hover_override_active = false
-	_set_hover_state(false, false)
-	_emit_hover_exit()
-
-func _on_touch_long_press_timeout() -> void:
-	_begin_touch_hover_peek()
+# Inspection peek and long-press are handled centrally via InspectionTrigger.
 
 func _can_begin_drag() -> bool:
 	if not _is_interactive:
@@ -836,8 +783,8 @@ func _prepare_drag_payload() -> Dictionary:
 
 	_drag_initiated_for_click = true
 	_pressed_pending_click = false
-	_stop_touch_long_press()
-	_touch_hover_override_active = false
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.cancel()
 
 	# --- Drag Deformation: Start tracking ---
 	_is_dragging = true
@@ -1696,6 +1643,8 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 # ---------------------------------------------------------------------------
 
 func _on_mouse_entered() -> void:
+	if is_instance_valid(GlobalInteractionRouter) and (GlobalInteractionRouter.is_combat_phase() or GlobalInteractionRouter.is_vcr_playing()):
+		return
 	# Drag guard: never emit hover during ANY drag (self or global)
 	if _is_dragging: return
 	if GlobalInteractionRouter.is_drag_active(): return
@@ -1704,16 +1653,20 @@ func _on_mouse_entered() -> void:
 	if not is_instance_valid(_location): return
 	# Touch guard: only emit on desktop
 	if InputUtils.prefers_touch_input(): return
-	_emit_hover_enter()
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_entered()
 
 func _on_mouse_exited() -> void:
 	_set_hover_state(false, false)
 	if not is_instance_valid(_location): return
+	if is_instance_valid(GlobalInteractionRouter) and (GlobalInteractionRouter.is_combat_phase() or GlobalInteractionRouter.is_vcr_playing()):
+		return
 	if InputUtils.prefers_touch_input(): return
 	# Drag guard: never emit hover during ANY drag (self or global)
 	if _is_dragging: return
 	if GlobalInteractionRouter.is_drag_active(): return
-	_emit_hover_exit()
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_exited()
 
 func _has_point(point: Vector2) -> bool:
 	var radius = size.x / 2.0
@@ -1721,11 +1674,36 @@ func _has_point(point: Vector2) -> bool:
 	return point.distance_to(center) <= radius
 
 func _gui_input(event: InputEvent) -> void:
+	# Ignore input entirely if we don't have a location (e.g. visual-only balls in RestSite)
+	# This allows the click to bubble up to the Rest Site's prize slot gui_input handler
+	if not is_instance_valid(_location):
+		return
+
+	var is_combat_or_vcr: bool = is_instance_valid(GlobalInteractionRouter) and (GlobalInteractionRouter.is_combat_phase() or GlobalInteractionRouter.is_vcr_playing())
+	if is_combat_or_vcr:
+		if InputUtils.is_primary_pointer_press(event):
+			# Instant pause and inspect window during VCR / combat playback.
+			# Do NOT play press squash animation (_animate_press_to) and do not defer to release.
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.cancel()
+			var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
+			var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
+			SignalBus.emit_signal("interaction_context_received", sc_ctx)
+			get_viewport().set_input_as_handled()
+			accept_event()
+			return
+		elif InputUtils.is_primary_pointer_release(event) or InputUtils.is_primary_pointer_motion(event):
+			get_viewport().set_input_as_handled()
+			accept_event()
+			return
+
 	if InputUtils.is_primary_pointer_motion(event):
 		var pointer_pos = InputUtils.get_event_position(event)
-		if event is InputEventScreenDrag and _touch_press_active and not _touch_long_press_triggered:
+		if event is InputEventScreenDrag and _touch_press_active:
 			if pointer_pos.distance_to(_touch_press_position) > InputUtils.TOUCH_DRAG_THRESHOLD_PX:
-				_stop_touch_long_press()
+				if is_instance_valid(_inspection_trigger):
+					_inspection_trigger.cancel()
+				_touch_press_active = false
 				_pressed_pending_click = false
 				if not _drag_initiated_for_click:
 					_begin_touch_drag()
@@ -1735,11 +1713,8 @@ func _gui_input(event: InputEvent) -> void:
 			get_viewport().set_input_as_handled()
 			accept_event()
 			return
-
-	# Ignore input entirely if we don't have a location (e.g. visual-only balls in RestSite)
-	# This allows the click to bubble up to the Rest Site's prize slot gui_input handler
-	if not is_instance_valid(_location):
-		return
+		elif is_instance_valid(_inspection_trigger):
+			_inspection_trigger.on_motion(pointer_pos)
 
 	if event is InputEventScreenTouch:
 		if event.pressed:
@@ -1748,14 +1723,17 @@ func _gui_input(event: InputEvent) -> void:
 			accept_event()
 			_pressed_pending_click = true
 			_drag_initiated_for_click = false
-			_start_touch_long_press(event.position)
+			_touch_press_active = true
+			_touch_press_position = event.position
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
 		else:
 			_animate_press_to(0.0, 0.14)
-			var long_press_was_triggered := _touch_long_press_triggered
-			_stop_touch_long_press()
-			if long_press_was_triggered:
-				_end_touch_hover_peek()
-			elif _pressed_pending_click and not _drag_initiated_for_click:
+			_touch_press_active = false
+			var peek_handled = false
+			if is_instance_valid(_inspection_trigger):
+				peek_handled = _inspection_trigger.on_pointer_released()
+			if not peek_handled and _pressed_pending_click and not _drag_initiated_for_click:
 				var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
 				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
@@ -1768,7 +1746,6 @@ func _gui_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
 		if InputUtils.should_ignore_mouse_pointer_event(event):
 			return
-		# DOUBLE_CLICK is no longer needed — hover replaces inspect, click locks
 		if event.is_pressed():
 			_animate_press_to(1.0, 0.05)
 			if not _is_hovered:
@@ -1776,10 +1753,15 @@ func _gui_input(event: InputEvent) -> void:
 			# Defer single-click to release; may become a drag
 			get_viewport().set_input_as_handled()
 			_pressed_pending_click = true
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
 		else:
 			_animate_press_to(0.0, 0.14)
-			# On release: only emit SINGLE_CLICK if no drag was initiated
-			if _pressed_pending_click and not _drag_initiated_for_click:
+			var peek_handled = false
+			if is_instance_valid(_inspection_trigger):
+				peek_handled = _inspection_trigger.on_pointer_released()
+			# On release: only emit SINGLE_CLICK if no drag was initiated and peek didn't handle release
+			if not peek_handled and _pressed_pending_click and not _drag_initiated_for_click:
 				var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
 				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
@@ -2006,9 +1988,8 @@ func _notification(what: int) -> void:
 	# Signal Drag Start to GIR (Critical for State Management)
 	if what == NOTIFICATION_DRAG_BEGIN:
 		if _drag_initiated_for_click:
-			_stop_touch_long_press()
-			_touch_hover_override_active = false
-			pass
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.cancel()
 			_set_hover_state(false, false)
 			_animate_press_to(0.0, 0.05)
 			var context = _create_interaction_context(&"DRAG_START")
@@ -2047,7 +2028,7 @@ func _notification(what: int) -> void:
 			if drop_pos.is_zero_approx() and is_instance_valid(GlobalInteractionRouter):
 				drop_pos = GlobalInteractionRouter.get_last_pointer_position()
 			if not godot_successful and is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
-				ActionQueue.request(CancelDragAction.new(_location, null, "empty_drop", drop_pos))
+				ActionQueue.request(CancelDragAction.new(_location, null, "empty_drop", drop_pos, get_instance_id()))
 			else:
 				if GlobalInteractionRouter.is_drag_active():
 					GlobalInteractionRouter.end_drag(false)

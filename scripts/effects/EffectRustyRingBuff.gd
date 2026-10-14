@@ -53,10 +53,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if not is_instance_valid(target_def) or target_def.category != &"UNIT":
 			continue
 			
-		# Skip the hero
-		if target_def.is_hero:
-			continue
-			
 		# Prevent duplicate trigger applications. MergeManager clears this marker on
 		# the newly-created unit, so the one valid post-merge bonus is reapplied.
 		if target_instance.has_tag(buff_tag):

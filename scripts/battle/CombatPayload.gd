@@ -66,6 +66,7 @@ var new_unit_snapshot: Dictionary = {}
 var unit_snapshot: Dictionary = {}
 var equipped_items: Array[Dictionary] = []
 var spawn_source_uuid: String = ""
+var spawn_source_location: LocationIdentifier = null
 var unit_tier: int = 1
 var visual_style: String = ""
 var draw_result = null # InventoryOperations.DrawResult is an inner class.
@@ -86,6 +87,10 @@ var item_uuid: String = ""
 var item_icon: Texture2D = null
 var item_icon_path: String = ""
 var item_name: String = "Item"
+var replaced_item_uuid: String = ""
+var replaced_item_icon: Texture2D = null
+var replaced_item_icon_path: String = ""
+var replaced_item_name: String = "Item"
 var message: String = ""
 var merge_parent_uuids: Array[String] = []
 var merge_recipe_id: StringName = &""
@@ -345,6 +350,7 @@ func deep_clone() -> CombatPayload:
 	copy.unit_snapshot = unit_snapshot.duplicate(true)
 	copy.equipped_items = equipped_items.duplicate(true)
 	copy.spawn_source_uuid = spawn_source_uuid
+	copy.spawn_source_location = spawn_source_location
 	copy.unit_tier = unit_tier
 	copy.visual_style = visual_style
 	copy.draw_result = draw_result
@@ -366,4 +372,8 @@ func deep_clone() -> CombatPayload:
 	copy.message = message
 	copy.merge_parent_uuids = merge_parent_uuids.duplicate()
 	copy.merge_recipe_id = merge_recipe_id
+	copy.replaced_item_uuid = replaced_item_uuid
+	copy.replaced_item_icon = replaced_item_icon
+	copy.replaced_item_icon_path = replaced_item_icon_path
+	copy.replaced_item_name = replaced_item_name
 	return copy

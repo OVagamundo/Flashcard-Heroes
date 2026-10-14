@@ -61,11 +61,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	battle_manager._turn_metadata[resurrection_flag_key] = true
 
 	# 7. Return EffectResult with resurrection instructions
+	var source_uuid: String = context.get("fainting_ally_uuid", "")
+	if source_uuid.is_empty():
+		source_uuid = first_killed_data.get("uuid", "")
+		
 	var result := EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": def_id,
 		"holder_uuid": first_killed_data.get("uuid", ""), # Pass original UUID to allow overwriting the corpse
 		"holder_location": summon_location,
-		"is_resurrection": true # Flag for special handling
+		"is_resurrection": true, # Flag for special handling
+		"spawn_source_uuid": source_uuid,
+		"spawn_source_location": summon_location
 	}
 	return result

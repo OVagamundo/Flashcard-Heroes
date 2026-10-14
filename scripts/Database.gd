@@ -90,24 +90,85 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 		file_name = dir.get_next()
 
 
-## Loads the translation CSV file and adds it to the TranslationServer
+## Locale-to-font mapping: Each locale maps to its dedicated primary font with NO fallbacks.
+## In alignment with fail-fast architecture, missing glyphs or unsupported locales fail visibly.
+const LOCALE_FONTS := {
+	"en": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"pt_BR": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"de": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"fr": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"es": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"it": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"ru": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"pl": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"tr": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"vi": "res://assets/fonts/noto_sans/NotoSans-Black.ttf",
+	"ja": "res://assets/fonts/static/NotoSansJP-Black.ttf",
+	"zh_CN": "res://assets/fonts/NotoSansSC-VariableFont_wght.ttf",
+	"zh_TW": "res://assets/fonts/NotoSansTC-VariableFont_wght.ttf",
+	"ko": "res://assets/fonts/NotoSansKR-VariableFont_wght.ttf",
+	"th": "res://assets/fonts/NotoSansThai-VariableFont_wdth_wght.ttf",
+}
+
+## Loads the translation PO files and registers them with TranslationServer
 func _load_translations() -> void:
 	var translation_paths := PackedStringArray([
-		"res://localization/game.en.translation",
-		"res://localization/game.pt_BR.translation"
+		"res://localization/en.po",
+		"res://localization/pt_BR.po"
 	])
 	
 	for translation_path in translation_paths:
 		var translation := load(translation_path) as Translation
 		if translation:
 			TranslationServer.add_translation(translation)
+		else:
+			push_error("CRITICAL: Failed to load translation file '%s'" % translation_path)
 	
-	# Set default locale (could load from saved preference later)
-	TranslationServer.set_locale("en")
+	# Set default locale and apply its font
+	set_locale("en")
 
-## Sets the game locale and triggers UI updates
+## Returns the dedicated font for a given locale (or its base language code)
+func get_font_for_locale(locale: String) -> Font:
+	var font_path: String = ""
+	if LOCALE_FONTS.has(locale):
+		font_path = LOCALE_FONTS[locale]
+	else:
+		var base_locale := locale.split("_")[0]
+		if LOCALE_FONTS.has(base_locale):
+			font_path = LOCALE_FONTS[base_locale]
+	
+	assert(not font_path.is_empty(), "CRITICAL: No dedicated font configured for locale '%s'!" % locale)
+	var font := load(font_path) as Font
+	assert(font != null, "CRITICAL: Failed to load font at '%s' for locale '%s'!" % [font_path, locale])
+	return font
+
+## Returns the dedicated font for the currently active locale
+func get_current_locale_font() -> Font:
+	return get_font_for_locale(TranslationServer.get_locale())
+
+## Applies the dedicated locale font to the global game theme
+func _apply_locale_font(locale: String) -> void:
+	var font := get_font_for_locale(locale)
+	if font == null:
+		return
+	
+	var theme := preload("res://assets/styles/game_theme.tres") as Theme
+	theme.default_font = font
+	theme.set_font("font", "Button", font)
+	theme.set_font("font", "Label", font)
+	theme.set_font("font", "HeaderLabel", font)
+	theme.set_font("font", "HUDLabel", font)
+	theme.set_font("font", "LineEdit", font)
+	theme.set_font("normal_font", "RichTextLabel", font)
+	theme.set_font("bold_font", "RichTextLabel", font)
+	theme.set_font("italics_font", "RichTextLabel", font)
+	theme.set_font("bold_italics_font", "RichTextLabel", font)
+	theme.set_font("mono_font", "RichTextLabel", font)
+
+## Sets the game locale, updates theme typography, and triggers UI updates
 func set_locale(locale: String) -> void:
 	TranslationServer.set_locale(locale)
+	_apply_locale_font(locale)
 	SignalBus.emit_signal("locale_changed")
 
 

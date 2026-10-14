@@ -59,6 +59,10 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only the dying unit responds
 			return unit_uuid == context.get("dying_uuid", "")
 		
+		&"passive_intercept":
+			# Only the intercepting guardian responds
+			return unit_uuid == context.get("source_uuid", "")
+		
 		&"on_attack", &"on_kill", &"on_damage_dealt":
 			# Only the attacker responds
 			return unit_uuid == context.get("attacker_uuid", "")

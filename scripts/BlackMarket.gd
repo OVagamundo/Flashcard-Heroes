@@ -108,6 +108,8 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 	if item_data.is_empty():
 		return
 	var cost := _get_remove_cost()
+	var selected_ctx = GlobalInteractionRouter.get_current_selection()
+	var source_view_id: int = selected_ctx.source_view_instance_id if selected_ctx else -1
 
 	var drop_pos := Vector2.ZERO
 	var interaction_type := "CLICK"
@@ -118,7 +120,17 @@ func _on_remove_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZE
 
 	var action := RemoveBlackMarketAction.new(item_data.uuid, cost, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
+		var accepted = ActionQueue.request(action)
+		if not accepted:
+			var main_node = GameManager._active_main_node
+			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+			var remove_target = main_node.get_action_zone_2() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_2") else open_inventory_button
+			RejectionFeedbackScript.play_rejection_with_counter(remove_target, gold_group, get_tree())
+			if is_drag:
+				ActionQueue.request(CancelDragAction.new(item_data.location, null, "insufficient_gold", drop_pos, source_view_id))
+			else:
+				GlobalInteractionRouter.apply_deselect_entity()
+			return
 	else:
 		execute_remove_visuals(item_data.uuid, cost, drop_pos)
 
@@ -219,6 +231,8 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 		return
 
 	var transform_cost = GameManager.get_black_market_transform_cost()
+	var selected_ctx = GlobalInteractionRouter.get_current_selection()
+	var source_view_id: int = selected_ctx.source_view_instance_id if selected_ctx else -1
 
 	var drop_pos := Vector2.ZERO
 	var interaction_type := "CLICK"
@@ -229,7 +243,17 @@ func _on_transform_requested(is_drag: bool = false, mouse_pos: Vector2 = Vector2
 
 	var action := TransformBlackMarketAction.new(item_data.uuid, transform_cost, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
+		var accepted = ActionQueue.request(action)
+		if not accepted:
+			var main_node = GameManager._active_main_node
+			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+			var transform_target = main_node.get_action_zone_1() if is_instance_valid(main_node) and main_node.has_method("get_action_zone_1") else open_inventory_button
+			RejectionFeedbackScript.play_rejection_with_counter(transform_target, gold_group, get_tree())
+			if is_drag:
+				ActionQueue.request(CancelDragAction.new(item_data.location, null, "insufficient_gold", drop_pos, source_view_id))
+			else:
+				GlobalInteractionRouter.apply_deselect_entity()
+			return
 	else:
 		execute_transform_visuals(item_data.uuid, transform_cost, drop_pos)
 
@@ -544,12 +568,16 @@ func execute_leave_visuals() -> void:
 
 func _on_gui_input(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
+		if WindowManager.is_run_inventory_window_open() or WindowManager.is_any_inventory_window_open():
+			ActionQueue.request(CloseInventoryAction.new("RUN"))
+			get_viewport().set_input_as_handled()
+			return
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
 		context.location = null
 		context.entity_uuid = ""
-		context.entity_type = &"WINDOW_BACKGROUND"
+		context.entity_type = &"GLOBAL_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 0
 		SignalBus.emit_signal("interaction_context_received", context)

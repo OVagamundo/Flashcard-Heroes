@@ -85,7 +85,7 @@ Before starting a run (or a test session), the player configures their starting 
 * Flashcard deck mastery levels and reviewed card history.
 
 ### Battle-Temporary State (Reset After Each Battle)
-* Gacha Tokens (reset to 0 after battle).
+* Tokens (reset to 0 between encounters).
 * Temporary in-combat stat modifications and status effects.
 * Battle Inventory (the active draw pools inside the tier machines).
 * Battle Discard Pile (all defeated units and discarded items).
@@ -106,10 +106,10 @@ The game operates on a dual-economy system that separates long-term strategy fro
   * **Tier 2**: $\text{Base } 2 \text{ Gold} \times 2^{(\text{Level}-1)}$
   * **Tier 3**: $\text{Base } 4 \text{ Gold} \times 2^{(\text{Level}-1)}$
 
-## 4.2 Gacha Tokens (Battle Economy)
-* **Purpose**: Spent during the Management Phase of battles and reward nodes to draw GachaBalls from Tier 1, 2, or 3 machines.
-* **Acquisition**: Earned exclusively by answering questions correctly during the Flashcard mini-game.
-* **Banking & Reset**: Tokens can be banked between turns within the same battle, but reset to zero once the battle concludes.
+## 4.2 Tokens
+* **Purpose**: Spent during encounters (such as the Management Phase of battles, reward rooms, rest sites, and unit training) to draw from machines or roll for upgrades.
+* **Acquisition**: Earned on a per-encounter basis primarily by answering questions correctly during the Flashcard mini-game (as well as through certain trinkets).
+* **Banking & Reset**: Tokens can only be banked between turns within the same battle (there are no turns in other encounters). Tokens are **never** transferred between encounters; any new encounter starts with tokens reset to zero.
 * **Tier Draw Costs (Tokens)**:
   * **Tier 1 Machine**: $1 \text{ Token}$
   * **Tier 2 Machine**: $2 \text{ Tokens}$
@@ -145,7 +145,7 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
   * The selected collection is shuffled so button display order does not mirror the mini game's SRS question sequence.
 
 ## 5.2 Rest Site Flashcard Mechanics
-* **Correct Answer**: Earns Rest Site Tokens that can be spent at Rest Site machines for permanent Hero base stat increases.
+* **Correct Answer**: Earns Tokens that can be spent at Rest Site machines for permanent Hero base stat increases.
 * **Incorrect / Skip**: Awards $0\text{ Tokens}$. Tokens exist only within the active rest site and reset upon departure.
 
 ## 5.3 Streak & Juice Escalation
@@ -203,7 +203,7 @@ Battles resolve in a structured, four-phase turn loop:
 
 1. **Start of Turn**:
    * **Flashcard Mini-Game**: The player plays the timed Flashcard mini-game to earn Gacha Tokens.
-   * **Turn 1 Enemy Entrance**: On Turn 1, enemy units do not appear on the battlefield until the Flashcard mini-game is finished. Once the player acknowledges their mini-game results, enemy units enter the board sequentially, starting from the backline down to the frontline. Each entering enemy unit displays its entrance animation, activates any board-entry effects (such as trinket buffs or stat scaling), and equips its items one by one before the phase transitions.
+   * **Turn 1 Hero & Enemy Entrance**: On Turn 1, neither the Hero nor enemy units appear on the battlefield until the Flashcard mini-game is finished. Once the player acknowledges their mini-game results, the Hero spawns into Slot 0 of the Player Lineup using the standard summon animation (fade-in + summon SFX) and triggers any board-entry / battle-start effects (such as *Rusty Ring* buffing an unequipped hero). Following the Hero's entrance, enemy units enter the board sequentially, starting from the backline down to the frontline. Each entering enemy unit displays its entrance animation, activates any board-entry effects (such as trinket buffs or stat scaling), and equips its items one by one before the phase transitions.
    * **DOT Application**: Burn damage ticks first, ignoring Armor (from Turn 2 onward).
    * **Slot Actions**: Turn-start slot effects resolve (Burn Slot and Lightning Slot actions).
    * **Abilities & Traits**: Turn-start passive abilities, traits, and status effects resolve.
@@ -222,8 +222,10 @@ Battles resolve in a structured, four-phase turn loop:
 During the Management Phase, the player may perform the following distinct actions:
 
 ## 7.1 Interaction Models & Controls
-* **Mouse (Desktop)**: Drag-and-Drop, Single-Click Select, Hover-to-Peek.
-* **Touch (Mobile)**: Tap-to-Select, Long-Press-to-Peek (`0.32s`).
+* **Mouse (Desktop)**: Drag-and-Drop, Single-Click Select (does not inspect), Hover Peek (`0.4s` dwell delay; closes immediately on cursor exit), Long-Press Peek (`0.5s` hold delay; closes immediately on release; suppresses click selection). Quick click (< 0.5s) suppresses hover peek on that element until the cursor exits.
+* **Touch (Mobile)**: Tap-to-Select (does not inspect), Long-Press Peek (`0.5s` hold delay; closes immediately on release; does not trigger tap selection). Touch drag > 24px cancels peek.
+* **Selection Decoupling**: Selection is completely decoupled from inspection. Selecting an entity does not open inspection, and inspecting an entity (via hover or long-press) never cancels or clears selection. When the player hovers over or long-presses an already-selected element, or when releasing the hold or hovering out, the selection is strictly preserved.
+* **Combat / VCR Replay**: Click/tap pauses combat playback and pins inspection open; clicking a non-inspectable area closes inspection and resumes playback. Hover and long-press peeks are disabled during combat.
 * **Platform Specifics**: The "Exit Game" button closes the application on desktop platforms; fullscreen toggles are platform-dependent and hidden on mobile devices.
 * **Audio & Accessibility Options**: Volume sliders for Master, Music, and SFX, plus a toggle for Card Pronunciation (silencing native voice audio during flashcards when disabled).
 
@@ -298,7 +300,7 @@ Units with token-scaling abilities (such as the Templar, `unit_t2_d`, *Token Pow
     1. The old item capsule arcs into the Battle Discard Pile and disappears from the unit view.
     2. The new item graphic appears on the unit view with a tactile landing bounce and landing sound effect.
     3. The net stat Buff and/or Debuff animations play on the unit view.
-* **Unified Ability Equip Parity (Standard Bearer)**: When an item is equipped or transferred onto a unit via an in-game ability (such as the Standard Bearer's death ability, *Standard's Legacy*), it executes through the exact same equip pipeline as manual player equipping. If the recipient ally already has an equipped item, that existing item is replaced, moved to the Discard Pile, and animated via the exact same GachaBall capsule discard animation before the transferred item lands.
+* **Unified Ability Equip Parity (Standard Bearer)**: When an item is equipped or transferred onto a unit via an in-game ability (such as the Standard Bearer's death ability, *Standard's Legacy*), it executes through the exact same equip pipeline as manual player equipping. If the recipient ally already has an equipped item, that existing item remains visible while the transfer projectile is in flight; on projectile impact, the old item is discarded and animated to the Discard Pile simultaneously as the transferred item is equipped and stats update.
 * **Bench Unit Item Passives**: Items equipped on bench units provide their passive stat bonuses immediately, but their reactive combat abilities do not trigger until the unit enters the active `PlayerLineup`.
 
 ## 7.6 Consumable Items
@@ -423,9 +425,11 @@ The game distinguishes between leveling up an existing unit and synthesizing a c
 * **Evolutionary Merge (Leveling Up)**: Merging two duplicate units of the same type upgrades the unit to the next level (up to Level 3).
   * **Level Requirement**: Strictly restricted to **matching levels** (Level 1 + Level 1 $\to$ Level 2, and Level 2 + Level 2 $\to$ Level 3). Units of different levels cannot self-merge, and Level 3 units cannot merge with other duplicate units.
   * The leveled-up unit is considered the **same continuous unit** advancing in power.
-  * **Rusty Ring**: If the resulting leveled-up unit holds no item, *Rusty Ring* (+1 HP / +1 PWR) applies once and is pre-baked into the new unit's starting stats without firing an additional visual cast or projectile animation that might be perceived as a duplicate proc of the same trinket.
-  * **Insignia Re-evaluation**: If two Level 1 units merge into a Level 2 unit, the Level 1 *Royal Insignia* bonus is stripped. If the player owns *Veteran Insignia*, the unit receives the Level 2 bonus fresh upon leveling up.
-  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: The leveled-up unit pre-inherits the post-merge battle pool copy bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus, the bonus is baked into the new unit without firing an additional duplicate buff projectile if the amount of buff changes because of the merge (since the twin charm and doppleganger or echoing orb if equipped on one or both the merging units should have already triggered with the correct values in the game loop during the simulation of the merge).
+  * **Rusty Ring**: If the resulting leveled-up unit holds no item, *Rusty Ring* (+1 HP / +1 PWR) applies once and is pre-baked into the new unit's starting stats without firing an additional visual cast or projectile animation that might be perceived as a duplicate proc of the same trinket. In an asymmetric merge where one parent held no item (possessing *Rusty Ring*) and the other parent held an item (ineligible for *Rusty Ring*), the resulting unit inherits the item per item transfer priority; because the result is born equipped with its inherited item stats pre-baked silently, no *Rusty Ring* debuff is fired.
+  * **Insignia Re-evaluation**: Level-specific insignia buffs (*Royal Insignia* for Level 1, *Veteran Insignia* for Level 2, and any future level-specific insignia like Level 3 trinkets) apply strictly to units of that exact level and are never permanently baked into inherited stats across merges. Because the leveled-up unit is considered the continuous evolution of the same unit advancing in power:
+    * **Level 1 to Level 2**: When two Level 1 units merge into a Level 2 unit, the unit lands carrying its existing stats (including the Level 1 *Royal Insignia* buff). Because the unit is now Level 2, *Royal Insignia* immediately expires upon landing, visibly popping an explicit **Debuff event** (`-1 HP`, `-1 PWR`) with an explanatory combat log notice. Immediately following this debuff, if the player owns *Veteran Insignia*, the unit qualifies for and receives the Level 2 bonus fresh, delivered via standard flying buff projectiles from the HUD trinket bar (`+1 HP` Green, then `+1 PWR` Blue). If the player does not own *Veteran Insignia*, the unit remains at its natural Level 2 base stats after the debuff.
+    * **Level 2 to Level 3**: When two Level 2 units merge into a Level 3 unit, the unit lands carrying its Level 2 stats (including *Veteran Insignia*). Because it is now Level 3, *Veteran Insignia* expires upon landing, visibly popping an explicit **Debuff event** (`-1 HP`, `-1 PWR`) with a combat log notice. If a Level 3 insignia trinket is owned in the future, it subsequently fires its buff projectiles upon arrival.
+  * **Dynamic Scaling Passives (*Twin Charm*, *Doppleganger*)**: The leveled-up unit pre-inherits the post-merge battle pool copy bonus directly into its initial stats and tracking state. If the post-merge copy count still qualifies for a bonus, the bonus is baked into the new unit without firing an additional duplicate buff projectile if the amount of buff changes because of the merge. However, if the reduction of copies caused by the merge drops the unit count below an active bonus threshold (e.g., dropping from 2 copies down to 1 copy, or from 4 down to 3), the resulting unit (and any other surviving copy on the board) visibly displays an explicit **Debuff event** (`-1 PWR` in Black) to clearly communicate to the player that the copy threshold was lost.
 
 * **Recipe Merge (Tiering Up)**: Merging different specific units according to an unlocked recipe evolves them into a higher-tier unit.
   * **Flexible Level Combinations**: Recipe Tier-Up merges allow **any combination of unit levels** (e.g., Level 1 + Level 1, Level 1 + Level 2, Level 1 + Level 3, Level 2 + Level 3, or Level 3 + Level 3).
@@ -599,14 +603,36 @@ The Mimic (*Mirror Image*) possesses a unique pre-action transformation mechanic
    * Mimic targets the mirrored opposing lineup slot ($\text{Mirror Slot Index} = 4 - \text{Current Slot Index}$).
    * The opposing entity must be an active, valid standard unit (Tier 1–3). It cannot transform into Heroes or Bosses.
    * **Empty or Ineligible Slot Fallback**: If the mirrored enemy slot is empty or contains an ineligible target, the transformation does not occur. Mimic retains its form and executes a standard basic attack instead.
-3. **Item Transfer & State Mutation**:
+3. **Item Transfer, Stat & Buff Inheritance**:
    * Any items equipped on Mimic are preserved and immediately re-equipped onto the newly spawned unit instance in their exact equipment slots, inheriting all passive item stat bonuses seamlessly.
+   * **Permanent Training**: Any permanent stat training components on Mimic (such as HP or PWR upgrades acquired at the Unit Training Ground / Dojo) are preserved and inherited by the newly transformed unit.
+   * **In-Combat Stat Buffs**: Any active in-combat stat buffs (such as potion buffs or ally stat empowerments applied to Mimic prior to its turn action) are preserved and inherited by the newly transformed unit.
+   * **Conditional Trinkets Fresh Evaluation**: Conditional trinket bonuses (*Rusty Ring*, *Royal Insignia*, *Veteran Insignia*, *Twin Charm*) are **not** inherited from Mimic; instead, the newly transformed unit arrives on the board via summon and evaluates all board-entry and summon trinkets fresh.
    * Mimic is removed from the board, and the new unit is spawned directly into the exact lineup slot Mimic occupied, initialized at the appropriate level (based on Mimic's ability level / delta).
 4. **Single-Action Turn Invariant (One Action Per Slot)**:
    * The newly transformed unit immediately continues the active turn for that slot, replacing Mimic as the acting unit and performing its attack (including any innate `on_attack` abilities or equipped item effects).
    * **No Duplicate Turn**: The transformed unit is **never** re-enqueued into the battle's remaining actor queue. It acts **exactly once** during the turn, preserving the core invariant that each board slot takes at most one action per round.
-5. **Visual Sequence**:
-   * Visually, Mimic executes a `TRANSFORM` hop-and-vanish animation (golden death fade), immediately followed by a `SUMMON` entrance (yellow flash VFX) of the transformed unit, which then performs its attack animation.
+5. **Visual & Causal Event Sequence**:
+   * Events resolve in strict causal order:
+     $$\text{TRANSFORM (Hop \& Vanish)} \longrightarrow \text{SUMMON (Yellow Flash)} \longrightarrow \text{Board-Entry \& Summon Reactions / Buffs} \longrightarrow \text{Acting Slot Attack}$$
+   * Visually, Mimic executes a `TRANSFORM` hop-and-vanish animation (golden death fade), immediately followed by a `SUMMON` entrance (yellow flash VFX) of the transformed unit.
+   * All board-entry and summon reactions (such as *Royal Insignia* buffing a Level 1 arrival, *Rusty Ring* buffing an unequipped unit, or *Twin Charm* pool scaling) trigger, animate, and resolve **after** the transformation summon but **before** the newly transformed unit performs its active turn attack.
+
+#### 9.3.2.1 Specific Conditional Trinket Reactions on Transformation
+* **Rusty Ring (+1 HP / +1 PWR)**:
+  * Because equipped items are transferred and re-equipped onto the newly spawned unit during initialization prior to board entrance, the transformed unit arrives on the board already holding Mimic's items.
+  * If Mimic was holding an item, the transformed unit enters equipped; it is ineligible for *Rusty Ring*, so no buff applies and no debuff event is triggered (matching asymmetric merge logic).
+  * If Mimic was unequipped, the transformed unit enters unequipped, immediately qualifying for *Rusty Ring* and receiving the +1 HP / +1 PWR buff fresh via visual buff projectiles before taking its action.
+* **Royal Insignia (+1 HP / +1 PWR for Level 1 Allies)**:
+  * Evaluates on `on_ally_summon`.
+  * If the transformed unit is Level 1, it qualifies and immediately receives +1 HP and +1 PWR with visual projectiles upon entering the board, prior to its attack.
+* **Veteran Insignia (+2 HP / +2 PWR for Level 2+ Allies)**:
+  * Evaluates on `on_ally_summon`.
+  * If a Level 2 Mimic transforms into a Level 1 unit, the Mimic's *Veteran Insignia* buff was attached to the Mimic instance and is discarded with it. The newly summoned Level 1 unit does not qualify for *Veteran Insignia* (and no debuff event is emitted, as it is a replacement spawn); instead, it qualifies for and receives *Royal Insignia* fresh if that trinket is equipped.
+  * If Mimic transforms into a Level 2+ unit (e.g. through Mimic ability scaling), the transformed unit qualifies for *Veteran Insignia* upon entrance and receives the +2 HP / +2 PWR buff fresh before acting.
+* **Twin Charm (+1 PWR per 2 Duplicate Copies)**:
+  * Evaluates team composition via `on_board_changed` upon the container update adding the transformed unit to the lineup.
+  * The new unit increments the team's count for its unit type. If this reaches a duplicate threshold with existing allies on the team (e.g. 2 copies $\to$ +1 PWR), the transformed unit and all matching copies on the board receive the *Twin Charm* buff fresh before the unit takes its turn action.
 
 ## 9.4 Causality & Deferred Deaths
 * Events resolve in strict causal order:
@@ -718,13 +744,13 @@ At the start of each combat turn, the game takes a snapshot of active souls in t
 * **Mini-Game Interceptors**: Trinkets like *Beginner's Charm* inspect reviewed card mastery to award bonus tokens.
 * **Board-Entry Insignia Trinkets (*Royal Insignia* & *Veteran Insignia*)**:
   * **Royal Insignia**: Grants +1 HP and +1 PWR to any Level 1 unit entering the board (drawn from the gacha machine, summoned by abilities, merged via tier evolution, or present at battle start). Operates strictly on unit level and ignores unit tier completely. The Hero has no level or tier and is strictly unaffected.
-  * **Veteran Insignia**: Applies strictly to Level 2 units. Grants +1 HP and +1 PWR to any Level 2 unit entering the board or advancing to Level 2 via merge, regardless of tier. The Hero is strictly unaffected.
-  * **Merge Contract**: Both insignia bonuses are conditional upon unit level and are strictly non-stackable across merges. When units merge, parent insignia buffs are cleanly stripped and never baked into inherited stats. When two Level 1 units merge into a Level 2 unit, the Level 1 *Royal Insignia* bonus is stripped, and the resulting unit qualifies for and receives the *Veteran Insignia* bonus fresh if owned by the player.
+  * **Veteran Insignia**: Applies strictly to Level 2 units. Grants +1 HP and +1 PWR to any Level 2 unit entering the board (drawn, summoned, or present at battle start) or advancing to Level 2 via evolutionary merge, regardless of tier. The Hero has no level or tier and is strictly unaffected.
+  * **Merge Contract**: All insignia bonuses are conditional upon unit level and are strictly non-stackable across merges. During evolutionary level-up merges, the unit is treated as a continuous entity: the expiration of the lower-level insignia is visibly communicated via an explicit **Debuff event** (`-1 HP`, `-1 PWR`) upon landing on the board, followed immediately by any newly qualified higher-level insignia (such as *Veteran Insignia* for Level 2) delivering its bonus fresh via visual buff projectiles from the HUD trinket bar. Recipe tier evolutions, being brand-new entities entering the board at Level 1, do not emit expiration debuffs and instead receive eligible Level 1 insignia fresh upon entry.
 * **Conditional Equipment Trinkets (*Rusty Ring*)**:
   * Grants +1 HP and +1 PWR to all units with no equipment.
   * Equipping an item immediately cancels this buff; if the unit loses its equipped item (such as via *Potion of Plunder*), the buff is restored.
   * **Merge Contract**: The ring's bonus is strictly non-stackable across merges and is never baked into inherited stats. When units merge:
-    * For an **Evolutionary Level-Up**, if the resulting unit holds no item, the bonus is applied once pre-baked into its stats without triggering an extraneous visual cast (since it is considered the same continuous unit).
+    * For an **Evolutionary Level-Up**, if the resulting unit holds no item (neither parent held an item), the bonus is applied once pre-baked into its stats without triggering an extraneous visual cast (since it is considered the same continuous unit). In an asymmetric merge where one parent held an item and the other held *Rusty Ring*, the resulting unit inherits the item; because the unit comes into existence already equipped, no *Rusty Ring* debuff is triggered.
     * For a **Recipe Tier Evolution**, the higher-tier unit enters the board as a brand-new entity without pre-baked trinket stats, receiving the *Rusty Ring* buff fresh on board arrival with the complete visual projectile and animation.
 * **Death-Reactive Stat Trinkets (*Vengeance Charm*)**:
   * When an ally dies, grants +1 HP and +1 PWR to a random surviving ally.
@@ -735,10 +761,12 @@ At the start of each combat turn, the game takes a snapshot of active souls in t
 * **Trinket Buff Delivery (*Twin Charm*)**:
   * Evaluates unit copy thresholds across the team's entire Battle Pool (+1 PWR for every 2 duplicate copies of that unit).
   * When a threshold is reached (via draw, summon, or board entry), the trinket activates on the HUD, firing directional buff projectiles from the trinket bar directly to each eligible unit on the board.
-  * During level-up merges, the new unit incorporates its post-merge bonus directly into its baseline stats, preventing duplicate buff animations.
+  * During level-up merges:
+    * If the post-merge pool count still meets the bonus threshold, the bonus is incorporated directly into baseline stats without firing duplicate buff projectiles.
+    * If merging reduces the pool count below a threshold pair (e.g. 2 copies $\to$ 1 copy, dropping from +1 PWR to 0 PWR), the unit visibly displays an on-unit Debuff event (`-1 PWR` in Black) with a combat log notice to reflect the lost threshold.
 * **Death-Reactive Trinkets (*Token Return Charm*)**:
   * Triggers on the death of the first non-Hero player unit each round.
-  * Refunds battle tokens equal to the deceased unit's tier (Tier 1 = 1 token, Tier 2 = 2 tokens, Tier 3 = 3 tokens).
+  * Refunds tokens equal to the deceased unit's tier (Tier 1 = 1 token, Tier 2 = 2 tokens, Tier 3 = 3 tokens).
   * Plays an animation of tokens bursting from the fallen unit and flying into the token counter.
   * Strictly limited to once per round.
 * **Draw Discount Trinkets (*Bargain Charm*)**:
@@ -758,6 +786,11 @@ Difficulty scales as the player resolves nodes and advances the Day counter, cau
 * **Elites & Bosses**: Mini-boss and Boss units are free; support units consume **85%** of the daily budget.
 * **Boss Reinforcements**: Reinforcements during boss battles consume **33%** of the daily budget.
 * **Elite Pity System**: The encounter generator tracks prior elite encounters, reducing weights for recently faced elite variants to guarantee encounter diversity.
+* **Path Choice & Encounter Priorities**:
+  * **Regular Normal Battles (Priority 1)**: Heavily prioritized with a dominant base weight (1500), appearing in ~96%–98% of 3-path choices.
+  * **Elite Battles (Priority 2)**: Weighted at 350 when active. Paced by progress towards the upcoming mini-boss, guaranteeing an elite node appearance upon reaching 20%, 40%, 60%, and 80% progress milestones, and capped at 4 elite encounters per mini-boss (max 20 per run).
+  * **Non-Battle Encounters (Equal Priority)**: Shop, Merge Encounter, Black Market, Surprise Event, and Unit Training Ground (Dojo) all share an equal base weight (100) with identical appearance probabilities and no limits.
+  * **Anti-Starvation Pity**: For every day an encounter type is not offered, it gains +10 to its selection weight until offered.
 
 ## 11.2 Standard Nodes
 * **Regular Battles**: Standard budget-based combat encounters.
@@ -780,7 +813,7 @@ Difficulty scales as the player resolves nodes and advances the Day counter, cau
   * **Collect Drop Zone**: Free; adds the capsule to the Run Inventory.
   * **Sell Drop Zone**: Sells the capsule for Gold (standard items sell for tier value; Elite rewards grant a flat **10 Gold**).
   * **Auto-Collection**: Leaving the scene with uncollected items triggers automatic sequential collection of all remaining prizes.
-  * **Gacha Machines**: Machines remain active in the reward room for spending banked combat tokens. Any unspent tokens are lost upon exiting.
+  * **Gacha Machines**: Machines remain active in the reward room for spending tokens earned during the Study session. Tokens do **not** transfer between encounters; any new encounter starts with tokens reset to zero. Any unspent tokens are cleared upon exiting.
 
 ## 11.3 Standalone Encounters
 * **Unit Training Ground (Dojo)**:
@@ -827,14 +860,16 @@ Both Hero Training (Rest Site HP, Training Grounds PWR, Gambling Den Gold) and U
 # 12. UI/UX Hierarchy & Inspection System
 
 ## 12.1 Inspection Window Rules
-* **Show-before-Measure**: To prevent layout bloat, windows render at alpha `0.0` for 3 frames at an off-screen position (`Vector2(-2000, -2000)`) while Godot resolves internal layout sizing, preventing accidental mouse interception.
+* **Display-Only Windows**: Inspection windows are display-only (`MOUSE_FILTER_IGNORE` recursively). They do not intercept pointer events or block clicks to underlying elements.
+* **Automatic Child Window Layout**: Opening a root inspection automatically opens and displays all related child windows (keywords/status effects, equipped items) in a column arranged away from the source entity, never overlapping the inspected entity, and clamped to the 1920x1080 viewport.
+* **Peek Lifecycle (Outside Combat)**:
+  * Mouse Hover: opens after `0.4s` dwell delay; closes immediately on cursor exit.
+  * Mouse / Touch Long-Press: opens after `0.5s` hold delay; closes immediately on pointer release; release suppresses click/tap selection.
+  * Selection click (< 0.5s) selects only and suppresses hover peek re-arming on that element until the cursor exits.
+* **Combat Click-to-Pin**: During Combat and VCR playback, all gameplay input is blocked except for instant pause-and-inspect behavior. Pressing on an inspectable entity triggers an instantaneous freeze and opens the inspection window on pointer press without click/squash animations. Clicking another inspectable element while frozen switches inspection to that element; clicking outside or clicking the same unit closes the window and resumes playback. `InspectEntityAction` and `CloseInspectionAction` are meta-actions that execute immediately even while the action queue is busy with combat animations.
+* **Selection Independence**: Inspection peek windows never modify, cancel, or clear `_current_selection`. Opening a peek, holding a press, releasing a press, or hovering out has zero effect on the active selection state.
+* **Show-before-Measure**: To prevent layout bloat, windows render at alpha `0.0` for 3 frames at an off-screen position (`Vector2(-2000, -2000)`) while Godot resolves internal layout sizing.
 * **Immediate Child Pruning**: Dynamic slot grids call `remove_child()` followed by `queue_free()` to eliminate inherited "ghost slots."
-* **Hierarchical Chains**:
-  * One window chain at a time; one child window per parent.
-  * Clicking the background of a group closes the entire chain.
-  * Clicking the background of a specific window closes its children only.
-  * Opening a new root inspection closes any existing chain.
-  * Deselection on action: opening any window deselects active GachaBalls.
 
 ## 12.2 Playback Controls & Speed Scaling
 * **Supported Speed Presets**: Combat playback provides `1x` (baseline), `2x`, and `4x` playback speed options, along with a `Pause` (`⏸`) toggle.
@@ -1115,7 +1150,7 @@ These choices define the initial run. A replay may initialize from the resulting
 
 Outside battle, the player can open or close the persistent run inventory from the machine area or the room's inventory control. The inventory is available on the map and in non-battle rooms, including the shop, reward rooms, merge encounter, training ground, black market, and resource sites. Opening it changes the screen and available interactions; closing it restores the current room view. Escape, clicking outside an inspection group, or using the room's inventory toggle can close the open window or window chain.
 
-The player can select and inspect GachaBalls, units, items, trinkets, traits, and effects. A click can lock an inspection open; clicking another eligible object changes the inspected object, and clicking the inspected object again or closing its window dismisses it. Hover-only previews are temporary. Inspection can open related detail windows where available.
+The player can select and inspect GachaBalls, units, items, trinkets, traits, and effects. Outside battle, inspection operates as a transient peek via hover (`0.4s`) or long-press (`0.5s`), automatically displaying all related child detail windows (keywords/status effects, equipped items) arranged around the root window without blocking underlying clicks. A quick click/tap selects the entity without opening inspection. During combat and VCR playback, click/tap pins an inspection and pauses playback, while clicking away dismisses it and resumes combat.
 
 In the run inventory, the player can drag a GachaBall to a legal slot to move it, or onto another GachaBall to request a swap or a valid merge. Legal placement and item type rules still apply. These changes affect the persistent run collection only when the applicable room rules permit them. A consumable can be used on a valid unit when that room and interaction allow it.
 
