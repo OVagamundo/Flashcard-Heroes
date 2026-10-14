@@ -1,0 +1,2679 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Flashcard Heroes\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#. English: Bounty Hunter
+msgid "hero.name"
+msgstr ""
+
+#. English: A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.
+msgid "hero.desc"
+msgstr ""
+
+#. English: Enemy Hero
+msgid "enemy_hero.name"
+msgstr ""
+
+#. English: The enemy's champion.
+msgid "enemy_hero.desc"
+msgstr ""
+
+#. English: Rocky
+msgid "unit_t1_a.name"
+msgstr ""
+
+#. English: Novice unit.
+msgid "unit_t1_a.desc"
+msgstr ""
+
+#. English: Burny
+msgid "unit_t1_b.name"
+msgstr ""
+
+#. English: Loyal squire.
+msgid "unit_t1_b.desc"
+msgstr ""
+
+#. English: Templar
+msgid "unit_t2_d.name"
+msgstr ""
+
+#. English: A devout templar.
+msgid "unit_t2_d.desc"
+msgstr ""
+
+#. English: Token Power
+msgid "ability.unit_t2_d_power.name"
+msgstr ""
+
+#. English: Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.
+msgid "ability.unit_t2_d_power_l1.desc"
+msgstr ""
+
+#. English: Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change.
+msgid "ability.unit_t2_d_power_l2.desc"
+msgstr ""
+
+#. English: Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change.
+msgid "ability.unit_t2_d_power_l3.desc"
+msgstr ""
+
+#. English: Merchant
+msgid "unit_t2_f.name"
+msgstr ""
+
+#. English: Traveling merchant.
+msgid "unit_t2_f.desc"
+msgstr ""
+
+#. English: Gold Investments
+msgid "ability.unit_t2_f_gold_pwr.name"
+msgstr ""
+
+#. English: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.
+msgid "ability.unit_t2_f_gold_pwr_l1.desc"
+msgstr ""
+
+#. English: Initial PWR equals your current Gold multiplied by 100% when drawn or spawned.
+msgid "ability.unit_t2_f_gold_pwr_l2.desc"
+msgstr ""
+
+#. English: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.
+msgid "ability.unit_t2_f_gold_pwr_l3.desc"
+msgstr ""
+
+#. English: Dewey
+msgid "unit_t1_c.name"
+msgstr ""
+
+#. English: Steadfast guardian.
+msgid "unit_t1_c.desc"
+msgstr ""
+
+#. English: Guardian's Grace
+msgid "ability.unit_t1_c_ally_shield.name"
+msgstr ""
+
+#. English: When the ally directly in front takes damage, heal them for 1 HP.
+msgid "ability.unit_t1_c_ally_shield.desc"
+msgstr ""
+
+#. English: When the ally directly in front takes damage, heal them for 2 HP.
+msgid "ability.unit_t1_c_ally_shield_l2.desc"
+msgstr ""
+
+#. English: When the ally directly in front takes damage, heal them for 3 HP.
+msgid "ability.unit_t1_c_ally_shield_l3.desc"
+msgstr ""
+
+#. English: Windy
+msgid "unit_t1_d.name"
+msgstr ""
+
+#. English: Sensitive soul.
+msgid "unit_t1_d.desc"
+msgstr ""
+
+#. English: Empathic Link
+msgid "ability.unit_t1_d_empathic_link.name"
+msgstr ""
+
+#. English: When this unit dies, grant its current PWR to the ally behind.
+msgid "ability.unit_t1_d_empathic_link.desc"
+msgstr ""
+
+#. English: When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally.
+msgid "ability.unit_t1_d_empathic_link_l2.desc"
+msgstr ""
+
+#. English: When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next.
+msgid "ability.unit_t1_d_empathic_link_l3.desc"
+msgstr ""
+
+#. English: Resilience
+msgid "ability.unit_tier1a_passive_heal.name"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, Heal this unit by 1 HP.
+msgid "ability.unit_tier1a_passive_heal.desc"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, Heal this unit by 2 HP.
+msgid "ability.unit_tier1a_passive_heal_l2.desc"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, Heal this unit by 3 HP.
+msgid "ability.unit_tier1a_passive_heal_l3.desc"
+msgstr ""
+
+#. English: Retaliation
+msgid "ability.unit_tier1b_counter_on_hurt.name"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.
+msgid "ability.unit_tier1b_counter_on_hurt.desc"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage.
+msgid "ability.unit_tier1b_counter_on_hurt_l2.desc"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce.
+msgid "ability.unit_tier1b_counter_on_hurt_l3.desc"
+msgstr ""
+
+#. English: Knight
+msgid "unit_t2_c.name"
+msgstr ""
+
+#. English: Valiant knight.
+msgid "unit_t2_c.desc"
+msgstr ""
+
+#. English: Koi's Blessing
+msgid "item_t1_a.name"
+msgstr ""
+
+#. English: A gentle remedy infused with the spirit of koi.
+msgid "item_t1_a.desc"
+msgstr ""
+
+#. English: Tiger's Spirit
+msgid "item_t1_b.name"
+msgstr ""
+
+#. English: A fierce elixir that awakens inner strength.
+msgid "item_t1_b.desc"
+msgstr ""
+
+#. English: Phoenix Elixir
+msgid "item_t2_c.name"
+msgstr ""
+
+#. English: A restorative brew that renews body and spirit.
+msgid "item_t2_c.desc"
+msgstr ""
+
+#. English: Basic Attack
+msgid "ability.basic_attack.name"
+msgstr ""
+
+#. English: Deal (PWR) damage to the frontmost enemy.
+msgid "ability.basic_attack.desc"
+msgstr ""
+
+#. English: Basic Attack
+msgid "ability.basic_attack_ranged_mirror.name"
+msgstr ""
+
+#. English: Deal (PWR) damage to the enemy in the mirror slot.
+msgid "ability.basic_attack_ranged_mirror.desc"
+msgstr ""
+
+#. English: Extra Attack
+msgid "ability.item_tier1b_extra_attack.name"
+msgstr ""
+
+#. English: When attacking, if target has more HP than holder then perform an extra attack.
+msgid "ability.item_tier1b_extra_attack.desc"
+msgstr ""
+
+#. English: Add (HP) HP to the unit.
+msgid "item.effect.hp"
+msgstr ""
+
+#. English: Add (PWR) PWR to the unit.
+msgid "item.effect.pwr"
+msgstr ""
+
+#. English: Add (HP) HP and (PWR) PWR to the unit.
+msgid "item.effect.both"
+msgstr ""
+
+#. English: Polished Plate
+msgid "trinket.polished_plate.name"
+msgstr ""
+
+#. English: A perfectly polished piece of armor.
+msgid "trinket.polished_plate.desc"
+msgstr ""
+
+#. English: Reinforced Armor
+msgid "ability.polished_plate.name"
+msgstr ""
+
+#. English: At the start of the turn, gain 2 Armor.
+msgid "ability.polished_plate.desc"
+msgstr ""
+
+#. English: Master Volume
+msgid "options.audio.master"
+msgstr ""
+
+#. English: Music Volume
+msgid "options.audio.music"
+msgstr ""
+
+#. English: SFX Volume
+msgid "options.audio.sfx"
+msgstr ""
+
+#. English: Language
+msgid "options.language"
+msgstr ""
+
+#. English: Reset Progress
+msgid "options.reset_data"
+msgstr ""
+
+#. English: Next
+msgid "tutorial.btn.next"
+msgstr ""
+
+#. English: Got it!
+msgid "tutorial.btn.got_it"
+msgstr ""
+
+#. English: Speed:
+msgid "battle.speed.label"
+msgstr ""
+
+#. English: Regeneration
+msgid "ability.item_tier2c_passive_heal.name"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.
+msgid "ability.item_tier2c_passive_heal.desc"
+msgstr ""
+
+#. English: Restoration
+msgid "ability.item_tier1a_turn_start_heal.name"
+msgstr ""
+
+#. English: At the start of the turn, Heal the holder for 2 HP.
+msgid "ability.item_tier1a_turn_start_heal.desc"
+msgstr ""
+
+#. English: Morale Boost
+msgid "ability.unit_tier2c_ally_death_buff.name"
+msgstr ""
+
+#. English: When an ally is defeated, gain +1 HP and +1 PWR.
+msgid "ability.unit_tier2c_ally_death_buff_l1.desc"
+msgstr ""
+
+#. English: When an ally is defeated, gain +2 HP and +1 PWR.
+msgid "ability.unit_tier2c_ally_death_buff_l2.desc"
+msgstr ""
+
+#. English: When an ally is defeated, gain +2 HP and +2 PWR.
+msgid "ability.unit_tier2c_ally_death_buff_l3.desc"
+msgstr ""
+
+#. English: Scavenger's Resolve
+msgid "ability.hero_bounty_hunter_ally_death_buff.name"
+msgstr ""
+
+#. English: When an ally is defeated, gain +1 HP and +1 PWR.
+msgid "ability.hero_bounty_hunter_ally_death_buff.desc"
+msgstr ""
+
+#. English: Retaliation
+msgid "ability.item_tier3d_retaliate.name"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.
+msgid "ability.item_tier3d_retaliate.desc"
+msgstr ""
+
+#. English: Resilient Aura
+msgid "ability.unit_tier3d_resilient_aura.name"
+msgstr ""
+
+#. English: When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies.
+msgid "ability.unit_tier3d_resilient_aura.desc"
+msgstr ""
+
+#. English: Summoning Scroll
+msgid "item_t2_a.name"
+msgstr ""
+
+#. English: A scroll containing a summoning spell.
+msgid "item_t2_a.desc"
+msgstr ""
+
+#. English: Death's Bargain
+msgid "item_t3_e.name"
+msgstr ""
+
+#. English: A cursed bargain with death.
+msgid "item_t3_e.desc"
+msgstr ""
+
+#. English: Soul Siphon
+msgid "item_t3_f.name"
+msgstr ""
+
+#. English: A dark siphon of souls.
+msgid "item_t3_f.desc"
+msgstr ""
+
+#. English: Sniper Aim
+msgid "item_t3_g.name"
+msgstr ""
+
+#. English: A scope for precise targeting.
+msgid "item_t3_g.desc"
+msgstr ""
+
+#. English: Final Strike
+msgid "ability.item_t3e_death_damage.name"
+msgstr ""
+
+#. English: Power Drain
+msgid "ability.item_t3f_power_drain.name"
+msgstr ""
+
+#. English: After dealing damage steal half of target's PWR (min 1).
+msgid "ability.item_t3f_power_drain.desc"
+msgstr ""
+
+#. English: When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.
+msgid "ability.item_t3e_death_damage.desc"
+msgstr ""
+
+#. English: Summon
+msgid "ability.item_t2_c_summon.name"
+msgstr ""
+
+#. English: When the holder dies, summon a random Tier 1 unit in their place.
+msgid "ability.item_t2_c_summon.desc"
+msgstr ""
+
+#. English: Paladin
+msgid "unit_t3_paladin.name"
+msgstr ""
+
+#. English: Heavily armored tank.
+msgid "unit_t3_paladin.desc"
+msgstr ""
+
+#. English: Berserker
+msgid "unit_t3_berserker.name"
+msgstr ""
+
+#. English: Powerful warrior.
+msgid "unit_t3_berserker.desc"
+msgstr ""
+
+#. English: Defensive Stance
+msgid "ability.unit_tier2a_defensive_stance.name"
+msgstr ""
+
+#. English: When targeted by an attack, heal [2 / 4 / 6] HP before taking damage.
+msgid "ability.unit_tier2a_defensive_stance.desc"
+msgstr ""
+
+#. English: Shockwave
+msgid "ability.unit_tier2b_shockwave.name"
+msgstr ""
+
+#. English: Attack deals cascading damage: [100% / 150% / 200%] to front, 50% to the unit behind, 25% to the one behind that.
+msgid "ability.unit_tier2b_shockwave.desc"
+msgstr ""
+
+#. English: Bloodlust Edge
+msgid "item_t2_b.name"
+msgstr ""
+
+#. English: A blade thirsty for blood.
+msgid "item_t2_b.desc"
+msgstr ""
+
+#. English: Bloodlust
+msgid "ability.item_tier2b_bloodlust.name"
+msgstr ""
+
+#. English: When the holder defeats an enemy, they act again immediately.
+msgid "ability.item_tier2b_bloodlust.desc"
+msgstr ""
+
+#. English: Timekeeper
+msgid "hero_timekeeper.name"
+msgstr ""
+
+#. English: A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.
+msgid "hero_timekeeper.desc"
+msgstr ""
+
+#. English: Bounty Hunter
+msgid "ability.hero_timekeeper_gold_on_kill.name"
+msgstr ""
+
+#. English: Gain 1 gold when this hero kills an enemy.
+msgid "ability.hero_timekeeper_gold_on_kill.desc"
+msgstr ""
+
+#. English: Time Warp
+msgid "ability.hero_timekeeper_time_warp.name"
+msgstr ""
+
+#. English: Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.
+msgid "ability.hero_timekeeper_time_warp.desc"
+msgstr ""
+
+#. English: Temporal Aura
+msgid "ability.hero_timekeeper_temporal_aura.name"
+msgstr ""
+
+#. English: At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.
+msgid "ability.hero_timekeeper_temporal_aura.desc"
+msgstr ""
+
+#. English: Sakura Spirit
+msgid "unit_t3_d.name"
+msgstr ""
+
+#. English: A powerful spirit guarding the cherry blossoms.
+msgid "unit_t3_d.desc"
+msgstr ""
+
+#. English: The Awakened Guardian
+msgid "boss_1.name"
+msgstr ""
+
+#. English: A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.
+msgid "boss_1.desc"
+msgstr ""
+
+#. English: The Shadow Warden
+msgid "boss_2.name"
+msgstr ""
+
+#. English: Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.
+msgid "boss_2.desc"
+msgstr ""
+
+#. English: The Storm Herald
+msgid "boss_3.name"
+msgstr ""
+
+#. English: Grows stronger as allies fall around it. Commands reinforcements to join its ranks.
+msgid "boss_3.desc"
+msgstr ""
+
+#. English: The Ancient Titan
+msgid "boss_4.name"
+msgstr ""
+
+#. English: An ancient being that summons warriors from ages past.
+msgid "boss_4.desc"
+msgstr ""
+
+#. English: The Final Arbiter
+msgid "boss_5.name"
+msgstr ""
+
+#. English: The ultimate challenge. Defeat it to complete your run.
+msgid "boss_5.desc"
+msgstr ""
+
+#. English: Call Reinforcements
+msgid "ability.boss_summon.name"
+msgstr ""
+
+#. English: At end of turn, summon units to fill empty team slots.
+msgid "ability.boss_summon.desc"
+msgstr ""
+
+#. English: Draining Presence
+msgid "ability.boss_1_draw_drain.name"
+msgstr ""
+
+#. English: Every time you draw a gachaball, this boss gains +1 HP.
+msgid "ability.boss_1_draw_drain.desc"
+msgstr ""
+
+#. English: Token Hunger
+msgid "ability.boss_2_token_drain.name"
+msgstr ""
+
+#. English: Every time you spend a token, this boss gains +1 HP.
+msgid "ability.boss_2_token_drain.desc"
+msgstr ""
+
+#. English: Vengeance Growth
+msgid "ability.boss_3_ally_growth.name"
+msgstr ""
+
+#. English: When an ally is defeated, gain +1 HP and +1 PWR.
+msgid "ability.boss_3_ally_growth.desc"
+msgstr ""
+
+#. English: Soul Echo
+msgid "trinket.soul_echo.name"
+msgstr ""
+
+#. English: A mystical gem that echoes the souls of the fallen.
+msgid "trinket.soul_echo.desc"
+msgstr ""
+
+#. English: Soul Echo
+msgid "ability.soul_echo.name"
+msgstr ""
+
+#. English: When an ally dies, resurrect the first non-hero unit that died this turn.
+msgid "ability.soul_echo.desc"
+msgstr ""
+
+#. English: Vengeance Charm
+msgid "trinket.vengeance.name"
+msgstr ""
+
+#. English: Channel the fury of fallen allies.
+msgid "trinket.vengeance.desc"
+msgstr ""
+
+#. English: Vengeance
+msgid "ability.vengeance.name"
+msgstr ""
+
+#. English: When an ally dies, grant +1 HP and +1 PWR to a random ally.
+msgid "ability.vengeance.desc"
+msgstr ""
+
+#. English: Aegis Charm
+msgid "trinket.aegis.name"
+msgstr ""
+
+#. English: A protective charm that shields allies from fatal blows.
+msgid "trinket.aegis.desc"
+msgstr ""
+
+#. English: Last Stand
+msgid "ability.aegis.name"
+msgstr ""
+
+#. English: Once per turn: When an ally would die, they survive with 1 HP instead.
+msgid "ability.aegis.desc"
+msgstr ""
+
+#. English: Twin Charm
+msgid "trinket.twin_charm.name"
+msgstr ""
+
+#. English: A mirrored charm that reflects its surroundings.
+msgid "trinket.twin_charm.desc"
+msgstr ""
+
+#. English: Shared Reflection
+msgid "ability.twin_charm_scale.name"
+msgstr ""
+
+#. English: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.
+msgid "ability.twin_charm_scale.desc"
+msgstr ""
+
+#. English: Shadow Striker
+msgid "unit_t3_a.name"
+msgstr ""
+
+#. English: Master of precise strikes.
+msgid "unit_t3_a.desc"
+msgstr ""
+
+#. English: Mirror Strike
+msgid "ability.unit_tier3a_mirror_strike.name"
+msgstr ""
+
+#. English: Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy.
+msgid "ability.unit_tier3a_mirror_strike.desc"
+msgstr ""
+
+#. English: Guardian Sentinel
+msgid "unit_t3_b.name"
+msgstr ""
+
+#. English: Stalwart protector.
+msgid "unit_t3_b.desc"
+msgstr ""
+
+#. English: Guardian Sacrifice
+msgid "ability.unit_tier3b_guardian_sacrifice.name"
+msgstr ""
+
+#. English: When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead.
+msgid "ability.unit_tier3b_guardian_sacrifice.desc"
+msgstr ""
+
+#. English: Soul Caller
+msgid "unit_t3_c.name"
+msgstr ""
+
+#. English: Mystical unit.
+msgid "unit_t3_c.desc"
+msgstr ""
+
+#. English: Soul Summon
+msgid "ability.unit_tier3c_soul_summon.name"
+msgstr ""
+
+#. English: When this unit dies, summon a random Tier 2 unit with [+0 / +2 / +4] HP and PWR.
+msgid "ability.unit_tier3c_soul_summon.desc"
+msgstr ""
+
+#. English: Heart Stone
+msgid "item_t3_a.name"
+msgstr ""
+
+#. English: A stone pulsating with life.
+msgid "item_t3_a.desc"
+msgstr ""
+
+#. English: Vital Link
+msgid "ability.item_t3a_on_hurt_heal.name"
+msgstr ""
+
+#. English: When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.
+msgid "ability.item_t3a_on_hurt_heal.desc"
+msgstr ""
+
+#. English: Power Amulet
+msgid "item_t3_b.name"
+msgstr ""
+
+#. English: An ancient amulet of power.
+msgid "item_t3_b.desc"
+msgstr ""
+
+#. English: Battle Cry
+msgid "ability.item_t3b_on_attack_buff.name"
+msgstr ""
+
+#. English: When the holder attacks, grant +2 PWR to two random allies.
+msgid "ability.item_t3b_on_attack_buff.desc"
+msgstr ""
+
+#. English: Lifesteal Ring
+msgid "item_t3_c.name"
+msgstr ""
+
+#. English: A ring that feeds on the living.
+msgid "item_t3_c.desc"
+msgstr ""
+
+#. English: Vampiric Strike
+msgid "ability.item_t3c_on_attack_lifesteal.name"
+msgstr ""
+
+#. English: On attack, heal the holder for 20% of damage dealt (min 1 HP).
+msgid "ability.item_t3c_on_attack_lifesteal.desc"
+msgstr ""
+
+#. English: Vengeful Thorn
+msgid "item_t3_d.name"
+msgstr ""
+
+#. English: A thorny charm that strikes back at those who harm its bearer.
+msgid "item_t3_d.desc"
+msgstr ""
+
+#. English: FLASHCARD HEROES
+msgid "ui.title"
+msgstr ""
+
+#. English: Loadout Selection
+msgid "ui.loadout_selection"
+msgstr ""
+
+#. English: Play
+msgid "ui.start_run"
+msgstr ""
+
+#. English: Options
+msgid "ui.options"
+msgstr ""
+
+#. English: Choose Hero
+msgid "ui.choose_hero"
+msgstr ""
+
+#. English: Choose Deck
+msgid "ui.choose_deck"
+msgstr ""
+
+#. English: Test Mode
+msgid "ui.test_mode"
+msgstr ""
+
+#. English: VICTORY
+msgid "ui.victory"
+msgstr ""
+
+#. English: DEFEAT
+msgid "ui.defeat"
+msgstr ""
+
+#. English: Continue
+msgid "ui.continue"
+msgstr ""
+
+#. English: Return to Path
+msgid "ui.return_to_path"
+msgstr ""
+
+#. English: Shop
+msgid "ui.shop"
+msgstr ""
+
+#. English: Buy
+msgid "ui.buy"
+msgstr ""
+
+#. English: Reroll (1 Gold)
+msgid "ui.reroll"
+msgstr ""
+
+#. English: Back to the Path
+msgid "ui.back_to_path"
+msgstr ""
+
+#. English: Battle!
+msgid "ui.end_turn"
+msgstr ""
+
+#. English: Discard Pile
+msgid "ui.discard_pile"
+msgstr ""
+
+#. English: Tokens
+msgid "ui.tokens"
+msgstr ""
+
+#. English: Inventory
+msgid "ui.inventory"
+msgstr ""
+
+#. English: Tier
+msgid "ui.tier"
+msgstr ""
+
+#. English: Rest Site
+msgid "ui.rest_site"
+msgstr ""
+
+#. English: Train HP
+msgid "ui.train_hp"
+msgstr ""
+
+#. English: Train PWR
+msgid "ui.train_pwr"
+msgstr ""
+
+#. English: Leave
+msgid "ui.leave"
+msgstr ""
+
+#. English: Choose Your Reward
+msgid "ui.choose_reward"
+msgstr ""
+
+#. English: Confirm Selection
+msgid "ui.confirm_selection"
+msgstr ""
+
+#. English: Take Gold Instead
+msgid "ui.take_gold"
+msgstr ""
+
+#. English: RUN COMPLETE!
+msgid "ui.run_complete"
+msgstr ""
+
+#. English: Congratulations!
+msgid "ui.congratulations"
+msgstr ""
+
+#. English: Return to Title
+msgid "ui.return_to_title"
+msgstr ""
+
+#. English: Exit Game
+msgid "ui.exit_game"
+msgstr ""
+
+#. English: Battle Log
+msgid "ui.battle_log"
+msgstr ""
+
+#. English: Hide
+msgid "ui.hide"
+msgstr ""
+
+#. English: Clear
+msgid "ui.clear"
+msgstr ""
+
+#. English: Language
+msgid "ui.language"
+msgstr ""
+
+#. English: English
+msgid "ui.english"
+msgstr ""
+
+#. English: Portuguese
+msgid "ui.portuguese"
+msgstr ""
+
+#. English: Equipped Items:
+msgid "ui.equipped_items"
+msgstr ""
+
+#. English: Results
+msgid "ui.results"
+msgstr ""
+
+#. English: Confirm
+msgid "ui.confirm"
+msgstr ""
+
+#. English: Got it!
+msgid "ui.got_it"
+msgstr ""
+
+#. English: Choose an action to perform.
+msgid "ui.choose_action"
+msgstr ""
+
+#. English: Training Complete!
+msgid "ui.training_complete"
+msgstr ""
+
+#. English: No gains this time.
+msgid "ui.no_gains"
+msgstr ""
+
+#. English: Your Hero gained +%d %s.
+msgid "ui.hero_gained"
+msgstr ""
+
+#. English: Buy (%d Gold)
+msgid "ui.buy_gold"
+msgstr ""
+
+#. English: Reroll (%d Gold)
+msgid "ui.reroll_gold"
+msgstr ""
+
+#. English: %d Gold
+msgid "ui.gold_price"
+msgstr ""
+
+#. English: Tier 1
+msgid "ui.tier_1"
+msgstr ""
+
+#. English: Tier 2
+msgid "ui.tier_2"
+msgstr ""
+
+#. English: Tier 3
+msgid "ui.tier_3"
+msgstr ""
+
+#. English: Show
+msgid "ui.show"
+msgstr ""
+
+#. English: You have defeated all %d bosses and completed your run!
+msgid "ui.run_complete_message"
+msgstr ""
+
+#. English: Final Statistics
+msgid "ui.final_statistics"
+msgstr ""
+
+#. English: Days Survived
+msgid "ui.days_survived"
+msgstr ""
+
+#. English: Bosses Defeated
+msgid "ui.bosses_defeated"
+msgstr ""
+
+#. English: Elites Defeated
+msgid "ui.elites_defeated"
+msgstr ""
+
+#. English: Enemies Slain
+msgid "ui.enemies_slain"
+msgstr ""
+
+#. English: Gold Earned
+msgid "ui.gold_earned"
+msgstr ""
+
+#. English: Tokens Earned
+msgid "ui.tokens_earned"
+msgstr ""
+
+#. English: Flashcards Mastered
+msgid "ui.flashcards_mastered"
+msgstr ""
+
+#. English: Mastery Breakdown
+msgid "ui.mastery_breakdown"
+msgstr ""
+
+#. English: Mastery 2 (Hard)
+msgid "ui.mastery_level_2"
+msgstr ""
+
+#. English: Mastery 3 (Medium)
+msgid "ui.mastery_level_3"
+msgstr ""
+
+#. English: Mastery 4 (Easy)
+msgid "ui.mastery_level_4"
+msgstr ""
+
+#. English: Mastery 5 (Very Easy)
+msgid "ui.mastery_level_5"
+msgstr ""
+
+#. English: Take %d Gold instead
+msgid "ui.take_gold_amount"
+msgstr ""
+
+#. English: Discard Pile (%d)
+msgid "ui.discard_pile_count"
+msgstr ""
+
+#. English: Tokens: %d
+msgid "ui.tokens_count"
+msgstr ""
+
+#. English: Day %d
+msgid "ui.day"
+msgstr ""
+
+#. English: Boss %d
+msgid "ui.boss"
+msgstr ""
+
+#. English: Battle
+msgid "ui.battle_node"
+msgstr ""
+
+#. English: Elite Battle
+msgid "ui.elite_battle_node"
+msgstr ""
+
+#. English: Shop
+msgid "ui.shop_node"
+msgstr ""
+
+#. English: Black Market
+msgid "ui.black_market_node"
+msgstr ""
+
+#. English: Rest Site
+msgid "ui.rest_node"
+msgstr ""
+
+#. English: Training Grounds
+msgid "ui.training_grounds_node"
+msgstr ""
+
+#. English: Gambling Den
+msgid "ui.gambling_den_node"
+msgstr ""
+
+#. English: Training Grounds
+msgid "ui.training_grounds"
+msgstr ""
+
+#. English: Gambling Den
+msgid "ui.gambling_den"
+msgstr ""
+
+#. English: Black Market
+msgid "ui.black_market_title"
+msgstr ""
+
+#. English: REMOVE OR TRANSFORM
+msgid "ui.black_market_open_inventory"
+msgstr ""
+
+#. English: What would you like to do with %s?
+msgid "ui.black_market_prompt"
+msgstr ""
+
+#. English: Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it.
+msgid "ui.black_market_instructions"
+msgstr ""
+
+#. English: Remove (%d Gold)
+msgid "ui.remove_cost"
+msgstr ""
+
+#. English: Transform (%d Gold)
+msgid "ui.transform_cost"
+msgstr ""
+
+#. English: Removing and Transforming
+msgid "tutorial.black_market_intro.title"
+msgstr ""
+
+#. English: The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase.
+msgid "tutorial.black_market_intro"
+msgstr ""
+
+#. English: A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.
+msgid "tutorial.training_grounds"
+msgstr ""
+
+#. English: Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.
+msgid "tutorial.gambling_den"
+msgstr ""
+
+#. English: Effects
+msgid "ui.effects"
+msgstr ""
+
+#. English: This unit has no special effects.
+msgid "ui.no_effects"
+msgstr ""
+
+#. English: No details available for this effect.
+msgid "ui.no_effect_details"
+msgstr ""
+
+#. English: Score: %d
+msgid "ui.score"
+msgstr ""
+
+#. English: Answer: %s
+msgid "ui.answer"
+msgstr ""
+
+#. English: Explanation: %s
+msgid "ui.explanation"
+msgstr ""
+
+#. English: No explanation available
+msgid "ui.no_explanation"
+msgstr ""
+
+#. English: Get Tokens!
+msgid "ui.study"
+msgstr ""
+
+#. English: Stat Prize
+msgid "ui.stat_prize"
+msgstr ""
+
+#. English: Show Tutorials & Tooltips
+msgid "ui.show_tutorials"
+msgstr ""
+
+#. English: Get Tokens!
+msgid "ui.review_title"
+msgstr ""
+
+#. English: SKIP
+msgid "ui.skip"
+msgstr ""
+
+#. English: Priority Cards (click to preview):
+msgid "ui.priority_cards"
+msgstr ""
+
+#. English: Ready!
+msgid "ui.ready"
+msgstr ""
+
+#. English: New Card Introduction
+msgid "ui.intro_new_card"
+msgstr ""
+
+#. English: ★ NEW CARD UNLOCKED! ★
+msgid "ui.midgame_card_unlocked"
+msgstr ""
+
+#. English: +1.0s TIME BONUS!
+msgid "ui.midgame_bonus_info"
+msgstr ""
+
+#. English: Play
+msgid "ui.play"
+msgstr ""
+
+#. English: Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run.
+msgid "tutorial.loadout"
+msgstr ""
+
+#. English: Path choice
+msgid "tutorial.path_choice_intro.title"
+msgstr ""
+
+#. English: Choose your next encounter! Every encounter counts as one day and enemies get stronger each day. Make it count!
+msgid "tutorial.path_choice_1"
+msgstr ""
+
+#. English: Gacha Collection
+msgid "tutorial.gacha_inspect_run.title"
+msgstr ""
+
+#. English: This is your current collection. Hover over or press and hold a GachaBall to inspect it (a quick click selects). You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just click or drag one onto another. You unlock GachaBall recipes by getting them during the game.
+msgid "tutorial.gacha_inspect_run.mouse"
+msgstr ""
+
+#. English: This is your current collection. Press and hold a GachaBall to inspect it (a quick tap selects). You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just tap or drag one onto another. You unlock GachaBall recipes by getting them during the game.
+msgid "tutorial.gacha_inspect_run.touch"
+msgstr ""
+
+#. English: Merging or destroying gachaballs in battle only affects the current encounter. Your permanent collection remains unchanged. Each battle resets your gachaballs to their base state.
+msgid "tutorial.gacha_inspect_battle"
+msgstr ""
+
+#. English: Spend Gold to expand your collection. Reroll the stock if you're looking for something specific, but be warned: the price rises with every roll!
+msgid "tutorial.shop"
+msgstr ""
+
+#. English: A moment of respite. Master the flashcard minigame to earn tokens, then spend them on these machines for permanent Hero upgrades.
+msgid "tutorial.rest_site"
+msgstr ""
+
+#. English: New Card and Review time!
+msgid "tutorial.new_card_intro.title"
+msgstr ""
+
+#. English: This is when new flashcards are added to your Mastery Deck.\n\nA new one will be added every mini game session.\n\nYou start with 6 flashcards already unlocked, so try to remember at least a few before starting the mini-game.\n\nYour battle resources depend on it!
+msgid "tutorial.new_card_intro"
+msgstr ""
+
+#. English: Tokens and Gacha Machines
+msgid "tutorial.battle_management_intro.title"
+msgstr ""
+
+#. English: Use your tokens to pull Units and Items from the Gacha Machines below!\n\nEach machine has a different cost. Spend your tokens wisely!
+msgid "tutorial.battle_management"
+msgstr ""
+
+#. English: Building your team
+msgid "tutorial.first_draw.title"
+msgstr ""
+
+#. English: New capsules are sent to your Bench.\n\nFrom there, you can deploy units to your Battle Lineup, or equip and use items on your units.\n\nIf your Bench is full, any new capsules you pull will be sent directly to the Discard Pile.
+msgid "tutorial.first_draw_1"
+msgstr ""
+
+#. English: How Battle Works
+msgid "tutorial.first_draw_combat.title"
+msgstr ""
+
+#. English: Your team goes first, starting from the frontmost unit to the back. Then the enemy team will go in the same order.\n\nDefeat all enemy units to win. If your hero dies, you lose.\n\nIf neither side is defeated, a new turn begins.\n\nPress \"Battle!\" when you're happy with your team.
+msgid "tutorial.first_draw_2"
+msgstr ""
+
+#. English: Choose your equipment wisely. Units have limited slots, and once an item is equipped, it cannot be removed. Every choice counts!
+msgid "tutorial.equip"
+msgstr ""
+
+#. English: Choose Merge to combine two into a single, more powerful entity, or Swap to reorganize your ranks? The choice is yours.
+msgid "tutorial.merge_choice"
+msgstr ""
+
+#. English: Battle Capsules
+msgid "tutorial.gacha_inspect_battle.title"
+msgstr ""
+
+#. English: Tier 1 Machine - Draw cost: 1 token. Low-power but plentiful gachaballs.
+msgid "tooltip.gacha_t1"
+msgstr ""
+
+#. English: Tier 2 Machine - Draw cost: 2 tokens. Balanced power and cost.
+msgid "tooltip.gacha_t2"
+msgstr ""
+
+#. English: Tier 3 Machine - Draw cost: 3 tokens. High-power high-risk draws.
+msgid "tooltip.gacha_t3"
+msgstr ""
+
+#. English: Gold - Spend at shops to buy gachaballs and reroll stock.
+msgid "tooltip.gold"
+msgstr ""
+
+#. English: Tokens - Earn from flashcard minigame. Spend to draw gachaballs.
+msgid "tooltip.tokens"
+msgstr ""
+
+#. English: Day - Enemies grow stronger each day. How long can you survive?
+msgid "tooltip.day"
+msgstr ""
+
+#. English: Hero Health - If this reaches zero your run ends.
+msgid "tooltip.hero_hp"
+msgstr ""
+
+#. English: End your management phase and start combat.
+msgid "tooltip.end_turn"
+msgstr ""
+
+#. English: View defeated units and discarded items.
+msgid "tooltip.discard_pile"
+msgstr ""
+
+#. English: Inspect your gachaball collection across all tiers.
+msgid "tooltip.inventory"
+msgstr ""
+
+#. English: Reserve slot - Units and items here wait to be deployed or equipped.
+msgid "tooltip.bench_slot"
+msgstr ""
+
+#. English: Battle slot - Units here fight in combat.
+msgid "tooltip.lineup_slot"
+msgstr ""
+
+#. English: Equipped item slot - Items equipped on this unit provide bonuses.
+msgid "tooltip.item_slot"
+msgstr ""
+
+#. English: Trinket - Provides passive bonuses for your entire run.
+msgid "tooltip.trinket_slot"
+msgstr ""
+
+#. English: Refresh shop stock. Cost increases each reroll.
+msgid "tooltip.reroll"
+msgstr ""
+
+#. English: Spend tokens from the minigame to permanently increase hero HP.
+msgid "tooltip.train_hp"
+msgstr ""
+
+#. English: Spend tokens from the minigame to permanently increase hero PWR.
+msgid "tooltip.train_pwr"
+msgstr ""
+
+#. English: Choose Your Hero
+msgid "ui.choose_your_hero"
+msgstr ""
+
+#. English: Choose Your Deck
+msgid "ui.choose_your_deck"
+msgstr ""
+
+#. English: Locked
+msgid "ui.locked_hero"
+msgstr ""
+
+#. English: cards
+msgid "ui.cards"
+msgstr ""
+
+#. English: Ability
+msgid "ui.ability"
+msgstr ""
+
+#. English: HP
+msgid "ui.hp"
+msgstr ""
+
+#. English: PWR
+msgid "ui.pwr"
+msgstr ""
+
+#. English: A survivor who learned that every kill counts. Low stats but gold flows freely.
+msgid "hero.flavor"
+msgstr ""
+
+#. English: Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer.
+msgid "hero_timekeeper.flavor"
+msgstr ""
+
+#. English: Learn the angular Japanese syllabary used for foreign words and loanwords.
+msgid "deck.katakana.desc"
+msgstr ""
+
+#. English: Master the flowing Japanese syllabary for native words and grammar.
+msgid "deck.hiragana.desc"
+msgstr ""
+
+#. English: Challenge yourself with 100 essential Chinese characters used in Japanese writing.
+msgid "deck.kanji_100.desc"
+msgstr ""
+
+#. English: Build your German vocabulary with 100 common and essential words.
+msgid "deck.german_100.desc"
+msgstr ""
+
+#. English: Expand your Portuguese vocabulary with 100 essential everyday words.
+msgid "deck.portuguese_100.desc"
+msgstr ""
+
+#. English: Learn Korean Hangul alphabet and pronunciation rules
+msgid "deck.korean_hangul.desc"
+msgstr ""
+
+#. English: Dreadnought
+msgid "unit_t3_e.name"
+msgstr ""
+
+#. English: A terrifying predator that strikes down newly summoned enemies.
+msgid "unit_t3_e.desc"
+msgstr ""
+
+#. English: Ambush Predator
+msgid "ability.unit_tier3e_ambush_predator.name"
+msgstr ""
+
+#. English: When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR.
+msgid "ability.unit_tier3e_ambush_predator.desc"
+msgstr ""
+
+#. English: Warden
+msgid "unit_t3_f.name"
+msgstr ""
+
+#. English: A protective guardian that empowers newly summoned allies.
+msgid "unit_t3_f.desc"
+msgstr ""
+
+#. English: Summon Blessing
+msgid "ability.unit_tier3f_summon_blessing.name"
+msgstr ""
+
+#. English: When an ally unit is summoned, grant it [+3 / +5 / +7] HP.
+msgid "ability.unit_tier3f_summon_blessing.desc"
+msgstr ""
+
+#. English: Burn
+msgid "STATUS_BURN"
+msgstr ""
+
+#. English: Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.
+msgid "STATUS_BURN_DESC"
+msgstr ""
+
+#. English: Armor
+msgid "STATUS_ARMOR"
+msgstr ""
+
+#. English: Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.
+msgid "STATUS_ARMOR_DESC"
+msgstr ""
+
+#. English: Spikes
+msgid "STATUS_SPIKES"
+msgstr ""
+
+#. English: Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.
+msgid "STATUS_SPIKES_DESC"
+msgstr ""
+
+#. English: Static
+msgid "STATUS_STATIC"
+msgstr ""
+
+#. English: Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.
+msgid "STATUS_STATIC_DESC"
+msgstr ""
+
+#. English: Royal Insignia
+msgid "trinket.royal_insignia.name"
+msgstr ""
+
+#. English: A medal signifying royal favor.
+msgid "trinket.royal_insignia.desc"
+msgstr ""
+
+#. English: Royal Blessing
+msgid "ability.royal_insignia.name"
+msgstr ""
+
+#. English: When a Level 1 unit enters the board, grant it +1 HP and +1 PWR.
+msgid "ability.royal_insignia.desc"
+msgstr ""
+
+#. English: Veteran Insignia
+msgid "trinket.veteran_insignia.name"
+msgstr ""
+
+#. English: A badge of honor for seasoned warriors.
+msgid "trinket.veteran_insignia.desc"
+msgstr ""
+
+#. English: Veteran Blessing
+msgid "ability.veteran_insignia.name"
+msgstr ""
+
+#. English: When a Level 2 unit enters the board, grant it +1 HP and +1 PWR.
+msgid "ability.veteran_insignia.desc"
+msgstr ""
+
+#. English: Fire Trait
+msgid "trinket.trait_fire.name"
+msgstr ""
+
+#. English: Enables the Fire trait whenever your team has enough Fire souls.
+msgid "trinket.trait_fire.desc"
+msgstr ""
+
+#. English: Earth Trait
+msgid "trinket.trait_earth.name"
+msgstr ""
+
+#. English: Enables the Earth trait whenever your team has enough Earth souls.
+msgid "trinket.trait_earth.desc"
+msgstr ""
+
+#. English: Water Trait
+msgid "trinket.trait_water.name"
+msgstr ""
+
+#. English: Enables the Water trait whenever your team has enough Water souls.
+msgid "trinket.trait_water.desc"
+msgstr ""
+
+#. English: Air Trait
+msgid "trinket.trait_air.name"
+msgstr ""
+
+#. English: Enables the Air trait whenever your team has enough Air souls.
+msgid "trinket.trait_air.desc"
+msgstr ""
+
+#. English: Fire
+msgid "trait.fire.name"
+msgstr ""
+
+#. English: Apply 1 Burn on attack.
+msgid "trait.fire.3"
+msgstr ""
+
+#. English: Apply +1 Extra Burn (Total 2).
+msgid "trait.fire.5"
+msgstr ""
+
+#. English: Start of Turn: Apply 2 Burn to ALL enemies.
+msgid "trait.fire.7"
+msgstr ""
+
+#. English: Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.
+msgid "trait.fire.9"
+msgstr ""
+
+#. English: Earth
+msgid "trait.earth.name"
+msgstr ""
+
+#. English: All Allies gain 1 Armor. Earth units gain 2 Armor.
+msgid "trait.earth.3"
+msgstr ""
+
+#. English: All Allies gain 2 Armor. Earth units gain 4 Armor.
+msgid "trait.earth.5"
+msgstr ""
+
+#. English: All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.
+msgid "trait.earth.7"
+msgstr ""
+
+#. English: All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.
+msgid "trait.earth.9"
+msgstr ""
+
+#. English: Fire Emblem
+msgid "item.emblem_fire.name"
+msgstr ""
+
+#. English: When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies.
+msgid "item.emblem_fire.desc"
+msgstr ""
+
+#. English: Earth Emblem
+msgid "item.emblem_earth.name"
+msgstr ""
+
+#. English: When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies.
+msgid "item.emblem_earth.desc"
+msgstr ""
+
+#. English: Water
+msgid "trait.water.name"
+msgstr ""
+
+#. English: Water units heal adjacent allies 1 HP at start of turn.
+msgid "trait.water.2"
+msgstr ""
+
+#. English: Air
+msgid "trait.air.name"
+msgstr ""
+
+#. English: Air units steal 1 PWR from the opposite enemy at start of turn.
+msgid "trait.air.2"
+msgstr ""
+
+#. English: Water Emblem
+msgid "item.emblem_water.name"
+msgstr ""
+
+#. English: When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies.
+msgid "item.emblem_water.desc"
+msgstr ""
+
+#. English: Air Emblem
+msgid "item.emblem_air.name"
+msgstr ""
+
+#. English: When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies.
+msgid "item.emblem_air.desc"
+msgstr ""
+
+#. English: Minor Healing Potion
+msgid "item.potion_t1.name"
+msgstr ""
+
+#. English: Restores 4 HP to a target unit.
+msgid "item.potion_t1.desc"
+msgstr ""
+
+#. English: Drink
+msgid "ability.potion_t1.name"
+msgstr ""
+
+#. English: Restores 4 HP.
+msgid "ability.potion_t1.desc"
+msgstr ""
+
+#. English: Thorn Potion
+msgid "item.potion_spikes.name"
+msgstr ""
+
+#. English: Grants 4 Spikes to target. Spikes damage attackers then lose a stack.
+msgid "item.potion_spikes.desc"
+msgstr ""
+
+#. English: Thorn Skin
+msgid "ability.grant_spikes.name"
+msgstr ""
+
+#. English: Grants 4 Spikes stacks
+msgid "ability.grant_spikes.desc"
+msgstr ""
+
+#. English: Heroism Potion
+msgid "item.potion_heroism.name"
+msgstr ""
+
+#. English: A potion that inspires heroism.
+msgid "item.potion_heroism.desc"
+msgstr ""
+
+#. English: Heroism
+msgid "ability.grant_heroism.name"
+msgstr ""
+
+#. English: Grants +3 HP, +3 PWR, and 3 Armor stacks.
+msgid "ability.grant_heroism.desc"
+msgstr ""
+
+#. English: Potion of Plunder
+msgid "item.potion_plunder.name"
+msgstr ""
+
+#. English: Steals a random item from the target and sends it to your Gacha Machine of the matching tier.
+msgid "item.potion_plunder.desc"
+msgstr ""
+
+#. English: Plunder
+msgid "ability.potion_plunder.name"
+msgstr ""
+
+#. English: Steals a random item from the target and sends it to your Gacha Machine of the matching tier.
+msgid "ability.potion_plunder.desc"
+msgstr ""
+
+#. English: Mimic
+msgid "unit_t3_mimic.name"
+msgstr ""
+
+#. English: Mysterious entity.
+msgid "unit_t3_mimic.desc"
+msgstr ""
+
+#. English: Mirror Image
+msgid "ability.unit_t2_e_mimic.name"
+msgstr ""
+
+#. English: At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR.
+msgid "ability.unit_t2_e_mimic.desc"
+msgstr ""
+
+#. English: Shadow Cloner
+msgid "unit_t3_shadow.name"
+msgstr ""
+
+#. English: Ethereal unit.
+msgid "unit_t3_shadow.desc"
+msgstr ""
+
+#. English: Buff Echo
+msgid "ability.unit_t2_g_buff_echo.name"
+msgstr ""
+
+#. English: When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them.
+msgid "ability.unit_t2_g_buff_echo.desc"
+msgstr ""
+
+#. English: Hermit
+msgid "unit_t2_h.name"
+msgstr ""
+
+#. English: Solitary warrior.
+msgid "unit_t2_h.desc"
+msgstr ""
+
+#. English: Solitary Strength
+msgid "ability.unit_t2_h.name"
+msgstr ""
+
+#. English: At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.
+msgid "ability.unit_t2_h_l1.desc"
+msgstr ""
+
+#. English: At start of combat, gain +2 HP and +2 PWR for each empty slot in your team.
+msgid "ability.unit_t2_h_l2.desc"
+msgstr ""
+
+#. English: At start of combat, gain +3 HP and +3 PWR for each empty slot in your team.
+msgid "ability.unit_t2_h_l3.desc"
+msgstr ""
+
+#. English: Mud Wretch
+msgid "unit_t2_i.name"
+msgstr ""
+
+#. English: Mud creature.
+msgid "unit_t2_i.desc"
+msgstr ""
+
+#. English: Mud Coating
+msgid "ability.mud_coating.name"
+msgstr ""
+
+#. English: When healed, gain 1 Armor and 1 Spikes.
+msgid "ability.mud_coating_l1.desc"
+msgstr ""
+
+#. English: When healed, gain 2 Armor and 2 Spikes.
+msgid "ability.mud_coating_l2.desc"
+msgstr ""
+
+#. English: When healed, gain 3 Armor and 3 Spikes.
+msgid "ability.mud_coating_l3.desc"
+msgstr ""
+
+#. English: Steam Wisp
+msgid "unit_t2_j.name"
+msgstr ""
+
+#. English: Scalding spirit.
+msgid "unit_t2_j.desc"
+msgstr ""
+
+#. English: Scald
+msgid "ability.scald.name"
+msgstr ""
+
+#. English: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.
+msgid "ability.scald_l1.desc"
+msgstr ""
+
+#. English: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.
+msgid "ability.scald_l2.desc"
+msgstr ""
+
+#. English: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce.
+msgid "ability.scald_l3.desc"
+msgstr ""
+
+#. English: Phantom Wayfarer
+msgid "unit_t3_g.name"
+msgstr ""
+
+#. English: Mysterious traveler.
+msgid "unit_t3_g.desc"
+msgstr ""
+
+#. English: Quiet Meditation
+msgid "ability.unit_tier3g_bench_growth.name"
+msgstr ""
+
+#. English: Fusion Warden
+msgid "unit_t3_h.name"
+msgstr ""
+
+#. English: Volatile hybrid.
+msgid "unit_t3_h.desc"
+msgstr ""
+
+#. English: Convergence Surge
+msgid "ability.unit_t3_h.name"
+msgstr ""
+
+#. English: Whenever a merge happens on the battle board, if this unit is on the battle board, gain [**+2 / +3 / +4 HP and PWR**].
+msgid "ability.unit_t3_h.desc"
+msgstr ""
+
+#. English: Dust Minion (T2)
+msgid "unit_dust_t2.name"
+msgstr ""
+
+#. English: A construct. Stays in the fight.
+msgid "unit_dust_t2.desc"
+msgstr ""
+
+#. English: Dust Minion (T3)
+msgid "unit_dust_t3.name"
+msgstr ""
+
+#. English: A heavy construct. Stays in the fight.
+msgid "unit_dust_t3.desc"
+msgstr ""
+
+#. English: Dust Guard (T1)
+msgid "unit_dust_elite_t1.name"
+msgstr ""
+
+#. English: A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.
+msgid "unit_dust_elite_t1.desc"
+msgstr ""
+
+#. English: Dust Sentinel (T2)
+msgid "unit_dust_elite_t2.name"
+msgstr ""
+
+#. English: An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.
+msgid "unit_dust_elite_t3.desc"
+msgstr ""
+
+#. English: Dust Pulse
+msgid "ability_dust_elite_spawn.name"
+msgstr ""
+
+#. English: Spawns a Dust unit in the player's inventory.
+msgid "ability_dust_elite_spawn.desc"
+msgstr ""
+
+#. English: Dust Minion (T1)
+msgid "unit_dust_t1.name"
+msgstr ""
+
+#. English: A fragile construct. Stays in the fight.
+msgid "unit_dust_t1.desc"
+msgstr ""
+
+#. English: Dust Overlord (T3)
+msgid "unit_dust_elite_t3.name"
+msgstr ""
+
+#. English: Dust Pulse (Turn)
+msgid "ability_dust_elite_spawn_turn.name"
+msgstr ""
+
+#. English: Spawns a Dust unit at Turn Start.
+msgid "ability_dust_elite_spawn_turn.desc"
+msgstr ""
+
+#. English: Dust Pulse (Death T1)
+msgid "ability_dust_elite1_spawn_death.name"
+msgstr ""
+
+#. English: Spawns a T1 Dust unit when an Ally dies.
+msgid "ability_dust_elite1_spawn_death.desc"
+msgstr ""
+
+#. English: Dust Pulse (Death T1/T2)
+msgid "ability_dust_elite2_spawn_death.name"
+msgstr ""
+
+#. English: Spawns a random T1 or T2 Dust unit when an Ally dies.
+msgid "ability_dust_elite2_spawn_death.desc"
+msgstr ""
+
+#. English: Universal Dust Pulse (Death)
+msgid "ability_dust_elite_spawn_death.name"
+msgstr ""
+
+#. English: Spawns a random T1, T2 or T3 Dust unit when an Ally dies.
+msgid "ability_dust_elite_spawn_death.desc"
+msgstr ""
+
+#. English: Dust Pulse (Hurt)
+msgid "ability_dust_elite_spawn_hurt.name"
+msgstr ""
+
+#. English: Spawns a Dust unit when Hurt.
+msgid "ability_dust_elite_spawn_hurt.desc"
+msgstr ""
+
+#. English: Dust Pulse (Attack)
+msgid "ability_dust_elite_spawn_attack.name"
+msgstr ""
+
+#. English: Spawns a Dust unit when Attacking.
+msgid "ability_dust_elite_spawn_attack.desc"
+msgstr ""
+
+#. English: A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit.
+msgid "unit_dust_elite_t2.desc"
+msgstr ""
+
+#. English: Dust Growth
+msgid "ability.dust_growth.name"
+msgstr ""
+
+#. English: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).
+msgid "ability.dust_growth.desc"
+msgstr ""
+
+#. English: Get
+msgid "ui.drop_zone_get"
+msgstr ""
+
+#. English: Buy
+msgid "ui.drop_zone_buy"
+msgstr ""
+
+#. English: Remove
+msgid "ui.drop_zone_remove"
+msgstr ""
+
+#. English: Transform
+msgid "ui.drop_zone_transform"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]GET[/font_size]
+msgid "ui.drop_zone_get_multi"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]BUY[/font_size]
+msgid "ui.drop_zone_buy_multi"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]REMOVE[/font_size]
+msgid "ui.drop_zone_remove_multi"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]TRANSFORM[/font_size]
+msgid "ui.drop_zone_transform_multi"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]SELL[/font_size]
+msgid "ui.drop_zone_sell_multi"
+msgstr ""
+
+#. English: Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.
+msgid "ui.bm_instruction"
+msgstr ""
+
+#. English: Move the gacha ball here to: Get or Sell.\nClick anywhere to close the inventory.
+msgid "ui.reward_instruction"
+msgstr ""
+
+#. English: Move the Trinket here to: Get or Sell.\nClick anywhere to close the inventory.
+msgid "ui.reward_elite_instruction"
+msgstr ""
+
+#. English: Dust Pulse (Enemy Death)
+msgid "ability_dust_elite_spawn_enemy_death.name"
+msgstr ""
+
+#. English: Spawns a Dust unit when an Enemy dies.
+msgid "ability_dust_elite_spawn_enemy_death.desc"
+msgstr ""
+
+#. English: Armor Aura
+msgid "trinket.armor_aura.name"
+msgstr ""
+
+#. English: An aura that hardens the resolve of allies.
+msgid "trinket.armor_aura.desc"
+msgstr ""
+
+#. English: Armor Aura
+msgid "ability.armor_aura.name"
+msgstr ""
+
+#. English: At turn start, all allies gain 3 Armor.
+msgid "ability.armor_aura.desc"
+msgstr ""
+
+#. English: Audio Settings
+msgid "ui.audio_settings"
+msgstr ""
+
+#. English: Master Volume
+msgid "ui.master_volume"
+msgstr ""
+
+#. English: Music Volume
+msgid "ui.music_volume"
+msgstr ""
+
+#. English: SFX Volume
+msgid "ui.sfx_volume"
+msgstr ""
+
+#. English: Close
+msgid "ui.close"
+msgstr ""
+
+#. English: Yes
+msgid "ui.yes"
+msgstr ""
+
+#. English: No
+msgid "ui.no"
+msgstr ""
+
+#. English: Are you sure you want to reset all progress?
+msgid "ui.confirm_reset"
+msgstr ""
+
+#. English: CRT Effect
+msgid "ui.crt_effect"
+msgstr ""
+
+#. English: Fullscreen
+msgid "ui.fullscreen"
+msgstr ""
+
+#. English: Glow Effect
+msgid "ui.glow_effect"
+msgstr ""
+
+#. English: Glow Debug:
+msgid "ui.glow_debug"
+msgstr ""
+
+#. English: Tutorial
+msgid "ui.tutorial_title"
+msgstr ""
+
+#. English: Traits
+msgid "tutorial.traits.title"
+msgstr ""
+
+#. English: Traits are special buffs and effects that happen according to how many souls or certain trait units of that trait you have on your battle lineup.\n\nInspect units to see what traits they have.
+msgid "tutorial.traits"
+msgstr ""
+
+#. English: Avenger
+msgid "hero_avenger.name"
+msgstr ""
+
+#. English: A fierce warrior who strikes when allies fall.
+msgid "hero_avenger.desc"
+msgstr ""
+
+#. English: Leap Attack
+msgid "ability.hero_avenger_ally_death_attack.name"
+msgstr ""
+
+#. English: When an ally dies, leap and attack the frontmost enemy.
+msgid "ability.hero_avenger_ally_death_attack.desc"
+msgstr ""
+
+#. English: Bastion
+msgid "hero_bastion.name"
+msgstr ""
+
+#. English: A steadfast defender who grows stronger as allies fall.
+msgid "hero_bastion.desc"
+msgstr ""
+
+#. English: Fortify
+msgid "ability.hero_bastion_ally_death_spikes_armor.name"
+msgstr ""
+
+#. English: When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.
+msgid "ability.hero_bastion_ally_death_spikes_armor.desc"
+msgstr ""
+
+#. English: Pyromancer
+msgid "hero_pyro.name"
+msgstr ""
+
+#. English: A fiery mage who incinerates enemies instead of striking them.
+msgid "hero_pyro.desc"
+msgstr ""
+
+#. English: Incinerate
+msgid "ability.hero_pyro_attack_burn.name"
+msgstr ""
+
+#. English: On attack, instead of dealing damage, apply Burn stacks equal to your Power.
+msgid "ability.hero_pyro_attack_burn.desc"
+msgstr ""
+
+#. English: Art Style
+msgid "options.art_style"
+msgstr ""
+
+#. English: Realistic
+msgid "options.style.realistic"
+msgstr ""
+
+#. English: Pixel Art
+msgid "options.style.pixelart"
+msgstr ""
+
+#. English: Surprise Event
+msgid "ui.surprise_node"
+msgstr ""
+
+#. English: Unit Training Ground
+msgid "ui.utg_title"
+msgstr ""
+
+#. English: TRAINING
+msgid "ui.utg_btn"
+msgstr ""
+
+#. English: Drag or select your unit to start your training.\nClick anywhere to close the inventory.
+msgid "ui.utg_instruction"
+msgstr ""
+
+#. English: Drag or Click here to\n[font_size=72]TRAIN HP[/font_size]\n(cost: 5 gold)
+msgid "ui.utg_drop_hp"
+msgstr ""
+
+#. English: Drag or Click here to\n[font_size=72]TRAIN PWR[/font_size]\n(cost: 5 gold)
+msgid "ui.utg_drop_pwr"
+msgstr ""
+
+#. English: Use your Tokens to train!
+msgid "ui.utg_popup_title"
+msgstr ""
+
+#. English: Done!
+msgid "ui.utg_done"
+msgstr ""
+
+#. English: Merge Encounter
+msgid "ui.merge_encounter_title"
+msgstr ""
+
+#. English: CLICK HERE TO MERGE!
+msgid "ui.merge_encounter_open_inventory"
+msgstr ""
+
+#. English: Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)
+msgid "ui.merge_encounter_instruction"
+msgstr ""
+
+#. English: Doppleganger
+msgid "unit_t3_i.name"
+msgstr ""
+
+#. English: Volatile clone.
+msgid "unit_t3_i.desc"
+msgstr ""
+
+#. English: Mirrored Might
+msgid "ability.doppleganger_scale.name"
+msgstr ""
+
+#. English: Gains [**+3 / +4 / +5 PWR**] for each other Doppleganger in battle.
+msgid "ability.doppleganger_scale.desc"
+msgstr ""
+
+#. English: Clone Split
+msgid "ability.doppleganger_death.name"
+msgstr ""
+
+#. English: Spawns a Doppleganger into the Tier 3 Gacha Machine on death.
+msgid "ability.doppleganger_death.desc"
+msgstr ""
+
+#. English: Echoing Orb
+msgid "item_t2_d.name"
+msgstr ""
+
+#. English: A resonant orb that amplifies the power of its bearer.
+msgid "item_t2_d.desc"
+msgstr ""
+
+#. English: Resonance
+msgid "ability.echoing_orb_scale.name"
+msgstr ""
+
+#. English: Grants the holder +2 PWR for each Echoing Orb in battle.
+msgid "ability.echoing_orb_scale.desc"
+msgstr ""
+
+#. English: Echo Split
+msgid "ability.echoing_orb_death.name"
+msgstr ""
+
+#. English: Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.
+msgid "ability.echoing_orb_death.desc"
+msgstr ""
+
+#. English: Standard Bearer
+msgid "unit_t3_j.name"
+msgstr ""
+
+#. English: Valiant commander.
+msgid "unit_t3_j.desc"
+msgstr ""
+
+#. English: Standard's Legacy
+msgid "ability.unit_t3_j_ability_l1.name"
+msgstr ""
+
+#. English: On death, transfers its equipped item to the ally directly behind it.
+msgid "ability.unit_t3_j_ability_l1.desc"
+msgstr ""
+
+#. English: Standard's Legacy
+msgid "ability.unit_t3_j_ability_l2.name"
+msgstr ""
+
+#. English: On death, transfers its equipped item to the ally behind and 1 copy behind them.
+msgid "ability.unit_t3_j_ability_l2.desc"
+msgstr ""
+
+#. English: Standard's Legacy
+msgid "ability.unit_t3_j_ability_l3.name"
+msgstr ""
+
+#. English: On death, transfers its equipped item to the ally behind and 2 copies behind them.
+msgid "ability.unit_t3_j_ability_l3.desc"
+msgstr ""
+
+#. English: %s transfers %s to %s!
+msgid "ui.transfer_item_msg"
+msgstr ""
+
+#. English: Golden Hermit
+msgid "unit_t3_l.name"
+msgstr ""
+
+#. English: A solitary sage of wealth.
+msgid "unit_t3_l.desc"
+msgstr ""
+
+#. English: Wealth Accumulation
+msgid "ability.unit_t3_l_l1.name"
+msgstr ""
+
+#. English: At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.
+msgid "ability.unit_t3_l_l1.desc"
+msgstr ""
+
+#. English: Wealth Accumulation
+msgid "ability.unit_t3_l_l2.name"
+msgstr ""
+
+#. English: At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have.
+msgid "ability.unit_t3_l_l2.desc"
+msgstr ""
+
+#. English: Wealth Accumulation
+msgid "ability.unit_t3_l_l3.name"
+msgstr ""
+
+#. English: At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have.
+msgid "ability.unit_t3_l_l3.desc"
+msgstr ""
+
+#. English: Card Pronunciation
+msgid "options.audio.pronunciation"
+msgstr ""
+
+#. English: Underdog Emblem
+msgid "trinket.underdog_emblem.name"
+msgstr ""
+
+#. English: An emblem that protects the outnumbered.
+msgid "trinket.underdog_emblem.desc"
+msgstr ""
+
+#. English: Outnumbered Bulwark
+msgid "ability.underdog_emblem.name"
+msgstr ""
+
+#. English: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.
+msgid "ability.underdog_emblem.desc"
+msgstr ""
+
+#. English: Bargain Charm
+msgid "trinket.bargain_charm.name"
+msgstr ""
+
+#. English: A charm that haggles for a better price.
+msgid "trinket.bargain_charm.desc"
+msgstr ""
+
+#. English: Bargain Charm
+msgid "ability.bargain_charm.name"
+msgstr ""
+
+#. English: Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.
+msgid "ability.bargain_charm.desc"
+msgstr ""
+
+#. English: Token Return Charm
+msgid "trinket.token_return_charm.name"
+msgstr ""
+
+#. English: A charm that reclaims spent potential.
+msgid "trinket.token_return_charm.desc"
+msgstr ""
+
+#. English: Token Return
+msgid "ability.token_return_charm.name"
+msgstr ""
+
+#. English: The first unit to die each round returns tokens equivalent to its tier.
+msgid "ability.token_return_charm.desc"
+msgstr ""
+
+#. English: Sprint Charm
+msgid "trinket.time_sprint_charm.name"
+msgstr ""
+
+#. English: A charm that bends time.
+msgid "trinket.time_sprint_charm.desc"
+msgstr ""
+
+#. English: Time Sprint
+msgid "ability.time_sprint_charm.name"
+msgstr ""
+
+#. English: Minigame timer gets a flat 2-second increase in battle.
+msgid "ability.time_sprint_charm.desc"
+msgstr ""
+
+#. English: Fusion Spark
+msgid "trinket.merge_damage_charm.name"
+msgstr ""
+
+#. English: A charm that weaponizes fusion.
+msgid "trinket.merge_damage_charm.desc"
+msgstr ""
+
+#. English: Fusion Spark
+msgid "ability.merge_damage_charm.name"
+msgstr ""
+
+#. English: Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.
+msgid "ability.merge_damage_charm.desc"
+msgstr ""
+
+#. English: Starter
+msgid "hero_starter.name"
+msgstr ""
+
+#. English: A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.
+msgid "hero_starter.desc"
+msgstr ""
+
+#. English: A gentle soul who draws strength from loss, guiding newcomers through their first steps.
+msgid "hero_starter.flavor"
+msgstr ""
+
+#. English: Soul Harvest
+msgid "ability.hero_starter_ally_death_absorb.name"
+msgstr ""
+
+#. English: When an ally dies, gain HP equal to their PWR.
+msgid "ability.hero_starter_ally_death_absorb.desc"
+msgstr ""
+
+#. English: Burn Vial
+msgid "trinket.burn_vial.name"
+msgstr ""
+
+#. English: A vial of eternal flame.
+msgid "trinket.burn_vial.desc"
+msgstr ""
+
+#. English: Rusty Ring
+msgid "trinket.rusty_ring.name"
+msgstr ""
+
+#. English: Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.
+msgid "trinket.rusty_ring.desc"
+msgstr ""
+
+#. English: Hero's Catalyst
+msgid "item.trinket_hero_catalyst.name"
+msgstr ""
+
+#. English: Whenever an ally merges, grants +1 HP and +1 PWR to your Hero.
+msgid "item.trinket_hero_catalyst.desc"
+msgstr ""
+
+#. English: Hero's Catalyst
+msgid "ability.hero_catalyst.name"
+msgstr ""
+
+#. English: Grants the Hero +1 HP and +1 PWR on any merge.
+msgid "ability.hero_catalyst.desc"
+msgstr ""
+
+#. English: Purifying Pendant
+msgid "trinket.purifying_pendant.name"
+msgstr ""
+
+#. English: When an ally takes damage from a negative status effect, removes all remaining stacks of that effect.
+msgid "trinket.purifying_pendant.desc"
+msgstr ""
+
+#. English: Awe Inspiring Totem
+msgid "trinket.awe_inspiring_totem.name"
+msgstr ""
+
+#. English: At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.
+msgid "trinket.awe_inspiring_totem.desc"
+msgstr ""
+
+#. English: Beginner's Charm
+msgid "trinket.beginners_charm.name"
+msgstr ""
+
+#. English: Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard).
+msgid "trinket.beginners_charm.desc"
+msgstr ""
+
+#. English: Trinity Charm
+msgid "trinket.trinity_charm.name"
+msgstr ""
+
+#. English: If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.
+msgid "trinket.trinity_charm.desc"
+msgstr ""
+
+#. English: Spiked Armor
+msgid "trinket.spiked_armor.name"
+msgstr ""
+
+#. English: At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].
+msgid "trinket.spiked_armor.desc"
+msgstr ""
+
+#. English: Spiked Armor
+msgid "ability.trinket_spiked_armor.name"
+msgstr ""
+
+#. English: At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].
+msgid "ability.trinket_spiked_armor.desc"
+msgstr ""
+
+#. English: Merge or level up your Gachamons or Spirits permanently!\n({cost} Gold per action)
+msgid "ui.merge_encounter_description"
+msgstr ""
+
+#. English: Play to earn tokens, then spend them for permanent HP upgrades.
+msgid "ui.rest_site_desc"
+msgstr ""
+
+#. English: Play to earn tokens, then spend them for permanent Power upgrades.
+msgid "ui.training_grounds_desc"
+msgstr ""
+
+#. English: Play to earn tokens, then spend them for a chance to win big Gold payouts.
+msgid "ui.gambling_den_desc"
+msgstr ""
+
+#. English: Merge
+msgid "ui.btn_merge"
+msgstr ""
+
+#. English: Merge ({cost} Gold)
+msgid "ui.btn_merge_cost"
+msgstr ""
+
+#. English: Swap
+msgid "ui.btn_swap"
+msgstr ""
+
+#. English: Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold.
+msgid "ui.black_market_desc"
+msgstr ""
+
+#. English: Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!
+msgid "ui.shop_desc"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold)
+msgid "ui.bm_drop_transform"
+msgstr ""
+
+#. English: Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold)
+msgid "ui.bm_drop_remove"
+msgstr ""
+
+#. English: Shape your units!\nOpen your inventory to drag a unit here,\nand train its HP or Power by spending tokens.
+msgid "ui.utg_desc"
+msgstr ""
+
+#. English: Get Tokens! (%d Gold)
+msgid "ui.rest_study"
+msgstr ""
+
+#. English: Get tokens to spend on prizes in the machines below!
+msgid "ui.reward_desc"
+msgstr ""
+
+#. English: REWARDS
+msgid "ui.rewards_title"
+msgstr ""
+
+#. English: Shockwave
+msgid "ability.unit_tier3_berserker_shockwave.name"
+msgstr ""
+
+#. English: Deals 100% cascade AOE damage to front enemy and units behind.
+msgid "ability.unit_tier3_berserker_shockwave_l1.desc"
+msgstr ""
+
+#. English: Deals 150% cascade AOE damage to front enemy and units behind.
+msgid "ability.unit_tier3_berserker_shockwave_l2.desc"
+msgstr ""
+
+#. English: Deals 200% cascade AOE damage to front enemy and units behind.
+msgid "ability.unit_tier3_berserker_shockwave_l3.desc"
+msgstr ""
+
+#. English: Resilient Aura
+msgid "ability.unit_tier3d_resilient_aura.name"
+msgstr ""
+
+#. English: Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.
+msgid "ability.unit_tier3d_resilient_aura_l1.desc"
+msgstr ""
+
+#. English: Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack.
+msgid "ability.unit_tier3d_resilient_aura_l2.desc"
+msgstr ""
+
+#. English: Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack.
+msgid "ability.unit_tier3d_resilient_aura_l3.desc"
+msgstr ""
+
+#. English: Mirror Strike
+msgid "ability.unit_tier3a_mirror_strike.name"
+msgstr ""
+
+#. English: Attacks enemy in opposite mirror slot for 100% damage.
+msgid "ability.unit_tier3a_mirror_strike_l1.desc"
+msgstr ""
+
+#. English: Attacks enemy in opposite mirror slot for 150% damage.
+msgid "ability.unit_tier3a_mirror_strike_l2.desc"
+msgstr ""
+
+#. English: Attacks enemy in opposite mirror slot for 200% damage.
+msgid "ability.unit_tier3a_mirror_strike_l3.desc"
+msgstr ""
+
+#. English: Guardian Sacrifice
+msgid "ability.unit_tier3b_guardian_sacrifice.name"
+msgstr ""
+
+#. English: Leaps to intercept lethal damage on allies.
+msgid "ability.unit_tier3b_guardian_sacrifice_l1.desc"
+msgstr ""
+
+#. English: Leaps to intercept lethal damage on allies and gains 1 Armor.
+msgid "ability.unit_tier3b_guardian_sacrifice_l2.desc"
+msgstr ""
+
+#. English: Leaps to intercept lethal damage on allies and gains 2 Armor.
+msgid "ability.unit_tier3b_guardian_sacrifice_l3.desc"
+msgstr ""
+
+#. English: Soul Summon
+msgid "ability.unit_tier3c_soul_summon.name"
+msgstr ""
+
+#. English: Summons a random Level 1 Tier 2 unit on death.
+msgid "ability.unit_tier3c_soul_summon_l1.desc"
+msgstr ""
+
+#. English: Summons a random Level 2 Tier 2 unit on death.
+msgid "ability.unit_tier3c_soul_summon_l2.desc"
+msgstr ""
+
+#. English: Summons a random Level 3 Tier 2 unit on death.
+msgid "ability.unit_tier3c_soul_summon_l3.desc"
+msgstr ""
+
+#. English: Deals damage to enemies equal to 100% of PWR when they are summoned.
+msgid "ability.unit_tier3e_ambush_predator_l1.desc"
+msgstr ""
+
+#. English: Deals damage to enemies equal to 150% of PWR when they are summoned.
+msgid "ability.unit_tier3e_ambush_predator_l2.desc"
+msgstr ""
+
+#. English: Deals damage to enemies equal to 200% of PWR when they are summoned.
+msgid "ability.unit_tier3e_ambush_predator_l3.desc"
+msgstr ""
+
+#. English: Grants +3 HP to newly summoned allies.
+msgid "ability.unit_tier3f_summon_blessing_l1.desc"
+msgstr ""
+
+#. English: Grants +5 HP to newly summoned allies.
+msgid "ability.unit_tier3f_summon_blessing_l2.desc"
+msgstr ""
+
+#. English: Grants +7 HP to newly summoned allies.
+msgid "ability.unit_tier3f_summon_blessing_l3.desc"
+msgstr ""
+
+#. English: If on the player bench at start of turn, gain +3 HP and PWR.
+msgid "ability.unit_tier3g_bench_growth_l1.desc"
+msgstr ""
+
+#. English: If on the player bench at start of turn, gain +5 HP and PWR.
+msgid "ability.unit_tier3g_bench_growth_l2.desc"
+msgstr ""
+
+#. English: If on the player bench at start of turn, gain +7 HP and PWR.
+msgid "ability.unit_tier3g_bench_growth_l3.desc"
+msgstr ""
+
+#. English: Whenever a merge happens on the battle board, gain +2 HP and PWR.
+msgid "ability.unit_tier3h_merge_growth_l1.desc"
+msgstr ""
+
+#. English: Whenever a merge happens on the battle board, gain +3 HP and PWR.
+msgid "ability.unit_tier3h_merge_growth_l2.desc"
+msgstr ""
+
+#. English: Whenever a merge happens on the battle board, gain +4 HP and PWR.
+msgid "ability.unit_tier3h_merge_growth_l3.desc"
+msgstr ""
+
+#. English: Gains +3 PWR for each other Doppleganger in battle.
+msgid "ability.doppleganger_scale_l1.desc"
+msgstr ""
+
+#. English: Gains +4 PWR for each other Doppleganger in battle.
+msgid "ability.doppleganger_scale_l2.desc"
+msgstr ""
+
+#. English: Gains +5 PWR for each other Doppleganger in battle.
+msgid "ability.doppleganger_scale_l3.desc"
+msgstr ""
+
+#. English: Summons 1 copy of itself on death into the Gacha Machine.
+msgid "ability.doppleganger_death_l1.desc"
+msgstr ""
+
+#. English: Summons 1 copy of itself on death into the Gacha Machine.
+msgid "ability.doppleganger_death_l2.desc"
+msgstr ""
+
+#. English: Summons 1 copy of itself on death into the Gacha Machine.
+msgid "ability.doppleganger_death_l3.desc"
+msgstr ""
+
+#. English: Gain +2 HP before taking damage.
+msgid "ability.unit_tier2a_defensive_stance_l1.desc"
+msgstr ""
+
+#. English: Gain +4 HP before taking damage.
+msgid "ability.unit_tier2a_defensive_stance_l2.desc"
+msgstr ""
+
+#. English: Gain +6 HP before taking damage.
+msgid "ability.unit_tier2a_defensive_stance_l3.desc"
+msgstr ""
+
+#. English: Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.
+msgid "ability.unit_t3_mimic_l1.desc"
+msgstr ""
+
+#. English: Before its turn action, transforms into the enemy unit in the mirror slot (+1 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.
+msgid "ability.unit_t3_mimic_l2.desc"
+msgstr ""
+
+#. English: Before its turn action, transforms into the enemy unit in the mirror slot (Level 3 MAX). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.
+msgid "ability.unit_t3_mimic_l3.desc"
+msgstr ""
+
+#. English: Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.
+msgid "ability.unit_t3_shadow_l1.desc"
+msgstr ""
+
+#. English: Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness.
+msgid "ability.unit_t3_shadow_l2.desc"
+msgstr ""
+
+#. English: Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness.
+msgid "ability.unit_t3_shadow_l3.desc"
+msgstr ""
+
+#. English: Wealth Accumulation
+msgid "ability.unit_t3_l.name"
+msgstr ""
+
+#. English: Standard's Legacy
+msgid "ability.unit_t3_j_ability.name"
+msgstr ""
+

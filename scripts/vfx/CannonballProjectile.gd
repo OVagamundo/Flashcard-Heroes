@@ -15,6 +15,7 @@ var _is_moving: bool = false
 var _start_pos: Vector2
 var _end_pos: Vector2
 var _is_self_cast: bool
+var has_impacted: bool = false
 
 func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_self_cast: bool = false) -> void:
 	_start_pos = start_pos
@@ -52,6 +53,7 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 	_recalculate_physics()
 
 func launch(custom_duration: float = 0.0) -> void:
+	has_impacted = false
 	if custom_duration > 0.0:
 		_duration = custom_duration
 	elif _duration <= 0.0:
@@ -60,6 +62,11 @@ func launch(custom_duration: float = 0.0) -> void:
 	_recalculate_physics()
 	_time = 0.0
 	_is_moving = true
+
+func wait_for_impact() -> void:
+	if has_impacted or not _is_moving:
+		return
+	await impact
 
 func _recalculate_physics() -> void:
 	# Physics Setup: We want to reach end_pos in _duration seconds with a parabolic arc.
@@ -109,5 +116,6 @@ func _process(delta: float) -> void:
 	# Check for completion
 	if _time >= _duration:
 		_is_moving = false
+		has_impacted = true
 		impact.emit()
 		queue_free()

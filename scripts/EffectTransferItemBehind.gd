@@ -93,8 +93,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			battle_manager._state.bm_add_instance(new_item, "", -1)
 			var equip_events: Array[CombatEvent] = []
 			battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true, equip_events)
-			for ev in equip_events:
-				result.add_event(ev)
 			
 			var new_pwr: int = tgt.current_pwr
 			var new_hp: int = tgt.current_hp
@@ -111,11 +109,22 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			
 			var transfer_payload := CombatPayload.new()
 			transfer_payload.item_uuid = new_item.ball_uuid
+			transfer_payload.item_icon = item_def.icon if (is_instance_valid(item_def) and "icon" in item_def) else null
 			transfer_payload.item_icon_path = item_icon_path
 			transfer_payload.old_pwr = old_pwr
 			transfer_payload.new_pwr = new_pwr
 			transfer_payload.old_hp = old_hp
 			transfer_payload.new_hp = new_hp
+			
+			for ev in equip_events:
+				if ev.type == CombatEvent.Type.ITEM_DISCARD and ev.visual_payload != null:
+					var d_payload: CombatPayload = ev.visual_payload
+					transfer_payload.replaced_item_uuid = d_payload.item_uuid
+					transfer_payload.replaced_item_icon = d_payload.item_icon
+					transfer_payload.replaced_item_icon_path = d_payload.item_icon_path
+					transfer_payload.replaced_item_name = d_payload.item_name
+					break
+			
 			result.add_event(CombatEvent.new(CombatEvent.Type.ITEM_TRANSFER, {
 				"source_uuid": source_uuid,
 				"target_uuids": [tgt_uuid],

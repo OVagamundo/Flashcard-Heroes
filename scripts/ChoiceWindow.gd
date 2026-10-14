@@ -16,6 +16,7 @@ var _recipe_id: StringName
 var _result_id: StringName
 var _source_view_instance_id: int = -1
 var _choice_made: bool = false
+var _drop_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	# Request interaction lock to prevent hover from closing this window
@@ -60,14 +61,22 @@ func _exit_tree() -> void:
 		
 	# Restore visibility of source view if it was hidden (e.g. on Cancel)
 	if not _choice_made and _source_view_instance_id != -1:
+		var effective_drop_pos: Vector2 = _drop_pos
+		if effective_drop_pos.is_zero_approx() and is_instance_valid(_target_location) and is_instance_valid(WindowManager):
+			var tgt_v = WindowManager.find_view_for_location(_target_location)
+			if is_instance_valid(tgt_v):
+				effective_drop_pos = tgt_v.get_global_rect().get_center()
+
 		if is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
-			ActionQueue.request(CancelDragAction.new(_source_location, _target_location, "cancelled_choice"))
+			ActionQueue.request(CancelDragAction.new(_source_location, _target_location, "cancelled_choice", effective_drop_pos, _source_view_instance_id))
 		else:
 			var view = instance_from_id(_source_view_instance_id)
 			if is_instance_valid(view) and view is Control:
 				view.visible = true
 				view.modulate.a = 1.0
-				if view.has_method("play_landing_bounce"):
+				if not effective_drop_pos.is_zero_approx() and view.has_method("play_snap_back_from"):
+					view.play_snap_back_from(effective_drop_pos)
+				elif view.has_method("play_landing_bounce"):
 					view.play_landing_bounce()
 
 
@@ -77,6 +86,7 @@ func populate(context: Dictionary) -> void:
 	_recipe_id = context.get("recipe_id")
 	_result_id = context.get("result_id", &"")
 	_source_view_instance_id = context.get("source_view_id", -1)
+	_drop_pos = context.get("drop_pos", Vector2.ZERO)
 
 	_update_localized_text()
 

@@ -569,6 +569,16 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	
 	_kill_active_tweens()
 	
+	# If this unit is a Guardian Sentinel that was mid-leap or hadn't returned,
+	# snap it back to its original slot before playing the lethal save animation.
+	if _guardian_original_position != Vector2.ZERO and is_instance_valid(_view):
+		_view.global_position = _guardian_original_position
+		_guardian_original_position = Vector2.ZERO
+		_view.top_level = false
+		_view.position = Vector2.ZERO
+		_move_original_local_position = Vector2.ZERO
+		_move_original_top_level = false
+	
 	var original_position: Vector2 = _view.position
 	var levitate_target := Vector2(original_position.x, original_position.y - AC.LETHAL_SAVE_LEVITATE_HEIGHT)
 	
@@ -600,6 +610,7 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	save_tween.finished.connect(_on_lethal_save_tween_finished)
 
 func _on_lethal_save_tween_finished() -> void:
+	_move_tween = null
 	SignalBus.emit_signal("unit_lethal_save_finished", _get_uuid())
 
 # =============================================================================
@@ -682,6 +693,13 @@ func animate_leap_return() -> void:
 	_view.z_index = _original_z_index
 	_reset_icon_scale()
 	_guardian_original_position = Vector2.ZERO
+	if is_instance_valid(_view):
+		_view.top_level = false
+		_view.position = Vector2.ZERO
+		_move_original_local_position = Vector2.ZERO
+		_move_original_position = _view.global_position
+		_move_original_top_level = false
+	_move_tween = null
 
 # =============================================================================
 # COMPOSABLE ANIMATION EFFECTS (Independent, parallel)

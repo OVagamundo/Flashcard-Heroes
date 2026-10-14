@@ -85,7 +85,7 @@ The following player decisions represent the interactions across the game that a
 | **Battle Management** | `MoveInventoryAction` | Move, equip, or use units/items between bench, board, and inventory. |
 | **Battle Management** | `ConfirmMergeAction` | Confirm a merge recipe between two units from `ChoiceWindow`. |
 | **Battle Management** | `ConfirmSwapAction` | Swap positions of two units or items from `ChoiceWindow` or direct drag. |
-| **Battle Management** | `DrawGachaAction` | Pull a unit/item from combat gacha machines using combat tokens. |
+| **Battle Management** | `DrawGachaAction` | Pull a unit/item from gacha machines using tokens. |
 | **Battle Management** | `EndTurnAction` | Finish management phase and transition to combat execution. |
 | **Battle Flow** | `AcknowledgeBattleResultsAction` | Acknowledge end-of-battle victory/defeat modal to open rewards or map. |
 | **Battle Settings** | `SetCombatSpeedAction` | Toggle combat playback speed multiplier (1x, 2x, 4x). |
@@ -97,14 +97,14 @@ The following player decisions represent the interactions across the game that a
 | **Shop** | `BuyShopAction` | Purchase an item/unit from a specific shop slot index. |
 | **Shop** | `RerollShopAction` | Pay gold to reroll shop stock. |
 | **Shop** | `LeaveShopAction` | Leave the shop and return to map navigation. |
-| **Reward Room** | `DrawRewardAction` | Spend reward tokens to draw a capsule. |
+| **Reward Room** | `DrawRewardAction` | Spend tokens to draw a capsule. |
 | **Reward Room** | `CollectRewardAction` | Claim a drawn reward capsule into inventory/trinkets. |
 | **Reward Room** | `SellRewardAction` | Sell a drawn reward capsule for gold. |
-| **Reward Room** | `StudyRewardAction` | Initiate flashcard minigame to earn reward tokens. |
+| **Reward Room** | `StudyRewardAction` | Initiate flashcard minigame to earn tokens. |
 | **Reward Room** | `LeaveRewardAction` | Finalize/discard remaining rewards and exit room. |
 | **Rest Site** | `DrawRestSiteAction` | Spend tokens to draw a stat capsule. |
 | **Rest Site** | `UpgradeRestSiteAction` | Apply a drawn stat capsule to the Hero. |
-| **Rest Site** | `StudyRestSiteAction` | Initiate flashcard minigame to earn rest site tokens. |
+| **Rest Site** | `StudyRestSiteAction` | Initiate flashcard minigame to earn tokens. |
 | **Rest Site** | `LeaveRestSiteAction` | Auto-apply remaining capsules and exit rest site. |
 | **Dojo / Training** | `StartTrainingAction` | Commit gold, select target unit & stat (`hp`/`pwr`), and initiate minigame. |
 | **Dojo / Training** | `TrainUnitStatAction` | Spend 1, 2, or 3 tokens inside training popup to roll and apply stat buffs. |

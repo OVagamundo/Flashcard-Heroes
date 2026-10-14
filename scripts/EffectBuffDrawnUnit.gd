@@ -86,8 +86,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_instance.level != 1:
 			continue
 		
-		# Check recursion prevention tag
 		var buff_tag := StringName("royal_insignia_buffed_%s" % _source_uuid)
+		# Check recursion prevention tag
 		if target_instance.has_tag(buff_tag):
 			continue
 		
@@ -119,15 +119,17 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, false)
 			state_applied_any = true
 
-	if is_simulation and not batched_target_uuids.is_empty():
-		var trinket_name: String = ""
-		if is_instance_valid(trinket_instance):
-			var trinket_def = trinket_instance.get_definition()
-			if is_instance_valid(trinket_def):
-				trinket_name = tr(trinket_def.name_key)
-		if trinket_name.is_empty():
-			trinket_name = "Royal Insignia"
+	var trinket_name: String = ""
+	if is_instance_valid(trinket_instance):
+		var trinket_def = trinket_instance.get_definition()
+		if is_instance_valid(trinket_def):
+			trinket_name = tr(trinket_def.name_key)
+	if trinket_name.is_empty():
+		trinket_name = "Royal Insignia"
 
+
+
+	if is_simulation and not batched_target_uuids.is_empty():
 		# Single Log message for all targets
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 			"text": "%s grants %s +%d HP, +%d PWR" % [trinket_name, " and ".join(batched_target_names), hp_amount, pwr_amount]
@@ -170,7 +172,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
 			}))
 
-	result.state_applied = true
+	result.state_applied = state_applied_any
 	return result
 
 # Helper to determine team from container

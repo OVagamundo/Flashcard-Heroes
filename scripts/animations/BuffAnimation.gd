@@ -74,7 +74,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	if has_hp_buff:
 		for proj in hp_projectiles:
 			if is_instance_valid(proj):
-				await proj.impact
+				await proj.wait_for_impact()
 		for i in range(targets.size()):
 			var target_uuid = targets[i]
 			var target_hp_delta = payload.targets_new_hp[i] - payload.targets_old_hp[i] if (i < payload.targets_new_hp.size() and i < payload.targets_old_hp.size()) else hp_delta
@@ -87,7 +87,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	if has_pwr_buff:
 		for proj in pwr_projectiles:
 			if is_instance_valid(proj):
-				await proj.impact
+				await proj.wait_for_impact()
 		for i in range(targets.size()):
 			var target_uuid = targets[i]
 			var target_pwr_delta = payload.targets_new_pwr[i] - payload.targets_old_pwr[i] if (i < payload.targets_new_pwr.size() and i < payload.targets_old_pwr.size()) else pwr_delta

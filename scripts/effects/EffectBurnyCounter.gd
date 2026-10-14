@@ -17,6 +17,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var attacker_uuid: String = context.get("attacker_uuid", "")
 	if attacker_uuid.is_empty():
 		attacker_uuid = context.get("trigger_context", {}).get("attacker_uuid", "")
+	if attacker_uuid.is_empty() and not targets.is_empty():
+		attacker_uuid = targets[0]
 		
 	# Zero-Instance-Query Compliant: Use context data for source stats if possible
 	var pwr: int = context.get("source_pwr", source_instance.current_pwr)
@@ -51,23 +53,15 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var old_armor = target_inst.get_status_effect_amount(&"armor")
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
-		var hp_damage = max(0, current_damage - old_armor)
-		var would_be_lethal: bool = target_inst.current_hp - hp_damage <= 0
-		var tgt_is_player_unit: bool = battle_manager._is_player_unit(target_inst)
-		var is_ally_damage: bool = (tgt_is_player_unit != is_player)
-		
-		if would_be_lethal and is_ally_damage:
-			var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, current_target_uuid)
-			if is_instance_valid(guardian):
-				result.add_event(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-					"source_uuid": guardian.ball_uuid,
-					"target_uuids": [current_target_uuid],
-					"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, current_target_uuid)
-				}))
-				current_target_uuid = guardian.ball_uuid
-				target_inst = guardian
-				old_hp = target_inst.current_hp
-				old_armor = target_inst.get_status_effect_amount(&"armor")
+		var intercept_res = BattleHelpers.resolve_guardian_intercept(
+			target_inst, current_damage, C.DamageType.RANGED, is_player, battle_manager
+		)
+		if intercept_res.intercepted:
+			target_inst = intercept_res.interceptor
+			current_target_uuid = target_inst.ball_uuid
+			old_hp = target_inst.current_hp
+			old_armor = target_inst.get_status_effect_amount(&"armor")
+			result.events.append_array(intercept_res.events)
 		
 		# 1. Apply Damage Manually to respect Armor
 		var dmg_res = battle_manager.apply_damage(target_inst, current_damage, C.DamageType.RANGED, source_uuid)

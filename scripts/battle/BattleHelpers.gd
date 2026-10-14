@@ -192,6 +192,70 @@ static func find_guardian_by_ability(state: BattleState, is_player_team: bool, e
 	
 	return best_guardian
 
+class InterceptResolution extends RefCounted:
+	var intercepted: bool = false
+	var interceptor: GachaBallInstance = null
+	var events: Array[CombatEvent] = []
+
+## Centralized Guardian Sentinel intercept resolution.
+## Evaluates if incoming damage is lethal to target ally, finds a guardian on the same team,
+## triggers passive_intercept so Guardian Sentinel gains level-based armor (e.g. +1 / +2)
+## on top of any existing armor BEFORE leaping, and records events in proper sequence.
+static func resolve_guardian_intercept(
+	target_inst: GachaBallInstance,
+	damage_amount: int,
+	damage_type: int,
+	is_player_source: bool,
+	battle_manager: Node
+) -> InterceptResolution:
+	var res := InterceptResolution.new()
+	if not is_instance_valid(target_inst) or target_inst.current_hp <= 0:
+		return res
+	if not is_instance_valid(battle_manager):
+		return res
+		
+	# Status effect damage (BURN, STATIC) bypasses armor and intercept
+	const C = preload("res://scripts/Constants.gd")
+	if damage_type == C.DamageType.BURN or damage_type == C.DamageType.STATIC:
+		return res
+		
+	var target_armor: int = target_inst.get_status_effect_amount(&"armor")
+	var predicted_hp_damage: int = max(0, damage_amount - target_armor)
+	var would_be_lethal: bool = target_inst.current_hp - predicted_hp_damage <= 0
+	if not would_be_lethal:
+		return res
+		
+	var tgt_is_player_unit: bool = battle_manager._is_player_unit(target_inst)
+	var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
+	if not is_ally_damage:
+		return res
+		
+	var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, target_inst.ball_uuid)
+	if not is_instance_valid(guardian):
+		return res
+		
+	res.intercepted = true
+	res.interceptor = guardian
+	
+	# Trigger Guardian passive effects (e.g., gain Armor at Level 2/3 on top of existing armor)
+	var combat_sim = battle_manager._combat
+	var intercept_scope = combat_sim.begin_reaction_scope()
+	AbilityResolver.process_trigger(&"passive_intercept", {
+		"source_uuid": guardian.ball_uuid,
+		"is_simulation": true
+	})
+	var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
+	
+	# Event order: Armor gain resolves first (on top of existing armor), then the leap event
+	res.events.append_array(guardian_results)
+	res.events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
+		"source_uuid": guardian.ball_uuid,
+		"target_uuids": [target_inst.ball_uuid],
+		"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, target_inst.ball_uuid)
+	}))
+	
+	return res
+
 ## Get a comprehensive board snapshot for animation playback (includes visual data)
 static func get_combat_board_snapshot(battle_instances: Dictionary) -> Dictionary:
 	var snapshot: Dictionary = {}

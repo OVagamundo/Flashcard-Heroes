@@ -1,7 +1,9 @@
 class_name InputUtils
 extends RefCounted
 
-const TOUCH_LONG_PRESS_SEC: float = 0.32
+const HOVER_PEEK_DELAY_SEC: float = 0.4
+const LONG_PRESS_PEEK_DELAY_SEC: float = 0.5
+const TOUCH_LONG_PRESS_SEC: float = 0.5
 const TOUCH_DRAG_THRESHOLD_PX: float = 24.0
 
 

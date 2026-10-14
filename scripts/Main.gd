@@ -222,7 +222,9 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 		# Check if any windows are open
 		if WindowManager.is_any_inspection_window_open():
 			# Close all open windows - this is the "click outside window" behavior
-			if WindowManager.is_run_inventory_window_open() or WindowManager.is_any_inventory_window_open():
+			if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
+				ActionQueue.request(CloseDiscardPileAction.new())
+			elif WindowManager.is_run_inventory_window_open() or WindowManager.is_battle_inventory_window_open():
 				var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
 				ActionQueue.request(CloseInventoryAction.new(kind))
 			else:
@@ -389,7 +391,16 @@ func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 		return
 	var action := DrawGachaAction.new(tier)
 	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
+		var accepted = ActionQueue.request(action)
+		if not accepted and not ActionQueue.is_busy():
+			var target_machine: Control = null
+			match tier:
+				1: target_machine = gacha_machine_1
+				2: target_machine = gacha_machine_2
+				3: target_machine = gacha_machine_3
+			var token_group = get_node_or_null("%TokenGroup")
+			if is_instance_valid(target_machine):
+				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
 	else:
 		execute_draw_gacha_visuals(button, tier)
 
@@ -434,7 +445,19 @@ func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
 	
 	# We've committed to this draw. Set _is_drawing_token to true.
 	_is_drawing_token = true
-	# Route a background interaction through GIR so any open inspection windows close
+
+	# As part of the draw visual choreography, close the battle inventory drawer,
+	# discard pile drawer, and any open inspection popups so the battle board and ball animation are unobstructed
+	if is_instance_valid(WindowManager):
+		if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
+			WindowManager.close_discard_pile_window()
+		if WindowManager.is_battle_inventory_window_open() or WindowManager.is_run_inventory_window_open():
+			var is_battle: bool = (is_instance_valid(GameManager) and GameManager.is_in_battle)
+			WindowManager.close_inventory_window(is_battle)
+		if WindowManager.is_any_inspection_window_open():
+			WindowManager.close_all_inspection_windows(false)
+
+	# Route a background interaction through GIR so any open inspection windows close and selections clear
 	var context = InteractionContext.new()
 	if is_instance_valid(button):
 		context.source_view_instance_id = button.get_instance_id()
@@ -566,10 +589,7 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	knob_button_2.disabled = not is_in_battle
 	knob_button_3.disabled = not is_in_battle
 	
-	# Reset token counter to 0 when leaving battle (tokens don't persist between encounters)
-	if not is_in_battle:
-		set_visual_tokens(0, false)
-	else:
+	if is_in_battle:
 		# Entering battle - snap visual counters to model state
 		call_deferred("sync_visual_machine_counts_with_model")
 		var bm = GameManager.get_battle_manager()
@@ -1021,7 +1041,12 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 		var is_valid_for_training = true
 		if _action_zone_1_text == tr("ui.utg_drop_hp"):
 			var sel = GlobalInteractionRouter.get_current_selection()
-			if sel and sel.entity_type != &"UNIT":
+			var sel_type: StringName = sel.entity_type if sel else &""
+			if sel_type == &"" and is_instance_valid(new_location) and is_instance_valid(GameManager):
+				var inst = GameManager.get_instance_from_location(new_location)
+				if is_instance_valid(inst) and is_instance_valid(inst.get_definition()):
+					sel_type = inst.get_definition().category
+			if sel_type != &"UNIT":
 				is_valid_for_training = false
 
 		if is_inventory_source and is_valid_for_training and not MergeManager.is_merge_encounter_active():
@@ -1063,7 +1088,12 @@ func _deferred_maybe_hide_action_drop_zones() -> void:
 	var sel = GlobalInteractionRouter.get_current_selection()
 	if sel and is_instance_valid(sel.location) and String(sel.location.container).begins_with("RunInventoryT"):
 		# If in training mode, still hide if not a unit
-		if _action_zone_1_text == tr("ui.utg_drop_hp") and sel.entity_type != &"UNIT":
+		var sel_type: StringName = sel.entity_type
+		if sel_type == &"" and is_instance_valid(GameManager):
+			var inst = GameManager.get_instance_from_location(sel.location)
+			if is_instance_valid(inst) and is_instance_valid(inst.get_definition()):
+				sel_type = inst.get_definition().category
+		if _action_zone_1_text == tr("ui.utg_drop_hp") and sel_type != &"UNIT":
 			pass # Continue to hide
 		else:
 			return

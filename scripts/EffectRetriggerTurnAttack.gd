@@ -32,8 +32,16 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 	
 	# --- FIND FRESH TARGET ---
-	var is_player = battle_manager._is_player_unit(attacker)
-	var target = battle_manager._get_frontmost_target(is_player)
+	var basic_attack_def = battle_manager.get_basic_attack_for(attacker) if battle_manager.has_method("get_basic_attack_for") else Database.get_ability_definition(&"basic_attack")
+	var default_target_type = C.TARGET_FRONTMOST_ENEMY
+	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
+		var effect = basic_attack_def.effects[0]
+		if is_instance_valid(effect) and effect.target_type != &"":
+			default_target_type = effect.target_type
+	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, default_target_type, {"trigger_type": &"on_attack"}, battle_manager)
+	if target_uuids.is_empty():
+		return EffectResult.empty()
+	var target = battle_manager.get_instance_by_uuid(target_uuids[0])
 	if not is_instance_valid(target):
 		return EffectResult.empty()
 
@@ -69,7 +77,6 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	double_strike_context["on_attack_already_triggered"] = true
 	
 	# --- QUEUE FRESH BASIC ATTACK ---
-	var basic_attack_def = Database.get_ability_definition(&"basic_attack")
 	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
 		var basic_attack_request = EffectRequest.new(
 			attacker.ball_uuid, &"double_strike_attack", basic_attack_def.effects[0],

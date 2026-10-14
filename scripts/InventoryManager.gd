@@ -122,6 +122,9 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 			source_view.visible = false
 			context["source_view_id"] = source_view.get_instance_id()
 			
+		var current_pointer: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else Vector2.ZERO
+		context["drop_pos"] = current_pointer
+			
 		# ORDER FIX: End drag FIRST to clear old state/locks.
 		# Pass true (handled) so GIR doesn't restore visibility or play sounds yet.
 		GlobalInteractionRouter.end_drag(true)

@@ -57,7 +57,7 @@ func _ready() -> void:
 	SignalBus.main_scene_requested.connect(_close_all_windows)
 	SignalBus.loadout_scene_requested.connect(_close_all_windows)
 	SignalBus.title_scene_requested.connect(_close_all_windows)
-	SignalBus.path_choice_scene_requested.connect(close_all_inspection_windows)
+	SignalBus.path_choice_scene_requested.connect(_close_all_windows)
 
 	call_deferred("_setup_persistent_inventory")
 	call_deferred("_setup_persistent_discard_pile")
@@ -271,6 +271,12 @@ func open_discard_pile_window() -> void:
 			_animate_discard_pile_close(win)
 			return
 
+	# We are about to open the discard pile, so close all other contexts gently
+	for iter_win in _active_inspection_group:
+		if is_instance_valid(iter_win) and iter_win != win:
+			stop_tracking_window(iter_win.get_instance_id())
+			_queue_free_with_optional_inventory_animation(iter_win)
+
 	var ctx = _get_discard_pile_populate_context()
 	if win.has_method("populate"):
 		win.populate(ctx)
@@ -399,6 +405,22 @@ func close_all_inspection_windows(keep_inventory: bool = false) -> void:
 
 	# no-op if already empty
 
+# Public API: explicitly close the run or battle inventory window drawer
+func close_inventory_window(is_battle: bool = false) -> void:
+	var win: Control = _persistent_battle_inventory_window if is_battle else _persistent_inventory_window
+	if is_instance_valid(win):
+		close_children_of(win)
+		stop_tracking_window(win.get_instance_id())
+		_queue_free_with_optional_inventory_animation(win)
+
+# Public API: explicitly close the discard pile drawer
+func close_discard_pile_window() -> void:
+	var win: Control = _persistent_discard_pile_window
+	if is_instance_valid(win):
+		close_children_of(win)
+		stop_tracking_window(win.get_instance_id())
+		_queue_free_with_optional_inventory_animation(win)
+
 # Public query function for the GIR.
 func is_any_inspection_window_open() -> bool:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
@@ -412,6 +434,32 @@ func get_top_contextual_window() -> Control:
 		if is_instance_valid(win):
 			return win
 	return null
+
+# Public API: check if the merge preview ChoiceWindow is currently open
+func is_choice_window_open() -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if not is_instance_valid(w) or w.is_queued_for_deletion():
+			continue
+		if w is ChoiceWindow or (w.has_meta("window_type") and w.get_meta("window_type") == &"ChoiceWindow"):
+			return true
+	return false
+
+# Public API: check if a screen point is inside the active ChoiceWindow
+func is_point_inside_choice_window(pos: Vector2) -> bool:
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if not is_instance_valid(w) or w.is_queued_for_deletion() or not w.is_visible_in_tree():
+			continue
+		if w is ChoiceWindow or (w.has_meta("window_type") and w.get_meta("window_type") == &"ChoiceWindow"):
+			var rect: Rect2 = _get_screen_rect(w)
+			if rect.has_point(pos):
+				return true
+	return false
+
+# Public API: check if any modal window is currently open
+func is_modal_open() -> bool:
+	return not _modal_stack.is_empty()
 
 # Public API: check if ANY base inventory window (Battle, Run, or Discard Pile) is currently open
 func is_any_inventory_window_open() -> bool:
@@ -436,6 +484,20 @@ func is_run_inventory_window_open() -> bool:
 	return _persistent_inventory_window in _active_inspection_group \
 		and _persistent_inventory_window.visible \
 		and not (_persistent_inventory_window.has_meta(_WM_META_CLOSING) and bool(_persistent_inventory_window.get_meta(_WM_META_CLOSING)))
+
+func is_battle_inventory_window_open() -> bool:
+	if not is_instance_valid(_persistent_battle_inventory_window):
+		return false
+	return _persistent_battle_inventory_window in _active_inspection_group \
+		and _persistent_battle_inventory_window.visible \
+		and not (_persistent_battle_inventory_window.has_meta(_WM_META_CLOSING) and bool(_persistent_battle_inventory_window.get_meta(_WM_META_CLOSING)))
+
+func is_discard_pile_window_open() -> bool:
+	if not is_instance_valid(_persistent_discard_pile_window):
+		return false
+	return _persistent_discard_pile_window in _active_inspection_group \
+		and _persistent_discard_pile_window.visible \
+		and not (_persistent_discard_pile_window.has_meta(_WM_META_CLOSING) and bool(_persistent_discard_pile_window.get_meta(_WM_META_CLOSING)))
 
 func is_run_inventory_window_interactive() -> bool:
 	if not is_run_inventory_window_open():
@@ -530,6 +592,7 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	# This ensures all height calculations (fit_content) are based on the final width from frame 1.
 	if window_instance is InspectionWindow:
 		window_instance.custom_minimum_size = Vector2(480, 0)
+		window_instance.enforce_display_only()
 		
 	window_instance.process_mode = Node.PROCESS_MODE_ALWAYS
 		
@@ -622,8 +685,129 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 
 	var position := _calculate_contextual_window_position(safe_anchor, safe_parent, window, pos_hint)
 	_set_window_screen_position(window, position)
-	_set_window_screen_position(window, position)
 	_animate_window_open(window)
+	
+	if safe_parent == null and window is InspectionWindow and window.has_method("get_child_window_specs"):
+		call_deferred("_setup_and_layout_child_windows", window, safe_anchor)
+
+func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> void:
+	if not is_instance_valid(root_window) or not root_window.is_inside_tree():
+		return
+	if not root_window.has_method("get_child_window_specs"):
+		return
+	
+	var specs: Array[Dictionary] = root_window.get_child_window_specs()
+	if specs.is_empty():
+		return
+	
+	var child_windows: Array[Control] = []
+	for spec in specs:
+		var w_type: StringName = spec.get("window_type", &"")
+		if not _window_scenes.has(w_type):
+			continue
+		var child_instance = _window_scenes[w_type].instantiate()
+		if child_instance is InspectionWindow:
+			child_instance.custom_minimum_size = Vector2(480, 0)
+			child_instance.enforce_display_only()
+		child_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		_get_modal_layer().add_child(child_instance)
+		child_instance.modulate.a = 0.0
+		child_instance.show()
+		_set_window_screen_position(child_instance, Vector2(-2000, -2000))
+		child_instance.z_index = 100
+		child_instance.set_meta("window_type", w_type)
+		_register_window(child_instance, false)
+		_active_inspection_group.push_back(child_instance)
+		
+		if child_instance.has_method("populate"):
+			child_instance.populate(spec.get("populate_context", {}))
+		
+		if child_instance is InspectionWindow:
+			child_instance.enforce_display_only()
+			
+		child_windows.append(child_instance)
+	
+	if child_windows.is_empty():
+		return
+	
+	# Wait for child windows layout to settle
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	if not is_instance_valid(root_window) or not root_window.is_inside_tree():
+		for child in child_windows:
+			if is_instance_valid(child):
+				child.queue_free()
+		return
+	
+	var source_rect = _get_screen_rect(anchor) if is_instance_valid(anchor) else Rect2()
+	var root_rect = _get_screen_rect(root_window)
+	
+	_layout_child_windows(source_rect, root_rect, child_windows)
+	
+	for child in child_windows:
+		if is_instance_valid(child):
+			_animate_window_open(child)
+
+func _layout_child_windows(source_rect: Rect2, root_rect: Rect2, children: Array[Control]) -> void:
+	if children.is_empty():
+		return
+	var viewport_rect := get_viewport().get_visible_rect()
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	
+	# Primary side: away from the source
+	var root_center_x = root_rect.get_center().x
+	var source_center_x = source_rect.get_center().x if not source_rect.size.is_zero_approx() else viewport_rect.get_center().x
+	var place_right: bool = root_center_x >= source_center_x
+	
+	var cur_col_x: float
+	if place_right:
+		cur_col_x = root_rect.end.x + margin
+	else:
+		var first_sz = _get_window_size(children[0])
+		cur_col_x = root_rect.position.x - first_sz.x - margin
+	
+	var cur_y: float = root_rect.position.y
+	var col_width: float = 0.0
+	
+	for child in children:
+		if not is_instance_valid(child):
+			continue
+		var child_sz := _get_window_size(child)
+		col_width = maxf(col_width, child_sz.x)
+		
+		# Check vertical fit in current column
+		if cur_y + child_sz.y > viewport_rect.end.y - margin and cur_y > root_rect.position.y:
+			# Advance to next column
+			if place_right:
+				cur_col_x += col_width + margin
+				col_width = child_sz.x
+				if cur_col_x + child_sz.x > viewport_rect.end.x - margin:
+					cur_col_x = (source_rect.position.x - child_sz.x - margin) if not source_rect.size.is_zero_approx() else margin
+			else:
+				cur_col_x -= (child_sz.x + margin)
+				col_width = child_sz.x
+				if cur_col_x < viewport_rect.position.x + margin:
+					cur_col_x = (source_rect.end.x + margin) if not source_rect.size.is_zero_approx() else margin
+			cur_y = root_rect.position.y
+		
+		var pos := Vector2(cur_col_x, cur_y)
+		pos.x = clampf(pos.x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
+		pos.y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+		
+		var candidate_rect := Rect2(pos, child_sz)
+		
+		# Must never overlap source_rect
+		if not source_rect.size.is_zero_approx() and candidate_rect.intersects(source_rect):
+			if source_rect.get_center().y <= viewport_rect.get_center().y:
+				pos.y = source_rect.end.y + margin
+			else:
+				pos.y = source_rect.position.y - child_sz.y - margin
+			pos.y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+		
+		_set_window_screen_position(child, pos)
+		cur_y += child_sz.y + margin
 
 func _find_ancestor_inspection_window(node: Node) -> Control:
 	if not is_instance_valid(node): return null
@@ -681,6 +865,18 @@ func find_view_for_location(loc: LocationIdentifier) -> Control:
 			if _locations_equal(meta_loc, loc):
 				return node as Control
 	return null
+
+# Public API: find the entity view (e.g. GachaBallView) for a location, unwrapping SlotView if necessary
+func find_entity_view_for_location(loc: LocationIdentifier) -> Control:
+	var slot_or_view = find_view_for_location(loc)
+	if not is_instance_valid(slot_or_view):
+		return null
+	if slot_or_view is GachaBallView or slot_or_view.has_method("play_landing_bounce"):
+		return slot_or_view
+	for child in slot_or_view.get_children():
+		if not child.is_queued_for_deletion() and (child is GachaBallView or (child is Control and child.has_method("play_landing_bounce"))):
+			return child
+	return slot_or_view
 
 # Helper: compare two LocationIdentifier values safely (by fields)
 func _locations_equal(a, b) -> bool:
@@ -820,6 +1016,18 @@ func _on_inspection_anchor_moved(window_id: int, anchor_id: int, pos_hint: Strin
 	if is_instance_valid(anchor) and is_instance_valid(window_instance):
 		var pos := _calculate_contextual_window_position(anchor, null, window_instance, pos_hint)
 		_set_window_screen_position(window_instance, pos)
+		
+		var source_rect = _get_screen_rect(anchor)
+		var root_rect = _get_screen_rect(window_instance)
+		var children: Array[Control] = []
+		var parent_idx = _active_inspection_group.find(window_instance)
+		if parent_idx != -1:
+			for i in range(parent_idx + 1, _active_inspection_group.size()):
+				var ch = _active_inspection_group[i]
+				if is_instance_valid(ch):
+					children.append(ch)
+		if not children.is_empty():
+			_layout_child_windows(source_rect, root_rect, children)
 
 
 func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable) -> void:
@@ -890,7 +1098,7 @@ func close_all_windows() -> void:
 	_close_all_windows()
 
 func _close_all_windows() -> void:
-	close_all_inspection_windows()
+	close_all_inspection_windows(false)
 	while not _modal_stack.is_empty():
 		_close_top_modal()
 
@@ -1139,6 +1347,11 @@ func get_vfx_layer() -> CanvasLayer:
 			get_tree().root.add_child(_vfx_layer)
 			_vfx_layer.add_to_group("vfx_layer")
 	return _vfx_layer
+
+func clear_vfx_layer() -> void:
+	if is_instance_valid(_vfx_layer):
+		for child in _vfx_layer.get_children():
+			child.queue_free()
 
 func _get_background_ui_layer() -> CanvasLayer:
 	if not is_instance_valid(_background_ui_layer):

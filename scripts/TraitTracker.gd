@@ -2,12 +2,36 @@ class_name TraitTracker
 extends PanelContainer
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
+const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
 
 @onready var icon_rect: TextureRect = $HBoxContainer/Icon
 @onready var name_label: Label = $HBoxContainer/VBoxContainer/NameLabel
 @onready var count_label: Label = $HBoxContainer/VBoxContainer/CountLabel
 
 var _current_trait_id: String = ""
+var _inspection_trigger: InspectionTrigger = null
+
+func _ready() -> void:
+	mouse_entered.connect(_on_mouse_entered)
+	mouse_exited.connect(_on_mouse_exited)
+	_inspection_trigger = InspectionTrigger.new()
+	_inspection_trigger.setup(self, func():
+		if _current_trait_id.is_empty():
+			return {}
+		return {"trait_id": _current_trait_id}
+	)
+
+func _exit_tree() -> void:
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.cancel()
+
+func _on_mouse_entered() -> void:
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_entered()
+
+func _on_mouse_exited() -> void:
+	if is_instance_valid(_inspection_trigger):
+		_inspection_trigger.on_mouse_exited()
 
 func populate(trait_name: String, count: int, is_active: bool) -> void:
 	# Set Icon based on trait name
@@ -54,8 +78,6 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 		style.border_width_bottom = 2
 		style.border_color = Color(1.0, 0.84, 0.0, 1.0) # Gold-ish
 		
-		style.border_color = Color(1.0, 0.84, 0.0, 1.0) # Gold-ish
-		
 		if is_instance_valid(name_label): name_label.modulate = Color(1, 1, 1, 1)
 		if is_instance_valid(count_label): count_label.modulate = Color(1, 1, 1, 1)
 		modulate = Color(1, 1, 1, 1)
@@ -68,8 +90,6 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 		style.border_width_bottom = 1
 		style.border_color = Color(0.4, 0.4, 0.4, 0.5)
 		
-		style.border_color = Color(0.4, 0.4, 0.4, 0.5)
-		
 		if is_instance_valid(name_label): name_label.modulate = Color(0.7, 0.7, 0.7, 1)
 		if is_instance_valid(count_label): count_label.modulate = Color(0.7, 0.7, 0.7, 1)
 		modulate = Color(1, 1, 1, 0.9)
@@ -77,9 +97,31 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 	add_theme_stylebox_override("panel", style)
 
 func _gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
-		if not _current_trait_id.is_empty():
-			# S6/W2: Clicking UI element clears selection
-			SignalBus.emit_signal("selection_clear_requested")
-			SignalBus.emit_signal("trait_inspection_requested", _current_trait_id, self)
+	if event is InputEventScreenTouch:
+		if event.pressed:
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
+			accept_event()
+		else:
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_released()
+			accept_event()
+		return
+
+	if event is InputEventScreenDrag:
+		if is_instance_valid(_inspection_trigger):
+			_inspection_trigger.on_motion(event.position)
+		accept_event()
+		return
+
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT:
+		if InputUtils.should_ignore_mouse_pointer_event(event):
+			return
+		if event.is_pressed():
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_pressed(event.position)
+			accept_event()
+		else:
+			if is_instance_valid(_inspection_trigger):
+				_inspection_trigger.on_pointer_released()
 			accept_event()

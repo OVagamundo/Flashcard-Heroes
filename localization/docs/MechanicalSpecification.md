@@ -515,7 +515,7 @@ After victory, the player enters the Reward scene:
     - **Collect**: Free of charge. Moving the item/trinket to this zone adds it to the appropriate Run Inventory slot.
     - **Sell**: Dragging/clicking the item/trinket to this zone discards it in exchange for Gold. Standard items/units sell for their base tier value, while Elite rewards grant a flat **10 Gold**.
 - **Auto-Collection**: If the player attempts to leave the scene with uncollected items, the system automatically triggers sequential collection for all remaining prizes to prevent accidental reward loss.
-- **Machine Interaction**: The Gacha Machines remain active for spending tokens banked during the final battle turn. Any remaining tokens are lost upon leaving this scene.
+- **Machine Interaction**: The Gacha Machines remain active for spending tokens earned during this encounter's Study session. Tokens do not transfer between encounters; any new encounter starts with tokens reset to zero. Any remaining tokens are lost upon leaving this scene.
 
 # 15. UI/UX Hierarchy & Inspection
 

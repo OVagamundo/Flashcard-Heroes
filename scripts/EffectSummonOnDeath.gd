@@ -52,6 +52,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	result.summon_request = {
 		"summon_unit_id": random_def.id,
 		"holder_uuid": holder_uuid,
-		"holder_location": holder_location
+		"holder_location": holder_location,
+		"spawn_source_uuid": holder_uuid,
+		"spawn_source_location": holder_location
 	}
 	return result

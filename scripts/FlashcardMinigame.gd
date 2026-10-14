@@ -20,6 +20,15 @@ const COLOR_FLASH_INCORRECT := Color(0.9, 0.2, 0.2)
 const JAPANESE_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
 const BUTTON_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
 const WESTERN_FONT = preload("res://assets/fonts/static/NotoSansJP-Black.ttf")
+const KOREAN_FONT = preload("res://assets/fonts/NotoSansKR-VariableFont_wght.ttf")
+const THAI_FONT = preload("res://assets/fonts/NotoSansThai-VariableFont_wdth_wght.ttf")
+
+func _get_study_font_for_card(card_id: StringName = &"") -> Font:
+	if card_id.begins_with("KOR_"):
+		return KOREAN_FONT
+	if card_id.begins_with("THAI_"):
+		return THAI_FONT
+	return JAPANESE_FONT
 const PANEL_TEXTURE = preload("res://assets/Realistic/ui/textures/panel_v4.png")
 const BUTTON_NORMAL_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_normal.png")
 const BUTTON_HOVER_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_hover.png")
@@ -212,6 +221,9 @@ func _setup_question_label_style() -> void:
 	intro_arrow.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 	intro_arrow.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
 	intro_arrow.add_theme_constant_override("outline_size", 4)
+	
+	intro_explanation_label.add_theme_font_override("font", JAPANESE_FONT)
+	intro_explanation_label.add_theme_font_size_override("font_size", 28)
 
 func populate(context: Dictionary) -> void:
 	"""Called by WindowManager when the modal window is opened"""
@@ -285,6 +297,11 @@ func _update_displayed_card_info(card_id: StringName) -> void:
 			explanation = tr("ui.no_explanation")
 		intro_explanation_label.text = explanation # Simplified as per feedback or clarity
 		
+		var study_font = _get_study_font_for_card(card_id)
+		intro_question_label.add_theme_font_override("font", study_font)
+		intro_answer_label.add_theme_font_override("font", study_font)
+		intro_explanation_label.add_theme_font_override("font", study_font)
+		
 		# Play native Japanese/Korean/Thai pronunciation out loud
 		if card_id.begins_with("KANJI_") or card_id.begins_with("KOR_") or card_id.begins_with("THAI_"):
 			Audio.play_sfx("pronunciation_" + card_id)
@@ -345,6 +362,10 @@ func _update_localized_text() -> void:
 			var answer_text = card_data.get("answer", "Error")
 			intro_answer_label.text = answer_text if _is_japanese(answer_text) else answer_text.to_upper()
 			intro_explanation_label.text = card_data.get("explanation", "")
+			var study_font = _get_study_font_for_card(_current_question_id)
+			intro_question_label.add_theme_font_override("font", study_font)
+			intro_answer_label.add_theme_font_override("font", study_font)
+			intro_explanation_label.add_theme_font_override("font", study_font)
 	
 	if _is_introducing_new_card:
 		intro_question_label.text = tr("ui.intro_new_card") # Default if not updated by card info
@@ -407,7 +428,7 @@ func _populate_priority_cards() -> void:
 		button.add_theme_stylebox_override("pressed", pressed_style)
 		
 		# Font styling
-		button.add_theme_font_override("font", JAPANESE_FONT)
+		button.add_theme_font_override("font", _get_study_font_for_card(card_id))
 		button.add_theme_font_size_override("font_size", 36) # Larger font
 		button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
 		button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
@@ -549,6 +570,7 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 		return
 	
 	question_label.text = card_data.get("question", "Error: No question")
+	question_label.add_theme_font_override("font", _get_study_font_for_card(question_card_id))
 	_current_question_id = question_card_id
 	# Coerce choices into Array[StringName]
 	var raw_choices: Variant = current_question.get("choices", null)
@@ -579,8 +601,8 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 			button.custom_minimum_size = Vector2(280, 100)
 			
 			# Apply conditional font and size
-			if is_jp:
-				button.add_theme_font_override("font", JAPANESE_FONT)
+			if is_jp or choice_id.begins_with("KOR_") or choice_id.begins_with("THAI_"):
+				button.add_theme_font_override("font", _get_study_font_for_card(choice_id))
 				button.add_theme_font_size_override("font_size", 48)
 			else:
 				button.add_theme_font_override("font", WESTERN_FONT)

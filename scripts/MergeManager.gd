@@ -143,6 +143,13 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 				merged_instance.add_tag(&"rusty_ring_buffed")
 				merged_instance.add_tag(&"rusty_ring_debuffed")
 
+		# Insignia Level-Up Evaluation:
+		# Leveled-up unit temporarily inherits the lower-level insignia so it lands
+		# displaying continuous stats, then expires it via an explicit debuff event upon landing.
+		_check_and_apply_level_up_insignia(instance_a, instance_b, merged_instance, all_instances_db)
+
+
+
 	# Direct Additive Soul Inheritance:
 	# All merges (both Level-Up and Tier-Up) add up all elemental souls from both parents.
 	var parent_a_souls = instance_a.get_trait_soul_counts(all_instances_db)
@@ -394,14 +401,19 @@ func _is_conditional_trinket_component(component: StatComponent, all_instances_d
 		return true
 	var source_instance: GachaBallInstance = all_instances_db.get(component.source_id)
 	if is_instance_valid(source_instance):
-		return source_instance.definition_id in [&"trinket_rusty_ring", &"trinket_royal_insignia", &"trinket_veteran_insignia"]
+		var def = source_instance.get_definition()
+		if is_instance_valid(def) and def.category == &"TRINKET":
+			return true
+		if String(source_instance.definition_id).begins_with("trinket_"):
+			return true
 	return false
 
 func _is_conditional_trinket_tag(tag: StringName) -> bool:
 	var value := String(tag)
-	return value == "rusty_ring_buffed" or value == "rusty_ring_debuffed" \
-		or value.begins_with("royal_insignia_buffed_") \
-		or value.begins_with("veteran_insignia_buffed_")
+	return value.begins_with("rusty_ring_") \
+		or value.contains("_buffed_") \
+		or value.contains("_debuffed") \
+		or value.contains("_insignia_")
 
 ## Performs an evolution by merging the instance with a 'phantom' copy of itself.
 func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Dictionary) -> Dictionary:
@@ -453,7 +465,21 @@ func _apply_level_up_scaling_trackers(instance_a: GachaBallInstance, instance_b:
 		# In battle pool, instance_a and instance_b merge into 1 unit (reduction of 1 copy)
 		var post_merge_count: int = maxi(0, current_pool_count - 1)
 		var post_merge_bonus: int = int(post_merge_count / 2)
-		if post_merge_bonus > 0:
+		var parent_bonus: int = instance_a.get_status_effect_amount(twin_charm_key)
+		if parent_bonus == 0:
+			parent_bonus = instance_b.get_status_effect_amount(twin_charm_key)
+
+		if post_merge_bonus < parent_bonus:
+			# Merging dropped unit copies below an active threshold pair (e.g. 2 -> 1 or 4 -> 3).
+			# Continuous unit starts holding parent_bonus in its landing state, allowing
+			# EffectTwinCharmScaling to trigger an explicit on-unit debuff (-1 PWR) on board changed.
+			merged_instance.status_effects[twin_charm_key] = parent_bonus
+			merged_instance.apply_pwr_delta(parent_bonus, {
+				"silent": true,
+				"merge_source_type": &"CONDITIONAL_ABILITY"
+			})
+		elif post_merge_bonus > 0:
+			# Threshold maintained: pre-bake post_merge_bonus seamlessly.
 			merged_instance.status_effects[twin_charm_key] = post_merge_bonus
 			merged_instance.apply_pwr_delta(post_merge_bonus, {
 				"silent": true,
@@ -509,3 +535,58 @@ func _get_instance_team(inst: GachaBallInstance, all_instances_db: Dictionary) -
 	if container.begins_with("Enemy"):
 		return "ENEMY"
 	return ""
+
+## Helper to evaluate and apply temporary insignia carryover for an evolutionary level-up.
+## Leveled-up unit carries over the lower-level insignia bonus into its starting landing stats,
+## and sets pending_expired_insignia metadata so BattleManager can trigger an explicit debuff event.
+func _check_and_apply_level_up_insignia(instance_a: GachaBallInstance, instance_b: GachaBallInstance, merged_instance: GachaBallInstance, all_instances_db: Dictionary) -> void:
+	var team: String = _get_instance_team(instance_a, all_instances_db)
+	if team.is_empty():
+		return
+	
+	var parent_level: int = instance_a.level
+	var trinket_id := &""
+	var trinket_name := ""
+	if parent_level == 1:
+		trinket_id = &"trinket_royal_insignia"
+		trinket_name = "Royal Insignia"
+	elif parent_level == 2:
+		trinket_id = &"trinket_veteran_insignia"
+		trinket_name = "Veteran Insignia"
+	
+	if trinket_id.is_empty():
+		return
+		
+	var trinket_uuid := _get_trinket_uuid(all_instances_db, trinket_id, team)
+	if trinket_uuid.is_empty():
+		return
+		
+	var cond_comp_id := StringName(trinket_uuid + "_conditional")
+	var had_buff := instance_a.has_component(cond_comp_id) or \
+		(is_instance_valid(instance_b) and instance_b.has_component(cond_comp_id)) or \
+		instance_a.has_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid)) or \
+		(is_instance_valid(instance_b) and instance_b.has_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))) or \
+		instance_a.has_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid)) or \
+		(is_instance_valid(instance_b) and instance_b.has_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid)))
+	
+	if not had_buff:
+		return
+		
+	# Parent had this insignia. The continuous leveled-up unit lands carrying this stat bonus,
+	# and will expire it via an explicit debuff upon landing on the board.
+	merged_instance.current_hp += 1
+	merged_instance.current_pwr += 1
+	merged_instance.add_or_update_stat_component(
+		cond_comp_id,
+		&"CONDITIONAL_TRINKET",
+		trinket_uuid,
+		1, 1, false,
+		"Conditional Trinket Bonus", "Conditional trinket stat bonus"
+	)
+	merged_instance.set_meta(&"pending_expired_insignia", {
+		"trinket_uuid": trinket_uuid,
+		"level": parent_level,
+		"hp": 1,
+		"pwr": 1,
+		"trinket_name": trinket_name
+	})

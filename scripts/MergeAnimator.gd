@@ -35,12 +35,23 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	_set_unit_view_visible(source_view, false)
 	_set_unit_view_visible(target_view, false)
 
-	# Ensure the target/final slot is populated with the new unit's view
-	if is_instance_valid(final_view) and final_view.has_method("set_content"):
+	var snapshot: Dictionary = context.get("snapshot", {})
+	var reaction_events: Array = context.get("reaction_events", [])
+	if snapshot.is_empty() and should_trigger_on_merge and is_instance_valid(bm):
+		snapshot = bm.get_board_snapshot()
+
+	# Resolve merge visual data strictly from pre-reaction snapshot to prevent leaking post-reaction simulation mutations
+	var merge_visual_data: Dictionary = {}
+	if snapshot.has(merged_uuid):
+		merge_visual_data = snapshot[merged_uuid]
+	else:
 		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
 		var db = bm.get_all_instances() if is_instance_valid(bm) else (GameManager.run_state.get_all_instances() if is_instance_valid(GameManager.run_state) else {})
-		var visual_data = VisualDataAdapter.create_visual_data(new_instance, db)
-		final_view.set_content(visual_data)
+		merge_visual_data = VisualDataAdapter.create_visual_data(new_instance, db)
+
+	# Ensure the target/final slot is populated with the new unit's view
+	if is_instance_valid(final_view) and final_view.has_method("set_content"):
+		final_view.set_content(merge_visual_data)
 	if is_instance_valid(source_view) and source_view != final_view and source_view.has_method("set_content"):
 		source_view.set_content({})
 
@@ -54,12 +65,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	# Hide the real result unit so we can animate the VFX ball
 	_set_unit_view_visible(final_view, false)
 
-	var snapshot: Dictionary = context.get("snapshot", {})
-	var reaction_events: Array = context.get("reaction_events", [])
-	if snapshot.is_empty() and should_trigger_on_merge and is_instance_valid(bm):
-		snapshot = bm.get_board_snapshot()
-
-	var vfx_ball = _create_vfx_ball(new_instance, start_pos)
+	var vfx_ball = _create_vfx_ball(new_instance, start_pos, merge_visual_data)
 	if is_instance_valid(vfx_ball):
 		vfx_ball.play_landing_bounce()
 
@@ -124,9 +130,11 @@ func _finish_merge_action_if_active(unblock_bm: bool = false) -> void:
 		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
 			ActionQueue.finish_action(act)
 
-func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2) -> Control:
-	var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
+func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2, visual_data_override: Dictionary = {}) -> Control:
+	var visual_data = visual_data_override
+	if visual_data.is_empty():
+		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
+		visual_data = VisualDataAdapter.create_visual_data(instance)
 	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
 	var effects_layer = WindowManager.get_vfx_layer()
 	effects_layer.add_child(anim_ball)

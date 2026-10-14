@@ -271,19 +271,21 @@ func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) 
 	if prize_data.is_empty(): return
 	var instance = prize_data.instance
 
+	var drop_pos := Vector2.ZERO
+	var interaction_type := "CLICK"
 	if is_drag:
-		_transient_drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else get_viewport().get_mouse_position()
-	else:
-		_transient_drop_pos = Vector2.ZERO
+		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
+		interaction_type = "DRAG"
+	_transient_drop_pos = drop_pos
 
-	var action := SellRewardAction.new(instance.ball_uuid)
+	var action := SellRewardAction.new(instance.ball_uuid, interaction_type, drop_pos)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
 		var gold_yield = GameManager.sell_reward_instance(instance.ball_uuid)
-		execute_sell_visuals(instance.ball_uuid, gold_yield)
+		execute_sell_visuals(instance.ball_uuid, gold_yield, drop_pos)
 
-func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
+func execute_sell_visuals(uuid: String, gold_yield: int = -1, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	var prize_data = _get_selected_prize()
 	if prize_data.is_empty() or prize_data.uuid != uuid:
 		for i in range(_reward_instances.size()):
@@ -314,7 +316,9 @@ func execute_sell_visuals(uuid: String, gold_yield: int = -1) -> void:
 			main_node.hide_action_instruction()
 	
 	var raw_pos = _get_slot_global_center(loc.index)
-	if not _transient_drop_pos.is_zero_approx():
+	if not p_drop_pos.is_zero_approx():
+		raw_pos = p_drop_pos
+	elif not _transient_drop_pos.is_zero_approx():
 		raw_pos = _transient_drop_pos
 		_transient_drop_pos = Vector2.ZERO
 	

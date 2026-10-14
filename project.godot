@@ -91,6 +91,7 @@ theme/default_font_size=32
 
 [internationalization]
 
+locale/translations=PackedStringArray("res://localization/en.po", "res://localization/pt_BR.po")
 font_override/use_system_fonts=false
 
 [layer_names]
@@ -105,7 +106,6 @@ font_override/use_system_fonts=false
 [locale]
 
 locale_filter=PackedStringArray("en", "pt_BR")
-translation_remaps=PackedStringArray("res://localization/game.csv")
 
 [physics]
 

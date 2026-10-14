@@ -253,7 +253,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
   - Each correct answer awards **1 Gacha Token** (temporary currency for drawing units/items in the Management Phase; resets after battle).
   - Incorrect / Skip: 0 Tokens.
 - **At Rest Sites (`RestSite.gd`)**:
-  - Correct answers award Rest Site Tokens used at stat shrines for permanent Hero base stat increases.
+  - Correct answers award Tokens used at stat shrines for permanent Hero base stat increases.
 
 ### Trinket & Hero Modifiers
 - **Starter Hero Guarantee (`hero_starter`)**:

@@ -234,24 +234,37 @@ func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -
 		if is_instance_valid(GameManager.run_state):
 			current_gold = GameManager.run_state.gold
 		
-		if current_gold < actual_cost:
-			var main_node = GameManager._active_main_node
-			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-			var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
-			var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
-			RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
-			return
-
 		var drop_pos := Vector2.ZERO
 		var interaction_type := "CLICK"
 		if is_drag:
 			drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
 			interaction_type = "DRAG"
 		_transient_drop_pos = drop_pos
+		var source_view_id: int = selected_ctx.source_view_instance_id if selected_ctx else -1
+
+		if current_gold < actual_cost:
+			var main_node = GameManager._active_main_node
+			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+			var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
+			var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
+			RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
+			if is_drag:
+				if is_instance_valid(ActionQueue):
+					ActionQueue.request(CancelDragAction.new(selected_loc, null, "insufficient_gold", drop_pos, source_view_id))
+				else:
+					GlobalInteractionRouter.apply_deselect_entity()
+			else:
+				GlobalInteractionRouter.apply_deselect_entity()
+			return
 
 		var action := BuyShopAction.new(selected_loc.index, actual_cost, String(instance.definition_id), interaction_type, drop_pos)
 		if is_instance_valid(ActionQueue):
-			ActionQueue.request(action)
+			var accepted = ActionQueue.request(action)
+			if not accepted:
+				if is_drag:
+					ActionQueue.request(CancelDragAction.new(selected_loc, null, "action_rejected", drop_pos, source_view_id))
+				else:
+					GlobalInteractionRouter.apply_deselect_entity()
 		else:
 			execute_buy_visuals(selected_loc.index, actual_cost, instance, drop_pos)
 

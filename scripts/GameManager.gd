@@ -111,7 +111,6 @@ func get_replay_state_snapshot() -> Dictionary:
 	var snapshot := {
 		"run_state": run_snapshot,
 		"is_in_battle": is_in_battle,
-		"combat_speed_factor": AnimationConstants.speed_factor,
 		"gacha_discounts_used": gacha_discounts_used.duplicate(true),
 		"temporary_rewards": _snapshot_temporary_instances(_temporary_reward_master_dict),
 		"temporary_shop": _snapshot_temporary_instances(_temporary_shop_master_dict),
@@ -443,6 +442,8 @@ func _on_battle_ended(results: Dictionary) -> void:
 	# Track boss defeat
 	if is_victory and run_state.current_boss_level > 0:
 		run_state.bosses_defeated += 1
+		run_state.elites_encountered_in_tier = 0
+		run_state.elite_milestones_offered.clear()
 		
 		var max_boss_level = 3 if run_state.is_half_deck else 5
 		# Check for Boss victory (run complete)
@@ -590,6 +591,13 @@ func _on_battle_victory_acknowledged() -> void:
 	# Calculate gold reward based on reward type
 	var is_special = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	_reward_room_active = true
+	if is_instance_valid(run_state):
+		run_state.reset_room_tokens()
+	reset_gacha_discounts()
+	_trinity_t1_drawn = false
+	_trinity_t2_drawn = false
+	_trinity_t3_drawn = false
+	_trinity_rewarded = false
 			
 	if is_special:
 		_temporary_gold_reward = 10
@@ -788,6 +796,7 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	if is_instance_valid(run_state):
 		run_state.available_path_nodes.clear()
+		run_state.reset_room_tokens()
 	match node_def.node_type:
 		"BATTLE":
 			var encounter_def: EncounterDefinition
@@ -815,6 +824,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				# Track elite level for victory handling (trinket rewards)
 				run_state.current_elite_level = 1
 				run_state.current_boss_level = 0
+				run_state.elites_encountered_in_tier += 1
 			else:
 				# Regular encounter - uses daily budget
 				encounter_def = EncounterGenerator.generate_encounter(daily_budget)
@@ -833,8 +843,6 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/MergeEncounter.tscn"))
 		"DOJO":
-			if is_instance_valid(run_state):
-				run_state.current_room_tokens = 0
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/UnitTrainingGround.tscn"))
 		"GOLD":
@@ -859,20 +867,33 @@ func _prepare_rest_site_entry(site_type: int) -> void:
 	_rest_site_active = true
 	_temporary_rest_site_prizes.clear()
 	_rest_site_study_used = false
-	if is_instance_valid(run_state) and is_instance_valid(run_state.hero_instance):
-		var hero_definition: Resource = run_state.hero_instance.get_definition()
-		if is_instance_valid(hero_definition) and hero_definition.id == &"hero_timekeeper":
-			run_state.current_room_tokens = 5
+	if is_instance_valid(run_state):
+		run_state.reset_room_tokens()
+		if is_instance_valid(run_state.hero_instance):
+			var hero_definition: Resource = run_state.hero_instance.get_definition()
+			if is_instance_valid(hero_definition) and hero_definition.id == &"hero_timekeeper":
+				run_state.current_room_tokens = 5
 
 func finish_rest_site_leave() -> void:
 	_rest_site_active = false
 	_rest_site_study_used = false
 	_temporary_rest_site_prizes.clear()
 	current_rest_site_type = 0
+	if is_instance_valid(run_state):
+		run_state.reset_room_tokens()
 
 func finish_reward_room_leave() -> void:
 	_reward_room_active = false
 	_reward_study_used = false
+	reset_gacha_discounts()
+	_trinity_t1_drawn = false
+	_trinity_t2_drawn = false
+	_trinity_t3_drawn = false
+	_trinity_rewarded = false
+	if is_instance_valid(run_state):
+		run_state.reset_room_tokens()
+		run_state.current_boss_level = 0
+		run_state.current_elite_level = 0
 
 func _enter_shop() -> void:
 	_reroll_cost = 1
@@ -1126,52 +1147,108 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 		node_def.difficulty = boss_level
 		selected_nodes.append(node_def)
 	else:
-		var types = [
-			{"type": "BATTLE", "subtype": "", "name": "ui.battle_node"},
-			{"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node"},
-			{"type": "SHOP", "subtype": "", "name": "ui.shop_node"},
-			{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node"},
-			{"type": "REST", "subtype": "", "name": "ui.rest_node"},
-			{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node"},
-			{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node"}
-		]
-		var pool: Array[PathNodeDefinition] = []
-		var current_day = run_state.day
-		for t in types:
-			var base_w = 50
-			if t.type == "BATTLE" and t.subtype == "":
-				base_w = 100
-			elif t.type == "BATTLE" and t.subtype == "ELITE":
-				var elite_day_threshold = 3 if is_half_deck else 5
-				if current_day < elite_day_threshold:
-					base_w = 20
-				else:
-					base_w = 80
-			var dict_key = t.type
-			if t.subtype != "":
-				dict_key += "_" + t.subtype
-			var last_offered = run_state.encounter_last_offered_day.get(dict_key, 0)
-			var days_since = current_day - last_offered
-			var final_weight = base_w + (days_since * 20)
-			
-			var def = PathNodeDefinition.new()
-			def.node_type = t.type
-			def.subtype = t.subtype
-			def.display_name_key = t.name
-			def.base_weight = final_weight
-			pool.append(def)
+		const MAX_TIER_ELITES: int = 4
+		const MAX_RUN_ELITES: int = 20
+		const ELITE_PROGRESS_THRESHOLDS: Array[float] = [0.20, 0.40, 0.60, 0.80]
 		
-		for i in range(3):
-			if pool.is_empty():
-				break
-			var drawn = director.draw_item(pool, director_run_state, RNGManager.map_rng)
-			if is_instance_valid(drawn):
-				selected_nodes.append(drawn)
-				var next_pool: Array[PathNodeDefinition] = []
-				for p in pool:
-					if p.node_type != drawn.node_type or p.subtype != drawn.subtype:
-						next_pool.append(p)
-				pool = next_pool
+		var tier_progress: float = run_state.get_tier_progress()
+		var can_encounter_elite: bool = (run_state.elites_encountered_in_tier < MAX_TIER_ELITES) and (run_state.elites_defeated < MAX_RUN_ELITES)
+		
+		var is_elite_guaranteed: bool = false
+		if can_encounter_elite:
+			for m_idx in range(ELITE_PROGRESS_THRESHOLDS.size()):
+				var m_thresh: float = ELITE_PROGRESS_THRESHOLDS[m_idx]
+				if tier_progress >= m_thresh and not run_state.elite_milestones_offered.has(m_idx):
+					is_elite_guaranteed = true
+					run_state.elite_milestones_offered.append(m_idx)
+		
+		if is_elite_guaranteed:
+			var elite_def := PathNodeDefinition.new()
+			elite_def.node_type = "BATTLE"
+			elite_def.subtype = "ELITE"
+			elite_def.display_name_key = "ui.elite_battle_node"
+			elite_def.base_weight = 350
+			selected_nodes.append(elite_def)
+			
+			var candidate_types = [
+				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
+				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
+				{"type": "REST", "subtype": "", "name": "ui.rest_node", "base_w": 100},
+				{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "base_w": 100},
+				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
+				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
+			]
+			
+			var pool: Array[PathNodeDefinition] = []
+			var current_day = run_state.day
+			for t in candidate_types:
+				var dict_key = t.type
+				if t.subtype != "":
+					dict_key += "_" + t.subtype
+				var last_offered = run_state.encounter_last_offered_day.get(dict_key, 0)
+				var days_since = current_day - last_offered
+				var final_weight = t.base_w + (days_since * 10)
+				
+				var def := PathNodeDefinition.new()
+				def.node_type = t.type
+				def.subtype = t.subtype
+				def.display_name_key = t.name
+				def.base_weight = final_weight
+				pool.append(def)
+			
+			for i in range(2):
+				if pool.is_empty():
+					break
+				var drawn = director.draw_item(pool, director_run_state, RNGManager.map_rng)
+				if is_instance_valid(drawn):
+					selected_nodes.append(drawn)
+					var next_pool: Array[PathNodeDefinition] = []
+					for p in pool:
+						if p.node_type != drawn.node_type or p.subtype != drawn.subtype:
+							next_pool.append(p)
+					pool = next_pool
+			
+			RNGManager.map_rng.shuffle(selected_nodes)
+		else:
+			var candidate_types = [
+				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
+				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
+				{"type": "REST", "subtype": "", "name": "ui.rest_node", "base_w": 100},
+				{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "base_w": 100},
+				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
+				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
+			]
+			if can_encounter_elite:
+				candidate_types.append({"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "base_w": 350})
+			
+			var pool: Array[PathNodeDefinition] = []
+			var current_day = run_state.day
+			for t in candidate_types:
+				var dict_key = t.type
+				if t.subtype != "":
+					dict_key += "_" + t.subtype
+				var last_offered = run_state.encounter_last_offered_day.get(dict_key, 0)
+				var days_since = current_day - last_offered
+				var final_weight = t.base_w + (days_since * 10)
+				
+				var def := PathNodeDefinition.new()
+				def.node_type = t.type
+				def.subtype = t.subtype
+				def.display_name_key = t.name
+				def.base_weight = final_weight
+				pool.append(def)
+			
+			for i in range(3):
+				if pool.is_empty():
+					break
+				var drawn = director.draw_item(pool, director_run_state, RNGManager.map_rng)
+				if is_instance_valid(drawn):
+					selected_nodes.append(drawn)
+					var next_pool: Array[PathNodeDefinition] = []
+					for p in pool:
+						if p.node_type != drawn.node_type or p.subtype != drawn.subtype:
+							next_pool.append(p)
+					pool = next_pool
 
 	run_state.available_path_nodes = selected_nodes
 
@@ -1186,15 +1263,20 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 
 	return selected_nodes
 
-func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
+## Simulates and executes an atomic Reward Room draw transaction.
+## Returns a structured event log for presentation playback.
+func simulate_reward_draw(tier: int, slot_index: int = -1) -> Dictionary:
 	if not is_instance_valid(run_state):
-		return null
+		return {"success": false, "error": "No active run_state"}
+	
+	var discount_active = is_bargain_charm_active(tier)
 	var cost = get_gacha_token_cost(tier)
 	if run_state.get_room_tokens() < cost:
-		return null
+		return {"success": false, "error": "Insufficient room tokens"}
 	
 	run_state.spend_room_tokens(cost)
-	use_gacha_discount(tier)
+	if discount_active:
+		use_gacha_discount(tier)
 	
 	if _temporary_reward_container == null:
 		_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(5)
@@ -1202,7 +1284,10 @@ func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
 	if slot_index == -1:
 		slot_index = _temporary_reward_container.find_first_empty_slot()
 		if slot_index == -1:
-			return null
+			run_state.add_room_tokens(cost)
+			if discount_active:
+				gacha_discounts_used[tier] = false
+			return {"success": false, "error": "Lineup full"}
 			
 	var eligible: Array[GachaBallDefinition] = []
 	for definition in Database.get_all_pool_definitions():
@@ -1211,7 +1296,10 @@ func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
 		eligible.append(definition)
 	
 	if eligible.is_empty():
-		return null
+		run_state.add_room_tokens(cost)
+		if discount_active:
+			gacha_discounts_used[tier] = false
+		return {"success": false, "error": "No eligible definitions"}
 		
 	var definition = RNGManager.reward_rng.pick_random(eligible)
 	var instance = GachaBallInstance.new()
@@ -1221,15 +1309,31 @@ func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
 	_temporary_reward_master_dict[instance.ball_uuid] = instance
 	_temporary_reward_container.set_uuid(slot_index, instance.ball_uuid)
 	
+	var trinity_triggered = false
 	if has_trinket(&"trinket_trinity_charm") and not _trinity_rewarded:
 		if tier == 1: _trinity_t1_drawn = true
 		elif tier == 2: _trinity_t2_drawn = true
 		elif tier == 3: _trinity_t3_drawn = true
 		if _trinity_t1_drawn and _trinity_t2_drawn and _trinity_t3_drawn:
 			_trinity_rewarded = true
+			trinity_triggered = true
 			run_state.add_room_tokens(1)
 			
-	return instance
+	return {
+		"success": true,
+		"transaction_type": &"REWARD_DRAW",
+		"tier": tier,
+		"cost": cost,
+		"discount_applied": discount_active,
+		"drawn_instance": instance,
+		"slot_index": slot_index,
+		"trinity_triggered": trinity_triggered,
+		"remaining_tokens": run_state.get_room_tokens()
+	}
+
+func create_reward_draw(tier: int, slot_index: int = -1) -> GachaBallInstance:
+	var result = simulate_reward_draw(tier, slot_index)
+	return result.get("drawn_instance", null) if result.get("success", false) else null
 
 ## Rolls a training reward value (stat increase or gold) for a given tier (1, 2, or 3 tokens).
 ## Uses a middle-weighted bell curve distribution with rare 0s and rare top prizes:

@@ -1,0 +1,2012 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: Flashcard Heroes\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "hero.name"
+msgstr "Bounty Hunter"
+
+msgid "hero.desc"
+msgstr "A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall."
+
+msgid "enemy_hero.name"
+msgstr "Enemy Hero"
+
+msgid "enemy_hero.desc"
+msgstr "The enemy's champion."
+
+msgid "unit_t1_a.name"
+msgstr "Rocky"
+
+msgid "unit_t1_a.desc"
+msgstr "Novice unit."
+
+msgid "unit_t1_b.name"
+msgstr "Burny"
+
+msgid "unit_t1_b.desc"
+msgstr "Loyal squire."
+
+msgid "unit_t2_d.name"
+msgstr "Templar"
+
+msgid "unit_t2_d.desc"
+msgstr "A devout templar."
+
+msgid "ability.unit_t2_d_power.name"
+msgstr "Token Power"
+
+msgid "ability.unit_t2_d_power_l1.desc"
+msgstr "Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change."
+
+msgid "ability.unit_t2_d_power_l2.desc"
+msgstr "Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change."
+
+msgid "ability.unit_t2_d_power_l3.desc"
+msgstr "Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change."
+
+msgid "unit_t2_f.name"
+msgstr "Merchant"
+
+msgid "unit_t2_f.desc"
+msgstr "Traveling merchant."
+
+msgid "ability.unit_t2_f_gold_pwr.name"
+msgstr "Gold Investments"
+
+msgid "ability.unit_t2_f_gold_pwr_l1.desc"
+msgstr "Initial PWR equals your current Gold multiplied by 50% when drawn or spawned."
+
+msgid "ability.unit_t2_f_gold_pwr_l2.desc"
+msgstr "Initial PWR equals your current Gold multiplied by 100% when drawn or spawned."
+
+msgid "ability.unit_t2_f_gold_pwr_l3.desc"
+msgstr "Initial PWR equals your current Gold multiplied by 150% when drawn or spawned."
+
+msgid "unit_t1_c.name"
+msgstr "Dewey"
+
+msgid "unit_t1_c.desc"
+msgstr "Steadfast guardian."
+
+msgid "ability.unit_t1_c_ally_shield.name"
+msgstr "Guardian's Grace"
+
+msgid "ability.unit_t1_c_ally_shield.desc"
+msgstr "When the ally directly in front takes damage, heal them for 1 HP."
+
+msgid "ability.unit_t1_c_ally_shield_l2.desc"
+msgstr "When the ally directly in front takes damage, heal them for 2 HP."
+
+msgid "ability.unit_t1_c_ally_shield_l3.desc"
+msgstr "When the ally directly in front takes damage, heal them for 3 HP."
+
+msgid "unit_t1_d.name"
+msgstr "Windy"
+
+msgid "unit_t1_d.desc"
+msgstr "Sensitive soul."
+
+msgid "ability.unit_t1_d_empathic_link.name"
+msgstr "Empathic Link"
+
+msgid "ability.unit_t1_d_empathic_link.desc"
+msgstr "When this unit dies, grant its current PWR to the ally behind."
+
+msgid "ability.unit_t1_d_empathic_link_l2.desc"
+msgstr "When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally."
+
+msgid "ability.unit_t1_d_empathic_link_l3.desc"
+msgstr "When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next."
+
+msgid "ability.unit_tier1a_passive_heal.name"
+msgstr "Resilience"
+
+msgid "ability.unit_tier1a_passive_heal.desc"
+msgstr "When hurt BY AN ATTACK, Heal this unit by 1 HP."
+
+msgid "ability.unit_tier1a_passive_heal_l2.desc"
+msgstr "When hurt BY AN ATTACK, Heal this unit by 2 HP."
+
+msgid "ability.unit_tier1a_passive_heal_l3.desc"
+msgstr "When hurt BY AN ATTACK, Heal this unit by 3 HP."
+
+msgid "ability.unit_tier1b_counter_on_hurt.name"
+msgstr "Retaliation"
+
+msgid "ability.unit_tier1b_counter_on_hurt.desc"
+msgstr "When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal."
+
+msgid "ability.unit_tier1b_counter_on_hurt_l2.desc"
+msgstr "When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage."
+
+msgid "ability.unit_tier1b_counter_on_hurt_l3.desc"
+msgstr "When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce."
+
+msgid "unit_t2_c.name"
+msgstr "Knight"
+
+msgid "unit_t2_c.desc"
+msgstr "Valiant knight."
+
+msgid "item_t1_a.name"
+msgstr "Koi's Blessing"
+
+msgid "item_t1_a.desc"
+msgstr "A gentle remedy infused with the spirit of koi."
+
+msgid "item_t1_b.name"
+msgstr "Tiger's Spirit"
+
+msgid "item_t1_b.desc"
+msgstr "A fierce elixir that awakens inner strength."
+
+msgid "item_t2_c.name"
+msgstr "Phoenix Elixir"
+
+msgid "item_t2_c.desc"
+msgstr "A restorative brew that renews body and spirit."
+
+msgid "ability.basic_attack.name"
+msgstr "Basic Attack"
+
+msgid "ability.basic_attack.desc"
+msgstr "Deal (PWR) damage to the frontmost enemy."
+
+msgid "ability.basic_attack_ranged_mirror.name"
+msgstr "Basic Attack"
+
+msgid "ability.basic_attack_ranged_mirror.desc"
+msgstr "Deal (PWR) damage to the enemy in the mirror slot."
+
+msgid "ability.item_tier1b_extra_attack.name"
+msgstr "Extra Attack"
+
+msgid "ability.item_tier1b_extra_attack.desc"
+msgstr "When attacking, if target has more HP than holder then perform an extra attack."
+
+msgid "item.effect.hp"
+msgstr "Add (HP) HP to the unit."
+
+msgid "item.effect.pwr"
+msgstr "Add (PWR) PWR to the unit."
+
+msgid "item.effect.both"
+msgstr "Add (HP) HP and (PWR) PWR to the unit."
+
+msgid "trinket.polished_plate.name"
+msgstr "Polished Plate"
+
+msgid "trinket.polished_plate.desc"
+msgstr "A perfectly polished piece of armor."
+
+msgid "ability.polished_plate.name"
+msgstr "Reinforced Armor"
+
+msgid "ability.polished_plate.desc"
+msgstr "At the start of the turn, gain 2 Armor."
+
+msgid "options.audio.master"
+msgstr "Master Volume"
+
+msgid "options.audio.music"
+msgstr "Music Volume"
+
+msgid "options.audio.sfx"
+msgstr "SFX Volume"
+
+msgid "options.language"
+msgstr "Language"
+
+msgid "options.reset_data"
+msgstr "Reset Progress"
+
+msgid "tutorial.btn.next"
+msgstr "Next"
+
+msgid "tutorial.btn.got_it"
+msgstr "Got it!"
+
+msgid "battle.speed.label"
+msgstr "Speed:"
+
+msgid "ability.item_tier2c_passive_heal.name"
+msgstr "Regeneration"
+
+msgid "ability.item_tier2c_passive_heal.desc"
+msgstr "When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR."
+
+msgid "ability.item_tier1a_turn_start_heal.name"
+msgstr "Restoration"
+
+msgid "ability.item_tier1a_turn_start_heal.desc"
+msgstr "At the start of the turn, Heal the holder for 2 HP."
+
+msgid "ability.unit_tier2c_ally_death_buff.name"
+msgstr "Morale Boost"
+
+msgid "ability.unit_tier2c_ally_death_buff_l1.desc"
+msgstr "When an ally is defeated, gain +1 HP and +1 PWR."
+
+msgid "ability.unit_tier2c_ally_death_buff_l2.desc"
+msgstr "When an ally is defeated, gain +2 HP and +1 PWR."
+
+msgid "ability.unit_tier2c_ally_death_buff_l3.desc"
+msgstr "When an ally is defeated, gain +2 HP and +2 PWR."
+
+msgid "ability.hero_bounty_hunter_ally_death_buff.name"
+msgstr "Scavenger's Resolve"
+
+msgid "ability.hero_bounty_hunter_ally_death_buff.desc"
+msgstr "When an ally is defeated, gain +1 HP and +1 PWR."
+
+msgid "ability.item_tier3d_retaliate.name"
+msgstr "Retaliation"
+
+msgid "ability.item_tier3d_retaliate.desc"
+msgstr "When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy."
+
+msgid "ability.unit_tier3d_resilient_aura.name"
+msgstr "Resilient Aura"
+
+msgid "ability.unit_tier3d_resilient_aura.desc"
+msgstr "When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies."
+
+msgid "item_t2_a.name"
+msgstr "Summoning Scroll"
+
+msgid "item_t2_a.desc"
+msgstr "A scroll containing a summoning spell."
+
+msgid "item_t3_e.name"
+msgstr "Death's Bargain"
+
+msgid "item_t3_e.desc"
+msgstr "A cursed bargain with death."
+
+msgid "item_t3_f.name"
+msgstr "Soul Siphon"
+
+msgid "item_t3_f.desc"
+msgstr "A dark siphon of souls."
+
+msgid "item_t3_g.name"
+msgstr "Sniper Aim"
+
+msgid "item_t3_g.desc"
+msgstr "A scope for precise targeting."
+
+msgid "ability.item_t3e_death_damage.name"
+msgstr "Final Strike"
+
+msgid "ability.item_t3f_power_drain.name"
+msgstr "Power Drain"
+
+msgid "ability.item_t3f_power_drain.desc"
+msgstr "After dealing damage steal half of target's PWR (min 1)."
+
+msgid "ability.item_t3e_death_damage.desc"
+msgstr "When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy."
+
+msgid "ability.item_t2_c_summon.name"
+msgstr "Summon"
+
+msgid "ability.item_t2_c_summon.desc"
+msgstr "When the holder dies, summon a random Tier 1 unit in their place."
+
+msgid "unit_t3_paladin.name"
+msgstr "Paladin"
+
+msgid "unit_t3_paladin.desc"
+msgstr "Heavily armored tank."
+
+msgid "unit_t3_berserker.name"
+msgstr "Berserker"
+
+msgid "unit_t3_berserker.desc"
+msgstr "Powerful warrior."
+
+msgid "ability.unit_tier2a_defensive_stance.name"
+msgstr "Defensive Stance"
+
+msgid "ability.unit_tier2a_defensive_stance.desc"
+msgstr "When targeted by an attack, heal [2 / 4 / 6] HP before taking damage."
+
+msgid "ability.unit_tier2b_shockwave.name"
+msgstr "Shockwave"
+
+msgid "ability.unit_tier2b_shockwave.desc"
+msgstr "Attack deals cascading damage: [100% / 150% / 200%] to front, 50% to the unit behind, 25% to the one behind that."
+
+msgid "item_t2_b.name"
+msgstr "Bloodlust Edge"
+
+msgid "item_t2_b.desc"
+msgstr "A blade thirsty for blood."
+
+msgid "ability.item_tier2b_bloodlust.name"
+msgstr "Bloodlust"
+
+msgid "ability.item_tier2b_bloodlust.desc"
+msgstr "When the holder defeats an enemy, they act again immediately."
+
+msgid "hero_timekeeper.name"
+msgstr "Timekeeper"
+
+msgid "hero_timekeeper.desc"
+msgstr "A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer."
+
+msgid "ability.hero_timekeeper_gold_on_kill.name"
+msgstr "Bounty Hunter"
+
+msgid "ability.hero_timekeeper_gold_on_kill.desc"
+msgstr "Gain 1 gold when this hero kills an enemy."
+
+msgid "ability.hero_timekeeper_time_warp.name"
+msgstr "Time Warp"
+
+msgid "ability.hero_timekeeper_time_warp.desc"
+msgstr "Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites."
+
+msgid "ability.hero_timekeeper_temporal_aura.name"
+msgstr "Temporal Aura"
+
+msgid "ability.hero_timekeeper_temporal_aura.desc"
+msgstr "At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind."
+
+msgid "unit_t3_d.name"
+msgstr "Sakura Spirit"
+
+msgid "unit_t3_d.desc"
+msgstr "A powerful spirit guarding the cherry blossoms."
+
+msgid "boss_1.name"
+msgstr "The Awakened Guardian"
+
+msgid "boss_1.desc"
+msgstr "A powerful guardian that summons allies and grows stronger as you draw from the gacha machines."
+
+msgid "boss_2.name"
+msgstr "The Shadow Warden"
+
+msgid "boss_2.desc"
+msgstr "Drains power from every token you spend. Calls upon shadow creatures to fight alongside it."
+
+msgid "boss_3.name"
+msgstr "The Storm Herald"
+
+msgid "boss_3.desc"
+msgstr "Grows stronger as allies fall around it. Commands reinforcements to join its ranks."
+
+msgid "boss_4.name"
+msgstr "The Ancient Titan"
+
+msgid "boss_4.desc"
+msgstr "An ancient being that summons warriors from ages past."
+
+msgid "boss_5.name"
+msgstr "The Final Arbiter"
+
+msgid "boss_5.desc"
+msgstr "The ultimate challenge. Defeat it to complete your run."
+
+msgid "ability.boss_summon.name"
+msgstr "Call Reinforcements"
+
+msgid "ability.boss_summon.desc"
+msgstr "At end of turn, summon units to fill empty team slots."
+
+msgid "ability.boss_1_draw_drain.name"
+msgstr "Draining Presence"
+
+msgid "ability.boss_1_draw_drain.desc"
+msgstr "Every time you draw a gachaball, this boss gains +1 HP."
+
+msgid "ability.boss_2_token_drain.name"
+msgstr "Token Hunger"
+
+msgid "ability.boss_2_token_drain.desc"
+msgstr "Every time you spend a token, this boss gains +1 HP."
+
+msgid "ability.boss_3_ally_growth.name"
+msgstr "Vengeance Growth"
+
+msgid "ability.boss_3_ally_growth.desc"
+msgstr "When an ally is defeated, gain +1 HP and +1 PWR."
+
+msgid "trinket.soul_echo.name"
+msgstr "Soul Echo"
+
+msgid "trinket.soul_echo.desc"
+msgstr "A mystical gem that echoes the souls of the fallen."
+
+msgid "ability.soul_echo.name"
+msgstr "Soul Echo"
+
+msgid "ability.soul_echo.desc"
+msgstr "When an ally dies, resurrect the first non-hero unit that died this turn."
+
+msgid "trinket.vengeance.name"
+msgstr "Vengeance Charm"
+
+msgid "trinket.vengeance.desc"
+msgstr "Channel the fury of fallen allies."
+
+msgid "ability.vengeance.name"
+msgstr "Vengeance"
+
+msgid "ability.vengeance.desc"
+msgstr "When an ally dies, grant +1 HP and +1 PWR to a random ally."
+
+msgid "trinket.aegis.name"
+msgstr "Aegis Charm"
+
+msgid "trinket.aegis.desc"
+msgstr "A protective charm that shields allies from fatal blows."
+
+msgid "ability.aegis.name"
+msgstr "Last Stand"
+
+msgid "ability.aegis.desc"
+msgstr "Once per turn: When an ally would die, they survive with 1 HP instead."
+
+msgid "trinket.twin_charm.name"
+msgstr "Twin Charm"
+
+msgid "trinket.twin_charm.desc"
+msgstr "A mirrored charm that reflects its surroundings."
+
+msgid "ability.twin_charm_scale.name"
+msgstr "Shared Reflection"
+
+msgid "ability.twin_charm_scale.desc"
+msgstr "Your units gain +1 PWR for every 2 copies of that same unit in your battle pool."
+
+msgid "unit_t3_a.name"
+msgstr "Shadow Striker"
+
+msgid "unit_t3_a.desc"
+msgstr "Master of precise strikes."
+
+msgid "ability.unit_tier3a_mirror_strike.name"
+msgstr "Mirror Strike"
+
+msgid "ability.unit_tier3a_mirror_strike.desc"
+msgstr "Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy."
+
+msgid "unit_t3_b.name"
+msgstr "Guardian Sentinel"
+
+msgid "unit_t3_b.desc"
+msgstr "Stalwart protector."
+
+msgid "ability.unit_tier3b_guardian_sacrifice.name"
+msgstr "Guardian Sacrifice"
+
+msgid "ability.unit_tier3b_guardian_sacrifice.desc"
+msgstr "When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead."
+
+msgid "unit_t3_c.name"
+msgstr "Soul Caller"
+
+msgid "unit_t3_c.desc"
+msgstr "Mystical unit."
+
+msgid "ability.unit_tier3c_soul_summon.name"
+msgstr "Soul Summon"
+
+msgid "ability.unit_tier3c_soul_summon.desc"
+msgstr "When this unit dies, summon a random Tier 2 unit with [+0 / +2 / +4] HP and PWR."
+
+msgid "item_t3_a.name"
+msgstr "Heart Stone"
+
+msgid "item_t3_a.desc"
+msgstr "A stone pulsating with life."
+
+msgid "ability.item_t3a_on_hurt_heal.name"
+msgstr "Vital Link"
+
+msgid "ability.item_t3a_on_hurt_heal.desc"
+msgstr "When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each."
+
+msgid "item_t3_b.name"
+msgstr "Power Amulet"
+
+msgid "item_t3_b.desc"
+msgstr "An ancient amulet of power."
+
+msgid "ability.item_t3b_on_attack_buff.name"
+msgstr "Battle Cry"
+
+msgid "ability.item_t3b_on_attack_buff.desc"
+msgstr "When the holder attacks, grant +2 PWR to two random allies."
+
+msgid "item_t3_c.name"
+msgstr "Lifesteal Ring"
+
+msgid "item_t3_c.desc"
+msgstr "A ring that feeds on the living."
+
+msgid "ability.item_t3c_on_attack_lifesteal.name"
+msgstr "Vampiric Strike"
+
+msgid "ability.item_t3c_on_attack_lifesteal.desc"
+msgstr "On attack, heal the holder for 20% of damage dealt (min 1 HP)."
+
+msgid "item_t3_d.name"
+msgstr "Vengeful Thorn"
+
+msgid "item_t3_d.desc"
+msgstr "A thorny charm that strikes back at those who harm its bearer."
+
+msgid "ui.title"
+msgstr "FLASHCARD HEROES"
+
+msgid "ui.loadout_selection"
+msgstr "Loadout Selection"
+
+msgid "ui.start_run"
+msgstr "Play"
+
+msgid "ui.options"
+msgstr "Options"
+
+msgid "ui.choose_hero"
+msgstr "Choose Hero"
+
+msgid "ui.choose_deck"
+msgstr "Choose Deck"
+
+msgid "ui.test_mode"
+msgstr "Test Mode"
+
+msgid "ui.victory"
+msgstr "VICTORY"
+
+msgid "ui.defeat"
+msgstr "DEFEAT"
+
+msgid "ui.continue"
+msgstr "Continue"
+
+msgid "ui.return_to_path"
+msgstr "Return to Path"
+
+msgid "ui.shop"
+msgstr "Shop"
+
+msgid "ui.buy"
+msgstr "Buy"
+
+msgid "ui.reroll"
+msgstr "Reroll (1 Gold)"
+
+msgid "ui.back_to_path"
+msgstr "Back to the Path"
+
+msgid "ui.end_turn"
+msgstr "Battle!"
+
+msgid "ui.discard_pile"
+msgstr "Discard Pile"
+
+msgid "ui.tokens"
+msgstr "Tokens"
+
+msgid "ui.inventory"
+msgstr "Inventory"
+
+msgid "ui.tier"
+msgstr "Tier"
+
+msgid "ui.rest_site"
+msgstr "Rest Site"
+
+msgid "ui.train_hp"
+msgstr "Train HP"
+
+msgid "ui.train_pwr"
+msgstr "Train PWR"
+
+msgid "ui.leave"
+msgstr "Leave"
+
+msgid "ui.choose_reward"
+msgstr "Choose Your Reward"
+
+msgid "ui.confirm_selection"
+msgstr "Confirm Selection"
+
+msgid "ui.take_gold"
+msgstr "Take Gold Instead"
+
+msgid "ui.run_complete"
+msgstr "RUN COMPLETE!"
+
+msgid "ui.congratulations"
+msgstr "Congratulations!"
+
+msgid "ui.return_to_title"
+msgstr "Return to Title"
+
+msgid "ui.exit_game"
+msgstr "Exit Game"
+
+msgid "ui.battle_log"
+msgstr "Battle Log"
+
+msgid "ui.hide"
+msgstr "Hide"
+
+msgid "ui.clear"
+msgstr "Clear"
+
+msgid "ui.language"
+msgstr "Language"
+
+msgid "ui.english"
+msgstr "English"
+
+msgid "ui.portuguese"
+msgstr "Portuguese"
+
+msgid "ui.equipped_items"
+msgstr "Equipped Items:"
+
+msgid "ui.results"
+msgstr "Results"
+
+msgid "ui.confirm"
+msgstr "Confirm"
+
+msgid "ui.got_it"
+msgstr "Got it!"
+
+msgid "ui.choose_action"
+msgstr "Choose an action to perform."
+
+msgid "ui.training_complete"
+msgstr "Training Complete!"
+
+msgid "ui.no_gains"
+msgstr "No gains this time."
+
+msgid "ui.hero_gained"
+msgstr "Your Hero gained +%d %s."
+
+msgid "ui.buy_gold"
+msgstr "Buy (%d Gold)"
+
+msgid "ui.reroll_gold"
+msgstr "Reroll (%d Gold)"
+
+msgid "ui.gold_price"
+msgstr "%d Gold"
+
+msgid "ui.tier_1"
+msgstr "Tier 1"
+
+msgid "ui.tier_2"
+msgstr "Tier 2"
+
+msgid "ui.tier_3"
+msgstr "Tier 3"
+
+msgid "ui.show"
+msgstr "Show"
+
+msgid "ui.run_complete_message"
+msgstr "You have defeated all %d bosses and completed your run!"
+
+msgid "ui.final_statistics"
+msgstr "Final Statistics"
+
+msgid "ui.days_survived"
+msgstr "Days Survived"
+
+msgid "ui.bosses_defeated"
+msgstr "Bosses Defeated"
+
+msgid "ui.elites_defeated"
+msgstr "Elites Defeated"
+
+msgid "ui.enemies_slain"
+msgstr "Enemies Slain"
+
+msgid "ui.gold_earned"
+msgstr "Gold Earned"
+
+msgid "ui.tokens_earned"
+msgstr "Tokens Earned"
+
+msgid "ui.flashcards_mastered"
+msgstr "Flashcards Mastered"
+
+msgid "ui.mastery_breakdown"
+msgstr "Mastery Breakdown"
+
+msgid "ui.mastery_level_2"
+msgstr "Mastery 2 (Hard)"
+
+msgid "ui.mastery_level_3"
+msgstr "Mastery 3 (Medium)"
+
+msgid "ui.mastery_level_4"
+msgstr "Mastery 4 (Easy)"
+
+msgid "ui.mastery_level_5"
+msgstr "Mastery 5 (Very Easy)"
+
+msgid "ui.take_gold_amount"
+msgstr "Take %d Gold instead"
+
+msgid "ui.discard_pile_count"
+msgstr "Discard Pile (%d)"
+
+msgid "ui.tokens_count"
+msgstr "Tokens: %d"
+
+msgid "ui.day"
+msgstr "Day %d"
+
+msgid "ui.boss"
+msgstr "Boss %d"
+
+msgid "ui.battle_node"
+msgstr "Battle"
+
+msgid "ui.elite_battle_node"
+msgstr "Elite Battle"
+
+msgid "ui.shop_node"
+msgstr "Shop"
+
+msgid "ui.black_market_node"
+msgstr "Black Market"
+
+msgid "ui.rest_node"
+msgstr "Rest Site"
+
+msgid "ui.training_grounds_node"
+msgstr "Training Grounds"
+
+msgid "ui.gambling_den_node"
+msgstr "Gambling Den"
+
+msgid "ui.training_grounds"
+msgstr "Training Grounds"
+
+msgid "ui.gambling_den"
+msgstr "Gambling Den"
+
+msgid "ui.black_market_title"
+msgstr "Black Market"
+
+msgid "ui.black_market_open_inventory"
+msgstr "REMOVE OR TRANSFORM"
+
+msgid "ui.black_market_prompt"
+msgstr "What would you like to do with %s?"
+
+msgid "ui.black_market_instructions"
+msgstr "Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it."
+
+msgid "ui.remove_cost"
+msgstr "Remove (%d Gold)"
+
+msgid "ui.transform_cost"
+msgstr "Transform (%d Gold)"
+
+msgid "tutorial.black_market_intro.title"
+msgstr "Removing and Transforming"
+
+msgid "tutorial.black_market_intro"
+msgstr "The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase."
+
+msgid "tutorial.training_grounds"
+msgstr "A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades."
+
+msgid "tutorial.gambling_den"
+msgstr "Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards."
+
+msgid "ui.effects"
+msgstr "Effects"
+
+msgid "ui.no_effects"
+msgstr "This unit has no special effects."
+
+msgid "ui.no_effect_details"
+msgstr "No details available for this effect."
+
+msgid "ui.score"
+msgstr "Score: %d"
+
+msgid "ui.answer"
+msgstr "Answer: %s"
+
+msgid "ui.explanation"
+msgstr "Explanation: %s"
+
+msgid "ui.no_explanation"
+msgstr "No explanation available"
+
+msgid "ui.study"
+msgstr "Get Tokens!"
+
+msgid "ui.stat_prize"
+msgstr "Stat Prize"
+
+msgid "ui.show_tutorials"
+msgstr "Show Tutorials & Tooltips"
+
+msgid "ui.review_title"
+msgstr "Get Tokens!"
+
+msgid "ui.skip"
+msgstr "SKIP"
+
+msgid "ui.priority_cards"
+msgstr "Priority Cards (click to preview):"
+
+msgid "ui.ready"
+msgstr "Ready!"
+
+msgid "ui.intro_new_card"
+msgstr "New Card Introduction"
+
+msgid "ui.midgame_card_unlocked"
+msgstr "★ NEW CARD UNLOCKED! ★"
+
+msgid "ui.midgame_bonus_info"
+msgstr "+1.0s TIME BONUS!"
+
+msgid "ui.play"
+msgstr "Play"
+
+msgid "tutorial.loadout"
+msgstr "Choose your hero and flashcard deck. Heroes have special abilities that can change drastically how the game plays and the deck is the flashcard deck that will be used throughout the entire run."
+
+msgid "tutorial.path_choice_intro.title"
+msgstr "Path choice"
+
+msgid "tutorial.path_choice_1"
+msgstr "Choose your next encounter! Every encounter counts as one day and enemies get stronger each day. Make it count!"
+
+msgid "tutorial.gacha_inspect_run.title"
+msgstr "Gacha Collection"
+
+msgid "tutorial.gacha_inspect_run.mouse"
+msgstr "This is your current collection. Hover over or press and hold a GachaBall to inspect it (a quick click selects). You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just click or drag one onto another. You unlock GachaBall recipes by getting them during the game."
+
+msgid "tutorial.gacha_inspect_run.touch"
+msgstr "This is your current collection. Press and hold a GachaBall to inspect it (a quick tap selects). You can merge some GachaBalls of the same tier if you've already unlocked the resulting GachaBall in this playthrough or level them up by merging two of the same level units, just tap or drag one onto another. You unlock GachaBall recipes by getting them during the game."
+
+msgid "tutorial.gacha_inspect_battle"
+msgstr "Merging or destroying gachaballs in battle only affects the current encounter. Your permanent collection remains unchanged. Each battle resets your gachaballs to their base state."
+
+msgid "tutorial.shop"
+msgstr "Spend Gold to expand your collection. Reroll the stock if you're looking for something specific, but be warned: the price rises with every roll!"
+
+msgid "tutorial.rest_site"
+msgstr "A moment of respite. Master the flashcard minigame to earn tokens, then spend them on these machines for permanent Hero upgrades."
+
+msgid "tutorial.new_card_intro.title"
+msgstr "New Card and Review time!"
+
+msgid "tutorial.new_card_intro"
+msgstr "This is when new flashcards are added to your Mastery Deck.\n\nA new one will be added every mini game session.\n\nYou start with 6 flashcards already unlocked, so try to remember at least a few before starting the mini-game.\n\nYour battle resources depend on it!"
+
+msgid "tutorial.battle_management_intro.title"
+msgstr "Tokens and Gacha Machines"
+
+msgid "tutorial.battle_management"
+msgstr "Use your tokens to pull Units and Items from the Gacha Machines below!\n\nEach machine has a different cost. Spend your tokens wisely!"
+
+msgid "tutorial.first_draw.title"
+msgstr "Building your team"
+
+msgid "tutorial.first_draw_1"
+msgstr "New capsules are sent to your Bench.\n\nFrom there, you can deploy units to your Battle Lineup, or equip and use items on your units.\n\nIf your Bench is full, any new capsules you pull will be sent directly to the Discard Pile."
+
+msgid "tutorial.first_draw_combat.title"
+msgstr "How Battle Works"
+
+msgid "tutorial.first_draw_2"
+msgstr "Your team goes first, starting from the frontmost unit to the back. Then the enemy team will go in the same order.\n\nDefeat all enemy units to win. If your hero dies, you lose.\n\nIf neither side is defeated, a new turn begins.\n\nPress \"Battle!\" when you're happy with your team."
+
+msgid "tutorial.equip"
+msgstr "Choose your equipment wisely. Units have limited slots, and once an item is equipped, it cannot be removed. Every choice counts!"
+
+msgid "tutorial.merge_choice"
+msgstr "Choose Merge to combine two into a single, more powerful entity, or Swap to reorganize your ranks? The choice is yours."
+
+msgid "tutorial.gacha_inspect_battle.title"
+msgstr "Battle Capsules"
+
+msgid "tooltip.gacha_t1"
+msgstr "Tier 1 Machine - Draw cost: 1 token. Low-power but plentiful gachaballs."
+
+msgid "tooltip.gacha_t2"
+msgstr "Tier 2 Machine - Draw cost: 2 tokens. Balanced power and cost."
+
+msgid "tooltip.gacha_t3"
+msgstr "Tier 3 Machine - Draw cost: 3 tokens. High-power high-risk draws."
+
+msgid "tooltip.gold"
+msgstr "Gold - Spend at shops to buy gachaballs and reroll stock."
+
+msgid "tooltip.tokens"
+msgstr "Tokens - Earn from flashcard minigame. Spend to draw gachaballs."
+
+msgid "tooltip.day"
+msgstr "Day - Enemies grow stronger each day. How long can you survive?"
+
+msgid "tooltip.hero_hp"
+msgstr "Hero Health - If this reaches zero your run ends."
+
+msgid "tooltip.end_turn"
+msgstr "End your management phase and start combat."
+
+msgid "tooltip.discard_pile"
+msgstr "View defeated units and discarded items."
+
+msgid "tooltip.inventory"
+msgstr "Inspect your gachaball collection across all tiers."
+
+msgid "tooltip.bench_slot"
+msgstr "Reserve slot - Units and items here wait to be deployed or equipped."
+
+msgid "tooltip.lineup_slot"
+msgstr "Battle slot - Units here fight in combat."
+
+msgid "tooltip.item_slot"
+msgstr "Equipped item slot - Items equipped on this unit provide bonuses."
+
+msgid "tooltip.trinket_slot"
+msgstr "Trinket - Provides passive bonuses for your entire run."
+
+msgid "tooltip.reroll"
+msgstr "Refresh shop stock. Cost increases each reroll."
+
+msgid "tooltip.train_hp"
+msgstr "Spend tokens from the minigame to permanently increase hero HP."
+
+msgid "tooltip.train_pwr"
+msgstr "Spend tokens from the minigame to permanently increase hero PWR."
+
+msgid "ui.choose_your_hero"
+msgstr "Choose Your Hero"
+
+msgid "ui.choose_your_deck"
+msgstr "Choose Your Deck"
+
+msgid "ui.locked_hero"
+msgstr "Locked"
+
+msgid "ui.cards"
+msgstr "cards"
+
+msgid "ui.ability"
+msgstr "Ability"
+
+msgid "ui.hp"
+msgstr "HP"
+
+msgid "ui.pwr"
+msgstr "PWR"
+
+msgid "hero.flavor"
+msgstr "A survivor who learned that every kill counts. Low stats but gold flows freely."
+
+msgid "hero_timekeeper.flavor"
+msgstr "Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer."
+
+msgid "deck.katakana.desc"
+msgstr "Learn the angular Japanese syllabary used for foreign words and loanwords."
+
+msgid "deck.hiragana.desc"
+msgstr "Master the flowing Japanese syllabary for native words and grammar."
+
+msgid "deck.kanji_100.desc"
+msgstr "Challenge yourself with 100 essential Chinese characters used in Japanese writing."
+
+msgid "deck.german_100.desc"
+msgstr "Build your German vocabulary with 100 common and essential words."
+
+msgid "deck.portuguese_100.desc"
+msgstr "Expand your Portuguese vocabulary with 100 essential everyday words."
+
+msgid "deck.korean_hangul.desc"
+msgstr "Learn Korean Hangul alphabet and pronunciation rules"
+
+msgid "unit_t3_e.name"
+msgstr "Dreadnought"
+
+msgid "unit_t3_e.desc"
+msgstr "A terrifying predator that strikes down newly summoned enemies."
+
+msgid "ability.unit_tier3e_ambush_predator.name"
+msgstr "Ambush Predator"
+
+msgid "ability.unit_tier3e_ambush_predator.desc"
+msgstr "When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR."
+
+msgid "unit_t3_f.name"
+msgstr "Warden"
+
+msgid "unit_t3_f.desc"
+msgstr "A protective guardian that empowers newly summoned allies."
+
+msgid "ability.unit_tier3f_summon_blessing.name"
+msgstr "Summon Blessing"
+
+msgid "ability.unit_tier3f_summon_blessing.desc"
+msgstr "When an ally unit is summoned, grant it [+3 / +5 / +7] HP."
+
+msgid "STATUS_BURN"
+msgstr "Burn"
+
+msgid "STATUS_BURN_DESC"
+msgstr "Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half."
+
+msgid "STATUS_ARMOR"
+msgstr "Armor"
+
+msgid "STATUS_ARMOR_DESC"
+msgstr "Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn."
+
+msgid "STATUS_SPIKES"
+msgstr "Spikes"
+
+msgid "STATUS_SPIKES_DESC"
+msgstr "Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation."
+
+msgid "STATUS_STATIC"
+msgstr "Static"
+
+msgid "STATUS_STATIC_DESC"
+msgstr "Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor."
+
+msgid "trinket.royal_insignia.name"
+msgstr "Royal Insignia"
+
+msgid "trinket.royal_insignia.desc"
+msgstr "A medal signifying royal favor."
+
+msgid "ability.royal_insignia.name"
+msgstr "Royal Blessing"
+
+msgid "ability.royal_insignia.desc"
+msgstr "When a Level 1 unit enters the board, grant it +1 HP and +1 PWR."
+
+msgid "trinket.veteran_insignia.name"
+msgstr "Veteran Insignia"
+
+msgid "trinket.veteran_insignia.desc"
+msgstr "A badge of honor for seasoned warriors."
+
+msgid "ability.veteran_insignia.name"
+msgstr "Veteran Blessing"
+
+msgid "ability.veteran_insignia.desc"
+msgstr "When a Level 2 unit enters the board, grant it +1 HP and +1 PWR."
+
+msgid "trinket.trait_fire.name"
+msgstr "Fire Trait"
+
+msgid "trinket.trait_fire.desc"
+msgstr "Enables the Fire trait whenever your team has enough Fire souls."
+
+msgid "trinket.trait_earth.name"
+msgstr "Earth Trait"
+
+msgid "trinket.trait_earth.desc"
+msgstr "Enables the Earth trait whenever your team has enough Earth souls."
+
+msgid "trinket.trait_water.name"
+msgstr "Water Trait"
+
+msgid "trinket.trait_water.desc"
+msgstr "Enables the Water trait whenever your team has enough Water souls."
+
+msgid "trinket.trait_air.name"
+msgstr "Air Trait"
+
+msgid "trinket.trait_air.desc"
+msgstr "Enables the Air trait whenever your team has enough Air souls."
+
+msgid "trait.fire.name"
+msgstr "Fire"
+
+msgid "trait.fire.3"
+msgstr "Apply 1 Burn on attack."
+
+msgid "trait.fire.5"
+msgstr "Apply +1 Extra Burn (Total 2)."
+
+msgid "trait.fire.7"
+msgstr "Start of Turn: Apply 2 Burn to ALL enemies."
+
+msgid "trait.fire.9"
+msgstr "Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks."
+
+msgid "trait.earth.name"
+msgstr "Earth"
+
+msgid "trait.earth.3"
+msgstr "All Allies gain 1 Armor. Earth units gain 2 Armor."
+
+msgid "trait.earth.5"
+msgstr "All Allies gain 2 Armor. Earth units gain 4 Armor."
+
+msgid "trait.earth.7"
+msgstr "All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor."
+
+msgid "trait.earth.9"
+msgstr "All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor."
+
+msgid "item.emblem_fire.name"
+msgstr "Fire Emblem"
+
+msgid "item.emblem_fire.desc"
+msgstr "When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies."
+
+msgid "item.emblem_earth.name"
+msgstr "Earth Emblem"
+
+msgid "item.emblem_earth.desc"
+msgstr "When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies."
+
+msgid "trait.water.name"
+msgstr "Water"
+
+msgid "trait.water.2"
+msgstr "Water units heal adjacent allies 1 HP at start of turn."
+
+msgid "trait.air.name"
+msgstr "Air"
+
+msgid "trait.air.2"
+msgstr "Air units steal 1 PWR from the opposite enemy at start of turn."
+
+msgid "item.emblem_water.name"
+msgstr "Water Emblem"
+
+msgid "item.emblem_water.desc"
+msgstr "When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies."
+
+msgid "item.emblem_air.name"
+msgstr "Air Emblem"
+
+msgid "item.emblem_air.desc"
+msgstr "When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies."
+
+msgid "item.potion_t1.name"
+msgstr "Minor Healing Potion"
+
+msgid "item.potion_t1.desc"
+msgstr "Restores 4 HP to a target unit."
+
+msgid "ability.potion_t1.name"
+msgstr "Drink"
+
+msgid "ability.potion_t1.desc"
+msgstr "Restores 4 HP."
+
+msgid "item.potion_spikes.name"
+msgstr "Thorn Potion"
+
+msgid "item.potion_spikes.desc"
+msgstr "Grants 4 Spikes to target. Spikes damage attackers then lose a stack."
+
+msgid "ability.grant_spikes.name"
+msgstr "Thorn Skin"
+
+msgid "ability.grant_spikes.desc"
+msgstr "Grants 4 Spikes stacks"
+
+msgid "item.potion_heroism.name"
+msgstr "Heroism Potion"
+
+msgid "item.potion_heroism.desc"
+msgstr "A potion that inspires heroism."
+
+msgid "ability.grant_heroism.name"
+msgstr "Heroism"
+
+msgid "ability.grant_heroism.desc"
+msgstr "Grants +3 HP, +3 PWR, and 3 Armor stacks."
+
+msgid "item.potion_plunder.name"
+msgstr "Potion of Plunder"
+
+msgid "item.potion_plunder.desc"
+msgstr "Steals a random item from the target and sends it to your Gacha Machine of the matching tier."
+
+msgid "ability.potion_plunder.name"
+msgstr "Plunder"
+
+msgid "ability.potion_plunder.desc"
+msgstr "Steals a random item from the target and sends it to your Gacha Machine of the matching tier."
+
+msgid "unit_t3_mimic.name"
+msgstr "Mimic"
+
+msgid "unit_t3_mimic.desc"
+msgstr "Mysterious entity."
+
+msgid "ability.unit_t2_e_mimic.name"
+msgstr "Mirror Image"
+
+msgid "ability.unit_t2_e_mimic.desc"
+msgstr "At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR."
+
+msgid "unit_t3_shadow.name"
+msgstr "Shadow Cloner"
+
+msgid "unit_t3_shadow.desc"
+msgstr "Ethereal unit."
+
+msgid "ability.unit_t2_g_buff_echo.name"
+msgstr "Buff Echo"
+
+msgid "ability.unit_t2_g_buff_echo.desc"
+msgstr "When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them."
+
+msgid "unit_t2_h.name"
+msgstr "Hermit"
+
+msgid "unit_t2_h.desc"
+msgstr "Solitary warrior."
+
+msgid "ability.unit_t2_h.name"
+msgstr "Solitary Strength"
+
+msgid "ability.unit_t2_h_l1.desc"
+msgstr "At start of combat, gain +1 HP and +1 PWR for each empty slot in your team."
+
+msgid "ability.unit_t2_h_l2.desc"
+msgstr "At start of combat, gain +2 HP and +2 PWR for each empty slot in your team."
+
+msgid "ability.unit_t2_h_l3.desc"
+msgstr "At start of combat, gain +3 HP and +3 PWR for each empty slot in your team."
+
+msgid "unit_t2_i.name"
+msgstr "Mud Wretch"
+
+msgid "unit_t2_i.desc"
+msgstr "Mud creature."
+
+msgid "ability.mud_coating.name"
+msgstr "Mud Coating"
+
+msgid "ability.mud_coating_l1.desc"
+msgstr "When healed, gain 1 Armor and 1 Spikes."
+
+msgid "ability.mud_coating_l2.desc"
+msgstr "When healed, gain 2 Armor and 2 Spikes."
+
+msgid "ability.mud_coating_l3.desc"
+msgstr "When healed, gain 3 Armor and 3 Spikes."
+
+msgid "unit_t2_j.name"
+msgstr "Steam Wisp"
+
+msgid "unit_t2_j.desc"
+msgstr "Scalding spirit."
+
+msgid "ability.scald.name"
+msgstr "Scald"
+
+msgid "ability.scald_l1.desc"
+msgstr "When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount."
+
+msgid "ability.scald_l2.desc"
+msgstr "When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied."
+
+msgid "ability.scald_l3.desc"
+msgstr "When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce."
+
+msgid "unit_t3_g.name"
+msgstr "Phantom Wayfarer"
+
+msgid "unit_t3_g.desc"
+msgstr "Mysterious traveler."
+
+msgid "ability.unit_tier3g_bench_growth.name"
+msgstr "Quiet Meditation"
+
+msgid "unit_t3_h.name"
+msgstr "Fusion Warden"
+
+msgid "unit_t3_h.desc"
+msgstr "Volatile hybrid."
+
+msgid "ability.unit_t3_h.name"
+msgstr "Convergence Surge"
+
+msgid "ability.unit_t3_h.desc"
+msgstr "Whenever a merge happens on the battle board, if this unit is on the battle board, gain [**+2 / +3 / +4 HP and PWR**]."
+
+msgid "unit_dust_t2.name"
+msgstr "Dust Minion (T2)"
+
+msgid "unit_dust_t2.desc"
+msgstr "A construct. Stays in the fight."
+
+msgid "unit_dust_t3.name"
+msgstr "Dust Minion (T3)"
+
+msgid "unit_dust_t3.desc"
+msgstr "A heavy construct. Stays in the fight."
+
+msgid "unit_dust_elite_t1.name"
+msgstr "Dust Guard (T1)"
+
+msgid "unit_dust_elite_t1.desc"
+msgstr "A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit."
+
+msgid "unit_dust_elite_t2.name"
+msgstr "Dust Sentinel (T2)"
+
+msgid "unit_dust_elite_t3.desc"
+msgstr "An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit."
+
+msgid "ability_dust_elite_spawn.name"
+msgstr "Dust Pulse"
+
+msgid "ability_dust_elite_spawn.desc"
+msgstr "Spawns a Dust unit in the player's inventory."
+
+msgid "unit_dust_t1.name"
+msgstr "Dust Minion (T1)"
+
+msgid "unit_dust_t1.desc"
+msgstr "A fragile construct. Stays in the fight."
+
+msgid "unit_dust_elite_t3.name"
+msgstr "Dust Overlord (T3)"
+
+msgid "ability_dust_elite_spawn_turn.name"
+msgstr "Dust Pulse (Turn)"
+
+msgid "ability_dust_elite_spawn_turn.desc"
+msgstr "Spawns a Dust unit at Turn Start."
+
+msgid "ability_dust_elite1_spawn_death.name"
+msgstr "Dust Pulse (Death T1)"
+
+msgid "ability_dust_elite1_spawn_death.desc"
+msgstr "Spawns a T1 Dust unit when an Ally dies."
+
+msgid "ability_dust_elite2_spawn_death.name"
+msgstr "Dust Pulse (Death T1/T2)"
+
+msgid "ability_dust_elite2_spawn_death.desc"
+msgstr "Spawns a random T1 or T2 Dust unit when an Ally dies."
+
+msgid "ability_dust_elite_spawn_death.name"
+msgstr "Universal Dust Pulse (Death)"
+
+msgid "ability_dust_elite_spawn_death.desc"
+msgstr "Spawns a random T1, T2 or T3 Dust unit when an Ally dies."
+
+msgid "ability_dust_elite_spawn_hurt.name"
+msgstr "Dust Pulse (Hurt)"
+
+msgid "ability_dust_elite_spawn_hurt.desc"
+msgstr "Spawns a Dust unit when Hurt."
+
+msgid "ability_dust_elite_spawn_attack.name"
+msgstr "Dust Pulse (Attack)"
+
+msgid "ability_dust_elite_spawn_attack.desc"
+msgstr "Spawns a Dust unit when Attacking."
+
+msgid "unit_dust_elite_t2.desc"
+msgstr "A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit."
+
+msgid "ability.dust_growth.name"
+msgstr "Dust Growth"
+
+msgid "ability.dust_growth.desc"
+msgstr "Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2)."
+
+msgid "ui.drop_zone_get"
+msgstr "Get"
+
+msgid "ui.drop_zone_buy"
+msgstr "Buy"
+
+msgid "ui.drop_zone_remove"
+msgstr "Remove"
+
+msgid "ui.drop_zone_transform"
+msgstr "Transform"
+
+msgid "ui.drop_zone_get_multi"
+msgstr "Drag or click here to\n[font_size=72]GET[/font_size]"
+
+msgid "ui.drop_zone_buy_multi"
+msgstr "Drag or click here to\n[font_size=72]BUY[/font_size]"
+
+msgid "ui.drop_zone_remove_multi"
+msgstr "Drag or click here to\n[font_size=72]REMOVE[/font_size]"
+
+msgid "ui.drop_zone_transform_multi"
+msgstr "Drag or click here to\n[font_size=72]TRANSFORM[/font_size]"
+
+msgid "ui.drop_zone_sell_multi"
+msgstr "Drag or click here to\n[font_size=72]SELL[/font_size]"
+
+msgid "ui.bm_instruction"
+msgstr "Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory."
+
+msgid "ui.reward_instruction"
+msgstr "Move the gacha ball here to: Get or Sell.\nClick anywhere to close the inventory."
+
+msgid "ui.reward_elite_instruction"
+msgstr "Move the Trinket here to: Get or Sell.\nClick anywhere to close the inventory."
+
+msgid "ability_dust_elite_spawn_enemy_death.name"
+msgstr "Dust Pulse (Enemy Death)"
+
+msgid "ability_dust_elite_spawn_enemy_death.desc"
+msgstr "Spawns a Dust unit when an Enemy dies."
+
+msgid "trinket.armor_aura.name"
+msgstr "Armor Aura"
+
+msgid "trinket.armor_aura.desc"
+msgstr "An aura that hardens the resolve of allies."
+
+msgid "ability.armor_aura.name"
+msgstr "Armor Aura"
+
+msgid "ability.armor_aura.desc"
+msgstr "At turn start, all allies gain 3 Armor."
+
+msgid "ui.audio_settings"
+msgstr "Audio Settings"
+
+msgid "ui.master_volume"
+msgstr "Master Volume"
+
+msgid "ui.music_volume"
+msgstr "Music Volume"
+
+msgid "ui.sfx_volume"
+msgstr "SFX Volume"
+
+msgid "ui.close"
+msgstr "Close"
+
+msgid "ui.yes"
+msgstr "Yes"
+
+msgid "ui.no"
+msgstr "No"
+
+msgid "ui.confirm_reset"
+msgstr "Are you sure you want to reset all progress?"
+
+msgid "ui.crt_effect"
+msgstr "CRT Effect"
+
+msgid "ui.fullscreen"
+msgstr "Fullscreen"
+
+msgid "ui.glow_effect"
+msgstr "Glow Effect"
+
+msgid "ui.glow_debug"
+msgstr "Glow Debug:"
+
+msgid "ui.tutorial_title"
+msgstr "Tutorial"
+
+msgid "tutorial.traits.title"
+msgstr "Traits"
+
+msgid "tutorial.traits"
+msgstr "Traits are special buffs and effects that happen according to how many souls or certain trait units of that trait you have on your battle lineup.\n\nInspect units to see what traits they have."
+
+msgid "hero_avenger.name"
+msgstr "Avenger"
+
+msgid "hero_avenger.desc"
+msgstr "A fierce warrior who strikes when allies fall."
+
+msgid "ability.hero_avenger_ally_death_attack.name"
+msgstr "Leap Attack"
+
+msgid "ability.hero_avenger_ally_death_attack.desc"
+msgstr "When an ally dies, leap and attack the frontmost enemy."
+
+msgid "hero_bastion.name"
+msgstr "Bastion"
+
+msgid "hero_bastion.desc"
+msgstr "A steadfast defender who grows stronger as allies fall."
+
+msgid "ability.hero_bastion_ally_death_spikes_armor.name"
+msgstr "Fortify"
+
+msgid "ability.hero_bastion_ally_death_spikes_armor.desc"
+msgstr "When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn."
+
+msgid "hero_pyro.name"
+msgstr "Pyromancer"
+
+msgid "hero_pyro.desc"
+msgstr "A fiery mage who incinerates enemies instead of striking them."
+
+msgid "ability.hero_pyro_attack_burn.name"
+msgstr "Incinerate"
+
+msgid "ability.hero_pyro_attack_burn.desc"
+msgstr "On attack, instead of dealing damage, apply Burn stacks equal to your Power."
+
+msgid "options.art_style"
+msgstr "Art Style"
+
+msgid "options.style.realistic"
+msgstr "Realistic"
+
+msgid "options.style.pixelart"
+msgstr "Pixel Art"
+
+msgid "ui.surprise_node"
+msgstr "Surprise Event"
+
+msgid "ui.utg_title"
+msgstr "Unit Training Ground"
+
+msgid "ui.utg_btn"
+msgstr "TRAINING"
+
+msgid "ui.utg_instruction"
+msgstr "Drag or select your unit to start your training.\nClick anywhere to close the inventory."
+
+msgid "ui.utg_drop_hp"
+msgstr "Drag or Click here to\n[font_size=72]TRAIN HP[/font_size]\n(cost: 5 gold)"
+
+msgid "ui.utg_drop_pwr"
+msgstr "Drag or Click here to\n[font_size=72]TRAIN PWR[/font_size]\n(cost: 5 gold)"
+
+msgid "ui.utg_popup_title"
+msgstr "Use your Tokens to train!"
+
+msgid "ui.utg_done"
+msgstr "Done!"
+
+msgid "ui.merge_encounter_title"
+msgstr "Merge Encounter"
+
+msgid "ui.merge_encounter_open_inventory"
+msgstr "CLICK HERE TO MERGE!"
+
+msgid "ui.merge_encounter_instruction"
+msgstr "Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)"
+
+msgid "unit_t3_i.name"
+msgstr "Doppleganger"
+
+msgid "unit_t3_i.desc"
+msgstr "Volatile clone."
+
+msgid "ability.doppleganger_scale.name"
+msgstr "Mirrored Might"
+
+msgid "ability.doppleganger_scale.desc"
+msgstr "Gains [**+3 / +4 / +5 PWR**] for each other Doppleganger in battle."
+
+msgid "ability.doppleganger_death.name"
+msgstr "Clone Split"
+
+msgid "ability.doppleganger_death.desc"
+msgstr "Spawns a Doppleganger into the Tier 3 Gacha Machine on death."
+
+msgid "item_t2_d.name"
+msgstr "Echoing Orb"
+
+msgid "item_t2_d.desc"
+msgstr "A resonant orb that amplifies the power of its bearer."
+
+msgid "ability.echoing_orb_scale.name"
+msgstr "Resonance"
+
+msgid "ability.echoing_orb_scale.desc"
+msgstr "Grants the holder +2 PWR for each Echoing Orb in battle."
+
+msgid "ability.echoing_orb_death.name"
+msgstr "Echo Split"
+
+msgid "ability.echoing_orb_death.desc"
+msgstr "Spawns an Echoing Orb into the Tier 2 Gacha Machine on death."
+
+msgid "unit_t3_j.name"
+msgstr "Standard Bearer"
+
+msgid "unit_t3_j.desc"
+msgstr "Valiant commander."
+
+msgid "ability.unit_t3_j_ability_l1.name"
+msgstr "Standard's Legacy"
+
+msgid "ability.unit_t3_j_ability_l1.desc"
+msgstr "On death, transfers its equipped item to the ally directly behind it."
+
+msgid "ability.unit_t3_j_ability_l2.name"
+msgstr "Standard's Legacy"
+
+msgid "ability.unit_t3_j_ability_l2.desc"
+msgstr "On death, transfers its equipped item to the ally behind and 1 copy behind them."
+
+msgid "ability.unit_t3_j_ability_l3.name"
+msgstr "Standard's Legacy"
+
+msgid "ability.unit_t3_j_ability_l3.desc"
+msgstr "On death, transfers its equipped item to the ally behind and 2 copies behind them."
+
+msgid "ui.transfer_item_msg"
+msgstr "%s transfers %s to %s!"
+
+msgid "unit_t3_l.name"
+msgstr "Golden Hermit"
+
+msgid "unit_t3_l.desc"
+msgstr "A solitary sage of wealth."
+
+msgid "ability.unit_t3_l_l1.name"
+msgstr "Wealth Accumulation"
+
+msgid "ability.unit_t3_l_l1.desc"
+msgstr "At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have."
+
+msgid "ability.unit_t3_l_l2.name"
+msgstr "Wealth Accumulation"
+
+msgid "ability.unit_t3_l_l2.desc"
+msgstr "At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have."
+
+msgid "ability.unit_t3_l_l3.name"
+msgstr "Wealth Accumulation"
+
+msgid "ability.unit_t3_l_l3.desc"
+msgstr "At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have."
+
+msgid "options.audio.pronunciation"
+msgstr "Card Pronunciation"
+
+msgid "trinket.underdog_emblem.name"
+msgstr "Underdog Emblem"
+
+msgid "trinket.underdog_emblem.desc"
+msgstr "An emblem that protects the outnumbered."
+
+msgid "ability.underdog_emblem.name"
+msgstr "Outnumbered Bulwark"
+
+msgid "ability.underdog_emblem.desc"
+msgstr "At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference."
+
+msgid "trinket.bargain_charm.name"
+msgstr "Bargain Charm"
+
+msgid "trinket.bargain_charm.desc"
+msgstr "A charm that haggles for a better price."
+
+msgid "ability.bargain_charm.name"
+msgstr "Bargain Charm"
+
+msgid "ability.bargain_charm.desc"
+msgstr "Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive."
+
+msgid "trinket.token_return_charm.name"
+msgstr "Token Return Charm"
+
+msgid "trinket.token_return_charm.desc"
+msgstr "A charm that reclaims spent potential."
+
+msgid "ability.token_return_charm.name"
+msgstr "Token Return"
+
+msgid "ability.token_return_charm.desc"
+msgstr "The first unit to die each round returns tokens equivalent to its tier."
+
+msgid "trinket.time_sprint_charm.name"
+msgstr "Sprint Charm"
+
+msgid "trinket.time_sprint_charm.desc"
+msgstr "A charm that bends time."
+
+msgid "ability.time_sprint_charm.name"
+msgstr "Time Sprint"
+
+msgid "ability.time_sprint_charm.desc"
+msgstr "Minigame timer gets a flat 2-second increase in battle."
+
+msgid "trinket.merge_damage_charm.name"
+msgstr "Fusion Spark"
+
+msgid "trinket.merge_damage_charm.desc"
+msgstr "A charm that weaponizes fusion."
+
+msgid "ability.merge_damage_charm.name"
+msgstr "Fusion Spark"
+
+msgid "ability.merge_damage_charm.desc"
+msgstr "Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit."
+
+msgid "hero_starter.name"
+msgstr "Starter"
+
+msgid "hero_starter.desc"
+msgstr "A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck."
+
+msgid "hero_starter.flavor"
+msgstr "A gentle soul who draws strength from loss, guiding newcomers through their first steps."
+
+msgid "ability.hero_starter_ally_death_absorb.name"
+msgstr "Soul Harvest"
+
+msgid "ability.hero_starter_ally_death_absorb.desc"
+msgstr "When an ally dies, gain HP equal to their PWR."
+
+msgid "trinket.burn_vial.name"
+msgstr "Burn Vial"
+
+msgid "trinket.burn_vial.desc"
+msgstr "A vial of eternal flame."
+
+msgid "trinket.rusty_ring.name"
+msgstr "Rusty Ring"
+
+msgid "trinket.rusty_ring.desc"
+msgstr "Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff."
+
+msgid "item.trinket_hero_catalyst.name"
+msgstr "Hero's Catalyst"
+
+msgid "item.trinket_hero_catalyst.desc"
+msgstr "Whenever an ally merges, grants +1 HP and +1 PWR to your Hero."
+
+msgid "ability.hero_catalyst.name"
+msgstr "Hero's Catalyst"
+
+msgid "ability.hero_catalyst.desc"
+msgstr "Grants the Hero +1 HP and +1 PWR on any merge."
+
+msgid "trinket.purifying_pendant.name"
+msgstr "Purifying Pendant"
+
+msgid "trinket.purifying_pendant.desc"
+msgstr "When an ally takes damage from a negative status effect, removes all remaining stacks of that effect."
+
+msgid "trinket.awe_inspiring_totem.name"
+msgstr "Awe Inspiring Totem"
+
+msgid "trinket.awe_inspiring_totem.desc"
+msgstr "At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units."
+
+msgid "trinket.beginners_charm.name"
+msgstr "Beginner's Charm"
+
+msgid "trinket.beginners_charm.desc"
+msgstr "Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard)."
+
+msgid "trinket.trinity_charm.name"
+msgstr "Trinity Charm"
+
+msgid "trinket.trinity_charm.desc"
+msgstr "If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token."
+
+msgid "trinket.spiked_armor.name"
+msgstr "Spiked Armor"
+
+msgid "trinket.spiked_armor.desc"
+msgstr "At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]."
+
+msgid "ability.trinket_spiked_armor.name"
+msgstr "Spiked Armor"
+
+msgid "ability.trinket_spiked_armor.desc"
+msgstr "At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]."
+
+msgid "ui.merge_encounter_description"
+msgstr "Merge or level up your Gachamons or Spirits permanently!\n({cost} Gold per action)"
+
+msgid "ui.rest_site_desc"
+msgstr "Play to earn tokens, then spend them for permanent HP upgrades."
+
+msgid "ui.training_grounds_desc"
+msgstr "Play to earn tokens, then spend them for permanent Power upgrades."
+
+msgid "ui.gambling_den_desc"
+msgstr "Play to earn tokens, then spend them for a chance to win big Gold payouts."
+
+msgid "ui.btn_merge"
+msgstr "Merge"
+
+msgid "ui.btn_merge_cost"
+msgstr "Merge ({cost} Gold)"
+
+msgid "ui.btn_swap"
+msgstr "Swap"
+
+msgid "ui.black_market_desc"
+msgstr "Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold."
+
+msgid "ui.shop_desc"
+msgstr "Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!"
+
+msgid "ui.bm_drop_transform"
+msgstr "Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold)"
+
+msgid "ui.bm_drop_remove"
+msgstr "Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold)"
+
+msgid "ui.utg_desc"
+msgstr "Shape your units!\nOpen your inventory to drag a unit here,\nand train its HP or Power by spending tokens."
+
+msgid "ui.rest_study"
+msgstr "Get Tokens! (%d Gold)"
+
+msgid "ui.reward_desc"
+msgstr "Get tokens to spend on prizes in the machines below!"
+
+msgid "ui.rewards_title"
+msgstr "REWARDS"
+
+msgid "ability.unit_tier3_berserker_shockwave.name"
+msgstr "Shockwave"
+
+msgid "ability.unit_tier3_berserker_shockwave_l1.desc"
+msgstr "Deals 100% cascade AOE damage to front enemy and units behind."
+
+msgid "ability.unit_tier3_berserker_shockwave_l2.desc"
+msgstr "Deals 150% cascade AOE damage to front enemy and units behind."
+
+msgid "ability.unit_tier3_berserker_shockwave_l3.desc"
+msgstr "Deals 200% cascade AOE damage to front enemy and units behind."
+
+msgid "ability.unit_tier3d_resilient_aura.name"
+msgstr "Resilient Aura"
+
+msgid "ability.unit_tier3d_resilient_aura_l1.desc"
+msgstr "Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack."
+
+msgid "ability.unit_tier3d_resilient_aura_l2.desc"
+msgstr "Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack."
+
+msgid "ability.unit_tier3d_resilient_aura_l3.desc"
+msgstr "Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack."
+
+msgid "ability.unit_tier3a_mirror_strike.name"
+msgstr "Mirror Strike"
+
+msgid "ability.unit_tier3a_mirror_strike_l1.desc"
+msgstr "Attacks enemy in opposite mirror slot for 100% damage."
+
+msgid "ability.unit_tier3a_mirror_strike_l2.desc"
+msgstr "Attacks enemy in opposite mirror slot for 150% damage."
+
+msgid "ability.unit_tier3a_mirror_strike_l3.desc"
+msgstr "Attacks enemy in opposite mirror slot for 200% damage."
+
+msgid "ability.unit_tier3b_guardian_sacrifice.name"
+msgstr "Guardian Sacrifice"
+
+msgid "ability.unit_tier3b_guardian_sacrifice_l1.desc"
+msgstr "Leaps to intercept lethal damage on allies."
+
+msgid "ability.unit_tier3b_guardian_sacrifice_l2.desc"
+msgstr "Leaps to intercept lethal damage on allies and gains 1 Armor."
+
+msgid "ability.unit_tier3b_guardian_sacrifice_l3.desc"
+msgstr "Leaps to intercept lethal damage on allies and gains 2 Armor."
+
+msgid "ability.unit_tier3c_soul_summon.name"
+msgstr "Soul Summon"
+
+msgid "ability.unit_tier3c_soul_summon_l1.desc"
+msgstr "Summons a random Level 1 Tier 2 unit on death."
+
+msgid "ability.unit_tier3c_soul_summon_l2.desc"
+msgstr "Summons a random Level 2 Tier 2 unit on death."
+
+msgid "ability.unit_tier3c_soul_summon_l3.desc"
+msgstr "Summons a random Level 3 Tier 2 unit on death."
+
+msgid "ability.unit_tier3e_ambush_predator_l1.desc"
+msgstr "Deals damage to enemies equal to 100% of PWR when they are summoned."
+
+msgid "ability.unit_tier3e_ambush_predator_l2.desc"
+msgstr "Deals damage to enemies equal to 150% of PWR when they are summoned."
+
+msgid "ability.unit_tier3e_ambush_predator_l3.desc"
+msgstr "Deals damage to enemies equal to 200% of PWR when they are summoned."
+
+msgid "ability.unit_tier3f_summon_blessing_l1.desc"
+msgstr "Grants +3 HP to newly summoned allies."
+
+msgid "ability.unit_tier3f_summon_blessing_l2.desc"
+msgstr "Grants +5 HP to newly summoned allies."
+
+msgid "ability.unit_tier3f_summon_blessing_l3.desc"
+msgstr "Grants +7 HP to newly summoned allies."
+
+msgid "ability.unit_tier3g_bench_growth_l1.desc"
+msgstr "If on the player bench at start of turn, gain +3 HP and PWR."
+
+msgid "ability.unit_tier3g_bench_growth_l2.desc"
+msgstr "If on the player bench at start of turn, gain +5 HP and PWR."
+
+msgid "ability.unit_tier3g_bench_growth_l3.desc"
+msgstr "If on the player bench at start of turn, gain +7 HP and PWR."
+
+msgid "ability.unit_tier3h_merge_growth_l1.desc"
+msgstr "Whenever a merge happens on the battle board, gain +2 HP and PWR."
+
+msgid "ability.unit_tier3h_merge_growth_l2.desc"
+msgstr "Whenever a merge happens on the battle board, gain +3 HP and PWR."
+
+msgid "ability.unit_tier3h_merge_growth_l3.desc"
+msgstr "Whenever a merge happens on the battle board, gain +4 HP and PWR."
+
+msgid "ability.doppleganger_scale_l1.desc"
+msgstr "Gains +3 PWR for each other Doppleganger in battle."
+
+msgid "ability.doppleganger_scale_l2.desc"
+msgstr "Gains +4 PWR for each other Doppleganger in battle."
+
+msgid "ability.doppleganger_scale_l3.desc"
+msgstr "Gains +5 PWR for each other Doppleganger in battle."
+
+msgid "ability.doppleganger_death_l1.desc"
+msgstr "Summons 1 copy of itself on death into the Gacha Machine."
+
+msgid "ability.doppleganger_death_l2.desc"
+msgstr "Summons 1 copy of itself on death into the Gacha Machine."
+
+msgid "ability.doppleganger_death_l3.desc"
+msgstr "Summons 1 copy of itself on death into the Gacha Machine."
+
+msgid "ability.unit_tier2a_defensive_stance_l1.desc"
+msgstr "Gain +2 HP before taking damage."
+
+msgid "ability.unit_tier2a_defensive_stance_l2.desc"
+msgstr "Gain +4 HP before taking damage."
+
+msgid "ability.unit_tier2a_defensive_stance_l3.desc"
+msgstr "Gain +6 HP before taking damage."
+
+msgid "ability.unit_t3_mimic_l1.desc"
+msgstr "Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead."
+
+msgid "ability.unit_t3_mimic_l2.desc"
+msgstr "Before its turn action, transforms into the enemy unit in the mirror slot (+1 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead."
+
+msgid "ability.unit_t3_mimic_l3.desc"
+msgstr "Before its turn action, transforms into the enemy unit in the mirror slot (Level 3 MAX). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead."
+
+msgid "ability.unit_t3_shadow_l1.desc"
+msgstr "Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness."
+
+msgid "ability.unit_t3_shadow_l2.desc"
+msgstr "Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness."
+
+msgid "ability.unit_t3_shadow_l3.desc"
+msgstr "Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness."
+
+msgid "ability.unit_t3_l.name"
+msgstr "Wealth Accumulation"
+
+msgid "ability.unit_t3_j_ability.name"
+msgstr "Standard's Legacy"
+

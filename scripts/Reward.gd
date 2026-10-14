@@ -41,14 +41,14 @@ var _action_in_progress: bool = false
 var _transient_drop_pos: Vector2 = Vector2.ZERO
 var _last_inventory_open: bool = false
 
-var _trinity_t1_drawn: bool = false
-var _trinity_t2_drawn: bool = false
-var _trinity_t3_drawn: bool = false
 var _trinity_rewarded: bool = false
 
 func _ready() -> void:
 	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
+	
+	if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.reset_room_tokens()
 	
 	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
 	tier2_draw_button.pressed.connect(_on_tier2_draw_pressed)
@@ -183,52 +183,88 @@ func _on_tier3_draw_pressed() -> void:
 	_request_draw_tier(3)
 
 func _request_draw_tier(tier: int) -> void:
+	var cost = GameManager.get_gacha_token_cost(tier)
+	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
+	var main_node = GameManager._active_main_node
+	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
+	
+	if _tokens < cost:
+		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
+		return
+	if _find_next_prize_slot() == -1:
+		RejectionFeedbackScript.play_rejection_with_counter(machine, null, get_tree())
+		return
+		
 	var action := DrawRewardAction.new(tier)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.request(action)
 	else:
-		execute_draw_tier_visuals(tier)
+		var event_log = GameManager.simulate_reward_draw(tier)
+		play_transaction_log(event_log)
+
+func play_transaction_log(event_log: Dictionary) -> void:
+	if not event_log.get("success", false):
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+	var tier: int = int(event_log.get("tier", 1))
+	var cost: int = int(event_log.get("cost", tier))
+	var discount_applied: bool = bool(event_log.get("discount_applied", false))
+	var instance: GachaBallInstance = event_log.get("drawn_instance", null)
+	var slot_index: int = int(event_log.get("slot_index", -1))
+	var trinity_triggered: bool = bool(event_log.get("trinity_triggered", false))
+	
+	_execute_draw_presentation(tier, cost, discount_applied, instance, slot_index, trinity_triggered)
 
 func execute_draw_tier_visuals(tier: int, pre_drawn_instance: GachaBallInstance = null) -> void:
-	var cost = GameManager.get_gacha_token_cost(tier)
-	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
-	_try_draw_tier(tier, cost, machine, pre_drawn_instance)
+	if is_instance_valid(pre_drawn_instance):
+		var slot_index = pre_drawn_instance.location_slot_index if pre_drawn_instance.location_slot_index != -1 else _find_next_prize_slot()
+		var cost = GameManager.get_gacha_token_cost(tier)
+		_execute_draw_presentation(tier, cost, false, pre_drawn_instance, slot_index, false)
+	else:
+		var event_log = GameManager.simulate_reward_draw(tier)
+		play_transaction_log(event_log)
 
-func _try_draw_tier(tier: int, cost: int, machine: Control, pre_drawn_instance: GachaBallInstance = null) -> void:
+func _try_draw_tier(tier: int, cost: int, _machine: Control, pre_drawn_instance: GachaBallInstance = null) -> void:
+	if is_instance_valid(pre_drawn_instance):
+		var slot_index = pre_drawn_instance.location_slot_index if pre_drawn_instance.location_slot_index != -1 else _find_next_prize_slot()
+		_execute_draw_presentation(tier, cost, false, pre_drawn_instance, slot_index, false)
+	else:
+		var event_log = GameManager.simulate_reward_draw(tier)
+		play_transaction_log(event_log)
+
+func _execute_draw_presentation(
+	tier: int,
+	cost: int,
+	discount_applied: bool,
+	instance: GachaBallInstance,
+	slot_index: int,
+	trinity_triggered: bool
+) -> void:
 	if _action_in_progress: return
+	_action_in_progress = true
 	
+	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
 	var main_node = GameManager._active_main_node
 	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
-	
-	if not is_instance_valid(pre_drawn_instance) and _tokens < cost:
-		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
-	
-	var slot_index = pre_drawn_instance.location_slot_index if is_instance_valid(pre_drawn_instance) else _find_next_prize_slot()
-	if slot_index == -1:
-		# Lineup full
-		RejectionFeedbackScript.play_rejection_with_counter(machine, null, get_tree())
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
-	
-	_action_in_progress = true
 	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
 	if is_instance_valid(button):
 		button.disabled = true
 	
+	# Bracket token animations if multiple currency events occur in this transaction
+	# (e.g. spend tokens followed by Trinity Charm token gain)
+	# This prevents end_token_animation's desync assert from firing on intermediate states.
+	var is_bracketed := trinity_triggered and is_instance_valid(main_node)
+	if is_bracketed:
+		main_node.begin_token_animation()
+	
 	# Animate Bargain Charm if it is providing a discount
-	if GameManager.is_bargain_charm_active(tier):
+	if discount_applied:
 		BattleAnimator.hop_trinket_by_definition_id(&"trinket_bargain_charm", false)
 		await AnimationConstants.create_pausable_timer(get_tree(), 0.25).timeout
 	
 	await _animate_token_spend(machine, cost, token_group)
 	
-	var instance = pre_drawn_instance
-	if not is_instance_valid(instance):
-		instance = GameManager.create_reward_draw(tier, slot_index)
 	_update_token_display()
 	_update_localized_text()
 	
@@ -237,12 +273,16 @@ func _try_draw_tier(tier: int, cost: int, machine: Control, pre_drawn_instance: 
 	_prizes[slot_index] = instance
 	_populate_prize_slot(slot_index, instance)
 	
-	if GameManager._trinity_rewarded and not _trinity_rewarded:
+	if trinity_triggered:
 		_trinity_rewarded = true
 		_update_token_display()
-		_animate_trinity_token_gain()
+		await _animate_trinity_token_gain()
 	
-	button.disabled = false
+	if is_bracketed:
+		main_node.end_token_animation()
+	
+	if is_instance_valid(button):
+		button.disabled = false
 	_action_in_progress = false
 	if is_instance_valid(ActionQueue):
 		ActionQueue.finish_action(ActionQueue.get_active_action())
@@ -708,7 +748,10 @@ func execute_leave_visuals() -> void:
 				await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, uuid)
 				SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": uuid})
 	
-	SignalBus.emit_signal("gacha_tokens_changed", 0)
+	if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		GameManager.run_state.reset_room_tokens()
+	else:
+		SignalBus.emit_signal("gacha_tokens_changed", 0)
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 

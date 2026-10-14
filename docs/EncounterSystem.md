@@ -65,8 +65,9 @@ Boss battles are triggered by **Flashcard Mastery Progression** rather than a fi
 
 ### Elite Battle Scheduling
 Elite nodes are harder optional encounters that provide better rewards.
-- **Full Deck**: Elites begin appearing on the map starting from Day 5.
-- **Quick/Half Deck**: Elites begin appearing on the map starting from Day 3 to account for the shorter run.
+- **Progress-Paced Milestones**: Rather than a fixed day gate, elite encounters are paced by progress towards the upcoming mini-boss. Crossing progress milestones at **20%**, **40%**, **60%**, and **80%** of the cards required for the next boss level guarantees that an Elite battle node is included as one of the 3 path choices.
+- **Natural Pool Re-appearance**: Outside of the guaranteed milestone appearances, elite nodes can still roll naturally from the weighted encounter pool as long as the player has not exhausted their quota for the current mini-boss tier.
+- **Quota Limits**: Players can fight at most **4 elite battles per mini-boss** (the quota resets to 0 upon defeating each mini-boss), up to a strict lifetime maximum of **20 elite battles per game run**. Once the quota is reached, elite nodes are removed from the pool until the next tier.
 
 ## Encounter Generation Algorithm
 
@@ -160,12 +161,18 @@ Starting at day 1, slots with special effects can be generated on player and ene
 
 When the player selects their next encounter, a weighted RNG system driven by `RNGManager.map_rng` determines which encounters are offered.
 - **Stream Isolation**: Map and encounter generation operate strictly on `map_rng` derived from `RunState.run_seed`.
-- **Regular Battles** have the highest priority (base weight 100).
-- **Elite Battles** are rare early on (base weight 20 before Day 5) but become more common later (base weight 80 from Day 5 onward).
-- **Other Encounters** (Shop, Black Market, Merge, Unit Training, Surprise) have a standard base weight (50).
+- **Regular Normal Battles (Priority 1)**: Heavily prioritized with a dominant base weight of **1500**. This ensures that a regular battle appears in ~96%–98% of all 3-path options, while preserving deterministic seeded rolls and allowing rare 3-non-battle rolls.
+- **Elite Battles (Priority 2)**: Configured with a base weight of **350** when eligible and under quota (4 per mini-boss, 20 per run), guaranteed to appear upon reaching the 20%, 40%, 60%, and 80% progress thresholds.
+- **Non-Battle Encounters (Equal Priority)**: All non-battle encounters share an equal base weight of **100**:
+  - **Shop** (`SHOP`)
+  - **Merge Encounter** (`REST`)
+  - **Black Market** (`BLACK_MARKET`)
+  - **Surprise Event** (`SURPRISE`)
+  - **Unit Training Ground / Dojo** (`DOJO`)
+  Because they all share the exact same base weight (100) and have no limits, they appear with equal probability across path choices.
 
 ### The Pity System
-To ensure variety, an encounter's weight increases the longer it goes unoffered. For every day an encounter type is *not* offered as a choice, it gains **+20** to its weight. Once it is offered, its "last offered day" is updated, resetting this pity bonus.
+To ensure variety, an encounter's weight increases the longer it goes unoffered. For every day an encounter type is *not* offered as a choice, it gains **+10** to its weight. Once it is offered, its "last offered day" is updated, resetting this pity bonus.
 
 ## Non-Combat Encounters
 

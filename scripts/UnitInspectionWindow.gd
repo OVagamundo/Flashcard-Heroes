@@ -6,7 +6,6 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
-const BOLD_FONT = preload("res://assets/fonts/noto_sans_black_composite.tres")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
@@ -21,67 +20,20 @@ var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
 var _window_group_id: int = 1 # Inspection window group
-var _long_press_timer: Timer
-var _last_meta_at_pointer = null
-var _locked_meta = null
-var _last_child_window_id: int = -1
 
 func _ready() -> void:
+	super._ready()
 	SignalBus.battle_inventory_changed.connect(_on_inventory_changed)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
 	SignalBus.run_data_changed.connect(_on_inventory_changed)
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
-	description_label.meta_clicked.connect(_on_description_meta_clicked)
-	description_label.meta_hover_started.connect(_on_description_meta_hover_started)
-	description_label.meta_hover_ended.connect(_on_description_meta_hover_ended)
-	
-	_long_press_timer = Timer.new()
-	_long_press_timer.one_shot = true
-	_long_press_timer.wait_time = 0.32
-	_long_press_timer.timeout.connect(_on_long_press_timeout)
-	add_child(_long_press_timer)
-	
-	if WindowManager.has_signal("window_closed"):
-		WindowManager.window_closed.connect(_on_window_manager_window_closed)
-	# Ensure the window root receives clicks for local pruning
-	mouse_filter = MOUSE_FILTER_STOP
-	
-	# Allow non-link clicks on the description to bubble to the window root
-	# Hover handlers below will set STOP only while over UI links
-	description_label.mouse_filter = MOUSE_FILTER_PASS
-
-	# Prune children when clicking anywhere on the window background area
-	if is_instance_valid(internal_background):
-		internal_background.mouse_filter = MOUSE_FILTER_STOP
-		internal_background.gui_input.connect(_on_internal_background_gui_input)
-
-	# Also treat clicks on the item grid (empty slots area) as background for pruning
-	if is_instance_valid(item_grid):
-		item_grid.mouse_filter = MOUSE_FILTER_STOP
-		item_grid.gui_input.connect(_on_item_grid_gui_input)
-
-	# Configure child controls to allow bubbling so the root can prune children on generic clicks
-	_configure_mouse_filters()
-
-## Recursively set mouse filters to PASS for child controls that should bubble to the root
-func _configure_mouse_filters() -> void:
-	var stack: Array = [ self ]
-	while not stack.is_empty():
-		var node = stack.pop_back()
-		for child in node.get_children():
-			if child is Control:
-				# Skip nodes that have explicit handlers or must remain STOP
-				if child == internal_background or child == item_grid or child == description_label:
-					pass
-				else:
-					(child as Control).mouse_filter = MOUSE_FILTER_PASS
-				stack.append(child)
-
 	
 	# Zero out internal minimums so they don't force a height from old .tscn values
 	for child in [%DescriptionLabel, %NameLabel, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
+	
+	enforce_display_only()
 
 func _exit_tree() -> void:
 	if SignalBus.is_connected("battle_inventory_changed", _on_inventory_changed):
@@ -118,7 +70,7 @@ func populate(context: Dictionary) -> void:
 
 
 	name_label.text = tr(unit_definition.display_name_key) + " (Lv. %d)" % _instance.level
-	name_label.add_theme_font_override("font", BOLD_FONT)
+	name_label.add_theme_font_override("font", Database.get_current_locale_font())
 	name_label.add_theme_font_size_override("font_size", 32)
 	
 	var title_color = Color(0, 0.4, 0.8, 1) # Default blue
@@ -141,6 +93,7 @@ func populate(context: Dictionary) -> void:
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
+	enforce_display_only()
 
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
@@ -412,115 +365,83 @@ func _get_all_instances_db() -> Dictionary:
 	
 	return result
 
-func _on_description_meta_clicked(meta) -> void:
-	if _locked_meta == meta:
-		_locked_meta = null
-		if is_instance_valid(ActionQueue):
-			ActionQueue.request(CloseInspectionAction.new(false))
-		else:
-			WindowManager.close_children_of(self)
-	else:
-		_locked_meta = meta
-		if is_instance_valid(ActionQueue):
-			if str(meta).begins_with("effect_"):
-				var effect_type = str(meta).replace("effect_", "")
-				ActionQueue.request(InspectEntityAction.new(null, true, &"EffectInspection", StringName(effect_type)))
-			else:
-				_handle_effect_meta_interaction(meta)
-		else:
-			_handle_effect_meta_interaction(meta)
-
-func _on_description_meta_hover_started(meta) -> void:
-	if _locked_meta != null:
-		return
-	description_label.mouse_filter = MOUSE_FILTER_STOP
-	_last_meta_at_pointer = meta
-	_handle_effect_meta_interaction(meta)
-
-func _on_description_meta_hover_ended(_meta) -> void:
-	description_label.mouse_filter = MOUSE_FILTER_PASS
-	_last_meta_at_pointer = null
-
-func _on_long_press_timeout() -> void:
-	var meta = _last_meta_at_pointer
-	
-	if meta:
-		_handle_effect_meta_interaction(meta)
-
-func _handle_effect_meta_interaction(meta) -> void:
-	if meta == "effect":
-		var definition: Variant = description_label.get_meta("effect_definition")
-		if definition:
-			var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
-			var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
-			var win = WindowManager.open_child_contextual_window(
-				&"EffectInspection",
-				self,
-				{
-					"effect_definition": definition.ability_definitions,
-					"is_inside_unit_inspection": true,
-					"target_parent_window_id": parent_id
-				}
-			)
-			if win:
-				_last_child_window_id = win.get_instance_id()
-			get_viewport().set_input_as_handled()
-			accept_event()
-	elif str(meta).begins_with("effect_"):
-		var effect_type = str(meta).replace("effect_", "")
-		var name_key = "STATUS_" + effect_type.to_upper()
-		var desc_key = "STATUS_" + effect_type.to_upper() + "_DESC"
-		
-		var parent_win: Control = WindowManager.find_ancestor_window_for_view(self)
-		var parent_id: int = parent_win.get_instance_id() if is_instance_valid(parent_win) else -1
-		
-		var win = WindowManager.open_child_contextual_window(
-			&"EffectInspection",
-			self,
-			{
-				"effect_definition": {
-					"name_key": name_key,
-					"description_key": desc_key
-				},
-				"is_inside_unit_inspection": true,
-				"target_parent_window_id": parent_id
-			}
-		)
-		if win:
-			_last_child_window_id = win.get_instance_id()
-		get_viewport().set_input_as_handled()
-		accept_event()
-
-func _on_window_manager_window_closed(window: Control) -> void:
-	if window.get_instance_id() == _last_child_window_id:
-		_locked_meta = null
-		_last_child_window_id = -1
-
-
-func _on_description_gui_input(event: InputEvent) -> void:
+func get_child_window_specs() -> Array[Dictionary]:
+	var specs: Array[Dictionary] = []
 	if not is_instance_valid(_instance):
-		return
+		return specs
 	
-	if event is InputEventMouseButton or event is InputEventScreenTouch:
-		if event.pressed:
-			_long_press_timer.start()
-		else:
-			_long_press_timer.stop()
-	pass
-
-func _on_internal_background_gui_input(event: InputEvent) -> void:
-	if _InputUtils.is_primary_pointer_press(event):
-		_locked_meta = null
-		WindowManager.handle_inspection_background_click(self)
-		get_viewport().set_input_as_handled()
-		accept_event()
-
-func _on_item_grid_gui_input(event: InputEvent) -> void:
-	if _InputUtils.is_primary_pointer_press(event):
-		_locked_meta = null
-		WindowManager.handle_inspection_background_click(self)
-		get_viewport().set_input_as_handled()
-		accept_event()
+	var seen_effects: Dictionary = {}
+	
+	# 1. Keywords from description / abilities
+	var text_to_search: String = ""
+	if is_instance_valid(description_label):
+		text_to_search += description_label.text + " "
+	
+	var keywords = DescriptionParser.find_keywords(text_to_search)
+	for kw in keywords:
+		if not seen_effects.has(kw):
+			seen_effects[kw] = true
+			var name_key = "STATUS_" + kw.to_upper()
+			var desc_key = "STATUS_" + kw.to_upper() + "_DESC"
+			specs.append({
+				"window_type": &"EffectInspection",
+				"populate_context": {
+					"effect_definition": {
+						"name_key": name_key,
+						"description_key": desc_key
+					},
+					"is_inside_unit_inspection": true,
+					"target_parent_window_id": get_instance_id()
+				}
+			})
+	
+	# 2. Active status effects on the unit (burn, armor, spikes, static)
+	for status_key in DescriptionParser.KEYWORDS:
+		var effect_id = StringName(status_key.to_lower())
+		if _instance.get_status_effect_amount(effect_id) > 0 and not seen_effects.has(status_key):
+			seen_effects[status_key] = true
+			var name_key = "STATUS_" + status_key
+			var desc_key = "STATUS_" + status_key + "_DESC"
+			specs.append({
+				"window_type": &"EffectInspection",
+				"populate_context": {
+					"effect_definition": {
+						"name_key": name_key,
+						"description_key": desc_key
+					},
+					"is_inside_unit_inspection": true,
+					"target_parent_window_id": get_instance_id()
+				}
+			})
+	
+	# 3. Equipped items
+	var unit_definition = _instance.get_definition()
+	if is_instance_valid(unit_definition):
+		var all_instances_db = _get_all_instances_db()
+		var seen_items: Dictionary = {}
+		for i in range(unit_definition.item_slot_count):
+			var item_uuid = _instance.get_equipped_item_uuid(i)
+			if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
+				if seen_items.has(item_uuid):
+					continue
+				seen_items[item_uuid] = true
+				var item_instance = all_instances_db[item_uuid]
+				var item_loc = LocationIdentifier.new()
+				item_loc.container = C.CONTAINER_EQUIPPED_ITEM
+				item_loc.index = i
+				item_loc.unit_uuid = _instance.ball_uuid
+				specs.append({
+					"window_type": &"ItemInspection",
+					"populate_context": {
+						"source_view": self,
+						"instance": item_instance,
+						"location": item_loc,
+						"is_inside_unit_inspection": true,
+						"target_parent_window_id": get_instance_id()
+					}
+				})
+				
+	return specs
 
 func get_location() -> LocationIdentifier:
 	return _location
@@ -583,7 +504,7 @@ func _update_recipe_display() -> void:
 		
 		var lbl = Label.new()
 		lbl.text = txt
-		lbl.add_theme_font_override("font", BOLD_FONT)
+		lbl.add_theme_font_override("font", Database.get_current_locale_font())
 		lbl.add_theme_font_size_override("font_size", 32)
 		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER

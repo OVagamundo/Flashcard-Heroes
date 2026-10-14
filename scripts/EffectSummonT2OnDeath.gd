@@ -43,6 +43,8 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 		"summon_unit_id": random_def.id,
 		"holder_uuid": holder_uuid,
 		"holder_location": holder_location,
-		"level": self.parameters.get("level", 1)
+		"level": self.parameters.get("level", 1),
+		"spawn_source_uuid": holder_uuid,
+		"spawn_source_location": holder_location
 	}
 	return result

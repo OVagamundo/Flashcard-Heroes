@@ -6,6 +6,7 @@ extends CanvasLayer
 @onready var _title_label: Label = %TitleLabel
 @onready var _info_label: Label = %InfoLabel
 @onready var _resume_button: Button = %ResumeButton
+@onready var _skip_idle_toggle: CheckButton = %SkipIdleToggle
 @onready var _exit_button: Button = %ExitButton
 
 var _current_action_seq: int = 0
@@ -16,6 +17,8 @@ var _seed: int = 0
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_resume_button.pressed.connect(_on_resume_pressed)
+	_skip_idle_toggle.toggled.connect(_on_skip_idle_toggled)
+	_skip_idle_toggle.button_pressed = ReplayController.is_skip_idle_pauses()
 	_exit_button.pressed.connect(_on_exit_pressed)
 
 	ReplayController.playback_started.connect(_on_playback_started)
@@ -24,6 +27,11 @@ func _ready() -> void:
 	ReplayController.playback_error.connect(_on_playback_error)
 	ReplayController.playback_paused.connect(_on_playback_paused)
 	ReplayController.playback_speed_changed.connect(_on_speed_changed)
+	if ReplayController.has_signal("skip_idle_changed"):
+		ReplayController.skip_idle_changed.connect(func(enabled: bool):
+			if is_instance_valid(_skip_idle_toggle):
+				_skip_idle_toggle.button_pressed = enabled
+		)
 	if ReplayController.has_signal("action_executing"):
 		ReplayController.action_executing.connect(_on_action_executing)
 
@@ -41,6 +49,8 @@ func _input(event: InputEvent) -> void:
 			_action_indicator.visible = not _action_indicator.visible
 		KEY_ESCAPE:
 			_toggle_pause_menu()
+		KEY_SPACE:
+			ReplayController.skip_current_idle()
 		KEY_1, KEY_KP_1:
 			ReplayController.set_playback_speed(1.0)
 		KEY_2, KEY_KP_2:
@@ -79,6 +89,20 @@ func _toggle_pause_menu() -> void:
 		_pause_popup.visible = true
 		ReplayController.set_playback_paused(true)
 		_update_info_label()
+
+func _process(_delta: float) -> void:
+	if not is_instance_valid(_action_label) or not _action_indicator.visible:
+		return
+	var remaining_idle := ReplayController.get_current_idle_remaining()
+	if remaining_idle > 1.0:
+		var speed := ReplayController.get_playback_speed()
+		var real_remaining := remaining_idle / speed
+		_action_label.text = "Action #%d (Wait: %.1fs | Space)" % [_current_action_seq, real_remaining]
+	elif not _action_label.text.begins_with("Action #%d" % _current_action_seq) or _action_label.text.contains("Wait"):
+		_update_action_display()
+
+func _on_skip_idle_toggled(toggled_on: bool) -> void:
+	ReplayController.set_skip_idle_pauses(toggled_on)
 
 func _on_resume_pressed() -> void:
 	_pause_popup.visible = false

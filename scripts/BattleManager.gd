@@ -30,6 +30,7 @@ var _is_processing_effect: bool:
 
 var _management_animation_queue: Array[Dictionary] = []
 var _is_animating_management_queue: bool = false
+var _is_entrance_sequence_running: bool = false
 var _is_drawing: bool = false
 signal management_animation_queue_completed
 
@@ -170,6 +171,7 @@ func get_replay_state_snapshot() -> Dictionary:
 		"player_slot_effects": _state.player_slot_effects.duplicate(),
 		"enemy_slot_effects": _state.enemy_slot_effects.duplicate(),
 		"staged_enemy_placements": _state.staged_enemy_placements.duplicate(true),
+		"staged_hero_placement": _state.staged_hero_placement.duplicate(true),
 		"instances": instances,
 		"containers": containers,
 		"actor_queue": actor_queue,
@@ -554,6 +556,7 @@ func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
 	# Clear all state
 	_state.clear()
 	_combat.clear()
+	_is_entrance_sequence_running = false
 	_battle_over_emitted = false
 	_battle_over_deferred = false
 	_current_turn = 0
@@ -986,6 +989,55 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 	var post_merge_snapshot := VisualDataAdapter.create_board_snapshot(get_all_instances())
 	if should_trigger_on_merge:
 		var scope_id = _combat.get_crr().begin_scope()
+
+		# Resolve pending expired insignia from evolutionary level-up:
+		# Emits explicit DEBUFF event before new level-entry insignia abilities run.
+		if new_instance.has_meta(&"pending_expired_insignia"):
+			var exp_data: Dictionary = new_instance.get_meta(&"pending_expired_insignia")
+			new_instance.remove_meta(&"pending_expired_insignia")
+			var trinket_uuid: String = exp_data.get("trinket_uuid", "")
+			var hp_loss: int = exp_data.get("hp", 1)
+			var pwr_loss: int = exp_data.get("pwr", 1)
+			var t_name: String = exp_data.get("trinket_name", "Insignia")
+
+			var old_hp: int = new_instance.current_hp
+			var old_pwr: int = new_instance.current_pwr
+			var max_hp: int = new_instance.get_definition_base_hp()
+
+			set_conditional_trinket_bonus(new_instance, trinket_uuid, 0, 0, false, true)
+			new_instance.remove_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))
+			new_instance.remove_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid))
+
+			var new_hp: int = new_instance.current_hp
+			var new_pwr: int = new_instance.current_pwr
+
+			var debuff_payload := CombatPayload.both_stats_change(
+				trinket_uuid,
+				-hp_loss,
+				-pwr_loss,
+				[old_hp],
+				[new_hp],
+				[old_pwr],
+				[new_pwr],
+				[max_hp]
+			)
+			debuff_payload.action_type = C.ACTION_DEBUFF
+
+			var unit_name: String = BattleHelpers.get_instance_display_name(new_instance)
+			var log_event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+				"text": "%s bonus lost on %s (-%d HP, -%d PWR)" % [t_name, unit_name, hp_loss, pwr_loss]
+			})
+			var debuff_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
+				"source_uuid": trinket_uuid,
+				"target_uuids": [new_instance.ball_uuid],
+				"ability_id": StringName("ability_%s_expire" % trinket_uuid),
+				"action_type": C.ACTION_DEBUFF,
+				"ability_holder_uuid": trinket_uuid,
+				"visual_payload": debuff_payload
+			})
+			reaction_events.append(log_event)
+			reaction_events.append(debuff_event)
+
 		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": new_instance.ball_uuid})
 		AbilityResolver.process_trigger(&"on_merge", merge_context)
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
@@ -1002,6 +1054,14 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 			safety -= 1
 
 		CausalReactionResolver.stamp_cause_id(reaction_events, merge_event.event_id)
+	else:
+		if new_instance.has_meta(&"pending_expired_insignia"):
+			var exp_data: Dictionary = new_instance.get_meta(&"pending_expired_insignia")
+			new_instance.remove_meta(&"pending_expired_insignia")
+			var trinket_uuid: String = exp_data.get("trinket_uuid", "")
+			set_conditional_trinket_bonus(new_instance, trinket_uuid, 0, 0, false, true)
+			new_instance.remove_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))
+			new_instance.remove_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid))
 
 	var all_events: Array[CombatEvent] = [merge_event]
 	all_events.append_array(reaction_events)
@@ -1385,8 +1445,9 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 			if is_instance_valid(inst):
 				GameManager.run_state.unlock_recipe_for_result(inst.definition_id)
 		
-		# Fire on_board_enter for the newly placed unit
-		AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": uuid})
+		# Fire on_board_enter for the newly placed unit (only if actually placed on board)
+		if container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+			AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": uuid})
 	
 	# 4. Handle queue replacements (single unit summons replace holder in queue)
 	var replaced_new_uuids: Dictionary = {}
@@ -1419,6 +1480,18 @@ func _apply_summon_result(result: EffectHandlers.SummonResult) -> void:
 	AbilityResolver.process_trigger(&"on_board_changed", {})
 	_emit_battle_inventory_changed()
 
+## Retrieves the basic attack ability definition for the specified unit.
+func get_basic_attack_for(attacker: GachaBallInstance) -> AbilityDefinition:
+	if is_instance_valid(attacker):
+		var def = attacker.get_definition()
+		if is_instance_valid(def) and "ability_definitions" in def and def.ability_definitions != null:
+			for ability in def.ability_definitions:
+				if is_instance_valid(ability):
+					if ability.id == &"basic_attack" or String(ability.id).begins_with("basic_attack"):
+						return ability
+
+	return Database.get_ability_definition(&"basic_attack")
+
 ## Enqueue an attack (on_attack trigger + basic attack fallback) for a single actor.
 func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	var is_player = _is_player_unit(attacker)
@@ -1430,7 +1503,14 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 		"trigger_type": &"on_attack"
 	}
 	
-	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, C.TARGET_FRONTMOST_ENEMY, context, self)
+	var basic_attack_def = get_basic_attack_for(attacker)
+	var default_target_type = C.TARGET_FRONTMOST_ENEMY
+	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
+		var effect = basic_attack_def.effects[0]
+		if is_instance_valid(effect) and effect.target_type != &"":
+			default_target_type = effect.target_type
+	
+	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, default_target_type, context, self)
 	if target_uuids.is_empty(): return
 	var target = get_instance_by_uuid(target_uuids[0])
 	if not is_instance_valid(target): return
@@ -1438,7 +1518,6 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	context["target_uuid"] = target.ball_uuid
 	context["target_initial_hp"] = target.current_hp
 	
-	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
 	# Trigger on_attack abilities (e.g., Double Strike, Power Amulet)
 	# Generic trigger (Power Amulet & Extra Attack both listen to this now, filtered by condition)
 	AbilityResolver.process_trigger(&"on_attack", context)
@@ -1451,10 +1530,9 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 	context["on_attack_already_triggered"] = true
 	
 	# Always add basic attack
-	var basic_attack_def = Database.get_ability_definition(&"basic_attack")
 	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
 		var basic_attack_request = EffectRequest.new(
-			attacker.ball_uuid, &"basic_attack", basic_attack_def.effects[0],
+			attacker.ball_uuid, basic_attack_def.id, basic_attack_def.effects[0],
 			[target.ball_uuid], context, 0 # Priority 0 for basic attack
 		)
 		enqueue_effect_request(basic_attack_request)
@@ -1531,6 +1609,9 @@ func _trigger_pre_combat_abilities() -> void:
 	call_deferred("_resolve_pending_reactions_only")
 
 func _on_turn_animation_finished() -> void:
+	if _is_entrance_sequence_running:
+		return
+
 	if _is_animating_management_queue:
 		# Management queue animations are orchestrated exclusively by _process_management_animation_queue
 		if _is_battle_over():
@@ -1690,6 +1771,9 @@ func _is_battle_over() -> bool:
 ##   - player_won: bool - If over, did player win?
 ##   - reason: StringName - "hero_death", "team_wipe", or "enemy_wipe"
 func _determine_battle_result() -> Dictionary:
+	if _is_entrance_sequence_running:
+		return {"is_over": false, "player_won": false, "reason": &""}
+
 	var player_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	var enemy_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	
@@ -1716,6 +1800,8 @@ func _determine_battle_result() -> Dictionary:
 		if unit.current_hp > 0:
 			player_has_alive = true
 			break
+	if not _state.staged_hero_placement.is_empty():
+		player_has_alive = true
 	
 	# Check if any enemy units are alive
 	var enemy_has_alive = false
@@ -1723,6 +1809,8 @@ func _determine_battle_result() -> Dictionary:
 		if unit.current_hp > 0:
 			enemy_has_alive = true
 			break
+	if not _state.staged_enemy_placements.is_empty():
+		enemy_has_alive = true
 	
 	# Determine outcome
 	if not player_has_alive:
@@ -1861,6 +1949,8 @@ func get_hero_uuid() -> String:
 			var uuid = player_lineup.get_uuid(i)
 			if not uuid.is_empty():
 				return uuid
+	if not _state.staged_hero_placement.is_empty():
+		return _state.staged_hero_placement.get("uuid", "")
 	return ""
 
 ## Check if a unit is on the player's side.
@@ -2105,7 +2195,7 @@ func set_conditional_trinket_bonus(instance: GachaBallInstance, source_id: Strin
 	if pwr_delta != 0:
 		instance.apply_pwr_delta(pwr_delta, {"silent": silent})
 
-func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true, source_category: StringName = &"", source_def_id: StringName = &"") -> Variant:
+func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true, source_category: StringName = &"", source_def_id: StringName = &"", extra_context: Dictionary = {}) -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	
 	if source_category.is_empty() and not source_uuid.is_empty():
@@ -2154,14 +2244,17 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						"is_stackable": is_stackable
 					})
 				elif action_type == C.ACTION_BUFF:
-					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+					var trigger_ctx = {
 						"unit_uuid": instance.ball_uuid,
 						"triggering_uuid": instance.ball_uuid,
 						"source_uuid": source_uuid,
 						"stat": "hp",
 						"amount": delta,
 						"is_stackable": is_stackable
-					})
+					}
+					if not extra_context.is_empty():
+						trigger_ctx.merge(extra_context)
+					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, trigger_ctx)
 				
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
@@ -2223,14 +2316,17 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 							gain_component.source_type = &"CONDITIONAL_ABILITY"
 							gain_component.source_id = source_uuid
 				
-				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, {
+				var trigger_ctx = {
 					"unit_uuid": instance.ball_uuid,
 					"triggering_uuid": instance.ball_uuid,
 					"source_uuid": source_uuid,
 					"stat": "pwr",
 					"amount": delta,
 					"is_stackable": is_stackable
-				})
+				}
+				if not extra_context.is_empty():
+					trigger_ctx.merge(extra_context)
+				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, trigger_ctx)
 				
 				if not _is_applying_static_damage:
 					_trigger_static_consumption(instance)
@@ -2727,19 +2823,8 @@ func _process_registered_death(unit: GachaBallInstance, phase: StringName, death
 		all_events.append_array(death_reaction_events)
 
 func _track_first_killed_non_hero(unit: GachaBallInstance, death_team: String) -> void:
-	var first_killed_key := "first_killed_player_unit" if death_team == "PLAYER" else "first_killed_enemy_unit"
-	if _turn_metadata.has(first_killed_key):
-		return
-	var unit_def = unit.get_definition()
-	if is_instance_valid(unit_def) and not unit_def.is_hero:
-		var loc_snapshot = get_location_for_uuid(unit.ball_uuid)
-		if is_instance_valid(loc_snapshot):
-			_turn_metadata[first_killed_key] = {
-				"uuid": unit.ball_uuid,
-				"def_id": unit.definition_id,
-				"team": death_team,
-				"location_snapshot": loc_snapshot.to_dict()
-			}
+	# THIN WRAPPER: Delegates to DeathProcessor
+	DeathProcessor.track_first_killed(self, unit, death_team)
 
 ## Trigger on_turn_end abilities for all units.
 func _trigger_turn_end_abilities() -> void:
@@ -3054,8 +3139,13 @@ func _on_results_acknowledged() -> void:
 	
 	SignalBus.emit_signal("close_modal_requested")
 	
-	if _current_turn <= 1 and not _state.staged_enemy_placements.is_empty():
-		await execute_enemy_entrance_sequence()
+	if _current_turn <= 1 and (not _state.staged_hero_placement.is_empty() or not _state.staged_enemy_placements.is_empty()):
+		_is_entrance_sequence_running = true
+		if not _state.staged_hero_placement.is_empty():
+			await execute_hero_entrance_sequence()
+		if not _state.staged_enemy_placements.is_empty():
+			await execute_enemy_entrance_sequence()
+		_is_entrance_sequence_running = false
 	
 	# Trigger turn start abilities AFTER mini-game completion
 	if not _turn_start_abilities_triggered:
@@ -3065,6 +3155,74 @@ func _on_results_acknowledged() -> void:
 	else:
 		# No abilities to execute, go directly to MANAGEMENT
 		_change_phase(Phases.MANAGEMENT)
+
+## Executes entrance animation of staged hero unit at Slot 0 of PlayerLineup.
+func execute_hero_entrance_sequence() -> void:
+	if _state.staged_hero_placement.is_empty():
+		return
+		
+	var placement: Dictionary = _state.staged_hero_placement.duplicate(true)
+	_state.staged_hero_placement.clear()
+	
+	var hero_uuid: String = placement.get("uuid", "")
+	var pos: int = placement.get("position", 0)
+	
+	var hero_inst: GachaBallInstance = get_instance(hero_uuid)
+	if not is_instance_valid(hero_inst):
+		return
+		
+	var hero_def = hero_inst.get_definition()
+	if not is_instance_valid(hero_def):
+		return
+		
+	_resolve_animator()
+	
+	# 1. Capture snapshot before hero enters
+	var pre_snap := get_board_snapshot()
+	
+	# 2. Place hero in PlayerLineup[pos] in data
+	_state.bm_add_instance(hero_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, pos)
+	
+	# 3. Create standard SUMMON event (same as all other summons)
+	var summon_loc := LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, pos)
+	var unit_snap := EffectHandlers.create_unit_snapshot(hero_inst, hero_def)
+	
+	var equipped_items_data: Array = []
+	for u_item_uuid in hero_inst.equipped_item_uuids:
+		if not u_item_uuid.is_empty():
+			var u_item = get_instance(u_item_uuid)
+			if is_instance_valid(u_item):
+				var u_def = u_item.get_definition()
+				if is_instance_valid(u_def):
+					equipped_items_data.append({
+						"uuid": u_item_uuid,
+						"icon": u_def.icon if "icon" in u_def else null,
+						"definition_id": u_item.definition_id
+					})
+	if not equipped_items_data.is_empty():
+		unit_snap["equipped_items"] = equipped_items_data
+		unit_snap["equipped_item_icon"] = equipped_items_data[0]["icon"]
+
+	var summon_payload := EffectHandlers._make_summon_payload("", hero_inst.ball_uuid, summon_loc, unit_snap)
+	var summon_event := CombatEvent.new(CombatEvent.Type.SUMMON, {
+		"source_uuid": "",
+		"target_uuids": [hero_inst.ball_uuid],
+		"visual_payload": summon_payload
+	})
+	
+	# 4. Trigger on_board_enter, on_battle_start, on_board_changed
+	AbilityResolver.process_trigger(&"on_board_enter", {"entered_uuid": hero_inst.ball_uuid})
+	AbilityResolver.process_trigger(&"on_battle_start", {"source_uuid": hero_inst.ball_uuid})
+	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+	
+	# 5. Collect reaction events (e.g. Rusty Ring buff, Royal Insignia buff)
+	var reaction_events := _combat.process_reaction_queue(self, {})
+	var entrance_events: Array[CombatEvent] = [summon_event]
+	entrance_events.append_array(reaction_events)
+	
+	# 6. Animate SUMMON followed by reactions via BattleAnimator
+	if is_instance_valid(_animator):
+		await _animator.play_turn_sequence(pre_snap, entrance_events)
 
 ## Executes sequential entrance of staged enemy units from Slot 4 (Backline) down to Slot 0 (Frontline).
 func execute_enemy_entrance_sequence() -> void:

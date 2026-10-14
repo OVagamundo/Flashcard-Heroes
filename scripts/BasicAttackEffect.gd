@@ -36,7 +36,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	#    This prevents "Extra Attack" (Cause: ABILITY) from triggering another "Extra Attack" (Requires: CAUSE_TURN)
 	var trigger_cause = _context.get("trigger_cause", &"")
 	var ability_id = _context.get("ability_id", &"")
-	if ability_id != &"basic_attack":
+	if ability_id != &"basic_attack" and not String(ability_id).begins_with("basic_attack"):
 		trigger_cause = &"CAUSE_ABILITY"
 	
 	# WIND-UP PHASE
@@ -99,44 +99,6 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			if burn_count > 0:
 				damage += burn_count
 				
-	# Guardian Sentinel Intercept
-	var target_armor = target_instance.get_status_effect_amount(&"armor")
-	var hp_damage = max(0, damage - target_armor)
-	var would_be_lethal = target_instance.current_hp - hp_damage <= 0
-	var tgt_is_player_unit = battle_manager._is_player_unit(target_instance)
-	var is_ally_damage = (tgt_is_player_unit != is_player_source)
-	
-	var final_target_uuid = target_instance.ball_uuid
-	var final_target = target_instance
-	
-	if would_be_lethal and is_ally_damage:
-		var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, final_target_uuid)
-		if is_instance_valid(guardian):
-			pre_impact_events.append(CombatEvent.new(CombatEvent.Type.GUARDIAN_INTERCEPT, {
-				"source_uuid": guardian.ball_uuid,
-				"target_uuids": [final_target_uuid],
-				"visual_payload": CombatPayload.guardian_intercept(guardian.ball_uuid, final_target_uuid)
-			}))
-			final_target_uuid = guardian.ball_uuid
-			final_target = guardian
-			
-			# Trigger Guardian passive effects (e.g., gain Armor)
-			var combat_sim = battle_manager._combat
-			var intercept_scope = combat_sim.begin_reaction_scope()
-			
-			AbilityResolver.process_trigger(&"passive_intercept", {
-				"source_uuid": guardian.ball_uuid,
-				"is_simulation": true
-			})
-			
-			var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
-			CombatCommand.append_unified_events(pre_impact_events, guardian_results)
-
-	# IMPACT PHASE (Damage Application)
-	var old_hp = final_target.current_hp
-	var old_armor = final_target.get_status_effect_amount(&"armor")
-	var old_burn = final_target.get_status_effect_amount(&"burn")
-	
 	var attack_type = parameters.get("attack_type", "melee")
 	
 	# Sniper Aim override
@@ -148,6 +110,23 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 					attack_type = "ranged"
 					break
 	var damage_type = C.DamageType.MELEE if attack_type == "melee" else C.DamageType.RANGED
+
+	# Guardian Sentinel Intercept
+	var final_target_uuid = target_instance.ball_uuid
+	var final_target = target_instance
+	var intercept_res = BattleHelpers.resolve_guardian_intercept(
+		target_instance, damage, damage_type, is_player_source, battle_manager
+	)
+	if intercept_res.intercepted:
+		final_target = intercept_res.interceptor
+		final_target_uuid = final_target.ball_uuid
+		CombatCommand.append_unified_events(pre_impact_events, intercept_res.events)
+
+	# IMPACT PHASE (Damage Application)
+	var old_hp = final_target.current_hp
+	var old_armor = final_target.get_status_effect_amount(&"armor")
+	var old_burn = final_target.get_status_effect_amount(&"burn")
+	
 	var damage_result = battle_manager.apply_damage(final_target, damage, damage_type, attacker_uuid)
 	
 	var new_hp = damage_result.get("new_hp", final_target.current_hp) if not damage_result.is_empty() else final_target.current_hp
