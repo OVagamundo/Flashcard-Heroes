@@ -18,24 +18,6 @@ msgstr "Enemy Hero"
 msgid "enemy_hero.desc"
 msgstr "The enemy's champion."
 
-msgid "unit_t1_a.name"
-msgstr "Rocky"
-
-msgid "unit_t1_a.desc"
-msgstr "Novice unit."
-
-msgid "unit_t1_b.name"
-msgstr "Burny"
-
-msgid "unit_t1_b.desc"
-msgstr "Loyal squire."
-
-msgid "unit_t2_d.name"
-msgstr "Templar"
-
-msgid "unit_t2_d.desc"
-msgstr "A devout templar."
-
 msgid "ability.unit_t2_d_power.name"
 msgstr "Token Power"
 
@@ -47,12 +29,6 @@ msgstr "Gains extra PWR equal to 150% of current Tokens, updating whenever Token
 
 msgid "ability.unit_t2_d_power_l3.desc"
 msgstr "Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change."
-
-msgid "unit_t2_f.name"
-msgstr "Merchant"
-
-msgid "unit_t2_f.desc"
-msgstr "Traveling merchant."
 
 msgid "ability.unit_t2_f_gold_pwr.name"
 msgstr "Gold Investments"
@@ -66,12 +42,6 @@ msgstr "Initial PWR equals your current Gold multiplied by 100% when drawn or sp
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
 msgstr "Initial PWR equals your current Gold multiplied by 150% when drawn or spawned."
 
-msgid "unit_t1_c.name"
-msgstr "Dewey"
-
-msgid "unit_t1_c.desc"
-msgstr "Steadfast guardian."
-
 msgid "ability.unit_t1_c_ally_shield.name"
 msgstr "Guardian's Grace"
 
@@ -83,12 +53,6 @@ msgstr "When the ally directly in front takes damage, heal them for 2 HP."
 
 msgid "ability.unit_t1_c_ally_shield_l3.desc"
 msgstr "When the ally directly in front takes damage, heal them for 3 HP."
-
-msgid "unit_t1_d.name"
-msgstr "Windy"
-
-msgid "unit_t1_d.desc"
-msgstr "Sensitive soul."
 
 msgid "ability.unit_t1_d_empathic_link.name"
 msgstr "Empathic Link"
@@ -125,12 +89,6 @@ msgstr "When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damag
 
 msgid "ability.unit_tier1b_counter_on_hurt_l3.desc"
 msgstr "When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce."
-
-msgid "unit_t2_c.name"
-msgstr "Knight"
-
-msgid "unit_t2_c.desc"
-msgstr "Valiant knight."
 
 msgid "item_t1_a.name"
 msgstr "Koi's Blessing"
@@ -297,18 +255,6 @@ msgstr "Summon"
 msgid "ability.item_t2_c_summon.desc"
 msgstr "When the holder dies, summon a random Tier 1 unit in their place."
 
-msgid "unit_t3_paladin.name"
-msgstr "Paladin"
-
-msgid "unit_t3_paladin.desc"
-msgstr "Heavily armored tank."
-
-msgid "unit_t3_berserker.name"
-msgstr "Berserker"
-
-msgid "unit_t3_berserker.desc"
-msgstr "Powerful warrior."
-
 msgid "ability.unit_tier2a_defensive_stance.name"
 msgstr "Defensive Stance"
 
@@ -356,12 +302,6 @@ msgstr "Temporal Aura"
 
 msgid "ability.hero_timekeeper_temporal_aura.desc"
 msgstr "At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind."
-
-msgid "unit_t3_d.name"
-msgstr "Sakura Spirit"
-
-msgid "unit_t3_d.desc"
-msgstr "A powerful spirit guarding the cherry blossoms."
 
 msgid "boss_1.name"
 msgstr "The Awakened Guardian"
@@ -465,35 +405,17 @@ msgstr "Shared Reflection"
 msgid "ability.twin_charm_scale.desc"
 msgstr "Your units gain +1 PWR for every 2 copies of that same unit in your battle pool."
 
-msgid "unit_t3_a.name"
-msgstr "Shadow Striker"
-
-msgid "unit_t3_a.desc"
-msgstr "Master of precise strikes."
-
 msgid "ability.unit_tier3a_mirror_strike.name"
 msgstr "Mirror Strike"
 
 msgid "ability.unit_tier3a_mirror_strike.desc"
 msgstr "Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy."
 
-msgid "unit_t3_b.name"
-msgstr "Guardian Sentinel"
-
-msgid "unit_t3_b.desc"
-msgstr "Stalwart protector."
-
 msgid "ability.unit_tier3b_guardian_sacrifice.name"
 msgstr "Guardian Sacrifice"
 
 msgid "ability.unit_tier3b_guardian_sacrifice.desc"
 msgstr "When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead."
-
-msgid "unit_t3_c.name"
-msgstr "Soul Caller"
-
-msgid "unit_t3_c.desc"
-msgstr "Mystical unit."
 
 msgid "ability.unit_tier3c_soul_summon.name"
 msgstr "Soul Summon"
@@ -1023,23 +945,11 @@ msgstr "Expand your Portuguese vocabulary with 100 essential everyday words."
 msgid "deck.korean_hangul.desc"
 msgstr "Learn Korean Hangul alphabet and pronunciation rules"
 
-msgid "unit_t3_e.name"
-msgstr "Dreadnought"
-
-msgid "unit_t3_e.desc"
-msgstr "A terrifying predator that strikes down newly summoned enemies."
-
 msgid "ability.unit_tier3e_ambush_predator.name"
 msgstr "Ambush Predator"
 
 msgid "ability.unit_tier3e_ambush_predator.desc"
 msgstr "When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR."
-
-msgid "unit_t3_f.name"
-msgstr "Warden"
-
-msgid "unit_t3_f.desc"
-msgstr "A protective guardian that empowers newly summoned allies."
 
 msgid "ability.unit_tier3f_summon_blessing.name"
 msgstr "Summon Blessing"
@@ -1119,6 +1029,72 @@ msgstr "Air Trait"
 msgid "trinket.trait_air.desc"
 msgstr "Enables the Air trait whenever your team has enough Air souls."
 
+msgid "trinket.trait_tank.name"
+msgstr "Tank Trait"
+
+msgid "trinket.trait_tank.desc"
+msgstr "Enables the Tank trait whenever your team has enough Tank units."
+
+msgid "trinket.trait_fighter.name"
+msgstr "Fighter Trait"
+
+msgid "trinket.trait_fighter.desc"
+msgstr "Enables the Fighter trait whenever your team has enough Fighter units."
+
+msgid "trinket.trait_support.name"
+msgstr "Support Trait"
+
+msgid "trinket.trait_support.desc"
+msgstr "Enables the Support trait whenever your team has enough Support units."
+
+msgid "trinket.trait_specialist.name"
+msgstr "Specialist Trait"
+
+msgid "trinket.trait_specialist.desc"
+msgstr "Enables the Specialist trait whenever your team has enough Specialist units."
+
+msgid "trinket.trait_food.name"
+msgstr "Food Trait"
+
+msgid "trinket.trait_food.desc"
+msgstr "Enables the Food trait whenever your team has enough Food units."
+
+msgid "trinket.trait_mecha.name"
+msgstr "Mecha Trait"
+
+msgid "trinket.trait_mecha.desc"
+msgstr "Enables the Mecha trait whenever your team has enough Mecha units."
+
+msgid "trinket.trait_animal.name"
+msgstr "Animal Trait"
+
+msgid "trinket.trait_animal.desc"
+msgstr "Enables the Animal trait whenever your team has enough Animal units."
+
+msgid "trinket.trait_plant.name"
+msgstr "Plant Trait"
+
+msgid "trinket.trait_plant.desc"
+msgstr "Enables the Plant trait whenever your team has enough Plant units."
+
+msgid "trinket.trait_toy.name"
+msgstr "Toy Trait"
+
+msgid "trinket.trait_toy.desc"
+msgstr "Enables the Toy trait whenever your team has enough Toy units."
+
+msgid "trinket.trait_appliance.name"
+msgstr "Appliance Trait"
+
+msgid "trinket.trait_appliance.desc"
+msgstr "Enables the Appliance trait whenever your team has enough Appliance units."
+
+msgid "trinket.trait_costume.name"
+msgstr "Costume Trait"
+
+msgid "trinket.trait_costume.desc"
+msgstr "Enables the Costume trait whenever your team has enough Costume units."
+
 msgid "trait.fire.name"
 msgstr "Fire"
 
@@ -1129,7 +1105,7 @@ msgid "trait.fire.5"
 msgstr "Apply +1 Extra Burn (Total 2)."
 
 msgid "trait.fire.7"
-msgstr "Start of Turn: Apply 2 Burn to ALL enemies."
+msgstr "Combat Start: Apply 2 Burn to ALL enemies."
 
 msgid "trait.fire.9"
 msgstr "Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks."
@@ -1165,13 +1141,64 @@ msgid "trait.water.name"
 msgstr "Water"
 
 msgid "trait.water.2"
-msgstr "Water units heal adjacent allies 1 HP at start of turn."
+msgstr "Water units heal adjacent allies 1 HP at combat start."
 
 msgid "trait.air.name"
 msgstr "Air"
 
 msgid "trait.air.2"
-msgstr "Air units steal 1 PWR from the opposite enemy at start of turn."
+msgstr "Air units steal 1 PWR from the opposite enemy at combat start."
+
+msgid "trait.tank.name"
+msgstr "Tank"
+
+msgid "trait.fighter.name"
+msgstr "Fighter"
+
+msgid "trait.support.name"
+msgstr "Support"
+
+msgid "trait.specialist.name"
+msgstr "Specialist"
+
+msgid "trait.food.name"
+msgstr "Food"
+
+msgid "trait.mecha.name"
+msgstr "Mecha"
+
+msgid "trait.animal.name"
+msgstr "Animal"
+
+msgid "trait.plant.name"
+msgstr "Plant"
+
+msgid "trait.toy.name"
+msgstr "Toy"
+
+msgid "trait.appliance.name"
+msgstr "Appliance"
+
+msgid "trait.costume.name"
+msgstr "Costume"
+
+msgid "trait.common_pwr.2"
+msgstr "At combat start, units of this trait gain +1 PWR."
+
+msgid "trait.common_pwr.3"
+msgstr "At combat start, units of this trait gain +2 PWR."
+
+msgid "trait.common_pwr.4"
+msgstr "At combat start, units of this trait gain +3 PWR."
+
+msgid "trait.common_pwr.5"
+msgstr "At combat start, units of this trait gain +4 PWR."
+
+msgid "ability.trait_pwr_buff.name"
+msgstr "Trait Surge"
+
+msgid "ability.trait_pwr_buff.desc"
+msgstr "At combat start, grants +1 to +4 PWR to matching trait units based on synergy count."
 
 msgid "item.emblem_water.name"
 msgstr "Water Emblem"
@@ -1233,35 +1260,17 @@ msgstr "Plunder"
 msgid "ability.potion_plunder.desc"
 msgstr "Steals a random item from the target and sends it to your Gacha Machine of the matching tier."
 
-msgid "unit_t3_mimic.name"
-msgstr "Mimic"
-
-msgid "unit_t3_mimic.desc"
-msgstr "Mysterious entity."
-
 msgid "ability.unit_t2_e_mimic.name"
 msgstr "Mirror Image"
 
 msgid "ability.unit_t2_e_mimic.desc"
 msgstr "At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR."
 
-msgid "unit_t3_shadow.name"
-msgstr "Shadow Cloner"
-
-msgid "unit_t3_shadow.desc"
-msgstr "Ethereal unit."
-
 msgid "ability.unit_t2_g_buff_echo.name"
 msgstr "Buff Echo"
 
 msgid "ability.unit_t2_g_buff_echo.desc"
 msgstr "When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them."
-
-msgid "unit_t2_h.name"
-msgstr "Hermit"
-
-msgid "unit_t2_h.desc"
-msgstr "Solitary warrior."
 
 msgid "ability.unit_t2_h.name"
 msgstr "Solitary Strength"
@@ -1275,12 +1284,6 @@ msgstr "At start of combat, gain +2 HP and +2 PWR for each empty slot in your te
 msgid "ability.unit_t2_h_l3.desc"
 msgstr "At start of combat, gain +3 HP and +3 PWR for each empty slot in your team."
 
-msgid "unit_t2_i.name"
-msgstr "Mud Wretch"
-
-msgid "unit_t2_i.desc"
-msgstr "Mud creature."
-
 msgid "ability.mud_coating.name"
 msgstr "Mud Coating"
 
@@ -1292,12 +1295,6 @@ msgstr "When healed, gain 2 Armor and 2 Spikes."
 
 msgid "ability.mud_coating_l3.desc"
 msgstr "When healed, gain 3 Armor and 3 Spikes."
-
-msgid "unit_t2_j.name"
-msgstr "Steam Wisp"
-
-msgid "unit_t2_j.desc"
-msgstr "Scalding spirit."
 
 msgid "ability.scald.name"
 msgstr "Scald"
@@ -1311,20 +1308,8 @@ msgstr "When this unit is healed, shoot a bouncing burn projectile at a random e
 msgid "ability.scald_l3.desc"
 msgstr "When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce."
 
-msgid "unit_t3_g.name"
-msgstr "Phantom Wayfarer"
-
-msgid "unit_t3_g.desc"
-msgstr "Mysterious traveler."
-
 msgid "ability.unit_tier3g_bench_growth.name"
 msgstr "Quiet Meditation"
-
-msgid "unit_t3_h.name"
-msgstr "Fusion Warden"
-
-msgid "unit_t3_h.desc"
-msgstr "Volatile hybrid."
 
 msgid "ability.unit_t3_h.name"
 msgstr "Convergence Surge"
@@ -1593,12 +1578,6 @@ msgstr "CLICK HERE TO MERGE!"
 msgid "ui.merge_encounter_instruction"
 msgstr "Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)"
 
-msgid "unit_t3_i.name"
-msgstr "Doppleganger"
-
-msgid "unit_t3_i.desc"
-msgstr "Volatile clone."
-
 msgid "ability.doppleganger_scale.name"
 msgstr "Mirrored Might"
 
@@ -1629,12 +1608,6 @@ msgstr "Echo Split"
 msgid "ability.echoing_orb_death.desc"
 msgstr "Spawns an Echoing Orb into the Tier 2 Gacha Machine on death."
 
-msgid "unit_t3_j.name"
-msgstr "Standard Bearer"
-
-msgid "unit_t3_j.desc"
-msgstr "Valiant commander."
-
 msgid "ability.unit_t3_j_ability_l1.name"
 msgstr "Standard's Legacy"
 
@@ -1655,12 +1628,6 @@ msgstr "On death, transfers its equipped item to the ally behind and 2 copies be
 
 msgid "ui.transfer_item_msg"
 msgstr "%s transfers %s to %s!"
-
-msgid "unit_t3_l.name"
-msgstr "Golden Hermit"
-
-msgid "unit_t3_l.desc"
-msgstr "A solitary sage of wealth."
 
 msgid "ability.unit_t3_l_l1.name"
 msgstr "Wealth Accumulation"
@@ -2009,4 +1976,178 @@ msgstr "Wealth Accumulation"
 
 msgid "ability.unit_t3_j_ability.name"
 msgstr "Standard's Legacy"
+
+msgid "ETnkPlaToy.name"
+msgstr "ETnkPlaToy"
+
+msgid "ETnkPlaToy.desc"
+msgstr "ETnkPlaToy unit."
+
+msgid "FFigMecApp.name"
+msgstr "FFigMecApp"
+
+msgid "FFigMecApp.desc"
+msgstr "FFigMecApp unit."
+
+msgid "WSupAniCos.name"
+msgstr "WSupAniCos"
+
+msgid "WSupAniCos.desc"
+msgstr "WSupAniCos unit."
+
+msgid "ASpeFodToy.name"
+msgstr "ASpeFodToy"
+
+msgid "ASpeFodToy.desc"
+msgstr "ASpeFodToy unit."
+
+msgid "EWFigCosToy.name"
+msgstr "EWFigCosToy"
+
+msgid "EWFigCosToy.desc"
+msgstr "EWFigCosToy unit."
+
+msgid "FASpeMecApp.name"
+msgstr "FASpeMecApp"
+
+msgid "FASpeMecApp.desc"
+msgstr "FASpeMecApp unit."
+
+msgid "EASpeFodToy.name"
+msgstr "EASpeFodToy"
+
+msgid "EASpeFodToy.desc"
+msgstr "EASpeFodToy unit."
+
+msgid "WATnkPlaAni.name"
+msgstr "WATnkPlaAni"
+
+msgid "WATnkPlaAni.desc"
+msgstr "WATnkPlaAni unit."
+
+msgid "EFTnkAniCos.name"
+msgstr "EFTnkAniCos"
+
+msgid "EFTnkAniCos.desc"
+msgstr "EFTnkAniCos unit."
+
+msgid "FWSpeAppFod.name"
+msgstr "FWSpeAppFod"
+
+msgid "FWSpeAppFod.desc"
+msgstr "FWSpeAppFod unit."
+
+msgid "EFWAFigSpeAniMec.name"
+msgstr "EFWAFigSpeAniMec"
+
+msgid "EFWAFigSpeAniMec.desc"
+msgstr "EFWAFigSpeAniMec unit."
+
+msgid "EWWATnkMecApp.name"
+msgstr "EWWATnkMecApp"
+
+msgid "EWWATnkMecApp.desc"
+msgstr "EWWATnkMecApp unit."
+
+msgid "EFWWFigSpeAniFodMecCos.name"
+msgstr "EFWWFigSpeAniFodMecCos"
+
+msgid "EFWWFigSpeAniFodMecCos.desc"
+msgstr "EFWWFigSpeAniFodMecCos unit."
+
+msgid "EFAASupToy.name"
+msgstr "EFAASupToy"
+
+msgid "EFAASupToy.desc"
+msgstr "EFAASupToy unit."
+
+msgid "EEFWFigTnkPlaToy.name"
+msgstr "EEFWFigTnkPlaToy"
+
+msgid "EEFWFigTnkPlaToy.desc"
+msgstr "EEFWFigTnkPlaToy unit."
+
+msgid "EEWAFigFodAniCos.name"
+msgstr "EEWAFigFodAniCos"
+
+msgid "EEWAFigFodAniCos.desc"
+msgstr "EEWAFigFodAniCos unit."
+
+msgid "EFFASupPlaToy.name"
+msgstr "EFFASupPlaToy"
+
+msgid "EFFASupPlaToy.desc"
+msgstr "EFFASupPlaToy unit."
+
+msgid "FWAASupToy.name"
+msgstr "FWAASupToy"
+
+msgid "FWAASupToy.desc"
+msgstr "FWAASupToy unit."
+
+msgid "EFFWSupMecApp.name"
+msgstr "EFFWSupMecApp"
+
+msgid "EFFWSupMecApp.desc"
+msgstr "EFFWSupMecApp unit."
+
+msgid "EFWASupFodToy.name"
+msgstr "EFWASupFodToy"
+
+msgid "EFWASupFodToy.desc"
+msgstr "EFWASupFodToy unit."
+
+msgid "FFWASpeSupMecAniApp.name"
+msgstr "FFWASpeSupMecAniApp"
+
+msgid "FFWASpeSupMecAniApp.desc"
+msgstr "FFWASpeSupMecAniApp unit."
+
+msgid "EWAASpePlaApp.name"
+msgstr "EWAASpePlaApp"
+
+msgid "EWAASpePlaApp.desc"
+msgstr "EWAASpePlaApp unit."
+
+msgid "EEFASpeFodCos.name"
+msgstr "EEFASpeFodCos"
+
+msgid "EEFASpeFodCos.desc"
+msgstr "EEFASpeFodCos unit."
+
+msgid "EFWATnkCosMec.name"
+msgstr "EFWATnkCosMec"
+
+msgid "EFWATnkCosMec.desc"
+msgstr "EFWATnkCosMec unit."
+
+msgid "FWWASupAniToy.name"
+msgstr "FWWASupAniToy"
+
+msgid "FWWASupAniToy.desc"
+msgstr "FWWASupAniToy unit."
+
+msgid "ability.trait_earth.name"
+msgstr "Earth Ward"
+
+msgid "ability.trait_earth.desc"
+msgstr "At combat start, grants Armor and Spikes to allies based on Earth souls (Earth units gain double Armor)."
+
+msgid "ability.trait_fire.name"
+msgstr "Fire Nova"
+
+msgid "ability.trait_fire.desc"
+msgstr "At combat start, applies 2 Burn to the opposing team if 7+ Fire souls."
+
+msgid "ability.trait_water.name"
+msgstr "Soothing Stream"
+
+msgid "ability.trait_water.desc"
+msgstr "At combat start, Water units heal adjacent allies 1 HP if 2+ Water souls."
+
+msgid "ability.trait_air.name"
+msgstr "Gale Siphon"
+
+msgid "ability.trait_air.desc"
+msgstr "At combat start, Air units steal 1 PWR from mirrored enemies if 2+ Air souls."
 

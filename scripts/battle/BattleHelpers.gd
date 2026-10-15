@@ -197,9 +197,9 @@ class InterceptResolution extends RefCounted:
 	var interceptor: GachaBallInstance = null
 	var events: Array[CombatEvent] = []
 
-## Centralized Guardian Sentinel intercept resolution.
+## Centralized Guardian intercept resolution.
 ## Evaluates if incoming damage is lethal to target ally, finds a guardian on the same team,
-## triggers passive_intercept so Guardian Sentinel gains level-based armor (e.g. +1 / +2)
+## triggers passive_intercept so Guardian gains level-based armor (e.g. +1 / +2)
 ## on top of any existing armor BEFORE leaping, and records events in proper sequence.
 static func resolve_guardian_intercept(
 	target_inst: GachaBallInstance,

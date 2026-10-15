@@ -42,12 +42,15 @@ func populate(context: Dictionary) -> void:
 	# Set icon (reusing internal preload logic or passing texture)
 	if is_instance_valid(_source_view) and _source_view.get("icon_texture"):
 		icon_rect.texture = _source_view.icon_texture
+	elif def.has("icon_path") and ResourceLoader.exists(def["icon_path"]):
+		icon_rect.texture = load(def["icon_path"])
 	else:
 		match _trait_id:
 			"FIRE": icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
 			"EARTH": icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
 			"WATER": icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
 			"AIR": icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
+
 	
 	# Build description text with highlighting
 	var text = ""

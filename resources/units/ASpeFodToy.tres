@@ -1,0 +1,27 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier1AirUnit.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttackRangedMirror.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink.tres" id="4_empathic_link"]
+
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink_L2.tres" id="5_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/UnitTier1D_EmpathicLink_L3.tres" id="6_l3"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ASpeFodToy"
+display_name_key = "ASpeFodToy.name"
+description_key = "ASpeFodToy.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_AIR", &"Specialist", &"Food", &"Toy"])
+tier = 1
+level = 1
+cost = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_empathic_link"), ExtResource("5_l2"), ExtResource("6_l3")])

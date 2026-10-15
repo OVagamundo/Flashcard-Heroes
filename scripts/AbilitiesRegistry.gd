@@ -30,13 +30,13 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"basic_attack_ranged_mirror": {
-		"owner": "Burny (T1B), Windy (T1D)",
+		"owner": "Squire (T1B), Empath (T1D)",
 		"trigger": "TURN_ACTION",
 		"effect": "Deal PWR ranged damage to mirror enemy (fallback backmost)",
 	},
 	
 	"unit_tier1a_passive_heal": {
-		"owner": "Rocky (T1A)",
+		"owner": "ETnkPlaToy",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_NON_LETHAL",
 		"effect": "Heal self for PWR",
@@ -44,7 +44,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1b_counter_on_hurt": {
-		"owner": "Burny (T1B)",
+		"owner": "FFigMecApp",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
 		"effect": "Apply 1 Burn stack to the attacker",
@@ -53,7 +53,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier2a_defensive_stance": {
-		"owner": "Guardian (T2A)",
+		"owner": "Defensive Stance",
 		"trigger": "on_before_damage",
 		"condition": null,
 		"effect": "Gain +2 HP before receiving attack damage",
@@ -61,7 +61,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier2b_shockwave": {
-		"owner": "Berserker (T2B)",
+		"owner": "Shockwave",
 		"trigger": "on_attack",
 		"condition": null,
 		"effect": "Deal 50% PWR damage to enemies behind the main target",
@@ -69,14 +69,14 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier2c_ally_death_buff": {
-		"owner": "Knight (T2C)",
+		"owner": "EWFigCosToy",
 		"trigger": "on_ally_death",
 		"condition": null,
 		"effect": "Gain +2 HP and +2 PWR when an ally dies",
 	},
 	
 	"unit_tier3a_mirror_strike": {
-		"owner": "Shadow Striker (T3A)",
+		"owner": "EFWAFigSpeAniMec",
 		"trigger": "on_attack",
 		"condition": null,
 		"effect": "Also attack the enemy in the mirror position",
@@ -84,7 +84,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier3b_guardian_sacrifice": {
-		"owner": "Guardian Sentinel (T3B)",
+		"owner": "EWWATnkMecApp",
 		"trigger": "passive_intercept",
 		"condition": null,
 		"effect": "Intercept lethal damage meant for an ally",
@@ -92,14 +92,14 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier3c_soul_summon": {
-		"owner": "Soul Keeper (T3C)",
+		"owner": "EFAASupToy",
 		"trigger": "on_death",
 		"condition": null,
 		"effect": "Resurrect the first ally that died this battle",
 	},
 	
 	"unit_tier3d_resilient_aura": {
-		"owner": "Resilient Aura (T3D)",
+		"owner": "EEFWFigTnkPlaToy",
 		"trigger": "on_hurt",
 		"condition": null,
 		"effect": "Grant +1 HP and +1 PWR to all allies when damaged",
@@ -107,7 +107,7 @@ const ABILITIES: Dictionary = {
 	},
 
 	"unit_tier3h_merge_growth": {
-		"owner": "Fusion Warden (T3H)",
+		"owner": "EFFWSupMecApp",
 		"trigger": "on_merge",
 		"condition": null,
 		"effect": "Gain +2 HP and +2 PWR when any merge occurs on the battle board",
@@ -193,7 +193,7 @@ const ABILITIES: Dictionary = {
 		"owner": "Phoenix Egg (T2C02)",
 		"trigger": "on_death",
 		"condition": null,
-		"effect": "Summon a Burny when holder dies",
+		"effect": "Summon a Squire when holder dies",
 	},
 	
 	# ==================== TRINKET ABILITIES ====================
@@ -283,6 +283,42 @@ const ABILITIES: Dictionary = {
 		"condition": "HAS_TIER3_OR_LEVEL3_UNIT",
 		"effect": "If there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.",
 	},
+
+	"ability_trait_buff": {
+		"owner": "Trait Trinkets",
+		"trigger": "on_pre_combat",
+		"condition": null,
+		"effect": "At combat start (when battle button is pressed), grants +1 to +4 PWR to matching trait units based on trait synergy count.",
+	},
+
+	"ability_trait_earth": {
+		"owner": "Earth Trait Trinket",
+		"trigger": "on_pre_combat",
+		"condition": null,
+		"effect": "At combat start, grants Armor and Spikes to allies based on Earth souls (Earth units gain double Armor).",
+	},
+
+	"ability_trait_fire": {
+		"owner": "Fire Trait Trinket",
+		"trigger": "on_pre_combat",
+		"condition": null,
+		"effect": "At combat start, applies 2 Burn to the opposing team if 7+ Fire souls.",
+	},
+
+	"ability_trait_water": {
+		"owner": "Water Trait Trinket",
+		"trigger": "on_pre_combat",
+		"condition": null,
+		"effect": "At combat start, Water units heal adjacent allies 1 HP if 2+ Water souls.",
+	},
+
+	"ability_trait_air": {
+		"owner": "Air Trait Trinket",
+		"trigger": "on_pre_combat",
+		"condition": null,
+		"effect": "At combat start, Air units steal 1 PWR from mirrored enemies if 2+ Air souls.",
+	},
+
 	
 	# ==================== BOSS ABILITIES ====================
 	

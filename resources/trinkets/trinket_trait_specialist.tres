@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/trinket_trait_specialist.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_trait_buff.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_trait_specialist"
+name_key = "trinket.trait_specialist.name"
+description_key = "trinket.trait_specialist.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+linked_trait_id = &"SPECIALIST"
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

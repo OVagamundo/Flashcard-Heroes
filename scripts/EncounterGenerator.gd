@@ -367,14 +367,16 @@ func _assemble_encounter(build: Dictionary, id_prefix: String, reserve_position_
 	return encounter
 
 func _append_required_trait_trinkets(encounter: EncounterDefinition) -> void:
-	var soul_counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var trait_counts: Dictionary = {}
+	for t in C.TRAIT_SORT_ORDER:
+		trait_counts[t] = 0
 
 	for placement in encounter.enemy_placements:
 		var unit_def = Database.get_definition(placement.id)
-		_accumulate_trait_souls(soul_counts, unit_def)
+		_accumulate_trait_souls(trait_counts, unit_def)
 		for item_id in placement.get("items", []):
 			var item_def = Database.get_definition(item_id)
-			_accumulate_trait_souls(soul_counts, item_def)
+			_accumulate_trait_souls(trait_counts, item_def)
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		if encounter.enemy_trinket_ids.size() >= MAX_TRINKETS:
@@ -384,7 +386,7 @@ func _append_required_trait_trinkets(encounter: EncounterDefinition) -> void:
 		if levels.is_empty():
 			continue
 		var min_required := int(levels[0].get("min", 999))
-		if int(soul_counts.get(trait_name, 0)) < min_required:
+		if int(trait_counts.get(trait_name, 0)) < min_required:
 			continue
 		var trinket_id: StringName = trait_def.get("trinket_id", &"")
 		if trinket_id == &"" or encounter.enemy_trinket_ids.has(trinket_id):
@@ -397,13 +399,18 @@ func _accumulate_trait_souls(counts: Dictionary, definition: Resource) -> void:
 	for tag in definition.tags:
 		match tag:
 			&"SOUL_FIRE":
-				counts["FIRE"] += 1
+				counts["FIRE"] = counts.get("FIRE", 0) + 1
 			&"SOUL_EARTH":
-				counts["EARTH"] += 1
+				counts["EARTH"] = counts.get("EARTH", 0) + 1
 			&"SOUL_WATER":
-				counts["WATER"] += 1
+				counts["WATER"] = counts.get("WATER", 0) + 1
 			&"SOUL_AIR":
-				counts["AIR"] += 1
+				counts["AIR"] = counts.get("AIR", 0) + 1
+			_:
+				var upper = String(tag).to_upper()
+				if counts.has(upper):
+					counts[upper] = counts.get(upper, 0) + 1
+
 
 
 ## Validates that the generated encounter is valid.

@@ -381,18 +381,31 @@ During a merge, only **one item** is transferred to the resulting unit.
 
 # 10. Trait System Rules
 
-Traits are passive team-wide bonuses based on unit composition. Each unit contributes 1 Soul to its element.
+Traits are passive team-wide synergies enabled by equipping corresponding Trait Trinkets. The system comprises 15 traits across 3 categories:
+* **Elemental Traits (4)**: Fire, Earth, Water, Air (evaluated via Soul counts: Tier 1 = 1, Tier 2 = 2, Tier 3 = 4).
+* **Class Traits (4)**: Tank, Fighter, Support, Specialist (evaluated via lineup unit counts).
+* **Visual Traits (7)**: Food, Mecha, Animal, Plant, Toy, Appliance, Costume (evaluated via lineup unit counts).
 
 ## 10.1 Snapshot Locking
-Combat logic uses a **Locked Snapshot** of traits taken at the start of turn. This prevents mid-combat changes as units die or are summoned
+Combat logic uses a **Locked Snapshot** of traits taken at the start of combat and start of turn. This prevents mid-combat changes as units die or are summoned.
 
 ## 10.2 Traits & Scaling
+
+### 10.2.1 Elemental Traits (Souls)
+Triggered at combat start (`on_pre_combat`, when the Battle button is pressed, prior to turn actions):
 | Trait | Focus | Souls | Effect |
 | :--- | :--- | :--- | :--- |
-| **Fire** | Pressure | 3/5/7/9 | Applies Burn on attack, more stacks per quantity threshold. 7+ applies to entire enemy team. |
-| **Earth** | Defense | 3/5/7/9 | Grants Armor (3,5,7,9) and Spikes (7,9) to allies. Earth units gain double armor. |
-| **Water** | Resilience | 2/4/6/8 | Heals adjacent allies at turn start. |
-| **Air** | Disruption | 2/4/6/8 | Steals PWR from mirrored enemy slot. |
+| **Fire** | Pressure | 3/5/7/9 | Applies Burn on attack, more stacks per quantity threshold. At 7+ souls, applies 2 Burn to the entire opposing team at combat start. |
+| **Earth** | Defense | 3/5/7/9 | Grants Armor (3,5,7,9) and Spikes (7,9) to allies at combat start. Earth units gain double armor. |
+| **Water** | Resilience | 2/4/6/8 | Water units heal adjacent allies 1 HP at combat start. |
+| **Air** | Disruption | 2/4/6/8 | Air units steal 1 PWR from mirrored enemy slot at combat start. |
+
+### 10.2.2 Class & Visual Traits (Units)
+Triggered at combat start (`on_pre_combat`, when the Battle button is pressed, prior to turn actions):
+| Trait Category | Traits | Units | Effect (Trait Surge) |
+| :--- | :--- | :--- | :--- |
+| **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
+| **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
 
 # 11. Stat Scaling Rules
 

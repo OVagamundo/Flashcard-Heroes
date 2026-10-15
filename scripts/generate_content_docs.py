@@ -226,7 +226,7 @@ def build_docs():
             for a in item["abilities"]:
                 n_key = a.get('name_key', '')
                 d_key = a.get('desc_key', '')
-                raw_name = t_md(n_key).strip() if n_key in localization else ""
+                raw_name = t_md(n_key).strip() if (folder != "resources/units" and n_key in localization) else ""
                 raw_desc = t_md(d_key).strip() if d_key in localization else ""
                 if not raw_name and not raw_desc:
                     continue
@@ -285,23 +285,33 @@ def build_docs():
 | `death` | **Death Slot** | `on_turn_end` (Sudden Death) | Systemic sudden-death slot advancing forward from Turn 10+. Immediately reduces unit HP to 0. | - |
 """
 
-    # Add Elemental Traits section
+    # Add Traits & Synergies section
     md += """
 
-## Elemental Traits & Synergies
-Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates team-wide synergies based on active lineup souls:
+## Traits & Synergies
+The game features 15 traits across three categories: 4 Elemental Traits, 4 Class Traits, and 7 Visual Archetype Traits. Equipping the corresponding Trait Trinket enables team-wide combat synergies.
+
+### Elemental Traits (Souls)
+Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates synergies at combat start (`on_pre_combat`) based on active lineup souls:
 | Trait | Focus | Synergy Thresholds | Effect |
 |---|---|---|---|
-| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 Souls | Applies Burn on attack. Higher thresholds grant more stacks; 7+ applies Burn to the entire enemy team. |
-| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 Souls | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at turn start. Earth units gain double armor bonus. |
-| **Water** | Resilience | 2 / 4 / 6 / 8 Souls | Heals adjacent allies at turn start upon acting. |
-| **Air** | Disruption | 2 / 4 / 6 / 8 Souls | Steals Power (PWR) from mirrored enemy slots. |
+| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 Souls | Applies Burn on attack. At 7+ souls, applies 2 Burn to the entire enemy team at combat start. |
+| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 Souls | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at combat start. Earth units gain double armor bonus. |
+| **Water** | Resilience | 2 / 4 / 6 / 8 Souls | Water units heal adjacent allies 1 HP at combat start. |
+| **Air** | Disruption | 2 / 4 / 6 / 8 Souls | Air units steal 1 Power (PWR) from mirrored enemy slots at combat start. |
+
+### Class & Visual Archetype Traits (Units)
+Class and Visual traits are enabled when the team equips that trait's trinket. At the start of combat (`on_pre_combat`, when the Battle button is pressed, before turn actions begin), the trinket grants a scaling Power buff to all units of that trait in the lineup:
+| Trait Category | Traits | Synergy Thresholds | Effect (Trait Surge) |
+|---|---|---|---|
+| **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
+| **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
 """
 
     with open(DOCS_MD_FILE, "w", encoding="utf-8") as f:
         f.write(md)
 
-    def write_csv(filepath, data_list):
+    def write_csv(filepath, data_list, is_unit=False):
         with open(filepath, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
             writer.writerow(["ID", "Name", "Description", "Tier", "Cost", "Base HP", "Base PWR", "Ability 1 Name", "Ability 1 Desc", "Ability 2 Name", "Ability 2 Desc", "Ability 3 Name", "Ability 3 Desc"])
@@ -329,7 +339,7 @@ Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresp
                     if i < len(deduped_abils):
                         n_key = deduped_abils[i].get("name_key", "")
                         d_key = deduped_abils[i].get("desc_key", "")
-                        row.append(t(n_key) if n_key in localization else "")
+                        row.append("" if is_unit else (t(n_key) if n_key in localization else ""))
                         desc = t(d_key) if d_key in localization else ""
                         if deduped_abils[i]["mechanics"]:
                             desc += " " + " ".join(deduped_abils[i]["mechanics"])
@@ -338,7 +348,7 @@ Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresp
                         row.extend(["", ""])
                 writer.writerow(row)
 
-    write_csv(DOCS_UNITS_CSV, all_data["resources/units"])
+    write_csv(DOCS_UNITS_CSV, all_data["resources/units"], is_unit=True)
     write_csv(DOCS_ITEMS_CSV, all_data["resources/items"])
     write_csv(DOCS_TRINKETS_CSV, all_data["resources/trinkets"])
 
@@ -359,9 +369,52 @@ Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresp
             src = os.path.join(PROJECT_ROOT, "docs", fname)
             dst = os.path.join(loc_docs_dir, fname)
             if os.path.exists(src):
-                shutil.copyfile(src, dst)
+                shutil.copy2(src, dst)
+    # 5. Sync game.csv to en.po, pt_BR.po, and game.pot
+    sync_po_files()
 
     print("Documentation (MD and CSVs) generated successfully including Status Effects, Slot Effects, and Traits.")
+
+def sync_po_files():
+    en_po_path = os.path.join(PROJECT_ROOT, "localization/en.po")
+    pt_po_path = os.path.join(PROJECT_ROOT, "localization/pt_BR.po")
+    pot_path = os.path.join(PROJECT_ROOT, "localization/game.pot")
+
+    def po_escape(s):
+        s = s.replace('\\n', '\n').replace('\\r', '')
+        s = s.replace('\r\n', '\n').replace('\r', '')
+        s = s.replace('\\', '\\\\')
+        s = s.replace('"', '\\"')
+        return s.replace('\n', '\\n')
+
+    if not os.path.exists(LOCALIZATION_FILE):
+        return
+
+    with open(LOCALIZATION_FILE, "r", encoding="utf-8") as f:
+        reader = csv.reader(f)
+        header = next(reader)
+        rows = [r for r in reader if r and r[0].strip()]
+
+    with open(en_po_path, "w", encoding="utf-8") as f:
+        f.write('msgid ""\nmsgstr ""\n"Project-Id-Version: Flashcard Heroes\\n"\n"MIME-Version: 1.0\\n"\n"Content-Type: text/plain; charset=UTF-8\\n"\n"Content-Transfer-Encoding: 8bit\\n"\n"Language: en\\n"\n\n')
+        for r in rows:
+            key = r[0].strip()
+            val = r[1] if len(r) > 1 else ""
+            f.write(f'msgid "{po_escape(key)}"\nmsgstr "{po_escape(val)}"\n\n')
+
+    with open(pt_po_path, "w", encoding="utf-8") as f:
+        f.write('msgid ""\nmsgstr ""\n"Project-Id-Version: Flashcard Heroes\\n"\n"MIME-Version: 1.0\\n"\n"Content-Type: text/plain; charset=UTF-8\\n"\n"Content-Transfer-Encoding: 8bit\\n"\n"Language: pt_BR\\n"\n\n')
+        for r in rows:
+            key = r[0].strip()
+            val = r[2] if len(r) > 2 else ""
+            f.write(f'msgid "{po_escape(key)}"\nmsgstr "{po_escape(val)}"\n\n')
+
+    with open(pot_path, "w", encoding="utf-8") as f:
+        f.write('msgid ""\nmsgstr ""\n"Project-Id-Version: Flashcard Heroes\\n"\n"MIME-Version: 1.0\\n"\n"Content-Type: text/plain; charset=UTF-8\\n"\n"Content-Transfer-Encoding: 8bit\\n"\n\n')
+        for r in rows:
+            key = r[0].strip()
+            en_val = r[1] if len(r) > 1 else ""
+            f.write(f'#. English: {en_val}\nmsgid "{po_escape(key)}"\nmsgstr ""\n\n')
 
 if __name__ == "__main__":
     build_docs()

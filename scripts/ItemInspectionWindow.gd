@@ -252,31 +252,45 @@ func _get_run_trait_count(trait_id: String) -> int:
 	if not is_instance_valid(GameManager.run_state):
 		return 0
 
-	var counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var counts: Dictionary = {}
+	for t in C.TRAIT_SORT_ORDER:
+		counts[t] = 0
+
 	var lineup = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_LINEUP)
 	if not is_instance_valid(lineup):
 		return 0
 
+	var all_inst = GameManager.run_state.get_all_instances()
 	for unit_uuid in lineup.get_all_non_empty_uuids():
 		var unit = GameManager.run_state.get_instance_by_uuid(unit_uuid)
 		if not is_instance_valid(unit):
 			continue
-		var soul_counts = unit.get_trait_soul_counts(GameManager.run_state.get_all_instances())
+		var soul_counts = unit.get_trait_soul_counts(all_inst)
 		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
-			counts[soul_type] += soul_counts[soul_type]
+			if counts.has(soul_type):
+				counts[soul_type] += soul_counts.get(soul_type, 0)
+		for tag in unit.get_active_tags(all_inst):
+			var upper = String(tag).to_upper()
+			if counts.has(upper):
+				counts[upper] += 1
 
 	return int(counts.get(trait_id, 0))
 
 func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 	match tag:
 		&"SOUL_FIRE":
-			counts["FIRE"] += 1
+			counts["FIRE"] = counts.get("FIRE", 0) + 1
 		&"SOUL_EARTH":
-			counts["EARTH"] += 1
+			counts["EARTH"] = counts.get("EARTH", 0) + 1
 		&"SOUL_WATER":
-			counts["WATER"] += 1
+			counts["WATER"] = counts.get("WATER", 0) + 1
 		&"SOUL_AIR":
-			counts["AIR"] += 1
+			counts["AIR"] = counts.get("AIR", 0) + 1
+		_:
+			var upper = String(tag).to_upper()
+			if counts.has(upper):
+				counts[upper] = counts.get(upper, 0) + 1
+
 
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):

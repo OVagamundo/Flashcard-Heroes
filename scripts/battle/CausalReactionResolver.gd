@@ -11,7 +11,7 @@ const C = preload("res://scripts/Constants.gd")
 ##
 ## Replaces ad-hoc queue slicing and index manipulation with an explicit,
 ## priority-tiered reaction lifecycle:
-##   1. INTERCEPTION: Priority >= 300 (Guardian Sentinel, Aegis Charm)
+##   1. INTERCEPTION: Priority >= 300 (Guardian, Aegis Charm)
 ##   2. PRIMARY_MUTATION: Primary attack, stat change, or trigger effect
 ##   3. REACTION_COLLECT: Gathers on_hurt, on_damage_dealt, on_stat_increased
 ##   4. LETHAL_COUNTER: Retaliation reactions execute WHILE unit death is deferred

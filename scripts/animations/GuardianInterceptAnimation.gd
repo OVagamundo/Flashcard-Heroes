@@ -1,7 +1,7 @@
 class_name GuardianInterceptAnimation
 extends BattleAnimation
 
-## Animation for Guardian Sentinel intercepting lethal damage.
+## Animation for Guardian intercepting lethal damage.
 ## Guardian leaps to the target's position to shield them.
 ## After damage is dealt, the guardian returns (handled by DamageAnimation's post-damage logic).
 

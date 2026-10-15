@@ -36,27 +36,34 @@ func _on_mouse_exited() -> void:
 func populate(trait_name: String, count: int, is_active: bool) -> void:
 	# Set Icon based on trait name
 	_current_trait_id = trait_name
+	var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
 	if is_instance_valid(icon_rect):
-		match trait_name:
-			"FIRE":
-				icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
-				if is_instance_valid(name_label): name_label.text = tr("trait.fire.name")
-			"EARTH":
-				icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
-				if is_instance_valid(name_label): name_label.text = tr("trait.earth.name")
-			"WATER":
-				icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
-				if is_instance_valid(name_label): name_label.text = tr("trait.water.name")
-			"AIR":
-				icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
-				if is_instance_valid(name_label): name_label.text = tr("trait.air.name")
-			_:
-				if is_instance_valid(name_label): name_label.text = trait_name
+		if trait_def.has("icon_path") and ResourceLoader.exists(trait_def["icon_path"]):
+			icon_rect.texture = load(trait_def["icon_path"])
+		else:
+			match trait_name:
+				"FIRE":
+					icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
+				"EARTH":
+					icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
+				"WATER":
+					icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
+				"AIR":
+					icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
 	
-	# Set Count text with dynamic threshold (3 for Fire/Earth, 2 for Water/Wind)
-	var threshold = 2 if trait_name in ["WATER", "AIR"] else 3
+	if is_instance_valid(name_label):
+		var display_key = trait_def.get("display_name_key", "")
+		if not display_key.is_empty():
+			name_label.text = tr(display_key)
+		else:
+			name_label.text = trait_name.capitalize()
+	
+	# Set Count text with dynamic threshold
+	var levels: Array = trait_def.get("levels", [])
+	var threshold = int(levels[0].get("min", 2)) if not levels.is_empty() else (2 if trait_name in ["WATER", "AIR"] else 3)
 	if is_instance_valid(count_label):
 		count_label.text = "%d / %d" % [count, threshold]
+
 	
 	# Style based on activation
 	var style = StyleBoxFlat.new()

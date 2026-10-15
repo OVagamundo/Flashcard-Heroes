@@ -17,7 +17,7 @@ If the game used a single global random seed, rolling a dice during a combat tur
 
 ### The Implemented Streams:
 * `map_rng`: Used for path generation, node selection, encounter generation (`EncounterGenerator.gd`), deck shuffling, and flashcard SRS algorithm.
-* `combat_rng`: Used for enemy targeting, bounce mechanics, and random status effects (`TargetResolver.gd`, `AbilityResolver.gd`, `EffectBurnyCounter.gd`).
+* `combat_rng`: Used for enemy targeting, bounce mechanics, and random status effects (`TargetResolver.gd`, `AbilityResolver.gd`, `EffectSquireCounter.gd`).
 * `shop_rng`: Used for shop inventories and re-rolls (`WeightedPoolDirector.gd`).
 * `reward_rng`: Used for post-combat loot drops, training outcomes, and rest sites.
 * `gacha_rng`: Used for drawing units/items from gachaballs, UUID suffix generation, and inventory overflow replacement.

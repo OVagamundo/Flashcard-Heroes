@@ -70,7 +70,7 @@ Refactor abilities to use the strict DTO pipeline.
 * **Scald (`EffectScald.gd`):** Use `DamageRequest` with `damage_type = C.DamageType.MAGIC`. Update target resolution to `TARGET_RANDOM_ENEMY`.
 * **Shockwave (Berserker T2B):** Use `CascadeRequest` with `damage_type = C.DamageType.MELEE`. Ensure `attacker_uuid` is injected.
 * **Fusion Spark (Trinket):** Use `DamageRequest` with `damage_type = C.DamageType.MAGIC`.
-* **Burny Counter (Tier 1B):** Apply `burn_stacks` via `EffectHandlers.handle_burn_stacks`. The script must wrap the returned event using `return EffectResult.from_event(...)`. Update `AbilitiesRegistry.gd`.
+* **Squire Counter (Tier 1B):** Apply `burn_stacks` via `EffectHandlers.handle_burn_stacks`. The script must wrap the returned event using `return EffectResult.from_event(...)`. Update `AbilitiesRegistry.gd`.
 
 ### Phase 7: Verification (Agent Self-Check)
 Autonomously search for any remaining scripts extending `EffectDefinition.gd` or implementing combat logic. Refactor them to comply with the strictly typed `EffectResult` requests.

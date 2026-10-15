@@ -202,7 +202,14 @@ const WINDOW_END_BATTLE = &"EndBattlePopup"
 const WINDOW_FLASHCARD = &"FlashcardMinigame"
 const WINDOW_RESULTS = &"ResultsPopup"
 
-const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "AIR"]
+const TRAIT_SORT_ORDER: Array[String] = [
+	"FIRE", "EARTH", "WATER", "AIR",
+	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST",
+	"FOOD", "MECHA", "ANIMAL", "PLANT", "TOY", "APPLIANCE", "COSTUME"
+]
+
+const CLASS_TRAITS: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist"]
+const VISUAL_TRAITS: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
 
 # --- Trait Definitions ---
 const TRAIT_DEFINITIONS = {
@@ -249,5 +256,127 @@ const TRAIT_DEFINITIONS = {
 			{"min": 6, "desc_key": "trait.air.6"},
 			{"min": 8, "desc_key": "trait.air.8"}
 		]
+	},
+	"TANK": {
+		"display_name_key": "trait.tank.name",
+		"trinket_id": &"trinket_trait_tank",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_tank.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"FIGHTER": {
+		"display_name_key": "trait.fighter.name",
+		"trinket_id": &"trinket_trait_fighter",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_fighter.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"SUPPORT": {
+		"display_name_key": "trait.support.name",
+		"trinket_id": &"trinket_trait_support",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_support.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"SPECIALIST": {
+		"display_name_key": "trait.specialist.name",
+		"trinket_id": &"trinket_trait_specialist",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_specialist.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"FOOD": {
+		"display_name_key": "trait.food.name",
+		"trinket_id": &"trinket_trait_food",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_food.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"MECHA": {
+		"display_name_key": "trait.mecha.name",
+		"trinket_id": &"trinket_trait_mecha",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_mecha.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"ANIMAL": {
+		"display_name_key": "trait.animal.name",
+		"trinket_id": &"trinket_trait_animal",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_animal.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"PLANT": {
+		"display_name_key": "trait.plant.name",
+		"trinket_id": &"trinket_trait_plant",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_plant.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"TOY": {
+		"display_name_key": "trait.toy.name",
+		"trinket_id": &"trinket_trait_toy",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_toy.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"APPLIANCE": {
+		"display_name_key": "trait.appliance.name",
+		"trinket_id": &"trinket_trait_appliance",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_appliance.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
+	},
+	"COSTUME": {
+		"display_name_key": "trait.costume.name",
+		"trinket_id": &"trinket_trait_costume",
+		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_costume.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.common_pwr.2"},
+			{"min": 3, "desc_key": "trait.common_pwr.3"},
+			{"min": 4, "desc_key": "trait.common_pwr.4"},
+			{"min": 5, "desc_key": "trait.common_pwr.5"}
+		]
 	}
 }
+

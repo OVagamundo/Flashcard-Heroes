@@ -312,19 +312,22 @@ static func setup_enemy_trinkets(state: RefCounted, encounter_def: Resource) -> 
 		slot_index += 1
 
 static func _append_missing_enemy_trait_trinkets(encounter_def: Resource, trinket_ids: Array, max_slots: int) -> void:
-	var soul_counts := {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var trait_counts: Dictionary = {}
+	for t in C.TRAIT_SORT_ORDER:
+		trait_counts[t] = 0
+
 	var placements = encounter_def.get("enemy_placements")
 	if not placements is Array:
 		return
 
 	for placement in placements:
 		var unit_def = Database.get_definition(placement.get("id", placement.get("unit_id", "")))
-		_accumulate_trait_souls(soul_counts, unit_def)
+		_accumulate_trait_souls(trait_counts, unit_def)
 		var equipment = placement.get("equipment", placement.get("items", []))
 		for item_data in equipment:
 			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
 			var item_def = Database.get_definition(item_id)
-			_accumulate_trait_souls(soul_counts, item_def)
+			_accumulate_trait_souls(trait_counts, item_def)
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		if trinket_ids.size() >= max_slots:
@@ -334,7 +337,7 @@ static func _append_missing_enemy_trait_trinkets(encounter_def: Resource, trinke
 		if levels.is_empty():
 			continue
 		var min_required := int(levels[0].get("min", 999))
-		if int(soul_counts.get(trait_name, 0)) < min_required:
+		if int(trait_counts.get(trait_name, 0)) < min_required:
 			continue
 		var trinket_id: StringName = trait_def.get("trinket_id", &"")
 		if trinket_id == &"" or trinket_ids.has(trinket_id):
@@ -347,13 +350,18 @@ static func _accumulate_trait_souls(counts: Dictionary, definition: Resource) ->
 	for tag in definition.tags:
 		match tag:
 			&"SOUL_FIRE":
-				counts["FIRE"] += 1
+				counts["FIRE"] = counts.get("FIRE", 0) + 1
 			&"SOUL_EARTH":
-				counts["EARTH"] += 1
+				counts["EARTH"] = counts.get("EARTH", 0) + 1
 			&"SOUL_WATER":
-				counts["WATER"] += 1
+				counts["WATER"] = counts.get("WATER", 0) + 1
 			&"SOUL_AIR":
-				counts["AIR"] += 1
+				counts["AIR"] = counts.get("AIR", 0) + 1
+			_:
+				var upper = String(tag).to_upper()
+				if counts.has(upper):
+					counts[upper] = counts.get(upper, 0) + 1
+
 
 static func setup_player_trinkets(state: RefCounted) -> void:
 	if not is_instance_valid(GameManager.run_state):

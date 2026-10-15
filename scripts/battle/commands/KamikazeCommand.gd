@@ -25,7 +25,7 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	if not is_instance_valid(src_inst) or not is_instance_valid(tgt_inst):
 		return
 	
-	# Guardian Sentinel Intercept
+	# Guardian Intercept
 	var is_player_source = battle_manager._is_player_unit(src_inst)
 	var damage_type = C.DamageType.KAMIKAZE
 	var intercept_res = BattleHelpers.resolve_guardian_intercept(

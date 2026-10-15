@@ -18,7 +18,7 @@ enum Type {
 	VFX_POPUP, # Visual only: { "target_uuid": str, "text": str, "color": Color }
 	LOG_MESSAGE, # Legacy support for text logs
 	LETHAL_SAVE, # Aegis Charm: unit saved from lethal damage, floats up gold then lands
-	GUARDIAN_INTERCEPT, # Guardian Sentinel: leaps to ally's position to intercept lethal damage
+	GUARDIAN_INTERCEPT, # Guardian: leaps to ally's position to intercept lethal damage
 	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
 	TRANSFORM, # Mimic: hop and vanish
 	GOLD_GAIN, # Payload: { "amount": int }

@@ -935,10 +935,10 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 
 func _get_starters_for_hero(_hero_id: StringName) -> Array[StringName]:
 	return [
-		&"unit_t1_a", &"unit_t1_a", &"unit_t1_a",
-		&"unit_t1_b", &"unit_t1_b", &"unit_t1_b",
-		&"unit_t1_c", &"unit_t1_c", &"unit_t1_c",
-		&"unit_t1_d", &"unit_t1_d", &"unit_t1_d",
+		&"ETnkPlaToy", &"ETnkPlaToy", &"ETnkPlaToy",
+		&"FFigMecApp", &"FFigMecApp", &"FFigMecApp",
+		&"WSupAniCos", &"WSupAniCos", &"WSupAniCos",
+		&"ASpeFodToy", &"ASpeFodToy", &"ASpeFodToy",
 		&"item_t1_a", &"item_t1_a",
 		&"item_t1_b", &"item_t1_b"
 	]

@@ -111,7 +111,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 					break
 	var damage_type = C.DamageType.MELEE if attack_type == "melee" else C.DamageType.RANGED
 
-	# Guardian Sentinel Intercept
+	# Guardian Intercept
 	var final_target_uuid = target_instance.ball_uuid
 	var final_target = target_instance
 	var intercept_res = BattleHelpers.resolve_guardian_intercept(
