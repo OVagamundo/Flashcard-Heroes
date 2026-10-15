@@ -20,7 +20,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		var inst = all_instances[uuid]
 		if not is_instance_valid(inst):
 			continue
-		if inst.definition_id == &"unit_t3_i": 
+		if inst.definition_id == &"EFWASupFodToy": 
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
 	

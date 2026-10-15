@@ -569,7 +569,7 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	
 	_kill_active_tweens()
 	
-	# If this unit is a Guardian Sentinel that was mid-leap or hadn't returned,
+	# If this unit is a Guardian that was mid-leap or hadn't returned,
 	# snap it back to its original slot before playing the lethal save animation.
 	if _guardian_original_position != Vector2.ZERO and is_instance_valid(_view):
 		_view.global_position = _guardian_original_position

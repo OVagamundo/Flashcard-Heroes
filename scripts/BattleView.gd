@@ -23,7 +23,11 @@ var _player_trait_anchor: Control = null
 var _enemy_trait_anchor: Control = null
 var _trait_hud_root: Control = null
 
-const TRAIT_SORT_ORDER: Array[String] = ["FIRE", "EARTH", "WATER", "AIR"]
+const TRAIT_SORT_ORDER: Array[String] = [
+	"FIRE", "EARTH", "WATER", "AIR",
+	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST",
+	"FOOD", "MECHA", "ANIMAL", "PLANT", "TOY", "APPLIANCE", "COSTUME"
+]
 const TRAIT_HUD_Y: float = 10.0
 const TRAIT_TRACKER_SPACING: float = 8.0
 const TRAIT_SCREEN_MARGIN: float = 24.0

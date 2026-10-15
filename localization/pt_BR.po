@@ -18,24 +18,6 @@ msgstr "Herói Inimigo"
 msgid "enemy_hero.desc"
 msgstr "O campeão do inimigo."
 
-msgid "unit_t1_a.name"
-msgstr "Pedrita"
-
-msgid "unit_t1_a.desc"
-msgstr "Unidade novata. Passiva: [Resiliência]"
-
-msgid "unit_t1_b.name"
-msgstr "Chaminho"
-
-msgid "unit_t1_b.desc"
-msgstr "Escudeiro leal. Passiva: [Retaliação]"
-
-msgid "unit_t2_d.name"
-msgstr "Templar"
-
-msgid "unit_t2_d.desc"
-msgstr "Um templário devoto."
-
 msgid "ability.unit_t2_d_power.name"
 msgstr "Poder das Fichas"
 
@@ -47,12 +29,6 @@ msgstr "Ganha PWR adicional igual a 150% das Fichas atuais, atualizando conforme
 
 msgid "ability.unit_t2_d_power_l3.desc"
 msgstr "Ganha PWR adicional igual a 200% das Fichas atuais, atualizando conforme as Fichas mudam."
-
-msgid "unit_t2_f.name"
-msgstr "Merchant"
-
-msgid "unit_t2_f.desc"
-msgstr "Mercador viajante. Passiva: [Investimentos em Ouro]"
 
 msgid "ability.unit_t2_f_gold_pwr.name"
 msgstr "Investimentos em Ouro"
@@ -66,12 +42,6 @@ msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser co
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
 msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
 
-msgid "unit_t1_c.name"
-msgstr "Dewey"
-
-msgid "unit_t1_c.desc"
-msgstr "Guardião firme. Passiva: [Graça do Guardião]"
-
 msgid "ability.unit_t1_c_ally_shield.name"
 msgstr "Graça do Guardião"
 
@@ -83,12 +53,6 @@ msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 2 HP."
 
 msgid "ability.unit_t1_c_ally_shield_l3.desc"
 msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 3 HP."
-
-msgid "unit_t1_d.name"
-msgstr "Ventania"
-
-msgid "unit_t1_d.desc"
-msgstr "Alma sensível. Passiva: [Vínculo Empático]"
 
 msgid "ability.unit_t1_d_empathic_link.name"
 msgstr "Vínculo Empático"
@@ -125,12 +89,6 @@ msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando d
 
 msgid "ability.unit_tier1b_counter_on_hurt_l3.desc"
 msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para 2 inimigos aleatórios, causando metade do dano por salto."
-
-msgid "unit_t2_c.name"
-msgstr "Cavaleiro"
-
-msgid "unit_t2_c.desc"
-msgstr "Cavaleiro valente. Passiva: [Impulso de Moral]"
 
 msgid "item_t1_a.name"
 msgstr "Bênção da Carpa"
@@ -297,18 +255,6 @@ msgstr "Invocação"
 msgid "ability.item_t2_c_summon.desc"
 msgstr "Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
 
-msgid "unit_t3_paladin.name"
-msgstr "Paladino"
-
-msgid "unit_t3_paladin.desc"
-msgstr "Tanque pesadamente blindado. Passiva: [Postura Defensiva]"
-
-msgid "unit_t3_berserker.name"
-msgstr "Berserker"
-
-msgid "unit_t3_berserker.desc"
-msgstr "Guerreiro poderoso. Passiva: [Onda de Choque]"
-
 msgid "ability.unit_tier2a_defensive_stance.name"
 msgstr "Postura Defensiva"
 
@@ -356,12 +302,6 @@ msgstr "Aura Temporal"
 
 msgid "ability.hero_timekeeper_temporal_aura.desc"
 msgstr "No início de cada turno, concede +2 HP às unidades na frente e +2 PWR às unidades atrás."
-
-msgid "unit_t3_d.name"
-msgstr "Espírito Sakura"
-
-msgid "unit_t3_d.desc"
-msgstr "Um espírito poderoso guardando as cerejeiras. Passiva: [Aura Resiliente]"
 
 msgid "boss_1.name"
 msgstr "O Guardião Desperto"
@@ -465,35 +405,17 @@ msgstr "Reflexo Compartilhado"
 msgid "ability.twin_charm_scale.desc"
 msgstr "Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
 
-msgid "unit_t3_a.name"
-msgstr "Atacante das Sombras"
-
-msgid "unit_t3_a.desc"
-msgstr "Mestre em ataques precisos. Passiva: [Aura Espelhada]"
-
 msgid "ability.unit_tier3a_mirror_strike.name"
 msgstr "Ataque Espelhado"
 
 msgid "ability.unit_tier3a_mirror_strike.desc"
 msgstr "Ataca o inimigo na posição oposta, causando [100% / 150% / 200%] de dano. Se vazio, ataca o inimigo do fundo."
 
-msgid "unit_t3_b.name"
-msgstr "Sentinela Guardião"
-
-msgid "unit_t3_b.desc"
-msgstr "Protetor inabalável. Passiva: [Sacrifício do Guardião]"
-
 msgid "ability.unit_tier3b_guardian_sacrifice.name"
 msgstr "Sacrifício do Guardião"
 
 msgid "ability.unit_tier3b_guardian_sacrifice.desc"
 msgstr "Quando um aliado receberia dano letal, intercepta e recebe [100% / 75% / 50%] do dano no lugar."
-
-msgid "unit_t3_c.name"
-msgstr "Invocador de Almas"
-
-msgid "unit_t3_c.desc"
-msgstr "Unidade mística. Passiva: [Invocação de Alma]"
 
 msgid "ability.unit_tier3c_soul_summon.name"
 msgstr "Invocação de Alma"
@@ -1023,23 +945,11 @@ msgstr "Expanda seu vocabulário português com 100 palavras essenciais do dia a
 msgid "deck.korean_hangul.desc"
 msgstr "Aprenda o alfabeto coreano Hangul e as regras de pronúncia"
 
-msgid "unit_t3_e.name"
-msgstr "Dreadnought"
-
-msgid "unit_t3_e.desc"
-msgstr "Um predador aterrorizante que abate inimigos recém-invocados."
-
 msgid "ability.unit_tier3e_ambush_predator.name"
 msgstr "Predador de Emboscada"
 
 msgid "ability.unit_tier3e_ambush_predator.desc"
 msgstr "Quando uma unidade inimiga é invocada, ataca-a causando [50% / 75% / 100%] do PWR desta unidade."
-
-msgid "unit_t3_f.name"
-msgstr "Guardião Protetor"
-
-msgid "unit_t3_f.desc"
-msgstr "Um guardião protetor que fortalece aliados recém-invocados."
 
 msgid "ability.unit_tier3f_summon_blessing.name"
 msgstr "Bênção de Invocação"
@@ -1119,6 +1029,72 @@ msgstr "Sinergia de Ar"
 msgid "trinket.trait_air.desc"
 msgstr "Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes."
 
+msgid "trinket.trait_tank.name"
+msgstr "Sinergia de Guardião"
+
+msgid "trinket.trait_tank.desc"
+msgstr "Ativa a sinergia de Guardião sempre que sua equipe tiver unidades de Guardião suficientes."
+
+msgid "trinket.trait_fighter.name"
+msgstr "Sinergia de Lutador"
+
+msgid "trinket.trait_fighter.desc"
+msgstr "Ativa a sinergia de Lutador sempre que sua equipe tiver unidades de Lutador suficientes."
+
+msgid "trinket.trait_support.name"
+msgstr "Sinergia de Suporte"
+
+msgid "trinket.trait_support.desc"
+msgstr "Ativa a sinergia de Suporte sempre que sua equipe tiver unidades de Suporte suficientes."
+
+msgid "trinket.trait_specialist.name"
+msgstr "Sinergia de Especialista"
+
+msgid "trinket.trait_specialist.desc"
+msgstr "Ativa a sinergia de Especialista sempre que sua equipe tiver unidades de Especialista suficientes."
+
+msgid "trinket.trait_food.name"
+msgstr "Sinergia de Comida"
+
+msgid "trinket.trait_food.desc"
+msgstr "Ativa a sinergia de Comida sempre que sua equipe tiver unidades de Comida suficientes."
+
+msgid "trinket.trait_mecha.name"
+msgstr "Sinergia de Mecha"
+
+msgid "trinket.trait_mecha.desc"
+msgstr "Ativa a sinergia de Mecha sempre que sua equipe tiver unidades de Mecha suficientes."
+
+msgid "trinket.trait_animal.name"
+msgstr "Sinergia de Animal"
+
+msgid "trinket.trait_animal.desc"
+msgstr "Ativa a sinergia de Animal sempre que sua equipe tiver unidades de Animal suficientes."
+
+msgid "trinket.trait_plant.name"
+msgstr "Sinergia de Planta"
+
+msgid "trinket.trait_plant.desc"
+msgstr "Ativa a sinergia de Planta sempre que sua equipe tiver unidades de Planta suficientes."
+
+msgid "trinket.trait_toy.name"
+msgstr "Sinergia de Brinquedo"
+
+msgid "trinket.trait_toy.desc"
+msgstr "Ativa a sinergia de Brinquedo sempre que sua equipe tiver unidades de Brinquedo suficientes."
+
+msgid "trinket.trait_appliance.name"
+msgstr "Sinergia de Eletrodoméstico"
+
+msgid "trinket.trait_appliance.desc"
+msgstr "Ativa a sinergia de Eletrodoméstico sempre que sua equipe tiver unidades de Eletrodoméstico suficientes."
+
+msgid "trinket.trait_costume.name"
+msgstr "Sinergia de Fantasia"
+
+msgid "trinket.trait_costume.desc"
+msgstr "Ativa a sinergia de Fantasia sempre que sua equipe tiver unidades de Fantasia suficientes."
+
 msgid "trait.fire.name"
 msgstr "Fogo"
 
@@ -1129,7 +1105,7 @@ msgid "trait.fire.5"
 msgstr "Aplica +1 de Chamas Extra (Total 2)."
 
 msgid "trait.fire.7"
-msgstr "Início do Turno: Aplica 2 de Chamas a TODOS inimigos."
+msgstr "Início do Combate: Aplica 2 de Chamas a TODOS inimigos."
 
 msgid "trait.fire.9"
 msgstr "Chama do Traidor: Ataques causam dano bônus igual às pilhas de Chamas do alvo."
@@ -1165,13 +1141,64 @@ msgid "trait.water.name"
 msgstr "Água"
 
 msgid "trait.water.2"
-msgstr "Unidades de Água curam aliados adjacentes em 1 HP no início do turno."
+msgstr "Unidades de Água curam aliados adjacentes em 1 HP no início do combate."
 
 msgid "trait.air.name"
 msgstr "Ar"
 
 msgid "trait.air.2"
-msgstr "Unidades de Ar roubam 1 PWR do inimigo oposto no início do turno."
+msgstr "Unidades de Ar roubam 1 PWR do inimigo oposto no início do combate."
+
+msgid "trait.tank.name"
+msgstr "Guardião"
+
+msgid "trait.fighter.name"
+msgstr "Lutador"
+
+msgid "trait.support.name"
+msgstr "Suporte"
+
+msgid "trait.specialist.name"
+msgstr "Especialista"
+
+msgid "trait.food.name"
+msgstr "Comida"
+
+msgid "trait.mecha.name"
+msgstr "Mecha"
+
+msgid "trait.animal.name"
+msgstr "Animal"
+
+msgid "trait.plant.name"
+msgstr "Planta"
+
+msgid "trait.toy.name"
+msgstr "Brinquedo"
+
+msgid "trait.appliance.name"
+msgstr "Eletrodoméstico"
+
+msgid "trait.costume.name"
+msgstr "Fantasia"
+
+msgid "trait.common_pwr.2"
+msgstr "No início do combate, unidades desta sinergia ganham +1 de Poder."
+
+msgid "trait.common_pwr.3"
+msgstr "No início do combate, unidades desta sinergia ganham +2 de Poder."
+
+msgid "trait.common_pwr.4"
+msgstr "No início do combate, unidades desta sinergia ganham +3 de Poder."
+
+msgid "trait.common_pwr.5"
+msgstr "No início do combate, unidades desta sinergia ganham +4 de Poder."
+
+msgid "ability.trait_pwr_buff.name"
+msgstr "Ímpeto de Sinergia"
+
+msgid "ability.trait_pwr_buff.desc"
+msgstr "No início do combate, concede de +1 a +4 de Poder para unidades desta sinergia baseado na contagem."
 
 msgid "item.emblem_water.name"
 msgstr "Emblema de Água"
@@ -1233,35 +1260,17 @@ msgstr "Saquear"
 msgid "ability.potion_plunder.desc"
 msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
 
-msgid "unit_t3_mimic.name"
-msgstr "Mímico"
-
-msgid "unit_t3_mimic.desc"
-msgstr "Entidade misteriosa. Passiva: [Imagem Espelhada]"
-
 msgid "ability.unit_t2_e_mimic.name"
 msgstr "Imagem Espelhada"
 
 msgid "ability.unit_t2_e_mimic.desc"
 msgstr "No início do turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de HP e PWR."
 
-msgid "unit_t3_shadow.name"
-msgstr "Clone das Sombras"
-
-msgid "unit_t3_shadow.desc"
-msgstr "Unidade etérea. Passiva: [Eco de Buff]"
-
 msgid "ability.unit_t2_g_buff_echo.name"
 msgstr "Eco de Buff"
 
 msgid "ability.unit_t2_g_buff_echo.desc"
 msgstr "Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
-
-msgid "unit_t2_h.name"
-msgstr "Eremita"
-
-msgid "unit_t2_h.desc"
-msgstr "Guerreiro solitário. Passiva: [Força Solitária]"
 
 msgid "ability.unit_t2_h.name"
 msgstr "Força Solitária"
@@ -1275,12 +1284,6 @@ msgstr "No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazi
 msgid "ability.unit_t2_h_l3.desc"
 msgstr "No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
 
-msgid "unit_t2_i.name"
-msgstr "Miserável de Lama"
-
-msgid "unit_t2_i.desc"
-msgstr "Criatura de lama. Passiva: [Camada de Lama]"
-
 msgid "ability.mud_coating.name"
 msgstr "Camada de Lama"
 
@@ -1292,12 +1295,6 @@ msgstr "Quando curado, ganha 2 de Armadura e 2 de Espinhos."
 
 msgid "ability.mud_coating_l3.desc"
 msgstr "Quando curado, ganha 3 de Armadura e 3 de Espinhos."
-
-msgid "unit_t2_j.name"
-msgstr "Fogo Fátuo"
-
-msgid "unit_t2_j.desc"
-msgstr "Espírito fervilhante. Passiva: [Escaldar]"
 
 msgid "ability.scald.name"
 msgstr "Escaldar"
@@ -1311,20 +1308,8 @@ msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante e
 msgid "ability.scald_l3.desc"
 msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
 
-msgid "unit_t3_g.name"
-msgstr "Viajante Fantasma"
-
-msgid "unit_t3_g.desc"
-msgstr "Viajante misterioso. Passiva: [Meditação Silenciosa]"
-
 msgid "ability.unit_tier3g_bench_growth.name"
 msgstr "Meditação Silenciosa"
-
-msgid "unit_t3_h.name"
-msgstr "Guardião da Fusão"
-
-msgid "unit_t3_h.desc"
-msgstr "Híbrido volátil. Passiva: [Surto de Conversão]"
 
 msgid "ability.unit_t3_h.name"
 msgstr "Surto de Convergência"
@@ -1593,12 +1578,6 @@ msgstr "CLIQUE AQUI PARA FUNDIR!"
 msgid "ui.merge_encounter_instruction"
 msgstr "Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
 
-msgid "unit_t3_i.name"
-msgstr "Doppleganger"
-
-msgid "unit_t3_i.desc"
-msgstr "Clone volátil."
-
 msgid "ability.doppleganger_scale.name"
 msgstr "Força Espelhada"
 
@@ -1629,12 +1608,6 @@ msgstr "Divisão de Eco"
 msgid "ability.echoing_orb_death.desc"
 msgstr "Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."
 
-msgid "unit_t3_j.name"
-msgstr "Porta-Estandarte"
-
-msgid "unit_t3_j.desc"
-msgstr "Comandante valente. Morte: [Legado do Estandarte]"
-
 msgid "ability.unit_t3_j_ability_l1.name"
 msgstr "Legado do Estandarte"
 
@@ -1655,12 +1628,6 @@ msgstr "Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias 
 
 msgid "ui.transfer_item_msg"
 msgstr "%s transfere %s para %s!"
-
-msgid "unit_t3_l.name"
-msgstr "Eremita Dourado"
-
-msgid "unit_t3_l.desc"
-msgstr "Um sábio solitário da riqueza. Passiva: [Acúmulo de Riqueza]"
 
 msgid "ability.unit_t3_l_l1.name"
 msgstr "Acúmulo de Riqueza"
@@ -2009,4 +1976,178 @@ msgstr "Acúmulo de Riqueza"
 
 msgid "ability.unit_t3_j_ability.name"
 msgstr "Legado do Estandarte"
+
+msgid "ETnkPlaToy.name"
+msgstr "ETnkPlaToy"
+
+msgid "ETnkPlaToy.desc"
+msgstr "Unidade ETnkPlaToy."
+
+msgid "FFigMecApp.name"
+msgstr "FFigMecApp"
+
+msgid "FFigMecApp.desc"
+msgstr "Unidade FFigMecApp."
+
+msgid "WSupAniCos.name"
+msgstr "WSupAniCos"
+
+msgid "WSupAniCos.desc"
+msgstr "Unidade WSupAniCos."
+
+msgid "ASpeFodToy.name"
+msgstr "ASpeFodToy"
+
+msgid "ASpeFodToy.desc"
+msgstr "Unidade ASpeFodToy."
+
+msgid "EWFigCosToy.name"
+msgstr "EWFigCosToy"
+
+msgid "EWFigCosToy.desc"
+msgstr "Unidade EWFigCosToy."
+
+msgid "FASpeMecApp.name"
+msgstr "FASpeMecApp"
+
+msgid "FASpeMecApp.desc"
+msgstr "Unidade FASpeMecApp."
+
+msgid "EASpeFodToy.name"
+msgstr "EASpeFodToy"
+
+msgid "EASpeFodToy.desc"
+msgstr "Unidade EASpeFodToy."
+
+msgid "WATnkPlaAni.name"
+msgstr "WATnkPlaAni"
+
+msgid "WATnkPlaAni.desc"
+msgstr "Unidade WATnkPlaAni."
+
+msgid "EFTnkAniCos.name"
+msgstr "EFTnkAniCos"
+
+msgid "EFTnkAniCos.desc"
+msgstr "Unidade EFTnkAniCos."
+
+msgid "FWSpeAppFod.name"
+msgstr "FWSpeAppFod"
+
+msgid "FWSpeAppFod.desc"
+msgstr "Unidade FWSpeAppFod."
+
+msgid "EFWAFigSpeAniMec.name"
+msgstr "EFWAFigSpeAniMec"
+
+msgid "EFWAFigSpeAniMec.desc"
+msgstr "Unidade EFWAFigSpeAniMec."
+
+msgid "EWWATnkMecApp.name"
+msgstr "EWWATnkMecApp"
+
+msgid "EWWATnkMecApp.desc"
+msgstr "Unidade EWWATnkMecApp."
+
+msgid "EFWWFigSpeAniFodMecCos.name"
+msgstr "EFWWFigSpeAniFodMecCos"
+
+msgid "EFWWFigSpeAniFodMecCos.desc"
+msgstr "Unidade EFWWFigSpeAniFodMecCos."
+
+msgid "EFAASupToy.name"
+msgstr "EFAASupToy"
+
+msgid "EFAASupToy.desc"
+msgstr "Unidade EFAASupToy."
+
+msgid "EEFWFigTnkPlaToy.name"
+msgstr "EEFWFigTnkPlaToy"
+
+msgid "EEFWFigTnkPlaToy.desc"
+msgstr "Unidade EEFWFigTnkPlaToy."
+
+msgid "EEWAFigFodAniCos.name"
+msgstr "EEWAFigFodAniCos"
+
+msgid "EEWAFigFodAniCos.desc"
+msgstr "Unidade EEWAFigFodAniCos."
+
+msgid "EFFASupPlaToy.name"
+msgstr "EFFASupPlaToy"
+
+msgid "EFFASupPlaToy.desc"
+msgstr "Unidade EFFASupPlaToy."
+
+msgid "FWAASupToy.name"
+msgstr "FWAASupToy"
+
+msgid "FWAASupToy.desc"
+msgstr "Unidade FWAASupToy."
+
+msgid "EFFWSupMecApp.name"
+msgstr "EFFWSupMecApp"
+
+msgid "EFFWSupMecApp.desc"
+msgstr "Unidade EFFWSupMecApp."
+
+msgid "EFWASupFodToy.name"
+msgstr "EFWASupFodToy"
+
+msgid "EFWASupFodToy.desc"
+msgstr "Unidade EFWASupFodToy."
+
+msgid "FFWASpeSupMecAniApp.name"
+msgstr "FFWASpeSupMecAniApp"
+
+msgid "FFWASpeSupMecAniApp.desc"
+msgstr "Unidade FFWASpeSupMecAniApp."
+
+msgid "EWAASpePlaApp.name"
+msgstr "EWAASpePlaApp"
+
+msgid "EWAASpePlaApp.desc"
+msgstr "Unidade EWAASpePlaApp."
+
+msgid "EEFASpeFodCos.name"
+msgstr "EEFASpeFodCos"
+
+msgid "EEFASpeFodCos.desc"
+msgstr "Unidade EEFASpeFodCos."
+
+msgid "EFWATnkCosMec.name"
+msgstr "EFWATnkCosMec"
+
+msgid "EFWATnkCosMec.desc"
+msgstr "Unidade EFWATnkCosMec."
+
+msgid "FWWASupAniToy.name"
+msgstr "FWWASupAniToy"
+
+msgid "FWWASupAniToy.desc"
+msgstr "Unidade FWWASupAniToy."
+
+msgid "ability.trait_earth.name"
+msgstr "Proteção da Terra"
+
+msgid "ability.trait_earth.desc"
+msgstr "No início do combate, concede Armadura e Espinhos a aliados com base nas almas de Terra (unidades de Terra recebem Armadura dobrada)."
+
+msgid "ability.trait_fire.name"
+msgstr "Nova de Fogo"
+
+msgid "ability.trait_fire.desc"
+msgstr "No início do combate, aplica 2 de Chamas à equipe adversária se tiver 7+ almas de Fogo."
+
+msgid "ability.trait_water.name"
+msgstr "Corrente Suave"
+
+msgid "ability.trait_water.desc"
+msgstr "No início do combate, unidades de Água curam aliados adjacentes em 1 HP se tiver 2+ almas de Água."
+
+msgid "ability.trait_air.name"
+msgstr "Sifão da Ventania"
+
+msgid "ability.trait_air.desc"
+msgstr "No início do combate, unidades de Ar roubam 1 PWR de inimigos espelhados se tiver 2+ almas de Ar."
 

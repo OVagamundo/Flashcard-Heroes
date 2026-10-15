@@ -114,10 +114,10 @@ Every effect and reaction has a priority value (defined in `AbilityDefinition`).
 
 | Priority | Constant | Usage | Examples |
 |----------|----------|-------|----------|
-| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian |
 | 220 | `PRIORITY_DOPPLEGANGER` | Post-death duplication | Doppleganger |
 | 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
-| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Necromancer |
 | 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
 | 100 | `PRIORITY_BUFF_HEAL` | Standard Buffs/Heals | Resilient Aura |
 | 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
@@ -189,11 +189,11 @@ Before simulation runs, `BattleManager` captures a **snapshot** of the entire bo
         "hp": 10,
         "pwr": 5,
         "poison_stacks": 0,
-        "def_id": &"unit_t1_a",
+        "def_id": &"ETnkPlaToy",
         "icon": <Texture>,
         "tier": 1,
         "category": &"UNIT",
-        "display_name_key": "unit_t1_a.name"
+        "display_name_key": "ETnkPlaToy.name"
     }
 }
 
@@ -494,7 +494,7 @@ Reserved for specific "Minion Summons" that bypass the standard battlefield econ
 - **Logic**: Targets the first available slot in the physics drawer corresponding to the unit's tier.
 
 #### 7. Summon Restrictions (Dust Units & Elites)
-- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (e.g. `Soul Caller` / `unit_t3_c`) or item abilities (e.g. `Summoning Scroll` / `item_t2_a`).
+- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (e.g. `Necromancer` / `unit_t3_c`) or item abilities (e.g. `Summoning Scroll` / `item_t2_a`).
 - **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
 - **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (`EffectBossSummon`).
 - **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
@@ -516,7 +516,7 @@ Effects receive ALL data via the `context` parameter:
 {
     "source_uuid": "unit_abc",
     "source_location": <LocationIdentifier>,  # Snapshot at trigger time
-    "source_def_id": &"unit_t1_a",
+    "source_def_id": &"ETnkPlaToy",
     "equipped_items": [{ /* snapshot */ }]
 }
 
@@ -587,19 +587,19 @@ The combat system enforces strict separation of logical damage categories based 
 All abilities and effects must return a strictly typed `EffectResult` containing a `DamageRequest` with an explicit `damage_type: int`.
 
 *   **MELEE** (`C.DamageType.MELEE`): Originates from a direct melee strike. Targets the frontmost enemy slot (including Shockwave melee hits).
-    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
+    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
 *   **RANGED** (`C.DamageType.RANGED`): Originates from a ranged strike or direct unit ability. Targets arbitrary or specific slots (e.g., Mirror Strike, Random enemies, All enemies, Kamikaze).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Intercept if lethal. Triggers `on_hurt` and `on_damage_dealt`.
 *   **TRINKET** (`C.DamageType.TRINKET`): Originates systemically from equipped Trinkets (e.g., *Fusion Spark*).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers self/ally hurt reactions (e.g., heals upon taking damage), but does NOT trigger counter-attacks (Trinkets cannot be attacked) or `on_damage_dealt`.
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Intercept if lethal. Triggers self/ally hurt reactions (e.g., heals upon taking damage), but does NOT trigger counter-attacks (Trinkets cannot be attacked) or `on_damage_dealt`.
 *   **KAMIKAZE** (`C.DamageType.KAMIKAZE`): Originates from a self-sacrificing unit attack (e.g., *Death's Bargain*).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal. Triggers self/ally hurt reactions, but does NOT allow targeted counter-attacks/retaliation against the deceased attacker, and does NOT trigger `on_damage_dealt`.
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Intercept if lethal. Triggers self/ally hurt reactions, but does NOT allow targeted counter-attacks/retaliation against the deceased attacker, and does NOT trigger `on_damage_dealt`.
 *   **BURN** (`C.DamageType.BURN`): Systemic damage from turn-start Burn stack decay.
-    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
+    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
 *   **SPIKES** (`C.DamageType.SPIKES`): Reactive damage reflected by a defender with Spikes when struck by a Melee attack.
     *   *Rules:* Mitigated by the attacker's Armor. Does not trigger Spikes. Does NOT trigger `on_hurt` or `on_damage_dealt`.
 *   **STATIC** (`C.DamageType.STATIC`): Systemic damage from Static discharge when suffering a stat modification.
-    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
+    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Intercept. Does NOT trigger `on_hurt` or `on_damage_dealt`.
 
 ---
 
@@ -671,10 +671,11 @@ var ability_holder_uuid: String = ""
 
 # Concurrent Animation Trackers
 # Array of dictionaries: { "source_uuid": str, "def_id": StringName }
-# Used by BattleAnimator to play VFX on the UI trinket icons concurrently with the event.
-# NOTE: Trait Trinkets (Fire, Water, etc.) are passive and do NOT use CombatEvents.
+# NOTE: Elemental Trait Trinkets (Fire, Water, etc.) are passive and do not use turn CombatEvents.
 # Instead, they calculate their state on UI layout changes and emit a standalone
 # `trait_threshold_reached` signal directly to the BattleAnimator.
+# In contrast, Class and Visual Trait Trinkets (Tank, Fighter, Toy, etc.) trigger actively
+# during pre-combat (`on_pre_combat`), emitting standard BUFF CombatEvents to power up matching units.
 var trinket_activations: Array[Dictionary] = []
 
 var visual_payload: Dictionary 

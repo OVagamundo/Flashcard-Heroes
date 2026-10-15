@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Grants +1 PWR to the target (ally behind the source unit).
-## Used by the Windy unit's Empathic Link ability.
+## Used by the Empath unit's ability.
 
 const C = preload("res://scripts/Constants.gd")
 

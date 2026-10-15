@@ -114,10 +114,10 @@ Every effect and reaction has a priority value (defined in `AbilityDefinition`).
 
 | Priority | Constant | Usage | Examples |
 |----------|----------|-------|----------|
-| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian Sentinel |
+| 300 | `PRIORITY_GUARDIAN_INTERCEPT` | Damage interception | Guardian |
 | 220 | `PRIORITY_DOPPLEGANGER` | Post-death duplication | Doppleganger |
 | 210 | `PRIORITY_SOUL_ECHO` | High-priority Resurrection | Soul Echo |
-| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Sakura Spirit |
+| 205 | `PRIORITY_UNIT_SUMMON` | Unit on-death summon | Necromancer |
 | 200 | `PRIORITY_ITEM_SUMMON` | Item on-death summon | Last Wish |
 | 100 | `PRIORITY_BUFF_HEAL` | Standard Buffs/Heals | Resilient Aura |
 | 50 | `PRIORITY_COUNTER_ATTACK` | Retaliation damage | Retaliate |
@@ -189,11 +189,11 @@ Before simulation runs, `BattleManager` captures a **snapshot** of the entire bo
         "hp": 10,
         "pwr": 5,
         "poison_stacks": 0,
-        "def_id": &"unit_t1_a",
+        "def_id": &"ETnkPlaToy",
         "icon": <Texture>,
         "tier": 1,
         "category": &"UNIT",
-        "display_name_key": "unit_t1_a.name"
+        "display_name_key": "ETnkPlaToy.name"
     }
 }
 
@@ -491,7 +491,7 @@ Reserved for specific "Minion Summons" that bypass the standard battlefield econ
 - **Logic**: Targets the first available slot in the physics drawer corresponding to the unit's tier.
 
 #### 7. Summon Restrictions (Dust Units & Elites)
-- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (e.g. `Soul Caller` / `unit_t3_c`) or item abilities (e.g. `Summoning Scroll` / `item_t2_a`).
+- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (e.g. `Necromancer` / `unit_t3_c`) or item abilities (e.g. `Summoning Scroll` / `item_t2_a`).
 - **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
 - **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (`EffectBossSummon`).
 - **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
@@ -513,7 +513,7 @@ Effects receive ALL data via the `context` parameter:
 {
     "source_uuid": "unit_abc",
     "source_location": <LocationIdentifier>,  # Snapshot at trigger time
-    "source_def_id": &"unit_t1_a",
+    "source_def_id": &"ETnkPlaToy",
     "equipped_items": [{ /* snapshot */ }]
 }
 
@@ -583,13 +583,13 @@ The combat system enforces strict separation of logical damage categories based 
 All abilities and effects must return a strictly typed `EffectResult` containing a `DamageRequest` with an explicit `damage_type: int`.
 
 *   **MELEE** (`C.DamageType.MELEE`): Originates from a **Unit**. Targets ONLY the **Frontmost Unit** (this includes Shockwave, which stems from a frontmost attack).
-    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Sentinel Intercept if lethal.
+    *   *Rules:* Mitigated by Armor. Triggers Spikes. Susceptible to Guardian Intercept if lethal.
 *   **RANGED** (`C.DamageType.RANGED`): Originates from a **Unit**. Targets **Other Units** (e.g., Mirror Strike, Random enemies, All enemies, Bounces).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Sentinel Intercept if lethal.
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Susceptible to Guardian Intercept if lethal.
 *   **MAGIC** (`C.DamageType.MAGIC`): Originates from a **Trinket** or has **No Unit Origin** (systemic).
-    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Bypasses Guardian Sentinel Intercept.
+    *   *Rules:* Mitigated by Armor. Bypasses Spikes. Bypasses Guardian Intercept.
 *   **BURN** (`C.DamageType.BURN`): Pure systemic damage from the Burn status effect.
-    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Sentinel Intercept. Triggers `C.CAUSE_STATUS_EFFECT` (bypassing counter-attacks).
+    *   *Rules:* Completely ignores Armor and Spikes. Bypasses Guardian Intercept. Triggers `C.CAUSE_STATUS_EFFECT` (bypassing counter-attacks).
 *   **SPIKES** (`C.DamageType.SPIKES`): Pure systemic damage from the Spikes status effect.
     *   *Rules:* Mitigated by Armor but ignores Spikes.
 

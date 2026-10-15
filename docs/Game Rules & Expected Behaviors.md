@@ -397,8 +397,8 @@ When two units merge, the game categorizes all attributes, stats, and modifiers 
        * Two Level 1 units (1 Fire soul each) merge into a Level 2 unit with **2 Fire souls** ($1 + 1 = 2$).
        * Two Level 2 units (2 Fire souls each) merge into a Level 3 unit with **4 Fire souls** ($2 + 2 = 4$).
      * **Recipe Tier-Up Example**:
-       * Merging a Level 3 Rocky (**4 Earth souls**) with a Level 1 Dewey (**1 Water soul**) produces a Tier 2 unit with **5 souls** (4 Earth + 1 Water).
-       * Merging a Level 3 Rocky (**4 Earth souls**) with a Level 3 Sparky (**4 Fire souls**) produces a Tier 2 unit with **8 souls** (4 Earth + 4 Fire).
+       * Merging a Level 3 `ETnkPlaToy` (**4 Earth souls**) with a Level 1 `WSupAniCos` (**1 Water soul**) produces a Tier 2 unit with **5 souls** (4 Earth + 1 Water).
+       * Merging a Level 3 `ETnkPlaToy` (**4 Earth souls**) with a Level 3 `FFigMecApp` (**4 Fire souls**) produces a Tier 2 unit with **8 souls** (4 Earth + 4 Fire).
      * No souls are ever subtracted or lost during a merge.
 
 3. **Status Effects (Armor, Burn, Spikes, Static, etc.)**:
@@ -563,10 +563,10 @@ Combat resolves automatically once the player clicks **"Battle!"** (ending the M
 ## 9.3 Reaction Priority Hierarchy
 When multiple abilities trigger simultaneously, the simulation sorts them using a strict 3-layer hierarchy:
 1. **Layer 1: Execution Priority (Descending Integer Priority)**: Higher priority integers resolve first:
-   * `300` - **Interceptors**: Shields and damage redirects that resolve *before* triggering damage is applied (e.g. *Guardian Sentinel*).
+   * `300` - **Interceptors**: Shields and damage redirects that resolve *before* triggering damage is applied (e.g. *Guardian*).
    * `220` - **Duplication**: Post-death clone mechanics (*Doppleganger*).
    * `210` - **Trinket Summons / Resurrections**: High-priority trinket triggers (*Soul Echo*).
-   * `205` - **Unit On-Death Summons**: Innate unit death spawns (*Soul Caller*, *Sakura Spirit*).
+   * `205` - **Unit On-Death Summons**: Innate unit death spawns (*Necromancer*, *Warden*).
    * `200` - **Item On-Death Summons**: Equipped item death spawns (*Summoning Scroll*, *Last Wish*).
    * `100–199` - **Standard Reactions**: Buffs, heals, and aura distributions (*Resilient Aura*).
    * `50` - **Modifiers**: Counter-attacks, defensive adjustments, and status applications (*Retaliate*).
@@ -585,7 +585,7 @@ When multiple summons occur simultaneously on the death of a unit (e.g. a unit w
 | Priority | Source | Claims Slot | Description |
 |---|---|---|---|
 | **210** (`PRIORITY_TRINKET_SUMMON`) | **Trinket** (*Soul Echo*) | **1st** | Resurrects the original dying unit into its original slot before any spawns occur. |
-| **205** (`PRIORITY_UNIT_SUMMON`) | **Unit Ability** (*Soul Caller*) | **2nd** | Spawns a unit; because the original slot was claimed by the resurrection, it searches for an alternative available slot. |
+| **205** (`PRIORITY_UNIT_SUMMON`) | **Unit Ability** (*Necromancer*) | **2nd** | Spawns a unit; because the original slot was claimed by the resurrection, it searches for an alternative available slot. |
 | **200** (`PRIORITY_ITEM_SUMMON`) | **Item** (*Summoning Scroll*, *Last Wish*) | **3rd** | Spawns a unit; searches for the next available alternative slot or Discard Pile. |
 
 **Slot Search Order for Displaced Summons**:
@@ -662,7 +662,7 @@ In *Flashcard Heroes*, units do not have a maximum stat cap; they have their sta
 
 | Action Category | Affected Stats | Reactive Trigger Fired | Interaction with Armor & Spikes | Gameplay Rule & Usage |
 | :--- | :--- | :--- | :--- | :--- |
-| **Healing (`HEAL`)** | Health (HP) | When Healed (`on_healed`) | Does not interact with Armor or Spikes | Restorative recovery (such as drinking potions, lifesteal recovery, or regenerative passives). Strictly triggers "When Healed" reaction abilities (like Mud Wretch's *Mud Coating* or Steam Wisp's *Scald*). **Never** counts as a stat buff and never triggers "When a Stat Increases". |
+| **Healing (`HEAL`)** | Health (HP) | When Healed (`on_healed`) | Does not interact with Armor or Spikes | Restorative recovery (such as drinking potions, lifesteal recovery, or regenerative passives). Strictly triggers "When Healed" reaction abilities (like `EFTnkAniCos` or `FWSpeAppFod` on-healed passives). **Never** counts as a stat buff and never triggers "When a Stat Increases". |
 | **Stat Buffs (`BUFF`)** | Health (HP), Power (PWR) | When a Stat Increases (`on_stat_increased`) | Does not interact with Armor or Spikes | Stat empowerment, level scaling, and conditional enhancements (such as ally death bonuses, merge stat increases, or aura growth). Strictly triggers "When a Stat Increases". **Never** counts as healing and never triggers "When Healed". |
 | **Attack Damage (`DAMAGE`)** | Health (HP) | When Hurt by an Attack (`on_hurt`), On Damage Dealt (`on_damage_dealt`) | Mitigated by Armor; Melee triggers Spikes | Direct combat strikes dealt by an attacker. Mitigated by the defender's Armor. Melee attacks trigger counter-damage from Spikes. Direct attacks trigger both "When Hurt by an Attack" on the victim and "On Damage Dealt" on the attacker. |
 | **Stat Debuffs (`DEBUFF`)** | Health (HP), Power (PWR) | When a Stat Decreases (`on_stat_decreased`) | Completely bypasses Armor and Spikes | Direct stat penalties. Directly reduces Health or Power, completely bypasses Armor, ignores Spikes, and **never** triggers "When Hurt by an Attack" or "On Damage Dealt". |
@@ -685,15 +685,15 @@ Direct combat attacks and non-attack damage sources interact differently with de
 > [!NOTE]
 > **Damage Classification & Reactions**:
 > * Direct combat attacks by units are classified as **Melee** (targeting frontmost positions, triggering Spikes) or **Ranged** (targeting arbitrary enemy slots, bypassing Spikes).
-> * **Trinket Damage** (e.g. *Fusion Spark*) originates systemically from equipped trinkets rather than a unit strike. It is mitigated by Armor and can be intercepted by Guardian Sentinel leaps, but cannot trigger counter-attacks against the trinket or Spikes reflection. It still triggers self-sustain or ally-protection abilities that react to suffering damage.
-> * **Kamikaze Damage** (e.g. *Death's Bargain*) is an attack where the attacking unit perishes upon executing the attack. It is mitigated by Armor and can be intercepted by Guardian Sentinel leaps, but does not allow targeted retaliation since the attacker has already died.
+> * **Trinket Damage** (e.g. *Fusion Spark*) originates systemically from equipped trinkets rather than a unit strike. It is mitigated by Armor and can be intercepted by lethal-interception leaps (e.g. `EWWATnkMecApp`), but cannot trigger counter-attacks against the trinket or Spikes reflection. It still triggers self-sustain or ally-protection abilities that react to suffering damage.
+> * **Kamikaze Damage** (e.g. *Death's Bargain*) is an attack where the attacking unit perishes upon executing the attack. It is mitigated by Armor and can be intercepted by lethal-interception leaps, but does not allow targeted retaliation since the attacker has already died.
 > * Non-attack environmental damage sources (Burn decay, Static discharge, and Spikes reflection) do not count as attacks and do not trigger attack-reactive abilities.
 
 ### 9.7.3 Trigger Separation Guarantees
 
 The game guarantees complete separation between triggers:
 1. **Healing vs. Health Buffs**:
-   - Restoring Health (`HEAL`) only triggers healing-reactive abilities (e.g. Mud Wretch's *Mud Coating*).
+   - Restoring Health (`HEAL`) only triggers healing-reactive abilities (e.g. `EFTnkAniCos` on-healed passive).
    - Increasing Health through a buff (`BUFF`) only triggers stat-growth abilities. Healing reactions will completely ignore Health buffs.
 2. **Direct Damage vs. Health Debuffs**:
    - Direct attacks deal damage through the combat system, reduce Armor, and trigger "When Hurt by an Attack" reactions.
@@ -723,23 +723,45 @@ The game guarantees complete separation between triggers:
 
 ---
 
-# 10. Elemental Traits & Trinkets
+# 10. Traits & Trinkets
 
-Units possess elemental soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket unlocks team-wide synergies:
+Units carry traits across three major taxonomy categories:
+- **Elemental Traits (4)**: Fire, Earth, Water, Air (tracked via Soul counts: Tier 1 = 1, Tier 2 = 2, Tier 3 = 4).
+- **Class Traits (4)**: Tank, Fighter, Support, Specialist (tracked via lineup unit count).
+- **Visual Archetype Traits (7)**: Food, Mecha, Animal, Plant, Toy, Appliance, Costume (tracked via lineup unit count).
+
+Equipping the corresponding Trait Trinket enables team-wide synergies for both player and enemy lineups.
 
 ## 10.1 Snapshot Locking
-At the start of each combat turn, the game takes a snapshot of active souls in the lineup. Trait strength is locked for the duration of that combat round, preventing mid-turn fluctuations as units die or are summoned.
+At the start of combat and each combat turn, the game takes a snapshot of active traits and souls in the lineup. Trait strength is locked for the duration of that combat round, preventing mid-combat fluctuations as units take damage, die, or are summoned.
 
 ## 10.2 Trait Synergies & Thresholds
+
+### 10.2.1 Elemental Traits (Souls)
+Activated when the team holds the required elemental soul count and has the corresponding elemental trinket equipped. All opening elemental effects trigger once at combat start (`on_pre_combat`, when the player presses the Battle button, before turn actions begin):
 | Trait | Focus | Thresholds (Souls) | Effect |
 | :--- | :--- | :--- | :--- |
-| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 | Applies Burn on attack. Higher thresholds grant more stacks; 7+ applies Burn to the entire enemy team. |
-| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies. Earth units gain double armor bonus. |
-| **Water** | Resilience | 2 / 4 / 6 / 8 | Heals adjacent allies at turn start upon acting. |
-| **Air** | Disruption | 2 / 4 / 6 / 8 | Steals Power (PWR) from mirrored enemy slots. |
+| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 | Applies Burn on attack. At 7+ souls, applies 2 Burn to the entire opposing team at combat start. |
+| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at combat start. Earth units gain double armor bonus. |
+| **Water** | Resilience | 2 / 4 / 6 / 8 | Water units heal adjacent allies 1 HP at combat start. |
+| **Air** | Disruption | 2 / 4 / 6 / 8 | Air units steal 1 Power (PWR) from mirrored enemy slots at combat start. |
+
+### 10.2.2 Class & Visual Traits (Units)
+Activated when the team holds the required count of units possessing that trait in their lineup and equips that trait's trinket.
+All 11 Class and Visual trait trinkets trigger at the start of combat (`on_pre_combat`, when the player presses the Battle button, before turn actions begin):
+| Trait Category | Traits | Thresholds (Units) | Effect (Trait Surge) |
+| :--- | :--- | :--- | :--- |
+| **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
+| **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
 
 ## 10.3 Trinket Integration Rules
 * **Reaction Priority**: When abilities react during combat, they resolve in an orderly hierarchy: Units act first, followed by Items, followed by Trinkets.
+* **Pre-Combat Trinkets (*All 15 Trait Trinkets*)**:
+  * All 15 Trait Trinkets (Elemental, Class, and Visual) activate strictly during the Pre-Combat phase (`on_pre_combat`) when the Battle button is pressed, at the start of each combat phase, rather than during the Start of Turn / Management phase.
+  * **Elemental Trait Trinkets**: Deliver their opening effects at the start of each combat phase (Earth grants Armor/Spikes, Fire 7+ applies Burn to the entire opposing lineup, Water units heal adjacent allies, and Air units steal PWR from mirrored enemies).
+  * **Class & Visual Trait Trinkets**: Grant a PWR bonus (+1 for 2 units, +2 for 3 units, +3 for 4 units, +4 for 5 units) exclusively to friendly units possessing that trait at the start of each combat phase.
+  * **Phase Timing**: Trait trinket effects activate at the opening of each combat phase and do NOT trigger during the Start of Turn / Management phase.
+  * Fully available to both player and enemy loadouts (`is_player_exclusive = false`).
 * **Turn-Start Trinkets**: Resolved during the Start of Turn phase, subject to First-Turn Suppression on Turn 1.
 * **Mini-Game Interceptors**: Trinkets like *Beginner's Charm* inspect reviewed card mastery to award bonus tokens.
 * **Board-Entry Insignia Trinkets (*Royal Insignia* & *Veteran Insignia*)**:

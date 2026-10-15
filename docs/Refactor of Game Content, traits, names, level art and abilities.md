@@ -1,163 +1,373 @@
-# Game Content Document
+# FLASHCARD HEROES: UNIT REFACTOR SPECIFICATION & ADAPTATION GUIDE
 
-*This document is auto-generated from the game's resource files.*
+> **Scope**: Master reference for adapting existing 25 units to descriptive trait names, recipes, trait tags (souls, classes, visuals), and mechanics-only ability specifications.  
+> *(Note: Content expansion math, 11-pack Hero architecture, and wildcard pool rules have been moved to [ProgressionSystems.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/ProgressionSystems.md)).*
 
+---
 
-## Units (Tier 1)
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `unit_t1_a` | **Rocky**<br>_Novice unit._ | 2 HP / 1 PWR | EARTH | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 1 HP. [Target: HOLDER]<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 2 HP. [Target: HOLDER]<br><br>**Resilience**: When hurt BY AN ATTACK, Heal this unit by 3 HP. [Target: HOLDER] |
-| `unit_t1_b` | **Burny**<br>_Loyal squire._ | 1 HP / 2 PWR | FIRE | **Basic Attack**: Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>**Retaliation**: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce. [Target: ATTACKER] [Trigger: CAUSE_ATTACK] |
-| `unit_t1_c` | **Dewey**<br>_Steadfast guardian._ | 1 HP / 1 PWR | WATER | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 1 HP. [Target: ALLY_SLOT_AHEAD]<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 2 HP. [Target: ALLY_SLOT_AHEAD]<br><br>**Guardian's Grace**: When the ally directly in front takes damage, heal them for 3 HP. [Target: ALLY_SLOT_AHEAD] |
-| `unit_t1_d` | **Windy**<br>_Sensitive soul._ | 1 HP / 1 PWR | AIR | **Basic Attack**: Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind. [Target: ALLY_BEHIND]<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally. [Target: ALLY_BEHIND]<br><br>**Empathic Link**: When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next. [Target: ALLY_BEHIND] |
+## 1. System Rules & Unified Trait Architecture
 
+1. **All Tags are Mechanically Traits**:
+   - Elements, Classes, and Visual Themes are stored in the unit's `tags: Array[StringName]` array.
+   - Any trait is queryable by Trinkets, Items, and Combat Triggers (`count_trait()`, `has_trait()`).
+2. **Elemental Souls (Multiplicity)**:
+   - **Tier 1**: 1 Soul.
+   - **Tier 2**: 2 Souls (Inherited directly as the exact sum of both Tier 1 parents: $1 + 1 = 2$).
+   - **Tier 3**: 4 Souls (Inherited directly as the exact sum of both Tier 2 parents: $2 + 2 = 4$).
+3. **Class Traits (Role Mechanics)**:
+   - `Tank`, `Fighter`, `Support`, `Specialist`.
+4. **Visual Traits (Thematic Archetypes)**:
+   - `Food`, `Mecha`, `Animal`, `Plant`, `Toy`, `Appliance`, `Costume`.
+5. **Trait Trinkets & Synergies**:
+   - Each of the 15 traits has an associated Trait Trinket (`trinket_trait_<trait>`).
+   - All 15 Trait Trinkets activate at the start of each combat phase during Pre-Combat (`on_pre_combat`, when the Battle button is pressed) rather than at turn start.
+   - Elemental Trinkets (Fire, Earth, Water, Air) deliver their opening effects (Earth Armor/Spikes, Fire 7+ Burn, Water adjacent Heal, Air mirrored PWR steal) at the start of each combat phase.
+   - Class and Visual Trinkets deliver their scaling PWR buff (+1 for 2 units, +2 for 3 units, +3 for 4 units, +4 for 5 units) to matching trait units at the start of each combat phase.
+   - All trait trinkets are available to both player and enemy loadouts (`is_player_exclusive = false`).
 
-## Units (Tier 2)
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `unit_t2_c` | **Knight**<br>_Valiant knight._ | 3 HP / 3 PWR | FIRE, EARTH | **Morale Boost**: When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF]<br><br>**Morale Boost**: When an ally is defeated, gain +2 HP and +1 PWR. [Target: SELF]<br><br>**Morale Boost**: When an ally is defeated, gain +2 HP and +2 PWR. [Target: SELF] |
-| `unit_t2_d` | **Templar**<br>_A devout templar._ | 2 HP / 3 PWR | WATER, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Token Power**: Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change. [Target: SELF]<br><br>**Token Power**: Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change. [Target: SELF]<br><br>**Token Power**: Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change. [Target: SELF] |
-| `unit_t2_f` | **Merchant**<br>_Traveling merchant._ | 3 HP / 2 PWR | EARTH, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 100% when drawn or spawned. [Target: SELF]<br><br>**Gold Investments**: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned. [Target: SELF] |
-| `unit_t2_h` | **Hermit**<br>_Solitary warrior._ | 2 HP / 2 PWR | WATER, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Solitary Strength**: At start of combat, gain +1 HP and +1 PWR for each empty slot in your team. [Target: SELF]<br><br>**Solitary Strength**: At start of combat, gain +2 HP and +2 PWR for each empty slot in your team. [Target: SELF]<br><br>**Solitary Strength**: At start of combat, gain +3 HP and +3 PWR for each empty slot in your team. [Target: SELF] |
-| `unit_t2_i` | **Mud Wretch**<br>_Mud creature._ | 3 HP / 2 PWR | EARTH, WATER | **Mud Coating**: When healed, gain 1 Armor and 1 Spikes.<br><br>**Mud Coating**: When healed, gain 2 Armor and 2 Spikes.<br><br>**Mud Coating**: When healed, gain 3 Armor and 3 Spikes. |
-| `unit_t2_j` | **Steam Wisp**<br>_Scalding spirit._ | 2 HP / 3 PWR | FIRE, WATER | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.<br><br>**Scald**: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce. |
+---
 
+## 2. Descriptive Naming Algorithm
 
-## Units (Tier 3)
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `unit_t3_a` | **Shadow Striker**<br>_Master of precise strikes._ | 5 HP / 5 PWR | FIRE, FIRE, FIRE, FIRE | **Mirror Strike**: Attacks enemy in opposite mirror slot for 100% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Mirror Strike**: Attacks enemy in opposite mirror slot for 150% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Mirror Strike**: Attacks enemy in opposite mirror slot for 200% damage. [Target: MIRROR_SLOT_ENEMY] [Trigger: CAUSE_TURN] |
-| `unit_t3_b` | **Guardian Sentinel**<br>_Stalwart protector._ | 5 HP / 5 PWR | intercept_lethal, EARTH, EARTH, EARTH, EARTH | **Guardian Sacrifice**: Leaps to intercept lethal damage on allies. [Target: SELF]<br><br>**Guardian Sacrifice**: Leaps to intercept lethal damage on allies and gains 1 Armor. [Target: SELF]<br><br>**Guardian Sacrifice**: Leaps to intercept lethal damage on allies and gains 2 Armor. [Target: SELF] |
-| `unit_t3_berserker` | **Berserker**<br>_Powerful warrior._ | 5 HP / 6 PWR | FIRE, FIRE | **Shockwave**: Deals 100% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Shockwave**: Deals 150% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>**Shockwave**: Deals 200% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN] |
-| `unit_t3_c` | **Soul Caller**<br>_Mystical unit._ | 5 HP / 5 PWR | FIRE, FIRE, EARTH, EARTH | **Soul Summon**: Summons a random Level 1 Tier 2 unit on death. [Target: NONE]<br><br>**Soul Summon**: Summons a random Level 2 Tier 2 unit on death. [Target: NONE]<br><br>**Soul Summon**: Summons a random Level 3 Tier 2 unit on death. [Target: NONE] |
-| `unit_t3_d` | **Sakura Spirit**<br>_A powerful spirit guarding the cherry blossoms._ | 6 HP / 5 PWR | FIRE, FIRE, EARTH, EARTH | **Resilient Aura**: Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>**Resilient Aura**: Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>**Resilient Aura**: Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES] |
-| `unit_t3_e` | **Dreadnought**<br>_A terrifying predator that strikes down newly summoned enemies._ | 6 HP / 5 PWR | EARTH, FIRE, FIRE, FIRE | **Ambush Predator**: Deals damage to enemies equal to 100% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>**Ambush Predator**: Deals damage to enemies equal to 150% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>**Ambush Predator**: Deals damage to enemies equal to 200% of PWR when they are summoned. [Target: TRIGGERING_ENTITY] |
-| `unit_t3_f` | **Warden**<br>_A protective guardian that empowers newly summoned allies._ | 5 HP / 5 PWR | EARTH, EARTH, EARTH, FIRE | **Summon Blessing**: Grants +3 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>**Summon Blessing**: Grants +5 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>**Summon Blessing**: Grants +7 HP to newly summoned allies. [Target: TRIGGERING_ENTITY] |
-| `unit_t3_g` | **Phantom Wayfarer**<br>_Mysterious traveler._ | 4 HP / 5 PWR | AIR, AIR, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +3 HP and PWR. [Target: SELF]<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +5 HP and PWR. [Target: SELF]<br><br>**Quiet Meditation**: If on the player bench at start of turn, gain +7 HP and PWR. [Target: SELF] |
-| `unit_t3_h` | **Fusion Warden**<br>_Volatile hybrid._ | 5 HP / 5 PWR | FIRE, WATER, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +2 HP and PWR. [Target: SELF]<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +3 HP and PWR. [Target: SELF]<br><br>**Convergence Surge**: Whenever a merge happens on the battle board, gain +4 HP and PWR. [Target: SELF] |
-| `unit_t3_i` | **Doppleganger**<br>_Volatile clone._ | 5 HP / 4 PWR |  | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Mirrored Might**: Gains +3 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Mirrored Might**: Gains +4 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Mirrored Might**: Gains +5 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>**Clone Split**: Summons 1 copy of itself on death into the Gacha Machine. [Target: NONE] |
-| `unit_t3_j` | **Standard Bearer**<br>_Valiant commander._ | 5 HP / 5 PWR | FIRE, WATER, WATER, AIR | **Standard's Legacy**: On death, transfers its equipped item to the ally directly behind it. [Target: ALLY_BEHIND]<br><br>**Standard's Legacy**: On death, transfers its equipped item to the ally behind and 1 copy behind them. [Target: ALLY_BEHIND]<br><br>**Standard's Legacy**: On death, transfers its equipped item to the ally behind and 2 copies behind them. [Target: ALLY_BEHIND] |
-| `unit_t3_l` | **Golden Hermit**<br>_A solitary sage of wealth._ | 5 HP / 4 PWR | EARTH, WATER, AIR, AIR | **Basic Attack**: Deal (PWR) damage to the frontmost enemy.<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>**Wealth Accumulation**: At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have. [Target: SELF] |
-| `unit_t3_mimic` | **Mimic**<br>_Mysterious entity._ | 6 HP / 4 PWR | WATER, WATER | **Mirror Image**: Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE]<br><br>**Mirror Image**: Before its turn action, transforms into the enemy unit in the mirror slot (+1 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE]<br><br>**Mirror Image**: Before its turn action, transforms into the enemy unit in the mirror slot (Level 3 MAX). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE] |
-| `unit_t3_paladin` | **Paladin**<br>_Heavily armored tank._ | 5 HP / 6 PWR | EARTH, EARTH | **Defensive Stance**: Gain +2 HP before taking damage. [Target: SELF]<br><br>**Defensive Stance**: Gain +4 HP before taking damage. [Target: SELF]<br><br>**Defensive Stance**: Gain +6 HP before taking damage. [Target: SELF] |
-| `unit_t3_shadow` | **Shadow Cloner**<br>_Ethereal unit._ | 4 HP / 5 PWR | AIR | **Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>**Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>**Buff Echo**: Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness. [Target: TRIGGERING_ENTITY] |
+Every unit and resource is identified by a standardized descriptive name that directly reflects its traits:
 
+### 2.1 Descriptive Unit Name Formula
+$$\text{\{Element Souls (E, F, W, A)\} + \{Class Trait(s)\} + \{Visual Trait(s)\}}$$
 
-## Heroes
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `hero_avenger` | **Avenger**<br>_A fierce warrior who strikes when allies fall._ | 6 HP / 2 PWR |  | **Leap Attack**: When an ally dies, leap and attack the frontmost enemy. [Target: FRONTMOST_ENEMY] |
-| `hero_bastion` | **Bastion**<br>_A steadfast defender who grows stronger as allies fall._ | 10 HP / 2 PWR |  | **Fortify**: When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. [Target: SELF] |
-| `hero_bounty_hunter` | **Bounty Hunter**<br>_A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall._ | 10 HP / 2 PWR |  | **Bounty Hunter**: Gain 1 gold when this hero kills an enemy. [Target: SELF]<br><br>**Scavenger's Resolve**: When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF] |
-| `hero_pyro` | **Pyromancer**<br>_A fiery mage who incinerates enemies instead of striking them._ | 8 HP / 2 PWR |  | **Incinerate**: On attack, instead of dealing damage, apply Burn stacks equal to your Power. [Target: ATTACK_TARGET] |
-| `hero_starter` | **Starter**<br>_A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck._ | 10 HP / 2 PWR |  | **Soul Harvest**: When an ally dies, gain HP equal to their PWR. [Target: SELF] |
-| `hero_timekeeper` | **Timekeeper**<br>_A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer._ | 50 HP / 2 PWR |  | **Time Warp**: Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.<br><br>**Temporal Aura**: At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind. [Target: ALLIES_IN_FRONT] |
+- **Elements**: `E` (Earth), `F` (Fire), `W` (Water), `A` (Air). Multiplicity is represented by repeating the letter: `EE` (2 Earth), `FF` (2 Fire), `WW` (2 Water), `AA` (2 Air).
+  - Tier 1 has 1 letter (1 soul).
+  - Tier 2 has 2 letters (2 souls).
+  - Tier 3 has 4 letters (4 souls).
+- **Class Trait(s)** (3-letter abbreviations): `Tnk` (Tank), `Fig` (Fighter), `Sup` (Support), `Spe` (Specialist).
+- **Visual Trait(s)** (3-letter abbreviations, except Toy): `Fod` (Food), `Mec` (Mecha), `Ani` (Animal), `Pla` (Plant), `Toy` (Toy), `App` (Appliance), `Cos` (Costume).
+- **Unified Identity**: The descriptive name is used identically across all layers:
+  - File name: `<Name>.tres`
+  - Resource ID: `id = &"<Name>"`
+  - Display name: `<Name>`
+  - Localization: `<Name>.name`
 
+**Examples**:
+- `ETnkPlaToy`: 1 Earth, Tank, Plant, Toy
+- `EWFigCosToy`: Earth + Water, Fighter, Costume, Toy
+- `EWWATnkMecApp`: Earth + 2x Water + Air, Tank, Mecha, Appliance
 
-## Enemies
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `boss_1` | **The Awakened Guardian**<br>_A powerful guardian that summons allies and grows stronger as you draw from the gacha machines._ | 6 HP / 6 PWR | BOSS | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Draining Presence**: Every time you draw a gachaball, this boss gains +1 HP. [Target: SELF] |
-| `boss_2` | **The Shadow Warden**<br>_Drains power from every token you spend. Calls upon shadow creatures to fight alongside it._ | 8 HP / 8 PWR | BOSS | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Token Hunger**: Every time you spend a token, this boss gains +1 HP. [Target: SELF] |
-| `boss_3` | **The Storm Herald**<br>_Grows stronger as allies fall around it. Commands reinforcements to join its ranks._ | 10 HP / 10 PWR | BOSS | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Vengeance Growth**: When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF] |
-| `boss_4` | **The Ancient Titan**<br>_An ancient being that summons warriors from ages past._ | 12 HP / 12 PWR | BOSS | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF] |
-| `boss_5` | **The Final Arbiter**<br>_The ultimate challenge. Defeat it to complete your run._ | 15 HP / 15 PWR | BOSS | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF] |
-| `enemy_hero` | **Enemy Hero**<br>_The enemy's champion._ | 10 HP / 2 PWR |  |  |
-| `unit_dust_elite_t1` | **Dust Guard (T1)**<br>_A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 3 HP / 3 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1)**: Spawns a T1 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse (Turn)**: Spawns a Dust unit at Turn Start. [Target: TRIGGERING_ENTITY]<br><br>**Dust Pulse (Attack)**: Spawns a Dust unit when Attacking. [Target: TRIGGERING_ENTITY] |
-| `unit_dust_elite_t2` | **Dust Sentinel (T2)**<br>_A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit._ | 4 HP / 4 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Dust Pulse (Death T1/T2)**: Spawns a random T1 or T2 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF]<br><br>**Dust Pulse**: Spawns a Dust unit in the player's inventory. [Target: TRIGGERING_ENTITY] |
-| `unit_dust_elite_t3` | **Dust Overlord (T3)**<br>_An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit._ | 5 HP / 5 PWR | BOSS, HIDDEN | **Call Reinforcements**: At end of turn, summon units to fill empty team slots. [Target: SELF]<br><br>**Universal Dust Pulse (Death)**: Spawns a random T1, T2 or T3 Dust unit when an Ally dies. [Target: TRIGGERING_ENTITY]<br><br>**Dust Growth**: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). [Target: SELF] |
-| `unit_dust_t1` | **Dust Minion (T1)**<br>_A fragile construct. Stays in the fight._ | 1 HP / 1 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
-| `unit_dust_t2` | **Dust Minion (T2)**<br>_A construct. Stays in the fight._ | 2 HP / 2 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
-| `unit_dust_t3` | **Dust Minion (T3)**<br>_A heavy construct. Stays in the fight._ | 3 HP / 3 PWR | HIDDEN | **Basic Attack**: Deal (PWR) damage to the frontmost enemy. |
+### 2.2 Ability Specification Rule
+Unit abilities do not have standalone fantasy names or titles. They are identified and displayed strictly by their trigger and mechanic description.
 
+---
 
-## Items
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `consumable_potion_plunder` | **Potion of Plunder**<br>_Steals a random item from the target and sends it to your Gacha Machine of the matching tier._ | - |  | Steals a random item from the target and sends it to your Gacha Machine of the matching tier. |
-| `item_emblem_air` | **Air Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies._ | +2 HP / +1 PWR | ITEM, AIR |  |
-| `item_emblem_earth` | **Earth Emblem**<br>_When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies._ | +4 HP | ITEM, EARTH |  |
-| `item_emblem_fire` | **Fire Emblem**<br>_When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies._ | +2 PWR | ITEM, FIRE |  |
-| `item_emblem_water` | **Water Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies._ | +2 HP / +1 PWR | ITEM, WATER |  |
-| `item_potion_heroism` | **Heroism Potion**<br>_A potion that inspires heroism._ | - | TIER_2, POTION | **Heroism**: Grants +3 HP, +3 PWR, and 3 Armor stacks. |
-| `item_potion_spikes` | **Thorn Potion**<br>_Grants 4 Spikes to target. Spikes damage attackers then lose a stack._ | - | TIER_2, POTION | **Thorn Skin**: Grants 4 Spikes stacks |
-| `item_potion_t1` | **Minor Healing Potion**<br>_Restores 4 HP to a target unit._ | - | TIER_1, POTION | **Drink**: Restores 4 HP. |
-| `item_t1_a` | **Koi's Blessing**<br>_A gentle remedy infused with the spirit of koi._ | +1 HP |  | **Restoration**: At the start of the turn, Heal the holder for 2 HP. [Target: HOLDER] |
-| `item_t1_b` | **Tiger's Spirit**<br>_A fierce elixir that awakens inner strength._ | +1 PWR |  | **Extra Attack**: When attacking, if target has more HP than holder then perform an extra attack. [Target: ATTACK_TARGET] [Trigger: CAUSE_TURN] |
-| `item_t2_a` | **Summoning Scroll**<br>_A scroll containing a summoning spell._ | +2 HP |  | **Summon**: A scroll containing a summoning spell. |
-| `item_t2_b` | **Bloodlust Edge**<br>_A blade thirsty for blood._ | +2 PWR |  | **Bloodlust**: When the holder defeats an enemy, they act again immediately. [Target: HOLDER] |
-| `item_t2_c` | **Phoenix Elixir**<br>_A restorative brew that renews body and spirit._ | +1 HP / +1 PWR |  | **Regeneration**: When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR. [Target: HOLDER] |
-| `item_t2_d` | **Echoing Orb**<br>_A resonant orb that amplifies the power of its bearer._ | - |  | **Resonance**: Grants the holder +2 PWR for each Echoing Orb in battle.<br><br>**Echo Split**: Spawns an Echoing Orb into the Tier 2 Gacha Machine on death. |
-| `item_t3_a` | **Heart Stone**<br>_A stone pulsating with life._ | +4 HP |  | **Vital Link**: When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each. [Target: RANDOM_ALLY] |
-| `item_t3_b` | **Power Amulet**<br>_An ancient amulet of power._ | +4 PWR |  | **Battle Cry**: When the holder attacks, grant +2 PWR to two random allies. [Target: NONE] |
-| `item_t3_c` | **Lifesteal Ring**<br>_A ring that feeds on the living._ | +2 HP / +2 PWR |  | **Vampiric Strike**: On attack, heal the holder for 20% of damage dealt (min 1 HP). [Target: HOLDER] |
-| `item_t3_d` | **Vengeful Thorn**<br>_A thorny charm that strikes back at those who harm its bearer._ | +2 HP / +2 PWR |  | **Retaliation**: When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy. [Target: RANDOM_ENEMY] [Trigger: CAUSE_ATTACK] |
-| `item_t3_e` | **Death's Bargain**<br>_A cursed bargain with death._ | +3 HP / +1 PWR |  | **Final Strike**: When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy. |
-| `item_t3_f` | **Soul Siphon**<br>_A dark siphon of souls._ | +1 HP / +3 PWR |  | **Power Drain**: After dealing damage steal half of target's PWR (min 1). [Target: DEFENDER] |
-| `item_t3_g` | **Sniper Aim**<br>_A scope for precise targeting._ | +1 PWR |  |  |
+## 3. Master Unit Directory & Adaptation Plan
 
+### 3.1 Tier 1 Units (Base 4)
 
-## Trinkets
-| ID | Name | Stats | Tags | Abilities |
-|---|---|---|---|---|
-| `trinket_aegis` | **Aegis Charm**<br>_A protective charm that shields allies from fatal blows._ | - |  | Once per turn: When an ally would die, they survive with 1 HP instead. [Target: NONE] |
-| `trinket_armor_aura` | **Armor Aura**<br>_An aura that hardens the resolve of allies._ | - |  | **Armor Aura**: At turn start, all allies gain 3 Armor. |
-| `trinket_awe_inspiring_totem` | **Awe Inspiring Totem**<br>_At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units._ | - |  | At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units. |
-| `trinket_bargain_charm` | **Bargain Charm**<br>_A charm that haggles for a better price._ | - |  | **Bargain Charm**: Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive. |
-| `trinket_beginners_charm` | **Beginner's Charm**<br>_Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard)._ | - |  | Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard). |
-| `trinket_burn_vial` | **Burn Vial**<br>_A vial of eternal flame._ | - |  | A vial of eternal flame. |
-| `trinket_hero_catalyst` | **Hero's Catalyst**<br>_Whenever an ally merges, grants +1 HP and +1 PWR to your Hero._ | - |  | **Hero's Catalyst**: Grants the Hero +1 HP and +1 PWR on any merge. |
-| `trinket_merge_damage_charm` | **Fusion Spark**<br>_A charm that weaponizes fusion._ | - |  | **Fusion Spark**: Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit. |
-| `trinket_polished_plate` | **Polished Plate**<br>_A perfectly polished piece of armor._ | - |  | A perfectly polished piece of armor. |
-| `trinket_purifying_pendant` | **Purifying Pendant**<br>_When an ally takes damage from a negative status effect, removes all remaining stacks of that effect._ | - |  | When an ally takes damage from a negative status effect, removes all remaining stacks of that effect. |
-| `trinket_royal_insignia` | **Royal Insignia**<br>_A medal signifying royal favor._ | - |  | **Royal Blessing**: When a Level 1 unit enters the board, grant it +1 HP and +1 PWR. |
-| `trinket_rusty_ring` | **Rusty Ring**<br>_Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff._ | - |  | **Rusty Ring**: Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff. |
-| `trinket_soul_echo` | **Soul Echo**<br>_A mystical gem that echoes the souls of the fallen._ | - |  | **Soul Echo**: When an ally dies, resurrect the first non-hero unit that died this turn. |
-| `trinket_spiked_armor` | **Spiked Armor**<br>_At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]._ | - |  | **Spiked Armor**: At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color]. |
-| `trinket_time_sprint_charm` | **Sprint Charm**<br>_A charm that bends time._ | - |  | **Time Sprint**: Minigame timer gets a flat 2-second increase in battle. |
-| `trinket_token_return_charm` | **Token Return Charm**<br>_A charm that reclaims spent potential._ | - |  | **Token Return**: The first unit to die each round returns tokens equivalent to its tier. |
-| `trinket_trait_air` | **Air Trait**<br>_Enables the Air trait whenever your team has enough Air souls._ | - |  | Enables the Air trait whenever your team has enough Air souls. |
-| `trinket_trait_earth` | **Earth Trait**<br>_Enables the Earth trait whenever your team has enough Earth souls._ | - |  | Enables the Earth trait whenever your team has enough Earth souls. |
-| `trinket_trait_fire` | **Fire Trait**<br>_Enables the Fire trait whenever your team has enough Fire souls._ | - |  | Enables the Fire trait whenever your team has enough Fire souls. |
-| `trinket_trait_water` | **Water Trait**<br>_Enables the Water trait whenever your team has enough Water souls._ | - |  | Enables the Water trait whenever your team has enough Water souls. |
-| `trinket_trinity_charm` | **Trinity Charm**<br>_If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token._ | - |  | **Trinity Charm**: If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token. |
-| `trinket_twin_charm` | **Twin Charm**<br>_A mirrored charm that reflects its surroundings._ | - |  | **Shared Reflection**: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
-| `trinket_underdog_emblem` | **Underdog Emblem**<br>_An emblem that protects the outnumbered._ | - |  | **Outnumbered Bulwark**: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference. |
-| `trinket_vengeance` | **Vengeance Charm**<br>_Channel the fury of fallen allies._ | - |  | When an ally dies, grant +1 HP and +1 PWR to a random ally. [Target: RANDOM_ALLY] |
-| `trinket_veteran_insignia` | **Veteran Insignia**<br>_A badge of honor for seasoned warriors._ | - |  | **Veteran Blessing**: When a Level 2 unit enters the board, grant it +1 HP and +1 PWR. |
+#### [ETnkPlaToy]
+- **ID / Name**: `ETnkPlaToy`
+- **Resource File**: `resources/units/ETnkPlaToy.tres`
+- **Tier**: 1
+- **Merge Recipe**: None (Base Unit)
+- **Elemental Souls (1 Total)**: 1 Earth (`E`)
+- **Class Trait(s)**: `Tank`
+- **Visual Trait(s)**: `Plant`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"Tank", &"Plant", &"Toy"]`
+- **Base Stats**: 2 HP / 1 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. When hurt BY AN ATTACK, Heal this unit by [1 / 2 / 3] HP.
 
+#### [FFigMecApp]
+- **ID / Name**: `FFigMecApp`
+- **Resource File**: `resources/units/FFigMecApp.tres`
+- **Tier**: 1
+- **Merge Recipe**: None (Base Unit)
+- **Elemental Souls (1 Total)**: 1 Fire (`F`)
+- **Class Trait(s)**: `Fighter`
+- **Visual Trait(s)**: `Mecha`, `Appliance`
+- **Tags Array**: `[&"SOUL_FIRE", &"Fighter", &"Mecha", &"Appliance"]`
+- **Base Stats**: 1 HP / 2 PWR
+- **Ability Description**: Deal (PWR) damage to the enemy in mirror slot. [Ranged Attack]. When hurt BY AN ATTACK, shoot a projectile at attacker dealing damage equal to PWR (bounces to additional targets at L2/L3).
 
-## Core Stats & Combat Attributes
-| Stat / Attribute | Type | Description |
-|---|---|---|
-| **HP (Health)** | Core Stat | The life pool of the unit. When reduced to 0, the unit is defeated and removed from the active battlefield. |
-| **PWR (Power)** | Core Stat | The damage output of the unit during attacks and the base reflection strength for Spikes. |
-| **Armor** | Combat Shield | Absorbs incoming direct combat attack damage point-for-point. Decays to 0 at the end of each turn unless preserved (e.g. by Polished Plate). Does not absorb Burn or Static damage. |
-| **Spikes** | Defensive Counter | Deals PWR damage back to attackers when hit by a direct melee attack. Bypassed by ranged attacks and does not decay at turn end. |
+#### [WSupAniCos]
+- **ID / Name**: `WSupAniCos`
+- **Resource File**: `resources/units/WSupAniCos.tres`
+- **Tier**: 1
+- **Merge Recipe**: None (Base Unit)
+- **Elemental Souls (1 Total)**: 1 Water (`W`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Animal`, `Costume`
+- **Tags Array**: `[&"SOUL_WATER", &"Support", &"Animal", &"Costume"]`
+- **Base Stats**: 1 HP / 1 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. When the ally directly in front takes damage, heal them for [1 / 2 / 3] HP.
 
+#### [ASpeFodToy]
+- **ID / Name**: `ASpeFodToy`
+- **Resource File**: `resources/units/ASpeFodToy.tres`
+- **Tier**: 1
+- **Merge Recipe**: None (Base Unit)
+- **Elemental Souls (1 Total)**: 1 Air (`A`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Food`, `Toy`
+- **Tags Array**: `[&"SOUL_AIR", &"Specialist", &"Food", &"Toy"]`
+- **Base Stats**: 1 HP / 1 PWR
+- **Ability Description**: Deal (PWR) damage to the enemy in mirror slot. [Ranged Attack]. When this unit dies, grant its current PWR to the ally behind (cascades to further allies at L2/L3).
 
-## Status Effects
-| ID | Status | Mechanics | Decay Mode |
-|---|---|---|---|
-| `burn` | **Burn** | Deals damage equal to the number of stacks at the end of each turn. Damage ignores Armor. | Halved (reduced by 50% rounded down) at the end of each turn. Stacks on units in a Burn Slot do not decay. |
-| `armor` | **Armor** | Absorbs incoming direct attack damage (1 point of Armor absorbs 1 point of HP damage). Bypassed by Burn and Static. | Decays to 0 at the end of each turn unless preserved by abilities/trinkets. |
-| `spikes` | **Spikes** | Deals the defending unit's PWR damage back to attackers when hit by direct melee attacks. | Does not decay. |
-| `static` | **Static** | Consumed stack-by-stack whenever the unit experiences any core stat change (HP damage, healing, or power modification). Each stack consumed deals 1 armor-ignoring damage. | Does not decay. Only consumed upon stat changes. |
+---
 
+### 3.2 Tier 2 Units (6 Combinations)
 
-## Battlefield Slot Effects
-| ID | Slot Name | Trigger | Effect | Cost (Gold) |
-|---|---|---|---|---|
-| `burn` | **Burn Slot** | `on_turn_start` | Applies 1 stack of Burn to the unit standing on it. Burn stacks on units in this slot do not decay. | 3 |
-| `lightning` | **Lightning Slot** | `on_turn_start` | Applies 1 stack of Static to the unit standing on it. | 2 |
-| `death` | **Death Slot** | `on_turn_end` (Sudden Death) | Systemic sudden-death slot advancing forward from Turn 10+. Immediately reduces unit HP to 0. | - |
+#### [EWFigCosToy]
+- **ID / Name**: `EWFigCosToy`
+- **Resource File**: `resources/units/EWFigCosToy.tres`
+- **Tier**: 2
+- **Merge Recipe**: `ETnkPlaToy` + `WSupAniCos` (`resources/recipes/Merge_ETnkPlaToy_WSupAniCos_to_EWFigCosToy.tres`)
+- **Elemental Souls (2 Total)**: Earth, Water (`EW`)
+- **Class Trait(s)**: `Fighter`
+- **Visual Trait(s)**: `Costume`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_WATER", &"Fighter", &"Costume", &"Toy"]`
+- **Base Stats**: 3 HP / 3 PWR
+- **Ability Description**: When an ally is defeated, gain [+1/+1, +2/+1, +2/+2] HP/PWR.
 
+#### [FASpeMecApp]
+- **ID / Name**: `FASpeMecApp`
+- **Resource File**: `resources/units/FASpeMecApp.tres`
+- **Tier**: 2
+- **Merge Recipe**: `FFigMecApp` + `ASpeFodToy` (`resources/recipes/Merge_FFigMecApp_ASpeFodToy_to_FASpeMecApp.tres`)
+- **Elemental Souls (2 Total)**: Fire, Air (`FA`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Mecha`, `Appliance`
+- **Tags Array**: `[&"SOUL_FIRE", &"SOUL_AIR", &"Specialist", &"Mecha", &"Appliance"]`
+- **Base Stats**: 2 HP / 3 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. Gains extra PWR equal to [100% / 150% / 200%] of current Tokens, updating whenever Tokens change.
 
-## Elemental Traits & Synergies
-Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates team-wide synergies based on active lineup souls:
-| Trait | Focus | Synergy Thresholds | Effect |
-|---|---|---|---|
-| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 Souls | Applies Burn on attack. Higher thresholds grant more stacks; 7+ applies Burn to the entire enemy team. |
-| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 Souls | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at turn start. Earth units gain double armor bonus. |
-| **Water** | Resilience | 2 / 4 / 6 / 8 Souls | Heals adjacent allies at turn start upon acting. |
-| **Air** | Disruption | 2 / 4 / 6 / 8 Souls | Steals Power (PWR) from mirrored enemy slots. |
+#### [EASpeFodToy]
+- **ID / Name**: `EASpeFodToy`
+- **Resource File**: `resources/units/EASpeFodToy.tres`
+- **Tier**: 2
+- **Merge Recipe**: `ETnkPlaToy` + `ASpeFodToy` (`resources/recipes/Merge_ETnkPlaToy_ASpeFodToy_to_EASpeFodToy.tres`)
+- **Elemental Souls (2 Total)**: Earth, Air (`EA`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Food`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_AIR", &"Specialist", &"Food", &"Toy"]`
+- **Base Stats**: 3 HP / 2 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. Initial PWR equals current Gold multiplied by [50% / 100% / 150%] when drawn or spawned.
+
+#### [WATnkPlaAni]
+- **ID / Name**: `WATnkPlaAni`
+- **Resource File**: `resources/units/WATnkPlaAni.tres`
+- **Tier**: 2
+- **Merge Recipe**: `WSupAniCos` + `ASpeFodToy` (`resources/recipes/Merge_WSupAniCos_ASpeFodToy_to_WATnkPlaAni.tres`)
+- **Elemental Souls (2 Total)**: Water, Air (`WA`)
+- **Class Trait(s)**: `Tank`
+- **Visual Trait(s)**: `Plant`, `Animal`
+- **Tags Array**: `[&"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Plant", &"Animal"]`
+- **Base Stats**: 2 HP / 2 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. At start of combat, gain [+1/+1, +2/+2, +3/+3] HP/PWR for each empty slot in your team.
+
+#### [EFTnkAniCos]
+- **ID / Name**: `EFTnkAniCos`
+- **Resource File**: `resources/units/EFTnkAniCos.tres`
+- **Tier**: 2
+- **Merge Recipe**: `ETnkPlaToy` + `FFigMecApp` (`resources/recipes/Merge_ETnkPlaToy_FFigMecApp_to_EFTnkAniCos.tres`)
+- **Elemental Souls (2 Total)**: Earth, Fire (`EF`)
+- **Class Trait(s)**: `Tank`
+- **Visual Trait(s)**: `Animal`, `Costume`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"Tank", &"Animal", &"Costume"]`
+- **Base Stats**: 3 HP / 2 PWR
+- **Ability Description**: When healed, gain [1 / 2 / 3] Armor and Spikes.
+
+#### [FWSpeAppFod]
+- **ID / Name**: `FWSpeAppFod`
+- **Resource File**: `resources/units/FWSpeAppFod.tres`
+- **Tier**: 2
+- **Merge Recipe**: `FFigMecApp` + `WSupAniCos` (`resources/recipes/Merge_FFigMecApp_WSupAniCos_to_FWSpeAppFod.tres`)
+- **Elemental Souls (2 Total)**: Fire, Water (`FW`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Appliance`, `Food`
+- **Tags Array**: `[&"SOUL_FIRE", &"SOUL_WATER", &"Specialist", &"Appliance", &"Food"]`
+- **Base Stats**: 2 HP / 3 PWR
+- **Ability Description**: Deal (PWR) damage to the frontmost enemy. When healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to heal amount.
+
+---
+
+### 3.3 Tier 3 Units (15 Combinations)
+
+#### [EFWAFigSpeAniMec]
+- **ID / Name**: `EFWAFigSpeAniMec`
+- **Resource File**: `resources/units/EFWAFigSpeAniMec.tres`
+- **Merge Recipe**: `EASpeFodToy` + `FWSpeAppFod`
+- **Elemental Souls (4 Total)**: Earth, Fire, Water, Air (`EFWA`)
+- **Class Trait(s)**: `Fighter`, `Specialist`
+- **Visual Trait(s)**: `Animal`, `Mecha`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"Specialist", &"Fighter", &"Animal", &"Mecha"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: Attacks enemy in opposite mirror slot for [100% / 150% / 200%] damage.
+
+#### [EWWATnkMecApp]
+- **ID / Name**: `EWWATnkMecApp`
+- **Resource File**: `resources/units/EWWATnkMecApp.tres`
+- **Merge Recipe**: `EWFigCosToy` + `WATnkPlaAni`
+- **Elemental Souls (4 Total)**: Earth, 2x Water, Air (`EWWA`)
+- **Class Trait(s)**: `Tank`
+- **Visual Trait(s)**: `Mecha`, `Appliance`
+- **Tags Array**: `[&"intercept_lethal", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Mecha", &"Appliance"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: Leaps to intercept lethal damage on allies (gains [0 / 1 / 2] Armor).
+
+#### [EFWWFigSpeAniFodMecCos]
+- **ID / Name**: `EFWWFigSpeAniFodMecCos`
+- **Resource File**: `resources/units/EFWWFigSpeAniFodMecCos.tres`
+- **Merge Recipe**: `EWFigCosToy` + `FWSpeAppFod`
+- **Elemental Souls (4 Total)**: Earth, Fire, 2x Water (`EFWW`)
+- **Class Trait(s)**: `Fighter`, `Specialist`
+- **Visual Trait(s)**: `Animal`, `Food`, `Mecha`, `Costume`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_WATER", &"SOUL_WATER", &"Specialist", &"Fighter", &"Animal", &"Food", &"Mecha", &"Costume"]`
+- **Base Stats**: 5 HP / 6 PWR
+- **Ability Description**: Deals [100% / 150% / 200%] cascade AOE damage to front enemy and units behind.
+
+#### [EFAASupToy]
+- **ID / Name**: `EFAASupToy`
+- **Resource File**: `resources/units/EFAASupToy.tres`
+- **Merge Recipe**: `EASpeFodToy` + `FASpeMecApp`
+- **Elemental Souls (4 Total)**: Earth, Fire, 2x Air (`EFAA`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_AIR", &"SOUL_AIR", &"Support", &"Toy"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: Summons a random Level [1 / 2 / 3] Tier 2 unit on death.
+
+#### [EEFWFigTnkPlaToy]
+- **ID / Name**: `EEFWFigTnkPlaToy`
+- **Resource File**: `resources/units/EEFWFigTnkPlaToy.tres`
+- **Merge Recipe**: `EWFigCosToy` + `EFTnkAniCos`
+- **Elemental Souls (4 Total)**: 2x Earth, Fire, Water (`EEFW`)
+- **Class Trait(s)**: `Fighter`, `Tank`
+- **Visual Trait(s)**: `Plant`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_WATER", &"Fighter", &"Tank", &"Plant", &"Toy"]`
+- **Base Stats**: 6 HP / 5 PWR
+- **Ability Description**: Grants [+1/+1, +2/+1, +2/+2] HP/PWR to adjacent allies when hurt by an attack.
+
+#### [EEWAFigFodAniCos]
+- **ID / Name**: `EEWAFigFodAniCos`
+- **Resource File**: `resources/units/EEWAFigFodAniCos.tres`
+- **Merge Recipe**: `EWFigCosToy` + `EASpeFodToy`
+- **Elemental Souls (4 Total)**: 2x Earth, Water, Air (`EEWA`)
+- **Class Trait(s)**: `Fighter`
+- **Visual Trait(s)**: `Food`, `Animal`, `Costume`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"Fighter", &"Food", &"Animal", &"Costume"]`
+- **Base Stats**: 6 HP / 5 PWR
+- **Ability Description**: Deals damage to enemies equal to [100% / 150% / 200%] of PWR when they are summoned.
+
+#### [EFFASupPlaToy]
+- **ID / Name**: `EFFASupPlaToy`
+- **Resource File**: `resources/units/EFFASupPlaToy.tres`
+- **Merge Recipe**: `EFTnkAniCos` + `FASpeMecApp`
+- **Elemental Souls (4 Total)**: Earth, 2x Fire, Air (`EFFA`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Plant`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_AIR", &"Support", &"Plant", &"Toy"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: Grants [+3 / +5 / +7] HP to newly summoned allies.
+
+#### [FWAASupToy]
+- **ID / Name**: `FWAASupToy`
+- **Resource File**: `resources/units/FWAASupToy.tres`
+- **Merge Recipe**: `FASpeMecApp` + `WATnkPlaAni`
+- **Elemental Souls (4 Total)**: Fire, Water, 2x Air (`FWAA`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Toy`
+- **Tags Array**: `[&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Support", &"Toy"]`
+- **Base Stats**: 4 HP / 5 PWR
+- **Ability Description**: Deal (PWR) damage to frontmost enemy. If on the player bench at start of turn, gain [+3 / +5 / +7] HP and PWR.
+
+#### [EFFWSupMecApp]
+- **ID / Name**: `EFFWSupMecApp`
+- **Resource File**: `resources/units/EFFWSupMecApp.tres`
+- **Merge Recipe**: `EFTnkAniCos` + `FWSpeAppFod`
+- **Elemental Souls (4 Total)**: Earth, 2x Fire, Water (`EFFW`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Mecha`, `Appliance`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_WATER", &"Support", &"Mecha", &"Appliance"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: Deal (PWR) damage to frontmost enemy. Whenever a merge happens on the battle board, gain [+2 / +3 / +4] HP and PWR.
+
+#### [EFWASupFodToy]
+- **ID / Name**: `EFWASupFodToy`
+- **Resource File**: `resources/units/EFWASupFodToy.tres`
+- **Merge Recipe**: `EFTnkAniCos` + `WATnkPlaAni`
+- **Elemental Souls (4 Total)**: Earth, Fire, Water, Air (`EFWA`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Food`, `Toy`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"Support", &"Food", &"Toy"]`
+- **Base Stats**: 5 HP / 4 PWR
+- **Ability Description**: Deal (PWR) damage to frontmost enemy. Gains [+3 / +4 / +5] PWR for each other copy in battle. Summons 1 copy of itself on death into Gacha Machine.
+
+#### [FFWASpeSupMecAniApp]
+- **ID / Name**: `FFWASpeSupMecAniApp`
+- **Resource File**: `resources/units/FFWASpeSupMecAniApp.tres`
+- **Merge Recipe**: `FWSpeAppFod` + `FASpeMecApp`
+- **Elemental Souls (4 Total)**: 2x Fire, Water, Air (`FFWA`)
+- **Class Trait(s)**: `Specialist`, `Support`
+- **Visual Trait(s)**: `Mecha`, `Animal`, `Appliance`
+- **Tags Array**: `[&"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"Specialist", &"Support", &"Mecha", &"Animal", &"Appliance"]`
+- **Base Stats**: 5 HP / 5 PWR
+- **Ability Description**: On death, transfers equipped item to the ally directly behind it (and extra copies behind them at L2/L3).
+
+#### [EWAASpePlaApp]
+- **ID / Name**: `EWAASpePlaApp`
+- **Resource File**: `resources/units/EWAASpePlaApp.tres`
+- **Merge Recipe**: `EASpeFodToy` + `WATnkPlaAni`
+- **Elemental Souls (4 Total)**: Earth, Water, 2x Air (`EWAA`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Plant`, `Appliance`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Specialist", &"Plant", &"Appliance"]`
+- **Base Stats**: 5 HP / 4 PWR
+- **Ability Description**: Deal (PWR) damage to frontmost enemy. At the start of each turn, permanently gain [+3 / +4 / +5] HP and PWR for every 5 Gold you currently have.
+
+#### [EEFASpeFodCos]
+- **ID / Name**: `EEFASpeFodCos`
+- **Resource File**: `resources/units/EEFASpeFodCos.tres`
+- **Merge Recipe**: `EFTnkAniCos` + `EASpeFodToy`
+- **Elemental Souls (4 Total)**: 2x Earth, Fire, Air (`EEFA`)
+- **Class Trait(s)**: `Specialist`
+- **Visual Trait(s)**: `Food`, `Costume`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_AIR", &"Specialist", &"Food", &"Costume"]`
+- **Base Stats**: 6 HP / 4 PWR
+- **Ability Description**: Before its turn action, transforms into the enemy unit in mirror slot (+0 Level / +1 Level / Level 3 Max) and takes its turn immediately.
+
+#### [EFWATnkCosMec]
+- **ID / Name**: `EFWATnkCosMec`
+- **Resource File**: `resources/units/EFWATnkCosMec.tres`
+- **Merge Recipe**: `EWFigCosToy` + `FASpeMecApp`
+- **Elemental Souls (4 Total)**: Earth, Fire, Water, Air (`EFWA`)
+- **Class Trait(s)**: `Tank`
+- **Visual Trait(s)**: `Costume`, `Mecha`
+- **Tags Array**: `[&"SOUL_EARTH", &"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Costume", &"Mecha"]`
+- **Base Stats**: 5 HP / 6 PWR
+- **Ability Description**: Gain [+2 / +4 / +6] HP before taking damage.
+
+#### [FWWASupAniToy]
+- **ID / Name**: `FWWASupAniToy`
+- **Resource File**: `resources/units/FWWASupAniToy.tres`
+- **Merge Recipe**: `FWSpeAppFod` + `WATnkPlaAni`
+- **Elemental Souls (4 Total)**: Fire, 2x Water, Air (`FWWA`)
+- **Class Trait(s)**: `Support`
+- **Visual Trait(s)**: `Animal`, `Toy`
+- **Tags Array**: `[&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Support", &"Animal", &"Toy"]`
+- **Base Stats**: 4 HP / 5 PWR
+- **Ability Description**: Grants an additional copy of any buff received by an adjacent ally at [100% / 150% / 200%] effectiveness.
+
+---
+
+## 4. Recipe & Elemental Inheritance Audit
+
+To achieve clean, non-duplicate elemental pairs in Tier 2 and exact soul sums in Tier 3 ($2 + 2 = 4$):
+
+### 4.1 Recipe Swap Realignment
+1. **`EWFigCosToy`**:
+   - Recipe: `ETnkPlaToy` (E) + `WSupAniCos` (W) $	o$ **EW** (Earth, Water).
+2. **`EFTnkAniCos`**:
+   - Recipe: `ETnkPlaToy` (E) + `FFigMecApp` (F) $	o$ **EF** (Earth, Fire).
+
+### 4.2 Tier 3 Soul Audits (Exact Parent Element Sums)
+All Tier 3 units have their elemental souls 100% mathematically aligned to the sum of their Tier 2 parents ($2 + 2 = 4$):
+- **`EWWATnkMecApp`**: `EWFigCosToy` (EW) + `WATnkPlaAni` (WA) = **EWWA** (1 Earth, 2 Water, 1 Air).
+- **`EFAASupToy`**: `EASpeFodToy` (EA) + `FASpeMecApp` (FA) = **EFAA** (1 Earth, 1 Fire, 2 Air).
+- **`EEWAFigFodAniCos`**: `EWFigCosToy` (EW) + `EASpeFodToy` (EA) = **EEWA** (2 Earth, 1 Water, 1 Air).
+- **`EFFASupPlaToy`**: `EFTnkAniCos` (EF) + `FASpeMecApp` (FA) = **EFFA** (1 Earth, 2 Fire, 1 Air).

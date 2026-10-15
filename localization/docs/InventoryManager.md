@@ -223,6 +223,6 @@ The `RunState` initializes different starting inventories based on the selected 
 
 | Hero | Loadout Strategy | Details |
 |------|------------------|---------|
-| **Timekeeper** | **Developer Testing** | **1000 Gold**, a special Prismatic Apprentice, and 2 copies of all mergeable entities plus 1 of non-mergeable entities. Used for high-level debugging and transaction testing. |
+| **Timekeeper** | **Developer Testing** | **1000 Gold**, a special Prismatic ETnkPlaToy, and 2 copies of all mergeable entities plus 1 of non-mergeable entities. Used for high-level debugging and transaction testing. |
 | **Bounty Hunter** | **Tier 1 Abundance** | 4 copies of EVERY Tier 1 unit and item (16 total items). No Tier 2 or 3 items. Focuses on rapid early-game merging strategies. |
 | **Generic** | **Standard** | 2 copies of specific items per tier. Default balanced start for standard gameplay. |

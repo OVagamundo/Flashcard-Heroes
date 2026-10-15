@@ -33,7 +33,7 @@ static func restore_state(data: Dictionary, fallback_run_id: String = "") -> voi
 		_run_scope = fallback_run_id
 	_run_counter = int(data.get("run_counter", 0))
 
-## Generates a UUID, e.g. "run_..._unit_t1_a_1_1234" during an active run.
+## Generates a UUID, e.g. "run_..._ETnkPlaToy_1_1234" during an active run.
 ## Keep consuming one gacha RNG value per ID to preserve the existing gameplay
 ## RNG sequence; the value is only used as a suffix, while time/process state is
 ## excluded from run-scoped IDs.

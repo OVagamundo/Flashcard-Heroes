@@ -1539,10 +1539,7 @@ func _enqueue_attack_for(attacker: GachaBallInstance) -> void:
 
 
 func _resolve_single_effect_request(request: EffectRequest, out_events: Array[CombatEvent], death_tracking: Dictionary = {}) -> void:
-	# SYSTEM TRAP: Handle delayed trait effects
-	if request.ability_id == "trait_start_effects":
-		out_events.append_array(_apply_trait_start_of_turn_effects())
-		return
+
 
 	# THIN WRAPPER: Delegates to CombatSimulator
 	_combat.resolve_effect_request(request, out_events, death_tracking, self )
@@ -2467,18 +2464,7 @@ func _trigger_turn_start_abilities() -> void:
 	var turn_start_context: Dictionary = {"turn": _current_turn}
 	AbilityResolver.process_trigger(&"on_turn_start", turn_start_context)
 	
-	# QUEUE Trait Start-of-Turn Effects (e.g., Earth Armor)
-	# We queue this as a reaction with specific priority so it interleaves correctly
-	# with other turn start abilities (e.g. Mimic Transform should happen BEFORE traits).
-	var trait_request = EffectRequest.new(
-		"SYSTEM",
-		"trait_start_effects",
-		null,
-		[],
-		{},
-		C.PRIORITY_TRAIT_START_EFFECTS # -10
-	)
-	_pending_reactions.append(trait_request)
+
 	
 	# QUEUE Slot Turn-Start Effects
 	var player_lineup_container = get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
@@ -3406,7 +3392,7 @@ func _team_has_trait_trinket(team: String, trait_name: String) -> bool:
 
 ## Find a unit with the intercept_lethal tag on the specified team.
 ## Returns the unit with highest HP, or null if none available.
-## This enables any unit with the tag to protect allies, not just Guardian Sentinel.
+## This enables any unit with the tag to protect allies, not just Guardian.
 func _find_guardian_on_team(is_player_team: bool, exclude_uuid: String) -> GachaBallInstance:
 	return BattleHelpers.find_interceptor_on_team(_state, is_player_team, exclude_uuid)
 
@@ -3436,17 +3422,28 @@ func get_active_traits(team: String) -> Dictionary:
 
 ## Internal calculation of active traits based on current board state.
 func _calculate_active_traits(team: String) -> Dictionary:
-	var counts: Dictionary = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
+	var counts: Dictionary = {}
+	for trait_name in C.TRAIT_SORT_ORDER:
+		counts[trait_name] = 0
+
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	
 	var units = get_instances_in_container(container_tag)
+	var all_inst = get_all_instances()
 	for unit in units:
 		if not is_instance_valid(unit) or unit.current_hp <= 0:
 			continue
 		
-		var soul_counts = unit.get_trait_soul_counts(get_all_instances())
+		var soul_counts = unit.get_trait_soul_counts(all_inst)
 		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
-			counts[soul_type] += soul_counts[soul_type]
+			if counts.has(soul_type):
+				counts[soul_type] += soul_counts.get(soul_type, 0)
+
+		var tags = unit.get_active_tags(all_inst)
+		for tag in tags:
+			var upper = String(tag).to_upper()
+			if counts.has(upper):
+				counts[upper] += 1
 
 	for trait_name in C.TRAIT_SORT_ORDER:
 		if not _team_has_trait_trinket(team, trait_name):
@@ -3469,239 +3466,22 @@ func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
 
 func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 	if tag == &"SOUL_FIRE":
-		counts["FIRE"] += 1
+		counts["FIRE"] = counts.get("FIRE", 0) + 1
 	elif tag == &"SOUL_EARTH":
-		counts["EARTH"] += 1
+		counts["EARTH"] = counts.get("EARTH", 0) + 1
 	elif tag == &"SOUL_WATER":
-		counts["WATER"] += 1
+		counts["WATER"] = counts.get("WATER", 0) + 1
 	elif tag == &"SOUL_AIR":
-		counts["AIR"] += 1
+		counts["AIR"] = counts.get("AIR", 0) + 1
+	else:
+		var upper = String(tag).to_upper()
+		if counts.has(upper):
+			counts[upper] = counts.get(upper, 0) + 1
 
-## Apply start-of-turn effects for active traits (e.g., Earth Armor)
-## Apply start-of-turn effects for active traits (e.g., Earth Armor)
-## Returns Array[CombatEvent] to be animated
+
+## Legacy start-of-turn trait effects stub (traits now trigger during on_pre_combat at combat start)
 func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
-	var total_events: Array[CombatEvent] = []
-	
-	# Process for both teams
-	for team in ["PLAYER", "ENEMY"]:
-		var traits = get_active_traits(team)
-		
-		# EARTH TRAIT: 3/5/7/9 Souls
-		# - All Team Units gain 1/2/3/4 Armor
-		# - Earth Units gain DOUBLE Armor (2/4/6/8)
-		# - All Team Units gain 1/2/3/4 Spikes (not doubled)
-		var earth_souls = traits.get("EARTH", 0)
-		if earth_souls >= 3:
-			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-			var units = get_instances_in_container(container_tag)
-			
-			var armor_value = 0
-			var spikes_value = 0
-			
-			if earth_souls >= 9:
-				armor_value = 2
-				spikes_value = 2
-			elif earth_souls >= 7:
-				armor_value = 2
-				spikes_value = 1
-			elif earth_souls >= 5:
-				armor_value = 2
-				spikes_value = 0
-			elif earth_souls >= 3:
-				armor_value = 1
-				spikes_value = 0
-				
-			var armor_target_uuids: Array[String] = []
-			var armor_old_vals: Array[int] = []
-			var armor_new_vals: Array[int] = []
-			
-			var spikes_target_uuids: Array[String] = []
-			var spikes_old_vals: Array[int] = []
-			var spikes_new_vals: Array[int] = []
-				
-			for unit in units:
-				if is_instance_valid(unit) and unit.current_hp > 0:
-					var is_earth = _has_trait_soul(unit, "EARTH")
-					var armor_to_apply = armor_value
-					if is_earth:
-						armor_to_apply *= 2
-						
-					if armor_to_apply > 0:
-						var old_armor = unit.get_status_effect_amount(&"armor")
-						var new_armor = apply_stat_delta(unit, "armor_stacks", armor_to_apply)
-						armor_target_uuids.append(unit.ball_uuid)
-						armor_old_vals.append(old_armor)
-						armor_new_vals.append(new_armor)
-					
-					if spikes_value > 0:
-						var old_spikes = unit.get_status_effect_amount(&"spikes")
-						var new_spikes = apply_stat_delta(unit, "spikes_stacks", spikes_value)
-						spikes_target_uuids.append(unit.ball_uuid)
-						spikes_old_vals.append(old_spikes)
-						spikes_new_vals.append(new_spikes)
-			
-			if not armor_target_uuids.is_empty():
-				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-					"source_uuid": "",
-					"target_uuids": armor_target_uuids,
-					"ability_id": &"trait_earth_armor",
-					"visual_payload": CombatPayload.status_change("", armor_value, "armor_stacks", armor_old_vals, armor_new_vals)
-				}))
-			
-			if not spikes_target_uuids.is_empty():
-				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-					"source_uuid": "",
-					"target_uuids": spikes_target_uuids,
-					"ability_id": &"trait_earth_spikes",
-					"visual_payload": CombatPayload.status_change("", spikes_value, "spikes_stacks", spikes_old_vals, spikes_new_vals)
-				}))
-		
-		# FIRE TRAIT: 7+ Souls -> Opposing team gets 2 Burn stacks
-		var fire_souls = traits.get("FIRE", 0)
-		if fire_souls >= 7:
-			var opposing_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			var opposing_units = get_instances_in_container(opposing_container_tag)
-			var fire_target_uuids: Array[String] = []
-			var fire_old_vals: Array[int] = []
-			var fire_new_vals: Array[int] = []
-			
-			for unit in opposing_units:
-				if is_instance_valid(unit) and unit.current_hp > 0:
-					var amount = 2
-					var old_val = unit.get_status_effect_amount(&"burn")
-					var new_val = apply_stat_delta(unit, "burn_stacks", amount)
-					fire_target_uuids.append(unit.ball_uuid)
-					fire_old_vals.append(old_val)
-					fire_new_vals.append(new_val)
-			
-			if not fire_target_uuids.is_empty():
-				total_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-					"source_uuid": "",
-					"target_uuids": fire_target_uuids,
-					"ability_id": &"trait_fire_burn",
-					"visual_payload": CombatPayload.status_change("", 2, "burn_stacks", fire_old_vals, fire_new_vals)
-				}))
-		
-		# WATER TRAIT: 2+ Souls -> Water units heal adjacent allies 1 HP at start of turn
-		var water_souls = traits.get("WATER", 0)
-		if water_souls >= 2:
-			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-			var units = get_instances_in_container(container_tag)
-			
-			for unit in units:
-				if not is_instance_valid(unit) or unit.current_hp <= 0:
-					continue
-				if not _has_trait_soul(unit, "WATER"):
-					continue
-				
-				var adjacent_allies = _get_adjacent_allies(unit)
-				var water_target_uuids: Array[String] = []
-				var water_old_hp: Array[int] = []
-				var water_new_hp: Array[int] = []
-				var water_max_hp: Array[int] = []
-				
-				for ally in adjacent_allies:
-					if not is_instance_valid(ally) or ally.current_hp <= 0:
-						continue
-					
-					var old_hp = ally.current_hp
-					var new_hp = apply_stat_delta(ally, "hp", 1, unit.ball_uuid, C.ACTION_HEAL)
-					
-					if new_hp > old_hp:
-						var ally_def = ally.get_definition()
-						var max_hp = ally_def.base_hp if is_instance_valid(ally_def) else 0
-						water_target_uuids.append(ally.ball_uuid)
-						water_old_hp.append(old_hp)
-						water_new_hp.append(new_hp)
-						water_max_hp.append(max_hp)
-				
-				if not water_target_uuids.is_empty():
-					total_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-						"source_uuid": unit.ball_uuid,
-						"target_uuids": water_target_uuids,
-						"ability_id": &"trait_water_heal",
-						"action_type": C.ACTION_HEAL,
-						"visual_payload": CombatPayload.heal(unit.ball_uuid, 1, water_old_hp, water_new_hp, water_max_hp)
-					}))
-		
-		# AIR TRAIT: 2+ Souls -> Air units steal 1 PWR from the opposite enemy
-		var air_souls = traits.get("AIR", 0)
-		if air_souls >= 2:
-			var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-			var enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-			var is_player_team = (team == "PLAYER")
-			var units = get_instances_in_container(container_tag)
-			var enemy_container = get_container(enemy_container_tag)
-			var source_container = get_container(container_tag)
-			
-			for unit in units:
-				if not is_instance_valid(unit) or unit.current_hp <= 0:
-					continue
-				if not _has_trait_soul(unit, "AIR"):
-					continue
-				
-				var source_slot = source_container.get_index_of_uuid(unit.ball_uuid)
-				if source_slot == -1:
-					continue
-				
-				var source_uuids = source_container.get_all_uuids()
-				var source_lineup_size = source_uuids.size()
-				var mirror_slot = (source_lineup_size - 1) - source_slot
-				
-				var enemy_uuids = enemy_container.get_all_uuids()
-				var enemy: GachaBallInstance = null
-				
-				if mirror_slot >= 0 and mirror_slot < enemy_uuids.size():
-					var enemy_uuid = enemy_uuids[mirror_slot]
-					if not enemy_uuid.is_empty():
-						var potential = get_instance_by_uuid(enemy_uuid)
-						if is_instance_valid(potential) and potential.current_hp > 0:
-							enemy = potential
-				
-				if enemy == null:
-					if is_player_team:
-						for slot_index in range(enemy_uuids.size() - 1, -1, -1):
-							var uuid = enemy_uuids[slot_index]
-							if uuid.is_empty(): continue
-							var potential = get_instance_by_uuid(uuid)
-							if is_instance_valid(potential) and potential.current_hp > 0:
-								enemy = potential
-								break
-					else:
-						for slot_index in range(enemy_uuids.size()):
-							var uuid = enemy_uuids[slot_index]
-							if uuid.is_empty(): continue
-							var potential = get_instance_by_uuid(uuid)
-							if is_instance_valid(potential) and potential.current_hp > 0:
-								enemy = potential
-								break
-				
-				if enemy == null:
-					continue
-				
-				var enemy_old_pwr = enemy.current_pwr
-				var unit_old_pwr = unit.current_pwr
-				var unit_new_pwr = apply_stat_delta(unit, "pwr", 1, enemy.ball_uuid, C.ACTION_BUFF)
-				var enemy_new_pwr = apply_stat_delta(enemy, "pwr", -1, enemy.ball_uuid, C.ACTION_DEBUFF)
-				
-				total_events.append(CombatEvent.new(CombatEvent.Type.DEBUFF, {
-					"source_uuid": enemy.ball_uuid,
-					"target_uuids": [enemy.ball_uuid],
-					"ability_id": &"trait_air_steal",
-					"action_type": C.ACTION_DEBUFF,
-					"visual_payload": CombatPayload.pwr_debuff(enemy.ball_uuid, -1, [enemy_old_pwr], [enemy_new_pwr])
-				}))
-				
-				total_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": enemy.ball_uuid,
-					"target_uuids": [unit.ball_uuid],
-					"ability_id": &"trait_air_steal",
-					"action_type": C.ACTION_BUFF,
-					"visual_payload": CombatPayload.pwr_buff(enemy.ball_uuid, 1, [unit_old_pwr], [unit_new_pwr])
-				}))
-
-	return total_events
+	return []
 
 # =============================================================================
 

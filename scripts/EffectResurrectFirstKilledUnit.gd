@@ -44,7 +44,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 	# 5. Determine where to resurrect
 	# We prefer the slot where the triggering ally died (fainting_ally_location)
-	# This matches Soul Caller and other summoning items.
+	# This matches Necromancer and other summoning items.
 	# Fallback to the original death location if necessary.
 	var fainting_ally_location: LocationIdentifier = context.get("fainting_ally_location")
 	var death_location: LocationIdentifier = first_killed_data.get("location_snapshot")

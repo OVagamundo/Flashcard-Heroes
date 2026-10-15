@@ -114,9 +114,9 @@ When multiple reactions trigger simultaneously in response to a game event, thei
 
 | Priority | Constant | Usage | Examples |
 |----------|----------|-------|----------|
-| **300+** | `PRIORITY_GUARDIAN_INTERCEPT` | Damage Interception | Guardian Sentinel |
+| **300+** | `PRIORITY_GUARDIAN_INTERCEPT` | Damage Interception | Guardian |
 | **210** | `PRIORITY_SOUL_ECHO` | High-priority Trinket Resurrections | Soul Echo |
-| **205** | `PRIORITY_UNIT_SUMMON` | Innate Unit On-Death Summons | Sakura Spirit, Soul Caller |
+| **205** | `PRIORITY_UNIT_SUMMON` | Innate Unit On-Death Summons | Warden, Necromancer |
 | **200** | `PRIORITY_ITEM_SUMMON` | Item On-Death Summons | Last Wish, Summoning Scroll |
 | **100–199**| `PRIORITY_BUFF_HEAL` | Standard Buffs, Heals & Reactions | Resilient Aura, Vengeance |
 | **50–99** | `PRIORITY_COUNTER_ATTACK` | Retaliation & Counter-attacks | Retaliate, Spike armor |
@@ -139,7 +139,7 @@ This enables the presentation layer (`BattleAnimator`) to visualize causal chain
 #### 4.4 Summon Restrictions
 
 To maintain balance and logical consistency in encounters and summons, the following strict rules apply across the entire combat system:
-- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (such as the `Soul Caller` unit) or item abilities (such as the `Summoning Scroll` item).
+- **No Unit/Item Summons for Dust & Elites**: Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`) and Dust elites (`unit_dust_elite_t1`, `unit_dust_elite_t2`, `unit_dust_elite_t3`) CANNOT be summoned by any unit abilities (such as the `Necromancer` unit) or item abilities (such as the `Summoning Scroll` item).
 - **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
 - **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (e.g. `EffectBossSummon`).
 - **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units (`unit_dust_t1`, `unit_dust_t2`, `unit_dust_t3`); they can NEVER summon other Dust elites.

@@ -77,8 +77,8 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 - **Layout:** Strictly aligned to x=0. Must not overlap the unit sprite (which faces right).
 
 **Trait Trinkets:**
-- **Dynamic Outlines:** Trait Trinkets (Fire, Earth, Water, Air) use a dynamically thick outline shader (up to 30.0px) that cycles through metallic gradient colors when their synergy threshold is met.
-- **Soul Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls of that element in the battle lineup.
+- **Dynamic Outlines:** Trait Trinkets (4 Elemental, 4 Class, and 7 Visual traits) use a dynamically thick outline shader (up to 30.0px) that cycles through metallic gradient colors when their synergy threshold is met.
+- **Soul & Unit Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls (elemental traits) or active units (class/visual traits) in the battle lineup.
 
 **GachaBall Outlines & Affordances:**
 - **Selection**: 3.0px crisp white outline shader on selected entity accompanied by hop animation.

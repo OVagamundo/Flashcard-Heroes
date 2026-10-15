@@ -53,3 +53,69 @@ The Codex: An in-game encyclopedia that serves as a comprehensive reference for 
 A bestiary of all encountered units.
 A catalog of all seen items.
 A "Recipe Book" that automatically records all MergeRecipe definitions the player has successfully used or unlocked. This allows players to reference valid merges without having to memorize them.
+
+---
+
+## 4. Content Expansion & Hero Content Pack Architecture
+
+### 4.1 The Core Problem of Combinatorial Expansion
+In the base roster:
+- 4 Tier-1 Base Units -> (4 choose 2) = 6 Tier-2 Units.
+- 6 Tier-2 Units -> (6 choose 2) = 15 Tier-3 Units.
+- Total Base Playable Units: 25.
+
+If content were added unrestrictedly across the whole roster:
+- Adding 1 new Tier-1 unit yields 5 Tier-1 units.
+- Tier 2 becomes (5 choose 2) = 10 units (+4 new Tier-2 units).
+- Tier 3 becomes (10 choose 2) = 45 units (+30 new Tier-3 units!).
+- An unrestricted 5th Tier-1 unit requires authoring 34 new merged units, bloating the active pool to 60 units. This destroys shop roll consistency, making duplicate merges and leveling unfeasible.
+
+### 4.2 The Hero-Exclusive Content Pack Model (11 Units per Hero)
+To deliver deep, asymmetric replayability without causing cross-roster combinatorial bloat, each playable Hero introduces a dedicated, self-contained 11-unit lineage pack.
+
+When a player selects a Hero at run start, exactly 11 Hero-exclusive units are added to the neutral pool:
+- 1 Hero-Exclusive Tier-1 Unit (H1)
+- 4 Hero-Exclusive Tier-2 Units (H2_a, H2_b, H2_c, H2_d)
+- 6 Hero-Exclusive Capstone Tier-3 Units (All pairs of Hero Tier-2 units)
+
+Total Active Units in a Run:
+  25 (Neutral Base Roster) + 11 (Selected Hero Pack) = 36 Active Units.
+
+#### Tier-by-Tier Lineage & Rules:
+1. **Tier 1 (Hero Starter)**:
+   - Exactly 1 new Tier-1 unit (H1) tied to the Hero's thematic traits and element.
+   - Appears in the shop alongside the 4 neutral base units (`ETnkPlaToy`, `FFigMecApp`, `WSupAniCos`, `ASpeFodToy`).
+2. **Tier 2 (Hero x Neutral Hybrids)**:
+   - The Hero Tier-1 unit (H1) merges exclusively with the 4 neutral Tier-1 units:
+     * `H1 + ETnkPlaToy           -> Hero Tier-2 A (H2_a)`
+     * `H1 + FFigMecApp  -> Hero Tier-2 B (H2_b)`
+     * `H1 + WSupAniCos   -> Hero Tier-2 C (H2_c)`
+     * `H1 + ASpeFodToy      -> Hero Tier-2 D (H2_d)`
+   - Exactly 4 new Tier-2 units are created per Hero.
+   - H1 cannot merge with itself to form a new unit (duplicates level up the unit).
+3. **Tier 3 (Closed-Loop Hero Capstones)**:
+   - Hero Tier-3 units are formed exclusively by merging pairs of Tier-2 units that originated from the Hero's Tier-1 unit.
+   - The 4 Hero Tier-2 units yield exactly (4 choose 2) = 6 unique pairs:
+     * `H2_a + H2_b -> Hero Tier-3 (H3_1)`
+     * `H2_a + H2_c -> Hero Tier-3 (H3_2)`
+     * `H2_a + H2_d -> Hero Tier-3 (H3_3)`
+     * `H2_b + H2_c -> Hero Tier-3 (H3_4)`
+     * `H2_b + H2_d -> Hero Tier-3 (H3_5)`
+     * `H2_c + H2_d -> Hero Tier-3 (H3_6)`
+   - Hero Tier-2 units do NOT merge with neutral Tier-2 units, completely walling off the 60-unit exponential explosion.
+
+### 4.3 Standalone "Recipe-less" Wildcard Units
+Standalone Wildcards are unique units added to the game without introducing merge recipes or parent dependencies:
+- Standalone units have no merge recipe (cannot be crafted from Tier 1 or Tier 2 merges).
+- They appear directly in the Gacha shop or as special reward drops (e.g., Elite battles, boss rewards, or high-tier shop slots).
+- They possess standard elemental souls, class traits, and visual traits, and can be leveled up normally via duplicate merges.
+- Functions: Trait Deficit Patching (filling synergy gaps without recipe cascades), Meta Tuning, and Gacha Chaser excitement.
+
+### 4.4 Mathematical Pool & Progression Summary
+Run Pool Size:
+- Neutral Pool: 4 (T1) + 6 (T2) + 15 (T3) = 25 Units.
+- Active Hero Pack: 1 (T1) + 4 (T2) + 6 (T3) = 11 Units.
+- Optional Standalone Wildcards: Variable (e.g., 2 to 4 neutral wildcards).
+- Total Active Units in a Run: Exactly 36 Units (plus any active wildcards).
+
+This ensures complete mechanical closure: every Tier-2 crossbreed can be merged with any other Hero Tier-2 crossbreed to form a Tier-3 unit, while preserving the exact 36-unit working pool size needed for reliable shop rolls and duplicate leveling.

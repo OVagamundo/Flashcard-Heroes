@@ -105,6 +105,11 @@ func _ready() -> void:
 	
 	_test_starters_option = OptionButton.new()
 	_test_starters_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	_test_starters_option.fit_to_longest_item = false
+	_test_starters_option.clip_text = true
+	_test_starters_option.custom_minimum_size = Vector2(100, 32)
+	var popup: PopupMenu = _test_starters_option.get_popup()
+	popup.max_size = Vector2i(450, 400)
 	ts_controls.add_child(_test_starters_option)
 	
 	_test_starters_option.add_item("--- Select Item ---", 0)
@@ -113,12 +118,14 @@ func _ready() -> void:
 	var t_idx = 1
 	var all_pool = Database.get_all_pool_definitions()
 	for def in all_pool:
-		var display_text = "%s (%s)" % [tr(def.display_name_key), def.id]
+		var loc_name = tr(def.display_name_key)
+		var display_text = loc_name if loc_name == String(def.id) else "%s (%s)" % [loc_name, def.id]
 		_test_starters_option.add_item(display_text, t_idx)
 		_test_starters_option.set_item_metadata(t_idx, def.id)
 		t_idx += 1
 	for t in Database.trinkets.values():
-		var display_text = "%s (%s)" % [tr(t.name_key), t.id]
+		var loc_name = tr(t.name_key)
+		var display_text = loc_name if loc_name == String(t.id) else "%s (%s)" % [loc_name, t.id]
 		_test_starters_option.add_item(display_text, t_idx)
 		_test_starters_option.set_item_metadata(t_idx, t.id)
 		t_idx += 1
@@ -430,7 +437,11 @@ func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	if hero_def.ability_definitions.size() > 0:
 		var ability_text = "[b]" + tr("ui.ability") + ":[/b]\n"
 		for ability_def in hero_def.ability_definitions:
-			ability_text += "• " + tr(ability_def.name_key) + ": " + tr(ability_def.description_key) + "\n"
+			var aname = tr(ability_def.name_key) if not ability_def.name_key.is_empty() and tr(ability_def.name_key) != ability_def.name_key else ""
+			if not aname.is_empty():
+				ability_text += "• " + aname + ": " + tr(ability_def.description_key) + "\n"
+			else:
+				ability_text += "• " + tr(ability_def.description_key) + "\n"
 		hero_abilities.text = ability_text
 		hero_abilities.visible = true
 	else:

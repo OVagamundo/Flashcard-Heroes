@@ -86,12 +86,12 @@ The following rules, exceptions, and animation timings have been established thr
   4. The unit plays [`LethalSaveAnimation`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/LethalSaveAnimation.gd) (floats up 30px with gold glow, holds for 0.3s, lands, floats gold text).
 * **Source Reference:** [`EffectHandlers.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/EffectHandlers.gd), [`AnimationConstants.gd:L82-L88`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/AnimationConstants.gd#L82-L88).
 
-### 2.5 The Guardian Sentinel Intercept Sequence
-* **Rule:** When an ally would take lethal damage, Guardian Sentinel triggers on `on_before_damage` with **Priority 300**.
+### 2.5 The Guardian Intercept Sequence
+* **Rule:** When an ally would take lethal damage, Guardian triggers on `on_before_damage` with **Priority 300**.
 * **Execution Flow:**
-  1. Preempts damage calculation. Guardian Sentinel leaps to the ally's position ([`GuardianInterceptAnimation`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/GuardianInterceptAnimation.gd)) over `0.25s`.
-  2. The attacker's melee lunge targets the original ally's position, striking Guardian Sentinel instead.
-  3. Guardian Sentinel absorbs the damage, takes the hit, and leaps back to its original slot over `0.35s`.
+  1. Preempts damage calculation. Guardian leaps to the ally's position ([`GuardianInterceptAnimation`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/GuardianInterceptAnimation.gd)) over `0.25s`.
+  2. The attacker's melee lunge targets the original ally's position, striking Guardian instead.
+  3. Guardian absorbs the damage, takes the hit, and leaps back to its original slot over `0.35s`.
 * **Source Reference:** [`CombatSimulator.gd:L203`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/CombatSimulator.gd#L203), [`AnimationConstants.gd:L42-L46`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/AnimationConstants.gd#L42-L46).
 
 ### 2.6 The Universal 500px Discard & Gacha Arrival Contract
@@ -105,7 +105,7 @@ The following rules, exceptions, and animation timings have been established thr
 ### 2.7 Sub-Phase Visual Keyframing Contract
 * **Rule:** Complex attacks must resolve in distinct visual keyframes rather than a single collapsed beat:
   1. `windup_events`: Wind-up anticipation ($0.1\text{s}$ windback, $30\text{px}$).
-  2. `pre_impact_events`: Pre-damage defensive interceptors (Guardian Sentinel leap).
+  2. `pre_impact_events`: Pre-damage defensive interceptors (Guardian leap).
   3. **Impact**: Melee lunge arrives ($0.6\text{s}$) $\to$ Screen shake $\to$ Armor consumed popup (grey) $\to 0.5\text{s}$ pause $\to$ HP damage popup (red) $\to$ Spikes reflection $\to$ Attacker returns ($0.3\text{s}$).
   4. `impact_events`: `on_hurt` reactions and `on_kill` triggers execute *after* the attacker has returned to its slot.
 * **Source Reference:** [`DamageAnimation.gd:L79-L194`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/DamageAnimation.gd#L79-L194), [`AnimationConstants.gd:L34-L40`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/AnimationConstants.gd#L34-L40).
@@ -153,7 +153,7 @@ Whenever an action (attack, ability, draw, or purchase) occurs, CRR executes the
                                 ▼
   ┌─────────────────────────────────────────────────────────────┐
   │ 1. Interception Phase (Priority >= 300)                     │
-  │    - Resolves Guardian Sentinel intercepts & Aegis saves    │
+  │    - Resolves Guardian intercepts & Aegis saves    │
   │    - Emits pre_impact_events                                │
   └─────────────────────────────┬───────────────────────────────┘
                                 │
@@ -198,9 +198,9 @@ Whenever an action (attack, ability, draw, or purchase) occurs, CRR executes the
 
 #### Deterministic Priority & Tie-Breaking Hierarchy:
 1. **Layer 1: Execution Priority (Descending Integer):**
-   - $300+$: Interceptors (Guardian Sentinel)
+   - $300+$: Interceptors (Guardian)
    - $210$: High-Priority Trinket Resurrections (Soul Echo)
-   - $205$: Innate Unit Death Summons (Soul Caller, Sakura Spirit)
+   - $205$: Innate Unit Death Summons (Necromancer, Warden)
    - $200$: Item Death Summons (Summoning Scroll, Last Wish)
    - $100–199$: Standard Reactions (Resilient Aura, Vengeance)
    - $50–99$: Counter-Attacks & Retaliation
@@ -256,7 +256,7 @@ The Presentation Engine (`BattleAnimator`) is a pure playback state machine.
 #### The Animation Timing Freeze:
 **No constant, delay, duration, or easing curve in [`AnimationConstants.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/AnimationConstants.gd) may be altered during this refactor.**
 * Melee Lunge: `0.6s` travel, `0.1s` windup, `0.3s` return, `120px` arc height.
-* Guardian Sentinel: `0.25s` leap, `0.35s` return, `60px` arc height.
+* Guardian: `0.25s` leap, `0.35s` return, `60px` arc height.
 * Bump Attack: `0.15s` forward, `0.15s` return, `0.5s` total settle.
 * Hurt Recoil: `35px` recoil distance, `0.08s` recoil duration.
 * Secondary Stat Buff Delay: `0.15s` projectile stagger.
@@ -288,7 +288,7 @@ To guarantee that the refactor produces 100% identical results, we utilize an au
 ```
 
 ### Mandatory Golden Test Encounters:
-1. **Guardian Sentinel Interception:** Attacker strikes ally $\to$ Guardian leaps at pre-impact $\to$ takes damage $\to$ attacker returns $\to$ Guardian leaps back.
+1. **Guardian Interception:** Attacker strikes ally $\to$ Guardian leaps at pre-impact $\to$ takes damage $\to$ attacker returns $\to$ Guardian leaps back.
 2. **Lethal Counter-Attack:** Attacker hits unit with Retaliate $\to$ unit HP drops to $0 \to$ unit remains deferred $\to$ unit counter-attacks attacker $\to$ unit dies $\to$ unit capsule arcs to Discard Pile.
 3. **Soul Echo vs. On-Death Summons:** Dying unit has an item summon while Soul Echo is equipped $\to$ Soul Echo resurrects original unit into slot $\to$ item summon displaces to next available slot.
 4. **Mimic Mirror Image:** Mimic transforms into opposing enemy in-place $\to$ inherits equipped items $\to$ attacks immediately $\to$ does not take a second action.

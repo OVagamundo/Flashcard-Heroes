@@ -4,7 +4,7 @@ class_name EffectAmbushPredator
 extends EffectDefinition
 
 ## Effect that attacks a newly summoned enemy unit for a portion of the source's PWR.
-## Used by the Dreadnought unit's "Ambush Predator" ability.
+## Used by the Assassin unit's ability.
 ##
 ## Parameters:
 ##   - damage_ratio: float - Multiplier for source PWR (default 0.5 = half PWR)

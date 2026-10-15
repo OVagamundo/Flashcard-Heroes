@@ -148,13 +148,13 @@ static func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 	AbilityResolver.process_trigger(&"on_kill", kill_context)
 
 ## Trigger on_enemy_summon when a unit is summoned
-## This allows units like Dreadnought to react and attack the newly summoned unit
+## This allows units like Assassin to react and attack the newly summoned unit
 ## @param summoned_uuid: String - The UUID of the summoned unit
 ## @param summoned_team: String - "PLAYER" or "ENEMY" team of the summoned unit
 ## @param summoned_location: LocationIdentifier - Where the unit was summoned
 static func trigger_on_enemy_summon(summoned_uuid: String, summoned_team: String, summoned_location: LocationIdentifier) -> void:
 	# AMBUSH FILTER: Only trigger if the unit is in a lineup (battlefield)
-	# This prevents Dreadnought from attacking units summoned to the bench
+	# This prevents Assassin from attacking units summoned to the bench
 	if is_instance_valid(summoned_location):
 		var container := summoned_location.container
 		if container != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and container != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:

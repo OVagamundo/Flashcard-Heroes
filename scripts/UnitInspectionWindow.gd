@@ -215,7 +215,7 @@ func _update_description() -> void:
 
 	# Build abilities section: list all abilities with name and localized description
 	var abilities_lines: Array[String] = []
-	var seen_ability_names: Dictionary = {}
+	var seen_ability_ids: Dictionary = {}
 	var all_instances_db := _get_all_instances_db()
 	
 	for entry in _instance.get_active_ability_entries(all_instances_db):
@@ -223,12 +223,9 @@ func _update_description() -> void:
 		if not ability_def or ability_def.id == &"basic_attack":
 			continue
 		
-		var ability_name = tr(ability_def.name_key)
-		if ability_name == ability_def.name_key and ability_def.name_key.begins_with("ability."):
-			ability_name = ""
-		if ability_name.is_empty() or seen_ability_names.has(ability_name):
+		if seen_ability_ids.has(ability_def.id):
 			continue
-		seen_ability_names[ability_name] = true
+		seen_ability_ids[ability_def.id] = true
 		
 		var ability_desc = tr(ability_def.description_key)
 		if ability_desc == ability_def.description_key and ability_def.description_key.begins_with("ability."):
@@ -254,7 +251,7 @@ func _update_description() -> void:
 				ability_desc += " [color=#4ade80]%s[/color]" % suffix
 		
 		if not ability_desc.is_empty():
-			abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+			abilities_lines.append(ability_desc)
 
 	var abilities_block := "\n".join(abilities_lines)
 	
