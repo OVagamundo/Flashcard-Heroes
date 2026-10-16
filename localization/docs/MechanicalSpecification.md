@@ -326,7 +326,7 @@ No randomness involved.
 Lineup slots can contain battlefield slot abilities, which affect the unit placed on them:
 * **Burn Slot**: Adds 1 stack of Burn to the unit standing on it every turn at the start of the turn (after DOT application). Burn stacks applied or held on units in a Burn slot do not decay.
 * **Lightning Slot**: Applies 1 stack of Static to the unit standing on it every turn at the start of the turn.
-* **Static (Status Effect)**: Stacks like Burn. One stack of Static is consumed whenever the unit suffers any core stat change (HP or PWR, from buffs, healing, or regular damage). Each consumed stack deals 1 damage to the unit, bypassing Armor. Damage dealt by Static itself does not trigger further Static consumption.
+* **Static (Status Effect)**: When a unit with Static dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Cleared on explosion. Decays by 1 stack at the end of each turn.
 
 ---
 

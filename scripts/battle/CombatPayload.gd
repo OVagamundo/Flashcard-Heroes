@@ -51,6 +51,7 @@ var is_status_damage: bool = false
 var old_value: int = 0
 var new_value: int = 0
 var spikes_data_list: Array[CombatSpikesData] = []
+var static_reflection_data_list: Array[CombatStaticReflectionData] = []
 
 # Nested animation event phases.
 var windup_events: Array[CombatEvent] = []
@@ -337,6 +338,8 @@ func deep_clone() -> CombatPayload:
 	copy.new_value = new_value
 	for spikes_data in spikes_data_list:
 		copy.spikes_data_list.append(spikes_data.deep_clone())
+	for static_data in static_reflection_data_list:
+		copy.static_reflection_data_list.append(static_data.deep_clone())
 	for event in windup_events:
 		copy.windup_events.append(event.deep_clone())
 	for event in pre_impact_events:

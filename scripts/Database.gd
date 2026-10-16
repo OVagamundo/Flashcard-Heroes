@@ -74,20 +74,26 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 	if not dir:
 		return
 
+	var file_names: Array[String] = []
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir() and _is_exported_resource_file(file_name):
-			var resource_path = path.path_join(_get_resource_load_name(file_name))
-			var resource = load(resource_path)
-			if is_instance_valid(resource):
-				if "id" in resource:
-					dictionary[resource.id] = resource
-				else:
-					pass
+			file_names.append(file_name)
+		file_name = dir.get_next()
+
+	file_names.sort()
+
+	for fn in file_names:
+		var resource_path = path.path_join(_get_resource_load_name(fn))
+		var resource = load(resource_path)
+		if is_instance_valid(resource):
+			if "id" in resource:
+				dictionary[resource.id] = resource
 			else:
 				pass
-		file_name = dir.get_next()
+		else:
+			pass
 
 
 ## Locale-to-font mapping: Each locale maps to its dedicated primary font with NO fallbacks.
@@ -276,7 +282,21 @@ func get_all_pool_definitions() -> Array[GachaBallDefinition]:
 		if _is_valid_for_pool(item):
 			pool.append(item)
 			
+	pool.sort_custom(func(a: GachaBallDefinition, b: GachaBallDefinition) -> bool:
+		return String(a.id) < String(b.id)
+	)
 	return pool
+
+## Returns all trinket definitions eligible for rewards, sorted deterministically by id
+func get_eligible_trinkets_for_reward() -> Array[TrinketDefinition]:
+	var eligible: Array[TrinketDefinition] = []
+	for t in trinkets.values():
+		if t is TrinketDefinition and not t.is_enemy_exclusive:
+			eligible.append(t)
+	eligible.sort_custom(func(a: TrinketDefinition, b: TrinketDefinition) -> bool:
+		return String(a.id) < String(b.id)
+	)
+	return eligible
 
 func _is_valid_for_pool(def: GachaBallDefinition) -> bool:
 	if not is_instance_valid(def): return false
@@ -293,53 +313,59 @@ func _load_flashcard_definitions() -> void:
 	if not dir:
 		return
 
+	var file_names: Array[String] = []
 	dir.list_dir_begin()
 	var file_name = dir.get_next()
 	while file_name != "":
 		if not dir.current_is_dir() and file_name.ends_with(".json"):
-			var file_path = "res://decks/" + file_name
-			var file = FileAccess.open(file_path, FileAccess.READ)
-			if file:
-				var json_string = file.get_as_text()
-				file.close()
-				
-				var json = JSON.new()
-				var parse_result = json.parse(json_string)
-				if parse_result == OK:
-					var deck_data = json.data
-					if deck_data.has("deck_id") and deck_data.has("cards"):
-						var deck_id = StringName(deck_data.deck_id)
-						var card_ids: Array[StringName] = []
-						
-						for card in deck_data.cards:
-							if card.has("id") and card.has("question") and card.has("answer"):
-								var card_id = StringName(card.id)
-								card_ids.append(card_id)
-								
-								# Store card definition globally
-								flashcard_definitions[card_id] = {
-									"question": card.question,
-									"question_pt": card.get("question_pt", ""),
-									"answer": card.answer,
-									"answer_pt": card.get("answer_pt", ""),
-									"explanation": card.get("explanation", ""),
-									"explanation_pt": card.get("explanation_pt", "")
-								}
-						
-						# Store deck definition
-						deck_definitions[deck_id] = {
-							"deck_id": deck_id,
-							"display_name": deck_data.get("display_name", deck_id),
-							"display_name_pt": deck_data.get("display_name_pt", ""),
-							"description": deck_data.get("description", ""),
-							"description_pt": deck_data.get("description_pt", ""),
-							"card_ids": card_ids
-						}
+			file_names.append(file_name)
+		file_name = dir.get_next()
+
+	file_names.sort()
+
+	for fn in file_names:
+		var file_path = "res://decks/" + fn
+		var file = FileAccess.open(file_path, FileAccess.READ)
+		if file:
+			var json_string = file.get_as_text()
+			file.close()
+			
+			var json = JSON.new()
+			var parse_result = json.parse(json_string)
+			if parse_result == OK:
+				var deck_data = json.data
+				if deck_data.has("deck_id") and deck_data.has("cards"):
+					var deck_id = StringName(deck_data.deck_id)
+					var card_ids: Array[StringName] = []
+					
+					for card in deck_data.cards:
+						if card.has("id") and card.has("question") and card.has("answer"):
+							var card_id = StringName(card.id)
+							card_ids.append(card_id)
+							
+							# Store card definition globally
+							flashcard_definitions[card_id] = {
+								"question": card.question,
+								"question_pt": card.get("question_pt", ""),
+								"answer": card.answer,
+								"answer_pt": card.get("answer_pt", ""),
+								"explanation": card.get("explanation", ""),
+								"explanation_pt": card.get("explanation_pt", "")
+							}
+					
+					# Store deck definition
+					deck_definitions[deck_id] = {
+						"deck_id": deck_id,
+						"display_name": deck_data.get("display_name", deck_id),
+						"display_name_pt": deck_data.get("display_name_pt", ""),
+						"description": deck_data.get("description", ""),
+						"description_pt": deck_data.get("description_pt", ""),
+						"card_ids": card_ids
+					}
 				else:
 					pass
 			else:
 				pass
-		file_name = dir.get_next()
 
 
 func _is_exported_resource_file(file_name: String) -> bool:

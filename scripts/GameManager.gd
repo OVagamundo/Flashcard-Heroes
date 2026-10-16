@@ -518,13 +518,10 @@ func _on_battle_won_rewards_pending() -> void:
 	_temporary_reward_container = preload("res://scripts/FixedArrayContainer.gd").new(3)
 	
 	if is_special_victory:
-		# Boss rewards: 3 random trinkets (use Director if they are WeightableEntities)
-		var eligible_trinkets: Array[Resource] = []
-		for t in Database.trinkets.values():
-			if t is TrinketDefinition and not t.is_enemy_exclusive:
-				eligible_trinkets.append(t)
+		# Boss/Elite rewards: 3 random trinkets (use Director if they are WeightableEntities)
+		var eligible_trinkets = Database.get_eligible_trinkets_for_reward()
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
-		var drawn_trinkets = director.draw_unique_items(eligible_trinkets, director_run_state, 3)
+		var drawn_trinkets = director.draw_unique_items(eligible_trinkets, director_run_state, 3, RNGManager.reward_rng)
 		
 		for i in range(drawn_trinkets.size()):
 			var inst = GachaBallInstance.new()
@@ -538,7 +535,7 @@ func _on_battle_won_rewards_pending() -> void:
 		var all_defs = Database.get_all_pool_definitions()
 
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
-		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3)
+		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3, RNGManager.reward_rng)
 		
 		for i in range(drawn_rewards.size()):
 			var inst = GachaBallInstance.new()
@@ -911,7 +908,7 @@ func _generate_shop_stock() -> void:
 	if all_defs.is_empty(): return
 	
 	_update_director_run_state(DirectorRunState.Purpose.SHOP)
-	var drawn_shop_items = director.draw_unique_items(all_defs, director_run_state, 3)
+	var drawn_shop_items = director.draw_unique_items(all_defs, director_run_state, 3, RNGManager.shop_rng)
 	
 	for i in range(drawn_shop_items.size()):
 		var def = drawn_shop_items[i]
@@ -1001,9 +998,9 @@ func _generate_reward_stock() -> void:
 	
 	if run_state.current_boss_level > 0 or run_state.current_elite_level > 0:
 		# Boss/Elite rewards: 3 random trinkets using Director
-		var all_trinkets = Database.trinkets.values().duplicate()
+		var all_trinkets = Database.get_eligible_trinkets_for_reward()
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
-		var drawn_trinkets = director.draw_unique_items(all_trinkets, director_run_state, 3)
+		var drawn_trinkets = director.draw_unique_items(all_trinkets, director_run_state, 3, RNGManager.reward_rng)
 		
 		for i in range(drawn_trinkets.size()):
 			var inst = GachaBallInstance.new()
@@ -1017,7 +1014,7 @@ func _generate_reward_stock() -> void:
 		if all_defs.is_empty(): return
 		
 		_update_director_run_state(DirectorRunState.Purpose.REWARD)
-		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3)
+		var drawn_rewards = director.draw_unique_items(all_defs, director_run_state, 3, RNGManager.reward_rng)
 		
 		for i in range(drawn_rewards.size()):
 			var inst = GachaBallInstance.new()

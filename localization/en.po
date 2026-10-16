@@ -979,7 +979,7 @@ msgid "STATUS_STATIC"
 msgstr "Static"
 
 msgid "STATUS_STATIC_DESC"
-msgstr "Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor."
+msgstr "When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn."
 
 msgid "trinket.royal_insignia.name"
 msgstr "Royal Insignia"
@@ -1009,127 +1009,133 @@ msgid "trinket.trait_fire.name"
 msgstr "Fire Trait"
 
 msgid "trinket.trait_fire.desc"
-msgstr "Enables the Fire trait whenever your team has enough Fire souls."
+msgstr "Enables the Fire trait. Fire units ignite enemies on attack, spreading fiery destruction and dealing bonus damage against burning targets."
 
 msgid "trinket.trait_earth.name"
 msgstr "Earth Trait"
 
 msgid "trinket.trait_earth.desc"
-msgstr "Enables the Earth trait whenever your team has enough Earth souls."
+msgstr "Enables the Earth trait. Grants Armor and Spikes across your frontline, turning impenetrable defense into devastating counter-attacks."
 
 msgid "trinket.trait_water.name"
 msgstr "Water Trait"
 
 msgid "trinket.trait_water.desc"
-msgstr "Enables the Water trait whenever your team has enough Water souls."
+msgstr "Enables the Water trait. Flowing waves heal allies, cleanse debilitating negative effects, and convert afflictions into restorative energy."
 
 msgid "trinket.trait_air.name"
 msgstr "Air Trait"
 
 msgid "trinket.trait_air.desc"
-msgstr "Enables the Air trait whenever your team has enough Air souls."
+msgstr "Enables the Air trait. Electrifies enemies with Static on attack, splashing charges that detonate into collateral damage upon death."
 
 msgid "trinket.trait_tank.name"
 msgstr "Tank Trait"
 
 msgid "trinket.trait_tank.desc"
-msgstr "Enables the Tank trait whenever your team has enough Tank units."
+msgstr "Enables the Tank trait. Tanks bolster defensive armor, intercept attacks directed at backline allies, and convert armor into punishing spikes."
 
 msgid "trinket.trait_fighter.name"
 msgstr "Fighter Trait"
 
 msgid "trinket.trait_fighter.desc"
-msgstr "Enables the Fighter trait whenever your team has enough Fighter units."
+msgstr "Enables the Fighter trait. Brawlers excel against high-health targets, cleaving enemies behind their mark and chain-attacking on kill."
 
 msgid "trinket.trait_support.name"
 msgstr "Support Trait"
 
 msgid "trinket.trait_support.desc"
-msgstr "Enables the Support trait whenever your team has enough Support units."
+msgstr "Enables the Support trait. Inspires formation allies with bonus health and power, reinforcing the weakest units every turn."
 
 msgid "trinket.trait_specialist.name"
 msgstr "Specialist Trait"
 
 msgid "trinket.trait_specialist.desc"
-msgstr "Enables the Specialist trait whenever your team has enough Specialist units."
+msgstr "Enables the Specialist trait. Manipulates economy and gacha tokens, summoning combat clones and scaling power with accrued gold."
 
 msgid "trinket.trait_food.name"
 msgstr "Food Trait"
 
 msgid "trinket.trait_food.desc"
-msgstr "Enables the Food trait whenever your team has enough Food units."
+msgstr "Enables the Food trait. Nourishes the ally standing directly behind when taking hits, passing down full power upon defeat."
 
 msgid "trinket.trait_mecha.name"
 msgstr "Mecha Trait"
 
 msgid "trinket.trait_mecha.desc"
-msgstr "Enables the Mecha trait whenever your team has enough Mecha units."
+msgstr "Enables the Mecha trait. Reinforced with armor and spikes, firing static laser salvos on merges and overloading upon destruction."
 
 msgid "trinket.trait_animal.name"
 msgstr "Animal Trait"
 
 msgid "trinket.trait_animal.desc"
-msgstr "Enables the Animal trait whenever your team has enough Animal units."
+msgstr "Enables the Animal trait. Feral pack instincts empower an alpha and heal the pack with every fierce attack."
 
 msgid "trinket.trait_plant.name"
 msgstr "Plant Trait"
 
 msgid "trinket.trait_plant.desc"
-msgstr "Enables the Plant trait whenever your team has enough Plant units."
+msgstr "Enables the Plant trait. Deep roots foster spikes and steady regeneration, transforming healing into sharp thorn defenses."
 
 msgid "trinket.trait_toy.name"
 msgstr "Toy Trait"
 
 msgid "trinket.trait_toy.desc"
-msgstr "Enables the Toy trait whenever your team has enough Toy units."
+msgstr "Enables the Toy trait. Generates volatile static friction when struck in melee, culminating in an explosive static detonation on death."
 
 msgid "trinket.trait_appliance.name"
 msgstr "Appliance Trait"
 
 msgid "trinket.trait_appliance.desc"
-msgstr "Enables the Appliance trait whenever your team has enough Appliance units."
+msgstr "Enables the Appliance trait. Appliances inflict Static and Burn on attack, gain immunity and reflection against both, and convert incoming debuffs into raw stats."
 
 msgid "trinket.trait_costume.name"
 msgstr "Costume Trait"
 
 msgid "trinket.trait_costume.desc"
-msgstr "Enables the Costume trait whenever your team has enough Costume units."
+msgstr "Enables the Costume trait. Masquerades in enemy strengths, stealing beneficial status effects and raw attributes before battle begins."
 
 msgid "trait.fire.name"
 msgstr "Fire"
 
 msgid "trait.fire.3"
-msgstr "Apply 1 Burn on attack."
+msgstr "Fire units' attacks inflict 1 Burn stack on target."
 
-msgid "trait.fire.5"
-msgstr "Apply +1 Extra Burn (Total 2)."
+msgid "trait.fire.6"
+msgstr "...and inflicts +1 additional Burn if the target already has Burn."
 
-msgid "trait.fire.7"
-msgstr "Combat Start: Apply 2 Burn to ALL enemies."
+msgid "trait.fire.12"
+msgstr "Additionally, when an enemy takes Burn damage at turn end, they spread 1 Burn to each adjacent ally."
 
-msgid "trait.fire.9"
-msgstr "Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks."
+msgid "trait.fire.20"
+msgstr "...and Fire units deal bonus attack damage equal to the target's current Burn stacks."
 
-msgid "trait.earth.name"
-msgstr "Earth"
-
-msgid "trait.earth.3"
-msgstr "All Allies gain 1 Armor. Earth units gain 2 Armor."
-
-msgid "trait.earth.5"
-msgstr "All Allies gain 2 Armor. Earth units gain 4 Armor."
-
-msgid "trait.earth.7"
-msgstr "All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor."
-
-msgid "trait.earth.9"
-msgstr "All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor."
+msgid "trait.fire.32"
+msgstr "Additionally, when an enemy holding Burn is defeated by a Fire unit, their remaining Burn stacks are distributed between adjacent enemies."
 
 msgid "item.emblem_fire.name"
 msgstr "Fire Emblem"
 
 msgid "item.emblem_fire.desc"
 msgstr "When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies."
+
+msgid "trait.earth.name"
+msgstr "Earth"
+
+msgid "trait.earth.3"
+msgstr "Pre-Combat: The frontmost Earth unit gains 1 Armor."
+
+msgid "trait.earth.6"
+msgstr "...and it also gains 1 Spikes."
+
+msgid "trait.earth.12"
+msgstr "Adds +1 Armor and +1 Spikes to the effect, and all other Earth units also gain this."
+
+msgid "trait.earth.20"
+msgstr "Adds +1 Armor and +1 Spikes to Earth units, and all other allies gain 1 Armor and 1 Spikes."
+
+msgid "trait.earth.32"
+msgstr "...and Earth units deal bonus attack damage equal to their current Spikes (decays 1 Spikes stack per attack instance)."
 
 msgid "item.emblem_earth.name"
 msgstr "Earth Emblem"
@@ -1140,65 +1146,20 @@ msgstr "When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit
 msgid "trait.water.name"
 msgstr "Water"
 
-msgid "trait.water.2"
-msgstr "Water units heal adjacent allies 1 HP at combat start."
+msgid "trait.water.3"
+msgstr "Pre-Combat: Water units heal the ally directly in front of them by 1 HP."
 
-msgid "trait.air.name"
-msgstr "Air"
+msgid "trait.water.6"
+msgstr "...and also cleanse 1 negative status stack (Burn/Static) from that ally."
 
-msgid "trait.air.2"
-msgstr "Air units steal 1 PWR from the opposite enemy at combat start."
+msgid "trait.water.12"
+msgstr "Additionally, at turn start, heals the ally with the lowest HP by 1 HP."
 
-msgid "trait.tank.name"
-msgstr "Tank"
+msgid "trait.water.20"
+msgstr "Additionally, Pre-Combat: All allies across the team cleanse 1 negative status stack."
 
-msgid "trait.fighter.name"
-msgstr "Fighter"
-
-msgid "trait.support.name"
-msgstr "Support"
-
-msgid "trait.specialist.name"
-msgstr "Specialist"
-
-msgid "trait.food.name"
-msgstr "Food"
-
-msgid "trait.mecha.name"
-msgstr "Mecha"
-
-msgid "trait.animal.name"
-msgstr "Animal"
-
-msgid "trait.plant.name"
-msgstr "Plant"
-
-msgid "trait.toy.name"
-msgstr "Toy"
-
-msgid "trait.appliance.name"
-msgstr "Appliance"
-
-msgid "trait.costume.name"
-msgstr "Costume"
-
-msgid "trait.common_pwr.2"
-msgstr "At combat start, units of this trait gain +1 PWR."
-
-msgid "trait.common_pwr.3"
-msgstr "At combat start, units of this trait gain +2 PWR."
-
-msgid "trait.common_pwr.4"
-msgstr "At combat start, units of this trait gain +3 PWR."
-
-msgid "trait.common_pwr.5"
-msgstr "At combat start, units of this trait gain +4 PWR."
-
-msgid "ability.trait_pwr_buff.name"
-msgstr "Trait Surge"
-
-msgid "ability.trait_pwr_buff.desc"
-msgstr "At combat start, grants +1 to +4 PWR to matching trait units based on synergy count."
+msgid "trait.water.32"
+msgstr "Additionally, at turn start, allies consume all their negative status stacks to heal 1 HP per stack consumed."
 
 msgid "item.emblem_water.name"
 msgstr "Water Emblem"
@@ -1206,11 +1167,194 @@ msgstr "Water Emblem"
 msgid "item.emblem_water.desc"
 msgstr "When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies."
 
+msgid "trait.air.name"
+msgstr "Air"
+
+msgid "trait.air.3"
+msgstr "Air units' attacks inflict 1 Static stack on target."
+
+msgid "trait.air.6"
+msgstr "Increases to 2 Static stacks per attack."
+
+msgid "trait.air.12"
+msgstr "...and attacks splash half of the inflicted Static (minimum 1) to adjacent enemies."
+
+msgid "trait.air.20"
+msgstr "Additionally, Pre-Combat: Inflicts 1 Static to all enemies."
+
+msgid "trait.air.32"
+msgstr "Static inflicted on attack scales to equal the Air unit's PWR (splashes half to adjacent enemies)."
+
 msgid "item.emblem_air.name"
 msgstr "Air Emblem"
 
 msgid "item.emblem_air.desc"
 msgstr "When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies."
+
+msgid "trait.tank.name"
+msgstr "Tank"
+
+msgid "trait.tank.2"
+msgstr "Pre-Combat: The frontmost Tank gains 1 Armor."
+
+msgid "trait.tank.3"
+msgstr "All Tanks now gain this 1 Armor. Whenever a Tank's Armor absorbs damage, the ally directly behind gains 1 Armor."
+
+msgid "trait.tank.4"
+msgstr "Additionally, at turn start, the frontmost Tank gains 1 Armor, and Tanks intercept attacks targeting the ally directly behind them."
+
+msgid "trait.tank.5"
+msgstr "...and whenever a Tank gains Armor from any source, it gains an equal amount of Spikes."
+
+msgid "trait.fighter.name"
+msgstr "Fighter"
+
+msgid "trait.fighter.2"
+msgstr "Fighters deal +1 damage on their attacks if the target has more HP than them."
+
+msgid "trait.fighter.3"
+msgstr "Additionally, when a Fighter receives attack damage, they retaliate for 1 ranged damage (once per turn)."
+
+msgid "trait.fighter.4"
+msgstr "Additionally, Fighters' attacks deal half PWR splash damage (minimum 1) to the enemy directly behind their target."
+
+msgid "trait.fighter.5"
+msgstr "...and when a Fighter defeats an enemy, they gain +1 PWR and immediately attack the next enemy (once per turn)."
+
+msgid "trait.support.name"
+msgstr "Support"
+
+msgid "trait.support.2"
+msgstr "Pre-Combat: Support units grant +1 HP to the ally directly in front of them."
+
+msgid "trait.support.3"
+msgstr "...and also grant +1 PWR to the ally directly behind them."
+
+msgid "trait.support.4"
+msgstr "Additionally, at turn start, grants +1 HP to the lowest-HP ally and +1 PWR to the lowest-PWR ally per living Support."
+
+msgid "trait.support.5"
+msgstr "Additionally, Pre-Combat: Grants +1 HP and +1 PWR to the Hero unit."
+
+msgid "trait.specialist.name"
+msgstr "Specialist"
+
+msgid "trait.specialist.2"
+msgstr "Combat Start: If you have 0 tokens remaining, gain 1 Token."
+
+msgid "trait.specialist.3"
+msgstr "...and the first Gacha draw of each battle costs 1 less Token (minimum 1)."
+
+msgid "trait.specialist.4"
+msgstr "Additionally, defeating an enemy with a Specialist awards +1 Gold (max 1/turn, 5/battle)."
+
+msgid "trait.specialist.5"
+msgstr "Additionally, summons a combat-only copy of your lowest tier/level unit to bench pre-combat, and at turn start, the frontmost Specialist gains +1 PWR per 5 Gold."
+
+msgid "trait.food.name"
+msgstr "Food"
+
+msgid "trait.food.2"
+msgstr "When a Food unit is hurt by an attack, it heals the ally directly behind it by 1 HP."
+
+msgid "trait.food.3"
+msgstr "Increases healing to 2 HP."
+
+msgid "trait.food.4"
+msgstr "Increases healing to 3 HP, and also grants +1 PWR to that ally."
+
+msgid "trait.food.5"
+msgstr "Increases healing to 4 HP and +2 PWR. Additionally, on death, passes all of its current PWR to the ally directly behind it."
+
+msgid "trait.mecha.name"
+msgstr "Mecha"
+
+msgid "trait.mecha.2"
+msgstr "Pre-Combat: Mecha units gain 1 Spikes."
+
+msgid "trait.mecha.3"
+msgstr "...and also gain 1 Armor. Additionally, Mechas inflict 1 Static on attack and when their Armor absorbs damage."
+
+msgid "trait.mecha.4"
+msgstr "Additionally, whenever a merge occurs on the board, each Mecha fires a laser dealing 1 damage and 1 Static to a random enemy."
+
+msgid "trait.mecha.5"
+msgstr "Additionally, when a Mecha dies, surviving Mechas gain 2 Armor and 2 Spikes, and fire a laser dealing 2 damage and 2 Static to a random enemy."
+
+msgid "trait.animal.name"
+msgstr "Animal"
+
+msgid "trait.animal.2"
+msgstr "Pre-Combat: A random Animal gains +1 PWR. Animals heal 1 HP per attack."
+
+msgid "trait.animal.3"
+msgstr "Healing per attack increases to 2 HP."
+
+msgid "trait.animal.4"
+msgstr "Healing per attack increases to 3 HP."
+
+msgid "trait.animal.5"
+msgstr "Healing per attack increases to 3 HP + 25% PWR (minimum +1)."
+
+msgid "trait.plant.name"
+msgstr "Plant"
+
+msgid "trait.plant.2"
+msgstr "Pre-Combat: The frontmost Plant unit gains 1 Spikes."
+
+msgid "trait.plant.3"
+msgstr "Additionally, at turn start, the lowest-HP Plant recovers 1 HP."
+
+msgid "trait.plant.4"
+msgstr "Additionally, Pre-Combat: All Plants gain 1 Spikes and +1 HP (frontmost gains 2 Spikes)."
+
+msgid "trait.plant.5"
+msgstr "Additionally, at turn start, all Plants gain 1 Spikes and +1 HP. Whenever a Plant receives a heal, it gains 1 Spikes."
+
+msgid "trait.toy.name"
+msgstr "Toy"
+
+msgid "trait.toy.2"
+msgstr "Enemies hitting a Toy with a melee attack receive 2 Static stacks."
+
+msgid "trait.toy.3"
+msgstr "Increases to 3 Static stacks."
+
+msgid "trait.toy.4"
+msgstr "Increases to 4 Static stacks."
+
+msgid "trait.toy.5"
+msgstr "Additionally, on death, detonates all Static on the enemy holding the highest Static stacks, dealing damage equal to those stacks to it and clearing them."
+
+msgid "trait.appliance.name"
+msgstr "Appliance"
+
+msgid "trait.appliance.2"
+msgstr "Appliance units inflict 1 Static on attack. Appliances are immune to Static and remove held Static pre-combat."
+
+msgid "trait.appliance.3"
+msgstr "...and also inflict 1 Burn on attack. Appliances become immune to Burn and cleanse held Burn pre-combat."
+
+msgid "trait.appliance.4"
+msgstr "Additionally, when an enemy attempts to apply Static or Burn to an Appliance, it is reflected back to the sender."
+
+msgid "trait.appliance.5"
+msgstr "Additionally, incoming negative status attempts grant stats: each attempted Static grants +1 PWR, and each attempted Burn grants +1 HP."
+
+msgid "trait.costume.name"
+msgstr "Costume"
+
+msgid "trait.costume.2"
+msgstr "Pre-Combat: Steals 1 stack of the mirror enemy's highest beneficial status effect, or 1 point of their highest stat."
+
+msgid "trait.costume.3"
+msgstr "Instead of above, Pre-Combat: Steals the entire highest beneficial status effect from the mirror enemy, or 1 HP and 1 PWR."
+
+msgid "trait.costume.4"
+msgstr "Upgrades to steal all beneficial status effects from the mirror enemy, or 2 HP and 2 PWR."
+
+msgid "trait.costume.5"
+msgstr "Pre-Combat: Executed once for the team. The Hero steals all Armor and Spikes, plus 3 HP and 3 PWR, from the enemy with highest total Armor and Spikes."
 
 msgid "item.potion_t1.name"
 msgstr "Minor Healing Potion"
@@ -2127,27 +2271,123 @@ msgstr "FWWASupAniToy"
 msgid "FWWASupAniToy.desc"
 msgstr "FWWASupAniToy unit."
 
-msgid "ability.trait_earth.name"
-msgstr "Earth Ward"
-
-msgid "ability.trait_earth.desc"
-msgstr "At combat start, grants Armor and Spikes to allies based on Earth souls (Earth units gain double Armor)."
-
 msgid "ability.trait_fire.name"
-msgstr "Fire Nova"
+msgstr "Infernal Ignition"
 
 msgid "ability.trait_fire.desc"
-msgstr "At combat start, applies 2 Burn to the opposing team if 7+ Fire souls."
+msgstr "Empowers Fire units to burn enemies on attack, spread burns, and deal bonus damage to burning foes."
+
+msgid "ability.trait_earth.name"
+msgstr "Tectonic Bulwark"
+
+msgid "ability.trait_earth.desc"
+msgstr "Grants Armor and Spikes to Earth units and allies, empowering Spikes to deal bonus damage on attack."
 
 msgid "ability.trait_water.name"
-msgstr "Soothing Stream"
+msgstr "Cleansing Tide"
 
 msgid "ability.trait_water.desc"
-msgstr "At combat start, Water units heal adjacent allies 1 HP if 2+ Water souls."
+msgstr "Water units heal allies ahead and cleanse negative status effects pre-combat."
+
+msgid "ability.trait_water_turn_start.name"
+msgstr "Restorative Spring"
+
+msgid "ability.trait_water_turn_start.desc"
+msgstr "At turn start, heals lowest HP ally and converts negative statuses into healing."
 
 msgid "ability.trait_air.name"
-msgstr "Gale Siphon"
+msgstr "Static Tempest"
 
 msgid "ability.trait_air.desc"
-msgstr "At combat start, Air units steal 1 PWR from mirrored enemies if 2+ Air souls."
+msgstr "Air units electrify targets with Static on attack, splashing charges to adjacent enemies."
+
+msgid "ability.trait_tank.name"
+msgstr "Bastion Guard"
+
+msgid "ability.trait_tank.desc"
+msgstr "Grants Armor pre-combat, passes armor backward on absorption, intercepts attacks, and mirrors armor as spikes."
+
+msgid "ability.trait_tank_turn_start.name"
+msgstr "Frontline Reinforcement"
+
+msgid "ability.trait_tank_turn_start.desc"
+msgstr "At turn start, grants 1 Armor to the frontmost Tank."
+
+msgid "ability.trait_fighter.name"
+msgstr "Battle Prowess"
+
+msgid "ability.trait_fighter.desc"
+msgstr "Deals bonus damage against high-health targets, retaliates on attack damage, cleaves behind targets, and chains attacks on kill."
+
+msgid "ability.trait_support.name"
+msgstr "Formation Blessing"
+
+msgid "ability.trait_support.desc"
+msgstr "Grants +1 HP to the ally ahead, +1 PWR to the ally behind, and +1 HP/+1 PWR to the Hero."
+
+msgid "ability.trait_support_turn_start.name"
+msgstr "Inspiring Presence"
+
+msgid "ability.trait_support_turn_start.desc"
+msgstr "At turn start, grants +1 HP to lowest-HP ally and +1 PWR to lowest-PWR ally per living Support."
+
+msgid "ability.trait_specialist.name"
+msgstr "Resource Mastery"
+
+msgid "ability.trait_specialist.desc"
+msgstr "Ensures opening tokens, discounts gacha draws, earns gold on kill, and summons a combat clone to the bench."
+
+msgid "ability.trait_specialist_turn_start.name"
+msgstr "Golden Ambition"
+
+msgid "ability.trait_specialist_turn_start.desc"
+msgstr "At turn start, the frontmost Specialist gains +1 PWR per 5 Gold held."
+
+msgid "ability.trait_food.name"
+msgstr "Nutrient Infusion"
+
+msgid "ability.trait_food.desc"
+msgstr "Heals and empowers the ally directly behind when hurt, and passes down all PWR on death."
+
+msgid "ability.trait_mecha.name"
+msgstr "Overclocked Core"
+
+msgid "ability.trait_mecha.desc"
+msgstr "Grants Armor and Spikes, inflicts Static on attack, fires lasers on ally merges, and detonates retaliatory lasers on death."
+
+msgid "ability.trait_animal.name"
+msgstr "Primal Frenzy"
+
+msgid "ability.trait_animal.desc"
+msgstr "Grants +1 PWR to an alpha Animal pre-combat and heals Animals on every attack."
+
+msgid "ability.trait_plant.name"
+msgstr "Verdant Growth"
+
+msgid "ability.trait_plant.desc"
+msgstr "Grants Spikes and HP pre-combat, and converts all incoming heals into Spikes."
+
+msgid "ability.trait_plant_turn_start.name"
+msgstr "Floral Rejuvenation"
+
+msgid "ability.trait_plant_turn_start.desc"
+msgstr "At turn start, heals the lowest-HP Plant, and grants +1 Spikes and +1 HP to all Plants."
+
+msgid "ability.trait_toy.name"
+msgstr "Static Discharge"
+
+msgid "ability.trait_toy.desc"
+msgstr "Inflicts Static on melee attackers, and detonates the enemy with the most Static stacks on death."
+
+msgid "ability.trait_appliance.name"
+msgstr "Thermal Grid"
+
+msgid "ability.trait_appliance.desc"
+msgstr "Appliance attacks inflict Static and Burn. Grants immunity and pre-combat cleanse to both, reflects incoming status effects, and converts debuffs into stats."
+
+msgid "ability.trait_costume.name"
+msgstr "Mimic Masquerade"
+
+msgid "ability.trait_costume.desc"
+msgstr "Pre-Combat: Steals beneficial status effects or base stats from mirrored enemies and enemy leaders."
 

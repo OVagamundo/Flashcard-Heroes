@@ -78,26 +78,75 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# -------------------------------------------------------------------------
 	# TRAIT & TRINKET LOGIC
 	# -------------------------------------------------------------------------
-	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
+	var source_instance = battle_manager.get_instance_by_uuid(attacker_uuid)
 	var is_player_source = false
 	if is_instance_valid(source_instance):
 		is_player_source = battle_manager._is_player_unit(source_instance)
 	
 	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
-	var fire_level = active_traits.get("FIRE", 0)
+	var fire_level: int = active_traits.get("FIRE", 0)
+	var earth_level: int = active_traits.get("EARTH", 0)
+	var air_level: int = active_traits.get("AIR", 0)
+	var fighter_level: int = active_traits.get("FIGHTER", 0)
+	var animal_level: int = active_traits.get("ANIMAL", 0)
+	var mecha_level: int = active_traits.get("MECHA", 0)
+	var appliance_level: int = active_traits.get("APPLIANCE", 0)
 	
+	# Fire Burn Stacks Calculation & Appliance L2 Burn
 	var burn_amount := 0
 	if is_instance_valid(source_instance):
-		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source_instance)
+		if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
+			burn_amount += 1
+		if fire_level >= 3 and battle_manager.has_trait(source_instance, "FIRE"):
+			burn_amount += 1
+			# L2 (6 Souls): If target already holds Burn stacks > 0, apply +1 additional Burn (total 2)
+			if fire_level >= 6 and target_instance.get_status_effect_amount(&"burn") > 0:
+				burn_amount += 1
+		# Appliance L2 (3 Units): Appliance attacks inflict 1 Burn
+		if appliance_level >= 3 and battle_manager.has_trait(source_instance, "APPLIANCE"):
+			burn_amount += 1
 	
 	var should_apply_burn = burn_amount > 0
 	
-	# Fire 9 Bonus Damage
-	if fire_level >= 9:
-		if is_instance_valid(source_instance) and battle_manager._has_trait_soul(source_instance, "FIRE"):
-			var burn_count = target_instance.get_status_effect_amount(&"burn")
-			if burn_count > 0:
-				damage += burn_count
+	# Fire L4 (20 Souls): Fire units deal bonus attack damage equal to target's current Burn stacks
+	if fire_level >= 20 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIRE"):
+		var burn_count = target_instance.get_status_effect_amount(&"burn")
+		if burn_count > 0:
+			damage += burn_count
+
+	# Earth L5 (32 Souls): Earth units deal bonus attack damage equal to current Spikes.
+	# Decays 1 stack per attack damage instance at impact.
+	var earth_spikes_applied := false
+	var earth_spikes_old := 0
+	if earth_level >= 32 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "EARTH"):
+		var earth_spikes = source_instance.get_status_effect_amount(&"spikes")
+		if earth_spikes > 0:
+			damage += earth_spikes
+			earth_spikes_applied = true
+			earth_spikes_old = earth_spikes
+
+	# Fighter L1 (2 Units): If target HP > Fighter HP, attacks deal +1 damage
+	if fighter_level >= 2 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
+		if target_instance.current_hp > source_instance.current_hp:
+			damage += 1
+
+	# Air Trait Static Application
+	var static_amount := 0
+	if is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
+		if air_level >= 32:
+			static_amount = max(1, source_instance.current_pwr)
+		elif air_level >= 6:
+			static_amount = 2
+		elif air_level >= 3:
+			static_amount = 1
+
+	# Mecha L2 (3 Units): Attacks inflict 1 Static
+	if mecha_level >= 3 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "MECHA"):
+		static_amount += 1
+
+	# Appliance L1 (2 Units): Attacks inflict 1 Static
+	if appliance_level >= 2 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "APPLIANCE"):
+		static_amount += 1
 				
 	var attack_type = parameters.get("attack_type", "melee")
 	
@@ -135,7 +184,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	var burn_val = old_burn
 	if should_apply_burn:
-		burn_val = battle_manager.apply_stat_delta(final_target, "burn_stacks", burn_amount)
+		burn_val = battle_manager.apply_stat_delta(final_target, "burn_stacks", burn_amount, attacker_uuid)
 	
 	var spikes_data_list: Array[Dictionary] = []
 	if not damage_result.is_empty() and damage_result.has("spikes_data"):
@@ -149,6 +198,119 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		impact_events = battle_manager.drain_reaction_scope(impact_scope)
 	else:
 		battle_manager.drain_reaction_scope(impact_scope)
+
+	# Earth L5 Spikes Decay (1 stack per damage instance)
+	if earth_spikes_applied and is_instance_valid(source_instance) and source_instance.current_hp > 0:
+		var new_sp = battle_manager.apply_stat_delta(source_instance, "spikes_stacks", -1, attacker_uuid)
+		var spikes_payload := CombatPayload.status_change(source_instance.ball_uuid, -1, "spikes_stacks", [earth_spikes_old], [new_sp])
+		impact_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+			"source_uuid": source_instance.ball_uuid,
+			"target_uuids": [source_instance.ball_uuid],
+			"visual_payload": spikes_payload
+		}))
+
+	# Static Application & Splash (Air L1, L2, L3, L5, Mecha L2 & Appliance L1)
+	if static_amount > 0 and is_instance_valid(final_target) and final_target.current_hp > 0:
+		var old_static = final_target.get_status_effect_amount(&"static")
+		var new_static = battle_manager.apply_stat_delta(final_target, "static_stacks", static_amount, attacker_uuid)
+		var static_payload := CombatPayload.status_change(attacker_uuid, static_amount, "static_stacks", [old_static], [new_static])
+		impact_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+			"source_uuid": attacker_uuid,
+			"target_uuids": [final_target.ball_uuid],
+			"visual_payload": static_payload
+		}))
+		
+		# Air L3 (12 Souls): Attacks splash half of applied Static (min 1) to adjacent enemies
+		if air_level >= 12 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
+			var splash_static = max(1, int(floor(static_amount / 2.0)))
+			var target_loc = battle_manager.get_location_for_uuid(final_target.ball_uuid)
+			if is_instance_valid(target_loc):
+				var opp_container = target_loc.container
+				var opp_lineup = battle_manager.get_instances_in_container(opp_container)
+				var target_slot: int = target_loc.index
+				for enemy in opp_lineup:
+					if not is_instance_valid(enemy) or enemy.current_hp <= 0 or enemy.ball_uuid == final_target.ball_uuid:
+						continue
+					if enemy.location_slot_index == target_slot - 1 or enemy.location_slot_index == target_slot + 1:
+						var enemy_old_st = enemy.get_status_effect_amount(&"static")
+						var enemy_new_st = battle_manager.apply_stat_delta(enemy, "static_stacks", splash_static, attacker_uuid)
+						var splash_payload := CombatPayload.status_change(attacker_uuid, splash_static, "static_stacks", [enemy_old_st], [enemy_new_st])
+						impact_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+							"source_uuid": attacker_uuid,
+							"target_uuids": [enemy.ball_uuid],
+							"visual_payload": splash_payload
+						}))
+
+	# Toy L1-L3 Melee Static Reflection (Resolved at point of contact)
+	var static_reflection_list: Array[CombatStaticReflectionData] = []
+	if damage_type == C.DamageType.MELEE and is_instance_valid(final_target) and is_instance_valid(source_instance) and source_instance.current_hp > 0:
+		var def_is_player = battle_manager._is_player_unit(final_target)
+		var def_traits = battle_manager.get_active_traits("PLAYER" if def_is_player else "ENEMY")
+		var toy_level = def_traits.get("TOY", 0)
+		if toy_level >= 2 and battle_manager.has_trait(final_target, "TOY"):
+			var toy_static := 2
+			if toy_level >= 4:
+				toy_static = 4
+			elif toy_level >= 3:
+				toy_static = 3
+			var atk_old_st = source_instance.get_status_effect_amount(&"static")
+			var atk_new_st = battle_manager.apply_stat_delta(source_instance, "static_stacks", toy_static, final_target.ball_uuid)
+			var static_refl := CombatStaticReflectionData.new()
+			static_refl.attacker_uuid = source_instance.ball_uuid
+			static_refl.defender_uuid = final_target.ball_uuid
+			static_refl.static_amount = toy_static
+			static_refl.attacker_old_static = atk_old_st
+			static_refl.attacker_new_static = atk_new_st
+			static_reflection_list.append(static_refl)
+
+	# Animal L1-L4 Heal on Attack
+	if animal_level >= 2 and is_instance_valid(source_instance) and source_instance.current_hp > 0 and battle_manager.has_trait(source_instance, "ANIMAL"):
+		var heal_amount := 1
+		if animal_level >= 5:
+			heal_amount = 3 + max(1, int(floor(source_instance.current_pwr * 0.25)))
+		elif animal_level >= 4:
+			heal_amount = 3
+		elif animal_level >= 3:
+			heal_amount = 2
+		
+		var a_old_hp = source_instance.current_hp
+		var a_new_hp = battle_manager.apply_stat_delta(source_instance, "hp", heal_amount, source_instance.ball_uuid, C.ACTION_HEAL)
+		var a_max_hp := 0
+		var a_def = source_instance.get_definition()
+		if is_instance_valid(a_def):
+			a_max_hp = a_def.base_hp
+		impact_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
+			"source_uuid": source_instance.ball_uuid,
+			"target_uuids": [source_instance.ball_uuid],
+			"action_type": C.ACTION_HEAL,
+			"visual_payload": CombatPayload.heal(source_instance.ball_uuid, heal_amount, [a_old_hp], [a_new_hp], [a_max_hp])
+		}))
+
+	# Fighter L3 (4 Units): Cleave damage to enemy directly behind target
+	if fighter_level >= 4 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
+		var cleave_damage = max(1, int(floor(source_instance.current_pwr / 2.0)))
+		var target_behind = battle_manager._get_ally_behind(final_target)
+		if is_instance_valid(target_behind) and target_behind.current_hp > 0:
+			var cleave_old_hp = target_behind.current_hp
+			var cleave_old_armor = target_behind.get_status_effect_amount(&"armor")
+			var cleave_res = battle_manager.apply_damage(target_behind, cleave_damage, C.DamageType.RANGED, attacker_uuid)
+			var cleave_new_hp = cleave_res.get("new_hp", target_behind.current_hp)
+			var cleave_armor_consumed = cleave_res.get("armor_consumed", 0)
+			var cleave_new_armor = cleave_res.get("new_armor", cleave_old_armor)
+			var cleave_max_hp := 0
+			var tb_def = target_behind.get_definition()
+			if is_instance_valid(tb_def):
+				cleave_max_hp = tb_def.base_hp
+			var cleave_payload := CombatPayload.damage(attacker_uuid, cleave_damage, [cleave_old_hp], [cleave_new_hp], [cleave_old_armor], [cleave_new_armor], [cleave_armor_consumed])
+			cleave_payload.targets_max_hp = [cleave_max_hp] as Array[int]
+			cleave_payload.attack_type = "cleave"
+			impact_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+				"source_uuid": attacker_uuid,
+				"target_uuids": [target_behind.ball_uuid],
+				"visual_payload": cleave_payload
+			}))
+			if cleave_new_hp <= 0:
+				battle_manager.trigger_on_kill(attacker_uuid, target_behind.ball_uuid)
 
 	# A lethal save resolves in the on_hurt reaction window, so determine kills only
 	# after that window closes.
@@ -168,6 +330,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	visual_payload.projectile = CombatProjectile.new("hp", abs(damage), "red") if attack_type == "ranged" else null
 	visual_payload.original_target_uuids = [target_instance.ball_uuid]
 	visual_payload.spikes_data_list = _make_spikes_payloads(spikes_data_list)
+	visual_payload.static_reflection_data_list = static_reflection_list
 	visual_payload.windup_events = windup_events
 	visual_payload.pre_impact_events = pre_impact_events
 	visual_payload.impact_events = impact_events

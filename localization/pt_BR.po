@@ -979,7 +979,7 @@ msgid "STATUS_STATIC"
 msgstr "Estático"
 
 msgid "STATUS_STATIC_DESC"
-msgstr "Qualquer alteração de atributo consome 1 acúmulo de estático e causa 1 de dano. Acúmulos consumidos causam 1 de dano ignorando armadura."
+msgstr "Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
 
 msgid "trinket.royal_insignia.name"
 msgstr "Insígnia Real"
@@ -1009,127 +1009,133 @@ msgid "trinket.trait_fire.name"
 msgstr "Sinergia de Fogo"
 
 msgid "trinket.trait_fire.desc"
-msgstr "Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes."
+msgstr "Ativa a sinergia de Fogo. Unidades de Fogo incendeiam inimigos ao atacar, espalhando chamas e causando dano bônus contra alvos queimando."
 
 msgid "trinket.trait_earth.name"
 msgstr "Sinergia de Terra"
 
 msgid "trinket.trait_earth.desc"
-msgstr "Ativa a sinergia de Terra sempre que sua equipe tiver almas de Terra suficientes."
+msgstr "Ativa a sinergia de Terra. Concede Armadura e Espinhos na sua linha de frente, transformando defesa impenetrável em contra-ataques devastadores."
 
 msgid "trinket.trait_water.name"
 msgstr "Sinergia de Água"
 
 msgid "trinket.trait_water.desc"
-msgstr "Ativa a sinergia de Água sempre que sua equipe tiver almas de Água suficientes."
+msgstr "Ativa a sinergia de Água. Ondas fluidas curam aliados, removem efeitos negativos debilitantes e convertem aflições em energia restauradora."
 
 msgid "trinket.trait_air.name"
 msgstr "Sinergia de Ar"
 
 msgid "trinket.trait_air.desc"
-msgstr "Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes."
+msgstr "Ativa a sinergia de Ar. Eletrifica inimigos com Estática ao atacar, espalhando cargas que explodem em dano colateral ao morrer."
 
 msgid "trinket.trait_tank.name"
 msgstr "Sinergia de Guardião"
 
 msgid "trinket.trait_tank.desc"
-msgstr "Ativa a sinergia de Guardião sempre que sua equipe tiver unidades de Guardião suficientes."
+msgstr "Ativa a sinergia de Guardião. Guardiões fortalecem armaduras defensivas, interceptam ataques a aliados atrás e convertem armadura em espinhos punitivos."
 
 msgid "trinket.trait_fighter.name"
 msgstr "Sinergia de Lutador"
 
 msgid "trinket.trait_fighter.desc"
-msgstr "Ativa a sinergia de Lutador sempre que sua equipe tiver unidades de Lutador suficientes."
+msgstr "Ativa a sinergia de Lutador. Lutadores superam alvos com muita vida, desferem golpes dispersos atrás do alvo e encadeiam ataques ao abater."
 
 msgid "trinket.trait_support.name"
 msgstr "Sinergia de Suporte"
 
 msgid "trinket.trait_support.desc"
-msgstr "Ativa a sinergia de Suporte sempre que sua equipe tiver unidades de Suporte suficientes."
+msgstr "Ativa a sinergia de Suporte. Inspira a formação aliada com bônus de vida e poder, reforçando as unidades mais fracas a cada turno."
 
 msgid "trinket.trait_specialist.name"
 msgstr "Sinergia de Especialista"
 
 msgid "trinket.trait_specialist.desc"
-msgstr "Ativa a sinergia de Especialista sempre que sua equipe tiver unidades de Especialista suficientes."
+msgstr "Ativa a sinergia de Especialista. Manipula a economia e fichas de gacha, invocando clones de combate e escalando poder com o ouro acumulado."
 
 msgid "trinket.trait_food.name"
 msgstr "Sinergia de Comida"
 
 msgid "trinket.trait_food.desc"
-msgstr "Ativa a sinergia de Comida sempre que sua equipe tiver unidades de Comida suficientes."
+msgstr "Ativa a sinergia de Comida. Alimenta o aliado logo atrás ao sofrer golpes, transferindo todo o poder restante ao ser derrotado."
 
 msgid "trinket.trait_mecha.name"
 msgstr "Sinergia de Mecha"
 
 msgid "trinket.trait_mecha.desc"
-msgstr "Ativa a sinergia de Mecha sempre que sua equipe tiver unidades de Mecha suficientes."
+msgstr "Ativa a sinergia de Mecha. Fortalecido com armadura e espinhos, disparando salvas de laser estático em fusões e sobrecarregando ao morrer."
 
 msgid "trinket.trait_animal.name"
 msgstr "Sinergia de Animal"
 
 msgid "trinket.trait_animal.desc"
-msgstr "Ativa a sinergia de Animal sempre que sua equipe tiver unidades de Animal suficientes."
+msgstr "Ativa a sinergia de Animal. Instintos ferozes de matilha fortalecem um alfa e curam o bando a cada ataque impiedoso."
 
 msgid "trinket.trait_plant.name"
 msgstr "Sinergia de Planta"
 
 msgid "trinket.trait_plant.desc"
-msgstr "Ativa a sinergia de Planta sempre que sua equipe tiver unidades de Planta suficientes."
+msgstr "Ativa a sinergia de Planta. Raízes profundas desenvolvem espinhos e regeneração contínua, convertendo cura em defesas espinhosas afiadas."
 
 msgid "trinket.trait_toy.name"
 msgstr "Sinergia de Brinquedo"
 
 msgid "trinket.trait_toy.desc"
-msgstr "Ativa a sinergia de Brinquedo sempre que sua equipe tiver unidades de Brinquedo suficientes."
+msgstr "Ativa a sinergia de Brinquedo. Gera atrito estático volátil ao receber golpes corpo a corpo, culminando em detonação estática explosiva ao morrer."
 
 msgid "trinket.trait_appliance.name"
 msgstr "Sinergia de Eletrodoméstico"
 
 msgid "trinket.trait_appliance.desc"
-msgstr "Ativa a sinergia de Eletrodoméstico sempre que sua equipe tiver unidades de Eletrodoméstico suficientes."
+msgstr "Ativa a sinergia de Eletrodoméstico. Eletrodomésticos aplicam Estática e Chamas ao atacar, ganham imunidade e reflexão contra ambos, e convertem penalidades em atributos."
 
 msgid "trinket.trait_costume.name"
 msgstr "Sinergia de Fantasia"
 
 msgid "trinket.trait_costume.desc"
-msgstr "Ativa a sinergia de Fantasia sempre que sua equipe tiver unidades de Fantasia suficientes."
+msgstr "Ativa a sinergia de Fantasia. Disfarça-se nas forças inimigas, roubando efeitos benéficos e atributos puros antes do combate começar."
 
 msgid "trait.fire.name"
 msgstr "Fogo"
 
 msgid "trait.fire.3"
-msgstr "Aplica 1 de Chamas ao atacar."
+msgstr "Ataques de unidades de Fogo aplicam 1 de Chamas no alvo."
 
-msgid "trait.fire.5"
-msgstr "Aplica +1 de Chamas Extra (Total 2)."
+msgid "trait.fire.6"
+msgstr "...e aplica +1 de Chamas adicional se o alvo já tiver Chamas."
 
-msgid "trait.fire.7"
-msgstr "Início do Combate: Aplica 2 de Chamas a TODOS inimigos."
+msgid "trait.fire.12"
+msgstr "Além disso, quando um inimigo sofre dano de Chamas no fim do turno, espalha 1 de Chamas para cada aliado adjacente."
 
-msgid "trait.fire.9"
-msgstr "Chama do Traidor: Ataques causam dano bônus igual às pilhas de Chamas do alvo."
+msgid "trait.fire.20"
+msgstr "...e unidades de Fogo causam dano de ataque bônus igual às Chamas atuais do alvo."
 
-msgid "trait.earth.name"
-msgstr "Terra"
-
-msgid "trait.earth.3"
-msgstr "Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura."
-
-msgid "trait.earth.5"
-msgstr "Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura."
-
-msgid "trait.earth.7"
-msgstr "Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura."
-
-msgid "trait.earth.9"
-msgstr "Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura."
+msgid "trait.fire.32"
+msgstr "Além disso, quando um inimigo com Chamas é derrotado por uma unidade de Fogo, suas Chamas restantes são distribuídas entre inimigos adjacentes."
 
 msgid "item.emblem_fire.name"
 msgstr "Emblema de Fogo"
 
 msgid "item.emblem_fire.desc"
 msgstr "Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
+
+msgid "trait.earth.name"
+msgstr "Terra"
+
+msgid "trait.earth.3"
+msgstr "Pré-Combate: A unidade de Terra mais à frente ganha 1 de Armadura."
+
+msgid "trait.earth.6"
+msgstr "...e também ganha 1 de Espinhos."
+
+msgid "trait.earth.12"
+msgstr "Adiciona +1 de Armadura e +1 de Espinhos ao efeito, e todas as outras unidades de Terra também ganham isso."
+
+msgid "trait.earth.20"
+msgstr "Adiciona +1 de Armadura e +1 de Espinhos a unidades de Terra, e todos os outros aliados ganham 1 de Armadura e 1 de Espinhos."
+
+msgid "trait.earth.32"
+msgstr "...e unidades de Terra causam dano de ataque bônus igual aos seus Espinhos atuais (consome 1 pilha de Espinhos por ataque)."
 
 msgid "item.emblem_earth.name"
 msgstr "Emblema de Terra"
@@ -1140,65 +1146,20 @@ msgstr "Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que 
 msgid "trait.water.name"
 msgstr "Água"
 
-msgid "trait.water.2"
-msgstr "Unidades de Água curam aliados adjacentes em 1 HP no início do combate."
+msgid "trait.water.3"
+msgstr "Pré-Combate: Unidades de Água curam o aliado diretamente à frente em 1 de Vida."
 
-msgid "trait.air.name"
-msgstr "Ar"
+msgid "trait.water.6"
+msgstr "...e também removem 1 efeito negativo (Chamas/Estática) desse aliado."
 
-msgid "trait.air.2"
-msgstr "Unidades de Ar roubam 1 PWR do inimigo oposto no início do combate."
+msgid "trait.water.12"
+msgstr "Além disso, no início do turno, cura o aliado com menor Vida em 1 de Vida."
 
-msgid "trait.tank.name"
-msgstr "Guardião"
+msgid "trait.water.20"
+msgstr "Além disso, Pré-Combate: Todos os aliados da equipe removem 1 efeito negativo."
 
-msgid "trait.fighter.name"
-msgstr "Lutador"
-
-msgid "trait.support.name"
-msgstr "Suporte"
-
-msgid "trait.specialist.name"
-msgstr "Especialista"
-
-msgid "trait.food.name"
-msgstr "Comida"
-
-msgid "trait.mecha.name"
-msgstr "Mecha"
-
-msgid "trait.animal.name"
-msgstr "Animal"
-
-msgid "trait.plant.name"
-msgstr "Planta"
-
-msgid "trait.toy.name"
-msgstr "Brinquedo"
-
-msgid "trait.appliance.name"
-msgstr "Eletrodoméstico"
-
-msgid "trait.costume.name"
-msgstr "Fantasia"
-
-msgid "trait.common_pwr.2"
-msgstr "No início do combate, unidades desta sinergia ganham +1 de Poder."
-
-msgid "trait.common_pwr.3"
-msgstr "No início do combate, unidades desta sinergia ganham +2 de Poder."
-
-msgid "trait.common_pwr.4"
-msgstr "No início do combate, unidades desta sinergia ganham +3 de Poder."
-
-msgid "trait.common_pwr.5"
-msgstr "No início do combate, unidades desta sinergia ganham +4 de Poder."
-
-msgid "ability.trait_pwr_buff.name"
-msgstr "Ímpeto de Sinergia"
-
-msgid "ability.trait_pwr_buff.desc"
-msgstr "No início do combate, concede de +1 a +4 de Poder para unidades desta sinergia baseado na contagem."
+msgid "trait.water.32"
+msgstr "Além disso, no início do turno, aliados consomem todos os seus efeitos negativos para curar 1 de Vida por efeito consumido."
 
 msgid "item.emblem_water.name"
 msgstr "Emblema de Água"
@@ -1206,11 +1167,194 @@ msgstr "Emblema de Água"
 msgid "item.emblem_water.desc"
 msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
 
+msgid "trait.air.name"
+msgstr "Ar"
+
+msgid "trait.air.3"
+msgstr "Ataques de unidades de Ar aplicam 1 de Estática no alvo."
+
+msgid "trait.air.6"
+msgstr "Aumenta para 2 de Estática por ataque."
+
+msgid "trait.air.12"
+msgstr "...e ataques espalham metade da Estática aplicada (mínimo 1) para inimigos adjacentes."
+
+msgid "trait.air.20"
+msgstr "Além disso, Pré-Combate: Aplica 1 de Estática a todos os inimigos."
+
+msgid "trait.air.32"
+msgstr "Estática aplicada ao atacar escala para igualar o Poder da unidade de Ar (espalha metade para inimigos adjacentes)."
+
 msgid "item.emblem_air.name"
 msgstr "Emblema de Ar"
 
 msgid "item.emblem_air.desc"
 msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
+
+msgid "trait.tank.name"
+msgstr "Guardião"
+
+msgid "trait.tank.2"
+msgstr "Pré-Combate: O Guardião mais à frente ganha 1 de Armadura."
+
+msgid "trait.tank.3"
+msgstr "Todos os Guardiões agora ganham 1 de Armadura. Quando a Armadura de um Guardião absorve dano, o aliado diretamente atrás ganha 1 de Armadura."
+
+msgid "trait.tank.4"
+msgstr "Além disso, no início do turno, o Guardião mais à frente ganha 1 de Armadura, e Guardiões interceptam ataques direcionados ao aliado diretamente atrás."
+
+msgid "trait.tank.5"
+msgstr "...e sempre que um Guardião ganha Armadura de qualquer fonte, ganha a mesma quantidade de Espinhos."
+
+msgid "trait.fighter.name"
+msgstr "Lutador"
+
+msgid "trait.fighter.2"
+msgstr "Lutadores causam +1 de dano em ataques se o alvo tiver mais Vida que eles."
+
+msgid "trait.fighter.3"
+msgstr "Além disso, quando um Lutador sofre dano de ataque, contra-ataca com 1 de dano à distância (uma vez por turno)."
+
+msgid "trait.fighter.4"
+msgstr "Além disso, ataques de Lutadores causam metade do Poder como dano disperso (mínimo 1) ao inimigo diretamente atrás do alvo."
+
+msgid "trait.fighter.5"
+msgstr "...e quando um Lutador derrota um inimigo, ganha +1 de Poder e ataca imediatamente o próximo inimigo (uma vez por turno)."
+
+msgid "trait.support.name"
+msgstr "Suporte"
+
+msgid "trait.support.2"
+msgstr "Pré-Combate: Unidades de Suporte concedem +1 de Vida ao aliado diretamente à frente."
+
+msgid "trait.support.3"
+msgstr "...e também concedem +1 de Poder ao aliado diretamente atrás."
+
+msgid "trait.support.4"
+msgstr "Além disso, no início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
+
+msgid "trait.support.5"
+msgstr "Além disso, Pré-Combate: Concede +1 de Vida e +1 de Poder à unidade Heroica."
+
+msgid "trait.specialist.name"
+msgstr "Especialista"
+
+msgid "trait.specialist.2"
+msgstr "Início do Combate: Se você tiver 0 fichas restantes, ganha 1 Ficha."
+
+msgid "trait.specialist.3"
+msgstr "...e o primeiro sorteio do Gacha em cada batalha custa 1 Ficha a menos (mínimo 1)."
+
+msgid "trait.specialist.4"
+msgstr "Além disso, derrotar um inimigo com um Especialista concede +1 de Ouro (máx 1/turno, 5/batalha)."
+
+msgid "trait.specialist.5"
+msgstr "Além disso, invoca uma cópia de combate da sua unidade de menor nível/tier no banco no pré-combate, e no início do turno, o Especialista mais à frente ganha +1 de Poder a cada 5 de Ouro."
+
+msgid "trait.food.name"
+msgstr "Comida"
+
+msgid "trait.food.2"
+msgstr "Quando uma unidade de Comida é ferida por um ataque, cura o aliado diretamente atrás em 1 de Vida."
+
+msgid "trait.food.3"
+msgstr "Aumenta a cura para 2 de Vida."
+
+msgid "trait.food.4"
+msgstr "Aumenta a cura para 3 de Vida e também concede +1 de Poder a esse aliado."
+
+msgid "trait.food.5"
+msgstr "Aumenta a cura para 4 de Vida e +2 de Poder. Além disso, ao morrer, passa todo seu Poder atual para o aliado diretamente atrás."
+
+msgid "trait.mecha.name"
+msgstr "Mecha"
+
+msgid "trait.mecha.2"
+msgstr "Pré-Combate: Unidades Mecha ganham 1 de Espinhos."
+
+msgid "trait.mecha.3"
+msgstr "...e também ganham 1 de Armadura. Além disso, Mechas aplicam 1 de Estática ao atacar e quando sua Armadura absorve dano."
+
+msgid "trait.mecha.4"
+msgstr "Além disso, sempre que ocorre uma fusão no tabuleiro, cada Mecha dispara um laser causando 1 de dano e 1 de Estática a um inimigo aleatório."
+
+msgid "trait.mecha.5"
+msgstr "Além disso, quando um Mecha morre, Mechas sobreviventes ganham 2 de Armadura e 2 de Espinhos, e disparam um laser causando 2 de dano e 2 de Estática a um inimigo aleatório."
+
+msgid "trait.animal.name"
+msgstr "Animal"
+
+msgid "trait.animal.2"
+msgstr "Pré-Combate: Um Animal aleatório ganha +1 de Poder. Animais curam 1 de Vida por ataque."
+
+msgid "trait.animal.3"
+msgstr "Cura por ataque aumenta para 2 de Vida."
+
+msgid "trait.animal.4"
+msgstr "Cura por ataque aumenta para 3 de Vida."
+
+msgid "trait.animal.5"
+msgstr "Cura por ataque aumenta para 3 de Vida + 25% do Poder (mínimo +1)."
+
+msgid "trait.plant.name"
+msgstr "Planta"
+
+msgid "trait.plant.2"
+msgstr "Pré-Combate: A Planta mais à frente ganha 1 de Espinhos."
+
+msgid "trait.plant.3"
+msgstr "Além disso, no início do turno, a Planta com menor Vida recupera 1 de Vida."
+
+msgid "trait.plant.4"
+msgstr "Além disso, Pré-Combate: Todas as Plantas ganham 1 de Espinhos e +1 de Vida (a mais à frente ganha 2 de Espinhos)."
+
+msgid "trait.plant.5"
+msgstr "Além disso, no início do turno, todas as Plantas ganham 1 de Espinhos e +1 de Vida. Sempre que uma Planta recebe cura, ganha 1 de Espinhos."
+
+msgid "trait.toy.name"
+msgstr "Brinquedo"
+
+msgid "trait.toy.2"
+msgstr "Inimigos que atingem um Brinquedo com ataque corpo a corpo recebem 2 de Estática."
+
+msgid "trait.toy.3"
+msgstr "Aumenta para 3 de Estática."
+
+msgid "trait.toy.4"
+msgstr "Aumenta para 4 de Estática."
+
+msgid "trait.toy.5"
+msgstr "Além disso, ao morrer, detona toda a Estática no inimigo com mais Estática, causando dano igual às pilhas e removendo-as."
+
+msgid "trait.appliance.name"
+msgstr "Eletrodoméstico"
+
+msgid "trait.appliance.2"
+msgstr "Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate."
+
+msgid "trait.appliance.3"
+msgstr "...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate."
+
+msgid "trait.appliance.4"
+msgstr "Além disso, quando um inimigo tenta aplicar Estática ou Chamas a um Eletrodoméstico, o efeito é refletido de volta para quem aplicou."
+
+msgid "trait.appliance.5"
+msgstr "Além disso, tentativas de aplicar efeitos negativos concedem atributos: cada Estática concede +1 de Poder, e cada Chamas concede +1 de Vida."
+
+msgid "trait.costume.name"
+msgstr "Fantasia"
+
+msgid "trait.costume.2"
+msgstr "Pré-Combate: Rouba 1 pilha do maior efeito benéfico do inimigo espelhado, ou 1 ponto do maior atributo dele."
+
+msgid "trait.costume.3"
+msgstr "Em vez do acima, Pré-Combate: Rouba todo o maior efeito benéfico do inimigo espelhado, ou 1 de Vida e 1 de Poder."
+
+msgid "trait.costume.4"
+msgstr "Melhora para roubar todos os efeitos benéficos do inimigo espelhado, ou 2 de Vida e 2 de Poder."
+
+msgid "trait.costume.5"
+msgstr "Pré-Combate: Executado uma vez pela equipe. O Herói rouba toda a Armadura e Espinhos, mais 3 de Vida e 3 de Poder, do inimigo com maior soma de Armadura e Espinhos."
 
 msgid "item.potion_t1.name"
 msgstr "Poção de Cura Menor"
@@ -2127,27 +2271,123 @@ msgstr "FWWASupAniToy"
 msgid "FWWASupAniToy.desc"
 msgstr "Unidade FWWASupAniToy."
 
-msgid "ability.trait_earth.name"
-msgstr "Proteção da Terra"
-
-msgid "ability.trait_earth.desc"
-msgstr "No início do combate, concede Armadura e Espinhos a aliados com base nas almas de Terra (unidades de Terra recebem Armadura dobrada)."
-
 msgid "ability.trait_fire.name"
-msgstr "Nova de Fogo"
+msgstr "Ignição Infernal"
 
 msgid "ability.trait_fire.desc"
-msgstr "No início do combate, aplica 2 de Chamas à equipe adversária se tiver 7+ almas de Fogo."
+msgstr "Capacita unidades de Fogo a queimar inimigos ao atacar, espalhar chamas e causar dano bônus a alvos queimando."
+
+msgid "ability.trait_earth.name"
+msgstr "Bastião Tectônico"
+
+msgid "ability.trait_earth.desc"
+msgstr "Concede Armadura e Espinhos a unidades de Terra e aliados, capacitando Espinhos a causar dano bônus ao atacar."
 
 msgid "ability.trait_water.name"
-msgstr "Corrente Suave"
+msgstr "Maré Purificadora"
 
 msgid "ability.trait_water.desc"
-msgstr "No início do combate, unidades de Água curam aliados adjacentes em 1 HP se tiver 2+ almas de Água."
+msgstr "Unidades de Água curam aliados à frente e removem efeitos negativos no pré-combate."
+
+msgid "ability.trait_water_turn_start.name"
+msgstr "Fonte Restauradora"
+
+msgid "ability.trait_water_turn_start.desc"
+msgstr "No início do turno, cura o aliado com menor Vida e converte status negativos em cura."
 
 msgid "ability.trait_air.name"
-msgstr "Sifão da Ventania"
+msgstr "Tempestade Estática"
 
 msgid "ability.trait_air.desc"
-msgstr "No início do combate, unidades de Ar roubam 1 PWR de inimigos espelhados se tiver 2+ almas de Ar."
+msgstr "Unidades de Ar eletrificam alvos com Estática ao atacar, espalhando cargas para inimigos adjacentes."
+
+msgid "ability.trait_tank.name"
+msgstr "Guarda do Bastião"
+
+msgid "ability.trait_tank.desc"
+msgstr "Concede Armadura no pré-combate, repassa armadura para trás ao absorver, intercepta ataques e espelha armadura como espinhos."
+
+msgid "ability.trait_tank_turn_start.name"
+msgstr "Reforço de Vanguarda"
+
+msgid "ability.trait_tank_turn_start.desc"
+msgstr "No início do turno, concede 1 de Armadura ao Guardião mais à frente."
+
+msgid "ability.trait_fighter.name"
+msgstr "Destreza de Batalha"
+
+msgid "ability.trait_fighter.desc"
+msgstr "Causa dano bônus contra alvos com mais Vida, contra-ataca ao sofrer dano, desfere golpe disperso atrás do alvo e encadeia ataques ao abater."
+
+msgid "ability.trait_support.name"
+msgstr "Bênção de Formação"
+
+msgid "ability.trait_support.desc"
+msgstr "Concede +1 de Vida ao aliado à frente, +1 de Poder ao aliado atrás e +1 de Vida/+1 de Poder ao Herói."
+
+msgid "ability.trait_support_turn_start.name"
+msgstr "Presença Inspiradora"
+
+msgid "ability.trait_support_turn_start.desc"
+msgstr "No início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
+
+msgid "ability.trait_specialist.name"
+msgstr "Domínio de Recursos"
+
+msgid "ability.trait_specialist.desc"
+msgstr "Garante fichas iniciais, dá desconto no gacha, ganha ouro ao abater e invoca clone de combate no banco."
+
+msgid "ability.trait_specialist_turn_start.name"
+msgstr "Ambição Dourada"
+
+msgid "ability.trait_specialist_turn_start.desc"
+msgstr "No início do turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
+
+msgid "ability.trait_food.name"
+msgstr "Infusão Nutritiva"
+
+msgid "ability.trait_food.desc"
+msgstr "Cura e fortalece o aliado logo atrás ao sofrer dano, e transfere todo seu Poder ao morrer."
+
+msgid "ability.trait_mecha.name"
+msgstr "Núcleo Sobrecarregado"
+
+msgid "ability.trait_mecha.desc"
+msgstr "Concede Armadura e Espinhos, aplica Estática ao atacar, dispara lasers em fusões aliadas e detona lasers de retaliação ao morrer."
+
+msgid "ability.trait_animal.name"
+msgstr "Frenesi Primordial"
+
+msgid "ability.trait_animal.desc"
+msgstr "Concede +1 de Poder a um Animal alfa no pré-combate e cura Animais a cada ataque."
+
+msgid "ability.trait_plant.name"
+msgstr "Crescimento Verdejante"
+
+msgid "ability.trait_plant.desc"
+msgstr "Concede Espinhos e Vida no pré-combate, e converte toda cura recebida em Espinhos."
+
+msgid "ability.trait_plant_turn_start.name"
+msgstr "Rejuvenescimento Floral"
+
+msgid "ability.trait_plant_turn_start.desc"
+msgstr "No início do turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
+
+msgid "ability.trait_toy.name"
+msgstr "Descarga Estática"
+
+msgid "ability.trait_toy.desc"
+msgstr "Aplica Estática a atacantes corpo a corpo, e detona o inimigo com mais Estática ao morrer."
+
+msgid "ability.trait_appliance.name"
+msgstr "Rede Térmica"
+
+msgid "ability.trait_appliance.desc"
+msgstr "Ataques de Eletrodomésticos aplicam Estática e Chamas. Concede imunidade e purificação pré-combate a ambos, reflete efeitos de status e converte penalidades em atributos."
+
+msgid "ability.trait_costume.name"
+msgstr "Disfarce Ilusório"
+
+msgid "ability.trait_costume.desc"
+msgstr "Pré-Combate: Rouba efeitos benéficos ou atributos básicos de inimigos espelhados e líderes adversários."
 

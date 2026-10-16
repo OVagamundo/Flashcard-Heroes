@@ -309,6 +309,42 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 		if SignalBus.has_signal("unit_deform"):
 			SignalBus.emit_signal("unit_deform", attacker_uuid, &"HIT_IMPACT")
 	
+	# TOY STATIC REFLECTION: Apply static stacks to attacker(s) at point of contact
+	# This happens while the attacker is at the lunge peak (touching the target)
+	# with a slight stagger delay so yellow static numbers appear on top of damage numbers.
+	for static_data in payload.static_reflection_data_list:
+		var attacker_uuid = static_data.attacker_uuid
+		var static_amount = static_data.static_amount
+		var new_static = static_data.attacker_new_static
+		var defender_uuid = static_data.defender_uuid
+		
+		if attacker_uuid.is_empty() or static_amount <= 0:
+			continue
+			
+		# Little stagger delay so yellow static number doesn't visually collide with damage number
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.08)).timeout
+		
+		# Audio feedback: higher pitched hit / shock
+		Audio.play_sfx("combat_hit", 1.25)
+		
+		# Spawn yellow damage-style floating number on top of contact damage
+		_spawn_floating_static_number(animator, attacker_uuid, static_amount, defender_uuid)
+		
+		# Update attacker's Static puppet stacks
+		animator.apply_status_stack(attacker_uuid, &"static", new_static)
+		
+		# Flash the attacker yellow (static reflection feedback)
+		if SignalBus.has_signal("unit_color_flash"):
+			SignalBus.emit_signal("unit_color_flash", attacker_uuid, Color(1.0, 0.85, 0.1), AnimationConstants.FLASH_FADE_DURATION)
+		
+		# Slight deformation on the attacker
+		if SignalBus.has_signal("unit_deform"):
+			SignalBus.emit_signal("unit_deform", attacker_uuid, &"HIT_IMPACT")
+	
+	if not payload.static_reflection_data_list.is_empty():
+		# Brief hold at contact so the player sees the yellow static number pop before returning
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.12)).timeout
+	
 	# Wait for movement completion (longest animation) - only once for all targets/spikes
 	if not targets.is_empty():
 		await animator.wait_for_animation_completion("move", targets[0])
@@ -397,3 +433,27 @@ func _spawn_floating_spikes_damage(_animator: Node, target_uuid: String, amount:
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, _color_hint: String) -> Node:
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat, true)
+
+## Helper to spawn floating Static reflection number (Yellow damage number style on top of contact damage)
+func _spawn_floating_static_number(_animator: Node, attacker_uuid: String, amount: int, defender_uuid: String = "") -> void:
+	var attacker_view = _animator._visual_registry.get(attacker_uuid)
+	var spawn_pos = Vector2.ZERO
+	var found_pos = false
+
+	if is_instance_valid(attacker_view) and attacker_view.is_inside_tree():
+		# Positioned slightly higher (0.15 instead of 0.3) so it appears "on top of" the red damage number
+		spawn_pos = attacker_view.global_position + (attacker_view.size * Vector2(0.5, 0.15))
+		found_pos = true
+	elif not defender_uuid.is_empty():
+		var def_snap = _animator.get_snapshot_position(defender_uuid)
+		if not def_snap.is_empty():
+			spawn_pos = Vector2(def_snap.position.x + def_snap.size.x / 2, def_snap.position.y + def_snap.size.y * 0.15)
+			found_pos = true
+	else:
+		var atk_snap = _animator.get_snapshot_position(attacker_uuid)
+		if not atk_snap.is_empty():
+			spawn_pos = Vector2(atk_snap.position.x + atk_snap.size.x / 2, atk_snap.position.y + atk_snap.size.y * 0.15)
+			found_pos = true
+
+	if found_pos:
+		VFXFactory.spawn_damage_number_on_layer(amount, spawn_pos, false, Color(1.0, 0.85, 0.1))

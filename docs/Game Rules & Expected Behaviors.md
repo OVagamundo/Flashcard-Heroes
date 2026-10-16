@@ -650,9 +650,9 @@ Special slots placed on the battlefield grid apply persistent or turn-start effe
 | ID | Name | Mechanics | Decay Mode |
 |---|---|---|---|
 | `burn` | Burn | Deals damage equal to the number of stacks at the end of each turn. **Burn damage ignores armor.** | Halved (reduced by 50% rounded down) at the end of each turn. Burn stacks on units in a Burn Slot do not decay. |
-| `armor` | Armor | Absorbs incoming direct HP damage (1 point of Armor blocks 1 point of HP damage). Does not block Burn or Static damage. | Decays to 0 at the end of each turn unless preserved by specific abilities or trinkets (e.g. Polished Plate). |
+| `armor` | Armor | Absorbs incoming direct attack damage and Static collateral damage (1 point of Armor blocks 1 point of damage). Does not block Burn damage. | Decays to 0 at the end of each turn unless preserved by specific abilities or trinkets (e.g. Polished Plate). |
 | `spikes` | Spikes | Deals PWR damage back to attackers when hit by a direct attack. | Does not decay. |
-| `static` | Static | Consumed stack-by-stack whenever the unit suffers any core stat change (HP damage, healing, or power modification). Consuming a stack deals 1 armor-ignoring damage to the unit. Damage dealt by Static itself does not trigger further Static consumption. | Does not decay. Stacks are only consumed by stat changes. |
+| `static` | Static | When a unit with Static dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Cleared on explosion. | Decays by 1 stack at the end of each turn. |
 
 ## 9.7 Semantic Action Typing in the Combat & Stat Engine
 

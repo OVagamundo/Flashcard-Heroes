@@ -151,18 +151,39 @@ static func compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
 	if rank_a != rank_b:
 		return rank_a < rank_b
 
-	# Layer 3: Visual Direction / The Mirror Rule (Left-to-Right)
-	if a.is_player != b.is_player:
-		return a.is_player # Player (left side) before Enemy (right side)
+	# Layer 3: Visual Direction / Pre-Combat & Mirror Rules
+	var is_pre_combat_a: bool = a.trigger_context.get("trigger_type") == C.TRIGGER_ON_PRE_COMBAT
+	var is_pre_combat_b: bool = b.trigger_context.get("trigger_type") == C.TRIGGER_ON_PRE_COMBAT
+	if is_pre_combat_a and is_pre_combat_b:
+		# Team Order: Player team first, then Enemy team
+		if a.is_player != b.is_player:
+			return a.is_player
 
-	if a.is_player:
-		# Player team: Left-to-Right is slot 4 down to slot 0
-		if a.slot_index != b.slot_index:
-			return a.slot_index > b.slot_index
+		# Trinket Order: Player 0 to max, Enemy max down to 0
+		if a.category == &"TRINKET" and b.category == &"TRINKET":
+			if a.is_player:
+				if a.slot_index != b.slot_index:
+					return a.slot_index < b.slot_index
+			else:
+				if a.slot_index != b.slot_index:
+					return a.slot_index > b.slot_index
+		else:
+			# Unit & Item Order: Back to front (highest slot down to slot 0) for BOTH teams
+			if a.slot_index != b.slot_index:
+				return a.slot_index > b.slot_index
 	else:
-		# Enemy team: Left-to-Right is slot 0 up to slot 4
-		if a.slot_index != b.slot_index:
-			return a.slot_index < b.slot_index
+		# Standard In-Combat Mirror Rule (Left-to-Right)
+		if a.is_player != b.is_player:
+			return a.is_player # Player (left side) before Enemy (right side)
+
+		if a.is_player:
+			# Player team: Left-to-Right is slot 4 down to slot 0
+			if a.slot_index != b.slot_index:
+				return a.slot_index > b.slot_index
+		else:
+			# Enemy team: Left-to-Right is slot 0 up to slot 4
+			if a.slot_index != b.slot_index:
+				return a.slot_index < b.slot_index
 
 	# Intra-unit item tie-breaker (slot index 0 -> N)
 	if a.sub_index != b.sub_index:

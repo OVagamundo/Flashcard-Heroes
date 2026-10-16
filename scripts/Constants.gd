@@ -33,7 +33,7 @@ enum DamageType {
 	KAMIKAZE, # Mitigated by Armor, NO Spikes, Triggers self/ally on_hurt, NO targeted retaliation, NO on_damage_dealt
 	BURN,     # NO Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
 	SPIKES,   # Mitigated by Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
-	STATIC    # NO Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
+	STATIC    # Mitigated by Armor, NO Spikes, NO on_hurt, NO on_damage_dealt
 }
 
 # --- Semantic Action Types ---
@@ -219,9 +219,10 @@ const TRAIT_DEFINITIONS = {
 		"icon_path": "res://assets/Realistic/sprites/items/FireEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.fire.3"},
-			{"min": 5, "desc_key": "trait.fire.5"},
-			{"min": 7, "desc_key": "trait.fire.7"},
-			{"min": 9, "desc_key": "trait.fire.9"}
+			{"min": 6, "desc_key": "trait.fire.6"},
+			{"min": 12, "desc_key": "trait.fire.12"},
+			{"min": 20, "desc_key": "trait.fire.20"},
+			{"min": 32, "desc_key": "trait.fire.32"}
 		]
 	},
 	"EARTH": {
@@ -230,9 +231,10 @@ const TRAIT_DEFINITIONS = {
 		"icon_path": "res://assets/Realistic/sprites/items/EarthEmblem.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.earth.3"},
-			{"min": 5, "desc_key": "trait.earth.5"},
-			{"min": 7, "desc_key": "trait.earth.7"},
-			{"min": 9, "desc_key": "trait.earth.9"}
+			{"min": 6, "desc_key": "trait.earth.6"},
+			{"min": 12, "desc_key": "trait.earth.12"},
+			{"min": 20, "desc_key": "trait.earth.20"},
+			{"min": 32, "desc_key": "trait.earth.32"}
 		]
 	},
 	"WATER": {
@@ -240,10 +242,11 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_water",
 		"icon_path": "res://assets/Realistic/sprites/items/WaterEmblem.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.water.2"},
-			{"min": 4, "desc_key": "trait.water.4"},
+			{"min": 3, "desc_key": "trait.water.3"},
 			{"min": 6, "desc_key": "trait.water.6"},
-			{"min": 8, "desc_key": "trait.water.8"}
+			{"min": 12, "desc_key": "trait.water.12"},
+			{"min": 20, "desc_key": "trait.water.20"},
+			{"min": 32, "desc_key": "trait.water.32"}
 		]
 	},
 	"AIR": {
@@ -251,10 +254,11 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_air",
 		"icon_path": "res://assets/Realistic/sprites/items/AirEmblem.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.air.2"},
-			{"min": 4, "desc_key": "trait.air.4"},
+			{"min": 3, "desc_key": "trait.air.3"},
 			{"min": 6, "desc_key": "trait.air.6"},
-			{"min": 8, "desc_key": "trait.air.8"}
+			{"min": 12, "desc_key": "trait.air.12"},
+			{"min": 20, "desc_key": "trait.air.20"},
+			{"min": 32, "desc_key": "trait.air.32"}
 		]
 	},
 	"TANK": {
@@ -262,10 +266,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_tank",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_tank.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.tank.2"},
+			{"min": 3, "desc_key": "trait.tank.3"},
+			{"min": 4, "desc_key": "trait.tank.4"},
+			{"min": 5, "desc_key": "trait.tank.5"}
 		]
 	},
 	"FIGHTER": {
@@ -273,10 +277,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_fighter",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_fighter.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.fighter.2"},
+			{"min": 3, "desc_key": "trait.fighter.3"},
+			{"min": 4, "desc_key": "trait.fighter.4"},
+			{"min": 5, "desc_key": "trait.fighter.5"}
 		]
 	},
 	"SUPPORT": {
@@ -284,10 +288,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_support",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_support.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.support.2"},
+			{"min": 3, "desc_key": "trait.support.3"},
+			{"min": 4, "desc_key": "trait.support.4"},
+			{"min": 5, "desc_key": "trait.support.5"}
 		]
 	},
 	"SPECIALIST": {
@@ -295,10 +299,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_specialist",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_specialist.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.specialist.2"},
+			{"min": 3, "desc_key": "trait.specialist.3"},
+			{"min": 4, "desc_key": "trait.specialist.4"},
+			{"min": 5, "desc_key": "trait.specialist.5"}
 		]
 	},
 	"FOOD": {
@@ -306,10 +310,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_food",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_food.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.food.2"},
+			{"min": 3, "desc_key": "trait.food.3"},
+			{"min": 4, "desc_key": "trait.food.4"},
+			{"min": 5, "desc_key": "trait.food.5"}
 		]
 	},
 	"MECHA": {
@@ -317,10 +321,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_mecha",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_mecha.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.mecha.2"},
+			{"min": 3, "desc_key": "trait.mecha.3"},
+			{"min": 4, "desc_key": "trait.mecha.4"},
+			{"min": 5, "desc_key": "trait.mecha.5"}
 		]
 	},
 	"ANIMAL": {
@@ -328,10 +332,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_animal",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_animal.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.animal.2"},
+			{"min": 3, "desc_key": "trait.animal.3"},
+			{"min": 4, "desc_key": "trait.animal.4"},
+			{"min": 5, "desc_key": "trait.animal.5"}
 		]
 	},
 	"PLANT": {
@@ -339,10 +343,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_plant",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_plant.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.plant.2"},
+			{"min": 3, "desc_key": "trait.plant.3"},
+			{"min": 4, "desc_key": "trait.plant.4"},
+			{"min": 5, "desc_key": "trait.plant.5"}
 		]
 	},
 	"TOY": {
@@ -350,10 +354,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_toy",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_toy.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.toy.2"},
+			{"min": 3, "desc_key": "trait.toy.3"},
+			{"min": 4, "desc_key": "trait.toy.4"},
+			{"min": 5, "desc_key": "trait.toy.5"}
 		]
 	},
 	"APPLIANCE": {
@@ -361,10 +365,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_appliance",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_appliance.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.appliance.2"},
+			{"min": 3, "desc_key": "trait.appliance.3"},
+			{"min": 4, "desc_key": "trait.appliance.4"},
+			{"min": 5, "desc_key": "trait.appliance.5"}
 		]
 	},
 	"COSTUME": {
@@ -372,10 +376,10 @@ const TRAIT_DEFINITIONS = {
 		"trinket_id": &"trinket_trait_costume",
 		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_costume.png",
 		"levels": [
-			{"min": 2, "desc_key": "trait.common_pwr.2"},
-			{"min": 3, "desc_key": "trait.common_pwr.3"},
-			{"min": 4, "desc_key": "trait.common_pwr.4"},
-			{"min": 5, "desc_key": "trait.common_pwr.5"}
+			{"min": 2, "desc_key": "trait.costume.2"},
+			{"min": 3, "desc_key": "trait.costume.3"},
+			{"min": 4, "desc_key": "trait.costume.4"},
+			{"min": 5, "desc_key": "trait.costume.5"}
 		]
 	}
 }

@@ -323,7 +323,7 @@ STATUS_ARMOR_DESC,Absorbs damage equal to the amount of stacks. Decays completel
 STATUS_SPIKES,Spikes,Espinhos
 STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação.
 STATUS_STATIC,Static,Estático
-STATUS_STATIC_DESC,Any core stat change consumes 1 stack of static and deals 1 damage. Consumed stacks deal 1 damage bypassing armor.,Qualquer alteração de atributo consome 1 acúmulo de estático e causa 1 de dano. Acúmulos consumidos causam 1 de dano ignorando armadura.
+STATUS_STATIC_DESC,"When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn.","Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
 trinket.royal_insignia.name,Royal Insignia,Insígnia Real
 trinket.royal_insignia.desc,A medal signifying royal favor.,Uma medalha significando favor real.
 ability.royal_insignia.name,Royal Blessing,Bênção Real
@@ -333,74 +333,122 @@ trinket.veteran_insignia.desc,A badge of honor for seasoned warriors.,Um distint
 ability.veteran_insignia.name,Veteran Blessing,Bênção do Veterano
 ability.veteran_insignia.desc,"When a Level 2 unit enters the board, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 2 entra no tabuleiro, concede +1 HP e +1 PWR."
 trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
-trinket.trait_fire.desc,Enables the Fire trait whenever your team has enough Fire souls.,Ativa a sinergia de Fogo sempre que sua equipe tiver almas de Fogo suficientes.
+trinket.trait_fire.desc,"Enables the Fire trait. Fire units ignite enemies on attack, spreading fiery destruction and dealing bonus damage against burning targets.","Ativa a sinergia de Fogo. Unidades de Fogo incendeiam inimigos ao atacar, espalhando chamas e causando dano bônus contra alvos queimando."
 trinket.trait_earth.name,Earth Trait,Sinergia de Terra
-trinket.trait_earth.desc,Enables the Earth trait whenever your team has enough Earth souls.,Ativa a sinergia de Terra sempre que sua equipe tiver almas de Terra suficientes.
+trinket.trait_earth.desc,"Enables the Earth trait. Grants Armor and Spikes across your frontline, turning impenetrable defense into devastating counter-attacks.","Ativa a sinergia de Terra. Concede Armadura e Espinhos na sua linha de frente, transformando defesa impenetrável em contra-ataques devastadores."
 trinket.trait_water.name,Water Trait,Sinergia de Água
-trinket.trait_water.desc,Enables the Water trait whenever your team has enough Water souls.,Ativa a sinergia de Água sempre que sua equipe tiver almas de Água suficientes.
+trinket.trait_water.desc,"Enables the Water trait. Flowing waves heal allies, cleanse debilitating negative effects, and convert afflictions into restorative energy.","Ativa a sinergia de Água. Ondas fluidas curam aliados, removem efeitos negativos debilitantes e convertem aflições em energia restauradora."
 trinket.trait_air.name,Air Trait,Sinergia de Ar
-trinket.trait_air.desc,Enables the Air trait whenever your team has enough Air souls.,Ativa a sinergia de Ar sempre que sua equipe tiver almas de Ar suficientes.
+trinket.trait_air.desc,"Enables the Air trait. Electrifies enemies with Static on attack, splashing charges that detonate into collateral damage upon death.","Ativa a sinergia de Ar. Eletrifica inimigos com Estática ao atacar, espalhando cargas que explodem em dano colateral ao morrer."
 trinket.trait_tank.name,Tank Trait,Sinergia de Guardião
-trinket.trait_tank.desc,Enables the Tank trait whenever your team has enough Tank units.,Ativa a sinergia de Guardião sempre que sua equipe tiver unidades de Guardião suficientes.
+trinket.trait_tank.desc,"Enables the Tank trait. Tanks bolster defensive armor, intercept attacks directed at backline allies, and convert armor into punishing spikes.","Ativa a sinergia de Guardião. Guardiões fortalecem armaduras defensivas, interceptam ataques a aliados atrás e convertem armadura em espinhos punitivos."
 trinket.trait_fighter.name,Fighter Trait,Sinergia de Lutador
-trinket.trait_fighter.desc,Enables the Fighter trait whenever your team has enough Fighter units.,Ativa a sinergia de Lutador sempre que sua equipe tiver unidades de Lutador suficientes.
+trinket.trait_fighter.desc,"Enables the Fighter trait. Brawlers excel against high-health targets, cleaving enemies behind their mark and chain-attacking on kill.","Ativa a sinergia de Lutador. Lutadores superam alvos com muita vida, desferem golpes dispersos atrás do alvo e encadeiam ataques ao abater."
 trinket.trait_support.name,Support Trait,Sinergia de Suporte
-trinket.trait_support.desc,Enables the Support trait whenever your team has enough Support units.,Ativa a sinergia de Suporte sempre que sua equipe tiver unidades de Suporte suficientes.
+trinket.trait_support.desc,"Enables the Support trait. Inspires formation allies with bonus health and power, reinforcing the weakest units every turn.","Ativa a sinergia de Suporte. Inspira a formação aliada com bônus de vida e poder, reforçando as unidades mais fracas a cada turno."
 trinket.trait_specialist.name,Specialist Trait,Sinergia de Especialista
-trinket.trait_specialist.desc,Enables the Specialist trait whenever your team has enough Specialist units.,Ativa a sinergia de Especialista sempre que sua equipe tiver unidades de Especialista suficientes.
+trinket.trait_specialist.desc,"Enables the Specialist trait. Manipulates economy and gacha tokens, summoning combat clones and scaling power with accrued gold.","Ativa a sinergia de Especialista. Manipula a economia e fichas de gacha, invocando clones de combate e escalando poder com o ouro acumulado."
 trinket.trait_food.name,Food Trait,Sinergia de Comida
-trinket.trait_food.desc,Enables the Food trait whenever your team has enough Food units.,Ativa a sinergia de Comida sempre que sua equipe tiver unidades de Comida suficientes.
+trinket.trait_food.desc,"Enables the Food trait. Nourishes the ally standing directly behind when taking hits, passing down full power upon defeat.","Ativa a sinergia de Comida. Alimenta o aliado logo atrás ao sofrer golpes, transferindo todo o poder restante ao ser derrotado."
 trinket.trait_mecha.name,Mecha Trait,Sinergia de Mecha
-trinket.trait_mecha.desc,Enables the Mecha trait whenever your team has enough Mecha units.,Ativa a sinergia de Mecha sempre que sua equipe tiver unidades de Mecha suficientes.
+trinket.trait_mecha.desc,"Enables the Mecha trait. Reinforced with armor and spikes, firing static laser salvos on merges and overloading upon destruction.","Ativa a sinergia de Mecha. Fortalecido com armadura e espinhos, disparando salvas de laser estático em fusões e sobrecarregando ao morrer."
 trinket.trait_animal.name,Animal Trait,Sinergia de Animal
-trinket.trait_animal.desc,Enables the Animal trait whenever your team has enough Animal units.,Ativa a sinergia de Animal sempre que sua equipe tiver unidades de Animal suficientes.
+trinket.trait_animal.desc,Enables the Animal trait. Feral pack instincts empower an alpha and heal the pack with every fierce attack.,Ativa a sinergia de Animal. Instintos ferozes de matilha fortalecem um alfa e curam o bando a cada ataque impiedoso.
 trinket.trait_plant.name,Plant Trait,Sinergia de Planta
-trinket.trait_plant.desc,Enables the Plant trait whenever your team has enough Plant units.,Ativa a sinergia de Planta sempre que sua equipe tiver unidades de Planta suficientes.
+trinket.trait_plant.desc,"Enables the Plant trait. Deep roots foster spikes and steady regeneration, transforming healing into sharp thorn defenses.","Ativa a sinergia de Planta. Raízes profundas desenvolvem espinhos e regeneração contínua, convertendo cura em defesas espinhosas afiadas."
 trinket.trait_toy.name,Toy Trait,Sinergia de Brinquedo
-trinket.trait_toy.desc,Enables the Toy trait whenever your team has enough Toy units.,Ativa a sinergia de Brinquedo sempre que sua equipe tiver unidades de Brinquedo suficientes.
+trinket.trait_toy.desc,"Enables the Toy trait. Generates volatile static friction when struck in melee, culminating in an explosive static detonation on death.","Ativa a sinergia de Brinquedo. Gera atrito estático volátil ao receber golpes corpo a corpo, culminando em detonação estática explosiva ao morrer."
 trinket.trait_appliance.name,Appliance Trait,Sinergia de Eletrodoméstico
-trinket.trait_appliance.desc,Enables the Appliance trait whenever your team has enough Appliance units.,Ativa a sinergia de Eletrodoméstico sempre que sua equipe tiver unidades de Eletrodoméstico suficientes.
+trinket.trait_appliance.desc,"Enables the Appliance trait. Appliances inflict Static and Burn on attack, gain immunity and reflection against both, and convert incoming debuffs into raw stats.","Ativa a sinergia de Eletrodoméstico. Eletrodomésticos aplicam Estática e Chamas ao atacar, ganham imunidade e reflexão contra ambos, e convertem penalidades em atributos."
 trinket.trait_costume.name,Costume Trait,Sinergia de Fantasia
-trinket.trait_costume.desc,Enables the Costume trait whenever your team has enough Costume units.,Ativa a sinergia de Fantasia sempre que sua equipe tiver unidades de Fantasia suficientes.
+trinket.trait_costume.desc,"Enables the Costume trait. Masquerades in enemy strengths, stealing beneficial status effects and raw attributes before battle begins.","Ativa a sinergia de Fantasia. Disfarça-se nas forças inimigas, roubando efeitos benéficos e atributos puros antes do combate começar."
 trait.fire.name,Fire,Fogo
-trait.fire.3,Apply 1 Burn on attack.,Aplica 1 de Chamas ao atacar.
-trait.fire.5,Apply +1 Extra Burn (Total 2).,Aplica +1 de Chamas Extra (Total 2).
-trait.fire.7,Combat Start: Apply 2 Burn to ALL enemies.,Início do Combate: Aplica 2 de Chamas a TODOS inimigos.
-trait.fire.9,Traitor's Flame: Attacks deal bonus damage equal to target's Burn stacks.,Chama do Traidor: Ataques causam dano bônus igual às pilhas de Chamas do alvo.
-trait.earth.name,Earth,Terra
-trait.earth.3,All Allies gain 1 Armor. Earth units gain 2 Armor.,Todos aliados ganham 1 Armadura. Unidades de Terra ganham 2 Armadura.
-trait.earth.5,All Allies gain 2 Armor. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura. Unidades de Terra ganham 4 Armadura.
-trait.earth.7,All Allies gain 2 Armor + 1 Spike. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 1 Espinho. Unidades de Terra ganham 4 Armadura.
-trait.earth.9,All Allies gain 2 Armor + 2 Spikes. Earth units gain 4 Armor.,Todos aliados ganham 2 Armadura + 2 Espinhos. Unidades de Terra ganham 4 Armadura.
+trait.fire.3,Fire units' attacks inflict 1 Burn stack on target.,Ataques de unidades de Fogo aplicam 1 de Chamas no alvo.
+trait.fire.6,...and inflicts +1 additional Burn if the target already has Burn.,...e aplica +1 de Chamas adicional se o alvo já tiver Chamas.
+trait.fire.12,"Additionally, when an enemy takes Burn damage at turn end, they spread 1 Burn to each adjacent ally.","Além disso, quando um inimigo sofre dano de Chamas no fim do turno, espalha 1 de Chamas para cada aliado adjacente."
+trait.fire.20,...and Fire units deal bonus attack damage equal to the target's current Burn stacks.,...e unidades de Fogo causam dano de ataque bônus igual às Chamas atuais do alvo.
+trait.fire.32,"Additionally, when an enemy holding Burn is defeated by a Fire unit, their remaining Burn stacks are distributed between adjacent enemies.","Além disso, quando um inimigo com Chamas é derrotado por uma unidade de Fogo, suas Chamas restantes são distribuídas entre inimigos adjacentes."
 item.emblem_fire.name,Fire Emblem,Emblema de Fogo
 item.emblem_fire.desc,"When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies.","Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
+trait.earth.name,Earth,Terra
+trait.earth.3,Pre-Combat: The frontmost Earth unit gains 1 Armor.,Pré-Combate: A unidade de Terra mais à frente ganha 1 de Armadura.
+trait.earth.6,...and it also gains 1 Spikes.,...e também ganha 1 de Espinhos.
+trait.earth.12,"Adds +1 Armor and +1 Spikes to the effect, and all other Earth units also gain this.","Adiciona +1 de Armadura e +1 de Espinhos ao efeito, e todas as outras unidades de Terra também ganham isso."
+trait.earth.20,"Adds +1 Armor and +1 Spikes to Earth units, and all other allies gain 1 Armor and 1 Spikes.","Adiciona +1 de Armadura e +1 de Espinhos a unidades de Terra, e todos os outros aliados ganham 1 de Armadura e 1 de Espinhos."
+trait.earth.32,...and Earth units deal bonus attack damage equal to their current Spikes (decays 1 Spikes stack per attack instance).,...e unidades de Terra causam dano de ataque bônus igual aos seus Espinhos atuais (consome 1 pilha de Espinhos por ataque).
 item.emblem_earth.name,Earth Emblem,Emblema de Terra
 item.emblem_earth.desc,"When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies.","Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que a unidade se beneficie das sinergias do traço de Terra."
 trait.water.name,Water,Água
-trait.water.2,Water units heal adjacent allies 1 HP at combat start.,Unidades de Água curam aliados adjacentes em 1 HP no início do combate.
-trait.air.name,Air,Ar
-trait.air.2,Air units steal 1 PWR from the opposite enemy at combat start.,Unidades de Ar roubam 1 PWR do inimigo oposto no início do combate.
-trait.tank.name,Tank,Guardião
-trait.fighter.name,Fighter,Lutador
-trait.support.name,Support,Suporte
-trait.specialist.name,Specialist,Especialista
-trait.food.name,Food,Comida
-trait.mecha.name,Mecha,Mecha
-trait.animal.name,Animal,Animal
-trait.plant.name,Plant,Planta
-trait.toy.name,Toy,Brinquedo
-trait.appliance.name,Appliance,Eletrodoméstico
-trait.costume.name,Costume,Fantasia
-trait.common_pwr.2,"At combat start, units of this trait gain +1 PWR.","No início do combate, unidades desta sinergia ganham +1 de Poder."
-trait.common_pwr.3,"At combat start, units of this trait gain +2 PWR.","No início do combate, unidades desta sinergia ganham +2 de Poder."
-trait.common_pwr.4,"At combat start, units of this trait gain +3 PWR.","No início do combate, unidades desta sinergia ganham +3 de Poder."
-trait.common_pwr.5,"At combat start, units of this trait gain +4 PWR.","No início do combate, unidades desta sinergia ganham +4 de Poder."
-ability.trait_pwr_buff.name,Trait Surge,Ímpeto de Sinergia
-ability.trait_pwr_buff.desc,"At combat start, grants +1 to +4 PWR to matching trait units based on synergy count.","No início do combate, concede de +1 a +4 de Poder para unidades desta sinergia baseado na contagem."
+trait.water.3,Pre-Combat: Water units heal the ally directly in front of them by 1 HP.,Pré-Combate: Unidades de Água curam o aliado diretamente à frente em 1 de Vida.
+trait.water.6,...and also cleanse 1 negative status stack (Burn/Static) from that ally.,...e também removem 1 efeito negativo (Chamas/Estática) desse aliado.
+trait.water.12,"Additionally, at turn start, heals the ally with the lowest HP by 1 HP.","Além disso, no início do turno, cura o aliado com menor Vida em 1 de Vida."
+trait.water.20,"Additionally, Pre-Combat: All allies across the team cleanse 1 negative status stack.","Além disso, Pré-Combate: Todos os aliados da equipe removem 1 efeito negativo."
+trait.water.32,"Additionally, at turn start, allies consume all their negative status stacks to heal 1 HP per stack consumed.","Além disso, no início do turno, aliados consomem todos os seus efeitos negativos para curar 1 de Vida por efeito consumido."
 item.emblem_water.name,Water Emblem,Emblema de Água
 item.emblem_water.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
+trait.air.name,Air,Ar
+trait.air.3,Air units' attacks inflict 1 Static stack on target.,Ataques de unidades de Ar aplicam 1 de Estática no alvo.
+trait.air.6,Increases to 2 Static stacks per attack.,Aumenta para 2 de Estática por ataque.
+trait.air.12,...and attacks splash half of the inflicted Static (minimum 1) to adjacent enemies.,...e ataques espalham metade da Estática aplicada (mínimo 1) para inimigos adjacentes.
+trait.air.20,"Additionally, Pre-Combat: Inflicts 1 Static to all enemies.","Além disso, Pré-Combate: Aplica 1 de Estática a todos os inimigos."
+trait.air.32,Static inflicted on attack scales to equal the Air unit's PWR (splashes half to adjacent enemies).,Estática aplicada ao atacar escala para igualar o Poder da unidade de Ar (espalha metade para inimigos adjacentes).
 item.emblem_air.name,Air Emblem,Emblema de Ar
 item.emblem_air.desc,"When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies.","Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
+trait.tank.name,Tank,Guardião
+trait.tank.2,Pre-Combat: The frontmost Tank gains 1 Armor.,Pré-Combate: O Guardião mais à frente ganha 1 de Armadura.
+trait.tank.3,"All Tanks now gain this 1 Armor. Whenever a Tank's Armor absorbs damage, the ally directly behind gains 1 Armor.","Todos os Guardiões agora ganham 1 de Armadura. Quando a Armadura de um Guardião absorve dano, o aliado diretamente atrás ganha 1 de Armadura."
+trait.tank.4,"Additionally, at turn start, the frontmost Tank gains 1 Armor, and Tanks intercept attacks targeting the ally directly behind them.","Além disso, no início do turno, o Guardião mais à frente ganha 1 de Armadura, e Guardiões interceptam ataques direcionados ao aliado diretamente atrás."
+trait.tank.5,"...and whenever a Tank gains Armor from any source, it gains an equal amount of Spikes.","...e sempre que um Guardião ganha Armadura de qualquer fonte, ganha a mesma quantidade de Espinhos."
+trait.fighter.name,Fighter,Lutador
+trait.fighter.2,Fighters deal +1 damage on their attacks if the target has more HP than them.,Lutadores causam +1 de dano em ataques se o alvo tiver mais Vida que eles.
+trait.fighter.3,"Additionally, when a Fighter receives attack damage, they retaliate for 1 ranged damage (once per turn).","Além disso, quando um Lutador sofre dano de ataque, contra-ataca com 1 de dano à distância (uma vez por turno)."
+trait.fighter.4,"Additionally, Fighters' attacks deal half PWR splash damage (minimum 1) to the enemy directly behind their target.","Além disso, ataques de Lutadores causam metade do Poder como dano disperso (mínimo 1) ao inimigo diretamente atrás do alvo."
+trait.fighter.5,"...and when a Fighter defeats an enemy, they gain +1 PWR and immediately attack the next enemy (once per turn).","...e quando um Lutador derrota um inimigo, ganha +1 de Poder e ataca imediatamente o próximo inimigo (uma vez por turno)."
+trait.support.name,Support,Suporte
+trait.support.2,Pre-Combat: Support units grant +1 HP to the ally directly in front of them.,Pré-Combate: Unidades de Suporte concedem +1 de Vida ao aliado diretamente à frente.
+trait.support.3,...and also grant +1 PWR to the ally directly behind them.,...e também concedem +1 de Poder ao aliado diretamente atrás.
+trait.support.4,"Additionally, at turn start, grants +1 HP to the lowest-HP ally and +1 PWR to the lowest-PWR ally per living Support.","Além disso, no início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
+trait.support.5,"Additionally, Pre-Combat: Grants +1 HP and +1 PWR to the Hero unit.","Além disso, Pré-Combate: Concede +1 de Vida e +1 de Poder à unidade Heroica."
+trait.specialist.name,Specialist,Especialista
+trait.specialist.2,"Combat Start: If you have 0 tokens remaining, gain 1 Token.","Início do Combate: Se você tiver 0 fichas restantes, ganha 1 Ficha."
+trait.specialist.3,...and the first Gacha draw of each battle costs 1 less Token (minimum 1).,...e o primeiro sorteio do Gacha em cada batalha custa 1 Ficha a menos (mínimo 1).
+trait.specialist.4,"Additionally, defeating an enemy with a Specialist awards +1 Gold (max 1/turn, 5/battle).","Além disso, derrotar um inimigo com um Especialista concede +1 de Ouro (máx 1/turno, 5/batalha)."
+trait.specialist.5,"Additionally, summons a combat-only copy of your lowest tier/level unit to bench pre-combat, and at turn start, the frontmost Specialist gains +1 PWR per 5 Gold.","Além disso, invoca uma cópia de combate da sua unidade de menor nível/tier no banco no pré-combate, e no início do turno, o Especialista mais à frente ganha +1 de Poder a cada 5 de Ouro."
+trait.food.name,Food,Comida
+trait.food.2,"When a Food unit is hurt by an attack, it heals the ally directly behind it by 1 HP.","Quando uma unidade de Comida é ferida por um ataque, cura o aliado diretamente atrás em 1 de Vida."
+trait.food.3,Increases healing to 2 HP.,Aumenta a cura para 2 de Vida.
+trait.food.4,"Increases healing to 3 HP, and also grants +1 PWR to that ally.",Aumenta a cura para 3 de Vida e também concede +1 de Poder a esse aliado.
+trait.food.5,"Increases healing to 4 HP and +2 PWR. Additionally, on death, passes all of its current PWR to the ally directly behind it.","Aumenta a cura para 4 de Vida e +2 de Poder. Além disso, ao morrer, passa todo seu Poder atual para o aliado diretamente atrás."
+trait.mecha.name,Mecha,Mecha
+trait.mecha.2,Pre-Combat: Mecha units gain 1 Spikes.,Pré-Combate: Unidades Mecha ganham 1 de Espinhos.
+trait.mecha.3,"...and also gain 1 Armor. Additionally, Mechas inflict 1 Static on attack and when their Armor absorbs damage.","...e também ganham 1 de Armadura. Além disso, Mechas aplicam 1 de Estática ao atacar e quando sua Armadura absorve dano."
+trait.mecha.4,"Additionally, whenever a merge occurs on the board, each Mecha fires a laser dealing 1 damage and 1 Static to a random enemy.","Além disso, sempre que ocorre uma fusão no tabuleiro, cada Mecha dispara um laser causando 1 de dano e 1 de Estática a um inimigo aleatório."
+trait.mecha.5,"Additionally, when a Mecha dies, surviving Mechas gain 2 Armor and 2 Spikes, and fire a laser dealing 2 damage and 2 Static to a random enemy.","Além disso, quando um Mecha morre, Mechas sobreviventes ganham 2 de Armadura e 2 de Espinhos, e disparam um laser causando 2 de dano e 2 de Estática a um inimigo aleatório."
+trait.animal.name,Animal,Animal
+trait.animal.2,Pre-Combat: A random Animal gains +1 PWR. Animals heal 1 HP per attack.,Pré-Combate: Um Animal aleatório ganha +1 de Poder. Animais curam 1 de Vida por ataque.
+trait.animal.3,Healing per attack increases to 2 HP.,Cura por ataque aumenta para 2 de Vida.
+trait.animal.4,Healing per attack increases to 3 HP.,Cura por ataque aumenta para 3 de Vida.
+trait.animal.5,Healing per attack increases to 3 HP + 25% PWR (minimum +1).,Cura por ataque aumenta para 3 de Vida + 25% do Poder (mínimo +1).
+trait.plant.name,Plant,Planta
+trait.plant.2,Pre-Combat: The frontmost Plant unit gains 1 Spikes.,Pré-Combate: A Planta mais à frente ganha 1 de Espinhos.
+trait.plant.3,"Additionally, at turn start, the lowest-HP Plant recovers 1 HP.","Além disso, no início do turno, a Planta com menor Vida recupera 1 de Vida."
+trait.plant.4,"Additionally, Pre-Combat: All Plants gain 1 Spikes and +1 HP (frontmost gains 2 Spikes).","Além disso, Pré-Combate: Todas as Plantas ganham 1 de Espinhos e +1 de Vida (a mais à frente ganha 2 de Espinhos)."
+trait.plant.5,"Additionally, at turn start, all Plants gain 1 Spikes and +1 HP. Whenever a Plant receives a heal, it gains 1 Spikes.","Além disso, no início do turno, todas as Plantas ganham 1 de Espinhos e +1 de Vida. Sempre que uma Planta recebe cura, ganha 1 de Espinhos."
+trait.toy.name,Toy,Brinquedo
+trait.toy.2,Enemies hitting a Toy with a melee attack receive 2 Static stacks.,Inimigos que atingem um Brinquedo com ataque corpo a corpo recebem 2 de Estática.
+trait.toy.3,Increases to 3 Static stacks.,Aumenta para 3 de Estática.
+trait.toy.4,Increases to 4 Static stacks.,Aumenta para 4 de Estática.
+trait.toy.5,"Additionally, on death, detonates all Static on the enemy holding the highest Static stacks, dealing damage equal to those stacks to it and clearing them.","Além disso, ao morrer, detona toda a Estática no inimigo com mais Estática, causando dano igual às pilhas e removendo-as."
+trait.appliance.name,Appliance,Eletrodoméstico
+trait.appliance.2,"Appliance units inflict 1 Static on attack. Appliances are immune to Static and remove held Static pre-combat.","Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate."
+trait.appliance.3,"...and also inflict 1 Burn on attack. Appliances become immune to Burn and cleanse held Burn pre-combat.","...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate."
+trait.appliance.4,"Additionally, when an enemy attempts to apply Static or Burn to an Appliance, it is reflected back to the sender.","Além disso, quando um inimigo tenta aplicar Estática ou Chamas a um Eletrodoméstico, o efeito é refletido de volta para quem aplicou."
+trait.appliance.5,"Additionally, incoming negative status attempts grant stats: each attempted Static grants +1 PWR, and each attempted Burn grants +1 HP.","Além disso, tentativas de aplicar efeitos negativos concedem atributos: cada Estática concede +1 de Poder, e cada Chamas concede +1 de Vida."
+trait.costume.name,Costume,Fantasia
+trait.costume.2,"Pre-Combat: Steals 1 stack of the mirror enemy's highest beneficial status effect, or 1 point of their highest stat.","Pré-Combate: Rouba 1 pilha do maior efeito benéfico do inimigo espelhado, ou 1 ponto do maior atributo dele."
+trait.costume.3,"Instead of above, Pre-Combat: Steals the entire highest beneficial status effect from the mirror enemy, or 1 HP and 1 PWR.","Em vez do acima, Pré-Combate: Rouba todo o maior efeito benéfico do inimigo espelhado, ou 1 de Vida e 1 de Poder."
+trait.costume.4,"Upgrades to steal all beneficial status effects from the mirror enemy, or 2 HP and 2 PWR.","Melhora para roubar todos os efeitos benéficos do inimigo espelhado, ou 2 de Vida e 2 de Poder."
+trait.costume.5,"Pre-Combat: Executed once for the team. The Hero steals all Armor and Spikes, plus 3 HP and 3 PWR, from the enemy with highest total Armor and Spikes.","Pré-Combate: Executado uma vez pela equipe. O Herói rouba toda a Armadura e Espinhos, mais 3 de Vida e 3 de Poder, do inimigo com maior soma de Armadura e Espinhos."
 item.potion_t1.name,Minor Healing Potion,Poção de Cura Menor
 item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
 ability.potion_t1.name,Drink,Beber
@@ -708,11 +756,43 @@ EFWATnkCosMec.name,EFWATnkCosMec,EFWATnkCosMec
 EFWATnkCosMec.desc,EFWATnkCosMec unit.,Unidade EFWATnkCosMec.
 FWWASupAniToy.name,FWWASupAniToy,FWWASupAniToy
 FWWASupAniToy.desc,FWWASupAniToy unit.,Unidade FWWASupAniToy.
-ability.trait_earth.name,Earth Ward,Proteção da Terra
-ability.trait_earth.desc,"At combat start, grants Armor and Spikes to allies based on Earth souls (Earth units gain double Armor).","No início do combate, concede Armadura e Espinhos a aliados com base nas almas de Terra (unidades de Terra recebem Armadura dobrada)."
-ability.trait_fire.name,Fire Nova,Nova de Fogo
-ability.trait_fire.desc,"At combat start, applies 2 Burn to the opposing team if 7+ Fire souls.","No início do combate, aplica 2 de Chamas à equipe adversária se tiver 7+ almas de Fogo."
-ability.trait_water.name,Soothing Stream,Corrente Suave
-ability.trait_water.desc,"At combat start, Water units heal adjacent allies 1 HP if 2+ Water souls.","No início do combate, unidades de Água curam aliados adjacentes em 1 HP se tiver 2+ almas de Água."
-ability.trait_air.name,Gale Siphon,Sifão da Ventania
-ability.trait_air.desc,"At combat start, Air units steal 1 PWR from mirrored enemies if 2+ Air souls.","No início do combate, unidades de Ar roubam 1 PWR de inimigos espelhados se tiver 2+ almas de Ar."
+ability.trait_fire.name,Infernal Ignition,Ignição Infernal
+ability.trait_fire.desc,"Empowers Fire units to burn enemies on attack, spread burns, and deal bonus damage to burning foes.","Capacita unidades de Fogo a queimar inimigos ao atacar, espalhar chamas e causar dano bônus a alvos queimando."
+ability.trait_earth.name,Tectonic Bulwark,Bastião Tectônico
+ability.trait_earth.desc,"Grants Armor and Spikes to Earth units and allies, empowering Spikes to deal bonus damage on attack.","Concede Armadura e Espinhos a unidades de Terra e aliados, capacitando Espinhos a causar dano bônus ao atacar."
+ability.trait_water.name,Cleansing Tide,Maré Purificadora
+ability.trait_water.desc,Water units heal allies ahead and cleanse negative status effects pre-combat.,Unidades de Água curam aliados à frente e removem efeitos negativos no pré-combate.
+ability.trait_water_turn_start.name,Restorative Spring,Fonte Restauradora
+ability.trait_water_turn_start.desc,"At turn start, heals lowest HP ally and converts negative statuses into healing.","No início do turno, cura o aliado com menor Vida e converte status negativos em cura."
+ability.trait_air.name,Static Tempest,Tempestade Estática
+ability.trait_air.desc,"Air units electrify targets with Static on attack, splashing charges to adjacent enemies.","Unidades de Ar eletrificam alvos com Estática ao atacar, espalhando cargas para inimigos adjacentes."
+ability.trait_tank.name,Bastion Guard,Guarda do Bastião
+ability.trait_tank.desc,"Grants Armor pre-combat, passes armor backward on absorption, intercepts attacks, and mirrors armor as spikes.","Concede Armadura no pré-combate, repassa armadura para trás ao absorver, intercepta ataques e espelha armadura como espinhos."
+ability.trait_tank_turn_start.name,Frontline Reinforcement,Reforço de Vanguarda
+ability.trait_tank_turn_start.desc,"At turn start, grants 1 Armor to the frontmost Tank.","No início do turno, concede 1 de Armadura ao Guardião mais à frente."
+ability.trait_fighter.name,Battle Prowess,Destreza de Batalha
+ability.trait_fighter.desc,"Deals bonus damage against high-health targets, retaliates on attack damage, cleaves behind targets, and chains attacks on kill.","Causa dano bônus contra alvos com mais Vida, contra-ataca ao sofrer dano, desfere golpe disperso atrás do alvo e encadeia ataques ao abater."
+ability.trait_support.name,Formation Blessing,Bênção de Formação
+ability.trait_support.desc,"Grants +1 HP to the ally ahead, +1 PWR to the ally behind, and +1 HP/+1 PWR to the Hero.","Concede +1 de Vida ao aliado à frente, +1 de Poder ao aliado atrás e +1 de Vida/+1 de Poder ao Herói."
+ability.trait_support_turn_start.name,Inspiring Presence,Presença Inspiradora
+ability.trait_support_turn_start.desc,"At turn start, grants +1 HP to lowest-HP ally and +1 PWR to lowest-PWR ally per living Support.","No início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
+ability.trait_specialist.name,Resource Mastery,Domínio de Recursos
+ability.trait_specialist.desc,"Ensures opening tokens, discounts gacha draws, earns gold on kill, and summons a combat clone to the bench.","Garante fichas iniciais, dá desconto no gacha, ganha ouro ao abater e invoca clone de combate no banco."
+ability.trait_specialist_turn_start.name,Golden Ambition,Ambição Dourada
+ability.trait_specialist_turn_start.desc,"At turn start, the frontmost Specialist gains +1 PWR per 5 Gold held.","No início do turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
+ability.trait_food.name,Nutrient Infusion,Infusão Nutritiva
+ability.trait_food.desc,"Heals and empowers the ally directly behind when hurt, and passes down all PWR on death.","Cura e fortalece o aliado logo atrás ao sofrer dano, e transfere todo seu Poder ao morrer."
+ability.trait_mecha.name,Overclocked Core,Núcleo Sobrecarregado
+ability.trait_mecha.desc,"Grants Armor and Spikes, inflicts Static on attack, fires lasers on ally merges, and detonates retaliatory lasers on death.","Concede Armadura e Espinhos, aplica Estática ao atacar, dispara lasers em fusões aliadas e detona lasers de retaliação ao morrer."
+ability.trait_animal.name,Primal Frenzy,Frenesi Primordial
+ability.trait_animal.desc,Grants +1 PWR to an alpha Animal pre-combat and heals Animals on every attack.,Concede +1 de Poder a um Animal alfa no pré-combate e cura Animais a cada ataque.
+ability.trait_plant.name,Verdant Growth,Crescimento Verdejante
+ability.trait_plant.desc,"Grants Spikes and HP pre-combat, and converts all incoming heals into Spikes.","Concede Espinhos e Vida no pré-combate, e converte toda cura recebida em Espinhos."
+ability.trait_plant_turn_start.name,Floral Rejuvenation,Rejuvenescimento Floral
+ability.trait_plant_turn_start.desc,"At turn start, heals the lowest-HP Plant, and grants +1 Spikes and +1 HP to all Plants.","No início do turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
+ability.trait_toy.name,Static Discharge,Descarga Estática
+ability.trait_toy.desc,"Inflicts Static on melee attackers, and detonates the enemy with the most Static stacks on death.","Aplica Estática a atacantes corpo a corpo, e detona o inimigo com mais Estática ao morrer."
+ability.trait_appliance.name,Thermal Grid,Rede Térmica
+ability.trait_appliance.desc,"Appliance attacks inflict Static and Burn. Grants immunity and pre-combat cleanse to both, reflects incoming status effects, and converts debuffs into stats.","Ataques de Eletrodomésticos aplicam Estática e Chamas. Concede imunidade e purificação pré-combate a ambos, reflete efeitos de status e converte penalidades em atributos."
+ability.trait_costume.name,Mimic Masquerade,Disfarce Ilusório
+ability.trait_costume.desc,Pre-Combat: Steals beneficial status effects or base stats from mirrored enemies and enemy leaders.,Pré-Combate: Rouba efeitos benéficos ou atributos básicos de inimigos espelhados e líderes adversários.

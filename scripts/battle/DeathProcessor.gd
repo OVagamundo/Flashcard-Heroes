@@ -489,6 +489,13 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# higher priority trinkets from Phase 2.
 	# -------------------------------------------------------------------------
 
+	# STATIC COLLATERAL: Process static discharge damage on death before death triggers
+	for data in dying_units_data:
+		_process_static_collateral_damage(bm, data.unit, data.death_location, data.team, out_events)
+		_process_food_death_pass(bm, data.unit, data.death_location, data.team, out_events)
+		_process_toy_death_detonation(bm, data.unit, data.team, out_events)
+		_process_mecha_ally_death(bm, data.unit, data.team, out_events)
+
 	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
 	for data in dying_units_data:
 		if not data.has_lethal_counter:
@@ -644,3 +651,216 @@ static func _emit_immediate_death(bm, unit: GachaBallInstance, death_location, t
 		"fainting_ally_pwr": unit.current_pwr
 	}
 	AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+
+static func _process_static_collateral_damage(bm, unit: GachaBallInstance, death_location, team: String, out_events) -> void:
+	if not is_instance_valid(unit):
+		return
+	var static_stacks = unit.get_status_effect_amount(&"static")
+	if static_stacks <= 0:
+		return
+	
+	unit.clear_status_effect(&"static")
+	
+	if not is_instance_valid(death_location):
+		return
+		
+	var death_slot: int = death_location.index
+	var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	var lineup = bm.get_instances_in_container(lineup_tag)
+	
+	for candidate in lineup:
+		if not is_instance_valid(candidate) or candidate.current_hp <= 0:
+			continue
+		if candidate.ball_uuid == unit.ball_uuid:
+			continue
+		if candidate.location_slot_index == death_slot - 1 or candidate.location_slot_index == death_slot + 1:
+			var old_hp = candidate.current_hp
+			var old_armor = candidate.get_status_effect_amount(&"armor")
+			var dmg_result = bm.apply_damage(candidate, static_stacks, C.DamageType.STATIC, unit.ball_uuid)
+			var new_hp = candidate.current_hp
+			var armor_consumed = 0
+			var new_armor = old_armor
+			if dmg_result is Dictionary and not dmg_result.is_empty():
+				new_hp = dmg_result.get("new_hp", new_hp)
+				armor_consumed = dmg_result.get("armor_consumed", 0)
+				new_armor = dmg_result.get("new_armor", new_armor)
+			
+			if out_events != null:
+				var target_name = BattleHelpers.get_instance_display_name(candidate)
+				var source_name = BattleHelpers.get_instance_display_name(unit)
+				out_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+					"text": "%s suffers %d static collateral damage from %s" % [target_name, static_stacks, source_name]
+				}))
+				
+				var max_hp = 0
+				var candidate_def = candidate.get_definition()
+				if is_instance_valid(candidate_def):
+					max_hp = candidate_def.base_hp
+					
+				var payload := CombatPayload.damage(unit.ball_uuid, -static_stacks, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
+				payload.skip_bump = true
+				payload.is_status_damage = true
+				payload.status_color = Color(1, 0.85, 0.1, 1)
+				payload.targets_max_hp = [max_hp] as Array[int]
+				out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+					"source_uuid": unit.ball_uuid,
+					"target_uuids": [candidate.ball_uuid],
+					"visual_payload": payload
+				}))
+
+static func _process_food_death_pass(bm, unit: GachaBallInstance, death_location, team: String, out_events) -> void:
+	if not is_instance_valid(unit):
+		return
+	var traits = bm.get_active_traits(team)
+	if traits.get("FOOD", 0) < 5 or not bm.has_trait(unit, "FOOD"):
+		return
+
+	var ally_behind = bm._get_ally_behind(unit)
+	if not is_instance_valid(ally_behind) and is_instance_valid(death_location):
+		var death_slot: int = death_location.index
+		var behind_slot: int = death_slot - 1 if team == "PLAYER" else death_slot + 1
+		var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		var container = bm._state.get_container(lineup_tag)
+		if is_instance_valid(container) and behind_slot >= 0 and behind_slot < container.get_size():
+			var behind_uuid = container.get_uuid(behind_slot)
+			if not behind_uuid.is_empty():
+				ally_behind = bm.get_instance_by_uuid(behind_uuid)
+
+	if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+		var pwr_to_pass = max(1, unit.current_pwr)
+		var old_p = ally_behind.current_pwr
+		var new_p = bm.apply_stat_delta(ally_behind, "pwr", pwr_to_pass, unit.ball_uuid, C.ACTION_BUFF)
+		if out_events != null:
+			out_events.append(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": unit.ball_uuid,
+				"target_uuids": [ally_behind.ball_uuid],
+				"action_type": C.ACTION_BUFF,
+				"visual_payload": CombatPayload.pwr_change(unit.ball_uuid, pwr_to_pass, [old_p], [new_p])
+			}))
+
+static func _process_toy_death_detonation(bm, unit: GachaBallInstance, team: String, out_events) -> void:
+	if not is_instance_valid(unit):
+		return
+	var traits = bm.get_active_traits(team)
+	if traits.get("TOY", 0) < 5 or not bm.has_trait(unit, "TOY"):
+		return
+
+	var opp_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	var enemies = bm.get_instances_in_container(opp_tag).filter(func(e): return is_instance_valid(e) and e.current_hp > 0 and e.get_status_effect_amount(&"static") > 0)
+	if enemies.is_empty():
+		return
+
+	enemies.sort_custom(func(a, b):
+		var st_a = a.get_status_effect_amount(&"static")
+		var st_b = b.get_status_effect_amount(&"static")
+		if st_a != st_b:
+			return st_a > st_b
+		if team == "PLAYER":
+			return a.location_slot_index < b.location_slot_index
+		else:
+			return a.location_slot_index > b.location_slot_index
+	)
+	var target_enemy = enemies[0]
+	var static_amt = target_enemy.get_status_effect_amount(&"static")
+	target_enemy.clear_status_effect(&"static")
+	var old_h = target_enemy.current_hp
+	var old_a = target_enemy.get_status_effect_amount(&"armor")
+	var dmg_res = bm.apply_damage(target_enemy, static_amt, C.DamageType.STATIC, unit.ball_uuid)
+	var new_h = dmg_res.get("new_hp", target_enemy.current_hp)
+	var a_cons = dmg_res.get("armor_consumed", 0)
+	var new_a = dmg_res.get("new_armor", old_a)
+	var max_h = 0
+	var te_def = target_enemy.get_definition()
+	if is_instance_valid(te_def):
+		max_h = te_def.base_hp
+
+	if out_events != null:
+		var st_p := CombatPayload.status_change(unit.ball_uuid, -static_amt, "static_stacks", [static_amt], [0])
+		out_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+			"source_uuid": unit.ball_uuid,
+			"target_uuids": [target_enemy.ball_uuid],
+			"visual_payload": st_p
+		}))
+		var dmg_p := CombatPayload.damage(unit.ball_uuid, -static_amt, [old_h], [new_h], [old_a], [new_a], [a_cons])
+		dmg_p.skip_bump = true
+		dmg_p.is_status_damage = true
+		dmg_p.status_color = Color(1, 0.85, 0.1, 1)
+		dmg_p.targets_max_hp = [max_h] as Array[int]
+		out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+			"source_uuid": unit.ball_uuid,
+			"target_uuids": [target_enemy.ball_uuid],
+			"visual_payload": dmg_p
+		}))
+
+	if new_h <= 0:
+		bm.trigger_on_kill(unit.ball_uuid, target_enemy.ball_uuid)
+
+static func _process_mecha_ally_death(bm, dying_unit: GachaBallInstance, team: String, out_events) -> void:
+	if not is_instance_valid(dying_unit):
+		return
+	var traits = bm.get_active_traits(team)
+	if traits.get("MECHA", 0) < 5 or not bm.has_trait(dying_unit, "MECHA"):
+		return
+
+	var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	var mechas = bm.get_instances_in_container(lineup_tag).filter(func(u): return is_instance_valid(u) and u.current_hp > 0 and u.ball_uuid != dying_unit.ball_uuid and bm.has_trait(u, "MECHA"))
+	if mechas.is_empty():
+		return
+
+	var opp_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	var opp_lineup = bm.get_instances_in_container(opp_tag)
+
+	for mecha in mechas:
+		var old_arm = mecha.get_status_effect_amount(&"armor")
+		var new_arm = bm.apply_stat_delta(mecha, "armor_stacks", 2, dying_unit.ball_uuid, C.ACTION_BUFF)
+		var old_spk = mecha.get_status_effect_amount(&"spikes")
+		var new_spk = bm.apply_stat_delta(mecha, "spikes_stacks", 2, dying_unit.ball_uuid, C.ACTION_BUFF)
+		if out_events != null:
+			out_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+				"source_uuid": dying_unit.ball_uuid,
+				"target_uuids": [mecha.ball_uuid],
+				"visual_payload": CombatPayload.status_change(dying_unit.ball_uuid, 2, "armor_stacks", [old_arm], [new_arm])
+			}))
+			out_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+				"source_uuid": dying_unit.ball_uuid,
+				"target_uuids": [mecha.ball_uuid],
+				"visual_payload": CombatPayload.status_change(dying_unit.ball_uuid, 2, "spikes_stacks", [old_spk], [new_spk])
+			}))
+
+		var living_enemies = opp_lineup.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+		if not living_enemies.is_empty():
+			var enemy = RNGManager.combat_rng.pick_random(living_enemies)
+			var old_h = enemy.current_hp
+			var old_a = enemy.get_status_effect_amount(&"armor")
+			var dmg_res = bm.apply_damage(enemy, 2, C.DamageType.RANGED, mecha.ball_uuid)
+			var new_h = dmg_res.get("new_hp", enemy.current_hp)
+			var a_cons = dmg_res.get("armor_consumed", 0)
+			var new_a = dmg_res.get("new_armor", old_a)
+			var max_h = 0
+			var e_def = enemy.get_definition()
+			if is_instance_valid(e_def):
+				max_h = e_def.base_hp
+
+			if out_events != null:
+				var p := CombatPayload.damage(mecha.ball_uuid, 2, [old_h], [new_h], [old_a], [new_a], [a_cons])
+				p.attack_type = "ranged"
+				p.skip_bump = true
+				p.projectile = CombatProjectile.new("hp", 2, "yellow")
+				p.targets_max_hp = [max_h] as Array[int]
+				out_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+					"source_uuid": mecha.ball_uuid,
+					"target_uuids": [enemy.ball_uuid],
+					"visual_payload": p
+				}))
+				var old_st = enemy.get_status_effect_amount(&"static")
+				var new_st = bm.apply_stat_delta(enemy, "static_stacks", 2)
+				var st_p := CombatPayload.status_change(mecha.ball_uuid, 2, "static_stacks", [old_st], [new_st])
+				out_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+					"source_uuid": mecha.ball_uuid,
+					"target_uuids": [enemy.ball_uuid],
+					"visual_payload": st_p
+				}))
+
+			if new_h <= 0:
+				bm.trigger_on_kill(mecha.ball_uuid, enemy.ball_uuid)
+
