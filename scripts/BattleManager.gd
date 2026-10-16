@@ -38,7 +38,6 @@ signal management_animation_queue_completed
 var _battle_over_deferred: bool = false
 var _battle_over_emitted: bool = false
 var is_test_mode: bool = false
-var _is_applying_static_damage: bool = false
 
 # Locked traits snapshot for COMBAT phase stability
 var _locked_ready_traits: Dictionary = {}
@@ -1042,6 +1041,51 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 		AbilityResolver.process_trigger(&"on_merge", merge_context)
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 
+		# Mecha L3 (4 Units): on_merge, each Mecha fires ranged shot (1 dmg + 1 Static) to random enemy
+		var p_traits = get_active_traits("PLAYER")
+		if p_traits.get("MECHA", 0) >= 4:
+			var p_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			var mechas = p_lineup.filter(func(u): return is_instance_valid(u) and u.current_hp > 0 and has_trait(u, "MECHA"))
+			var opp_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+			if not mechas.is_empty() and not opp_lineup.is_empty():
+				for mecha in mechas:
+					var living_enemies = opp_lineup.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
+					if living_enemies.is_empty():
+						break
+					var target_enemy = RNGManager.combat_rng.pick_random(living_enemies)
+					var old_h = target_enemy.current_hp
+					var old_a = target_enemy.get_status_effect_amount(&"armor")
+					var dmg_res = apply_damage(target_enemy, 1, C.DamageType.RANGED, mecha.ball_uuid)
+					var new_h = dmg_res.get("new_hp", target_enemy.current_hp)
+					var a_cons = dmg_res.get("armor_consumed", 0)
+					var new_a = dmg_res.get("new_armor", old_a)
+					var max_h = 0
+					var t_def = target_enemy.get_definition()
+					if is_instance_valid(t_def): max_h = t_def.base_hp
+
+					var p := CombatPayload.damage(mecha.ball_uuid, 1, [old_h], [new_h], [old_a], [new_a], [a_cons])
+					p.attack_type = "ranged"
+					p.skip_bump = true
+					p.projectile = CombatProjectile.new("hp", 1, "yellow")
+					p.targets_max_hp = [max_h] as Array[int]
+					reaction_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+						"source_uuid": mecha.ball_uuid,
+						"target_uuids": [target_enemy.ball_uuid],
+						"visual_payload": p
+					}))
+
+					var old_st = target_enemy.get_status_effect_amount(&"static")
+					var new_st = apply_stat_delta(target_enemy, "static_stacks", 1)
+					var st_p := CombatPayload.status_change(mecha.ball_uuid, 1, "static_stacks", [old_st], [new_st])
+					reaction_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+						"source_uuid": mecha.ball_uuid,
+						"target_uuids": [target_enemy.ball_uuid],
+						"visual_payload": st_p
+					}))
+
+					if new_h <= 0:
+						trigger_on_kill(mecha.ball_uuid, target_enemy.ball_uuid)
+
 		var death_tracking: Dictionary = {}
 		reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
 		var safety := 20
@@ -1157,6 +1201,8 @@ func get_gacha_draw_cost(tier: int) -> int:
 	var bargain_used = _bargain_charm_uses.get(tier, false)
 	if has_bargain and not bargain_used:
 		cost = maxi(1, cost - 1)
+	elif get_active_traits("PLAYER").get("SPECIALIST", 0) >= 3 and not get_meta("specialist_gacha_discount_used", false):
+		cost = maxi(1, cost - 1)
 	return cost
 
 func is_animations_playing() -> bool:
@@ -1216,6 +1262,12 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 		if cost < base_cost:
 			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": ""})
 			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_bargain_charm", false))
+			chain_events.append(event)
+	elif get_active_traits("PLAYER").get("SPECIALIST", 0) >= 3 and not get_meta("specialist_gacha_discount_used", false):
+		set_meta("specialist_gacha_discount_used", true)
+		if cost < base_cost:
+			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "Specialist discount applied!"})
+			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_trait_specialist", false))
 			chain_events.append(event)
 	SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 	
@@ -2048,8 +2100,12 @@ func get_bonus_burn_stacks_for_attack(source: GachaBallInstance) -> int:
 	
 	if fire_level >= 3 and _has_trait_soul(source, "FIRE"):
 		burn += 1
-		if fire_level >= 5:
+		if fire_level >= 6:
 			burn += 1
+
+	var appliance_level = active_traits.get("APPLIANCE", 0)
+	if appliance_level >= 3 and has_trait(source, "APPLIANCE"):
+		burn += 1
 			
 	return burn
 
@@ -2064,8 +2120,8 @@ func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, at
 	var old_armor = 0
 	var new_armor = 0
 	
-	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless non-attack: BURN, STATIC)
-	if damage_type not in [C.DamageType.BURN, C.DamageType.STATIC]:
+	# CENTRALIZED ARMOR MITIGATION: All HP damage goes through armor first (unless non-attack: BURN)
+	if damage_type != C.DamageType.BURN:
 		old_armor = instance.get_status_effect_amount(&"armor")
 		if old_armor > 0:
 			armor_consumed = mini(old_armor, actual_damage)
@@ -2074,6 +2130,20 @@ func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, at
 			# Consume armor stacks
 			instance.add_status_effect_silent(&"armor", -armor_consumed)
 			new_armor = instance.get_status_effect_amount(&"armor")
+
+			# Tank L2: When a Tank absorbs damage with Armor, ally directly behind gains 1 Armor
+			var is_player = _is_player_unit(instance)
+			var team_traits = get_active_traits("PLAYER" if is_player else "ENEMY")
+			if team_traits.get("TANK", 0) >= 3 and has_trait(instance, "TANK"):
+				var ally_behind = _get_ally_behind(instance)
+				if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+					apply_stat_delta(ally_behind, "armor_stacks", 1)
+
+			# Mecha L2: When Mecha Armor absorbs damage, inflicts 1 Static on attacker
+			if team_traits.get("MECHA", 0) >= 3 and has_trait(instance, "MECHA") and not attacker_uuid.is_empty():
+				var attacker_inst = get_instance_by_uuid(attacker_uuid)
+				if is_instance_valid(attacker_inst) and attacker_inst.current_hp > 0:
+					apply_stat_delta(attacker_inst, "static_stacks", 1)
 			
 	var new_hp = instance.current_hp - actual_damage
 	
@@ -2133,9 +2203,6 @@ func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, at
 	}
 	if not spikes_data.is_empty():
 		result["spikes_data"] = spikes_data
-		
-	if actual_damage != 0 and not _is_applying_static_damage:
-		_trigger_static_consumption(instance)
 		
 	return result
 
@@ -2230,6 +2297,12 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				instance.set_current_hp_silent(new_hp)
 				
 				if action_type == C.ACTION_HEAL:
+					# Plant L4: whenever a Plant receives ACTION_HEAL, it gains 1 Spikes
+					var u_is_player = _is_player_unit(instance)
+					var u_traits = get_active_traits("PLAYER" if u_is_player else "ENEMY")
+					if u_traits.get("PLANT", 0) >= 5 and has_trait(instance, "PLANT"):
+						apply_stat_delta(instance, "spikes_stacks", 1, source_uuid, C.ACTION_BUFF)
+
 					AbilityResolver.process_trigger(C.TRIGGER_ON_HEALED, {
 						"healed_uuid": instance.ball_uuid,
 						"unit_uuid": instance.ball_uuid,
@@ -2253,9 +2326,6 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 						trigger_ctx.merge(extra_context)
 					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, trigger_ctx)
 				
-				if not _is_applying_static_damage:
-					_trigger_static_consumption(instance)
-					
 				return new_hp
 			else:
 				# delta < 0: HP debuff
@@ -2279,9 +2349,6 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					"is_stackable": is_stackable
 				})
 				
-				if not _is_applying_static_damage:
-					_trigger_static_consumption(instance)
-					
 				return new_hp
 				
 		"pwr":
@@ -2325,8 +2392,6 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					trigger_ctx.merge(extra_context)
 				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, trigger_ctx)
 				
-				if not _is_applying_static_damage:
-					_trigger_static_consumption(instance)
 				return new_pwr
 			else:
 				assert(action_type == C.ACTION_DEBUFF, "apply_stat_delta: negative PWR delta requires ACTION_DEBUFF, got '%s'" % action_type)
@@ -2341,48 +2406,66 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					"is_stackable": is_stackable
 				})
 				
-				if not _is_applying_static_damage:
-					_trigger_static_consumption(instance)
 				return new_pwr
 				
 		"burn_stacks":
+			if delta > 0 and has_trait(instance, "APPLIANCE"):
+				var is_app_player = _is_player_unit(instance)
+				var app_traits = get_active_traits("PLAYER" if is_app_player else "ENEMY")
+				var app_level = app_traits.get("APPLIANCE", 0)
+				if app_level >= 3:
+					if app_level >= 5:
+						apply_stat_delta(instance, "hp", delta, source_uuid, C.ACTION_BUFF)
+					if app_level >= 4:
+						_handle_appliance_reflection(source_uuid, "burn_stacks", delta)
+					return instance.status_effects.get(&"burn", 0)
 			instance.add_status_effect_silent(&"burn", delta)
 			return instance.status_effects.get(&"burn", 0)
 		_:
 			if stat_type.ends_with("_stacks"):
 				var effect_name = stat_type.trim_suffix("_stacks")
+				if effect_name == "static" and delta > 0 and has_trait(instance, "APPLIANCE"):
+					var is_app_player = _is_player_unit(instance)
+					var app_traits = get_active_traits("PLAYER" if is_app_player else "ENEMY")
+					var app_level = app_traits.get("APPLIANCE", 0)
+					if app_level >= 2:
+						if app_level >= 5:
+							apply_stat_delta(instance, "pwr", delta, source_uuid, C.ACTION_BUFF)
+						if app_level >= 4:
+							_handle_appliance_reflection(source_uuid, "static_stacks", delta)
+						return instance.status_effects.get(&"static", 0)
+
 				instance.add_status_effect_silent(StringName(effect_name), delta)
+
+				# Tank L4: When a Tank gains Armor, it gains equal Spikes
+				if effect_name == "armor" and delta > 0:
+					var is_tnk_player = _is_player_unit(instance)
+					var tnk_traits = get_active_traits("PLAYER" if is_tnk_player else "ENEMY")
+					if tnk_traits.get("TANK", 0) >= 5 and has_trait(instance, "TANK"):
+						apply_stat_delta(instance, "spikes_stacks", delta, source_uuid, C.ACTION_BUFF)
+
 				return instance.status_effects.get(StringName(effect_name), 0)
 			else:
 				push_error("Unknown stat type: %s" % stat_type)
 				return 0
 
-func _trigger_static_consumption(instance: GachaBallInstance) -> void:
-	var static_stacks = instance.get_status_effect_amount(&"static")
-	if static_stacks > 0:
-		instance.add_status_effect_silent(&"static", -1)
-		var new_static = static_stacks - 1
-		
-		var static_payload := CombatPayload.status_change("", -1, "static_stacks", [], [new_static])
-		static_payload.new_value = new_static
-		static_payload.old_value = static_stacks
-		var static_event = CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-			"source_uuid": "SYSTEM",
-			"target_uuids": [instance.ball_uuid],
-			"visual_payload": static_payload
-		})
-		_combat.add_inline_event(static_event)
-		
-		var static_effect_script = preload("res://scripts/effects/EffectStaticDischarge.gd").new()
-		var request = EffectRequest.new(
-			"",
-			&"static_discharge",
-			static_effect_script,
-			[instance.ball_uuid],
-			{"is_simulation": true, "ability_id": &"static_discharge"},
-			C.PRIORITY_STANDARD
-		)
-		_pending_reactions.append(request)
+func _handle_appliance_reflection(source_uuid: String, stat_name: String, delta: int) -> void:
+	if source_uuid.is_empty():
+		return
+	var sender = get_instance_by_uuid(source_uuid)
+	if not is_instance_valid(sender):
+		return
+	var sender_def = sender.get_definition()
+	if not is_instance_valid(sender_def):
+		return
+	if sender_def.category == &"ITEM":
+		if not sender.equipped_on_uuid.is_empty():
+			var holder = get_instance_by_uuid(sender.equipped_on_uuid)
+			if is_instance_valid(holder) and holder.current_hp > 0 and not has_trait(holder, "APPLIANCE"):
+				apply_stat_delta(holder, stat_name, delta, source_uuid)
+	elif sender_def.category == &"UNIT":
+		if sender.current_hp > 0 and not has_trait(sender, "APPLIANCE"):
+			apply_stat_delta(sender, stat_name, delta, source_uuid)
 
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"", trigger_damage_dealt: bool = true) -> void:
 	# Get target instance data for context (effects should not query instances directly)
@@ -2416,6 +2499,81 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
 	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id, victim_category)
 	
+	var target_is_player = (victim_team == "PLAYER")
+	var target_traits = get_active_traits("PLAYER" if target_is_player else "ENEMY")
+
+	# Fighter L2: Retaliation on attack damage (1 ranged damage to attacker, 1/turn per Fighter)
+	if cause == C.CAUSE_ATTACK and is_instance_valid(target_instance) and not attacker_uuid.is_empty():
+		if target_traits.get("FIGHTER", 0) >= 3 and has_trait(target_instance, "FIGHTER"):
+			var retal_key = "fighter_retaliated_turn_" + str(_current_turn) + "_" + target_uuid
+			if not _turn_metadata.get(retal_key, false):
+				_turn_metadata[retal_key] = true
+				var atk_inst = get_instance_by_uuid(attacker_uuid)
+				if is_instance_valid(atk_inst) and atk_inst.current_hp > 0:
+					var old_h = atk_inst.current_hp
+					var old_a = atk_inst.get_status_effect_amount(&"armor")
+					var retal_res = apply_damage(atk_inst, 1, C.DamageType.RANGED, target_uuid)
+					var new_h = retal_res.get("new_hp", atk_inst.current_hp)
+					var a_cons = retal_res.get("armor_consumed", 0)
+					var new_a = retal_res.get("new_armor", old_a)
+					var max_h = 0
+					var atk_def = atk_inst.get_definition()
+					if is_instance_valid(atk_def):
+						max_h = atk_def.base_hp
+					var payload := CombatPayload.damage(target_uuid, 1, [old_h], [new_h], [old_a], [new_a], [a_cons])
+					payload.attack_type = "ranged"
+					payload.skip_bump = true
+					payload.projectile = CombatProjectile.new("hp", 1, "red")
+					payload.targets_max_hp = [max_h] as Array[int]
+					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
+						"source_uuid": target_uuid,
+						"target_uuids": [attacker_uuid],
+						"visual_payload": payload
+					}))
+					if new_h <= 0:
+						trigger_on_kill(target_uuid, attacker_uuid)
+
+	# Food Trait: L1-L4 on_hurt targeting TARGET_ALLY_BEHIND
+	if is_instance_valid(target_instance):
+		var food_level = target_traits.get("FOOD", 0)
+		if food_level >= 2 and has_trait(target_instance, "FOOD"):
+			var ally_behind = _get_ally_behind(target_instance)
+			if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+				var heal_amount := 1
+				var pwr_amount := 0
+				if food_level >= 5:
+					heal_amount = 4
+					pwr_amount = 2
+				elif food_level >= 4:
+					heal_amount = 3
+					pwr_amount = 1
+				elif food_level >= 3:
+					heal_amount = 2
+				elif food_level >= 2:
+					heal_amount = 1
+
+				var old_h = ally_behind.current_hp
+				var new_h = apply_stat_delta(ally_behind, "hp", heal_amount, target_uuid, C.ACTION_HEAL)
+				var ab_def = ally_behind.get_definition()
+				var max_h = ab_def.base_hp if is_instance_valid(ab_def) else 0
+
+				_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.HEAL, {
+					"source_uuid": target_uuid,
+					"target_uuids": [ally_behind.ball_uuid],
+					"action_type": C.ACTION_HEAL,
+					"visual_payload": CombatPayload.heal(target_uuid, heal_amount, [old_h], [new_h], [max_h])
+				}))
+
+				if pwr_amount > 0:
+					var old_p = ally_behind.current_pwr
+					var new_p = apply_stat_delta(ally_behind, "pwr", pwr_amount, target_uuid, C.ACTION_BUFF)
+					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+						"source_uuid": target_uuid,
+						"target_uuids": [ally_behind.ball_uuid],
+						"action_type": C.ACTION_BUFF,
+						"visual_payload": CombatPayload.pwr_change(target_uuid, pwr_amount, [old_p], [new_p])
+					}))
+
 	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
 	var victim_loc = get_location_for_uuid(target_uuid)
 	var victim_slot_index: int = victim_loc.index if is_instance_valid(victim_loc) else -1
@@ -2427,6 +2585,93 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 ## @param killed_uuid: String - The UUID of the unit that was killed
 func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 	TurnAbilities.trigger_on_kill(killer_uuid, killed_uuid)
+
+	var killer = get_instance_by_uuid(killer_uuid)
+	var killed = get_instance_by_uuid(killed_uuid)
+	if is_instance_valid(killer) and is_instance_valid(killed):
+		var killer_is_player = _is_player_unit(killer)
+		var killer_traits = get_active_traits("PLAYER" if killer_is_player else "ENEMY")
+
+		# Fire L5: Burn dispersion on kill
+		if killer_traits.get("FIRE", 0) >= 32 and has_trait(killer, "FIRE"):
+			var burn_stacks = killed.get_status_effect_amount(&"burn")
+			if burn_stacks > 0:
+				killed.clear_status_effect(&"burn")
+				var killed_loc = get_location_for_uuid(killed_uuid)
+				if is_instance_valid(killed_loc):
+					var lineup = get_instances_in_container(killed_loc.container)
+					var adj_living: Array[GachaBallInstance] = []
+					for unit in lineup:
+						if not is_instance_valid(unit) or unit.current_hp <= 0 or unit.ball_uuid == killed_uuid:
+							continue
+						if unit.location_slot_index == killed_loc.index - 1 or unit.location_slot_index == killed_loc.index + 1:
+							adj_living.append(unit)
+
+					adj_living.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
+
+					if adj_living.size() == 2:
+						var half = int(floor(burn_stacks / 2.0))
+						var remainder = burn_stacks % 2
+						var front_burn = half + remainder
+						var rear_burn = half
+
+						var old_f = adj_living[0].get_status_effect_amount(&"burn")
+						var new_f = apply_stat_delta(adj_living[0], "burn_stacks", front_burn, killer_uuid)
+						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+							"source_uuid": killer_uuid,
+							"target_uuids": [adj_living[0].ball_uuid],
+							"visual_payload": CombatPayload.status_change(killer_uuid, front_burn, "burn_stacks", [old_f], [new_f])
+						}))
+
+						var old_r = adj_living[1].get_status_effect_amount(&"burn")
+						var new_r = apply_stat_delta(adj_living[1], "burn_stacks", rear_burn, killer_uuid)
+						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+							"source_uuid": killer_uuid,
+							"target_uuids": [adj_living[1].ball_uuid],
+							"visual_payload": CombatPayload.status_change(killer_uuid, rear_burn, "burn_stacks", [old_r], [new_r])
+						}))
+					elif adj_living.size() == 1:
+						var old_b = adj_living[0].get_status_effect_amount(&"burn")
+						var new_b = apply_stat_delta(adj_living[0], "burn_stacks", burn_stacks, killer_uuid)
+						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+							"source_uuid": killer_uuid,
+							"target_uuids": [adj_living[0].ball_uuid],
+							"visual_payload": CombatPayload.status_change(killer_uuid, burn_stacks, "burn_stacks", [old_b], [new_b])
+						}))
+
+		# Fighter L4: +1 PWR and extra action on kill (1/turn per Fighter)
+		if killer_traits.get("FIGHTER", 0) >= 5 and has_trait(killer, "FIGHTER"):
+			var key = "fighter_kill_action_" + killer_uuid
+			if not _turn_metadata.get(key, false):
+				_turn_metadata[key] = true
+				apply_stat_delta(killer, "pwr", 1, killer_uuid, C.ACTION_BUFF)
+				grant_extra_action(killer_uuid)
+
+		# Specialist L3: Defeating an enemy awards +1 Gold (max 1/turn, 5/battle)
+		if killer_traits.get("SPECIALIST", 0) >= 4 and has_trait(killer, "SPECIALIST"):
+			if killer_is_player:
+				var turn_key = "specialist_gold_awarded_turn_" + str(_current_turn)
+				var battle_awarded = get_meta("specialist_gold_awarded_battle", 0)
+				if not _turn_metadata.get(turn_key, false) and battle_awarded < 5:
+					_turn_metadata[turn_key] = true
+					set_meta("specialist_gold_awarded_battle", battle_awarded + 1)
+					var target_gold_amount = 0
+					if is_instance_valid(GameManager.run_state):
+						GameManager.run_state.add_gold(1, true)
+						target_gold_amount = GameManager.run_state.gold
+					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+						"text": "Specialist earns 1 Gold from defeat!"
+					}))
+					var gold_payload := CombatPayload.new()
+					gold_payload.amount = 1
+					gold_payload.origin_uuid = killed_uuid
+					gold_payload.target_gold_amount = target_gold_amount
+					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.GOLD_GAIN, {
+						"source_uuid": killer_uuid,
+						"target_uuids": [killer_uuid],
+						"amount": 1,
+						"visual_payload": gold_payload
+					}))
 
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
@@ -2906,6 +3151,28 @@ func _process_status_turn_effect(status_def: Resource, all_units: Array, all_eve
 				"target_uuids": [unit.ball_uuid],
 				"visual_payload": status_damage_payload
 			}))
+
+			# Fire L3 (12 Souls): Spread 1 Burn to each living adjacent ally
+			if status_def.id == &"burn":
+				var is_player_unit = _is_player_unit(unit)
+				var opp_team = "ENEMY" if is_player_unit else "PLAYER"
+				var fire_souls: int = get_active_traits(opp_team).get("FIRE", 0)
+				if fire_souls >= 12:
+					var loc = get_location_for_uuid(unit.ball_uuid)
+					if is_instance_valid(loc):
+						var lineup = get_instances_in_container(loc.container)
+						for adj in lineup:
+							if not is_instance_valid(adj) or adj.current_hp <= 0 or adj.ball_uuid == unit.ball_uuid:
+								continue
+							if adj.location_slot_index == loc.index - 1 or adj.location_slot_index == loc.index + 1:
+								var old_b = adj.get_status_effect_amount(&"burn")
+								var new_b = apply_stat_delta(adj, "burn_stacks", 1, unit.ball_uuid)
+								var spread_payload := CombatPayload.status_change(unit.ball_uuid, 1, "burn_stacks", [old_b], [new_b])
+								all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+									"source_uuid": unit.ball_uuid,
+									"target_uuids": [adj.ball_uuid],
+									"visual_payload": spread_payload
+								}))
 
 		elif status_def.turn_effect == "HEAL":
 			var heal: int = int(stacks * status_def.turn_effect_multiplier)
@@ -3463,6 +3730,43 @@ func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
 		return false
 	var target_tag = StringName("SOUL_" + trait_name)
 	return unit.get_active_tags(get_all_instances()).has(target_tag)
+
+func has_trait(unit: GachaBallInstance, trait_name: String) -> bool:
+	if not is_instance_valid(unit):
+		return false
+	var upper_trait = trait_name.to_upper()
+	var all_inst = get_all_instances()
+	if upper_trait in ["FIRE", "EARTH", "WATER", "AIR"]:
+		var target_tag = StringName("SOUL_" + upper_trait)
+		return unit.get_active_tags(all_inst).has(target_tag)
+	for tag in unit.get_active_tags(all_inst):
+		if String(tag).to_upper() == upper_trait:
+			return true
+	return false
+
+func get_frontmost_unit_on_team(is_player: bool, trait_name: String = "") -> GachaBallInstance:
+	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	var units = get_instances_in_container(container_tag).filter(func(u):
+		if not is_instance_valid(u) or u.current_hp <= 0:
+			return false
+		if not trait_name.is_empty():
+			return has_trait(u, trait_name)
+		return true
+	)
+	if units.is_empty():
+		return null
+	units.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
+	return units[-1] if is_player else units[0]
+
+func get_hero_on_team(is_player: bool) -> GachaBallInstance:
+	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+	var units = get_instances_in_container(container_tag)
+	for u in units:
+		if is_instance_valid(u) and u.current_hp > 0:
+			var def = u.get_definition()
+			if is_instance_valid(def) and def.is_hero:
+				return u
+	return get_frontmost_unit_on_team(is_player, "")
 
 func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 	if tag == &"SOUL_FIRE":

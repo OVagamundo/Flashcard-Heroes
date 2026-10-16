@@ -219,15 +219,24 @@ static func resolve_guardian_intercept(
 	if damage_type == C.DamageType.BURN or damage_type == C.DamageType.STATIC:
 		return res
 		
+	var tgt_is_player_unit: bool = battle_manager._is_player_unit(target_inst)
+	var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
+	if not is_ally_damage:
+		return res
+
+	# Tank L3: Intercept ANY physical attack aimed at the ally directly behind it
+	var team_traits: Dictionary = battle_manager.get_active_traits("PLAYER" if tgt_is_player_unit else "ENEMY")
+	if team_traits.get("TANK", 0) >= 4:
+		var ahead_unit = battle_manager._get_slot_ahead(target_inst)
+		if is_instance_valid(ahead_unit) and ahead_unit.current_hp > 0 and battle_manager.has_trait(ahead_unit, "TANK"):
+			res.intercepted = true
+			res.interceptor = ahead_unit
+			return res
+
 	var target_armor: int = target_inst.get_status_effect_amount(&"armor")
 	var predicted_hp_damage: int = max(0, damage_amount - target_armor)
 	var would_be_lethal: bool = target_inst.current_hp - predicted_hp_damage <= 0
 	if not would_be_lethal:
-		return res
-		
-	var tgt_is_player_unit: bool = battle_manager._is_player_unit(target_inst)
-	var is_ally_damage: bool = (tgt_is_player_unit != is_player_source)
-	if not is_ally_damage:
 		return res
 		
 	var guardian: GachaBallInstance = battle_manager._find_guardian_on_team(tgt_is_player_unit, target_inst.ball_uuid)

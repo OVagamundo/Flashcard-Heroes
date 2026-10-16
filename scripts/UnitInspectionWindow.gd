@@ -6,6 +6,7 @@ const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var name_label: Label = %NameLabel
+@onready var trait_tags_container: HFlowContainer = %TraitTagsContainer
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
@@ -13,6 +14,24 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var separator: HSeparator = %HSeparator
 @onready var internal_background: ColorRect = $InternalBackground
+
+const TRAIT_COLORS: Dictionary = {
+	"FIRE": Color(0.85, 0.22, 0.12, 1.0),       # Fiery Vermilion
+	"EARTH": Color(0.58, 0.35, 0.18, 1.0),      # Terracotta Brown
+	"WATER": Color(0.12, 0.46, 0.86, 1.0),      # Ocean Blue
+	"AIR": Color(0.15, 0.68, 0.82, 1.0),        # Sky Cyan
+	"TANK": Color(0.32, 0.42, 0.54, 1.0),       # Slate Steel
+	"FIGHTER": Color(0.72, 0.12, 0.22, 1.0),    # Ruby Crimson
+	"SUPPORT": Color(0.12, 0.65, 0.48, 1.0),    # Emerald Mint
+	"SPECIALIST": Color(0.58, 0.22, 0.78, 1.0), # Royal Violet
+	"FOOD": Color(0.90, 0.52, 0.08, 1.0),       # Warm Tangerine
+	"MECHA": Color(0.24, 0.28, 0.33, 1.0),      # Dark Gunmetal
+	"ANIMAL": Color(0.48, 0.56, 0.18, 1.0),     # Wild Olive
+	"PLANT": Color(0.18, 0.58, 0.18, 1.0),      # Leaf Green
+	"TOY": Color(0.85, 0.18, 0.55, 1.0),        # Hot Pink
+	"APPLIANCE": Color(0.82, 0.65, 0.08, 1.0),  # Electric Gold
+	"COSTUME": Color(0.34, 0.14, 0.52, 1.0)     # Velvet Indigo
+}
 
 var _inspected_unit_uuid: String
 var _source_view: Control
@@ -29,7 +48,7 @@ func _ready() -> void:
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 	
 	# Zero out internal minimums so they don't force a height from old .tscn values
-	for child in [%DescriptionLabel, %NameLabel, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
+	for child in [%DescriptionLabel, %NameLabel, %TraitTagsContainer, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
 	
@@ -89,7 +108,7 @@ func populate(context: Dictionary) -> void:
 
 	# Manage separator visibility based on any visible footers
 	if is_instance_valid(separator):
-		separator.visible = item_grid.visible or trait_icons_container.visible or recipe_container.visible
+		separator.visible = item_grid.visible or (is_instance_valid(trait_icons_container) and trait_icons_container.visible) or recipe_container.visible
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
@@ -99,7 +118,7 @@ func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
 		# Zero out hidden containers completely to ensure they contribute NO height
-		for container in [item_grid, recipe_container, trait_icons_container, separator]:
+		for container in [item_grid, recipe_container, trait_icons_container, trait_tags_container, separator]:
 			if is_instance_valid(container) and not container.visible:
 				container.custom_minimum_size = Vector2.ZERO
 		
@@ -515,96 +534,82 @@ func _update_recipe_display() -> void:
 	recipe_container.add_child(_make_icon.call(def_b))
 	recipe_container.visible = true
 
-## Update the trait icons display
+## Update the trait tags display at the top
 func _update_trait_display() -> void:
-	if not is_instance_valid(trait_icons_container):
+	if is_instance_valid(trait_icons_container):
+		for child in trait_icons_container.get_children():
+			trait_icons_container.remove_child(child)
+			child.queue_free()
+		trait_icons_container.visible = false
+
+	if not is_instance_valid(trait_tags_container):
 		return
-	
-	# Clear existing trait icons
-	for child in trait_icons_container.get_children():
+
+	# Clear existing trait tags
+	for child in trait_tags_container.get_children():
+		trait_tags_container.remove_child(child)
 		child.queue_free()
-	
-	var trait_counts = _calculate_unit_trait_counts()
-	
-	# Display Fire trait if count > 0
-	if trait_counts["FIRE"] > 0:
-		var fire_container = HBoxContainer.new()
-		fire_container.add_theme_constant_override("separation", 4)
-		
-		var fire_icon = TextureRect.new()
-		fire_icon.texture = preload("res://assets/Realistic/sprites/items/FireEmblem.png")
-		fire_icon.custom_minimum_size = Vector2(96, 96)
-		fire_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		fire_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		
-		var fire_label = Label.new()
-		fire_label.text = "x%d" % trait_counts["FIRE"]
-		fire_label.add_theme_font_size_override("font_size", 32)
-		fire_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		
-		fire_container.add_child(fire_icon)
-		fire_container.add_child(fire_label)
-		trait_icons_container.add_child(fire_container)
-	
-	# Display Earth trait if count > 0
-	if trait_counts["EARTH"] > 0:
-		var earth_container = HBoxContainer.new()
-		earth_container.add_theme_constant_override("separation", 4)
-		
-		var earth_icon = TextureRect.new()
-		earth_icon.texture = preload("res://assets/Realistic/sprites/items/EarthEmblem.png")
-		earth_icon.custom_minimum_size = Vector2(96, 96)
-		earth_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		earth_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		
-		var earth_label = Label.new()
-		earth_label.text = "x%d" % trait_counts["EARTH"]
-		earth_label.add_theme_font_size_override("font_size", 32)
-		earth_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		
-		earth_container.add_child(earth_icon)
-		earth_container.add_child(earth_label)
-		trait_icons_container.add_child(earth_container)
-	
-	# Display Water trait if count > 0
-	if trait_counts["WATER"] > 0:
-		var water_container = HBoxContainer.new()
-		water_container.add_theme_constant_override("separation", 4)
-		
-		var water_icon = TextureRect.new()
-		water_icon.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
-		water_icon.custom_minimum_size = Vector2(96, 96)
-		water_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		water_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		
-		var water_label = Label.new()
-		water_label.text = "x%d" % trait_counts["WATER"]
-		water_label.add_theme_font_size_override("font_size", 32)
-		water_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		
-		water_container.add_child(water_icon)
-		water_container.add_child(water_label)
-		trait_icons_container.add_child(water_container)
-	
-	# Display Air trait if count > 0
-	if trait_counts["AIR"] > 0:
-		var air_container = HBoxContainer.new()
-		air_container.add_theme_constant_override("separation", 4)
-		
-		var air_icon = TextureRect.new()
-		air_icon.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
-		air_icon.custom_minimum_size = Vector2(96, 96)
-		air_icon.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		air_icon.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		
-		var air_label = Label.new()
-		air_label.text = "x%d" % trait_counts["AIR"]
-		air_label.add_theme_font_size_override("font_size", 32)
-		air_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		
-		air_container.add_child(air_icon)
-		air_container.add_child(air_label)
-		trait_icons_container.add_child(air_container)
-	
-	# Only show the container if it actually has content
-	trait_icons_container.visible = trait_icons_container.get_child_count() > 0
+
+	if not is_instance_valid(_instance):
+		trait_tags_container.visible = false
+		return
+
+	var all_instances_db = _get_all_instances_db()
+	var soul_counts = _instance.get_trait_soul_counts(all_instances_db)
+	var active_tags = _instance.get_active_tags(all_instances_db)
+
+	for trait_id in C.TRAIT_SORT_ORDER:
+		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_id, {})
+		var trait_name: String = tr(trait_def.get("display_name_key", trait_id.capitalize()))
+
+		if trait_id in ["FIRE", "EARTH", "WATER", "AIR"]:
+			var count: int = soul_counts.get(trait_id, 0)
+			if count > 0:
+				var tag_text = "%dx %s" % [count, trait_name]
+				_create_trait_tag(trait_id, tag_text)
+		else:
+			var has_trait := false
+			for tag in active_tags:
+				if String(tag).to_upper() == trait_id:
+					has_trait = true
+					break
+			if has_trait:
+				_create_trait_tag(trait_id, trait_name)
+
+	trait_tags_container.visible = trait_tags_container.get_child_count() > 0
+
+func _create_trait_tag(trait_id: String, text: String) -> void:
+	var tag_panel = PanelContainer.new()
+	tag_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+
+	var style = StyleBoxFlat.new()
+	var base_color: Color = TRAIT_COLORS.get(trait_id, Color(0.35, 0.35, 0.35, 1.0))
+	style.bg_color = base_color
+	style.corner_radius_top_left = 6
+	style.corner_radius_top_right = 6
+	style.corner_radius_bottom_left = 6
+	style.corner_radius_bottom_right = 6
+	style.content_margin_left = 8
+	style.content_margin_right = 8
+	style.content_margin_top = 2
+	style.content_margin_bottom = 2
+	style.border_width_left = 1
+	style.border_width_top = 1
+	style.border_width_right = 1
+	style.border_width_bottom = 1
+	style.border_color = Color(1.0, 1.0, 1.0, 0.3)
+	tag_panel.add_theme_stylebox_override("panel", style)
+
+	var label = Label.new()
+	label.text = text
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.add_theme_font_override("font", Database.get_current_locale_font())
+	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.75))
+	label.add_theme_constant_override("outline_size", 3)
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+
+	tag_panel.add_child(label)
+	trait_tags_container.add_child(tag_panel)

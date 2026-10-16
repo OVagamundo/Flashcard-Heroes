@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectTraitPlantPreCombat.gd" id="2_effect_script"]
+
+[sub_resource type="Resource" id="EffectTraitPlantPreCombat_1"]
+script = ExtResource("2_effect_script")
+parameters = {}
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_trait_plant"
+name_key = "ability.trait_plant.name"
+description_key = "ability.trait_plant.desc"
+trigger = &"on_pre_combat"
+effects = Array[Resource]([SubResource("EffectTraitPlantPreCombat_1")])
+priority = -10
+max_level = 1

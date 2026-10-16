@@ -271,7 +271,7 @@ def build_docs():
 | `burn` | **Burn** | Deals damage equal to the number of stacks at the end of each turn. Damage ignores Armor. | Halved (reduced by 50% rounded down) at the end of each turn. Stacks on units in a Burn Slot do not decay. |
 | `armor` | **Armor** | Absorbs incoming direct attack damage (1 point of Armor absorbs 1 point of HP damage). Bypassed by Burn and Static. | Decays to 0 at the end of each turn unless preserved by abilities/trinkets. |
 | `spikes` | **Spikes** | Deals the defending unit's PWR damage back to attackers when hit by direct melee attacks. | Does not decay. |
-| `static` | **Static** | Consumed stack-by-stack whenever the unit experiences any core stat change (HP damage, healing, or power modification). Each stack consumed deals 1 armor-ignoring damage. | Does not decay. Only consumed upon stat changes. |
+| `static` | **Static** | When a unit with Static dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Cleared on explosion. | Decays by 1 stack at the end of each turn. |
 """
 
     # Add Battlefield Slot Effects section
@@ -289,23 +289,23 @@ def build_docs():
     md += """
 
 ## Traits & Synergies
-The game features 15 traits across three categories: 4 Elemental Traits, 4 Class Traits, and 7 Visual Archetype Traits. Equipping the corresponding Trait Trinket enables team-wide combat synergies.
+The game features 15 traits across three categories: 4 Elemental Traits (Souls: 3 to 32), 4 Class Traits (Units: 2 to 5), and 7 Visual Archetype Traits (Units: 2 to 5). Equipping the corresponding Trait Trinket enables team-wide combat synergies.
 
-### Elemental Traits (Souls)
-Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates synergies at combat start (`on_pre_combat`) based on active lineup souls:
-| Trait | Focus | Synergy Thresholds | Effect |
+### Elemental Traits (Souls: 3, 6, 12, 20, 32)
+Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates synergies based on active lineup souls:
+| Trait | Focus | Synergy Thresholds | Overview |
 |---|---|---|---|
-| **Fire** | Offensive Pressure | 3 / 5 / 7 / 9 Souls | Applies Burn on attack. At 7+ souls, applies 2 Burn to the entire enemy team at combat start. |
-| **Earth** | Defensive Sustain | 3 / 5 / 7 / 9 Souls | Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at combat start. Earth units gain double armor bonus. |
-| **Water** | Resilience | 2 / 4 / 6 / 8 Souls | Water units heal adjacent allies 1 HP at combat start. |
-| **Air** | Disruption | 2 / 4 / 6 / 8 Souls | Air units steal 1 Power (PWR) from mirrored enemy slots at combat start. |
+| **Fire** | Offensive Pressure | 3 / 6 / 12 / 20 / 32 Souls | Applies Burn on attack, spreads Burn on tick, deals bonus attack damage against burning targets, and redistributes Burn on kill. |
+| **Earth** | Defensive Counter | 3 / 6 / 12 / 20 / 32 Souls | Grants Armor and Spikes across the frontline pre-combat, and Earth units deal bonus attack damage equal to their Spikes (decays 1 stack per attack). |
+| **Water** | Healing & Cleanse | 3 / 6 / 12 / 20 / 32 Souls | Pre-combat healing and negative status cleansing; turn-start lowest-HP healing; consumes negative statuses to heal at turn start. |
+| **Air** | Static Discharge | 3 / 6 / 12 / 20 / 32 Souls | Inflicts Static on attack, splashes Static to adjacent enemies, pre-combat team Static, and scales attack Static with unit PWR. |
 
-### Class & Visual Archetype Traits (Units)
-Class and Visual traits are enabled when the team equips that trait's trinket. At the start of combat (`on_pre_combat`, when the Battle button is pressed, before turn actions begin), the trinket grants a scaling Power buff to all units of that trait in the lineup:
-| Trait Category | Traits | Synergy Thresholds | Effect (Trait Surge) |
+### Class & Visual Archetype Traits (Units: 2, 3, 4, 5)
+Class and Visual traits activate when the team equips that trait's trinket and field the required unit count:
+| Trait Category | Traits | Synergy Thresholds | Archetype Mechanic |
 |---|---|---|---|
-| **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
-| **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | Grants +1 PWR (2 units), +2 PWR (3 units), +3 PWR (4 units), +4 PWR (5 units) to matching trait units at combat start. |
+| **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | **Tank**: Frontline Armor, backward Armor passing, attack interception, Armor-to-Spikes.<br>**Fighter**: Bonus damage vs higher HP, ranged counter-attack, cleave splash, extra action on kill.<br>**Support**: Positional +HP (front) / +PWR (behind), turn-start lowest-stat buffs, Hero empowerment.<br>**Specialist**: Opening tokens, Gacha discount, gold on kill, bench combat clone, +PWR per 5 Gold. |
+| **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | **Food**: Feeds ally behind when hurt (+HP/+PWR), passes all PWR on death.<br>**Mecha**: Spikes & Armor, Static on attack & hit, merge laser strikes, death revenge salvos.<br>**Animal**: Random alpha +PWR, healing per attack (scaling with PWR).<br>**Plant**: Frontline Spikes, turn-start healing, team Spikes & HP, converts incoming heals to Spikes.<br>**Toy**: Melee Static reflection, death explosion detonating highest Static enemy.<br>**Appliance**: Static immunity, pre-combat Static/Burn, status reflection, converts debuffs to PWR/HP.<br>**Costume**: Pre-combat status and stat theft from mirror enemies and highest-status targets. |
 """
 
     with open(DOCS_MD_FILE, "w", encoding="utf-8") as f:

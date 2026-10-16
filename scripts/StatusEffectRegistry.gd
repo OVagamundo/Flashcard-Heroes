@@ -20,16 +20,22 @@ func _load_all_definitions() -> void:
 		push_warning("[StatusEffectRegistry] Could not open: %s" % STATUS_EFFECTS_PATH)
 		return
 	
+	var file_names: Array[String] = []
 	dir.list_dir_begin()
 	var file_name := dir.get_next()
 	while file_name != "":
 		if _is_exported_resource_file(file_name):
-			var path := STATUS_EFFECTS_PATH + _get_resource_load_name(file_name)
-			var def := load(path) as StatusEffectDefinition
-			if is_instance_valid(def) and not def.id.is_empty():
-				_definitions[def.id] = def
+			file_names.append(file_name)
 		file_name = dir.get_next()
 	dir.list_dir_end()
+
+	file_names.sort()
+
+	for fn in file_names:
+		var path := STATUS_EFFECTS_PATH + _get_resource_load_name(fn)
+		var def := load(path) as StatusEffectDefinition
+		if is_instance_valid(def) and not def.id.is_empty():
+			_definitions[def.id] = def
 
 ## Get a status effect definition by ID.
 func get_definition(id: StringName) -> StatusEffectDefinition:

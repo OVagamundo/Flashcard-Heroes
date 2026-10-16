@@ -92,7 +92,7 @@ func spawn_projectile_on_layer(amount: int, stat: String, start_pos: Vector2, en
 			return null
 
 ## Spawn a floating damage number on the effects layer with proper positioning
-func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: bool = false) -> void:
+func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: bool = false, custom_color: Color = Color(1.0, 0.0, 0.0)) -> void:
 	var damage_number = create_damage_number()
 	var effects_layer = get_effects_layer()
 	
@@ -102,13 +102,13 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 		
 		# Ensure it's on top of all other items in the same layer
 		if damage_number is CanvasItem:
-			damage_number.z_index = 100
+			damage_number.z_index = 101 if custom_color != Color(1.0, 0.0, 0.0) else 100
 			
 		effects_layer.add_child(damage_number)
 		if is_armor:
 			damage_number.setup_armor(amount, spawn_pos + offset)
 		else:
-			damage_number.setup(amount, spawn_pos + offset)
+			damage_number.setup(amount, spawn_pos + offset, custom_color)
 		damage_number.play()
 	else:
 		# Fallback to battle view
@@ -119,7 +119,7 @@ func spawn_damage_number_on_layer(amount: int, spawn_pos: Vector2, is_armor: boo
 			if is_armor:
 				damage_number.setup_armor(amount, spawn_pos)
 			else:
-				damage_number.setup(amount, spawn_pos)
+				damage_number.setup(amount, spawn_pos, custom_color)
 			damage_number.play()
 		else:
 			damage_number.queue_free()
