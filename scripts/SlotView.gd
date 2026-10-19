@@ -32,6 +32,20 @@ const BASE_SLOT_SIZE: int = 96
 # Slot background stylebox
 var _background_style: StyleBoxTexture
 
+## Whether the slot draws a background pedestal texture. Set to false for preview / inspection windows.
+var show_background: bool = true:
+	set(value):
+		show_background = value
+		if not is_node_ready():
+			return
+		if not show_background:
+			add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+			if is_instance_valid(_background_style):
+				_background_style.texture = null
+		else:
+			if is_instance_valid(_background_style):
+				add_theme_stylebox_override("panel", _background_style)
+
 ## Set size scale for gachaball views in this slot
 ## NOTE: This only sets internal scale for GachaBallView. Caller is responsible for slot size.
 func set_size_scale(size_scale: float) -> void:
@@ -47,7 +61,11 @@ func _ready() -> void:
 	_background_style.texture = ArtStyleManager.get_themed_texture(SLOT_TEXTURE)
 	# Default neutral tint (no alpha changes as requested)
 	_background_style.modulate_color = Color(0.5, 0.5, 0.5)
-	add_theme_stylebox_override("panel", _background_style)
+	if show_background:
+		add_theme_stylebox_override("panel", _background_style)
+	else:
+		_background_style.texture = null
+		add_theme_stylebox_override("panel", StyleBoxEmpty.new())
 	
 	# Connect to granular stat change signal for targeted updates
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
@@ -76,7 +94,7 @@ func set_slot_effect(effect: StringName) -> void:
 	_update_slot_appearance(should_animate)
 
 func _update_slot_appearance(animate_transition: bool = false) -> void:
-	if not is_instance_valid(_background_style):
+	if not show_background or not is_instance_valid(_background_style):
 		return
 	
 	# Determine if this is a battle slot

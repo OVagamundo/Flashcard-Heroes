@@ -425,23 +425,24 @@ func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	# Stats
 	hero_stats.text = tr("ui.hp") + ": " + str(hero_def.base_hp) + "  " + tr("ui.pwr") + ": " + str(hero_def.base_pwr)
 	
-	# Description and Flavor
-	var desc_text = tr(hero_def.description_key)
-	var flavor_key = String(hero_def.id) + ".flavor"
-	var flavor_text = tr(flavor_key)
-	if flavor_text != flavor_key: # Translation exists
-		desc_text += "\n\n[i]" + flavor_text + "[/i]"
-	hero_description.text = desc_text
+	# Show only summary effects that are not already covered by the ability list.
+	hero_description.text = tr(hero_def.description_key)
+	var summary_is_covered_by_abilities := not hero_def.ability_definitions.is_empty()
+	var summary_text := hero_description.text.to_lower()
+	for ability_def in hero_def.ability_definitions:
+		var ability_description := tr(ability_def.description_key).strip_edges().to_lower()
+		if ability_description.is_empty() or not summary_text.contains(ability_description):
+			summary_is_covered_by_abilities = false
+			break
+	hero_description.visible = not hero_description.text.is_empty() and not summary_is_covered_by_abilities
 	
 	# Abilities
 	if hero_def.ability_definitions.size() > 0:
 		var ability_text = "[b]" + tr("ui.ability") + ":[/b]\n"
 		for ability_def in hero_def.ability_definitions:
-			var aname = tr(ability_def.name_key) if not ability_def.name_key.is_empty() and tr(ability_def.name_key) != ability_def.name_key else ""
-			if not aname.is_empty():
-				ability_text += "• " + aname + ": " + tr(ability_def.description_key) + "\n"
-			else:
-				ability_text += "• " + tr(ability_def.description_key) + "\n"
+			var ability_description := tr(ability_def.description_key)
+			if not ability_description.is_empty() and ability_description != ability_def.description_key:
+				ability_text += "• " + ability_description + "\n"
 		hero_abilities.text = ability_text
 		hero_abilities.visible = true
 	else:

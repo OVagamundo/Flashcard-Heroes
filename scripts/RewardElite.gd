@@ -3,16 +3,20 @@ extends Control
 
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
+const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
+const CurrencyAnimator = preload("res://scripts/CurrencyAnimator.gd")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 
-@onready var title_label: Label = $VBoxContainer/TitleLabel
+@onready var title_label: Label = %TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
 @onready var gold_button: Button = %TakeGoldButton
+@onready var reroll_button: Button = %RerollButton
 @onready var back_to_path_button: Button = %BackToPathButton
 
 var _reward_instances: Array = []
 var _gold_amount: int = 10 # Default to 10 for Elite rewards
+var _current_reroll_cost: int = 5
 var _action_in_progress: bool = false
 var _original_reward_instances: Array = [] 
 var _is_first_populate: bool = true
@@ -29,6 +33,10 @@ func _ready() -> void:
 	
 	gold_button.pressed.connect(_on_gold_pressed)
 	gold_button.visible = false # Replaced by Sell drop zone
+	back_to_path_button.visible = false
+	back_to_path_button.disabled = true
+	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	reroll_button.pressed.connect(_on_reroll_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
 	gui_input.connect(_on_gui_input)
 	
@@ -73,11 +81,17 @@ func _process(_delta: float) -> void:
 
 func _mark_reward_action_buttons() -> void:
 	_mark_action_button_for_inspection_avoidance(gold_button)
+	_mark_action_button_for_inspection_avoidance(reroll_button)
 	_mark_action_button_for_inspection_avoidance(back_to_path_button)
 
 func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
 	if is_instance_valid(button):
 		button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
+
+func _get_reroll_cost() -> int:
+	if is_instance_valid(GameManager.run_state) and GameManager.run_state.has_method("get_elite_reward_reroll_cost"):
+		return GameManager.run_state.get_elite_reward_reroll_cost()
+	return 5
 
 func _update_localized_text() -> void:
 	var locale = TranslationServer.get_locale().left(2)
@@ -89,15 +103,20 @@ func _update_localized_text() -> void:
 		back_to_path_button.text = tr("ui.back_to_path")
 	
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
+	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 
 func populate(context: Dictionary) -> void:
 	_reward_instances = context.get("reward_instances", [])
 	_original_reward_instances = _reward_instances.duplicate()
 	
 	_gold_amount = context.get("gold_amount", 10)
+	_current_reroll_cost = context.get("reroll_cost", _get_reroll_cost())
 	
 	_update_localized_text()
+	reroll_button.visible = true
+	reroll_button.disabled = false
 	
+	var created_views: Array[GachaBallView] = []
 	var slot_nodes = choices_container.get_children()
 	for i in range(slot_nodes.size()):
 		var slot_view = slot_nodes[i]
@@ -110,30 +129,30 @@ func populate(context: Dictionary) -> void:
 				var visual_data = VisualDataAdapter.create_visual_data(inst)
 				var ball_view = slot_view.set_content(visual_data, true, false)
 				
-				# HIDE IMMEDIATELY (both visibility and scale)
+				# Hide immediately for staggered entry; preserve unit scale
 				if is_instance_valid(ball_view):
 					ball_view.visible = false
-					ball_view.scale = Vector2.ZERO
+					ball_view.scale = Vector2.ONE
+					created_views.append(ball_view)
 				slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 				slot_view.set_size_scale(2.0)
 				slot_view.visible = true
 			else:
 				slot_view.visible = false
-	back_to_path_button.visible = true
+	back_to_path_button.visible = false
 	back_to_path_button.modulate.a = 0.0
 	back_to_path_button.disabled = true
+	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	gold_button.visible = false # Keep hidden, replaced by Sell zone
 	
-	_animate_staggered_entry()
+	_animate_staggered_entry(created_views)
 
 # Replaced by direct call in populate
 func _on_staggered_entry_timer_timeout() -> void:
 	pass
 
-func _animate_staggered_entry() -> void:
+func _animate_staggered_entry(p_views: Array[GachaBallView] = []) -> void:
 	"""Animate trinkets appearing one-by-one with landing bounce"""
-	var slot_nodes = choices_container.get_children()
-	
 	# STAGE 2: Wait before starting the population sequence
 	# Only wait a short time on first entry (per USER request)
 	if _is_first_populate:
@@ -147,15 +166,21 @@ func _animate_staggered_entry() -> void:
 	# This is critical for play_landing_bounce() which skips if size is zero.
 	await get_tree().process_frame
 	
-	var ball_index: int = 0
-	for slot_view in slot_nodes:
-		# Find GachaBallView in slot
-		var ball_view: GachaBallView = null
-		for child in slot_view.get_children():
-			if child is GachaBallView:
-				ball_view = child
-				break
-		
+	var targets: Array[GachaBallView] = []
+	if not p_views.is_empty():
+		for b in p_views:
+			if is_instance_valid(b) and not b.is_queued_for_deletion():
+				targets.append(b)
+	else:
+		var slot_nodes = choices_container.get_children()
+		for slot_view in slot_nodes:
+			for child in slot_view.get_children():
+				if child is GachaBallView and not child.is_queued_for_deletion():
+					targets.append(child)
+					break
+	
+	for ball_index in range(targets.size()):
+		var ball_view = targets[ball_index]
 		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 			# Ensure pivot is centered based on now-valid size
 			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
@@ -167,10 +192,9 @@ func _animate_staggered_entry() -> void:
 			wait_tween.tween_callback(func():
 				if is_instance_valid(ball_view):
 					ball_view.visible = true
-					ball_view.scale = Vector2.ZERO
+					ball_view.scale = Vector2.ONE
 					ball_view.play_landing_bounce()
 			)
-			ball_index += 1
 
 func _on_selection_changed(_new_location: LocationIdentifier) -> void:
 	pass
@@ -338,13 +362,65 @@ func _on_gold_pressed() -> void:
 	# Keep legacy method for compatibility if needed, but it's now redundant
 	pass
 
+func _on_reroll_pressed() -> void:
+	if _action_in_progress:
+		return
+	var current_gold: int = 0
+	if is_instance_valid(GameManager.run_state):
+		current_gold = GameManager.run_state.gold
+	
+	if current_gold < _current_reroll_cost:
+		var main_node = GameManager._active_main_node
+		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
+		return
+
+	var action := RerollRewardAction.new()
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		execute_reroll_visuals()
+
+func execute_reroll_visuals(cost: int = -1) -> void:
+	_action_in_progress = true
+	reroll_button.disabled = true
+	var target_pos = reroll_button.get_global_rect().get_center()
+			
+	var spend_cost = cost if cost >= 0 else _current_reroll_cost
+	_animate_gold_spend(spend_cost, target_pos, func():
+		SignalBus.emit_signal("selection_clear_requested")
+		var main_node = GameManager._active_main_node
+		if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		_show_initial_instruction()
+		if not is_instance_valid(ActionQueue):
+			SignalBus.emit_signal("reward_reroll_requested")
+		Audio.play_sfx("shop_reroll")
+		reroll_button.disabled = false
+		_action_in_progress = false
+		if is_instance_valid(ActionQueue):
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+	)
+
+func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
+	if is_instance_valid(GameManager) and is_instance_valid(GameManager._active_main_node):
+		CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
+	else:
+		if on_complete.is_valid():
+			on_complete.call()
+
 func _complete_choice() -> void:
 	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
 	gold_button.visible = false
+	reroll_button.visible = false
+	reroll_button.disabled = true
+	reroll_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
-	# Reveal navigation button via modulation to prevent layout shifts
+	# Reveal navigation button
+	back_to_path_button.visible = true
 	back_to_path_button.modulate.a = 1.0
 	back_to_path_button.disabled = false
+	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_STOP
 	
 	# Animate unselected balls flying away (parallel staggered)
 	var slot_nodes = choices_container.get_children()

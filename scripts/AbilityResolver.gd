@@ -71,7 +71,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only the unit about to receive attack damage responds
 			return unit_uuid == context.get("defender_uuid", "")
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
 			# All living units ON THE BATTLE BOARD respond
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 		
@@ -220,7 +220,7 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var fainting_uuid = context.get("fainting_ally_uuid", "")
 			return holder_uuid != fainting_uuid
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
 			# All equipped items on living holders respond
 			return true
 		
@@ -260,7 +260,7 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			var fainting_team = context.get("fainting_ally_team", "")
 			return trinket_team == fainting_team
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
 			# All trinkets respond
 			return true
 		

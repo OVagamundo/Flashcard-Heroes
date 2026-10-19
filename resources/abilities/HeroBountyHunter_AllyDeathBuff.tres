@@ -16,7 +16,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_ability")
 id = &"hero_bounty_hunter_ally_death_buff"
-name_key = "ability.hero_bounty_hunter_ally_death_buff.name"
 description_key = "ability.hero_bounty_hunter_ally_death_buff.desc"
 trigger = &"on_ally_death"
 effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])

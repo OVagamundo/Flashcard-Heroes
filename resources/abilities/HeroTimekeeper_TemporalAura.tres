@@ -16,7 +16,6 @@ target_type = &"ALLIES_BEHIND"
 [resource]
 script = ExtResource("1_ability")
 id = &"hero_timekeeper_temporal_aura"
-name_key = "ability.hero_timekeeper_temporal_aura.name"
 description_key = "ability.hero_timekeeper_temporal_aura.desc"
 trigger = &"on_turn_start"
 priority = 0

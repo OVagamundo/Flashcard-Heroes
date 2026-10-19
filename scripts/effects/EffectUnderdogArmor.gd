@@ -1,7 +1,7 @@
 @tool
 extends EffectDefinition
 
-## At turn start, if the trinket's team has fewer living lineup units than the enemy,
+## At pre-combat, if the trinket's team has fewer living lineup units than the enemy,
 ## grant all living allied lineup units 2 Armor per unit difference.
 func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = bool(context.get("is_simulation", false))

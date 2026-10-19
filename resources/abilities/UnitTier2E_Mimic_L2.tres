@@ -11,7 +11,6 @@ parameters = { "level_delta": 1, "max_level": false }
 [resource]
 script = ExtResource("1_def")
 id = &"ability_unit_t3_mimic_l2"
-name_key = "ability.unit_t2_e_mimic.name"
 description_key = "ability.unit_t3_mimic_l2.desc"
 trigger = &"on_before_turn_action"
 effects = Array[Resource]([SubResource("Resource_custom_transform_2")])

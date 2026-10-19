@@ -10,7 +10,7 @@ target_type = "SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_unit_t2_d_power_init"
-name_key = "ability.unit_t2_d_power.name" # Share same name/desc
+name_key = "" # Share same name/desc
 description_key = "ability.unit_t2_d_power_l1.desc"
 trigger = &"on_board_changed"
 effects = Array[Resource]([SubResource("Resource_effect")])

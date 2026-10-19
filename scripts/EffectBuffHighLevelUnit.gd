@@ -2,11 +2,13 @@
 @tool
 extends EffectDefinition
 
-## Effect that buffs Level 2 units when they enter the board.
-## Clone of EffectBuffDrawnUnit (Royal Insignia) targeting Level 2 units without tier requirements.
+## Effect that buffs a selected unit level or tier when it enters the board.
 ## Expected parameters:
 ##   - hp_amount: int (default 1) - HP buff amount
 ##   - pwr_amount: int (default 1) - PWR buff amount
+##   - target_level: int (default 2) - Matching unit level when target_tier is unset
+##   - target_tier: int (default 0) - Matching unit tier; bypasses the level filter when positive
+##   - target_trait: String (default empty) - Matching unit trait; takes precedence over level and tier
 
 func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
 	var is_simulation: bool = context.get("is_simulation", false)
@@ -82,14 +84,30 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.is_hero:
 			continue
 		
+		var raw_tier = parameters.get("target_tier", 0)
+		var target_tier: int = int(raw_tier) if raw_tier != null else 0
+		var target_trait := String(parameters.get("target_trait", "")).to_upper()
 		var raw_level = parameters.get("target_level", 2)
 		var target_level: int = int(raw_level) if raw_level != null else 2
+		if not target_trait.is_empty():
+			if not battle_manager.has_trait(target_instance, target_trait):
+				continue
+		elif target_tier > 0:
+			if not ("tier" in target_def) or int(target_def.tier) != target_tier:
+				continue
+		else:
+			if target_instance.level != target_level:
+				continue
 		
-		# Applies to matching level units only (no tier requirement)
-		if target_instance.level != target_level:
-			continue
-		
-		var buff_tag := StringName("veteran_insignia_buffed_%s" % _source_uuid) if target_level == 2 else StringName("insignia_buffed_%s_%s" % [_source_uuid, target_level])
+		var buff_tag: StringName
+		if not target_trait.is_empty():
+			buff_tag = StringName("trait_insignia_buffed_%s_%s" % [_source_uuid, target_trait.to_lower()])
+		elif target_tier > 0:
+			buff_tag = StringName("tier_insignia_buffed_%s_%s" % [_source_uuid, target_tier])
+		elif target_level == 2:
+			buff_tag = StringName("veteran_insignia_buffed_%s" % _source_uuid)
+		else:
+			buff_tag = StringName("insignia_buffed_%s_%s" % [_source_uuid, target_level])
 		# Check recursion prevention tag
 		if target_instance.has_tag(buff_tag):
 			continue
@@ -127,7 +145,20 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		var trinket_def = trinket_instance.get_definition()
 		if is_instance_valid(trinket_def):
 			trinket_name = tr(trinket_def.name_key)
-	if trinket_name.is_empty():
+	var effect_target_tier := int(parameters.get("target_tier", 0))
+	var effect_target_level := int(parameters.get("target_level", 2))
+	var effect_target_trait := String(parameters.get("target_trait", "")).to_lower()
+	var effect_ability_id: StringName = &"ability_trinket_veteran_insignia"
+	if not effect_target_trait.is_empty():
+		trinket_name = trinket_name if not trinket_name.is_empty() else "%s Insignia" % effect_target_trait.capitalize()
+		effect_ability_id = StringName("ability_%s_insignia_draw" % effect_target_trait)
+	elif effect_target_tier > 0:
+		trinket_name = trinket_name if not trinket_name.is_empty() else "Tier %d Insignia" % effect_target_tier
+		effect_ability_id = StringName("ability_tier%d_insignia_draw" % effect_target_tier)
+	elif effect_target_level == 3:
+		trinket_name = trinket_name if not trinket_name.is_empty() else "Master Insignia"
+		effect_ability_id = &"ability_level3_insignia_draw"
+	elif trinket_name.is_empty():
 		trinket_name = "Veteran Insignia"
 
 	if is_simulation and not batched_target_uuids.is_empty():
@@ -141,7 +172,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": &"ability_trinket_veteran_insignia",
+				"ability_id": context.get("ability_id", effect_ability_id),
 				"trigger_type": context.get("trigger_type", ""),
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
@@ -156,7 +187,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": &"ability_trinket_veteran_insignia",
+				"ability_id": context.get("ability_id", effect_ability_id),
 				"trigger_type": context.get("trigger_type", ""),
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
@@ -166,7 +197,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": &"ability_trinket_veteran_insignia",
+				"ability_id": context.get("ability_id", effect_ability_id),
 				"trigger_type": context.get("trigger_type", ""),
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,

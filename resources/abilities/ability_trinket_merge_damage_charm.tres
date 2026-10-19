@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_merge_damage_charm"
-name_key = "ability.merge_damage_charm.name"
 description_key = "ability.merge_damage_charm.desc"
 trigger = &"on_merge"
 priority = 0

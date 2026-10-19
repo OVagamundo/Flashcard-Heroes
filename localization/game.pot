@@ -9,7 +9,7 @@ msgstr ""
 msgid "hero.name"
 msgstr ""
 
-#. English: A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.
+#. English: Gain 1 gold when this hero kills an enemy. When an ally is defeated, gain +1 HP and +1 PWR.
 msgid "hero.desc"
 msgstr ""
 
@@ -17,12 +17,8 @@ msgstr ""
 msgid "enemy_hero.name"
 msgstr ""
 
-#. English: The enemy's champion.
+#. English: Deal (PWR) damage to the frontmost enemy.
 msgid "enemy_hero.desc"
-msgstr ""
-
-#. English: Token Power
-msgid "ability.unit_t2_d_power.name"
 msgstr ""
 
 #. English: Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.
@@ -37,10 +33,6 @@ msgstr ""
 msgid "ability.unit_t2_d_power_l3.desc"
 msgstr ""
 
-#. English: Gold Investments
-msgid "ability.unit_t2_f_gold_pwr.name"
-msgstr ""
-
 #. English: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.
 msgid "ability.unit_t2_f_gold_pwr_l1.desc"
 msgstr ""
@@ -51,10 +43,6 @@ msgstr ""
 
 #. English: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
-msgstr ""
-
-#. English: Guardian's Grace
-msgid "ability.unit_t1_c_ally_shield.name"
 msgstr ""
 
 #. English: When the ally directly in front takes damage, heal them for 1 HP.
@@ -69,10 +57,6 @@ msgstr ""
 msgid "ability.unit_t1_c_ally_shield_l3.desc"
 msgstr ""
 
-#. English: Empathic Link
-msgid "ability.unit_t1_d_empathic_link.name"
-msgstr ""
-
 #. English: When this unit dies, grant its current PWR to the ally behind.
 msgid "ability.unit_t1_d_empathic_link.desc"
 msgstr ""
@@ -85,10 +69,6 @@ msgstr ""
 msgid "ability.unit_t1_d_empathic_link_l3.desc"
 msgstr ""
 
-#. English: Resilience
-msgid "ability.unit_tier1a_passive_heal.name"
-msgstr ""
-
 #. English: When hurt BY AN ATTACK, Heal this unit by 1 HP.
 msgid "ability.unit_tier1a_passive_heal.desc"
 msgstr ""
@@ -99,10 +79,6 @@ msgstr ""
 
 #. English: When hurt BY AN ATTACK, Heal this unit by 3 HP.
 msgid "ability.unit_tier1a_passive_heal_l3.desc"
-msgstr ""
-
-#. English: Retaliation
-msgid "ability.unit_tier1b_counter_on_hurt.name"
 msgstr ""
 
 #. English: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.
@@ -121,7 +97,7 @@ msgstr ""
 msgid "item_t1_a.name"
 msgstr ""
 
-#. English: A gentle remedy infused with the spirit of koi.
+#. English: At the start of the turn, Heal the holder for 2 HP.
 msgid "item_t1_a.desc"
 msgstr ""
 
@@ -129,7 +105,7 @@ msgstr ""
 msgid "item_t1_b.name"
 msgstr ""
 
-#. English: A fierce elixir that awakens inner strength.
+#. English: When attacking, if target has more HP than holder then perform an extra attack.
 msgid "item_t1_b.desc"
 msgstr ""
 
@@ -137,28 +113,16 @@ msgstr ""
 msgid "item_t2_c.name"
 msgstr ""
 
-#. English: A restorative brew that renews body and spirit.
+#. English: When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.
 msgid "item_t2_c.desc"
-msgstr ""
-
-#. English: Basic Attack
-msgid "ability.basic_attack.name"
 msgstr ""
 
 #. English: Deal (PWR) damage to the frontmost enemy.
 msgid "ability.basic_attack.desc"
 msgstr ""
 
-#. English: Basic Attack
-msgid "ability.basic_attack_ranged_mirror.name"
-msgstr ""
-
 #. English: Deal (PWR) damage to the enemy in the mirror slot.
 msgid "ability.basic_attack_ranged_mirror.desc"
-msgstr ""
-
-#. English: Extra Attack
-msgid "ability.item_tier1b_extra_attack.name"
 msgstr ""
 
 #. English: When attacking, if target has more HP than holder then perform an extra attack.
@@ -181,12 +145,8 @@ msgstr ""
 msgid "trinket.polished_plate.name"
 msgstr ""
 
-#. English: A perfectly polished piece of armor.
+#. English: Armor does not decay at turn end.
 msgid "trinket.polished_plate.desc"
-msgstr ""
-
-#. English: Reinforced Armor
-msgid "ability.polished_plate.name"
 msgstr ""
 
 #. English: At the start of the turn, gain 2 Armor.
@@ -225,24 +185,12 @@ msgstr ""
 msgid "battle.speed.label"
 msgstr ""
 
-#. English: Regeneration
-msgid "ability.item_tier2c_passive_heal.name"
-msgstr ""
-
 #. English: When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.
 msgid "ability.item_tier2c_passive_heal.desc"
 msgstr ""
 
-#. English: Restoration
-msgid "ability.item_tier1a_turn_start_heal.name"
-msgstr ""
-
 #. English: At the start of the turn, Heal the holder for 2 HP.
 msgid "ability.item_tier1a_turn_start_heal.desc"
-msgstr ""
-
-#. English: Morale Boost
-msgid "ability.unit_tier2c_ally_death_buff.name"
 msgstr ""
 
 #. English: When an ally is defeated, gain +1 HP and +1 PWR.
@@ -257,24 +205,12 @@ msgstr ""
 msgid "ability.unit_tier2c_ally_death_buff_l3.desc"
 msgstr ""
 
-#. English: Scavenger's Resolve
-msgid "ability.hero_bounty_hunter_ally_death_buff.name"
-msgstr ""
-
 #. English: When an ally is defeated, gain +1 HP and +1 PWR.
 msgid "ability.hero_bounty_hunter_ally_death_buff.desc"
 msgstr ""
 
-#. English: Retaliation
-msgid "ability.item_tier3d_retaliate.name"
-msgstr ""
-
 #. English: When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.
 msgid "ability.item_tier3d_retaliate.desc"
-msgstr ""
-
-#. English: Resilient Aura
-msgid "ability.unit_tier3d_resilient_aura.name"
 msgstr ""
 
 #. English: When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies.
@@ -285,7 +221,7 @@ msgstr ""
 msgid "item_t2_a.name"
 msgstr ""
 
-#. English: A scroll containing a summoning spell.
+#. English: When the holder dies, summon a Tier 1 unit.
 msgid "item_t2_a.desc"
 msgstr ""
 
@@ -293,7 +229,7 @@ msgstr ""
 msgid "item_t3_e.name"
 msgstr ""
 
-#. English: A cursed bargain with death.
+#. English: When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.
 msgid "item_t3_e.desc"
 msgstr ""
 
@@ -301,7 +237,7 @@ msgstr ""
 msgid "item_t3_f.name"
 msgstr ""
 
-#. English: A dark siphon of souls.
+#. English: After dealing damage steal half of target's PWR (min 1).
 msgid "item_t3_f.desc"
 msgstr ""
 
@@ -309,16 +245,8 @@ msgstr ""
 msgid "item_t3_g.name"
 msgstr ""
 
-#. English: A scope for precise targeting.
+#. English: Basic attacks target the enemy in the mirror slot.
 msgid "item_t3_g.desc"
-msgstr ""
-
-#. English: Final Strike
-msgid "ability.item_t3e_death_damage.name"
-msgstr ""
-
-#. English: Power Drain
-msgid "ability.item_t3f_power_drain.name"
 msgstr ""
 
 #. English: After dealing damage steal half of target's PWR (min 1).
@@ -329,24 +257,12 @@ msgstr ""
 msgid "ability.item_t3e_death_damage.desc"
 msgstr ""
 
-#. English: Summon
-msgid "ability.item_t2_c_summon.name"
-msgstr ""
-
 #. English: When the holder dies, summon a random Tier 1 unit in their place.
 msgid "ability.item_t2_c_summon.desc"
 msgstr ""
 
-#. English: Defensive Stance
-msgid "ability.unit_tier2a_defensive_stance.name"
-msgstr ""
-
 #. English: When targeted by an attack, heal [2 / 4 / 6] HP before taking damage.
 msgid "ability.unit_tier2a_defensive_stance.desc"
-msgstr ""
-
-#. English: Shockwave
-msgid "ability.unit_tier2b_shockwave.name"
 msgstr ""
 
 #. English: Attack deals cascading damage: [100% / 150% / 200%] to front, 50% to the unit behind, 25% to the one behind that.
@@ -357,15 +273,11 @@ msgstr ""
 msgid "item_t2_b.name"
 msgstr ""
 
-#. English: A blade thirsty for blood.
+#. English: When the holder defeats an enemy, they act again immediately (once per turn).
 msgid "item_t2_b.desc"
 msgstr ""
 
-#. English: Bloodlust
-msgid "ability.item_tier2b_bloodlust.name"
-msgstr ""
-
-#. English: When the holder defeats an enemy, they act again immediately.
+#. English: When the holder defeats an enemy, they act again immediately (once per turn).
 msgid "ability.item_tier2b_bloodlust.desc"
 msgstr ""
 
@@ -373,28 +285,16 @@ msgstr ""
 msgid "hero_timekeeper.name"
 msgstr ""
 
-#. English: A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.
+#. English: Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites. At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.
 msgid "hero_timekeeper.desc"
-msgstr ""
-
-#. English: Bounty Hunter
-msgid "ability.hero_timekeeper_gold_on_kill.name"
 msgstr ""
 
 #. English: Gain 1 gold when this hero kills an enemy.
 msgid "ability.hero_timekeeper_gold_on_kill.desc"
 msgstr ""
 
-#. English: Time Warp
-msgid "ability.hero_timekeeper_time_warp.name"
-msgstr ""
-
 #. English: Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.
 msgid "ability.hero_timekeeper_time_warp.desc"
-msgstr ""
-
-#. English: Temporal Aura
-msgid "ability.hero_timekeeper_temporal_aura.name"
 msgstr ""
 
 #. English: At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.
@@ -405,7 +305,7 @@ msgstr ""
 msgid "boss_1.name"
 msgstr ""
 
-#. English: A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.
+#. English: At end of turn, summon units to fill empty team slots. Every time you draw a gachaball, this boss gains +1 HP.
 msgid "boss_1.desc"
 msgstr ""
 
@@ -413,7 +313,7 @@ msgstr ""
 msgid "boss_2.name"
 msgstr ""
 
-#. English: Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.
+#. English: At end of turn, summon units to fill empty team slots. Every time you spend a token, this boss gains +1 HP.
 msgid "boss_2.desc"
 msgstr ""
 
@@ -421,7 +321,7 @@ msgstr ""
 msgid "boss_3.name"
 msgstr ""
 
-#. English: Grows stronger as allies fall around it. Commands reinforcements to join its ranks.
+#. English: At end of turn, summon units to fill empty team slots. When an ally is defeated, gain +1 HP and +1 PWR.
 msgid "boss_3.desc"
 msgstr ""
 
@@ -429,7 +329,7 @@ msgstr ""
 msgid "boss_4.name"
 msgstr ""
 
-#. English: An ancient being that summons warriors from ages past.
+#. English: At end of turn, summon units to fill empty team slots.
 msgid "boss_4.desc"
 msgstr ""
 
@@ -437,36 +337,20 @@ msgstr ""
 msgid "boss_5.name"
 msgstr ""
 
-#. English: The ultimate challenge. Defeat it to complete your run.
+#. English: At end of turn, summon units to fill empty team slots.
 msgid "boss_5.desc"
-msgstr ""
-
-#. English: Call Reinforcements
-msgid "ability.boss_summon.name"
 msgstr ""
 
 #. English: At end of turn, summon units to fill empty team slots.
 msgid "ability.boss_summon.desc"
 msgstr ""
 
-#. English: Draining Presence
-msgid "ability.boss_1_draw_drain.name"
-msgstr ""
-
 #. English: Every time you draw a gachaball, this boss gains +1 HP.
 msgid "ability.boss_1_draw_drain.desc"
 msgstr ""
 
-#. English: Token Hunger
-msgid "ability.boss_2_token_drain.name"
-msgstr ""
-
 #. English: Every time you spend a token, this boss gains +1 HP.
 msgid "ability.boss_2_token_drain.desc"
-msgstr ""
-
-#. English: Vengeance Growth
-msgid "ability.boss_3_ally_growth.name"
 msgstr ""
 
 #. English: When an ally is defeated, gain +1 HP and +1 PWR.
@@ -477,12 +361,8 @@ msgstr ""
 msgid "trinket.soul_echo.name"
 msgstr ""
 
-#. English: A mystical gem that echoes the souls of the fallen.
+#. English: When an ally dies, resurrect the first non-hero unit that died this turn.
 msgid "trinket.soul_echo.desc"
-msgstr ""
-
-#. English: Soul Echo
-msgid "ability.soul_echo.name"
 msgstr ""
 
 #. English: When an ally dies, resurrect the first non-hero unit that died this turn.
@@ -493,12 +373,8 @@ msgstr ""
 msgid "trinket.vengeance.name"
 msgstr ""
 
-#. English: Channel the fury of fallen allies.
+#. English: When an ally dies, grant +1 HP and +1 PWR to a random ally.
 msgid "trinket.vengeance.desc"
-msgstr ""
-
-#. English: Vengeance
-msgid "ability.vengeance.name"
 msgstr ""
 
 #. English: When an ally dies, grant +1 HP and +1 PWR to a random ally.
@@ -509,12 +385,8 @@ msgstr ""
 msgid "trinket.aegis.name"
 msgstr ""
 
-#. English: A protective charm that shields allies from fatal blows.
+#. English: Once per turn: When an ally would die, they survive with 1 HP instead.
 msgid "trinket.aegis.desc"
-msgstr ""
-
-#. English: Last Stand
-msgid "ability.aegis.name"
 msgstr ""
 
 #. English: Once per turn: When an ally would die, they survive with 1 HP instead.
@@ -525,36 +397,20 @@ msgstr ""
 msgid "trinket.twin_charm.name"
 msgstr ""
 
-#. English: A mirrored charm that reflects its surroundings.
+#. English: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.
 msgid "trinket.twin_charm.desc"
-msgstr ""
-
-#. English: Shared Reflection
-msgid "ability.twin_charm_scale.name"
 msgstr ""
 
 #. English: Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.
 msgid "ability.twin_charm_scale.desc"
 msgstr ""
 
-#. English: Mirror Strike
-msgid "ability.unit_tier3a_mirror_strike.name"
-msgstr ""
-
 #. English: Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy.
 msgid "ability.unit_tier3a_mirror_strike.desc"
 msgstr ""
 
-#. English: Guardian Sacrifice
-msgid "ability.unit_tier3b_guardian_sacrifice.name"
-msgstr ""
-
 #. English: When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead.
 msgid "ability.unit_tier3b_guardian_sacrifice.desc"
-msgstr ""
-
-#. English: Soul Summon
-msgid "ability.unit_tier3c_soul_summon.name"
 msgstr ""
 
 #. English: When this unit dies, summon a random Tier 2 unit with [+0 / +2 / +4] HP and PWR.
@@ -565,12 +421,8 @@ msgstr ""
 msgid "item_t3_a.name"
 msgstr ""
 
-#. English: A stone pulsating with life.
+#. English: When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.
 msgid "item_t3_a.desc"
-msgstr ""
-
-#. English: Vital Link
-msgid "ability.item_t3a_on_hurt_heal.name"
 msgstr ""
 
 #. English: When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.
@@ -581,12 +433,8 @@ msgstr ""
 msgid "item_t3_b.name"
 msgstr ""
 
-#. English: An ancient amulet of power.
+#. English: When the holder attacks, grant +2 PWR to two random allies.
 msgid "item_t3_b.desc"
-msgstr ""
-
-#. English: Battle Cry
-msgid "ability.item_t3b_on_attack_buff.name"
 msgstr ""
 
 #. English: When the holder attacks, grant +2 PWR to two random allies.
@@ -597,12 +445,8 @@ msgstr ""
 msgid "item_t3_c.name"
 msgstr ""
 
-#. English: A ring that feeds on the living.
+#. English: On attack, heal the holder for 20% of damage dealt (min 1 HP).
 msgid "item_t3_c.desc"
-msgstr ""
-
-#. English: Vampiric Strike
-msgid "ability.item_t3c_on_attack_lifesteal.name"
 msgstr ""
 
 #. English: On attack, heal the holder for 20% of damage dealt (min 1 HP).
@@ -613,7 +457,7 @@ msgstr ""
 msgid "item_t3_d.name"
 msgstr ""
 
-#. English: A thorny charm that strikes back at those who harm its bearer.
+#. English: When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.
 msgid "item_t3_d.desc"
 msgstr ""
 
@@ -1225,14 +1069,6 @@ msgstr ""
 msgid "ui.pwr"
 msgstr ""
 
-#. English: A survivor who learned that every kill counts. Low stats but gold flows freely.
-msgid "hero.flavor"
-msgstr ""
-
-#. English: Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer.
-msgid "hero_timekeeper.flavor"
-msgstr ""
-
 #. English: Learn the angular Japanese syllabary used for foreign words and loanwords.
 msgid "deck.katakana.desc"
 msgstr ""
@@ -1257,16 +1093,8 @@ msgstr ""
 msgid "deck.korean_hangul.desc"
 msgstr ""
 
-#. English: Ambush Predator
-msgid "ability.unit_tier3e_ambush_predator.name"
-msgstr ""
-
 #. English: When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR.
 msgid "ability.unit_tier3e_ambush_predator.desc"
-msgstr ""
-
-#. English: Summon Blessing
-msgid "ability.unit_tier3f_summon_blessing.name"
 msgstr ""
 
 #. English: When an ally unit is summoned, grant it [+3 / +5 / +7] HP.
@@ -1305,155 +1133,147 @@ msgstr ""
 msgid "STATUS_STATIC_DESC"
 msgstr ""
 
-#. English: Royal Insignia
-msgid "trinket.royal_insignia.name"
+#. English: Novice Insignia
+msgid "trinket.novice_insignia.name"
 msgstr ""
 
-#. English: A medal signifying royal favor.
-msgid "trinket.royal_insignia.desc"
+#. English: When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.novice_insignia.desc"
 msgstr ""
 
-#. English: Royal Blessing
-msgid "ability.royal_insignia.name"
-msgstr ""
-
-#. English: When a Level 1 unit enters the board, grant it +1 HP and +1 PWR.
-msgid "ability.royal_insignia.desc"
+#. English: When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.novice_insignia.desc"
 msgstr ""
 
 #. English: Veteran Insignia
 msgid "trinket.veteran_insignia.name"
 msgstr ""
 
-#. English: A badge of honor for seasoned warriors.
+#. English: When a Level 2 unit enters the board, it gains +1 HP and +1 PWR.
 msgid "trinket.veteran_insignia.desc"
 msgstr ""
 
-#. English: Veteran Blessing
-msgid "ability.veteran_insignia.name"
-msgstr ""
-
-#. English: When a Level 2 unit enters the board, grant it +1 HP and +1 PWR.
+#. English: When a Level 2 unit enters the board, it gains +1 HP and +1 PWR.
 msgid "ability.veteran_insignia.desc"
 msgstr ""
 
-#. English: Fire Trait
+#. English: Fire Sigil
 msgid "trinket.trait_fire.name"
 msgstr ""
 
-#. English: Enables the Fire trait. Fire units ignite enemies on attack, spreading fiery destruction and dealing bonus damage against burning targets.
+#. English: Fire trait effects activate at 3, 6, 12, 20, and 32 units.
 msgid "trinket.trait_fire.desc"
 msgstr ""
 
-#. English: Earth Trait
+#. English: Earth Sigil
 msgid "trinket.trait_earth.name"
 msgstr ""
 
-#. English: Enables the Earth trait. Grants Armor and Spikes across your frontline, turning impenetrable defense into devastating counter-attacks.
+#. English: Earth trait effects activate at 3, 6, 12, 20, and 32 units.
 msgid "trinket.trait_earth.desc"
 msgstr ""
 
-#. English: Water Trait
+#. English: Water Sigil
 msgid "trinket.trait_water.name"
 msgstr ""
 
-#. English: Enables the Water trait. Flowing waves heal allies, cleanse debilitating negative effects, and convert afflictions into restorative energy.
+#. English: Water trait effects activate at 3, 6, 12, 20, and 32 units.
 msgid "trinket.trait_water.desc"
 msgstr ""
 
-#. English: Air Trait
+#. English: Air Sigil
 msgid "trinket.trait_air.name"
 msgstr ""
 
-#. English: Enables the Air trait. Electrifies enemies with Static on attack, splashing charges that detonate into collateral damage upon death.
+#. English: Air trait effects activate at 3, 6, 12, 20, and 32 units.
 msgid "trinket.trait_air.desc"
 msgstr ""
 
-#. English: Tank Trait
+#. English: Tank Sigil
 msgid "trinket.trait_tank.name"
 msgstr ""
 
-#. English: Enables the Tank trait. Tanks bolster defensive armor, intercept attacks directed at backline allies, and convert armor into punishing spikes.
+#. English: Tank trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_tank.desc"
 msgstr ""
 
-#. English: Fighter Trait
+#. English: Fighter Sigil
 msgid "trinket.trait_fighter.name"
 msgstr ""
 
-#. English: Enables the Fighter trait. Brawlers excel against high-health targets, cleaving enemies behind their mark and chain-attacking on kill.
+#. English: Fighter trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_fighter.desc"
 msgstr ""
 
-#. English: Support Trait
+#. English: Support Sigil
 msgid "trinket.trait_support.name"
 msgstr ""
 
-#. English: Enables the Support trait. Inspires formation allies with bonus health and power, reinforcing the weakest units every turn.
+#. English: Support trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_support.desc"
 msgstr ""
 
-#. English: Specialist Trait
+#. English: Specialist Sigil
 msgid "trinket.trait_specialist.name"
 msgstr ""
 
-#. English: Enables the Specialist trait. Manipulates economy and gacha tokens, summoning combat clones and scaling power with accrued gold.
+#. English: Specialist trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_specialist.desc"
 msgstr ""
 
-#. English: Food Trait
+#. English: Food Sigil
 msgid "trinket.trait_food.name"
 msgstr ""
 
-#. English: Enables the Food trait. Nourishes the ally standing directly behind when taking hits, passing down full power upon defeat.
+#. English: Food trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_food.desc"
 msgstr ""
 
-#. English: Mecha Trait
+#. English: Mecha Sigil
 msgid "trinket.trait_mecha.name"
 msgstr ""
 
-#. English: Enables the Mecha trait. Reinforced with armor and spikes, firing static laser salvos on merges and overloading upon destruction.
+#. English: Mecha trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_mecha.desc"
 msgstr ""
 
-#. English: Animal Trait
+#. English: Animal Sigil
 msgid "trinket.trait_animal.name"
 msgstr ""
 
-#. English: Enables the Animal trait. Feral pack instincts empower an alpha and heal the pack with every fierce attack.
+#. English: Animal trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_animal.desc"
 msgstr ""
 
-#. English: Plant Trait
+#. English: Plant Sigil
 msgid "trinket.trait_plant.name"
 msgstr ""
 
-#. English: Enables the Plant trait. Deep roots foster spikes and steady regeneration, transforming healing into sharp thorn defenses.
+#. English: Plant trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_plant.desc"
 msgstr ""
 
-#. English: Toy Trait
+#. English: Toy Sigil
 msgid "trinket.trait_toy.name"
 msgstr ""
 
-#. English: Enables the Toy trait. Generates volatile static friction when struck in melee, culminating in an explosive static detonation on death.
+#. English: Toy trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_toy.desc"
 msgstr ""
 
-#. English: Appliance Trait
+#. English: Appliance Sigil
 msgid "trinket.trait_appliance.name"
 msgstr ""
 
-#. English: Enables the Appliance trait. Appliances inflict Static and Burn on attack, gain immunity and reflection against both, and convert incoming debuffs into raw stats.
+#. English: Appliance trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_appliance.desc"
 msgstr ""
 
-#. English: Costume Trait
+#. English: Costume Sigil
 msgid "trinket.trait_costume.name"
 msgstr ""
 
-#. English: Enables the Costume trait. Masquerades in enemy strengths, stealing beneficial status effects and raw attributes before battle begins.
+#. English: Costume trait effects activate at 2, 3, 4, and 5 units.
 msgid "trinket.trait_costume.desc"
 msgstr ""
 
@@ -1809,12 +1629,8 @@ msgstr ""
 msgid "item.potion_t1.name"
 msgstr ""
 
-#. English: Restores 4 HP to a target unit.
+#. English: Restores 4 HP.
 msgid "item.potion_t1.desc"
-msgstr ""
-
-#. English: Drink
-msgid "ability.potion_t1.name"
 msgstr ""
 
 #. English: Restores 4 HP.
@@ -1825,12 +1641,8 @@ msgstr ""
 msgid "item.potion_spikes.name"
 msgstr ""
 
-#. English: Grants 4 Spikes to target. Spikes damage attackers then lose a stack.
+#. English: Grants 4 Spikes stacks
 msgid "item.potion_spikes.desc"
-msgstr ""
-
-#. English: Thorn Skin
-msgid "ability.grant_spikes.name"
 msgstr ""
 
 #. English: Grants 4 Spikes stacks
@@ -1841,12 +1653,8 @@ msgstr ""
 msgid "item.potion_heroism.name"
 msgstr ""
 
-#. English: A potion that inspires heroism.
+#. English: Grants +3 HP, +3 PWR, and 3 Armor stacks.
 msgid "item.potion_heroism.desc"
-msgstr ""
-
-#. English: Heroism
-msgid "ability.grant_heroism.name"
 msgstr ""
 
 #. English: Grants +3 HP, +3 PWR, and 3 Armor stacks.
@@ -1861,32 +1669,16 @@ msgstr ""
 msgid "item.potion_plunder.desc"
 msgstr ""
 
-#. English: Plunder
-msgid "ability.potion_plunder.name"
-msgstr ""
-
 #. English: Steals a random item from the target and sends it to your Gacha Machine of the matching tier.
 msgid "ability.potion_plunder.desc"
-msgstr ""
-
-#. English: Mirror Image
-msgid "ability.unit_t2_e_mimic.name"
 msgstr ""
 
 #. English: At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR.
 msgid "ability.unit_t2_e_mimic.desc"
 msgstr ""
 
-#. English: Buff Echo
-msgid "ability.unit_t2_g_buff_echo.name"
-msgstr ""
-
 #. English: When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them.
 msgid "ability.unit_t2_g_buff_echo.desc"
-msgstr ""
-
-#. English: Solitary Strength
-msgid "ability.unit_t2_h.name"
 msgstr ""
 
 #. English: At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.
@@ -1901,10 +1693,6 @@ msgstr ""
 msgid "ability.unit_t2_h_l3.desc"
 msgstr ""
 
-#. English: Mud Coating
-msgid "ability.mud_coating.name"
-msgstr ""
-
 #. English: When healed, gain 1 Armor and 1 Spikes.
 msgid "ability.mud_coating_l1.desc"
 msgstr ""
@@ -1915,10 +1703,6 @@ msgstr ""
 
 #. English: When healed, gain 3 Armor and 3 Spikes.
 msgid "ability.mud_coating_l3.desc"
-msgstr ""
-
-#. English: Scald
-msgid "ability.scald.name"
 msgstr ""
 
 #. English: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.
@@ -1933,14 +1717,6 @@ msgstr ""
 msgid "ability.scald_l3.desc"
 msgstr ""
 
-#. English: Quiet Meditation
-msgid "ability.unit_tier3g_bench_growth.name"
-msgstr ""
-
-#. English: Convergence Surge
-msgid "ability.unit_t3_h.name"
-msgstr ""
-
 #. English: Whenever a merge happens on the battle board, if this unit is on the battle board, gain [**+2 / +3 / +4 HP and PWR**].
 msgid "ability.unit_t3_h.desc"
 msgstr ""
@@ -1949,7 +1725,7 @@ msgstr ""
 msgid "unit_dust_t2.name"
 msgstr ""
 
-#. English: A construct. Stays in the fight.
+#. English: Deal (PWR) damage to the frontmost enemy.
 msgid "unit_dust_t2.desc"
 msgstr ""
 
@@ -1957,7 +1733,7 @@ msgstr ""
 msgid "unit_dust_t3.name"
 msgstr ""
 
-#. English: A heavy construct. Stays in the fight.
+#. English: Deal (PWR) damage to the frontmost enemy.
 msgid "unit_dust_t3.desc"
 msgstr ""
 
@@ -1965,7 +1741,7 @@ msgstr ""
 msgid "unit_dust_elite_t1.name"
 msgstr ""
 
-#. English: A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.
+#. English: At end of turn, summon units to fill empty team slots. Spawns a T1 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). Spawns a Dust unit at Turn Start. Spawns a Dust unit when Attacking.
 msgid "unit_dust_elite_t1.desc"
 msgstr ""
 
@@ -1973,12 +1749,8 @@ msgstr ""
 msgid "unit_dust_elite_t2.name"
 msgstr ""
 
-#. English: An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.
+#. English: At end of turn, summon units to fill empty team slots. Spawns a random T1, T2 or T3 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).
 msgid "unit_dust_elite_t3.desc"
-msgstr ""
-
-#. English: Dust Pulse
-msgid "ability_dust_elite_spawn.name"
 msgstr ""
 
 #. English: Spawns a Dust unit in the player's inventory.
@@ -1989,7 +1761,7 @@ msgstr ""
 msgid "unit_dust_t1.name"
 msgstr ""
 
-#. English: A fragile construct. Stays in the fight.
+#. English: Deal (PWR) damage to the frontmost enemy.
 msgid "unit_dust_t1.desc"
 msgstr ""
 
@@ -1997,60 +1769,32 @@ msgstr ""
 msgid "unit_dust_elite_t3.name"
 msgstr ""
 
-#. English: Dust Pulse (Turn)
-msgid "ability_dust_elite_spawn_turn.name"
-msgstr ""
-
 #. English: Spawns a Dust unit at Turn Start.
 msgid "ability_dust_elite_spawn_turn.desc"
-msgstr ""
-
-#. English: Dust Pulse (Death T1)
-msgid "ability_dust_elite1_spawn_death.name"
 msgstr ""
 
 #. English: Spawns a T1 Dust unit when an Ally dies.
 msgid "ability_dust_elite1_spawn_death.desc"
 msgstr ""
 
-#. English: Dust Pulse (Death T1/T2)
-msgid "ability_dust_elite2_spawn_death.name"
-msgstr ""
-
 #. English: Spawns a random T1 or T2 Dust unit when an Ally dies.
 msgid "ability_dust_elite2_spawn_death.desc"
-msgstr ""
-
-#. English: Universal Dust Pulse (Death)
-msgid "ability_dust_elite_spawn_death.name"
 msgstr ""
 
 #. English: Spawns a random T1, T2 or T3 Dust unit when an Ally dies.
 msgid "ability_dust_elite_spawn_death.desc"
 msgstr ""
 
-#. English: Dust Pulse (Hurt)
-msgid "ability_dust_elite_spawn_hurt.name"
-msgstr ""
-
 #. English: Spawns a Dust unit when Hurt.
 msgid "ability_dust_elite_spawn_hurt.desc"
-msgstr ""
-
-#. English: Dust Pulse (Attack)
-msgid "ability_dust_elite_spawn_attack.name"
 msgstr ""
 
 #. English: Spawns a Dust unit when Attacking.
 msgid "ability_dust_elite_spawn_attack.desc"
 msgstr ""
 
-#. English: A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit.
+#. English: At end of turn, summon units to fill empty team slots. Spawns a random T1 or T2 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). Spawns a Dust unit in the player's inventory.
 msgid "unit_dust_elite_t2.desc"
-msgstr ""
-
-#. English: Dust Growth
-msgid "ability.dust_growth.name"
 msgstr ""
 
 #. English: Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).
@@ -2105,10 +1849,6 @@ msgstr ""
 msgid "ui.reward_elite_instruction"
 msgstr ""
 
-#. English: Dust Pulse (Enemy Death)
-msgid "ability_dust_elite_spawn_enemy_death.name"
-msgstr ""
-
 #. English: Spawns a Dust unit when an Enemy dies.
 msgid "ability_dust_elite_spawn_enemy_death.desc"
 msgstr ""
@@ -2117,12 +1857,8 @@ msgstr ""
 msgid "trinket.armor_aura.name"
 msgstr ""
 
-#. English: An aura that hardens the resolve of allies.
+#. English: At turn start, all allies gain 3 Armor.
 msgid "trinket.armor_aura.desc"
-msgstr ""
-
-#. English: Armor Aura
-msgid "ability.armor_aura.name"
 msgstr ""
 
 #. English: At turn start, all allies gain 3 Armor.
@@ -2193,12 +1929,8 @@ msgstr ""
 msgid "hero_avenger.name"
 msgstr ""
 
-#. English: A fierce warrior who strikes when allies fall.
+#. English: When an ally dies, leap and attack the frontmost enemy.
 msgid "hero_avenger.desc"
-msgstr ""
-
-#. English: Leap Attack
-msgid "ability.hero_avenger_ally_death_attack.name"
 msgstr ""
 
 #. English: When an ally dies, leap and attack the frontmost enemy.
@@ -2209,12 +1941,8 @@ msgstr ""
 msgid "hero_bastion.name"
 msgstr ""
 
-#. English: A steadfast defender who grows stronger as allies fall.
+#. English: When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.
 msgid "hero_bastion.desc"
-msgstr ""
-
-#. English: Fortify
-msgid "ability.hero_bastion_ally_death_spikes_armor.name"
 msgstr ""
 
 #. English: When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.
@@ -2225,12 +1953,8 @@ msgstr ""
 msgid "hero_pyro.name"
 msgstr ""
 
-#. English: A fiery mage who incinerates enemies instead of striking them.
+#. English: On attack, instead of dealing damage, apply Burn stacks equal to your Power.
 msgid "hero_pyro.desc"
-msgstr ""
-
-#. English: Incinerate
-msgid "ability.hero_pyro_attack_burn.name"
 msgstr ""
 
 #. English: On attack, instead of dealing damage, apply Burn stacks equal to your Power.
@@ -2293,16 +2017,8 @@ msgstr ""
 msgid "ui.merge_encounter_instruction"
 msgstr ""
 
-#. English: Mirrored Might
-msgid "ability.doppleganger_scale.name"
-msgstr ""
-
 #. English: Gains [**+3 / +4 / +5 PWR**] for each other Doppleganger in battle.
 msgid "ability.doppleganger_scale.desc"
-msgstr ""
-
-#. English: Clone Split
-msgid "ability.doppleganger_death.name"
 msgstr ""
 
 #. English: Spawns a Doppleganger into the Tier 3 Gacha Machine on death.
@@ -2313,44 +2029,24 @@ msgstr ""
 msgid "item_t2_d.name"
 msgstr ""
 
-#. English: A resonant orb that amplifies the power of its bearer.
+#. English: Grants the holder +2 PWR for each Echoing Orb in battle. Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.
 msgid "item_t2_d.desc"
-msgstr ""
-
-#. English: Resonance
-msgid "ability.echoing_orb_scale.name"
 msgstr ""
 
 #. English: Grants the holder +2 PWR for each Echoing Orb in battle.
 msgid "ability.echoing_orb_scale.desc"
 msgstr ""
 
-#. English: Echo Split
-msgid "ability.echoing_orb_death.name"
-msgstr ""
-
 #. English: Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.
 msgid "ability.echoing_orb_death.desc"
-msgstr ""
-
-#. English: Standard's Legacy
-msgid "ability.unit_t3_j_ability_l1.name"
 msgstr ""
 
 #. English: On death, transfers its equipped item to the ally directly behind it.
 msgid "ability.unit_t3_j_ability_l1.desc"
 msgstr ""
 
-#. English: Standard's Legacy
-msgid "ability.unit_t3_j_ability_l2.name"
-msgstr ""
-
 #. English: On death, transfers its equipped item to the ally behind and 1 copy behind them.
 msgid "ability.unit_t3_j_ability_l2.desc"
-msgstr ""
-
-#. English: Standard's Legacy
-msgid "ability.unit_t3_j_ability_l3.name"
 msgstr ""
 
 #. English: On death, transfers its equipped item to the ally behind and 2 copies behind them.
@@ -2361,24 +2057,12 @@ msgstr ""
 msgid "ui.transfer_item_msg"
 msgstr ""
 
-#. English: Wealth Accumulation
-msgid "ability.unit_t3_l_l1.name"
-msgstr ""
-
 #. English: At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.
 msgid "ability.unit_t3_l_l1.desc"
 msgstr ""
 
-#. English: Wealth Accumulation
-msgid "ability.unit_t3_l_l2.name"
-msgstr ""
-
 #. English: At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have.
 msgid "ability.unit_t3_l_l2.desc"
-msgstr ""
-
-#. English: Wealth Accumulation
-msgid "ability.unit_t3_l_l3.name"
 msgstr ""
 
 #. English: At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have.
@@ -2393,15 +2077,11 @@ msgstr ""
 msgid "trinket.underdog_emblem.name"
 msgstr ""
 
-#. English: An emblem that protects the outnumbered.
+#. English: Pre-Combat: If your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.
 msgid "trinket.underdog_emblem.desc"
 msgstr ""
 
-#. English: Outnumbered Bulwark
-msgid "ability.underdog_emblem.name"
-msgstr ""
-
-#. English: At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.
+#. English: Pre-Combat: If your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.
 msgid "ability.underdog_emblem.desc"
 msgstr ""
 
@@ -2409,12 +2089,8 @@ msgstr ""
 msgid "trinket.bargain_charm.name"
 msgstr ""
 
-#. English: A charm that haggles for a better price.
+#. English: Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.
 msgid "trinket.bargain_charm.desc"
-msgstr ""
-
-#. English: Bargain Charm
-msgid "ability.bargain_charm.name"
 msgstr ""
 
 #. English: Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.
@@ -2425,12 +2101,8 @@ msgstr ""
 msgid "trinket.token_return_charm.name"
 msgstr ""
 
-#. English: A charm that reclaims spent potential.
+#. English: When the first unit dies each round, return Tokens equal to its Tier.
 msgid "trinket.token_return_charm.desc"
-msgstr ""
-
-#. English: Token Return
-msgid "ability.token_return_charm.name"
 msgstr ""
 
 #. English: The first unit to die each round returns tokens equivalent to its tier.
@@ -2441,12 +2113,8 @@ msgstr ""
 msgid "trinket.time_sprint_charm.name"
 msgstr ""
 
-#. English: A charm that bends time.
+#. English: Minigame timer gets a flat 2-second increase in battle.
 msgid "trinket.time_sprint_charm.desc"
-msgstr ""
-
-#. English: Time Sprint
-msgid "ability.time_sprint_charm.name"
 msgstr ""
 
 #. English: Minigame timer gets a flat 2-second increase in battle.
@@ -2457,12 +2125,8 @@ msgstr ""
 msgid "trinket.merge_damage_charm.name"
 msgstr ""
 
-#. English: A charm that weaponizes fusion.
+#. English: Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.
 msgid "trinket.merge_damage_charm.desc"
-msgstr ""
-
-#. English: Fusion Spark
-msgid "ability.merge_damage_charm.name"
 msgstr ""
 
 #. English: Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.
@@ -2473,16 +2137,8 @@ msgstr ""
 msgid "hero_starter.name"
 msgstr ""
 
-#. English: A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.
+#. English: Gain at least 3 Tokens from each minigame.
 msgid "hero_starter.desc"
-msgstr ""
-
-#. English: A gentle soul who draws strength from loss, guiding newcomers through their first steps.
-msgid "hero_starter.flavor"
-msgstr ""
-
-#. English: Soul Harvest
-msgid "ability.hero_starter_ally_death_absorb.name"
 msgstr ""
 
 #. English: When an ally dies, gain HP equal to their PWR.
@@ -2493,7 +2149,7 @@ msgstr ""
 msgid "trinket.burn_vial.name"
 msgstr ""
 
-#. English: A vial of eternal flame.
+#. English: Attacks apply 1 Burn stack.
 msgid "trinket.burn_vial.desc"
 msgstr ""
 
@@ -2509,12 +2165,8 @@ msgstr ""
 msgid "item.trinket_hero_catalyst.name"
 msgstr ""
 
-#. English: Whenever an ally merges, grants +1 HP and +1 PWR to your Hero.
+#. English: Grants the Hero +1 HP and +1 PWR on any merge.
 msgid "item.trinket_hero_catalyst.desc"
-msgstr ""
-
-#. English: Hero's Catalyst
-msgid "ability.hero_catalyst.name"
 msgstr ""
 
 #. English: Grants the Hero +1 HP and +1 PWR on any merge.
@@ -2545,10 +2197,6 @@ msgstr ""
 msgid "trinket.beginners_charm.desc"
 msgstr ""
 
-#. English: Trinity Charm
-msgid "trinket.trinity_charm.name"
-msgstr ""
-
 #. English: If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.
 msgid "trinket.trinity_charm.desc"
 msgstr ""
@@ -2561,17 +2209,20 @@ msgstr ""
 msgid "trinket.spiked_armor.desc"
 msgstr ""
 
-#. English: Spiked Armor
-msgid "ability.trinket_spiked_armor.name"
-msgstr ""
-
 #. English: At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].
 msgid "ability.trinket_spiked_armor.desc"
 msgstr ""
 
 #. English: Merge or level up your Gachamons or Spirits permanently!
-({cost} Gold per action)
 msgid "ui.merge_encounter_description"
+msgstr ""
+
+#. English: Fundir ou evoluir seus Gachamons ou Espíritos permanentemente!
+msgid "({cost} Gold per action)\""
+msgstr ""
+
+#. English: 
+msgid "({cost} Ouro por ação)\""
 msgstr ""
 
 #. English: Play to earn tokens, then spend them for permanent HP upgrades.
@@ -2630,10 +2281,6 @@ msgstr ""
 msgid "ui.rewards_title"
 msgstr ""
 
-#. English: Shockwave
-msgid "ability.unit_tier3_berserker_shockwave.name"
-msgstr ""
-
 #. English: Deals 100% cascade AOE damage to front enemy and units behind.
 msgid "ability.unit_tier3_berserker_shockwave_l1.desc"
 msgstr ""
@@ -2644,10 +2291,6 @@ msgstr ""
 
 #. English: Deals 200% cascade AOE damage to front enemy and units behind.
 msgid "ability.unit_tier3_berserker_shockwave_l3.desc"
-msgstr ""
-
-#. English: Resilient Aura
-msgid "ability.unit_tier3d_resilient_aura.name"
 msgstr ""
 
 #. English: Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.
@@ -2662,10 +2305,6 @@ msgstr ""
 msgid "ability.unit_tier3d_resilient_aura_l3.desc"
 msgstr ""
 
-#. English: Mirror Strike
-msgid "ability.unit_tier3a_mirror_strike.name"
-msgstr ""
-
 #. English: Attacks enemy in opposite mirror slot for 100% damage.
 msgid "ability.unit_tier3a_mirror_strike_l1.desc"
 msgstr ""
@@ -2678,10 +2317,6 @@ msgstr ""
 msgid "ability.unit_tier3a_mirror_strike_l3.desc"
 msgstr ""
 
-#. English: Guardian Sacrifice
-msgid "ability.unit_tier3b_guardian_sacrifice.name"
-msgstr ""
-
 #. English: Leaps to intercept lethal damage on allies.
 msgid "ability.unit_tier3b_guardian_sacrifice_l1.desc"
 msgstr ""
@@ -2692,10 +2327,6 @@ msgstr ""
 
 #. English: Leaps to intercept lethal damage on allies and gains 2 Armor.
 msgid "ability.unit_tier3b_guardian_sacrifice_l3.desc"
-msgstr ""
-
-#. English: Soul Summon
-msgid "ability.unit_tier3c_soul_summon.name"
 msgstr ""
 
 #. English: Summons a random Level 1 Tier 2 unit on death.
@@ -2818,19 +2449,11 @@ msgstr ""
 msgid "ability.unit_t3_shadow_l3.desc"
 msgstr ""
 
-#. English: Wealth Accumulation
-msgid "ability.unit_t3_l.name"
-msgstr ""
-
-#. English: Standard's Legacy
-msgid "ability.unit_t3_j_ability.name"
-msgstr ""
-
 #. English: ETnkPlaToy
 msgid "ETnkPlaToy.name"
 msgstr ""
 
-#. English: ETnkPlaToy unit.
+#. English: When hurt BY AN ATTACK, Heal this unit by 1 HP.
 msgid "ETnkPlaToy.desc"
 msgstr ""
 
@@ -2838,7 +2461,7 @@ msgstr ""
 msgid "FFigMecApp.name"
 msgstr ""
 
-#. English: FFigMecApp unit.
+#. English: When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.
 msgid "FFigMecApp.desc"
 msgstr ""
 
@@ -2846,7 +2469,7 @@ msgstr ""
 msgid "WSupAniCos.name"
 msgstr ""
 
-#. English: WSupAniCos unit.
+#. English: When the ally directly in front takes damage, heal them for 1 HP.
 msgid "WSupAniCos.desc"
 msgstr ""
 
@@ -2854,7 +2477,7 @@ msgstr ""
 msgid "ASpeFodToy.name"
 msgstr ""
 
-#. English: ASpeFodToy unit.
+#. English: When this unit dies, grant its current PWR to the ally behind.
 msgid "ASpeFodToy.desc"
 msgstr ""
 
@@ -2862,7 +2485,7 @@ msgstr ""
 msgid "EWFigCosToy.name"
 msgstr ""
 
-#. English: EWFigCosToy unit.
+#. English: When an ally is defeated, gain +1 HP and +1 PWR.
 msgid "EWFigCosToy.desc"
 msgstr ""
 
@@ -2870,7 +2493,7 @@ msgstr ""
 msgid "FASpeMecApp.name"
 msgstr ""
 
-#. English: FASpeMecApp unit.
+#. English: Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.
 msgid "FASpeMecApp.desc"
 msgstr ""
 
@@ -2878,7 +2501,7 @@ msgstr ""
 msgid "EASpeFodToy.name"
 msgstr ""
 
-#. English: EASpeFodToy unit.
+#. English: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.
 msgid "EASpeFodToy.desc"
 msgstr ""
 
@@ -2886,7 +2509,7 @@ msgstr ""
 msgid "WATnkPlaAni.name"
 msgstr ""
 
-#. English: WATnkPlaAni unit.
+#. English: At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.
 msgid "WATnkPlaAni.desc"
 msgstr ""
 
@@ -2894,7 +2517,7 @@ msgstr ""
 msgid "EFTnkAniCos.name"
 msgstr ""
 
-#. English: EFTnkAniCos unit.
+#. English: When healed, gain 1 Armor and 1 Spikes.
 msgid "EFTnkAniCos.desc"
 msgstr ""
 
@@ -2902,7 +2525,7 @@ msgstr ""
 msgid "FWSpeAppFod.name"
 msgstr ""
 
-#. English: FWSpeAppFod unit.
+#. English: When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.
 msgid "FWSpeAppFod.desc"
 msgstr ""
 
@@ -2910,7 +2533,7 @@ msgstr ""
 msgid "EFWAFigSpeAniMec.name"
 msgstr ""
 
-#. English: EFWAFigSpeAniMec unit.
+#. English: Attacks enemy in opposite mirror slot for 100% damage.
 msgid "EFWAFigSpeAniMec.desc"
 msgstr ""
 
@@ -2918,7 +2541,7 @@ msgstr ""
 msgid "EWWATnkMecApp.name"
 msgstr ""
 
-#. English: EWWATnkMecApp unit.
+#. English: Leaps to intercept lethal damage on allies.
 msgid "EWWATnkMecApp.desc"
 msgstr ""
 
@@ -2926,7 +2549,7 @@ msgstr ""
 msgid "EFWWFigSpeAniFodMecCos.name"
 msgstr ""
 
-#. English: EFWWFigSpeAniFodMecCos unit.
+#. English: Deals 100% cascade AOE damage to front enemy and units behind.
 msgid "EFWWFigSpeAniFodMecCos.desc"
 msgstr ""
 
@@ -2934,7 +2557,7 @@ msgstr ""
 msgid "EFAASupToy.name"
 msgstr ""
 
-#. English: EFAASupToy unit.
+#. English: Summons a random Level 1 Tier 2 unit on death.
 msgid "EFAASupToy.desc"
 msgstr ""
 
@@ -2942,7 +2565,7 @@ msgstr ""
 msgid "EEFWFigTnkPlaToy.name"
 msgstr ""
 
-#. English: EEFWFigTnkPlaToy unit.
+#. English: Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.
 msgid "EEFWFigTnkPlaToy.desc"
 msgstr ""
 
@@ -2950,7 +2573,7 @@ msgstr ""
 msgid "EEWAFigFodAniCos.name"
 msgstr ""
 
-#. English: EEWAFigFodAniCos unit.
+#. English: Deals damage to enemies equal to 100% of PWR when they are summoned.
 msgid "EEWAFigFodAniCos.desc"
 msgstr ""
 
@@ -2958,7 +2581,7 @@ msgstr ""
 msgid "EFFASupPlaToy.name"
 msgstr ""
 
-#. English: EFFASupPlaToy unit.
+#. English: Grants +3 HP to newly summoned allies.
 msgid "EFFASupPlaToy.desc"
 msgstr ""
 
@@ -2966,7 +2589,7 @@ msgstr ""
 msgid "FWAASupToy.name"
 msgstr ""
 
-#. English: FWAASupToy unit.
+#. English: If on the player bench at start of turn, gain +3 HP and PWR.
 msgid "FWAASupToy.desc"
 msgstr ""
 
@@ -2974,7 +2597,7 @@ msgstr ""
 msgid "EFFWSupMecApp.name"
 msgstr ""
 
-#. English: EFFWSupMecApp unit.
+#. English: Whenever a merge happens on the battle board, gain +2 HP and PWR.
 msgid "EFFWSupMecApp.desc"
 msgstr ""
 
@@ -2982,7 +2605,7 @@ msgstr ""
 msgid "EFWASupFodToy.name"
 msgstr ""
 
-#. English: EFWASupFodToy unit.
+#. English: Gains +3 PWR for each other Doppleganger in battle. Summons 1 copy of itself on death into the Gacha Machine.
 msgid "EFWASupFodToy.desc"
 msgstr ""
 
@@ -2990,7 +2613,7 @@ msgstr ""
 msgid "FFWASpeSupMecAniApp.name"
 msgstr ""
 
-#. English: FFWASpeSupMecAniApp unit.
+#. English: On death, transfers its equipped item to the ally directly behind it.
 msgid "FFWASpeSupMecAniApp.desc"
 msgstr ""
 
@@ -2998,7 +2621,7 @@ msgstr ""
 msgid "EWAASpePlaApp.name"
 msgstr ""
 
-#. English: EWAASpePlaApp unit.
+#. English: At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.
 msgid "EWAASpePlaApp.desc"
 msgstr ""
 
@@ -3006,7 +2629,7 @@ msgstr ""
 msgid "EEFASpeFodCos.name"
 msgstr ""
 
-#. English: EEFASpeFodCos unit.
+#. English: Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.
 msgid "EEFASpeFodCos.desc"
 msgstr ""
 
@@ -3014,7 +2637,7 @@ msgstr ""
 msgid "EFWATnkCosMec.name"
 msgstr ""
 
-#. English: EFWATnkCosMec unit.
+#. English: Gain +2 HP before taking damage.
 msgid "EFWATnkCosMec.desc"
 msgstr ""
 
@@ -3022,167 +2645,319 @@ msgstr ""
 msgid "FWWASupAniToy.name"
 msgstr ""
 
-#. English: FWWASupAniToy unit.
+#. English: Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.
 msgid "FWWASupAniToy.desc"
-msgstr ""
-
-#. English: Infernal Ignition
-msgid "ability.trait_fire.name"
 msgstr ""
 
 #. English: Empowers Fire units to burn enemies on attack, spread burns, and deal bonus damage to burning foes.
 msgid "ability.trait_fire.desc"
 msgstr ""
 
-#. English: Tectonic Bulwark
-msgid "ability.trait_earth.name"
-msgstr ""
-
 #. English: Grants Armor and Spikes to Earth units and allies, empowering Spikes to deal bonus damage on attack.
 msgid "ability.trait_earth.desc"
-msgstr ""
-
-#. English: Cleansing Tide
-msgid "ability.trait_water.name"
 msgstr ""
 
 #. English: Water units heal allies ahead and cleanse negative status effects pre-combat.
 msgid "ability.trait_water.desc"
 msgstr ""
 
-#. English: Restorative Spring
-msgid "ability.trait_water_turn_start.name"
-msgstr ""
-
 #. English: At turn start, heals lowest HP ally and converts negative statuses into healing.
 msgid "ability.trait_water_turn_start.desc"
-msgstr ""
-
-#. English: Static Tempest
-msgid "ability.trait_air.name"
 msgstr ""
 
 #. English: Air units electrify targets with Static on attack, splashing charges to adjacent enemies.
 msgid "ability.trait_air.desc"
 msgstr ""
 
-#. English: Bastion Guard
-msgid "ability.trait_tank.name"
-msgstr ""
-
 #. English: Grants Armor pre-combat, passes armor backward on absorption, intercepts attacks, and mirrors armor as spikes.
 msgid "ability.trait_tank.desc"
-msgstr ""
-
-#. English: Frontline Reinforcement
-msgid "ability.trait_tank_turn_start.name"
 msgstr ""
 
 #. English: At turn start, grants 1 Armor to the frontmost Tank.
 msgid "ability.trait_tank_turn_start.desc"
 msgstr ""
 
-#. English: Battle Prowess
-msgid "ability.trait_fighter.name"
-msgstr ""
-
 #. English: Deals bonus damage against high-health targets, retaliates on attack damage, cleaves behind targets, and chains attacks on kill.
 msgid "ability.trait_fighter.desc"
-msgstr ""
-
-#. English: Formation Blessing
-msgid "ability.trait_support.name"
 msgstr ""
 
 #. English: Grants +1 HP to the ally ahead, +1 PWR to the ally behind, and +1 HP/+1 PWR to the Hero.
 msgid "ability.trait_support.desc"
 msgstr ""
 
-#. English: Inspiring Presence
-msgid "ability.trait_support_turn_start.name"
-msgstr ""
-
 #. English: At turn start, grants +1 HP to lowest-HP ally and +1 PWR to lowest-PWR ally per living Support.
 msgid "ability.trait_support_turn_start.desc"
-msgstr ""
-
-#. English: Resource Mastery
-msgid "ability.trait_specialist.name"
 msgstr ""
 
 #. English: Ensures opening tokens, discounts gacha draws, earns gold on kill, and summons a combat clone to the bench.
 msgid "ability.trait_specialist.desc"
 msgstr ""
 
-#. English: Golden Ambition
-msgid "ability.trait_specialist_turn_start.name"
-msgstr ""
-
 #. English: At turn start, the frontmost Specialist gains +1 PWR per 5 Gold held.
 msgid "ability.trait_specialist_turn_start.desc"
-msgstr ""
-
-#. English: Nutrient Infusion
-msgid "ability.trait_food.name"
 msgstr ""
 
 #. English: Heals and empowers the ally directly behind when hurt, and passes down all PWR on death.
 msgid "ability.trait_food.desc"
 msgstr ""
 
-#. English: Overclocked Core
-msgid "ability.trait_mecha.name"
-msgstr ""
-
 #. English: Grants Armor and Spikes, inflicts Static on attack, fires lasers on ally merges, and detonates retaliatory lasers on death.
 msgid "ability.trait_mecha.desc"
-msgstr ""
-
-#. English: Primal Frenzy
-msgid "ability.trait_animal.name"
 msgstr ""
 
 #. English: Grants +1 PWR to an alpha Animal pre-combat and heals Animals on every attack.
 msgid "ability.trait_animal.desc"
 msgstr ""
 
-#. English: Verdant Growth
-msgid "ability.trait_plant.name"
-msgstr ""
-
 #. English: Grants Spikes and HP pre-combat, and converts all incoming heals into Spikes.
 msgid "ability.trait_plant.desc"
-msgstr ""
-
-#. English: Floral Rejuvenation
-msgid "ability.trait_plant_turn_start.name"
 msgstr ""
 
 #. English: At turn start, heals the lowest-HP Plant, and grants +1 Spikes and +1 HP to all Plants.
 msgid "ability.trait_plant_turn_start.desc"
 msgstr ""
 
-#. English: Static Discharge
-msgid "ability.trait_toy.name"
-msgstr ""
-
 #. English: Inflicts Static on melee attackers, and detonates the enemy with the most Static stacks on death.
 msgid "ability.trait_toy.desc"
-msgstr ""
-
-#. English: Thermal Grid
-msgid "ability.trait_appliance.name"
 msgstr ""
 
 #. English: Appliance attacks inflict Static and Burn. Grants immunity and pre-combat cleanse to both, reflects incoming status effects, and converts debuffs into stats.
 msgid "ability.trait_appliance.desc"
 msgstr ""
 
-#. English: Mimic Masquerade
-msgid "ability.trait_costume.name"
-msgstr ""
-
 #. English: Pre-Combat: Steals beneficial status effects or base stats from mirrored enemies and enemy leaders.
 msgid "ability.trait_costume.desc"
+msgstr ""
+
+#. English: Master Insignia
+msgid "trinket.master_insignia.name"
+msgstr ""
+
+#. English: When a Level 3 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.level3_insignia.desc"
+msgstr ""
+
+#. English: When a Level 3 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.level3_insignia.desc"
+msgstr ""
+
+#. English: Cheap Insignia
+msgid "trinket.cheap_insignia.name"
+msgstr ""
+
+#. English: When a Tier 1 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.tier1_insignia.desc"
+msgstr ""
+
+#. English: When a Tier 1 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.tier1_insignia.desc"
+msgstr ""
+
+#. English: Fair Insignia
+msgid "trinket.fair_insignia.name"
+msgstr ""
+
+#. English: When a Tier 2 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.tier2_insignia.desc"
+msgstr ""
+
+#. English: When a Tier 2 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.tier2_insignia.desc"
+msgstr ""
+
+#. English: Premium Insignia
+msgid "trinket.premium_insignia.name"
+msgstr ""
+
+#. English: When a Tier 3 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.tier3_insignia.desc"
+msgstr ""
+
+#. English: When a Tier 3 unit enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.tier3_insignia.desc"
+msgstr ""
+
+#. English: Fire Insignia
+msgid "trinket.fire_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Fire trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.fire_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Fire trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.fire_insignia.desc"
+msgstr ""
+
+#. English: Earth Insignia
+msgid "trinket.earth_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Earth trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.earth_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Earth trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.earth_insignia.desc"
+msgstr ""
+
+#. English: Water Insignia
+msgid "trinket.water_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Water trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.water_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Water trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.water_insignia.desc"
+msgstr ""
+
+#. English: Air Insignia
+msgid "trinket.air_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Air trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.air_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Air trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.air_insignia.desc"
+msgstr ""
+
+#. English: Tank Insignia
+msgid "trinket.tank_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Tank trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.tank_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Tank trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.tank_insignia.desc"
+msgstr ""
+
+#. English: Fighter Insignia
+msgid "trinket.fighter_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Fighter trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.fighter_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Fighter trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.fighter_insignia.desc"
+msgstr ""
+
+#. English: Support Insignia
+msgid "trinket.support_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Support trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.support_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Support trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.support_insignia.desc"
+msgstr ""
+
+#. English: Specialist Insignia
+msgid "trinket.specialist_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Specialist trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.specialist_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Specialist trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.specialist_insignia.desc"
+msgstr ""
+
+#. English: Food Insignia
+msgid "trinket.food_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Food trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.food_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Food trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.food_insignia.desc"
+msgstr ""
+
+#. English: Mecha Insignia
+msgid "trinket.mecha_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Mecha trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.mecha_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Mecha trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.mecha_insignia.desc"
+msgstr ""
+
+#. English: Animal Insignia
+msgid "trinket.animal_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Animal trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.animal_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Animal trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.animal_insignia.desc"
+msgstr ""
+
+#. English: Plant Insignia
+msgid "trinket.plant_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Plant trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.plant_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Plant trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.plant_insignia.desc"
+msgstr ""
+
+#. English: Toy Insignia
+msgid "trinket.toy_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Toy trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.toy_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Toy trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.toy_insignia.desc"
+msgstr ""
+
+#. English: Appliance Insignia
+msgid "trinket.appliance_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Appliance trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.appliance_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Appliance trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.appliance_insignia.desc"
+msgstr ""
+
+#. English: Costume Insignia
+msgid "trinket.costume_insignia.name"
+msgstr ""
+
+#. English: When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.
+msgid "trinket.costume_insignia.desc"
+msgstr ""
+
+#. English: When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.
+msgid "ability.costume_insignia.desc"
+msgstr ""
+
+#. English: Trinity Charm
+msgid "trinket.trinity_charm.name"
 msgstr ""
 

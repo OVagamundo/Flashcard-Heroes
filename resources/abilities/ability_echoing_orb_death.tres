@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_echoing_orb_death"
-name_key = "ability.echoing_orb_death.name"
 description_key = "ability.echoing_orb_death.desc"
 trigger = &"on_death"
 priority = 200

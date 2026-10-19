@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_token_return_charm"
-name_key = "ability.token_return_charm.name"
 description_key = "ability.token_return_charm.desc"
 trigger = &"on_ally_death"
 priority = 220

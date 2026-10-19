@@ -7,7 +7,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_spiked_armor"
-name_key = "ability.trinket_spiked_armor.name"
 description_key = "ability.trinket_spiked_armor.desc"
 trigger = &"on_turn_start"
 priority = 50

@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_consumable_steal"
-display_name_key = "ability.potion_plunder.name"
 description_key = "ability.potion_plunder.desc"
 trigger = &""
 effects = Array[Resource]([ExtResource("2_effect")])

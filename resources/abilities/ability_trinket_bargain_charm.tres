@@ -5,7 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_bargain_charm"
-name_key = "ability.bargain_charm.name"
 description_key = "ability.bargain_charm.desc"
 trigger = &"gacha_draw_cost"
 priority = 50

@@ -2,13 +2,16 @@
 class_name ChoiceWindow
 extends Control
 
-const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
+const _UnitInspectionWindowScene = preload("res://scenes/UnitInspectionWindow.tscn")
+const _ItemInspectionWindowScene = preload("res://scenes/ItemInspectionWindow.tscn")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 @onready var merge_button: Button = %MergeButton
 @onready var swap_button: Button = %SwapButton
 @onready var title_label: Label = %Label
 @onready var result_image: TextureRect = %ResultImage
+@onready var inspection_container: MarginContainer = %InspectionContainer
+@onready var buttons_separator: HSeparator = %ButtonsSeparator
 
 var _source_location: LocationIdentifier
 var _target_location: LocationIdentifier
@@ -24,8 +27,6 @@ func _ready() -> void:
 		SignalBus.emit_signal("interaction_lock_requested", true)
 		
 	# Connect the SWAP button signal, as it's always available.
-
-	# The MERGE button signal will be connected in populate() only if a valid recipe exists.
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
 	# Prune only child windows when clicking on this window's background
 	gui_input.connect(_on_panel_gui_input)
@@ -90,6 +91,11 @@ func populate(context: Dictionary) -> void:
 
 	_update_localized_text()
 
+	# Clear any previous preview inspection views
+	if is_instance_valid(inspection_container):
+		for child in inspection_container.get_children():
+			inspection_container.remove_child(child)
+			child.queue_free()
 
 	# MODIFIED: All button configuration logic is now here, inside populate().
 	# This guarantees it runs AFTER the context data has been received.
@@ -105,23 +111,99 @@ func populate(context: Dictionary) -> void:
 		if not merge_button.is_connected("pressed", _on_merge_pressed):
 			merge_button.pressed.connect(_on_merge_pressed)
 			
-		var result_id = _result_id
-		if result_id == &"":
-			var recipe = Database.recipes.get(_recipe_id)
-			if recipe and recipe.result_id:
-				result_id = recipe.result_id
+		var preview_instance: GachaBallInstance = context.get("preview_instance")
+		if not is_instance_valid(preview_instance) and is_instance_valid(_source_location) and is_instance_valid(_target_location):
+			var data_owner: Object = null
+			if GameManager.is_in_battle:
+				data_owner = get_tree().get_first_node_in_group("battle_manager")
+			else:
+				data_owner = GameManager.run_state
+			if is_instance_valid(data_owner):
+				var all_instances: Dictionary = data_owner.get_all_instances() if data_owner.has_method("get_all_instances") else {}
+				var src_inst = GameManager.get_instance_from_location(_source_location)
+				var tgt_inst = GameManager.get_instance_from_location(_target_location)
+				if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
+					preview_instance = MergeManager.get_preview_merge_instance(src_inst, tgt_inst, _source_location, _target_location, all_instances)
+
+		var preview_loaded := false
+		if is_instance_valid(preview_instance):
+			var def = preview_instance.get_definition()
+			if is_instance_valid(def):
+				var is_unit = def.category == &"UNIT"
+				var inspection_view: InspectionWindow = _UnitInspectionWindowScene.instantiate() if is_unit else _ItemInspectionWindowScene.instantiate()
 				
-		if result_id != &"":
-			var result_def = Database.get_definition(result_id)
-			if result_def and result_def.icon:
-				result_image.texture = result_def.icon
-				result_image.visible = true
-				title_label.visible = false
+				inspection_container.add_child(inspection_view)
+				inspection_view.custom_minimum_size = Vector2.ZERO
+				inspection_view.add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+				
+				var inspect_ctx: Dictionary = {
+					"source_view": self,
+					"instance": preview_instance,
+					"location": _target_location,
+					"is_preview": true,
+					"recipe_id": _recipe_id
+				}
+				inspection_view.populate(inspect_ctx)
+				inspection_view.custom_minimum_size = Vector2.ZERO
+				inspection_view.enforce_display_only()
+
+				inspection_container.visible = true
+				if is_instance_valid(buttons_separator):
+					buttons_separator.visible = true
+				if is_instance_valid(title_label):
+					title_label.visible = false
+				if is_instance_valid(result_image):
+					result_image.visible = false
+				custom_minimum_size = Vector2(480, 0)
+				preview_loaded = true
+				call_deferred("_deferred_shrink")
+
+		if not preview_loaded:
+			if is_instance_valid(inspection_container):
+				inspection_container.visible = false
+			if is_instance_valid(buttons_separator):
+				buttons_separator.visible = false
+			var result_id = _result_id
+			if result_id == &"":
+				var recipe = Database.recipes.get(_recipe_id)
+				if recipe and recipe.result_id:
+					result_id = recipe.result_id
+					
+			if result_id != &"":
+				var result_def = Database.get_definition(result_id)
+				if result_def and result_def.icon:
+					result_image.texture = result_def.icon
+					result_image.visible = true
+					title_label.visible = false
 	else:
 		# No valid recipe. The button should be disabled.
 		merge_button.disabled = true
-		result_image.visible = false
-		title_label.visible = true
+		if is_instance_valid(result_image):
+			result_image.visible = false
+		if is_instance_valid(inspection_container):
+			inspection_container.visible = false
+		if is_instance_valid(buttons_separator):
+			buttons_separator.visible = false
+		if is_instance_valid(title_label):
+			title_label.visible = true
+
+	reset_size()
+
+func _deferred_shrink() -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
+	await get_tree().process_frame
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_instance_valid(self):
+		return
+	if is_instance_valid(inspection_container):
+		for child in inspection_container.get_children():
+			if child is Control:
+				child.custom_minimum_size = Vector2.ZERO
+	custom_minimum_size = Vector2(480, 0)
+	size = Vector2(480, 0)
+	reset_size()
 
 func _on_merge_pressed() -> void:
 	# This function is now a dedicated handler for the merge button press.

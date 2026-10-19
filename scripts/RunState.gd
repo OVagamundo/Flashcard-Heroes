@@ -18,6 +18,7 @@ extends Resource
 @export var current_room_tokens: int = 0
 @export var elapsed_simulation_time: float = 0.0
 @export var black_market_remove_cost: int = 5
+@export var elite_reward_reroll_cost: int = 5
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
@@ -673,6 +674,13 @@ func increase_black_market_remove_cost() -> void:
 	black_market_remove_cost = get_black_market_remove_cost() + 1
 	SignalBus.emit_signal("run_data_changed")
 
+func get_elite_reward_reroll_cost() -> int:
+	return max(5, elite_reward_reroll_cost)
+
+func increase_elite_reward_reroll_cost() -> void:
+	elite_reward_reroll_cost = get_elite_reward_reroll_cost() + 1
+	SignalBus.emit_signal("run_data_changed")
+
 
 func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
 	# Equips an item onto a unit. Units now use a single slot, so default equips replace.
@@ -816,6 +824,7 @@ func start_new_run() -> void:
 	total_enemies_defeated = 0
 	total_gold_earned = 0
 	black_market_remove_cost = 5
+	elite_reward_reroll_cost = 5
 	run_instances.clear()
 	_containers.clear()
 	flashcard_progress.clear()
@@ -1005,6 +1014,7 @@ func to_save_dict() -> Dictionary:
 		"current_room_tokens": current_room_tokens,
 		"elapsed_simulation_time": elapsed_simulation_time,
 		"black_market_remove_cost": black_market_remove_cost,
+		"elite_reward_reroll_cost": elite_reward_reroll_cost,
 		"merge_encounter_cost": merge_encounter_cost,
 		"get_tokens_cost": get_tokens_cost,
 		"deck_def_id": String(deck_def_id),
@@ -1065,6 +1075,7 @@ func from_save_dict(data: Dictionary) -> void:
 	current_room_tokens = data.get("current_room_tokens", 0)
 	elapsed_simulation_time = data.get("elapsed_simulation_time", 0.0)
 	black_market_remove_cost = data.get("black_market_remove_cost", 5)
+	elite_reward_reroll_cost = data.get("elite_reward_reroll_cost", 5)
 	merge_encounter_cost = data.get("merge_encounter_cost", 5)
 	get_tokens_cost = data.get("get_tokens_cost", 5)
 	deck_def_id = StringName(data.get("deck_def_id", ""))

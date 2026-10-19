@@ -3,6 +3,7 @@ extends Node
 
 signal turn_animation_finished
 
+const C = preload("res://scripts/Constants.gd")
 const ANIM_TIMEOUT_DURATION = 1.1
 const BUMP_DURATION = 0.5
 
@@ -87,6 +88,8 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 		# Including them in iteration can cause unpredictable behavior due to dictionary iteration order
 		for uuid in start_snapshot:
 			var snapshot_data = start_snapshot[uuid]
+			if snapshot_data is Dictionary and snapshot_data.get("container_tag") == C.CONTAINER_EQUIPPED_ITEM:
+				continue
 			
 			# TRUE DECOUPLING: Use VALUES from snapshot, not object references
 			if snapshot_data is Dictionary and snapshot_data.has("container_tag") and snapshot_data.has("slot_index"):
@@ -1259,6 +1262,10 @@ func _animate_item_equip(target_uuid: String, payload: CombatPayload) -> void:
 	var target_view = _visual_registry.get(target_uuid)
 	if not is_instance_valid(target_view):
 		return
+
+	# Hide/remove the item view from its source slot so it appears to have transferred
+	if not payload.item_uuid.is_empty():
+		_hide_item_source_view(payload.item_uuid)
 		
 	var item_texture: Texture2D = payload.item_icon
 	if not is_instance_valid(item_texture) and not payload.item_icon_path.is_empty():
@@ -1279,3 +1286,34 @@ func _animate_item_equip(target_uuid: String, payload: CombatPayload) -> void:
 	if target_view.has_method("play_landing_bounce"):
 		target_view.play_landing_bounce()
 	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
+
+func _hide_item_source_view(item_uuid: String) -> void:
+	if item_uuid.is_empty():
+		return
+		
+	var views_to_hide: Array[Node] = []
+	
+	if _visual_registry.has(item_uuid):
+		var reg_view = _visual_registry[item_uuid]
+		if is_instance_valid(reg_view):
+			views_to_hide.append(reg_view)
+		_visual_registry.erase(item_uuid)
+		
+	for node in get_tree().get_nodes_in_group("gachaball_view"):
+		if is_instance_valid(node) and not node.is_queued_for_deletion():
+			if node.has_method("get_instance_uuid") and node.get_instance_uuid() == item_uuid:
+				if not (node in views_to_hide):
+					views_to_hide.append(node)
+					
+	for node in get_tree().get_nodes_in_group("physics_gacha_ball"):
+		if is_instance_valid(node) and not node.is_queued_for_deletion():
+			if "instance_uuid" in node and node.instance_uuid == item_uuid:
+				if not (node in views_to_hide):
+					views_to_hide.append(node)
+					
+	for view in views_to_hide:
+		if is_instance_valid(view):
+			view.visible = false
+			if view is CanvasItem:
+				view.modulate.a = 0.0
+			view.queue_free()

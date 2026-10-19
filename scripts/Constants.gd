@@ -216,7 +216,7 @@ const TRAIT_DEFINITIONS = {
 	"FIRE": {
 		"display_name_key": "trait.fire.name",
 		"trinket_id": &"trinket_trait_fire",
-		"icon_path": "res://assets/Realistic/sprites/items/FireEmblem.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Fire.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.fire.3"},
 			{"min": 6, "desc_key": "trait.fire.6"},
@@ -228,7 +228,7 @@ const TRAIT_DEFINITIONS = {
 	"EARTH": {
 		"display_name_key": "trait.earth.name",
 		"trinket_id": &"trinket_trait_earth",
-		"icon_path": "res://assets/Realistic/sprites/items/EarthEmblem.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Earth.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.earth.3"},
 			{"min": 6, "desc_key": "trait.earth.6"},
@@ -240,7 +240,7 @@ const TRAIT_DEFINITIONS = {
 	"WATER": {
 		"display_name_key": "trait.water.name",
 		"trinket_id": &"trinket_trait_water",
-		"icon_path": "res://assets/Realistic/sprites/items/WaterEmblem.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Water.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.water.3"},
 			{"min": 6, "desc_key": "trait.water.6"},
@@ -252,7 +252,7 @@ const TRAIT_DEFINITIONS = {
 	"AIR": {
 		"display_name_key": "trait.air.name",
 		"trinket_id": &"trinket_trait_air",
-		"icon_path": "res://assets/Realistic/sprites/items/AirEmblem.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Air.png",
 		"levels": [
 			{"min": 3, "desc_key": "trait.air.3"},
 			{"min": 6, "desc_key": "trait.air.6"},
@@ -264,7 +264,7 @@ const TRAIT_DEFINITIONS = {
 	"TANK": {
 		"display_name_key": "trait.tank.name",
 		"trinket_id": &"trinket_trait_tank",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_tank.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Tank.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.tank.2"},
 			{"min": 3, "desc_key": "trait.tank.3"},
@@ -275,7 +275,7 @@ const TRAIT_DEFINITIONS = {
 	"FIGHTER": {
 		"display_name_key": "trait.fighter.name",
 		"trinket_id": &"trinket_trait_fighter",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_fighter.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Fighter.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.fighter.2"},
 			{"min": 3, "desc_key": "trait.fighter.3"},
@@ -286,7 +286,7 @@ const TRAIT_DEFINITIONS = {
 	"SUPPORT": {
 		"display_name_key": "trait.support.name",
 		"trinket_id": &"trinket_trait_support",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_support.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Support.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.support.2"},
 			{"min": 3, "desc_key": "trait.support.3"},
@@ -297,7 +297,7 @@ const TRAIT_DEFINITIONS = {
 	"SPECIALIST": {
 		"display_name_key": "trait.specialist.name",
 		"trinket_id": &"trinket_trait_specialist",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_specialist.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Specialist.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.specialist.2"},
 			{"min": 3, "desc_key": "trait.specialist.3"},
@@ -308,7 +308,7 @@ const TRAIT_DEFINITIONS = {
 	"FOOD": {
 		"display_name_key": "trait.food.name",
 		"trinket_id": &"trinket_trait_food",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_food.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Food.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.food.2"},
 			{"min": 3, "desc_key": "trait.food.3"},
@@ -319,7 +319,7 @@ const TRAIT_DEFINITIONS = {
 	"MECHA": {
 		"display_name_key": "trait.mecha.name",
 		"trinket_id": &"trinket_trait_mecha",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_mecha.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Mecha.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.mecha.2"},
 			{"min": 3, "desc_key": "trait.mecha.3"},
@@ -330,7 +330,7 @@ const TRAIT_DEFINITIONS = {
 	"ANIMAL": {
 		"display_name_key": "trait.animal.name",
 		"trinket_id": &"trinket_trait_animal",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_animal.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Animal.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.animal.2"},
 			{"min": 3, "desc_key": "trait.animal.3"},
@@ -341,7 +341,7 @@ const TRAIT_DEFINITIONS = {
 	"PLANT": {
 		"display_name_key": "trait.plant.name",
 		"trinket_id": &"trinket_trait_plant",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_plant.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Plant.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.plant.2"},
 			{"min": 3, "desc_key": "trait.plant.3"},
@@ -352,7 +352,7 @@ const TRAIT_DEFINITIONS = {
 	"TOY": {
 		"display_name_key": "trait.toy.name",
 		"trinket_id": &"trinket_trait_toy",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_toy.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Toy.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.toy.2"},
 			{"min": 3, "desc_key": "trait.toy.3"},
@@ -363,7 +363,7 @@ const TRAIT_DEFINITIONS = {
 	"APPLIANCE": {
 		"display_name_key": "trait.appliance.name",
 		"trinket_id": &"trinket_trait_appliance",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_appliance.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Appliance.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.appliance.2"},
 			{"min": 3, "desc_key": "trait.appliance.3"},
@@ -374,7 +374,7 @@ const TRAIT_DEFINITIONS = {
 	"COSTUME": {
 		"display_name_key": "trait.costume.name",
 		"trinket_id": &"trinket_trait_costume",
-		"icon_path": "res://assets/Realistic/sprites/trinkets/trinket_trait_costume.png",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/Trait_Costume.png",
 		"levels": [
 			{"min": 2, "desc_key": "trait.costume.2"},
 			{"min": 3, "desc_key": "trait.costume.3"},

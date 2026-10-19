@@ -13,6 +13,5 @@ target_type = &"MIRROR_SLOT_ENEMY"
 [resource]
 script = ExtResource("1_script")
 id = &"basic_attack_ranged_mirror"
-name_key = "ability.basic_attack.name"
 description_key = "ability.basic_attack_ranged_mirror.desc"
 effects = Array[Resource]([SubResource("BasicAttackEffect_RangedMirror")])

@@ -652,6 +652,10 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	# ASYNC SAFETY CHECK: Window might have been freed during the await frame
 	if not is_instance_valid(window): return
 
+	if window is InspectionWindow or window is ChoiceWindow:
+		window.size = Vector2(480, 0)
+		window.reset_size()
+
 	# Safety check for anchor and parent which might have been freed during the await
 	var safe_anchor: Control = anchor if is_instance_valid(anchor) else null
 	var safe_parent: Control = parent_window if is_instance_valid(parent_window) else null
@@ -675,6 +679,10 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 	
 	# ASYNC SAFETY CHECK: Window or dependencies might have been freed during the await frame
 	if not is_instance_valid(window): return
+	
+	if window is InspectionWindow or window is ChoiceWindow:
+		window.size = Vector2(480, 0)
+		window.reset_size()
 	
 	var safe_anchor: Control = anchor if is_instance_valid(anchor) else null
 	var safe_parent: Control = parent_window if is_instance_valid(parent_window) else null
@@ -740,6 +748,11 @@ func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> v
 			if is_instance_valid(child):
 				child.queue_free()
 		return
+	
+	for child in child_windows:
+		if is_instance_valid(child) and child is InspectionWindow:
+			child.size = Vector2(480, 0)
+			child.reset_size()
 	
 	var source_rect = _get_screen_rect(anchor) if is_instance_valid(anchor) else Rect2()
 	var root_rect = _get_screen_rect(root_window)
@@ -1251,10 +1264,11 @@ func _find_canvas_layer(node: Node) -> CanvasLayer:
 func _get_window_size(window: Control) -> Vector2:
 	# For inspection windows, combined_minimum_size is much more reliable than 'size'
 	# during the first few frames of population/layout.
-	if window is InspectionWindow:
+	if window is InspectionWindow or window is ChoiceWindow:
+		window.size = Vector2(480, 0)
+		window.reset_size()
 		var min_sz := window.get_combined_minimum_size()
 		if min_sz != Vector2.ZERO:
-			# Enforce our 480 width even in the measurement phase
 			return Vector2(maxf(min_sz.x, 480.0), min_sz.y)
 			
 	var sz := window.size

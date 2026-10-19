@@ -29,7 +29,6 @@ parameters = {
 [resource]
 script = ExtResource("1_script")
 id = &"ability_dust_elite_growth"
-name_key = "ability.dust_growth.name"
 description_key = "ability.dust_growth.desc"
 trigger = &"on_unit_death"
 condition = ExtResource("3_cond")

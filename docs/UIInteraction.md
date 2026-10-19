@@ -37,7 +37,7 @@ The game implements a dedicated software cursor manager operating on CanvasLayer
 - **Waiting Indicator Animation**:
   - `_waiting_control` is added to the CanvasLayer *after* `_cursor_sprite` so dots render on top of the cursor layer (Z-axis).
   - Positioned at vertical offset `Vector2(12 + i * 11, 52)` relative to the cursor position so dots animate clearly *below the hand/cursor graphic vertically*.
-  - When `set_waiting_indicator(true)` is invoked, `_on_waiting_draw` draws a looping 3-step sequence of white circles with a black outline (`.` $\rightarrow$ `..` $\rightarrow$ `...`).
+  - When `set_waiting_indicator(true)` is invoked, `_on_waiting_draw` draws a looping 3-step sequence of white circles with a black outline (`.` -> `..` -> `...`).
   - Activated dynamically by `Main._process` when the player hovers over draw mechanics (`gacha_machine_1/2/3` or `knob_button_1/2/3`) while VCR animations or token spending are active (`bm.is_animations_playing()` or `_is_drawing_token`). Automatically deactivates the frame VCR playback completes.
 
 | Element | Size | Notes |
@@ -58,8 +58,8 @@ The game uses two distinct methods for GachaBall movement:
 
 ### Kinematic Projectile Standard
 For high-fidelity transitions involving screen-space movement (Gacha Draws, Elite Summons), the system uses a **Kinematic Projectile** model instead of standard Bezier curves:
-- **Linear Horizontal Velocity**: $X = \text{lerp}(start, end, t)$. This ensures constant movement speed across the screen.
-- **Parabolic Vertical Arc**: $Y = \text{lerp}(start, end, t) - (4.0 \cdot H \cdot t \cdot (1.0 - t))$. This simulates uniform gravitational acceleration, where $H$ is the peak arc height.
+- **Linear Horizontal Velocity**: `X = lerp(start, end, t)`. This ensures constant movement speed across the screen.
+- **Parabolic Vertical Arc**: `Y = lerp(start, end, t) - (4.0 * H * t * (1.0 - t))`. This simulates uniform gravitational acceleration, where `H` is the peak arc height.
 - **Visual Impact**: Transitions land with a frame-synchronous impact (machine bounce or landing squash) and matching audio hooks.
 
 ### Visual-Driven Inventory Counters
@@ -221,8 +221,8 @@ The application uses a **High-Performance Hybrid Cursor** system managed by `Cur
 ### Staggered Grid (Run Inventory ONLY)
 The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-optimized layout.
 - **Geometry**: A hexagonal/honeycomb pattern where even-numbered rows are offset by half a slot's width.
-- **39-Slot Capacity**: Perfectly sized to display 39 slots ($4 \times 6$ and $3 \times 5$) без scrolling.
-- **Separation**: `v_separation` is calculated as $SlotHeight \times 0.75$ to allow circular caps to nest perfectly.
+- **39-Slot Capacity**: Perfectly sized to display 39 slots (4 x 6 and 3 x 5) without scrolling.
+- **Separation**: `v_separation` is calculated as `SlotHeight * 0.75` to allow circular caps to nest perfectly.
 - **Alignment**: Uses `bottom_to_top = true` to fill from the base of the container.
 - **1x Scale**: Gachaballs are fixed at `1.0` scale to maximize grid density.
 
@@ -265,11 +265,11 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
 
 - **Outline Precedence Hierarchy:**
   When multiple outline states could apply to a single view, shaders resolve deterministically:
-  1. `_is_selected` $\rightarrow$ White selection outline (source focus).
-  2. `_merge_target_type` $\rightarrow$ Cyan (`LEVEL_UP`), Magenta (`RECIPE_TIER_UP`), or White (`EQUIP`) indicator.
-  3. `_has_locked_recipe and is_reward_or_shop` $\rightarrow$ Violet discovery outline.
-  4. `_last_trait_level > 0 and is_in_battle` $\rightarrow$ Trait synergy metallic outline (18.0px).
-  5. Default $\rightarrow$ Outline disabled.
+  1. `_is_selected` -> White selection outline (source focus).
+  2. `_merge_target_type` -> Cyan (`LEVEL_UP`), Magenta (`RECIPE_TIER_UP`), or White (`EQUIP`) indicator.
+  3. `_has_locked_recipe and is_reward_or_shop` -> Violet discovery outline.
+  4. `_last_trait_level > 0 and is_in_battle` -> Trait synergy metallic outline (5.0px).
+  5. Default -> Outline disabled.
 
 ### 5.5 Interactive Overlays
 To streamline interactions in Reward, Shop, and Black Market scenes, the game uses **Interactive Overlays** instead of modal choice windows.

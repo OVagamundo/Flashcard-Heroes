@@ -111,9 +111,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					if dest_slot == -1:
 						dest_slot = discard.get_all_uuids().size()
 
-				var copy = chosen_unit.duplicate_instance(battle_manager.get_all_instances())
+				var copy = chosen_unit.create_battle_copy(battle_manager.get_all_instances())
 				if is_instance_valid(copy):
 					copy.is_temporary = true
+					copy.equipped_item_uuids.fill("")
+					copy.equipped_on_uuid = ""
+					copy.equipped_slot_index = -1
+					copy.current_hp = copy.get_effective_starting_hp(battle_manager.get_all_instances())
+					copy.current_pwr = copy.get_effective_starting_pwr(battle_manager.get_all_instances())
 					battle_manager._state.bm_add_instance(copy, dest_container, dest_slot)
 
 					var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")

@@ -23,7 +23,6 @@ parameters = { "extra_bounces": 2 }
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier1b_counter_on_hurt_l3"
-name_key = "ability.unit_tier1b_counter_on_hurt.name"
 trigger = &"on_hurt"
 condition = SubResource("ConditionDefinition_DamageReceived_1")
 effects = Array[Resource]([SubResource("EffectCounterAttack_1")])

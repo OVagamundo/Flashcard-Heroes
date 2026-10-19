@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_twin_charm_scale"
-name_key = "ability.twin_charm_scale.name"
 description_key = "ability.twin_charm_scale.desc"
 trigger = &"on_board_changed"
 priority = 100

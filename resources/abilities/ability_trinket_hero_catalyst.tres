@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_hero_catalyst"
-name_key = "ability.hero_catalyst.name"
 description_key = "ability.hero_catalyst.desc"
 trigger = &"on_merge"
 priority = 50

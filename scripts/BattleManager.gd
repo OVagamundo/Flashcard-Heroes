@@ -895,7 +895,7 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 	if not is_instance_valid(source_instance) or not is_instance_valid(target_instance):
 		return {}
 
-	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, _battle_instances)
+	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, _battle_instances, recipe_id)
 	if merge_result.is_empty():
 		return {}
 
@@ -2903,7 +2903,7 @@ func resolve_management_effects_and_animate(snapshot: Dictionary) -> void:
 	var events: Array[CombatEvent] = []
 	var death_tracking: Dictionary = {}
 	
-	# Resolve all pending reactions (e.g., Royal Insignia buffs)
+	# Resolve all pending reactions (e.g., Novice Insignia buffs)
 	# UNIFIED LOGIC: Use CombatSimulator's processor to handle priority, inline events, and deaths
 	events.append_array(_combat.process_reaction_queue(self , death_tracking))
 	
@@ -3468,7 +3468,7 @@ func execute_hero_entrance_sequence() -> void:
 	AbilityResolver.process_trigger(&"on_battle_start", {"source_uuid": hero_inst.ball_uuid})
 	AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 	
-	# 5. Collect reaction events (e.g. Rusty Ring buff, Royal Insignia buff)
+	# 5. Collect reaction events (e.g. Rusty Ring buff, Novice Insignia buff)
 	var reaction_events := _combat.process_reaction_queue(self, {})
 	var entrance_events: Array[CombatEvent] = [summon_event]
 	entrance_events.append_array(reaction_events)
@@ -3527,7 +3527,7 @@ func execute_enemy_entrance_sequence() -> void:
 		AbilityResolver.process_trigger(&"on_battle_start", {"source_uuid": enemy_inst.ball_uuid})
 		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
 		
-		# 5. Collect reaction events (e.g. Royal Insignia buff, Templar power scaling)
+		# 5. Collect reaction events (e.g. Novice Insignia buff, Templar power scaling)
 		var reaction_events := _combat.process_reaction_queue(self, {})
 		var entrance_events: Array[CombatEvent] = [summon_event]
 		entrance_events.append_array(reaction_events)

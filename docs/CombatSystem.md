@@ -13,7 +13,7 @@ The system is divided into two distinct, non-overlapping phases:
 > **The Golden Rule of Decoupling:**
 > During the Presentation Phase, the UI must **NEVER** query the live `GachaBallInstance` or `BattleManager` for current state (e.g., `unit.current_hp`). The live data is already at the "End of Turn" state. The UI must *only* use the data provided in the `CombatEvent` to update itself.
 >
-> **See [AbilityImplementationGuide.md](AbilityImplementationGuide.md) and [AnimationImplementationGuide.md](AnimationImplementationGuide.md) for strict implementation rules.**
+> **See [CODE_GUIDELINES.md](CODE_GUIDELINES.md) and [UIInteraction.md](UIInteraction.md) for strict architectural and presentation rules.**
 
 ---
 
@@ -245,7 +245,7 @@ func is_animations_playing() -> bool:
 When `is_animations_playing()` is `true`:
 - **Gacha Machine Drawing**: `can_draw_gacha_instance()` returns `false`, preventing draws and token spending animations.
 - **Draw Buttons**: `Main._on_draw_button_pressed` and `_on_machine_gui_input` return early without starting token spend animations or playing rejection sound/shake feedback.
-- **Cursor Feedback**: Hovering over the draw mechanic (`gacha_machine_1/2/3` or `knob_button_1/2/3`) triggers a looping waiting cursor animation (`.` $\rightarrow$ `..` $\rightarrow$ `...`) rendered below the cursor icon until VCR playback completes.
+- **Cursor Feedback**: Hovering over the draw mechanic (`gacha_machine_1/2/3` or `knob_button_1/2/3`) triggers a looping waiting cursor animation (`.` -> `..` -> `...`) rendered below the cursor icon until VCR playback completes.
 
 ### UI Rebuild Guard
 ```gdscript
@@ -264,21 +264,21 @@ func _redraw_board() -> void:
 All visual animation execution in the game—across both Combat and Management phases—is strictly linear and serialized. Legacy asynchronous parallel chains (`play_async_chain`) have been completely eliminated.
 
 ### Monolithic Combat Playback
-During the `COMBAT` phase, `CombatSimulator` generates a linear `TurnLog` array (`Array[CombatEvent]`). `BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**, executing one `CombatEvent` at a time. Each event is fully awaited before the next begins, preserving exact causal history (e.g., Damage $\rightarrow$ Reaction Buffs $\rightarrow$ Death $\rightarrow$ Ally Triggers $\rightarrow$ Summon).
+During the `COMBAT` phase, `CombatSimulator` generates a linear `TurnLog` array (`Array[CombatEvent]`). `BattleAnimator.play_turn_sequence()` processes this log **strictly sequentially**, executing one `CombatEvent` at a time. Each event is fully awaited before the next begins, preserving exact causal history (e.g., Damage -> Reaction Buffs -> Death -> Ally Triggers -> Summon).
 
 ### Sequential Management Animation Queue (`_management_animation_queue`)
 During the `MANAGEMENT` phase, committing interactions (such as **Gacha Draws**, **Merging Units**, **Equipping Items**, or **Consumables**) resolve their logical state instantly and emit `CombatEvent` sequences:
 - All management-phase event sequences are funneled into `BattleManager.enqueue_management_animation(snapshot, events)`.
 - `BattleManager` processes them via a sequential FIFO queue (`_management_animation_queue`).
-- **Player Unit Death Discard Flow (`DEATH`)**: When a player unit dies in combat, its board view fades out via `death_fade`. Immediately upon fade completion, the unit's GachaBall capsule animates from the death position along a 500px parabolic arc (`GachaBallView.tscn` in inventory mode, scaling `0.3` $\rightarrow$ `1.5`) into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps (`1.0` $\rightarrow$ `1.15` $\rightarrow$ `1.0`), and the Discard Pile counter increments (+1). If the unit held equipped items, each item's GachaBall capsule follows along the exact same arc **strictly sequentially**, with each capsule landing triggering `coin_land` SFX, button bump, and counter increment (+1). **Enemy units do NOT go to the discard pile**; they dissolve upon death without departure arcs or counter changes.
-- **Item Discard Flow (`ITEM_DISCARD`)**: When an item is replaced (manual equip, Standard Bearer death equip, or merge overflow), an `ITEM_DISCARD` event executes sequentially first. It launches the replaced item along a 500px parabolic arc using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling `0.3` $\rightarrow$ `1.5`) directly into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps, and the Discard Pile counter increments (+1). Subsequent stat change floats resolve only after the discard lands.
+- **Player Unit Death Discard Flow (`DEATH`)**: When a player unit dies in combat, its board view fades out via `death_fade`. Immediately upon fade completion, the unit's GachaBall capsule animates from the death position along a 500px parabolic arc (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.5`) into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps (`1.0 -> 1.15 -> 1.0`), and the Discard Pile counter increments (+1). If the unit held equipped items, each item's GachaBall capsule follows along the exact same arc **strictly sequentially**, with each capsule landing triggering `coin_land` SFX, button bump, and counter increment (+1). **Enemy units do NOT go to the discard pile**; they dissolve upon death without departure arcs or counter changes.
+- **Item Discard Flow (`ITEM_DISCARD`)**: When an item is replaced (manual equip, Standard Bearer death equip, or merge overflow), an `ITEM_DISCARD` event executes sequentially first. It launches the replaced item along a 500px parabolic arc using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.5`) directly into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps, and the Discard Pile counter increments (+1). Subsequent stat change floats resolve only after the discard lands.
 - **Gacha Machine Departure Flow (`SUMMON` with Inventory Target)**: When an item or unit is sent to the Gacha Machine (e.g. Echoing Orb death duplicate, or *Potion of Plunder* item stripping), a `SUMMON` event targeting `BattleInventoryT{tier}` is emitted. The animator launches the capsule from the source unit's position/slot into `%GachaMachine{tier}`, clears the source unit's equipped visual, plays `coin_land` SFX, and triggers `animate_machine_inventory_change(tier, 1)` to bounce the machine and update its count badge at the exact moment of landing.
 - **Real-Time Counter Synchronization**: Counter labels (both the Discard Pile button counter and Gacha Machine tier badges) are strictly decoupled from live end-of-turn container counts during playback. They initialize from the turn-start snapshot and update exclusively at the arrival moment of each individual capsule.
 
 ### The 3-Layer Reaction Sorting Hierarchy
 When multiple reaction triggers fire simultaneously during simulation, `CombatSimulator.gd` sorts reaction requests using a strict 3-layer hierarchy before emitting combat events:
 1. **Layer 1: Execution Priority**: Descending integer priority defined in `AbilityDefinition` (e.g., Intercepts at 300, Trinket Summons at 210, Unit Summons at 205, Item Summons at 200, Default at 0). Reactions with higher priority execute first.
-2. **Layer 2: Category Pass (Tie-Breaker)**: When reactions share the same priority, resolve by category rank: Units (Rank 1) $\rightarrow$ Items (Rank 2) $\rightarrow$ Trinkets (Rank 3).
+2. **Layer 2: Category Pass (Tie-Breaker)**: When reactions share the same priority, resolve by category rank: Units (Rank 1) -> Items (Rank 2) -> Trinkets (Rank 3).
 3. **Layer 3: Visual Direction (The Mirror Rule)**: When priority and category are identical, resolve Left-to-Right visually on screen.
    - **Player Team**: Evaluated Left-to-Right (Slot 4 down to Slot 0).
    - **Enemy Team**: Evaluated Right-to-Left visually (Slot 0 up to Slot 4).

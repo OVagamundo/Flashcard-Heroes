@@ -1,50 +1,40 @@
 keys,en,pt_BR
 hero.name,Bounty Hunter,Caçador de Recompensas
-hero.desc,"A skilled hunter who profits from every kill and grows stronger from loss. Earns gold for each enemy slain, and gains +1 HP and +1 PWR when allies fall.","Um caçador habilidoso que lucra com cada morte e fica mais forte com perdas. Ganha ouro por cada inimigo morto, e ganha +1 HP e +1 PWR quando aliados morrem."
+hero.desc,"Gain 1 gold when this hero kills an enemy. When an ally is defeated, gain +1 HP and +1 PWR.","Ganha 1 ouro quando este herói mata um inimigo. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 enemy_hero.name,Enemy Hero,Herói Inimigo
-enemy_hero.desc,The enemy's champion.,O campeão do inimigo.
-ability.unit_t2_d_power.name,Token Power,Poder das Fichas
+enemy_hero.desc,Deal (PWR) damage to the frontmost enemy.,Cause (PWR) de dano ao inimigo mais à frente.
 ability.unit_t2_d_power_l1.desc,"Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
 ability.unit_t2_d_power_l2.desc,"Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 150% das Fichas atuais, atualizando conforme as Fichas mudam."
 ability.unit_t2_d_power_l3.desc,"Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 200% das Fichas atuais, atualizando conforme as Fichas mudam."
-ability.unit_t2_f_gold_pwr.name,Gold Investments,Investimentos em Ouro
 ability.unit_t2_f_gold_pwr_l1.desc,Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.,O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado.
 ability.unit_t2_f_gold_pwr_l2.desc,Initial PWR equals your current Gold multiplied by 100% when drawn or spawned.,O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado.
 ability.unit_t2_f_gold_pwr_l3.desc,Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.,O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado.
-ability.unit_t1_c_ally_shield.name,Guardian's Grace,Graça do Guardião
 ability.unit_t1_c_ally_shield.desc,"When the ally directly in front takes damage, heal them for 1 HP.","Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
 ability.unit_t1_c_ally_shield_l2.desc,"When the ally directly in front takes damage, heal them for 2 HP.","Quando o aliado diretamente à frente recebe dano, cura-o por 2 HP."
 ability.unit_t1_c_ally_shield_l3.desc,"When the ally directly in front takes damage, heal them for 3 HP.","Quando o aliado diretamente à frente recebe dano, cura-o por 3 HP."
-ability.unit_t1_d_empathic_link.name,Empathic Link,Vínculo Empático
 ability.unit_t1_d_empathic_link.desc,"When this unit dies, grant its current PWR to the ally behind.","Quando esta unidade morre, concede seu PWR atual ao aliado atrás."
 ability.unit_t1_d_empathic_link_l2.desc,"When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally.","Quando esta unidade morre, concede seu PWR atual ao aliado atrás, e metade disso ao próximo aliado."
 ability.unit_t1_d_empathic_link_l3.desc,"When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next.","Quando esta unidade morre, concede seu PWR atual ao aliado atrás, metade ao próximo, e metade ao próximo."
-ability.unit_tier1a_passive_heal.name,Resilience,Resiliência
 ability.unit_tier1a_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
 ability.unit_tier1a_passive_heal_l2.desc,"When hurt BY AN ATTACK, Heal this unit by 2 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 2 de HP."
 ability.unit_tier1a_passive_heal_l3.desc,"When hurt BY AN ATTACK, Heal this unit by 3 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 3 de HP."
-ability.unit_tier1b_counter_on_hurt.name,Retaliation,Retaliação
 ability.unit_tier1b_counter_on_hurt.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
 ability.unit_tier1b_counter_on_hurt_l2.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para outro inimigo aleatório, causando metade do dano."
 ability.unit_tier1b_counter_on_hurt_l3.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para 2 inimigos aleatórios, causando metade do dano por salto."
 item_t1_a.name,Koi's Blessing,Bênção da Carpa
-item_t1_a.desc,A gentle remedy infused with the spirit of koi.,Um remédio suave infundido com o espírito da carpa.
+item_t1_a.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
 item_t1_b.name,Tiger's Spirit,Espírito do Tigre
-item_t1_b.desc,A fierce elixir that awakens inner strength.,Um elixir feroz que desperta a força interior.
+item_t1_b.desc,"When attacking, if target has more HP than holder then perform an extra attack.","Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
 item_t2_c.name,Phoenix Elixir,Elixir da Fênix
-item_t2_c.desc,A restorative brew that renews body and spirit.,Uma poção restauradora que renova corpo e espírito.
-ability.basic_attack.name,Basic Attack,Ataque Básico
+item_t2_c.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
 ability.basic_attack.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
-ability.basic_attack_ranged_mirror.name,Basic Attack,Ataque Básico
 ability.basic_attack_ranged_mirror.desc,Deal (PWR) damage to the enemy in the mirror slot.,Causa (PWR) de dano ao inimigo no espaço espelhado.
-ability.item_tier1b_extra_attack.name,Extra Attack,Ataque Extra
 ability.item_tier1b_extra_attack.desc,"When attacking, if target has more HP than holder then perform an extra attack.","Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
 item.effect.hp,Add (HP) HP to the unit.,Adiciona (HP) HP à unidade.
 item.effect.pwr,Add (PWR) PWR to the unit.,Adiciona (PWR) PWR à unidade.
 item.effect.both,Add (HP) HP and (PWR) PWR to the unit.,Adiciona (HP) HP e (PWR) PWR à unidade.
 trinket.polished_plate.name,Polished Plate,Placa Polida
-trinket.polished_plate.desc,A perfectly polished piece of armor.,Uma peça de armadura perfeitamente polida.
-ability.polished_plate.name,Reinforced Armor,Armadura Reforçada
+trinket.polished_plate.desc,Armor does not decay at turn end.,A Armadura não decai no fim do turno.
 ability.polished_plate.desc,"At the start of the turn, gain 2 Armor.","No início do turno, ganha 2 de Armadura."
 options.audio.master,Master Volume,Volume Geral
 options.audio.music,Music Volume,Volume da Música
@@ -54,104 +44,75 @@ options.reset_data,Reset Progress,Resetar Progresso
 tutorial.btn.next,Next,Próximo
 tutorial.btn.got_it,Got it!,Entendi!
 battle.speed.label,Speed:,Velocidade:
-ability.item_tier2c_passive_heal.name,Regeneration,Regeneração
 ability.item_tier2c_passive_heal.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP and gain 1 PWR.","Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
-ability.item_tier1a_turn_start_heal.name,Restoration,Restauração
 ability.item_tier1a_turn_start_heal.desc,"At the start of the turn, Heal the holder for 2 HP.","No início do turno, cura o portador em 2 HP."
-ability.unit_tier2c_ally_death_buff.name,Morale Boost,Impulso de Moral
 ability.unit_tier2c_ally_death_buff_l1.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
 ability.unit_tier2c_ally_death_buff_l2.desc,"When an ally is defeated, gain +2 HP and +1 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +1 de PWR."
 ability.unit_tier2c_ally_death_buff_l3.desc,"When an ally is defeated, gain +2 HP and +2 PWR.","Quando um aliado é derrotado, ganha +2 de HP e +2 de PWR."
-ability.hero_bounty_hunter_ally_death_buff.name,Scavenger's Resolve,Determinação do Saqueador
 ability.hero_bounty_hunter_ally_death_buff.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
-ability.item_tier3d_retaliate.name,Retaliation,Retaliação
 ability.item_tier3d_retaliate.desc,"When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
-ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
 ability.unit_tier3d_resilient_aura.desc,"When hurt BY AN ATTACK, grants +1 HP and +1 PWR to adjacent allies.","Ao ser ferido POR UM ATAQUE, concede +1 HP e +1 PWR aos aliados adjacentes."
 item_t2_a.name,Summoning Scroll,Pergaminho de Invocação
-item_t2_a.desc,A scroll containing a summoning spell.,Um pergaminho contendo um feitiço de invocação.
+item_t2_a.desc,"When the holder dies, summon a Tier 1 unit.","Quando o portador morre, invoque uma unidade de Tier 1."
 item_t3_e.name,Death's Bargain,Barganha da Morte
-item_t3_e.desc,A cursed bargain with death.,Uma barganha amaldiçoada com a morte.
+item_t3_e.desc,When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.,Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP.
 item_t3_f.name,Soul Siphon,Sifão de Almas
-item_t3_f.desc,A dark siphon of souls.,Um sifão sombrio de almas.
+item_t3_f.desc,After dealing damage steal half of target's PWR (min 1).,Após causar dano rouba metade do PWR do alvo (mín. 1).
 item_t3_g.name,Sniper Aim,Mira de Precisão
-item_t3_g.desc,A scope for precise targeting.,Uma mira para precisão extrema.
-ability.item_t3e_death_damage.name,Final Strike,Golpe Final
-ability.item_t3f_power_drain.name,Power Drain,Dreno de Poder
+item_t3_g.desc,Basic attacks target the enemy in the mirror slot.,Ataques básicos têm como alvo o inimigo no espaço espelhado.
 ability.item_t3f_power_drain.desc,After dealing damage steal half of target's PWR (min 1).,Após causar dano rouba metade do PWR do alvo (mín. 1).
 ability.item_t3e_death_damage.desc,When the holder dies deal damage equal to half of the highest HP enemy's HP to that enemy.,Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP.
-ability.item_t2_c_summon.name,Summon,Invocação
 ability.item_t2_c_summon.desc,"When the holder dies, summon a random Tier 1 unit in their place.","Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
-ability.unit_tier2a_defensive_stance.name,Defensive Stance,Postura Defensiva
 ability.unit_tier2a_defensive_stance.desc,"When targeted by an attack, heal [2 / 4 / 6] HP before taking damage.","Ao ser alvo de um ataque, cura [2 / 4 / 6] HP antes de receber dano."
-ability.unit_tier2b_shockwave.name,Shockwave,Onda de Choque
 ability.unit_tier2b_shockwave.desc,"Attack deals cascading damage: [100% / 150% / 200%] to front, 50% to the unit behind, 25% to the one behind that.","O ataque causa dano em cascata: [100% / 150% / 200%] à frente, 50% à unidade atrás, 25% à próxima."
 item_t2_b.name,Bloodlust Edge,Lâmina Sanguinária
-item_t2_b.desc,A blade thirsty for blood.,Uma lâmina sedenta por sangue.
-ability.item_tier2b_bloodlust.name,Bloodlust,Sede de Sangue
-ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately.","Quando o portador derrota um inimigo, ele age novamente imediatamente."
+item_t2_b.desc,"When the holder defeats an enemy, they act again immediately (once per turn).","Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
+ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately (once per turn).","Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
 hero_timekeeper.name,Timekeeper,Guardião do Tempo
-hero_timekeeper.desc,A scholarly mage who grants +2 HP to units in front and +2 PWR to units behind at turn start. Masters time to extend the minigame timer.,Um mago estudioso que concede +2 HP às unidades da frente e +2 PWR às unidades de trás no início do turno. Domina o tempo para estender o cronômetro do minigame.
-ability.hero_timekeeper_gold_on_kill.name,Bounty Hunter,Caçador de Recompensas
+hero_timekeeper.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites. At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","Minijogo: +1s ao acertar, -0,5s ao errar. Ganha 5 fichas por turno em Batalhas e Locais de Descanso. No início de cada turno, concede +2 HP às unidades à frente e +2 PWR às unidades atrás."
 ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herói mata um inimigo.
-ability.hero_timekeeper_time_warp.name,Time Warp,Distorção Temporal
 ability.hero_timekeeper_time_warp.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.","Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
-ability.hero_timekeeper_temporal_aura.name,Temporal Aura,Aura Temporal
 ability.hero_timekeeper_temporal_aura.desc,"At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","No início de cada turno, concede +2 HP às unidades na frente e +2 PWR às unidades atrás."
 boss_1.name,The Awakened Guardian,O Guardião Desperto
-boss_1.desc,A powerful guardian that summons allies and grows stronger as you draw from the gacha machines.,Um guardião poderoso que invoca aliados e fica mais forte conforme você saca das máquinas gacha.
+boss_1.desc,"At end of turn, summon units to fill empty team slots. Every time you draw a gachaball, this boss gains +1 HP.","No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você saca um gachaball, este chefe ganha +1 HP."
 boss_2.name,The Shadow Warden,O Guardião das Sombras
-boss_2.desc,Drains power from every token you spend. Calls upon shadow creatures to fight alongside it.,Drena poder de cada ficha que você gasta. Convoca criaturas das sombras para lutar ao seu lado.
+boss_2.desc,"At end of turn, summon units to fill empty team slots. Every time you spend a token, this boss gains +1 HP.","No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
 boss_3.name,The Storm Herald,O Arauto da Tempestade
-boss_3.desc,Grows stronger as allies fall around it. Commands reinforcements to join its ranks.,Fica mais forte conforme aliados caem ao seu redor. Comanda reforços para suas fileiras.
+boss_3.desc,"At end of turn, summon units to fill empty team slots. When an ally is defeated, gain +1 HP and +1 PWR.","No final do turno, invoca unidades para preencher espaços vazios. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 boss_4.name,The Ancient Titan,O Titã Ancestral
-boss_4.desc,An ancient being that summons warriors from ages past.,Um ser ancestral que invoca guerreiros de eras passadas.
+boss_4.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaços vazios."
 boss_5.name,The Final Arbiter,O Árbitro Final
-boss_5.desc,The ultimate challenge. Defeat it to complete your run.,O desafio final. Derrote-o para completar sua jogatina.
-ability.boss_summon.name,Call Reinforcements,Chamar Reforços
+boss_5.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaços vazios."
 ability.boss_summon.desc,"At end of turn, summon units to fill empty team slots.","No final do turno, invoca unidades para preencher espaços vazios."
-ability.boss_1_draw_drain.name,Draining Presence,Presença Drenante
 ability.boss_1_draw_drain.desc,"Every time you draw a gachaball, this boss gains +1 HP.","Toda vez que você saca um gachaball, este chefe ganha +1 HP."
-ability.boss_2_token_drain.name,Token Hunger,Fome de Fichas
 ability.boss_2_token_drain.desc,"Every time you spend a token, this boss gains +1 HP.","Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
-ability.boss_3_ally_growth.name,Vengeance Growth,Crescimento Vingativo
 ability.boss_3_ally_growth.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 trinket.soul_echo.name,Soul Echo,Eco da Alma
-trinket.soul_echo.desc,A mystical gem that echoes the souls of the fallen.,Uma gema mística que ecoa as almas dos caídos.
-ability.soul_echo.name,Soul Echo,Eco da Alma
+trinket.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn.","Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
 ability.soul_echo.desc,"When an ally dies, resurrect the first non-hero unit that died this turn.","Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
 trinket.vengeance.name,Vengeance Charm,Amuleto de Vingança
-trinket.vengeance.desc,Channel the fury of fallen allies.,Canaliza a fúria dos aliados caídos.
-ability.vengeance.name,Vengeance,Vingança
+trinket.vengeance.desc,"When an ally dies, grant +1 HP and +1 PWR to a random ally.","Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
 ability.vengeance.desc,"When an ally dies, grant +1 HP and +1 PWR to a random ally.","Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
 trinket.aegis.name,Aegis Charm,Amuleto Égide
-trinket.aegis.desc,A protective charm that shields allies from fatal blows.,Um amuleto protetor que escuda aliados de golpes fatais.
-ability.aegis.name,Last Stand,Último Suspiro
+trinket.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead.","Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
 ability.aegis.desc,"Once per turn: When an ally would die, they survive with 1 HP instead.","Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
 trinket.twin_charm.name,Twin Charm,Amuleto Gêmeo
-trinket.twin_charm.desc,A mirrored charm that reflects its surroundings.,Um amuleto espelhado que reflete os seus arredores.
-ability.twin_charm_scale.name,Shared Reflection,Reflexo Compartilhado
+trinket.twin_charm.desc,Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.,Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha.
 ability.twin_charm_scale.desc,Your units gain +1 PWR for every 2 copies of that same unit in your battle pool.,Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha.
-ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
 ability.unit_tier3a_mirror_strike.desc,"Attacks the enemy in the opposite slot, dealing [100% / 150% / 200%] damage. If empty, attacks the backmost enemy.","Ataca o inimigo na posição oposta, causando [100% / 150% / 200%] de dano. Se vazio, ataca o inimigo do fundo."
-ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
 ability.unit_tier3b_guardian_sacrifice.desc,"When an ally would take lethal damage, intercepts and takes [100% / 75% / 50%] of that damage instead.","Quando um aliado receberia dano letal, intercepta e recebe [100% / 75% / 50%] do dano no lugar."
-ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
 ability.unit_tier3c_soul_summon.desc,"When this unit dies, summon a random Tier 2 unit with [+0 / +2 / +4] HP and PWR.","Quando esta unidade morre, invoca uma unidade Nível 2 aleatória com [+0 / +2 / +4] de HP e PWR."
 item_t3_a.name,Heart Stone,Pedra do Coração
-item_t3_a.desc,A stone pulsating with life.,Uma pedra pulsando com vida.
-ability.item_t3a_on_hurt_heal.name,Vital Link,Vínculo Vital
+item_t3_a.desc,"When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.","Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
 ability.item_t3a_on_hurt_heal.desc,"When the holder is hurt BY AN ATTACK, heal two random allies for 2 HP each.","Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
 item_t3_b.name,Power Amulet,Amuleto de Poder
-item_t3_b.desc,An ancient amulet of power.,Um amuleto antigo de poder.
-ability.item_t3b_on_attack_buff.name,Battle Cry,Grito de Guerra
+item_t3_b.desc,"When the holder attacks, grant +2 PWR to two random allies.","Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
 ability.item_t3b_on_attack_buff.desc,"When the holder attacks, grant +2 PWR to two random allies.","Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
 item_t3_c.name,Lifesteal Ring,Anel de Roubo de Vida
-item_t3_c.desc,A ring that feeds on the living.,Um anel que se alimenta dos vivos.
-ability.item_t3c_on_attack_lifesteal.name,Vampiric Strike,Golpe Vampírico
+item_t3_c.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP).","Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
 ability.item_t3c_on_attack_lifesteal.desc,"On attack, heal the holder for 20% of damage dealt (min 1 HP).","Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
 item_t3_d.name,Vengeful Thorn,Espinho Vingativo
-item_t3_d.desc,A thorny charm that strikes back at those who harm its bearer.,Um amuleto espinhoso que revida aqueles que ferem seu portador.
+item_t3_d.desc,"When hurt BY AN ATTACK, deal half of the holder's PWR as damage to a random enemy.","Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
 ui.title,FLASHCARD HEROES,FLASHCARD HEROES
 ui.loadout_selection,Loadout Selection,Seleção de Loadout
 ui.start_run,Play,Jogar
@@ -304,17 +265,13 @@ ui.cards,cards,cartas
 ui.ability,Ability,Habilidade
 ui.hp,HP,HP
 ui.pwr,PWR,PWR
-hero.flavor,A survivor who learned that every kill counts. Low stats but gold flows freely.,Um sobrevivente que aprendeu que cada morte conta. Stats baixos mas ouro flui livremente.
-hero_timekeeper.flavor,"Master of temporal magic, the Timekeeper bends time itself to extend the minigame timer.","Mestre da magia temporal, o Guardião do Tempo dobra o próprio tempo para estender o cronômetro do minigame."
 deck.katakana.desc,Learn the angular Japanese syllabary used for foreign words and loanwords.,Aprenda o silabário japonês angular usado para palavras estrangeiras e empréstimos.
 deck.hiragana.desc,Master the flowing Japanese syllabary for native words and grammar.,Domine o silabário japonês fluido para palavras nativas e gramática.
 deck.kanji_100.desc,Challenge yourself with 100 essential Chinese characters used in Japanese writing.,Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa.
 deck.german_100.desc,Build your German vocabulary with 100 common and essential words.,Construa seu vocabulário alemão com 100 palavras comuns e essenciais.
 deck.portuguese_100.desc,Expand your Portuguese vocabulary with 100 essential everyday words.,Expanda seu vocabulário português com 100 palavras essenciais do dia a dia.
 deck.korean_hangul.desc,Learn Korean Hangul alphabet and pronunciation rules,Aprenda o alfabeto coreano Hangul e as regras de pronúncia
-ability.unit_tier3e_ambush_predator.name,Ambush Predator,Predador de Emboscada
 ability.unit_tier3e_ambush_predator.desc,"When an enemy unit is summoned, attack it for [50% / 75% / 100%] of this unit's PWR.","Quando uma unidade inimiga é invocada, ataca-a causando [50% / 75% / 100%] do PWR desta unidade."
-ability.unit_tier3f_summon_blessing.name,Summon Blessing,Bênção de Invocação
 ability.unit_tier3f_summon_blessing.desc,"When an ally unit is summoned, grant it [+3 / +5 / +7] HP.","Quando uma unidade aliada é invocada, concede [+3 / +5 / +7] HP."
 STATUS_BURN,Burn,Chamas
 STATUS_BURN_DESC,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.,Causa dano igual ao valor de Chamas ao final do turno. Após o dano o valor cai pela metade.
@@ -324,44 +281,42 @@ STATUS_SPIKES,Spikes,Espinhos
 STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação.
 STATUS_STATIC,Static,Estático
 STATUS_STATIC_DESC,"When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn.","Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
-trinket.royal_insignia.name,Royal Insignia,Insígnia Real
-trinket.royal_insignia.desc,A medal signifying royal favor.,Uma medalha significando favor real.
-ability.royal_insignia.name,Royal Blessing,Bênção Real
-ability.royal_insignia.desc,"When a Level 1 unit enters the board, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 1 entra no tabuleiro, concede +1 HP e +1 PWR."
+trinket.novice_insignia.name,Novice Insignia,Insígnia do Novato
+trinket.novice_insignia.desc,"When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.novice_insignia.desc,"When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
 trinket.veteran_insignia.name,Veteran Insignia,Insígnia do Veterano
-trinket.veteran_insignia.desc,A badge of honor for seasoned warriors.,Um distintivo de honra para guerreiros experientes.
-ability.veteran_insignia.name,Veteran Blessing,Bênção do Veterano
-ability.veteran_insignia.desc,"When a Level 2 unit enters the board, grant it +1 HP and +1 PWR.","Quando uma unidade Nível 2 entra no tabuleiro, concede +1 HP e +1 PWR."
-trinket.trait_fire.name,Fire Trait,Sinergia de Fogo
-trinket.trait_fire.desc,"Enables the Fire trait. Fire units ignite enemies on attack, spreading fiery destruction and dealing bonus damage against burning targets.","Ativa a sinergia de Fogo. Unidades de Fogo incendeiam inimigos ao atacar, espalhando chamas e causando dano bônus contra alvos queimando."
-trinket.trait_earth.name,Earth Trait,Sinergia de Terra
-trinket.trait_earth.desc,"Enables the Earth trait. Grants Armor and Spikes across your frontline, turning impenetrable defense into devastating counter-attacks.","Ativa a sinergia de Terra. Concede Armadura e Espinhos na sua linha de frente, transformando defesa impenetrável em contra-ataques devastadores."
-trinket.trait_water.name,Water Trait,Sinergia de Água
-trinket.trait_water.desc,"Enables the Water trait. Flowing waves heal allies, cleanse debilitating negative effects, and convert afflictions into restorative energy.","Ativa a sinergia de Água. Ondas fluidas curam aliados, removem efeitos negativos debilitantes e convertem aflições em energia restauradora."
-trinket.trait_air.name,Air Trait,Sinergia de Ar
-trinket.trait_air.desc,"Enables the Air trait. Electrifies enemies with Static on attack, splashing charges that detonate into collateral damage upon death.","Ativa a sinergia de Ar. Eletrifica inimigos com Estática ao atacar, espalhando cargas que explodem em dano colateral ao morrer."
-trinket.trait_tank.name,Tank Trait,Sinergia de Guardião
-trinket.trait_tank.desc,"Enables the Tank trait. Tanks bolster defensive armor, intercept attacks directed at backline allies, and convert armor into punishing spikes.","Ativa a sinergia de Guardião. Guardiões fortalecem armaduras defensivas, interceptam ataques a aliados atrás e convertem armadura em espinhos punitivos."
-trinket.trait_fighter.name,Fighter Trait,Sinergia de Lutador
-trinket.trait_fighter.desc,"Enables the Fighter trait. Brawlers excel against high-health targets, cleaving enemies behind their mark and chain-attacking on kill.","Ativa a sinergia de Lutador. Lutadores superam alvos com muita vida, desferem golpes dispersos atrás do alvo e encadeiam ataques ao abater."
-trinket.trait_support.name,Support Trait,Sinergia de Suporte
-trinket.trait_support.desc,"Enables the Support trait. Inspires formation allies with bonus health and power, reinforcing the weakest units every turn.","Ativa a sinergia de Suporte. Inspira a formação aliada com bônus de vida e poder, reforçando as unidades mais fracas a cada turno."
-trinket.trait_specialist.name,Specialist Trait,Sinergia de Especialista
-trinket.trait_specialist.desc,"Enables the Specialist trait. Manipulates economy and gacha tokens, summoning combat clones and scaling power with accrued gold.","Ativa a sinergia de Especialista. Manipula a economia e fichas de gacha, invocando clones de combate e escalando poder com o ouro acumulado."
-trinket.trait_food.name,Food Trait,Sinergia de Comida
-trinket.trait_food.desc,"Enables the Food trait. Nourishes the ally standing directly behind when taking hits, passing down full power upon defeat.","Ativa a sinergia de Comida. Alimenta o aliado logo atrás ao sofrer golpes, transferindo todo o poder restante ao ser derrotado."
-trinket.trait_mecha.name,Mecha Trait,Sinergia de Mecha
-trinket.trait_mecha.desc,"Enables the Mecha trait. Reinforced with armor and spikes, firing static laser salvos on merges and overloading upon destruction.","Ativa a sinergia de Mecha. Fortalecido com armadura e espinhos, disparando salvas de laser estático em fusões e sobrecarregando ao morrer."
-trinket.trait_animal.name,Animal Trait,Sinergia de Animal
-trinket.trait_animal.desc,Enables the Animal trait. Feral pack instincts empower an alpha and heal the pack with every fierce attack.,Ativa a sinergia de Animal. Instintos ferozes de matilha fortalecem um alfa e curam o bando a cada ataque impiedoso.
-trinket.trait_plant.name,Plant Trait,Sinergia de Planta
-trinket.trait_plant.desc,"Enables the Plant trait. Deep roots foster spikes and steady regeneration, transforming healing into sharp thorn defenses.","Ativa a sinergia de Planta. Raízes profundas desenvolvem espinhos e regeneração contínua, convertendo cura em defesas espinhosas afiadas."
-trinket.trait_toy.name,Toy Trait,Sinergia de Brinquedo
-trinket.trait_toy.desc,"Enables the Toy trait. Generates volatile static friction when struck in melee, culminating in an explosive static detonation on death.","Ativa a sinergia de Brinquedo. Gera atrito estático volátil ao receber golpes corpo a corpo, culminando em detonação estática explosiva ao morrer."
-trinket.trait_appliance.name,Appliance Trait,Sinergia de Eletrodoméstico
-trinket.trait_appliance.desc,"Enables the Appliance trait. Appliances inflict Static and Burn on attack, gain immunity and reflection against both, and convert incoming debuffs into raw stats.","Ativa a sinergia de Eletrodoméstico. Eletrodomésticos aplicam Estática e Chamas ao atacar, ganham imunidade e reflexão contra ambos, e convertem penalidades em atributos."
-trinket.trait_costume.name,Costume Trait,Sinergia de Fantasia
-trinket.trait_costume.desc,"Enables the Costume trait. Masquerades in enemy strengths, stealing beneficial status effects and raw attributes before battle begins.","Ativa a sinergia de Fantasia. Disfarça-se nas forças inimigas, roubando efeitos benéficos e atributos puros antes do combate começar."
+trinket.veteran_insignia.desc,"When a Level 2 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.veteran_insignia.desc,"When a Level 2 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.trait_fire.name,Fire Sigil,Sigilo de Fogo
+trinket.trait_fire.desc,"Fire trait effects activate at 3, 6, 12, 20, and 32 units.","Os efeitos do traço Fogo são ativados com 3, 6, 12, 20 e 32 unidades."
+trinket.trait_earth.name,Earth Sigil,Sigilo da Terra
+trinket.trait_earth.desc,"Earth trait effects activate at 3, 6, 12, 20, and 32 units.","Os efeitos do traço Terra são ativados com 3, 6, 12, 20 e 32 unidades."
+trinket.trait_water.name,Water Sigil,Sigilo da Água
+trinket.trait_water.desc,"Water trait effects activate at 3, 6, 12, 20, and 32 units.","Os efeitos do traço Água são ativados com 3, 6, 12, 20 e 32 unidades."
+trinket.trait_air.name,Air Sigil,Sigilo do Ar
+trinket.trait_air.desc,"Air trait effects activate at 3, 6, 12, 20, and 32 units.","Os efeitos do traço Ar são ativados com 3, 6, 12, 20 e 32 unidades."
+trinket.trait_tank.name,Tank Sigil,Sigilo do Guardião
+trinket.trait_tank.desc,"Tank trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Guardião são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_fighter.name,Fighter Sigil,Sigilo do Lutador
+trinket.trait_fighter.desc,"Fighter trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Lutador são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_support.name,Support Sigil,Sigilo de Suporte
+trinket.trait_support.desc,"Support trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Suporte são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_specialist.name,Specialist Sigil,Sigilo do Especialista
+trinket.trait_specialist.desc,"Specialist trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Especialista são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_food.name,Food Sigil,Sigilo da Comida
+trinket.trait_food.desc,"Food trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Comida são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_mecha.name,Mecha Sigil,Sigilo Mecha
+trinket.trait_mecha.desc,"Mecha trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Mecha são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_animal.name,Animal Sigil,Sigilo Animal
+trinket.trait_animal.desc,"Animal trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Animal são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_plant.name,Plant Sigil,Sigilo da Planta
+trinket.trait_plant.desc,"Plant trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Planta são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_toy.name,Toy Sigil,Sigilo do Brinquedo
+trinket.trait_toy.desc,"Toy trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Brinquedo são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_appliance.name,Appliance Sigil,Sigilo do Eletrodoméstico
+trinket.trait_appliance.desc,"Appliance trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Eletrodoméstico são ativados com 2, 3, 4 e 5 unidades."
+trinket.trait_costume.name,Costume Sigil,Sigilo da Fantasia
+trinket.trait_costume.desc,"Costume trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Fantasia são ativados com 2, 3, 4 e 5 unidades."
 trait.fire.name,Fire,Fogo
 trait.fire.3,Fire units' attacks inflict 1 Burn stack on target.,Ataques de unidades de Fogo aplicam 1 de Chamas no alvo.
 trait.fire.6,...and inflicts +1 additional Burn if the target already has Burn.,...e aplica +1 de Chamas adicional se o alvo já tiver Chamas.
@@ -440,8 +395,8 @@ trait.toy.3,Increases to 3 Static stacks.,Aumenta para 3 de Estática.
 trait.toy.4,Increases to 4 Static stacks.,Aumenta para 4 de Estática.
 trait.toy.5,"Additionally, on death, detonates all Static on the enemy holding the highest Static stacks, dealing damage equal to those stacks to it and clearing them.","Além disso, ao morrer, detona toda a Estática no inimigo com mais Estática, causando dano igual às pilhas e removendo-as."
 trait.appliance.name,Appliance,Eletrodoméstico
-trait.appliance.2,"Appliance units inflict 1 Static on attack. Appliances are immune to Static and remove held Static pre-combat.","Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate."
-trait.appliance.3,"...and also inflict 1 Burn on attack. Appliances become immune to Burn and cleanse held Burn pre-combat.","...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate."
+trait.appliance.2,Appliance units inflict 1 Static on attack. Appliances are immune to Static and remove held Static pre-combat.,Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate.
+trait.appliance.3,...and also inflict 1 Burn on attack. Appliances become immune to Burn and cleanse held Burn pre-combat.,...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate.
 trait.appliance.4,"Additionally, when an enemy attempts to apply Static or Burn to an Appliance, it is reflected back to the sender.","Além disso, quando um inimigo tenta aplicar Estática ou Chamas a um Eletrodoméstico, o efeito é refletido de volta para quem aplicou."
 trait.appliance.5,"Additionally, incoming negative status attempts grant stats: each attempted Static grants +1 PWR, and each attempted Burn grants +1 HP.","Além disso, tentativas de aplicar efeitos negativos concedem atributos: cada Estática concede +1 de Poder, e cada Chamas concede +1 de Vida."
 trait.costume.name,Costume,Fantasia
@@ -450,67 +405,48 @@ trait.costume.3,"Instead of above, Pre-Combat: Steals the entire highest benefic
 trait.costume.4,"Upgrades to steal all beneficial status effects from the mirror enemy, or 2 HP and 2 PWR.","Melhora para roubar todos os efeitos benéficos do inimigo espelhado, ou 2 de Vida e 2 de Poder."
 trait.costume.5,"Pre-Combat: Executed once for the team. The Hero steals all Armor and Spikes, plus 3 HP and 3 PWR, from the enemy with highest total Armor and Spikes.","Pré-Combate: Executado uma vez pela equipe. O Herói rouba toda a Armadura e Espinhos, mais 3 de Vida e 3 de Poder, do inimigo com maior soma de Armadura e Espinhos."
 item.potion_t1.name,Minor Healing Potion,Poção de Cura Menor
-item.potion_t1.desc,Restores 4 HP to a target unit.,Restaura 4 HP de uma unidade alvo.
-ability.potion_t1.name,Drink,Beber
+item.potion_t1.desc,Restores 4 HP.,Restaura 4 HP.
 ability.potion_t1.desc,Restores 4 HP.,Restaura 4 HP.
 item.potion_spikes.name,Thorn Potion,Poção de Espinhos
-item.potion_spikes.desc,Grants 4 Spikes to target. Spikes damage attackers then lose a stack.,Concede 4 Espinhos ao alvo. Espinhos causam dano a atacantes e perdem uma pilha.
-ability.grant_spikes.name,Thorn Skin,Pele de Espinhos
+item.potion_spikes.desc,Grants 4 Spikes stacks,Concede 4 pilhas de Espinhos
 ability.grant_spikes.desc,Grants 4 Spikes stacks,Concede 4 pilhas de Espinhos
 item.potion_heroism.name,Heroism Potion,Poção de Heroísmo
-item.potion_heroism.desc,A potion that inspires heroism.,Uma poção que inspira heroísmo.
-ability.grant_heroism.name,Heroism,Heroísmo
+item.potion_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
 ability.grant_heroism.desc,"Grants +3 HP, +3 PWR, and 3 Armor stacks.","Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
 item.potion_plunder.name,Potion of Plunder,Poção do Saqueador
 item.potion_plunder.desc,Steals a random item from the target and sends it to your Gacha Machine of the matching tier.,Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente.
-ability.potion_plunder.name,Plunder,Saquear
 ability.potion_plunder.desc,Steals a random item from the target and sends it to your Gacha Machine of the matching tier.,Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente.
-ability.unit_t2_e_mimic.name,Mirror Image,Imagem Espelhada
 ability.unit_t2_e_mimic.desc,"At start of turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR.","No início do turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de HP e PWR."
-ability.unit_t2_g_buff_echo.name,Buff Echo,Eco de Buff
 ability.unit_t2_g_buff_echo.desc,"When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them.","Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
-ability.unit_t2_h.name,Solitary Strength,Força Solitária
 ability.unit_t2_h_l1.desc,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.","No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
 ability.unit_t2_h_l2.desc,"At start of combat, gain +2 HP and +2 PWR for each empty slot in your team.","No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazio no seu time."
 ability.unit_t2_h_l3.desc,"At start of combat, gain +3 HP and +3 PWR for each empty slot in your team.","No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
-ability.mud_coating.name,Mud Coating,Camada de Lama
 ability.mud_coating_l1.desc,"When healed, gain 1 Armor and 1 Spikes.","Quando curado, ganha 1 de Armadura e 1 de Espinhos."
 ability.mud_coating_l2.desc,"When healed, gain 2 Armor and 2 Spikes.","Quando curado, ganha 2 de Armadura e 2 de Espinhos."
 ability.mud_coating_l3.desc,"When healed, gain 3 Armor and 3 Spikes.","Quando curado, ganha 3 de Armadura e 3 de Espinhos."
-ability.scald.name,Scald,Escaldar
 ability.scald_l1.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
 ability.scald_l2.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para 1 alvo extra, reduzindo pela metade os acúmulos aplicados."
 ability.scald_l3.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
-ability.unit_tier3g_bench_growth.name,Quiet Meditation,Meditação Silenciosa
-ability.unit_t3_h.name,Convergence Surge,Surto de Convergência
 ability.unit_t3_h.desc,"Whenever a merge happens on the battle board, if this unit is on the battle board, gain [**+2 / +3 / +4 HP and PWR**].","Sempre que uma fusão acontece no tabuleiro de batalha, se esta unidade estiver no tabuleiro de batalha, ganha [**+2 / +3 / +4 de HP e PWR**]."
 unit_dust_t2.name,Dust Minion (T2),Recruta de Poeira (T2)
-unit_dust_t2.desc,A construct. Stays in the fight.,Um construto.   
+unit_dust_t2.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
 unit_dust_t3.name,Dust Minion (T3),Recruta de Poeira (T3)
-unit_dust_t3.desc,A heavy construct. Stays in the fight.,Um construto pesado.
+unit_dust_t3.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
 unit_dust_elite_t1.name,Dust Guard (T1),Guarda de Poeira (T1)
-unit_dust_elite_t1.desc,"A guard. Spawns a Dust unit (T1) on Turn Start, Attack, or Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.","Um guarda. Invoca um Recruta de Poeira (T1) no Início do Turno, ao Atacar ou na morte de aliado. Ganha HP e PWR com base no tier de unidade de Poeira morta."
+unit_dust_elite_t1.desc,"At end of turn, summon units to fill empty team slots. Spawns a T1 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). Spawns a Dust unit at Turn Start. Spawns a Dust unit when Attacking.","No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no início do turno. Invoca um Recruta de Poeira ao atacar."
 unit_dust_elite_t2.name,Dust Sentinel (T2),Sentinela de Poeira (T2)
-unit_dust_elite_t3.desc,"An overlord. Spawns random T1, T2, or T3 Dust units on Ally Death. Gains HP and PWR based on the tier of any dying Dust unit.","Um soberano. Invoca Recrutas de Poeira (T1, T2 ou T3) na morte de aliado. Ganha HP e PWR com base no tier de unidade de Poeira morta."
-ability_dust_elite_spawn.name,Dust Pulse,Pulso de Poeira
+unit_dust_elite_t3.desc,"At end of turn, summon units to fill empty team slots. Spawns a random T1, T2 or T3 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).","No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
 ability_dust_elite_spawn.desc,Spawns a Dust unit in the player's inventory.,Invoca um Recruta de Poeira no inventário do jogador.
 unit_dust_t1.name,Dust Minion (T1),Recruta de Poeira (T1)
-unit_dust_t1.desc,A fragile construct. Stays in the fight.,Um construto frágil.   
+unit_dust_t1.desc,Deal (PWR) damage to the frontmost enemy.,Causa (PWR) de dano ao inimigo da frente.
 unit_dust_elite_t3.name,Dust Overlord (T3),Soberano de Poeira (T3)
-ability_dust_elite_spawn_turn.name,Dust Pulse (Turn),Pulso de Poeira (Turno)
 ability_dust_elite_spawn_turn.desc,Spawns a Dust unit at Turn Start.,Invoca um Recruta de Poeira no início do turno.
-ability_dust_elite1_spawn_death.name,Dust Pulse (Death T1),Pulso de Poeira (Morte T1)
 ability_dust_elite1_spawn_death.desc,Spawns a T1 Dust unit when an Ally dies.,Invoca um Recruta de Poeira T1 quando um aliado morre.
-ability_dust_elite2_spawn_death.name,Dust Pulse (Death T1/T2),Pulso de Poeira (Morte T1/T2)
 ability_dust_elite2_spawn_death.desc,Spawns a random T1 or T2 Dust unit when an Ally dies.,Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre.
-ability_dust_elite_spawn_death.name,Universal Dust Pulse (Death),Pulso de Poeira Universal (Morte)
 ability_dust_elite_spawn_death.desc,"Spawns a random T1, T2 or T3 Dust unit when an Ally dies.","Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre."
-ability_dust_elite_spawn_hurt.name,Dust Pulse (Hurt),Pulso de Poeira (Dano)
 ability_dust_elite_spawn_hurt.desc,Spawns a Dust unit when Hurt.,Invoca um Recruta de Poeira ao sofrer dano.
-ability_dust_elite_spawn_attack.name,Dust Pulse (Attack),Pulso de Poeira (Ataque)
 ability_dust_elite_spawn_attack.desc,Spawns a Dust unit when Attacking.,Invoca um Recruta de Poeira ao atacar.
-unit_dust_elite_t2.desc,A sentinel. Spawns random T1 or T2 Dust units on Ally Death or when Hurt. Gains HP and PWR based on the tier of any dying Dust unit.,Uma sentinela. Invoca Recrutas de Poeira (T1 ou T2) na morte de aliado ou ao sofrer dano. Ganha HP e PWR com base no tier de unidade de Poeira morta.
-ability.dust_growth.name,Dust Growth,Crescimento de Poeira
+unit_dust_elite_t2.desc,"At end of turn, summon units to fill empty team slots. Spawns a random T1 or T2 Dust unit when an Ally dies. Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2). Spawns a Dust unit in the player's inventory.","No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no inventário do jogador."
 ability.dust_growth.desc,"Gains HP and PWR based on the tier of any dying Dust unit (e.g., +1/+1 for T1, +2/+2 for T2).","Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
 ui.drop_zone_get,Get,Pegar
 ui.drop_zone_buy,Buy,Comprar
@@ -524,11 +460,9 @@ ui.drop_zone_sell_multi,Drag or click here to\n[font_size=72]SELL[/font_size],Ar
 ui.bm_instruction,Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.,Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário.
 ui.reward_instruction,Move the gacha ball here to: Get or Sell.\nClick anywhere to close the inventory.,Mova a gacha ball para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário.
 ui.reward_elite_instruction,Move the Trinket here to: Get or Sell.\nClick anywhere to close the inventory.,Mova o Amuleto para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário.
-ability_dust_elite_spawn_enemy_death.name,Dust Pulse (Enemy Death),Pulso de Poeira (Morte Inimiga)
 ability_dust_elite_spawn_enemy_death.desc,Spawns a Dust unit when an Enemy dies.,Invoca um Recruta de Poeira quando um Inimigo morre.
 trinket.armor_aura.name,Armor Aura,Aura de Armadura
-trinket.armor_aura.desc,An aura that hardens the resolve of allies.,Uma aura que endurece a determinação dos aliados.
-ability.armor_aura.name,Armor Aura,Aura de Armadura
+trinket.armor_aura.desc,"At turn start, all allies gain 3 Armor.","No início do turno, todos os aliados ganham 3 de Armadura."
 ability.armor_aura.desc,"At turn start, all allies gain 3 Armor.","No início do turno, todos os aliados ganham 3 de Armadura."
 ui.audio_settings,Audio Settings,Configurações de Áudio
 ui.master_volume,Master Volume,Volume Geral
@@ -546,16 +480,13 @@ ui.tutorial_title,Tutorial,Tutorial
 tutorial.traits.title,Traits,Sinergias
 tutorial.traits,Traits are special buffs and effects that happen according to how many souls or certain trait units of that trait you have on your battle lineup.\n\nInspect units to see what traits they have.,Sinergias são efeitos e bônus especiais que são ativados conforme o número de Almas ou unidades de um mesmo tipo que você possui em seu time.\n\nToque nas unidades para conferir quais Sinergias elas possuem.
 hero_avenger.name,Avenger,Vingador
-hero_avenger.desc,A fierce warrior who strikes when allies fall.,Um guerreiro feroz que ataca quando aliados caem.
-ability.hero_avenger_ally_death_attack.name,Leap Attack,Ataque com Salto
+hero_avenger.desc,"When an ally dies, leap and attack the frontmost enemy.","Quando um aliado morre, salta e ataca o inimigo da frente."
 ability.hero_avenger_ally_death_attack.desc,"When an ally dies, leap and attack the frontmost enemy.","Quando um aliado morre, salta e ataca o inimigo da frente."
 hero_bastion.name,Bastion,Bastião
-hero_bastion.desc,A steadfast defender who grows stronger as allies fall.,Um defensor inabalável que fica mais forte conforme seus aliados caem.
-ability.hero_bastion_ally_death_spikes_armor.name,Fortify,Fortificar
+hero_bastion.desc,"When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.","Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
 ability.hero_bastion_ally_death_spikes_armor.desc,"When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn.","Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
 hero_pyro.name,Pyromancer,Piromante
-hero_pyro.desc,A fiery mage who incinerates enemies instead of striking them.,Um mago ardente que incinera os inimigos em vez de atacá-los.
-ability.hero_pyro_attack_burn.name,Incinerate,Incinerar
+hero_pyro.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
 ability.hero_pyro_attack_burn.desc,"On attack, instead of dealing damage, apply Burn stacks equal to your Power.","Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
 options.art_style,Art Style,Estilo de Arte
 options.style.realistic,Realistic,Realista
@@ -571,62 +502,44 @@ ui.utg_done,Done!,Pronto!
 ui.merge_encounter_title,Merge Encounter,Encontro de Fusão
 ui.merge_encounter_open_inventory,CLICK HERE TO MERGE!,CLIQUE AQUI PARA FUNDIR!
 ui.merge_encounter_instruction,Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!),Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)
-ability.doppleganger_scale.name,Mirrored Might,Força Espelhada
 ability.doppleganger_scale.desc,Gains [**+3 / +4 / +5 PWR**] for each other Doppleganger in battle.,Ganha [**+3 / +4 / +5 de PWR**] para cada outro Doppleganger em batalha.
-ability.doppleganger_death.name,Clone Split,Divisão de Clone
 ability.doppleganger_death.desc,Spawns a Doppleganger into the Tier 3 Gacha Machine on death.,Gera um Doppleganger na Máquina Gacha de Nível 3 ao morrer.
 item_t2_d.name,Echoing Orb,Orbe Ressonante
-item_t2_d.desc,A resonant orb that amplifies the power of its bearer.,Um orbe ressonante que amplifica o poder de seu portador.
-ability.echoing_orb_scale.name,Resonance,Ressonância
+item_t2_d.desc,Grants the holder +2 PWR for each Echoing Orb in battle. Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,Concede ao portador +2 PWR para cada Orbe Ressonante em batalha. Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer.
 ability.echoing_orb_scale.desc,Grants the holder +2 PWR for each Echoing Orb in battle.,Concede ao portador +2 PWR para cada Orbe Ressonante em batalha.
-ability.echoing_orb_death.name,Echo Split,Divisão de Eco
 ability.echoing_orb_death.desc,Spawns an Echoing Orb into the Tier 2 Gacha Machine on death.,Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer.
-ability.unit_t3_j_ability_l1.name,Standard's Legacy,Legado do Estandarte
 ability.unit_t3_j_ability_l1.desc,"On death, transfers its equipped item to the ally directly behind it.","Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
-ability.unit_t3_j_ability_l2.name,Standard's Legacy,Legado do Estandarte
 ability.unit_t3_j_ability_l2.desc,"On death, transfers its equipped item to the ally behind and 1 copy behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 1 cópia para trás deles."
-ability.unit_t3_j_ability_l3.name,Standard's Legacy,Legado do Estandarte
 ability.unit_t3_j_ability_l3.desc,"On death, transfers its equipped item to the ally behind and 2 copies behind them.","Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias para trás deles."
 ui.transfer_item_msg,%s transfers %s to %s!,%s transfere %s para %s!
-ability.unit_t3_l_l1.name,Wealth Accumulation,Acúmulo de Riqueza
 ability.unit_t3_l_l1.desc,"At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
-ability.unit_t3_l_l2.name,Wealth Accumulation,Acúmulo de Riqueza
 ability.unit_t3_l_l2.desc,"At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +4 HP e +4 PWR para cada 5 de Ouro que você possuir no momento."
-ability.unit_t3_l_l3.name,Wealth Accumulation,Acúmulo de Riqueza
 ability.unit_t3_l_l3.desc,"At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +5 HP e +5 PWR para cada 5 de Ouro que você possuir no momento."
 options.audio.pronunciation,Card Pronunciation,Pronúncia de Cartas
 trinket.underdog_emblem.name,Underdog Emblem,Emblema do Azarão
-trinket.underdog_emblem.desc,An emblem that protects the outnumbered.,Um emblema que protege aqueles em menor número.
-ability.underdog_emblem.name,Outnumbered Bulwark,Bastião dos Superados
-ability.underdog_emblem.desc,"At turn start, if your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","No início do turno, se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
+trinket.underdog_emblem.desc,"Pre-Combat: If your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
+ability.underdog_emblem.desc,"Pre-Combat: If your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference.","Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
 trinket.bargain_charm.name,Bargain Charm,Charme de Barganha
-trinket.bargain_charm.desc,A charm that haggles for a better price.,Um amuleto que pechincha por um preço melhor.
-ability.bargain_charm.name,Bargain Charm,Charme de Barganha
+trinket.bargain_charm.desc,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.","Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
 ability.bargain_charm.desc,"Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive.","Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
 trinket.token_return_charm.name,Token Return Charm,Amuleto de Retorno de Fichas
-trinket.token_return_charm.desc,A charm that reclaims spent potential.,Um amuleto que recupera potencial gasto.
-ability.token_return_charm.name,Token Return,Retorno de Fichas
+trinket.token_return_charm.desc,"When the first unit dies each round, return Tokens equal to its Tier.","Quando a primeira unidade morre a cada rodada, retorna Fichas iguais ao Tier dela."
 ability.token_return_charm.desc,The first unit to die each round returns tokens equivalent to its tier.,A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nível.
 trinket.time_sprint_charm.name,Sprint Charm,Amuleto de Arrancada
-trinket.time_sprint_charm.desc,A charm that bends time.,Um amuleto que dobra o tempo.
-ability.time_sprint_charm.name,Time Sprint,Tempo de Arrancada
+trinket.time_sprint_charm.desc,Minigame timer gets a flat 2-second increase in battle.,O cronômetro do minigame ganha um aumento de 2 segundos em batalhas.
 ability.time_sprint_charm.desc,Minigame timer gets a flat 2-second increase in battle.,O cronômetro do minigame ganha um aumento de 2 segundos em batalhas.
 trinket.merge_damage_charm.name,Fusion Spark,Centelha de Fusão
-trinket.merge_damage_charm.desc,A charm that weaponizes fusion.,Um amuleto que transforma fusão em arma.
-ability.merge_damage_charm.name,Fusion Spark,Centelha de Fusão
+trinket.merge_damage_charm.desc,"Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.","Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
 ability.merge_damage_charm.desc,"Whenever a merge is performed on the battle board, deal 3 damage to a random enemy unit.","Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
 hero_starter.name,Starter,Iniciante
-hero_starter.desc,A supportive hero who absorbs the power of fallen allies. Guarantees at least 3 tokens from every minigame. Recommended for trying a new deck.,Um herói de apoio que absorve o poder dos aliados caídos. Garante pelo menos 3 fichas em cada minijogo. Recomendado para experimentar um novo baralho.
-hero_starter.flavor,"A gentle soul who draws strength from loss, guiding newcomers through their first steps.","Uma alma gentil que tira força da perda, guiando novatos em seus primeiros passos."
-ability.hero_starter_ally_death_absorb.name,Soul Harvest,Colheita de Almas
+hero_starter.desc,Gain at least 3 Tokens from each minigame.,Ganha pelo menos 3 Fichas em cada minijogo.
 ability.hero_starter_ally_death_absorb.desc,"When an ally dies, gain HP equal to their PWR.","Quando um aliado morre, ganha HP igual ao PWR dele."
 trinket.burn_vial.name,Burn Vial,Frasco de Chamas
-trinket.burn_vial.desc,A vial of eternal flame.,Um frasco de chama eterna.
+trinket.burn_vial.desc,Attacks apply 1 Burn stack.,Ataques aplicam 1 acúmulo de Queimadura.
 trinket.rusty_ring.name,Rusty Ring,Anel Enferrujado
 trinket.rusty_ring.desc,Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff.,Concede +1 HP e +1 PWR a todas as unidades sem equipamentos. Equipar um item cancela esse bônus.
 item.trinket_hero_catalyst.name,Hero's Catalyst,Catalisador do Herói
-item.trinket_hero_catalyst.desc,"Whenever an ally merges, grants +1 HP and +1 PWR to your Hero.","Sempre que um aliado se funde, concede +1 HP e +1 PWR ao seu Herói."
-ability.hero_catalyst.name,Hero's Catalyst,Catalisador do Herói
+item.trinket_hero_catalyst.desc,Grants the Hero +1 HP and +1 PWR on any merge.,Concede ao Herói +1 HP e +1 PWR em qualquer fusão.
 ability.hero_catalyst.desc,Grants the Hero +1 HP and +1 PWR on any merge.,Concede ao Herói +1 HP e +1 PWR em qualquer fusão.
 trinket.purifying_pendant.name,Purifying Pendant,Pingente Purificador
 trinket.purifying_pendant.desc,"When an ally takes damage from a negative status effect, removes all remaining stacks of that effect.","Quando um aliado recebe dano de um efeito de status negativo, remove todas as pilhas restantes desse efeito."
@@ -634,15 +547,13 @@ trinket.awe_inspiring_totem.name,Awe Inspiring Totem,Totem Inspirador
 trinket.awe_inspiring_totem.desc,"At turn start, if there is a Tier 3 or Level 3 unit in the lineup, grants +1 HP and +1 PWR to all other lower tier and level units.","No início do turno, se houver uma unidade de Nível 3 ou Tier 3 na formação, concede +1 HP e +1 PWR a todas as outras unidades de tier e nível inferiores."
 trinket.beginners_charm.name,Beginner's Charm,Amuleto do Iniciante
 trinket.beginners_charm.desc,Minigames: Gain 1 extra token if the mastery level of the answered flashcard is 1 (Very Hard).,Minigames: Ganhe 1 ficha extra se o nível de maestria do flashcard respondido for 1 (Muito Difícil).
-trinket.trinity_charm.name,Trinity Charm,Amuleto da Trindade
 trinket.trinity_charm.desc,"If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token.","Se você comprar pelo menos uma vez de cada máquina de tier (1, 2 e 3) em um turno ou encontro, ganha 1 Ficha."
 trinket.spiked_armor.name,Spiked Armor,Armadura de Espinhos
 trinket.spiked_armor.desc,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].","No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
-ability.trinket_spiked_armor.name,Spiked Armor,Armadura de Espinhos
 ability.trinket_spiked_armor.desc,"At turn start, the frontmost unit gains 2 Armor and 2 [color=#44CC44]Spikes[/color].","No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
-ui.merge_encounter_description,"Merge or level up your Gachamons or Spirits permanently!
-({cost} Gold per action)","Fundir ou evoluir seus Gachamons ou Espíritos permanentemente!
-({cost} Ouro por ação)"
+ui.merge_encounter_description,Merge or level up your Gachamons or Spirits permanently!,
+"({cost} Gold per action)""",Fundir ou evoluir seus Gachamons ou Espíritos permanentemente!,
+"({cost} Ouro por ação)""",,
 ui.rest_site_desc,"Play to earn tokens, then spend them for permanent HP upgrades.",Jogue para ganhar fichas e gaste-as em melhorias permanentes de HP.
 ui.training_grounds_desc,"Play to earn tokens, then spend them for permanent Power upgrades.",Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder.
 ui.gambling_den_desc,"Play to earn tokens, then spend them for a chance to win big Gold payouts.",Jogue para ganhar fichas e gaste-as para ter a chance de ganhar muito Ouro.
@@ -657,23 +568,18 @@ ui.utg_desc,"Shape your units!\nOpen your inventory to drag a unit here,\nand tr
 ui.rest_study,Get Tokens! (%d Gold),Ganhar Fichas! (%d Ouro)
 ui.reward_desc,Get tokens to spend on prizes in the machines below!,Ganhe fichas para gastar em prêmios nas máquinas abaixo!
 ui.rewards_title,REWARDS,RECOMPENSAS
-ability.unit_tier3_berserker_shockwave.name,Shockwave,Onda de Choque
 ability.unit_tier3_berserker_shockwave_l1.desc,Deals 100% cascade AOE damage to front enemy and units behind.,Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás.
 ability.unit_tier3_berserker_shockwave_l2.desc,Deals 150% cascade AOE damage to front enemy and units behind.,Causa 150% de dano em cascata em área ao inimigo da frente e às unidades atrás.
 ability.unit_tier3_berserker_shockwave_l3.desc,Deals 200% cascade AOE damage to front enemy and units behind.,Causa 200% de dano em cascata em área ao inimigo da frente e às unidades atrás.
-ability.unit_tier3d_resilient_aura.name,Resilient Aura,Aura Resiliente
 ability.unit_tier3d_resilient_aura_l1.desc,Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.,Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque.
 ability.unit_tier3d_resilient_aura_l2.desc,Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack.,Concede +2 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque.
 ability.unit_tier3d_resilient_aura_l3.desc,Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack.,Concede +2 HP e +2 PWR aos aliados adjacentes quando ferido por um ataque.
-ability.unit_tier3a_mirror_strike.name,Mirror Strike,Ataque Espelhado
 ability.unit_tier3a_mirror_strike_l1.desc,Attacks enemy in opposite mirror slot for 100% damage.,Ataca o inimigo no espaço espelhado oposto causando 100% de dano.
 ability.unit_tier3a_mirror_strike_l2.desc,Attacks enemy in opposite mirror slot for 150% damage.,Ataca o inimigo no espaço espelhado oposto causando 150% de dano.
 ability.unit_tier3a_mirror_strike_l3.desc,Attacks enemy in opposite mirror slot for 200% damage.,Ataca o inimigo no espaço espelhado oposto causando 200% de dano.
-ability.unit_tier3b_guardian_sacrifice.name,Guardian Sacrifice,Sacrifício do Guardião
 ability.unit_tier3b_guardian_sacrifice_l1.desc,Leaps to intercept lethal damage on allies.,Salta para interceptar dano letal em aliados.
 ability.unit_tier3b_guardian_sacrifice_l2.desc,Leaps to intercept lethal damage on allies and gains 1 Armor.,Salta para interceptar dano letal em aliados e ganha 1 de Armadura.
 ability.unit_tier3b_guardian_sacrifice_l3.desc,Leaps to intercept lethal damage on allies and gains 2 Armor.,Salta para interceptar dano letal em aliados e ganha 2 de Armadura.
-ability.unit_tier3c_soul_summon.name,Soul Summon,Invocação de Alma
 ability.unit_tier3c_soul_summon_l1.desc,Summons a random Level 1 Tier 2 unit on death.,Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer.
 ability.unit_tier3c_soul_summon_l2.desc,Summons a random Level 2 Tier 2 unit on death.,Invoca uma unidade aleatória de Tier 2 no Nível 2 ao morrer.
 ability.unit_tier3c_soul_summon_l3.desc,Summons a random Level 3 Tier 2 unit on death.,Invoca uma unidade aleatória de Tier 2 no Nível 3 ao morrer.
@@ -704,95 +610,131 @@ ability.unit_t3_mimic_l3.desc,"Before its turn action, transforms into the enemy
 ability.unit_t3_shadow_l1.desc,Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.,Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia.
 ability.unit_t3_shadow_l2.desc,Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness.,Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 150% de eficácia.
 ability.unit_t3_shadow_l3.desc,Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness.,Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 200% de eficácia.
-ability.unit_t3_l.name,Wealth Accumulation,Acúmulo de Riqueza
-ability.unit_t3_j_ability.name,Standard's Legacy,Legado do Estandarte
 ETnkPlaToy.name,ETnkPlaToy,ETnkPlaToy
-ETnkPlaToy.desc,ETnkPlaToy unit.,Unidade ETnkPlaToy.
+ETnkPlaToy.desc,"When hurt BY AN ATTACK, Heal this unit by 1 HP.","Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
 FFigMecApp.name,FFigMecApp,FFigMecApp
-FFigMecApp.desc,FFigMecApp unit.,Unidade FFigMecApp.
+FFigMecApp.desc,"When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal.","Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
 WSupAniCos.name,WSupAniCos,WSupAniCos
-WSupAniCos.desc,WSupAniCos unit.,Unidade WSupAniCos.
+WSupAniCos.desc,"When the ally directly in front takes damage, heal them for 1 HP.","Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
 ASpeFodToy.name,ASpeFodToy,ASpeFodToy
-ASpeFodToy.desc,ASpeFodToy unit.,Unidade ASpeFodToy.
+ASpeFodToy.desc,"When this unit dies, grant its current PWR to the ally behind.","Quando esta unidade morre, concede seu PWR atual ao aliado atrás."
 EWFigCosToy.name,EWFigCosToy,EWFigCosToy
-EWFigCosToy.desc,EWFigCosToy unit.,Unidade EWFigCosToy.
+EWFigCosToy.desc,"When an ally is defeated, gain +1 HP and +1 PWR.","Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
 FASpeMecApp.name,FASpeMecApp,FASpeMecApp
-FASpeMecApp.desc,FASpeMecApp unit.,Unidade FASpeMecApp.
+FASpeMecApp.desc,"Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
 EASpeFodToy.name,EASpeFodToy,EASpeFodToy
-EASpeFodToy.desc,EASpeFodToy unit.,Unidade EASpeFodToy.
+EASpeFodToy.desc,Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.,O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado.
 WATnkPlaAni.name,WATnkPlaAni,WATnkPlaAni
-WATnkPlaAni.desc,WATnkPlaAni unit.,Unidade WATnkPlaAni.
+WATnkPlaAni.desc,"At start of combat, gain +1 HP and +1 PWR for each empty slot in your team.","No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
 EFTnkAniCos.name,EFTnkAniCos,EFTnkAniCos
-EFTnkAniCos.desc,EFTnkAniCos unit.,Unidade EFTnkAniCos.
+EFTnkAniCos.desc,"When healed, gain 1 Armor and 1 Spikes.","Quando curado, ganha 1 de Armadura e 1 de Espinhos."
 FWSpeAppFod.name,FWSpeAppFod,FWSpeAppFod
-FWSpeAppFod.desc,FWSpeAppFod unit.,Unidade FWSpeAppFod.
+FWSpeAppFod.desc,"When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.","Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
 EFWAFigSpeAniMec.name,EFWAFigSpeAniMec,EFWAFigSpeAniMec
-EFWAFigSpeAniMec.desc,EFWAFigSpeAniMec unit.,Unidade EFWAFigSpeAniMec.
+EFWAFigSpeAniMec.desc,Attacks enemy in opposite mirror slot for 100% damage.,Ataca o inimigo no espaço espelhado oposto causando 100% de dano.
 EWWATnkMecApp.name,EWWATnkMecApp,EWWATnkMecApp
-EWWATnkMecApp.desc,EWWATnkMecApp unit.,Unidade EWWATnkMecApp.
+EWWATnkMecApp.desc,Leaps to intercept lethal damage on allies.,Salta para interceptar dano letal em aliados.
 EFWWFigSpeAniFodMecCos.name,EFWWFigSpeAniFodMecCos,EFWWFigSpeAniFodMecCos
-EFWWFigSpeAniFodMecCos.desc,EFWWFigSpeAniFodMecCos unit.,Unidade EFWWFigSpeAniFodMecCos.
+EFWWFigSpeAniFodMecCos.desc,Deals 100% cascade AOE damage to front enemy and units behind.,Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás.
 EFAASupToy.name,EFAASupToy,EFAASupToy
-EFAASupToy.desc,EFAASupToy unit.,Unidade EFAASupToy.
+EFAASupToy.desc,Summons a random Level 1 Tier 2 unit on death.,Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer.
 EEFWFigTnkPlaToy.name,EEFWFigTnkPlaToy,EEFWFigTnkPlaToy
-EEFWFigTnkPlaToy.desc,EEFWFigTnkPlaToy unit.,Unidade EEFWFigTnkPlaToy.
+EEFWFigTnkPlaToy.desc,Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack.,Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque.
 EEWAFigFodAniCos.name,EEWAFigFodAniCos,EEWAFigFodAniCos
-EEWAFigFodAniCos.desc,EEWAFigFodAniCos unit.,Unidade EEWAFigFodAniCos.
+EEWAFigFodAniCos.desc,Deals damage to enemies equal to 100% of PWR when they are summoned.,Causa dano aos inimigos igual a 100% do PWR quando eles são invocados.
 EFFASupPlaToy.name,EFFASupPlaToy,EFFASupPlaToy
-EFFASupPlaToy.desc,EFFASupPlaToy unit.,Unidade EFFASupPlaToy.
+EFFASupPlaToy.desc,Grants +3 HP to newly summoned allies.,Concede +3 de HP a aliados recém-invocados.
 FWAASupToy.name,FWAASupToy,FWAASupToy
-FWAASupToy.desc,FWAASupToy unit.,Unidade FWAASupToy.
+FWAASupToy.desc,"If on the player bench at start of turn, gain +3 HP and PWR.","Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
 EFFWSupMecApp.name,EFFWSupMecApp,EFFWSupMecApp
-EFFWSupMecApp.desc,EFFWSupMecApp unit.,Unidade EFFWSupMecApp.
+EFFWSupMecApp.desc,"Whenever a merge happens on the battle board, gain +2 HP and PWR.","Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
 EFWASupFodToy.name,EFWASupFodToy,EFWASupFodToy
-EFWASupFodToy.desc,EFWASupFodToy unit.,Unidade EFWASupFodToy.
+EFWASupFodToy.desc,Gains +3 PWR for each other Doppleganger in battle. Summons 1 copy of itself on death into the Gacha Machine.,Ganha +3 de PWR para cada outro Doppleganger em batalha. Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha.
 FFWASpeSupMecAniApp.name,FFWASpeSupMecAniApp,FFWASpeSupMecAniApp
-FFWASpeSupMecAniApp.desc,FFWASpeSupMecAniApp unit.,Unidade FFWASpeSupMecAniApp.
+FFWASpeSupMecAniApp.desc,"On death, transfers its equipped item to the ally directly behind it.","Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
 EWAASpePlaApp.name,EWAASpePlaApp,EWAASpePlaApp
-EWAASpePlaApp.desc,EWAASpePlaApp unit.,Unidade EWAASpePlaApp.
+EWAASpePlaApp.desc,"At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have.","No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
 EEFASpeFodCos.name,EEFASpeFodCos,EEFASpeFodCos
-EEFASpeFodCos.desc,EEFASpeFodCos unit.,Unidade EEFASpeFodCos.
+EEFASpeFodCos.desc,"Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead.","Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
 EFWATnkCosMec.name,EFWATnkCosMec,EFWATnkCosMec
-EFWATnkCosMec.desc,EFWATnkCosMec unit.,Unidade EFWATnkCosMec.
+EFWATnkCosMec.desc,Gain +2 HP before taking damage.,Ganha +2 de HP antes de receber dano.
 FWWASupAniToy.name,FWWASupAniToy,FWWASupAniToy
-FWWASupAniToy.desc,FWWASupAniToy unit.,Unidade FWWASupAniToy.
-ability.trait_fire.name,Infernal Ignition,Ignição Infernal
+FWWASupAniToy.desc,Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness.,Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia.
 ability.trait_fire.desc,"Empowers Fire units to burn enemies on attack, spread burns, and deal bonus damage to burning foes.","Capacita unidades de Fogo a queimar inimigos ao atacar, espalhar chamas e causar dano bônus a alvos queimando."
-ability.trait_earth.name,Tectonic Bulwark,Bastião Tectônico
 ability.trait_earth.desc,"Grants Armor and Spikes to Earth units and allies, empowering Spikes to deal bonus damage on attack.","Concede Armadura e Espinhos a unidades de Terra e aliados, capacitando Espinhos a causar dano bônus ao atacar."
-ability.trait_water.name,Cleansing Tide,Maré Purificadora
 ability.trait_water.desc,Water units heal allies ahead and cleanse negative status effects pre-combat.,Unidades de Água curam aliados à frente e removem efeitos negativos no pré-combate.
-ability.trait_water_turn_start.name,Restorative Spring,Fonte Restauradora
 ability.trait_water_turn_start.desc,"At turn start, heals lowest HP ally and converts negative statuses into healing.","No início do turno, cura o aliado com menor Vida e converte status negativos em cura."
-ability.trait_air.name,Static Tempest,Tempestade Estática
 ability.trait_air.desc,"Air units electrify targets with Static on attack, splashing charges to adjacent enemies.","Unidades de Ar eletrificam alvos com Estática ao atacar, espalhando cargas para inimigos adjacentes."
-ability.trait_tank.name,Bastion Guard,Guarda do Bastião
 ability.trait_tank.desc,"Grants Armor pre-combat, passes armor backward on absorption, intercepts attacks, and mirrors armor as spikes.","Concede Armadura no pré-combate, repassa armadura para trás ao absorver, intercepta ataques e espelha armadura como espinhos."
-ability.trait_tank_turn_start.name,Frontline Reinforcement,Reforço de Vanguarda
 ability.trait_tank_turn_start.desc,"At turn start, grants 1 Armor to the frontmost Tank.","No início do turno, concede 1 de Armadura ao Guardião mais à frente."
-ability.trait_fighter.name,Battle Prowess,Destreza de Batalha
 ability.trait_fighter.desc,"Deals bonus damage against high-health targets, retaliates on attack damage, cleaves behind targets, and chains attacks on kill.","Causa dano bônus contra alvos com mais Vida, contra-ataca ao sofrer dano, desfere golpe disperso atrás do alvo e encadeia ataques ao abater."
-ability.trait_support.name,Formation Blessing,Bênção de Formação
 ability.trait_support.desc,"Grants +1 HP to the ally ahead, +1 PWR to the ally behind, and +1 HP/+1 PWR to the Hero.","Concede +1 de Vida ao aliado à frente, +1 de Poder ao aliado atrás e +1 de Vida/+1 de Poder ao Herói."
-ability.trait_support_turn_start.name,Inspiring Presence,Presença Inspiradora
 ability.trait_support_turn_start.desc,"At turn start, grants +1 HP to lowest-HP ally and +1 PWR to lowest-PWR ally per living Support.","No início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
-ability.trait_specialist.name,Resource Mastery,Domínio de Recursos
 ability.trait_specialist.desc,"Ensures opening tokens, discounts gacha draws, earns gold on kill, and summons a combat clone to the bench.","Garante fichas iniciais, dá desconto no gacha, ganha ouro ao abater e invoca clone de combate no banco."
-ability.trait_specialist_turn_start.name,Golden Ambition,Ambição Dourada
 ability.trait_specialist_turn_start.desc,"At turn start, the frontmost Specialist gains +1 PWR per 5 Gold held.","No início do turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
-ability.trait_food.name,Nutrient Infusion,Infusão Nutritiva
 ability.trait_food.desc,"Heals and empowers the ally directly behind when hurt, and passes down all PWR on death.","Cura e fortalece o aliado logo atrás ao sofrer dano, e transfere todo seu Poder ao morrer."
-ability.trait_mecha.name,Overclocked Core,Núcleo Sobrecarregado
 ability.trait_mecha.desc,"Grants Armor and Spikes, inflicts Static on attack, fires lasers on ally merges, and detonates retaliatory lasers on death.","Concede Armadura e Espinhos, aplica Estática ao atacar, dispara lasers em fusões aliadas e detona lasers de retaliação ao morrer."
-ability.trait_animal.name,Primal Frenzy,Frenesi Primordial
 ability.trait_animal.desc,Grants +1 PWR to an alpha Animal pre-combat and heals Animals on every attack.,Concede +1 de Poder a um Animal alfa no pré-combate e cura Animais a cada ataque.
-ability.trait_plant.name,Verdant Growth,Crescimento Verdejante
 ability.trait_plant.desc,"Grants Spikes and HP pre-combat, and converts all incoming heals into Spikes.","Concede Espinhos e Vida no pré-combate, e converte toda cura recebida em Espinhos."
-ability.trait_plant_turn_start.name,Floral Rejuvenation,Rejuvenescimento Floral
 ability.trait_plant_turn_start.desc,"At turn start, heals the lowest-HP Plant, and grants +1 Spikes and +1 HP to all Plants.","No início do turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
-ability.trait_toy.name,Static Discharge,Descarga Estática
 ability.trait_toy.desc,"Inflicts Static on melee attackers, and detonates the enemy with the most Static stacks on death.","Aplica Estática a atacantes corpo a corpo, e detona o inimigo com mais Estática ao morrer."
-ability.trait_appliance.name,Thermal Grid,Rede Térmica
 ability.trait_appliance.desc,"Appliance attacks inflict Static and Burn. Grants immunity and pre-combat cleanse to both, reflects incoming status effects, and converts debuffs into stats.","Ataques de Eletrodomésticos aplicam Estática e Chamas. Concede imunidade e purificação pré-combate a ambos, reflete efeitos de status e converte penalidades em atributos."
-ability.trait_costume.name,Mimic Masquerade,Disfarce Ilusório
 ability.trait_costume.desc,Pre-Combat: Steals beneficial status effects or base stats from mirrored enemies and enemy leaders.,Pré-Combate: Rouba efeitos benéficos ou atributos básicos de inimigos espelhados e líderes adversários.
+trinket.master_insignia.name,Master Insignia,Insígnia do Mestre
+trinket.level3_insignia.desc,"When a Level 3 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.level3_insignia.desc,"When a Level 3 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.cheap_insignia.name,Cheap Insignia,Insígnia Barata
+trinket.tier1_insignia.desc,"When a Tier 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.tier1_insignia.desc,"When a Tier 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.fair_insignia.name,Fair Insignia,Insígnia de Preço Justo
+trinket.tier2_insignia.desc,"When a Tier 2 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.tier2_insignia.desc,"When a Tier 2 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.premium_insignia.name,Premium Insignia,Insígnia Premium
+trinket.tier3_insignia.desc,"When a Tier 3 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
+ability.tier3_insignia.desc,"When a Tier 3 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.fire_insignia.name,Fire Insignia,Insígnia de Fogo
+trinket.fire_insignia.desc,"When a unit with the Fire trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
+ability.fire_insignia.desc,"When a unit with the Fire trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.earth_insignia.name,Earth Insignia,Insígnia da Terra
+trinket.earth_insignia.desc,"When a unit with the Earth trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
+ability.earth_insignia.desc,"When a unit with the Earth trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.water_insignia.name,Water Insignia,Insígnia da Água
+trinket.water_insignia.desc,"When a unit with the Water trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Água entra em campo, ela recebe +1 HP e +1 PWR."
+ability.water_insignia.desc,"When a unit with the Water trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Água entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.air_insignia.name,Air Insignia,Insígnia do Ar
+trinket.air_insignia.desc,"When a unit with the Air trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
+ability.air_insignia.desc,"When a unit with the Air trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.tank_insignia.name,Tank Insignia,Insígnia do Guardião
+trinket.tank_insignia.desc,"When a unit with the Tank trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+ability.tank_insignia.desc,"When a unit with the Tank trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.fighter_insignia.name,Fighter Insignia,Insígnia do Lutador
+trinket.fighter_insignia.desc,"When a unit with the Fighter trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
+ability.fighter_insignia.desc,"When a unit with the Fighter trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.support_insignia.name,Support Insignia,Insígnia de Suporte
+trinket.support_insignia.desc,"When a unit with the Support trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+ability.support_insignia.desc,"When a unit with the Support trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.specialist_insignia.name,Specialist Insignia,Insígnia do Especialista
+trinket.specialist_insignia.desc,"When a unit with the Specialist trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+ability.specialist_insignia.desc,"When a unit with the Specialist trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.food_insignia.name,Food Insignia,Insígnia da Comida
+trinket.food_insignia.desc,"When a unit with the Food trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
+ability.food_insignia.desc,"When a unit with the Food trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.mecha_insignia.name,Mecha Insignia,Insígnia Mecha
+trinket.mecha_insignia.desc,"When a unit with the Mecha trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
+ability.mecha_insignia.desc,"When a unit with the Mecha trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.animal_insignia.name,Animal Insignia,Insígnia Animal
+trinket.animal_insignia.desc,"When a unit with the Animal trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
+ability.animal_insignia.desc,"When a unit with the Animal trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.plant_insignia.name,Plant Insignia,Insígnia da Planta
+trinket.plant_insignia.desc,"When a unit with the Plant trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+ability.plant_insignia.desc,"When a unit with the Plant trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.toy_insignia.name,Toy Insignia,Insígnia do Brinquedo
+trinket.toy_insignia.desc,"When a unit with the Toy trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+ability.toy_insignia.desc,"When a unit with the Toy trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.appliance_insignia.name,Appliance Insignia,Insígnia do Eletrodoméstico
+trinket.appliance_insignia.desc,"When a unit with the Appliance trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
+ability.appliance_insignia.desc,"When a unit with the Appliance trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.costume_insignia.name,Costume Insignia,Insígnia da Fantasia
+trinket.costume_insignia.desc,"When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
+ability.costume_insignia.desc,"When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
+trinket.trinity_charm.name,Trinity Charm,Amuleto da Trindade

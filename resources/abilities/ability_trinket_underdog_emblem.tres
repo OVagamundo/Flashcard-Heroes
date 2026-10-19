@@ -6,8 +6,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_underdog_emblem"
-name_key = "ability.underdog_emblem.name"
 description_key = "ability.underdog_emblem.desc"
-trigger = &"on_turn_start"
+trigger = &"on_pre_combat"
 priority = 0
 effects = Array[Resource]([ExtResource("2_effect")])

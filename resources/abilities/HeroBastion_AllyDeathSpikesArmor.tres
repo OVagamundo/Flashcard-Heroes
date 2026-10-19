@@ -16,7 +16,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"hero_bastion_ally_death_spikes_armor"
-name_key = "ability.hero_bastion_ally_death_spikes_armor.name"
 description_key = "ability.hero_bastion_ally_death_spikes_armor.desc"
 trigger = &"on_ally_death"
 effects = Array[Resource]([SubResource("EffectApplyStatus_Armor"), SubResource("EffectApplyStatus_Spikes")])

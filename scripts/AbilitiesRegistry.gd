@@ -149,7 +149,8 @@ const ABILITIES: Dictionary = {
 		"owner": "Bloodlust Ring (T2B)",
 		"trigger": "on_kill",
 		"condition": null,
-		"effect": "Grant holder an extra turn action",
+		"effect": "Grant holder an extra turn action on kill (once per turn)",
+		"notes": "NON-STACKING: Only executes once per turn.",
 	},
 	
 	"item_tier2c_passive_heal": {
@@ -223,13 +224,13 @@ const ABILITIES: Dictionary = {
 
 	"ability_trinket_underdog_emblem": {
 		"owner": "Underdog Emblem (Trinket)",
-		"trigger": "on_turn_start",
+		"trigger": "on_pre_combat",
 		"condition": null,
-		"effect": "If outnumbered in the lineup, grant all allies +2 Armor per missing ally",
+		"effect": "Pre-combat: If outnumbered in the lineup, grant all allies +2 Armor per missing ally",
 	},
 
 	"ability_trinket_royal_insignia": {
-		"owner": "Royal Insignia (Trinket)",
+		"owner": "Novice Insignia (Trinket)",
 		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
 		"condition": "TARGET_LEVEL_1_NON_HERO",
 		"effect": "Grant +1 HP and +1 PWR when a level 1 unit enters the board (drawn, summoned, merged, or at battle start)",
@@ -240,6 +241,104 @@ const ABILITIES: Dictionary = {
 		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
 		"condition": "TARGET_LEVEL_2_NON_HERO",
 		"effect": "Grant +1 HP and +1 PWR when a level 2 unit enters the board (drawn, summoned, merged, or at battle start)",
+	},
+
+	"ability_level3_insignia_draw": {
+		"owner": "Master Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_LEVEL_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 3 unit enters the board",
+	},
+	"ability_tier1_insignia_draw": {
+		"owner": "Tier I Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_TIER_1_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 1 unit enters the board",
+	},
+	"ability_tier2_insignia_draw": {
+		"owner": "Tier II Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_TIER_2_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 2 unit enters the board",
+	},
+	"ability_tier3_insignia_draw": {
+		"owner": "Tier III Insignia (Trinket)",
+		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
+		"condition": "TARGET_TIER_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 3 unit enters the board",
+	},
+
+	"ability_level3_insignia_summon": {
+		"owner": "Master Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_LEVEL_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 3 unit enters the board",
+	},
+	"ability_level3_insignia_merge": {
+		"owner": "Master Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_LEVEL_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 3 unit enters the board",
+	},
+	"ability_level3_insignia_battle_start": {
+		"owner": "Master Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_LEVEL_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a level 3 unit enters the board",
+	},
+	"ability_tier1_insignia_summon": {
+		"owner": "Tier I Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TIER_1_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 1 unit enters the board",
+	},
+	"ability_tier1_insignia_merge": {
+		"owner": "Tier I Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TIER_1_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 1 unit enters the board",
+	},
+	"ability_tier1_insignia_battle_start": {
+		"owner": "Tier I Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TIER_1_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 1 unit enters the board",
+	},
+	"ability_tier2_insignia_summon": {
+		"owner": "Tier II Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TIER_2_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 2 unit enters the board",
+	},
+	"ability_tier2_insignia_merge": {
+		"owner": "Tier II Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TIER_2_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 2 unit enters the board",
+	},
+	"ability_tier2_insignia_battle_start": {
+		"owner": "Tier II Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TIER_2_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 2 unit enters the board",
+	},
+	"ability_tier3_insignia_summon": {
+		"owner": "Tier III Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TIER_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 3 unit enters the board",
+	},
+	"ability_tier3_insignia_merge": {
+		"owner": "Tier III Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TIER_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 3 unit enters the board",
+	},
+	"ability_tier3_insignia_battle_start": {
+		"owner": "Tier III Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TIER_3_NON_HERO",
+		"effect": "Grant +1 HP and +1 PWR when a Tier 3 unit enters the board",
 	},
 
 	"ability_trinket_bargain_charm": {
@@ -395,3 +494,423 @@ static func describe(ability_id: StringName) -> String:
 		desc += " (if %s)" % condition
 	return desc
 
+
+	"ability_fire_insignia_draw": {
+		"owner": "Fire Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_FIRE",
+		"effect": "Grant +1 HP and +1 PWR to Fire units when they enter the board",
+	},
+
+	"ability_fire_insignia_summon": {
+		"owner": "Fire Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_FIRE",
+		"effect": "Grant +1 HP and +1 PWR to Fire units when they enter the board",
+	},
+
+	"ability_fire_insignia_merge": {
+		"owner": "Fire Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_FIRE",
+		"effect": "Grant +1 HP and +1 PWR to Fire units when they enter the board",
+	},
+
+	"ability_fire_insignia_battle_start": {
+		"owner": "Fire Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_FIRE",
+		"effect": "Grant +1 HP and +1 PWR to Fire units when they enter the board",
+	},
+
+	"ability_earth_insignia_draw": {
+		"owner": "Earth Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_EARTH",
+		"effect": "Grant +1 HP and +1 PWR to Earth units when they enter the board",
+	},
+
+	"ability_earth_insignia_summon": {
+		"owner": "Earth Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_EARTH",
+		"effect": "Grant +1 HP and +1 PWR to Earth units when they enter the board",
+	},
+
+	"ability_earth_insignia_merge": {
+		"owner": "Earth Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_EARTH",
+		"effect": "Grant +1 HP and +1 PWR to Earth units when they enter the board",
+	},
+
+	"ability_earth_insignia_battle_start": {
+		"owner": "Earth Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_EARTH",
+		"effect": "Grant +1 HP and +1 PWR to Earth units when they enter the board",
+	},
+
+	"ability_water_insignia_draw": {
+		"owner": "Water Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_WATER",
+		"effect": "Grant +1 HP and +1 PWR to Water units when they enter the board",
+	},
+
+	"ability_water_insignia_summon": {
+		"owner": "Water Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_WATER",
+		"effect": "Grant +1 HP and +1 PWR to Water units when they enter the board",
+	},
+
+	"ability_water_insignia_merge": {
+		"owner": "Water Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_WATER",
+		"effect": "Grant +1 HP and +1 PWR to Water units when they enter the board",
+	},
+
+	"ability_water_insignia_battle_start": {
+		"owner": "Water Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_WATER",
+		"effect": "Grant +1 HP and +1 PWR to Water units when they enter the board",
+	},
+
+	"ability_air_insignia_draw": {
+		"owner": "Air Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_AIR",
+		"effect": "Grant +1 HP and +1 PWR to Air units when they enter the board",
+	},
+
+	"ability_air_insignia_summon": {
+		"owner": "Air Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_AIR",
+		"effect": "Grant +1 HP and +1 PWR to Air units when they enter the board",
+	},
+
+	"ability_air_insignia_merge": {
+		"owner": "Air Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_AIR",
+		"effect": "Grant +1 HP and +1 PWR to Air units when they enter the board",
+	},
+
+	"ability_air_insignia_battle_start": {
+		"owner": "Air Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_AIR",
+		"effect": "Grant +1 HP and +1 PWR to Air units when they enter the board",
+	},
+
+	"ability_tank_insignia_draw": {
+		"owner": "Tank Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_TANK",
+		"effect": "Grant +1 HP and +1 PWR to Tank units when they enter the board",
+	},
+
+	"ability_tank_insignia_summon": {
+		"owner": "Tank Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_TANK",
+		"effect": "Grant +1 HP and +1 PWR to Tank units when they enter the board",
+	},
+
+	"ability_tank_insignia_merge": {
+		"owner": "Tank Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_TANK",
+		"effect": "Grant +1 HP and +1 PWR to Tank units when they enter the board",
+	},
+
+	"ability_tank_insignia_battle_start": {
+		"owner": "Tank Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_TANK",
+		"effect": "Grant +1 HP and +1 PWR to Tank units when they enter the board",
+	},
+
+	"ability_fighter_insignia_draw": {
+		"owner": "Fighter Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_FIGHTER",
+		"effect": "Grant +1 HP and +1 PWR to Fighter units when they enter the board",
+	},
+
+	"ability_fighter_insignia_summon": {
+		"owner": "Fighter Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_FIGHTER",
+		"effect": "Grant +1 HP and +1 PWR to Fighter units when they enter the board",
+	},
+
+	"ability_fighter_insignia_merge": {
+		"owner": "Fighter Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_FIGHTER",
+		"effect": "Grant +1 HP and +1 PWR to Fighter units when they enter the board",
+	},
+
+	"ability_fighter_insignia_battle_start": {
+		"owner": "Fighter Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_FIGHTER",
+		"effect": "Grant +1 HP and +1 PWR to Fighter units when they enter the board",
+	},
+
+	"ability_support_insignia_draw": {
+		"owner": "Support Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_SUPPORT",
+		"effect": "Grant +1 HP and +1 PWR to Support units when they enter the board",
+	},
+
+	"ability_support_insignia_summon": {
+		"owner": "Support Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_SUPPORT",
+		"effect": "Grant +1 HP and +1 PWR to Support units when they enter the board",
+	},
+
+	"ability_support_insignia_merge": {
+		"owner": "Support Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_SUPPORT",
+		"effect": "Grant +1 HP and +1 PWR to Support units when they enter the board",
+	},
+
+	"ability_support_insignia_battle_start": {
+		"owner": "Support Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_SUPPORT",
+		"effect": "Grant +1 HP and +1 PWR to Support units when they enter the board",
+	},
+
+	"ability_specialist_insignia_draw": {
+		"owner": "Specialist Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_SPECIALIST",
+		"effect": "Grant +1 HP and +1 PWR to Specialist units when they enter the board",
+	},
+
+	"ability_specialist_insignia_summon": {
+		"owner": "Specialist Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_SPECIALIST",
+		"effect": "Grant +1 HP and +1 PWR to Specialist units when they enter the board",
+	},
+
+	"ability_specialist_insignia_merge": {
+		"owner": "Specialist Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_SPECIALIST",
+		"effect": "Grant +1 HP and +1 PWR to Specialist units when they enter the board",
+	},
+
+	"ability_specialist_insignia_battle_start": {
+		"owner": "Specialist Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_SPECIALIST",
+		"effect": "Grant +1 HP and +1 PWR to Specialist units when they enter the board",
+	},
+
+	"ability_food_insignia_draw": {
+		"owner": "Food Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_FOOD",
+		"effect": "Grant +1 HP and +1 PWR to Food units when they enter the board",
+	},
+
+	"ability_food_insignia_summon": {
+		"owner": "Food Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_FOOD",
+		"effect": "Grant +1 HP and +1 PWR to Food units when they enter the board",
+	},
+
+	"ability_food_insignia_merge": {
+		"owner": "Food Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_FOOD",
+		"effect": "Grant +1 HP and +1 PWR to Food units when they enter the board",
+	},
+
+	"ability_food_insignia_battle_start": {
+		"owner": "Food Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_FOOD",
+		"effect": "Grant +1 HP and +1 PWR to Food units when they enter the board",
+	},
+
+	"ability_mecha_insignia_draw": {
+		"owner": "Mecha Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_MECHA",
+		"effect": "Grant +1 HP and +1 PWR to Mecha units when they enter the board",
+	},
+
+	"ability_mecha_insignia_summon": {
+		"owner": "Mecha Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_MECHA",
+		"effect": "Grant +1 HP and +1 PWR to Mecha units when they enter the board",
+	},
+
+	"ability_mecha_insignia_merge": {
+		"owner": "Mecha Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_MECHA",
+		"effect": "Grant +1 HP and +1 PWR to Mecha units when they enter the board",
+	},
+
+	"ability_mecha_insignia_battle_start": {
+		"owner": "Mecha Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_MECHA",
+		"effect": "Grant +1 HP and +1 PWR to Mecha units when they enter the board",
+	},
+
+	"ability_animal_insignia_draw": {
+		"owner": "Animal Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_ANIMAL",
+		"effect": "Grant +1 HP and +1 PWR to Animal units when they enter the board",
+	},
+
+	"ability_animal_insignia_summon": {
+		"owner": "Animal Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_ANIMAL",
+		"effect": "Grant +1 HP and +1 PWR to Animal units when they enter the board",
+	},
+
+	"ability_animal_insignia_merge": {
+		"owner": "Animal Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_ANIMAL",
+		"effect": "Grant +1 HP and +1 PWR to Animal units when they enter the board",
+	},
+
+	"ability_animal_insignia_battle_start": {
+		"owner": "Animal Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_ANIMAL",
+		"effect": "Grant +1 HP and +1 PWR to Animal units when they enter the board",
+	},
+
+	"ability_plant_insignia_draw": {
+		"owner": "Plant Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_PLANT",
+		"effect": "Grant +1 HP and +1 PWR to Plant units when they enter the board",
+	},
+
+	"ability_plant_insignia_summon": {
+		"owner": "Plant Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_PLANT",
+		"effect": "Grant +1 HP and +1 PWR to Plant units when they enter the board",
+	},
+
+	"ability_plant_insignia_merge": {
+		"owner": "Plant Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_PLANT",
+		"effect": "Grant +1 HP and +1 PWR to Plant units when they enter the board",
+	},
+
+	"ability_plant_insignia_battle_start": {
+		"owner": "Plant Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_PLANT",
+		"effect": "Grant +1 HP and +1 PWR to Plant units when they enter the board",
+	},
+
+	"ability_toy_insignia_draw": {
+		"owner": "Toy Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_TOY",
+		"effect": "Grant +1 HP and +1 PWR to Toy units when they enter the board",
+	},
+
+	"ability_toy_insignia_summon": {
+		"owner": "Toy Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_TOY",
+		"effect": "Grant +1 HP and +1 PWR to Toy units when they enter the board",
+	},
+
+	"ability_toy_insignia_merge": {
+		"owner": "Toy Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_TOY",
+		"effect": "Grant +1 HP and +1 PWR to Toy units when they enter the board",
+	},
+
+	"ability_toy_insignia_battle_start": {
+		"owner": "Toy Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_TOY",
+		"effect": "Grant +1 HP and +1 PWR to Toy units when they enter the board",
+	},
+
+	"ability_appliance_insignia_draw": {
+		"owner": "Appliance Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_APPLIANCE",
+		"effect": "Grant +1 HP and +1 PWR to Appliance units when they enter the board",
+	},
+
+	"ability_appliance_insignia_summon": {
+		"owner": "Appliance Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_APPLIANCE",
+		"effect": "Grant +1 HP and +1 PWR to Appliance units when they enter the board",
+	},
+
+	"ability_appliance_insignia_merge": {
+		"owner": "Appliance Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_APPLIANCE",
+		"effect": "Grant +1 HP and +1 PWR to Appliance units when they enter the board",
+	},
+
+	"ability_appliance_insignia_battle_start": {
+		"owner": "Appliance Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_APPLIANCE",
+		"effect": "Grant +1 HP and +1 PWR to Appliance units when they enter the board",
+	},
+
+	"ability_costume_insignia_draw": {
+		"owner": "Costume Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_COSTUME",
+		"effect": "Grant +1 HP and +1 PWR to Costume units when they enter the board",
+	},
+
+	"ability_costume_insignia_summon": {
+		"owner": "Costume Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_COSTUME",
+		"effect": "Grant +1 HP and +1 PWR to Costume units when they enter the board",
+	},
+
+	"ability_costume_insignia_merge": {
+		"owner": "Costume Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_COSTUME",
+		"effect": "Grant +1 HP and +1 PWR to Costume units when they enter the board",
+	},
+
+	"ability_costume_insignia_battle_start": {
+		"owner": "Costume Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_COSTUME",
+		"effect": "Grant +1 HP and +1 PWR to Costume units when they enter the board",
+	},

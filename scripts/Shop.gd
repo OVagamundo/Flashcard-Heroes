@@ -87,10 +87,10 @@ func populate(context: Dictionary) -> void:
 			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
 			var ball_view = slot_view.set_content(visual_data, true)
 			
-			# HIDE IMMEDIATELY (both visibility and scale)
+			# Hide immediately for staggered entry; preserve scale
 			if is_instance_valid(ball_view):
 				ball_view.visible = false
-				ball_view.scale = Vector2.ZERO
+				ball_view.scale = Vector2.ONE
 	
 	_update_fixed_price_tags()
 	_animate_staggered_entry()
@@ -132,7 +132,7 @@ func _animate_staggered_entry() -> void:
 			wait_tween.tween_callback(func():
 				if is_instance_valid(ball_view):
 					ball_view.visible = true
-					ball_view.scale = Vector2.ZERO
+					ball_view.scale = Vector2.ONE
 					ball_view.play_landing_bounce()
 			)
 			ball_index += 1
@@ -356,11 +356,6 @@ func _on_reroll_pressed() -> void:
 func execute_reroll_visuals(cost: int = -1) -> void:
 	reroll_button.disabled = true
 	var target_pos = reroll_button.get_global_rect().get_center()
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node):
-		var content_area = main_node.get_node_or_null("%ContentArea")
-		if is_instance_valid(content_area):
-			target_pos += content_area.global_position
 			
 	var spend_cost = cost if cost >= 0 else _current_reroll_cost
 	_animate_gold_spend(spend_cost, target_pos, func():

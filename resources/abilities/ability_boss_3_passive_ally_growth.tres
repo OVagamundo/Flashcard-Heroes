@@ -28,7 +28,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_boss_3_ally_growth"
-name_key = "ability.boss_3_ally_growth.name"
 description_key = "ability.boss_3_ally_growth.desc"
 trigger = &"on_ally_death"
 priority = 0
