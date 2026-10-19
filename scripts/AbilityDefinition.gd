@@ -8,7 +8,7 @@ extends Resource
 
 ## Unique identifier for the ability (e.g., "last_wish_cricket").
 @export var id: StringName
-## The localization key for the ability's name text.
+## Retained for resource compatibility; ability titles are not displayed.
 @export var name_key: String
 ## The specific gameplay event that can activate this ability (e.g., "on_death"). See TDD for canonical list.
 @export var trigger: StringName

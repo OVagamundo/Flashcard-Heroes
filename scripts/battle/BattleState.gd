@@ -72,7 +72,7 @@ func get_container(container_name: StringName) -> DataContainer:
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(5)
-		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		BATTLE_CONTAINER_TAGS.PLAYER_BENCH, BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
 			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(24)

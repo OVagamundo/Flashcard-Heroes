@@ -100,9 +100,9 @@ func log_buff(source_name: String, target_name: String, stat: String, amount: in
 	var message = "[b]%s[/b] grants [b]%s[/b] [color=%s]%s%d %s[/color]%s" % [source_name, target_name, color, sign_str, abs(amount), stat.to_upper(), context_str]
 	_add_entry("buff", message, "", 0, "buff")
 
-func log_ability_trigger(source_name: String, ability_name: String, trigger_reason: String = "") -> void:
+func log_ability_trigger(source_name: String, trigger_reason: String = "") -> void:
 	var reason_str = " (%s)" % trigger_reason if trigger_reason != "" else ""
-	var message = "[b]%s[/b] triggers [color=purple]\"%s\"[/color]%s" % [source_name, ability_name, reason_str]
+	var message = "[b]%s[/b] activates an ability%s" % [source_name, reason_str]
 	_add_entry("ability", message, "", 1, "ability")
 
 func log_death(unit_name: String, killer_name: String = "") -> void:
@@ -117,8 +117,8 @@ func log_summon(summoned_name: String, source_name: String) -> void:
 	var message = "[b]%s[/b] summons [color=yellow][b]%s[/b][/color]!" % [source_name, summoned_name]
 	_add_entry("summon", message, "", 1, "summon")
 
-func log_extra_action(unit_name: String, ability_name: String) -> void:
-	var message = "[color=gold]\"%s\"[/color] grants [b]%s[/b] an extra action!" % [ability_name, unit_name]
+func log_extra_action(unit_name: String) -> void:
+	var message = "[b]%s[/b] gains an extra action!" % unit_name
 	_add_entry("extra_action", message, "", 1, "extra_action")
 
 func log_burn_damage(target_name: String, damage: int, old_hp: int, new_hp: int, stacks: int) -> void:

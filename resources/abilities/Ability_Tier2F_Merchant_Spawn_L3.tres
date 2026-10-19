@@ -13,7 +13,6 @@ target_type = "SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_unit_t2_f_spawn_pwr_l3"
-name_key = "ability.unit_t2_f_gold_pwr.name"
 description_key = "ability.unit_t2_f_gold_pwr_l3.desc"
 trigger = &"on_board_changed"
 effects = Array[Resource]([SubResource("Resource_effect")])

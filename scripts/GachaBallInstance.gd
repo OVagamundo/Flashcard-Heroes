@@ -23,6 +23,7 @@ var _pwr_debt: int = 0
 # --- Location Properties (for temporary battle state) ---
 var location_container_tag: StringName = &""
 var location_slot_index: int = -1
+var is_temporary: bool = false
 
 # --- Relationship Properties ---
 var equipped_on_uuid: String = ""
@@ -77,6 +78,7 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	copy.origin_uuid = self.ball_uuid # Link back to the original
 	copy.definition_id = self.definition_id
 	copy.level = self.level
+	copy.is_temporary = self.is_temporary
 
 	# Copy equipment state (needed for effective stat calculation)
 	copy.equipped_on_uuid = self.equipped_on_uuid

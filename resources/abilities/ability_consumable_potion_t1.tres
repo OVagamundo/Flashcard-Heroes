@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_consumable_potion_t1"
-name_key = "ability.potion_t1.name"
 description_key = "ability.potion_t1.desc"
 trigger = &"manual_activation"
 condition = null

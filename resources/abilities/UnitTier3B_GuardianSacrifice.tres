@@ -11,7 +11,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier3b_guardian_sacrifice"
-name_key = "ability.unit_tier3b_guardian_sacrifice.name"
 trigger = &"passive_intercept"
 description_key = "ability.unit_tier3b_guardian_sacrifice_l1.desc"
 priority = 300

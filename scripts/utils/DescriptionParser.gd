@@ -77,3 +77,58 @@ static func _replace_keyword(text: String, word: String, color: String, meta: St
 		text = text.left(start) + replacement + text.right(-end)
 	
 	return text
+
+static func strip_bbcode(text: String) -> String:
+	var regex = RegEx.new()
+	regex.compile("\\[[^\\]]*\\]")
+	return regex.sub(text, "", true)
+
+static func split_bbcode(bbcode: String, split_char_idx: int) -> Array[String]:
+	if bbcode.is_empty() or split_char_idx <= 0:
+		return ["", bbcode]
+	
+	var parsed_idx := 0
+	var i := 0
+	var n := bbcode.length()
+	
+	var tag_stack: Array[String] = []
+	var upper_end := 0
+	var lower_start := 0
+	
+	while i < n and parsed_idx < split_char_idx:
+		if bbcode[i] == '[':
+			var tag_close = bbcode.find("]", i)
+			if tag_close != -1:
+				var tag_content = bbcode.substr(i + 1, tag_close - i - 1).strip_edges()
+				if tag_content.begins_with("/"):
+					if not tag_stack.is_empty():
+						tag_stack.pop_back()
+				else:
+					tag_stack.append(tag_content)
+				i = tag_close + 1
+				continue
+		parsed_idx += 1
+		i += 1
+	
+	if parsed_idx < split_char_idx:
+		return [bbcode, ""]
+	
+	upper_end = i
+	lower_start = i
+	
+	while lower_start < n and bbcode[lower_start] in [" ", "\n", "\t"]:
+		lower_start += 1
+	
+	var upper_str = bbcode.substr(0, upper_end).strip_edges()
+	var lower_str = bbcode.substr(lower_start).strip_edges()
+	
+	for idx in range(tag_stack.size() - 1, -1, -1):
+		var tag = tag_stack[idx].split("=")[0]
+		upper_str += "[/%s]" % tag
+	
+	var prefix = ""
+	for tag in tag_stack:
+		prefix += "[%s]" % tag
+	lower_str = prefix + lower_str
+	
+	return [upper_str, lower_str]

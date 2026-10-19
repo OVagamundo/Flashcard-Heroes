@@ -1,176 +1,198 @@
-# Flashcard Heroes - Technical Design Document
+# Flashcard Heroes - Technical Design Document (TDD V10.0)
+
 ## Part 1: Core Architecture & Principles
 
 ### 1.1 The Definitive Hybrid Architecture
-The game follows a mandatory hybrid architecture that separates data truth from positional indexing. All systems must adhere to these three rules:
+The game follows a mandatory hybrid architecture that separates data truth from positional indexing. All systems must adhere to these four core rules:
 
-1.  **The Instance is the Source of Truth:** `GachaBallInstance` is a stateful composition container and the single source of truth for an individual gachaball's state (stats, components, location).
-2.  **Component-Based Composition:** All modifications to a gachaball (equipment, buffs, levels, rarity) are represented as source-aware components, allowing for deterministic resolution and inspection.
-3.  **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
-4.  **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
+1. **The Instance is the Source of Truth:** `GachaBallInstance` is a stateful composition container and the single source of truth for an individual gachaball's state (stats, components, location).
+2. **Component-Based Composition:** All modifications to a gachaball (equipment, buffs, levels, rarity, permanent upgrades) are represented as source-aware components, allowing for deterministic resolution, inspection, and serialization.
+3. **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
+4. **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip, discard) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
 
 ### 1.2 The Command Pipeline (Slay the Spire 2 Architecture)
-The game uses a strict Command Pattern to isolate user intent from state mutation.
+The game uses a strict Command Pattern to isolate user intent from state mutation:
 
-**What it is:**
-Every state-altering player interaction (buying an item, dragging a card, choosing a path, or closing a tutorial) is encapsulated into an immutable object called a `GameAction`. The UI is completely forbidden from directly mutating the `RunState`.
-
-**How it works:**
-1. **Generation**: A UI script (like `GlobalInteractionRouter` or a button click) instantiates a `GameAction` (e.g., `BuyShopAction(item_uuid)`).
-2. **Execution**: It passes the action to the `ActionQueue`. The queue checks `action.is_valid()`. If valid, it invokes `action.execute()`, which delegates to pure backend logic (`InventoryOperations`, `CombatSimulator`).
-3. **Lockdown**: While an action is processing, the `ActionQueue` physically blocks all global player input until the mutation and ALL of its resulting visual animations have completed.
-4. **Recording**: As the action completes, the `SessionRecorder` intercepts it, calls `action.serialize()`, and writes it as a JSON line to the active `.mcr` replay file, alongside a timestamp `time_delta`.
-5. **Replays**: During a replay, the game is completely blind. The `ReplayEngine` loads the initial RNG seed, blocks the player's mouse, and simply deserializes the JSON lines back into `GameAction`s. It pushes them into the `ActionQueue` at the exact recorded `time_delta` intervals. Because the engine is perfectly deterministic, the exact same run visually plays out with 100% fidelity.
-
-**Why we do it this way:**
-1. **Deterministic Replays:** It enables perfect VCR-like replays. We only need to record the initial seed and the sequence of actions to reproduce an entire 40-minute run flawlessly.
-2. **Headless Bot Testing:** It allows QA bots to instantly test game balance and discover soft-locks by feeding actions directly into the simulation layer, completely bypassing the UI and its animations.
-3. **Decoupling Presentation:** The UI becomes a pure "puppet" that only reacts to state changes. This eliminates animation race conditions, desyncs, and "ghost items" that occur when UI graphics mistakenly mutate underlying game logic.
+- **Encapsulation**: Every state-altering player interaction (buying an item, dragging a card, choosing a path, or dismissing a tutorial) is encapsulated into an immutable object subclassed from `GameAction`. The UI is completely forbidden from directly mutating `RunState`.
+- **Validation & Execution**:
+  1. A UI script (e.g., `GlobalInteractionRouter` or a button click) instantiates a validated `GameAction` (e.g., `BuyShopAction(item_uuid)`).
+  2. The action is passed to `ActionQueue.request()`. The queue checks `action.is_valid()`.
+  3. If valid, the queue invokes `action.execute()`, delegating to backend logic (`InventoryOperations`, `CombatSimulator`).
+- **Input Gating**: While an action is processing, `ActionQueue` blocks all global player input until the mutation and all resulting visual choreography have completed.
+- **Serialization & Recording**: As the action completes, `SessionRecorder` serializes it as a JSON line to the active `.mcr` replay file alongside a `time_delta`.
+- **Deterministic Replay Engine**: During playback, the replay engine is completely blind to UI state. It loads the initial RNG seed, blocks player input, deserializes the JSON lines back into `GameAction`s, and pushes them into `ActionQueue` at recorded intervals.
 
 ---
 
 > [!IMPORTANT]
 > **MANDATORY CODING STANDARDS:**
 > Before writing any code, you **MUST** read [CODE_GUIDELINES.md](CODE_GUIDELINES.md).
-> It defines the strict laws of the Hybrid Architecture, the VCR Pattern, and the prohibited anti-patterns.
+> It defines the strict laws of the Hybrid Architecture, the VCR Pattern, and prohibited anti-patterns.
 
 ---
 
 ## Part 2: Data Domain
 
-### 2.1 Core Resources
--   **`RunState.gd`**: Persistent state for the entire run (gold, day, unlocked recipes, global instance dictionary).
--   **`GachaBallDefinition.gd`**: Immutable template for units/items. Contains stats, abilities, cost, and temporal prerequisites (`min_day`, `max_day`). Inherits from `WeightableEntity`.
-    -   **Unified Slot Constraint**: `item_slot_count` is strictly **1** for all units (`category == &"UNIT"`), enforcing that every unit holds at most one item, and 0 for non-units.
--   **`TrinketDefinition.gd`**: Immutable template for trinkets. Now inherits from `WeightableEntity` to support Director-based reward generation.
--   **`GachaBallInstance.gd`**: Stateful composition container representing an individual gachaball. Manages its own components and live stats.
--   **`GachaBallComponent.gd`**: Base class for all instance modifications (Stat, Ability, Tag, Visual).
--   **`VisualDataAdapter.gd`**: Logic-to-View bridge that converts instance component stacks into rendered visual layers.
--   **`LocationIdentifier`**: Universal key `{container, index, unit_uuid}` used to bridge Managers and Views.
+### 2.1 Core Resources & Data Models
+- **`RunState.gd`**: Persistent state for the entire run (gold, day, unlocked recipes, global instance dictionary, deck progress, RNG states).
+- **`GachaBallDefinition.gd`**: Immutable template for units and items. Contains base stats, abilities, token/gold costs, tags, and temporal prerequisites (`min_day`, `max_day`). Inherits from `WeightableEntity`.
+  - **Unified Slot Constraint**: `item_slot_count` is strictly **1** for all units (`category == &"UNIT"`), enforcing that every unit holds at most one item, and 0 for non-units.
+- **`TrinketDefinition.gd`**: Immutable template for trinkets, providing run-wide passive bonuses. Inherits from `WeightableEntity` for director-based generation.
+- **`GachaBallInstance.gd`**: Stateful composition container representing an individual gachaball. Manages its own components, live combat stats (`current_hp`, `current_pwr`), and equipment references.
+- **`GachaBallComponent.gd`**: Base class for all instance modifications (`StatComponent`, `TagComponent`, `AbilityComponent`, `VisualComponent`).
+- **`VisualDataAdapter.gd`**: Logic-to-View bridge that converts instance component stacks into rendered visual layers.
+- **`LocationIdentifier`**: Universal key `{container, index, unit_uuid}` used to bridge Managers and Views.
 
 ### 2.2 Location Registry
 Logical locations are categorized by their lifecycle:
--   **Run State:** `RunInventoryT*`, `PlayerLineup`, `PlayerBench`.
--   **Battle State:** `BattleInventoryT*`, `EnemyLineup`, `DiscardPile`, `EnemyTrinkets`.
--   **Equipped:** `equipped_item` (conceptual slot on a unit).
+- **Run State**: `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`.
+- **Battle State**: `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `EnemyLineup`, `EnemyBench`, `DiscardPile`, `EnemyTrinkets`.
+- **Equipped**: `equipped_item` (conceptual slot attached directly to a unit).
 
 ---
 
 ## Part 3: System Architecture & Responsibilities
 
 ### 3.1 Gameplay & Simulation
-Core logic is partitioned to ensure Single Responsibility:
-
--   **Battle System:** Orchestrates combat via a **"Simulate First, Present Later"** model.
-    -   (See `docs/CombatSystem.md` for phase logic)
-    -   **SRP Delegation:** `BattleManager` delegates to specialized helpers:
-        - `CombatSimulator`: Logic loop and reaction processing.
-        - `EffectHandlers`: Conversion of simulation results into `CombatEvent` payloads.
-        - `BattleState`: Atomic mutations and container persistence.
-    -   **Snapshotting:** Before playback, a value-based snapshot is captured. Views query this snapshot to ensure visual consistency regardless of underlying state mutations.
--   **Ability System:** A source-aware broadcast system. `AbilityResolver` queries `get_active_ability_entries()` to process abilities from units, items, and temporary effects in a unified priority pass.
-    -   (See `docs/AbilityExecutionPipeline.md`)
--   **Encounter System:** A budget-based generator (`3 + (Day-1)`) that guarantees 100% budget spend using a greedy fill algorithm.
-    -   (See `docs/EncounterSystem.md`)
+- **Battle System (`BattleManager.gd`)**: Orchestrates combat via a strict **"Simulate First, Present Later"** model. (See [CombatSystem.md](CombatSystem.md) for full phase and event logic).
+  - Delegates to specialized helpers:
+    - `CombatSimulator`: Combat loop, actor turn queue, reaction processing, and command pipeline execution.
+    - `EffectHandlers`: Processing of raw stat/summon mutations into `CombatEvent` streams.
+    - `BattleState`: Instance storage and container indexing during battle.
+    - `InventoryOperations`: Exclusive handler for in-combat inventory mutations (draws, equips, merges, discards).
+  - **Snapshotting**: Captures value-based snapshots of board states before turn execution to ensure views render consistent visual baselines.
+- **Ability System (`AbilityResolver.gd`)**: A source-aware broadcast system that queries active ability entries from units, items, and traits in a unified priority pass (**Unit -> Item -> Trinket**).
+- **Encounter System (`EncounterGenerator.gd`)**: Budget-based procedural enemy generator (`3 + (Day-1)`) utilizing a greedy fill algorithm to guarantee 100% budget spend. (See [EncounterSystem.md](EncounterSystem.md)).
+- **Flashcard System (`FlashcardManager.gd`)**: Persistent autoload managing SRS minigame sessions, weighted distractor generation, and mid-minigame streak unlocks. (See [FlashcardSystem.md](FlashcardSystem.md)).
+- **Inventory System (`InventoryManager.gd`)**: Stateless logic controller executing validated moves, equips, merges, and item replacements. (See [InventoryManager.md](InventoryManager.md)).
 
 ### 3.2 Interactions & UI Flow
-Centralized interpretation of user intent to decouple Views from Logic:
--   **Command Pipeline (`ActionQueue` & `GameAction`):** EVERY state-altering interaction across the game (purchases, path choices, drags, and even dismissing UI tutorials) must construct a validated `GameAction` command. `ActionQueue` executes them sequentially (`is_valid() -> execute()`) and handles input blocking until all visuals resolve. The engine serializes this queue for flawless deterministic session replayability.
--   **Strict Deterministic Replay Engine:** Replays in Flashcard Heroes are strictly "dumb and blind" pipelines (inspired by Slay the Spire 2). They operate purely by re-injecting serialized `GameAction`s into the deterministic engine. They never serialize UI telemetry or mouse movements, and during playback, all user input is aggressively blocked (except spectator controls like playback speed and exiting).
--   **Global Interaction Router (Command Factory):** Validates UI context, constructs `InventoryDragAction` or `ChoiceAction`, and pushes them to `ActionQueue`.
--   **Seeded PRNG Streams (`RNGManager` & `SeededRNG`):** Stream isolation across game systems (`map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`) seeded from `RunState.run_seed`.
--   **Global Engine Time Scale:** Engine-level playback acceleration (`Engine.time_scale`) via `AnimationConstants.speed_factor` scales all tweens, timers, particle systems, and token animations uniformly.
-
--   **Global Interaction Router (GIR):** The entry point for all UI input. It translates raw `InteractionContext` into a `CommandQueue`.
-    -   (See `docs/UIInteraction.md` for selection/interaction rules)
-    -   **O(1) Domain Mapping:** Maps containers to functional groups (`BattleBoard`, `InventoryGrid`, etc.) to determine valid interactions.
--   **Window Manager**: Manages the hierarchical lifecycle of modals and inspection windows. Implements **"Show-before-Measure"** layout synchronization and enforces a strict five-tier layering system:
-    - **BackgroundUILayer (40)**: Inventory and Trays.
-    - **HUDLayer (60)**: Persistent HUD and Gacha Machines.
-    - **ModalLayer (120)**: Pop-ups and Inspections.
-    - **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions.
-    - **CursorLayer (1024)**: Software Cursor (Sprite2D).
--   **Interactive Overlays**: Programmatic service zones (Shop, Black Market, Rewards) that use the `DropZone.gd` component to provide native Godot drag-and-drop stability. They feature a **VFX Proxy** system to eliminate visual gaps during animated transactions.
--   **Inventory Manager**: Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
--   **Audio System**: Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
-    -   (See `docs/AudioSystem.md`)
+- **Global Interaction Router (GIR)**: The central command factory that translates raw user input (`InteractionContext`) into validated `GameAction` commands. (See [UIInteraction.md](UIInteraction.md)).
+- **Window Manager (`WindowManager.gd`)**: Manages the hierarchical lifecycle of modals and inspection peek windows using "Show-before-Measure" layout synchronization and a strict five-tier CanvasLayer system:
+  - `BackgroundUILayer` (Layer 40): Inventory drawers and discard trays.
+  - `HUDLayer` (Layer 60): Persistent HUD and Gacha Machines.
+  - `EffectsLayer` (Layer 90): Standard visual effects.
+  - `ModalLayer` (Layer 120): Modals, popups, and locked inspection windows.
+  - `GlobalVFXLayer` (Layer 150): High-priority currency animations (Gold/Token Gain/Spend) and screen transitions.
+  - `CursorLayer` (Layer 1024): 1000Hz raw software cursor overlay (`CursorManager.gd`).
+- **Interactive Overlays**: Dedicated service zones (Shop, Black Market, Rewards) using `DropZone.gd` and visual proxies for stable drag-and-drop transactions.
+- **Audio System (`AudioManager.gd` & `Audio.gd`)**: Global SFX pooling (16 pre-instantiated players), dynamic BGM pitch tweens, and semantic sound registry mapping. (See [AudioSystem.md](AudioSystem.md)).
 
 ---
 
-## Part 4: System Inter-Actions (Flows)
+## Part 4: System Interactions & Pipelines
 
 ### 4.1 Input-to-Action Pipeline
-1.  **View** emits `InteractionContext` to GIR.
-2.  **GIR** maps source/target to functional groups and validates the transition.
-3.  **GIR** generates a `REQUEST_ACTION` command.
-4.  **InventoryManager** receives the command and requests a `MergeRecipe` from `MergeManager`.
-5.  **MergeManager** calculates the result using the "Evolutionary Merge" model.
-6.  **Merge Inheritance:** The new instance inherits a "stat surplus" from parents via a persistent `StatComponent` with the `MERGE_INHERITANCE` source.
-    - **Tier Evolution**: Additive (Parent A + Parent B).
-    - **Leveling**: Evolutionary (Base + Sum of Extra Stats + 1).
-7.  **InventoryManager** executes the atomic mutation on the `DataOwner` (RunState or BattleManager).
+1. **View** emits `InteractionContext` to GIR upon player gesture (click, drag, drop).
+2. **GIR** maps source and target locations to functional context groups and validates intent.
+3. **GIR** instantiates a validated `GameAction` subclass and requests execution via `ActionQueue.request(action)`.
+4. `ActionQueue` blocks player input, invokes `action.execute()`, and yields until state mutations and visual animations complete.
+5. If ambiguous (e.g. valid merge recipe exists on drag-drop), `WindowManager.open_choice_window()` prompts the player, which dispatches a subsequent `ChoiceAction`.
 
-### 4.2 Combat Broadcast Pattern
-1.  `BattleManager` detects a trigger event (e.g., `TRIGGER_ON_ATTACK`).
-2.  `AbilityResolver` buckets all active instances (Units, Items, Trinkets) in O(N).
-3.  Abilities are resolved in priority order: **Unit -> Item -> Trinket**.
-4.  `CombatSimulator` executes the resulting effects and generates the `TurnLog`.
-
-### 4.3 Progression & Unlocks
--   **Stat Resolution:** `GachaBallInstance` resolves effective stats by aggregating base definition values with active `StatComponents`. 
--   **Attribute Resolution:** Attributes like `tier`, `level`, and `rarity` are queried through `get_attribute()`, ensuring that dynamic changes (e.g., a "Level Up" buff) are correctly reflected.
+### 4.2 Combat Broadcast & Execution Pipeline
+1. `BattleManager` detects an execution trigger (e.g., `TRIGGER_ON_ATTACK`, `TRIGGER_ON_DEATH`).
+2. `AbilityResolver` evaluates active instances in O(N) priority order: **Unit -> Item -> Trinket**.
+3. `CombatSimulator` delegates effect calculations to `EffectHandlers`, generating an ordered queue of `CombatEvent`s (the `TurnLog`).
+4. `BattleAnimator` consumes the `TurnLog` sequentially during the presentation phase to animate attacks, damage numbers, and death/summon transitions.
 
 ---
 
-## Part 5: Infrastructure
+## Part 5: Infrastructure & Platform Architecture
 
--   **Database:** Singleton that loads all `.tres` and `.json` resources on startup, providing a central registry for definitions.
--   **Localization:** Key-based translation via Godot `Translation` resources. Exported/mobile builds must load `.translation` assets instead of relying on raw CSV reads at runtime.
--   **Exported Resource Loading:** Runtime directory scans must support exported `.remap` files (`.tres.remap`, `.res.remap`) because Android/exported builds do not expose loose desktop resources the same way.
--   **Inventory Visualization**: Count labels on gacha machines/discard pile are driven by signals from `DataContainers`, ensuring real-time UI magnitude feedback.
--   **Android/Mobile Reference:** See [AndroidPorting.md](AndroidPorting.md) for export setup, touch model, and mobile input adaptations.
-## Part 6: Run Lifecycle & Persistence
+### 5.1 Database Registry
+- Central autoload (`Database.gd`) that loads all `.tres` definitions and `.json` tables at boot, exposing cached registries for units, items, trinkets, flashcards, and merge recipes.
 
-### 6.1 Save & Checkpoints
-- **Checkpointing**: The run state is automatically serialized and saved to disk at the start of each "Day" (Path Selection scene).
-- **Session Management**: Players can resume from the title screen. The save file is **permanently deleted** upon reaching a terminal state (Victory or Defeat) to enforce roguelike stakes.
+### 5.2 Localization & Exported Resource Loading
+- Key-based translation via Godot `Translation` resources. Exported/mobile builds load compiled `.translation` binaries rather than reading loose CSV files at runtime.
+- Runtime directory scans support `.remap` file references (`.tres.remap`, `.res.remap`) to ensure compatibility with packed PCK archives on mobile and console exports.
 
-### 6.2 Scene & State Transitions
-- **Persistence**: Core resources (Hero HP, Gold, Run Inventory, Trinkets, Mastery) are persisted in `RunState` and carried across all scenes.
-- **Temporary State**: Battle-specific data (Gacha Tokens, Battle Inventory, Discard Pile, Board State) is initialized upon entering a battle node and discarded upon exit.
-- **Transition Safety**: Managers must ensure atomic state transfers during transitions to prevent data loss or duplication between the persistent `RunState` and transient battle managers.
+### 5.3 Mobile & Android Platform Architecture
+To guarantee visual stability, input parity, and power efficiency on mobile devices:
+- **SubViewport UI Rendering Isolation**:
+  To resolve mobile rendering glitches (dithered lines, non-square pixels, and shader scaling artifacts across non-standard mobile aspect ratios), the main game hierarchy is isolated within a `SubViewportContainer`:
+  ```
+  Main.tscn
+  └── ContentArea (SubViewportContainer)
+      └── SubViewport (Fixed 1920x1080 canvas)
+          ├── SceneBackground (FullScreen)
+          └── VBoxContainer (Centering Layout)
+  ```
+  This ensures opaque backgrounds span screen notches without grey bars, keeps custom shaders at native aspect ratio, and maps touch coordinates directly without manual offsets.
+- **Platform Detection (`OS.has_feature("mobile")`)**:
+  - **Cursor Management**: Software cursors are disabled on mobile by default (`CursorManager.gd`), restoring the native OS touch indicator.
+  - **Touch-to-Hover**: Hover peeks are adapted to mobile touch using long-press detection (`0.5s` hold) via `InputUtils.gd`. Touch drag greater than 24 pixels cleanly cancels inspection.
+- **Mobile Performance & Power Optimization**:
+  - The deterministic Command Pipeline and discrete turn architecture completely eliminate per-frame state polling in `_process()`, significantly reducing mobile battery drain and thermal throttling.
+  - Global playback acceleration (`Engine.time_scale`) smoothly accelerates tweens and particle timers across mobile threads without extra script iterations.
+
+---
+
+## Part 6: Run Lifecycle, Persistence & Serialization
+
+### 6.1 Checkpoint Architecture
+The run state is serialized and saved to disk automatically **immediately upon entering the Path Choice scene** (at the start of each Day, after the day counter advances). This creates a safe, deterministic checkpoint at the start of every day.
+
+### 6.2 Save File Schema & SaveManager
+The `SaveManager` autoload singleton (`res://scripts/SaveManager.gd`) manages file I/O:
+- **Storage Location**: `user://run_save.dat`.
+- **Format**: Native Godot variant dictionary serialization via `FileAccess.store_var()` and `get_var()`.
+- **Serialized Dictionary Schema (`RunState.to_save_dict()`)**:
+  - **Run Seed & Seeded PRNG**: Master seed `run_seed` (32-bit uint) and stream states (`rng_state` for `map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`), ensuring 100% deterministic run resumption.
+  - **Run Progress**: `day`, `gold`, `tokens`, `bosses_defeated`, `current_boss_level`.
+  - **Run Statistics**: `total_enemies_defeated`, `total_gold_earned`.
+  - **Deck State**: `deck_def_id`, `active_deck_ids`, `cards_presented_count`.
+  - **Flashcard Progress**: Full mastery history per card (`mastery_level`, `times_reviewed`, `last_review_day`).
+  - **Instance Registry**: All `GachaBallInstance` dictionaries (`ball_uuid`, `definition_id`, `origin_uuid`, stats, components, equipment UUIDs, tags, status effects).
+  - **Containers**: UUID layouts across all inventory containers (`PlayerLineup`, `PlayerBench`, `RunInventoryT1/T2/T3`).
+  - **Action Queue History**: Processed `GameAction` history for session audit and VCR playback.
+
+### 6.3 Loading & Scene Transitions
+- The Title Screen detects `user://run_save.dat` on startup and displays the "Continue" button.
+- Clicking "Continue" loads `RunState` into `GameManager.run_state` and transitions directly to the Path Choice scene.
+- **Double Increment Prevention**: `GameManager.loading_from_save` is flagged during load. `PathChoice.gd` checks this flag to suppress daily day increment logic, preserving exact checkpoint day numbers.
+- **Roguelike Save Clearing**: To enforce permadeath stakes, `SaveManager.delete_save()` deletes the save file immediately upon reaching a terminal state (Victory or Defeat).
+
+---
+
+## Part 7: Deterministic PRNG Stream Isolation
+
+To guarantee that gameplay decisions, combat outcomes, and replays remain 100% deterministic and immune to desynchronization:
+- **Stream Isolation (`RNGManager.gd`)**: Game systems are strictly prohibited from calling global unseeded random methods (`randi()`, `randf()`). All randomness routes through dedicated `SeededRNG` streams derived from `RunState.run_seed`:
+  - `map_rng`: Node generation and path randomization.
+  - `gacha_rng`: In-combat gacha machine draw order and distractor picks.
+  - `shop_rng`: Shop inventory generation and Black Market transformations.
+  - `combat_rng`: Combat targeting choices (`TARGET_RANDOM_ENEMY`, `TARGET_RANDOM_ALLY`) and effect rolls.
+  - `reward_rng`: Post-battle reward capsules and trinket offerings.
+- **State Capture**: When saving a checkpoint, the internal state of each RNG stream is serialized into `rng_state`, guaranteeing identical outcome sequences upon run continuation.
 
 ---
 
 ## Part 8: Physics-Based Gacha Visuals
 
-The battle inventory system uses a pure Godot 2D Physics simulation for the gachaball containers. To ensure stability and visual fidelity during high-speed movement, the following architectural choices are enforced:
+The battle inventory system uses a pure Godot 2D Physics simulation for the gachaball containers. The following architectural parameters are enforced for high-speed stability and visual fidelity:
 
 ### 8.1 Stability & Resting State
--   **Restitution (Base Bounce)**: **0.15** (Landing decay from 0.8 ensures stability while maintaining 'life').
--   **Gravity Scale**: Fixed at **4.0** (RigidBody2D property) to ensure heavy, satisfying impact and fast settling.
--   **Damping**: `linear_damp` is set to **0.05** and `angular_damp` is set to **0.5** on the gachaballs. This allows for fluid movement while preventing eternal rolling.
--   **Friction**: Set to **0.05** (from `GachaBallMaterial.tres`) to allow for slippery, high-density packing.
--   **Sleep Mode**: A global 6.0s countdown timer force-sleeps the entire pile after a container stops moving.
--   **CCD**: Continuous Collision Detection is enabled on all balls to prevent floor-tunneling during high-velocity drawer slams.
+- **Restitution (Base Bounce)**: Set to **0.15** to ensure stability while maintaining tactile 'life'.
+- **Gravity Scale**: Fixed at **4.0** (RigidBody2D property) for crisp, heavy impacts and rapid settling.
+- **Damping**: `linear_damp = 0.05` and `angular_damp = 0.5` on gachaballs to allow fluid movement while preventing eternal rolling.
+- **Friction**: Set to **0.05** (`GachaBallMaterial.tres`) for slippery, high-density packing.
+- **Sleep Mode**: A global 6.0s countdown force-sleeps the entire drawer pile after container motion stops.
+- **Continuous Collision Detection (CCD)**: Enabled on all balls to prevent floor-tunneling during high-velocity drawer animations.
+
+### 8.2 Boundary Buffering & Fast Movement
+- **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) use a thickness of **5000.0 pixels**, preventing physics escape during extreme single-frame positional deltas.
+- **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on Layers 12/13), allowing bounds of one container to overlap another without unintended collisions.
+- **Overflow Detection**: A 30px sensor at the top of the drawer detects overflow. Contact for 5 continuous seconds triggers discard penalty routing to the Battle Discard Pile.
+
+### 8.3 Rendering Fidelity & Interpolation
+- **Physics Interpolation**: Uses Godot 4 native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (120 Hz).
+- **Spawn Origin Handling**: To prevent a 1-frame visual flash at `(0,0)`, local positions are calculated and assigned before `add_child()`, followed immediately by `reset_physics_interpolation()`.
 
 ### 8.4 Soft Spawning (Collision Scaling)
--   **Initial State**: To prevent the "Popcorn Effect" (violent upward shooting) caused by simultaneous overlaps during high-volume spawning, gachaballs are initialized with a collision scale of `0.1`.
--   **Growth Transition**: A `Tween` is used to grow the collision shape to `1.0` scale over **0.5 seconds**. This translates potentially explosive restorative impulses into gentle "nudges," allowing the physics solver to resolve overlaps gracefully as the balls fall.
--   **Spawn Interval**: The `DropTimer` is set to **0.15s** to provide enough temporal breathing room for the physics engine between spawns.
+- **Overlap Prevention**: Gachaballs spawn with an initial collision scale of `0.1`.
+- **Gentle Impulse Expansion**: A `Tween` scales the collision shape to `1.0` over **0.5 seconds**, translating explosive overlap impulses into gentle nudges.
+- **Spawn Stagger**: Drops are spaced by a `0.15s` interval (`DropTimer`) to give the physics solver temporal breathing room.
 
-### 8.6 Dodecagon Shape Approximation
--   **Stable Facets**: Direct `CircleShape2D` contact is avoid due to numerical instability (single-point contact). Instead, gachaballs use a **12-sided CollisionPolygon2D (Dodecagon)**.
--   **Resting Stability**: The flat facets of the dodecagon allow balls to "lock" together in a stable pile, creating "stable bridges" that Godot's physics solver can resolve to a zero-velocity state much faster.
--   **Visual Fidelity**: 12 sides provide a visual approximation that is indistinguishable from a circle at 48px radius while providing the necessary structural stability.
-
-### 8.2 Tunneling Prevention (Fast Movement)
--   **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) utilize a thickness of **5000.0 pixels**. This ensures that even during extreme single-frame positional deltas (rapid elevator slams), the physics solver's corrective vectors always push the balls inward.
--   **Overflow Mechanic**: A **30px** translucent red rectangle at the top of drawers detects gachaballs. Continuous contact for 5 seconds triggers a "discard penalty," moving the ball to the Discard Pile.
--   **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on 12/13). This isolation allows the massive bounds of one container to safely overlap others without causing unintended collisions.
-
-### 8.3 Rendering Fidelity
--   **Physics Interpolation**: The system utilizes Godot 4's native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (currently 120 Hz).
--   **High-Fidelity Rules**: Gravity Scale is set to **4.0**, and Continuous Collision Detection (CCD) is enabled on all balls to prevent tunneling during high-velocity drawer animations.
--   **Spawn Sequence**: To prevent a 1-frame "flash" at the scene origin `(0,0)`, gachaballs have their local position calculated and assigned *before* calling `add_child()`.
--   **Interpolation Reset**: Immediately after being added to the tree, `reset_physics_interpolation()` is called to prevent the interpolation engine from "sliding" the ball from the origin to its spawn point in a single frame.
+### 8.5 Dodecagon Shape Approximation
+- **Stable Facets**: Rather than direct `CircleShape2D` contact (which produces single-point instability), gachaballs use a **12-sided CollisionPolygon2D (Dodecagon)**.
+- **Bridge Stability**: The flat facets allow balls to lock together into stable bridges, resolving to zero velocity significantly faster while remaining visually indistinguishable from a circle at 48px radius.

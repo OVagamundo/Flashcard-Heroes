@@ -11,7 +11,6 @@ target_type = &"ATTACK_TARGET"
 [resource]
 script = ExtResource("1_script")
 id = &"hero_pyro_attack_burn"
-name_key = "ability.hero_pyro_attack_burn.name"
 description_key = "ability.hero_pyro_attack_burn.desc"
 trigger = &"on_attack"
 replaces_basic_attack = true

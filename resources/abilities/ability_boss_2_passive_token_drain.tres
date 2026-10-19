@@ -18,7 +18,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_boss_2_token_drain"
-name_key = "ability.boss_2_token_drain.name"
 description_key = "ability.boss_2_token_drain.desc"
 trigger = &"on_token_spent"
 priority = 0

@@ -17,7 +17,6 @@ parameters = {
 [resource]
 script = ExtResource("1_script")
 id = &"ability_doppleganger_death_l3"
-name_key = "ability.doppleganger_death.name"
 description_key = "ability.doppleganger_death_l3.desc"
 trigger = &"on_death"
 priority = 215

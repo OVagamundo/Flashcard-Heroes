@@ -20,7 +20,6 @@ invert_result = false
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier3_berserker_shockwave_l2"
-name_key = "ability.unit_tier3_berserker_shockwave.name"
 trigger = &"on_attack"
 condition = SubResource("ContextCauseCondition_TurnOnly")
 effects = Array[Resource]([SubResource("EffectCascadeAOE_Shockwave_2")])

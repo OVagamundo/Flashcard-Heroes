@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_echoing_orb_scale"
-name_key = "ability.echoing_orb_scale.name"
 description_key = "ability.echoing_orb_scale.desc"
 trigger = &"on_board_changed"
 priority = 100

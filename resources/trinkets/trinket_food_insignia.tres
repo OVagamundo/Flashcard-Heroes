@@ -1,0 +1,19 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/trinkets/Trait_Food_Insignia.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_food_insignia_draw.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_food_insignia_summon.tres" id="4_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_food_insignia_merge.tres" id="5_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_food_insignia_battle_start.tres" id="6_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_food_insignia"
+name_key = "trinket.food_insignia.name"
+description_key = "trinket.food_insignia.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_player_exclusive = false
+rarity = 1
+ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_ability"), ExtResource("5_ability"), ExtResource("6_ability")])

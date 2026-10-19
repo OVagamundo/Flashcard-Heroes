@@ -5,7 +5,6 @@
 [resource]
 script = ExtResource("1_ability")
 id = &"hero_timekeeper_time_warp"
-name_key = "ability.hero_timekeeper_time_warp.name"
 description_key = "ability.hero_timekeeper_time_warp.desc"
 trigger = &"passive"
 effects = []

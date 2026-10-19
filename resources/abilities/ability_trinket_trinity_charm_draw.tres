@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_trinity_charm_draw"
-name_key = "trinket.trinity_charm.name"
 description_key = "trinket.trinity_charm.desc"
 trigger = &"on_draw"
 priority = 50

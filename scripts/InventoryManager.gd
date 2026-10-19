@@ -108,11 +108,13 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 
 	var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 	if is_instance_valid(recipe):
+		var preview_instance: GachaBallInstance = MergeManager.get_preview_merge_instance(source_instance, target_instance, source_loc, target_loc, all_instances_db, recipe.id)
 		var context: Dictionary = {
 			"source_location": source_loc, 
 			"target_location": target_loc, 
 			"recipe_id": recipe.id,
-			"result_id": recipe.result_id
+			"result_id": recipe.result_id,
+			"preview_instance": preview_instance
 		}
 		
 		# VISUAL FIX: Hide the source view so it doesn't snap back while the prompt is open.
@@ -445,7 +447,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		SignalBus.emit_signal("selection_clear_requested")
 		return
 
-	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db)
+	var merge_result = MergeManager.calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db, recipe_id)
 	if merge_result.is_empty():
 		_finish_merge_action_if_active()
 		return

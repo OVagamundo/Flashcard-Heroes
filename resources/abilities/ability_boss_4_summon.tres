@@ -11,7 +11,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_boss_4_summon"
-name_key = "ability.boss_summon.name"
 description_key = "ability.boss_summon.desc"
 trigger = &"on_turn_end"
 priority = -50

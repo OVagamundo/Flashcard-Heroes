@@ -5,7 +5,7 @@
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_summon.tres" id="3_ability_summon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_merge.tres" id="4_ability_merge"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_trinket_veteran_insignia_battle_start.tres" id="5_ability_battle_start"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/trinkets/Trinket10A.png" id="6_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/trinkets/VeteranInsignia.png" id="6_icon"]
 
 [resource]
 script = ExtResource("1_script")

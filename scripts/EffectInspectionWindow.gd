@@ -32,22 +32,36 @@ func populate(context: Dictionary) -> void:
 
 	# Display the first effect definition; support Dictionary or Object types
 	var first = defs[0]
-	var name_key := ""
 	var desc_key := ""
 	if first is Dictionary:
-		name_key = first.get("name_key", "")
 		desc_key = first.get("description_key", "")
 	elif first is Object:
 		# Use safe field access via get() to avoid relying on typed properties
-		name_key = first.get("name_key") if first.has_method("get") else (first.name_key if "name_key" in first else "")
 		desc_key = first.get("description_key") if first.has_method("get") else (first.description_key if "description_key" in first else "")
 
-	if name_key == "" and desc_key == "":
+	if desc_key == "":
 		name_label.text = tr("ui.effects")
 		description_label.text = tr("ui.no_effect_details")
 		return
 
-	name_label.text = tr(name_key)
+	# Status-effect definitions are passed as dictionaries with a localization key.
+	# Ability definitions intentionally keep the generic heading because abilities
+	# no longer have display names.
+	var status_definition: StatusEffectDefinition = null
+	if first is Dictionary:
+		var status_name_key: String = first.get("name_key", "")
+		if not status_name_key.is_empty() and is_instance_valid(StatusEffectRegistry):
+			for candidate in StatusEffectRegistry.get_all_definitions():
+				if candidate.display_name_key == status_name_key:
+					status_definition = candidate
+					break
+
+	if is_instance_valid(status_definition):
+		name_label.text = tr(status_definition.display_name_key)
+		name_label.add_theme_color_override("font_color", status_definition.color)
+	else:
+		name_label.text = tr("ui.ability")
+		name_label.remove_theme_color_override("font_color")
 	var final_text = tr(desc_key).strip_edges()
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")

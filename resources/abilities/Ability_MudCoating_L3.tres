@@ -7,7 +7,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"unit_mud_coating_l3"
-name_key = "ability.mud_coating.name"
 description_key = "ability.mud_coating_l3.desc"
 trigger = &"on_healed"
 effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])

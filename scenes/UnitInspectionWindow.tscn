@@ -38,10 +38,17 @@ alignment = 1
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 4
 
-[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+[node name="BodyContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
+theme_override_constants/separation = 8
+alignment = 0
+
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/BodyContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 0
 theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
 theme_override_font_sizes/normal_font_size = 32
 theme_override_font_sizes/bold_font_size = 32
@@ -50,10 +57,35 @@ theme_override_constants/p_separation = 0
 bbcode_enabled = true
 text = ""
 fit_content = true
+autowrap_mode = 3
+meta_underlined = false
+
+[node name="ViewContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer/BodyContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(192, 212)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+
+[node name="BottomDescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/normal_font_size = 32
+theme_override_font_sizes/bold_font_size = 32
+theme_override_constants/line_separation = -4
+theme_override_constants/p_separation = 0
+bbcode_enabled = true
+text = ""
+fit_content = true
+autowrap_mode = 3
 meta_underlined = false
 
 [node name="HSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 
 [node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]

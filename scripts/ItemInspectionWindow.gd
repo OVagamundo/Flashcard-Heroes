@@ -2,10 +2,13 @@ class_name ItemInspectionWindow
 extends InspectionWindow
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
+const _SlotView = preload("res://scenes/SlotView.tscn")
 const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
+@onready var view_container: CenterContainer = %ViewContainer
 @onready var description_label: RichTextLabel = %DescriptionLabel
+@onready var bottom_description_label: RichTextLabel = %BottomDescriptionLabel
 @onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var separator: HSeparator = %HSeparator
 @onready var internal_background: ColorRect = $InternalBackground
@@ -14,6 +17,8 @@ var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _inspected_item_uuid: String
+var _is_preview: bool = false
+var _explicit_recipe_id: StringName = &""
 
 func _ready() -> void:
 	super._ready()
@@ -22,9 +27,16 @@ func _ready() -> void:
 	SignalBus.run_data_changed.connect(_on_inventory_changed)
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 
-	for child in [description_label, name_label, recipe_container, separator]:
+	for child in [description_label, bottom_description_label, name_label, recipe_container, separator]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
+	
+	if is_instance_valid(description_label):
+		description_label.add_theme_font_override("normal_font", Database.get_current_locale_font())
+		description_label.add_theme_font_override("bold_font", Database.get_current_locale_font())
+	if is_instance_valid(bottom_description_label):
+		bottom_description_label.add_theme_font_override("normal_font", Database.get_current_locale_font())
+		bottom_description_label.add_theme_font_override("bold_font", Database.get_current_locale_font())
 	
 	enforce_display_only()
 
@@ -33,8 +45,14 @@ func populate(context: Dictionary) -> void:
 	_source_view = context.get("source_view")
 	_instance = context.get("instance")
 	_location = context.get("location")
+	_is_preview = context.get("is_preview", false)
+	_explicit_recipe_id = context.get("recipe_id", &"")
 
-	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
+	if not is_instance_valid(_instance):
+		WindowManager.request_close_inspection_window(self , &"INVALID_CONTEXT")
+		return
+
+	if not _is_preview and not is_instance_valid(_source_view):
 		WindowManager.request_close_inspection_window(self , &"INVALID_CONTEXT")
 		return
 
@@ -44,6 +62,7 @@ func populate(context: Dictionary) -> void:
 		return
 
 	_inspected_item_uuid = _instance.ball_uuid
+	_update_item_view()
 	_update_description_and_stats(item_def)
 
 func _update_description_and_stats(item_def: Resource) -> void:
@@ -92,16 +111,14 @@ func _update_description_and_stats(item_def: Resource) -> void:
 			elif item_def.bonus_pwr > 0:
 				effect_desc = tr("item.effect.pwr").replace("(PWR)", str(item_def.bonus_pwr))
 		
-		# Build abilities section: list all abilities with name and localized description
+		# Item and trinket abilities are shown as descriptions only.
 		var abilities_block := ""
 		var abilities_lines: Array[String] = []
+		var seen_ability_descriptions: Dictionary = {}
 		for entry in _instance.get_active_ability_entries(_get_all_instances_db()):
 			var ability: AbilityDefinition = entry.get("ability_def")
 			if not is_instance_valid(ability):
 				continue
-			var ability_name := tr(ability.name_key) if "name_key" in ability else ""
-			if "name_key" in ability and ability_name == ability.name_key and ability.name_key.begins_with("ability."):
-				ability_name = ""
 			var ability_desc := tr(ability.description_key) if "description_key" in ability else ""
 			if "description_key" in ability and ability_desc == ability.description_key and ability.description_key.begins_with("ability."):
 				ability_desc = ""
@@ -125,8 +142,10 @@ func _update_description_and_stats(item_def: Resource) -> void:
 					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 					ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			
-			if not ability_name.is_empty() or not ability_desc.is_empty():
-				abilities_lines.append("[b]%s[/b]: %s" % [ability_name, ability_desc])
+			var description_signature := ability_desc.strip_edges()
+			if not description_signature.is_empty() and not seen_ability_descriptions.has(description_signature):
+				seen_ability_descriptions[description_signature] = true
+				abilities_lines.append(ability_desc)
 		abilities_block = "\n".join(abilities_lines)
 
 		if not base_desc.is_empty() and abilities_block.is_empty():
@@ -149,19 +168,79 @@ func _update_description_and_stats(item_def: Resource) -> void:
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")
 	final_text = regex.sub(final_text, "\n", true)
-	description_label.text = final_text
+	
+	if _is_trinket(item_def):
+		description_label.text = final_text
+		description_label.custom_minimum_size = Vector2.ZERO
+		if is_instance_valid(bottom_description_label):
+			bottom_description_label.text = ""
+			bottom_description_label.visible = false
+			bottom_description_label.custom_minimum_size = Vector2.ZERO
+	else:
+		description_label.custom_minimum_size = Vector2.ZERO
+		var font = Database.get_current_locale_font()
+		var font_size = 32
+		var plain_text = DescriptionParser.strip_bbcode(final_text)
+		
+		description_label.add_theme_font_override("normal_font", font)
+		description_label.add_theme_font_override("bold_font", font)
+		if is_instance_valid(bottom_description_label):
+			bottom_description_label.add_theme_font_override("normal_font", font)
+			bottom_description_label.add_theme_font_override("bold_font", font)
+
+		var p = TextParagraph.new()
+		p.width = 256.0
+		p.set_line_spacing(-4)
+		p.add_string(plain_text, font, font_size)
+		
+		var max_view_h = 212.0
+		var cutoff_line := -1
+		var cum_h := 0.0
+		for i in range(p.get_line_count()):
+			var line_h = p.get_line_size(i).y - 4
+			if cum_h + line_h <= max_view_h:
+				cum_h += line_h
+				cutoff_line = i
+			else:
+				break
+		
+		if cutoff_line >= 0 and cutoff_line < p.get_line_count() - 1:
+			var split_char_idx = p.get_line_range(cutoff_line + 1).x
+			var parts = DescriptionParser.split_bbcode(final_text, split_char_idx)
+			description_label.text = parts[0]
+			if is_instance_valid(bottom_description_label):
+				bottom_description_label.text = parts[1]
+				bottom_description_label.visible = true
+				bottom_description_label.set_meta("effect_definition", item_def)
+		else:
+			description_label.text = final_text
+			if is_instance_valid(bottom_description_label):
+				bottom_description_label.text = ""
+				bottom_description_label.visible = false
+				bottom_description_label.custom_minimum_size = Vector2.ZERO
 	
 	_update_recipe_display(item_def)
 
-	# Manage separator visibility based on recipe container
+	# Manage separator visibility based on recipe container (hidden to eliminate grey line)
 	if is_instance_valid(separator):
-		separator.visible = recipe_container.visible
+		separator.visible = false
+		separator.custom_minimum_size = Vector2.ZERO
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
+	call_deferred("_deferred_shrink")
+
+func _deferred_shrink() -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_instance_valid(self):
+		return
+	_reset_window_size()
 
 func _on_inventory_changed() -> void:
-	if not is_instance_valid(self):
+	if _is_preview or not is_instance_valid(self):
 		return
 	var all_instances: Dictionary = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_item_uuid)
@@ -175,15 +254,31 @@ func _on_inventory_changed() -> void:
 		_update_description_and_stats(item_def)
 
 func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
+	if _is_preview:
+		return
 	if is_instance_valid(_instance):
 		if unit_uuid == _instance.equipped_on_uuid or unit_uuid == _inspected_item_uuid:
 			_on_inventory_changed()
 
+func _is_trinket(item_def: Resource) -> bool:
+	if not is_instance_valid(item_def):
+		return false
+	if item_def is TrinketDefinition:
+		return true
+	if item_def.get("category") == &"TRINKET":
+		return true
+	if not _get_linked_trait_id(item_def).is_empty():
+		return true
+	return false
+
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
-		if is_instance_valid(recipe_container) and not recipe_container.visible:
-			recipe_container.custom_minimum_size = Vector2.ZERO
+		for container in [recipe_container, separator, bottom_description_label]:
+			if is_instance_valid(container) and not container.visible:
+				container.custom_minimum_size = Vector2.ZERO
+		if is_instance_valid(view_container) and not view_container.visible:
+			view_container.custom_minimum_size = Vector2.ZERO
 		
 		# Enforce shrinking on EVERY container in the hierarchy
 		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
@@ -194,16 +289,22 @@ func _reset_window_size() -> void:
 		if vbox:
 			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			
-		custom_minimum_size = Vector2(480, 0)
-		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		custom_minimum_size = Vector2(0 if _is_preview else 480, 0)
+		size = Vector2(0 if _is_preview else 480, 0) # Force immediate recalculation of minimum size
 		reset_size()
 		enforce_display_only()
 
 func _get_all_instances_db() -> Dictionary:
+	var result: Dictionary = {}
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
-		return bm.get_all_instances() if is_instance_valid(bm) else {}
-	return GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
+		result = bm.get_all_instances() if is_instance_valid(bm) else {}
+	elif is_instance_valid(GameManager.run_state):
+		result = GameManager.run_state.run_instances
+	if _is_preview and is_instance_valid(_instance):
+		result = result.duplicate()
+		result[_instance.ball_uuid] = _instance
+	return result
 
 func _get_linked_trait_id(item_def: Resource) -> String:
 	if not is_instance_valid(item_def):
@@ -292,18 +393,80 @@ func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 				counts[upper] = counts.get(upper, 0) + 1
 
 
+## Populate the ViewContainer to show the resulting item's view at 2x scale.
+func _update_item_view() -> void:
+	if not is_instance_valid(view_container):
+		return
+	
+	for child in view_container.get_children():
+		view_container.remove_child(child)
+		child.queue_free()
+	
+	if not is_instance_valid(_instance):
+		view_container.visible = false
+		view_container.custom_minimum_size = Vector2.ZERO
+		return
+	
+	var item_def = _instance.get_definition()
+	if _is_trinket(item_def):
+		view_container.visible = false
+		view_container.custom_minimum_size = Vector2.ZERO
+		return
+	
+	var slot_view: SlotView = _SlotView.instantiate()
+	slot_view.show_background = false
+	slot_view.set_size_scale(2.0)
+	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	
+	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"EquippedItem"
+	slot_view.set_slot_color(slot_color)
+	
+	# Disconnect interactive / indicator signals for inspection view
+	if SignalBus.show_slot_indicators.is_connected(slot_view._on_show_slot_indicators):
+		SignalBus.show_slot_indicators.disconnect(slot_view._on_show_slot_indicators)
+	if SignalBus.hide_slot_indicators.is_connected(slot_view._on_hide_slot_indicators):
+		SignalBus.hide_slot_indicators.disconnect(slot_view._on_hide_slot_indicators)
+	if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
+		SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
+	
+	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+	
+	view_container.add_child(slot_view)
+	view_container.visible = true
+	view_container.custom_minimum_size = Vector2(192, 212)
+
+	var all_instances_db = _get_all_instances_db()
+	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
+	slot_view.set_content(visual_data, false, false)
+	
+	for child in slot_view.get_children():
+		if child is GachaBallView:
+			child.show_capsule_overlay = false
+			child.set_is_interactive(false)
+			var overlay = child.get_node_or_null("GachaBallOverlay")
+			if is_instance_valid(overlay):
+				overlay.queue_free()
+			var trait_count = child.get_node_or_null("%TraitCountLabel")
+			if is_instance_valid(trait_count):
+				trait_count.visible = false
+
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):
 		return
 	
 	for child in recipe_container.get_children():
+		recipe_container.remove_child(child)
 		child.queue_free()
 	
 	if not item_def is GachaBallDefinition:
 		recipe_container.visible = false
 		return
 	
-	var recipe: MergeRecipe = Database.get_recipe_for_result(item_def.id)
+	var recipe: MergeRecipe = null
+	if not _explicit_recipe_id.is_empty():
+		recipe = Database.recipes.get(_explicit_recipe_id)
+	if not is_instance_valid(recipe):
+		recipe = Database.get_recipe_for_result(item_def.id)
 	if not is_instance_valid(recipe):
 		recipe_container.visible = false
 		return
@@ -351,6 +514,8 @@ func get_child_window_specs() -> Array[Dictionary]:
 	var text_to_search: String = ""
 	if is_instance_valid(description_label):
 		text_to_search += description_label.text + " "
+	if is_instance_valid(bottom_description_label) and bottom_description_label.visible:
+		text_to_search += bottom_description_label.text + " "
 	
 	var keywords = DescriptionParser.find_keywords(text_to_search)
 	var seen_effects: Dictionary = {}
@@ -376,6 +541,8 @@ func get_location() -> LocationIdentifier:
 	return _location
 
 func _trigger_trait_tutorial() -> void:
+	if _is_preview:
+		return
 	# Wait 1.0s before showing tutorial to avoid "quick pass" triggers as requested
 	await AnimationConstants.create_pausable_timer(get_tree(), 1.0).timeout
 	

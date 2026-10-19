@@ -11,7 +11,6 @@ parameters = { "amount": 1 }
 [resource]
 script = ExtResource("1_ability")
 id = &"hero_timekeeper_gold_on_kill"
-name_key = "ability.hero_timekeeper_gold_on_kill.name"
 description_key = "ability.hero_timekeeper_gold_on_kill.desc"
 trigger = &"on_kill"
 effects = Array[Resource]([SubResource("Effect_GainGold_1")])

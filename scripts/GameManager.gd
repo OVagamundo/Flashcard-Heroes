@@ -88,10 +88,13 @@ func get_battle_manager() -> Node:
 	return _active_battle_manager
 
 func get_pending_rewards() -> Dictionary:
+	var reroll_cost: int = 5
+	if is_instance_valid(run_state) and run_state.has_method("get_elite_reward_reroll_cost"):
+		reroll_cost = run_state.get_elite_reward_reroll_cost()
 	return {
 		"reward_instances": _temporary_reward_master_dict.values(),
 		"gold_amount": _temporary_gold_reward,
-		"reroll_cost": _reward_reroll_cost,
+		"reroll_cost": reroll_cost,
 		"is_special_victory": run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	}
 
@@ -115,7 +118,7 @@ func get_replay_state_snapshot() -> Dictionary:
 		"temporary_rewards": _snapshot_temporary_instances(_temporary_reward_master_dict),
 		"temporary_shop": _snapshot_temporary_instances(_temporary_shop_master_dict),
 		"temporary_gold_reward": _temporary_gold_reward,
-		"reward_reroll_cost": _reward_reroll_cost,
+		"reward_reroll_cost": run_state.get_elite_reward_reroll_cost() if is_instance_valid(run_state) and run_state.has_method("get_elite_reward_reroll_cost") else 5,
 		"reward_room_active": _reward_room_active,
 		"reward_study_used": _reward_study_used,
 		"shop_reroll_cost": _reroll_cost,
@@ -176,7 +179,9 @@ func restore_replay_manager_state(data: Dictionary) -> void:
 	_restore_temporary_instances(data.get("temporary_rewards", []), int(data.get("temporary_reward_container_size", 0)), true)
 	_restore_temporary_instances(data.get("temporary_shop", []), int(data.get("temporary_shop_container_size", 0)), false)
 	_temporary_gold_reward = int(data.get("temporary_gold_reward", 0))
-	_reward_reroll_cost = int(data.get("reward_reroll_cost", 1))
+	_reward_reroll_cost = int(data.get("reward_reroll_cost", 5))
+	if is_instance_valid(run_state):
+		run_state.elite_reward_reroll_cost = _reward_reroll_cost
 	_reward_room_active = bool(data.get("reward_room_active", false))
 	_reward_study_used = bool(data.get("reward_study_used", false))
 	_reroll_cost = int(data.get("shop_reroll_cost", 1))
@@ -372,7 +377,7 @@ func _reset_replay_transient_state() -> void:
 	_temporary_reward_master_dict.clear()
 	_temporary_reward_container = null
 	_temporary_gold_reward = 0
-	_reward_reroll_cost = 1
+	_reward_reroll_cost = 5
 	_reward_room_active = false
 	_reward_study_used = false
 	_temporary_rest_site_prizes.clear()
@@ -509,8 +514,6 @@ func _on_battle_won_rewards_pending() -> void:
 	# Detect if this was a boss or elite victory (both get trinket rewards)
 	var is_special_victory = run_state.current_boss_level > 0 or run_state.current_elite_level > 0
 	
-	# Reset reward reroll cost for new rewards
-	_reward_reroll_cost = 1
 	_reward_study_used = false
 	
 	# Generate rewards for the victory and store them.
@@ -981,8 +984,13 @@ func _on_shop_reroll_requested() -> void:
 	SignalBus.emit_signal("shop_stock_refreshed", context)
 
 func _on_reward_reroll_requested() -> void:
-	if not run_state.spend_gold(_reward_reroll_cost): return
-	_reward_reroll_cost += 1
+	var cost := 5
+	if is_instance_valid(run_state) and run_state.has_method("get_elite_reward_reroll_cost"):
+		cost = run_state.get_elite_reward_reroll_cost()
+	if not run_state.spend_gold(cost): return
+	if run_state.has_method("increase_elite_reward_reroll_cost"):
+		run_state.increase_elite_reward_reroll_cost()
+	_reward_reroll_cost = run_state.get_elite_reward_reroll_cost() if run_state.has_method("get_elite_reward_reroll_cost") else cost + 1
 	
 	_generate_reward_stock()
 

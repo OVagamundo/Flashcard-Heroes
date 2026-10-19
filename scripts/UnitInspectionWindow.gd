@@ -4,10 +4,13 @@ extends InspectionWindow
 const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
+const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var trait_tags_container: HFlowContainer = %TraitTagsContainer
+@onready var view_container: CenterContainer = %ViewContainer
 @onready var description_label: RichTextLabel = %DescriptionLabel
+@onready var bottom_description_label: RichTextLabel = %BottomDescriptionLabel
 @onready var item_grid: GridContainer = %ItemGrid
 @onready var item_grid_label: Label = %ItemGridLabel
 @onready var trait_icons_container: HBoxContainer = %TraitIconsContainer
@@ -38,6 +41,8 @@ var _source_view: Control
 var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
+var _is_preview: bool = false
+var _explicit_recipe_id: StringName = &""
 var _window_group_id: int = 1 # Inspection window group
 
 func _ready() -> void:
@@ -48,9 +53,16 @@ func _ready() -> void:
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 	
 	# Zero out internal minimums so they don't force a height from old .tscn values
-	for child in [%DescriptionLabel, %NameLabel, %TraitTagsContainer, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
+	for child in [%DescriptionLabel, %BottomDescriptionLabel, %NameLabel, %TraitTagsContainer, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
+	
+	if is_instance_valid(description_label):
+		description_label.add_theme_font_override("normal_font", Database.get_current_locale_font())
+		description_label.add_theme_font_override("bold_font", Database.get_current_locale_font())
+	if is_instance_valid(bottom_description_label):
+		bottom_description_label.add_theme_font_override("normal_font", Database.get_current_locale_font())
+		bottom_description_label.add_theme_font_override("bold_font", Database.get_current_locale_font())
 	
 	enforce_display_only()
 
@@ -75,8 +87,14 @@ func populate(context: Dictionary) -> void:
 	_instance = context.get("instance")
 	_location = context.get("location")
 	_is_enemy_context = context.get("is_enemy_context", false)
+	_is_preview = context.get("is_preview", false)
+	_explicit_recipe_id = context.get("recipe_id", &"")
 
-	if not is_instance_valid(_source_view) or not is_instance_valid(_instance):
+	if not is_instance_valid(_instance):
+		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
+		return
+
+	if not _is_preview and not is_instance_valid(_source_view):
 		WindowManager.request_close_inspection_window(self, &"INVALID_CONTEXT")
 		return
 
@@ -88,7 +106,7 @@ func populate(context: Dictionary) -> void:
 	_inspected_unit_uuid = _instance.ball_uuid
 
 
-	name_label.text = tr(unit_definition.display_name_key) + " (Lv. %d)" % _instance.level
+	name_label.text = tr(unit_definition.display_name_key)
 	name_label.add_theme_font_override("font", Database.get_current_locale_font())
 	name_label.add_theme_font_size_override("font_size", 32)
 	
@@ -104,21 +122,33 @@ func populate(context: Dictionary) -> void:
 	# --- Core UI Population Logic ---
 	_rebuild_item_grid()
 	_update_trait_display()
+	_update_unit_view()
 	_update_recipe_display()
 
-	# Manage separator visibility based on any visible footers
+	# Manage separator visibility based on any visible footers (hidden to eliminate grey line crossing stats)
 	if is_instance_valid(separator):
-		separator.visible = item_grid.visible or (is_instance_valid(trait_icons_container) and trait_icons_container.visible) or recipe_container.visible
+		separator.visible = false
+		separator.custom_minimum_size = Vector2.ZERO
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
+	call_deferred("_deferred_shrink")
 	enforce_display_only()
+
+func _deferred_shrink() -> void:
+	if not is_instance_valid(self) or not is_inside_tree():
+		return
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if not is_instance_valid(self):
+		return
+	_reset_window_size()
 
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
 		# Zero out hidden containers completely to ensure they contribute NO height
-		for container in [item_grid, recipe_container, trait_icons_container, trait_tags_container, separator]:
+		for container in [item_grid, recipe_container, trait_icons_container, trait_tags_container, separator, bottom_description_label]:
 			if is_instance_valid(container) and not container.visible:
 				container.custom_minimum_size = Vector2.ZERO
 		
@@ -131,8 +161,8 @@ func _reset_window_size() -> void:
 		if vbox:
 			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			
-		custom_minimum_size = Vector2(480, 0)
-		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		custom_minimum_size = Vector2(0 if _is_preview else 480, 0)
+		size = Vector2(0 if _is_preview else 480, 0) # Force immediate recalculation of minimum size
 		reset_size()
 		# Let WindowManager know we have settled so it can refine the position if needed
 		# (Note: Standard contextual window positioning happens in WindowManager)
@@ -140,87 +170,16 @@ func _reset_window_size() -> void:
 
 
 func _rebuild_item_grid() -> void:
-	# This function now handles the complete lifecycle of the item grid UI.
-	# It ensures that slots are persistent and correctly represent the data model.
-	if not is_instance_valid(_instance):
-		return
-	var unit_definition = _instance.get_definition()
-	if not is_instance_valid(unit_definition):
-		return
-
-	# Clear existing content from slots, but don't delete the slots themselves.
-	for slot_view in item_grid.get_children():
-		for content in slot_view.get_children():
-			content.queue_free()
-
-	# Ensure the correct number of persistent SlotViews exist.
-	var children = item_grid.get_children()
-	# Filter out any lingering children that are already queued for deletion
-	var active_children = []
-	for child in children:
-		if not child.is_queued_for_deletion():
-			active_children.append(child)
-	
-	while active_children.size() < unit_definition.item_slot_count:
-		var slot_view = _SlotView.instantiate()
-		slot_view.custom_minimum_size = Vector2(64, 80)
-		slot_view.set_size_scale(1.0)
-		item_grid.add_child(slot_view)
-		active_children.append(slot_view)
-		
-	while active_children.size() > unit_definition.item_slot_count:
-		var slot_to_remove = active_children.pop_back()
-		item_grid.remove_child(slot_to_remove)
-		slot_to_remove.queue_free()
-
-	if unit_definition.item_slot_count == 0:
+	# Units with equipped items don't show the items in their inspection window,
+	# as the item's own inspection window is opened at the same time alongside.
+	if is_instance_valid(item_grid_label):
 		item_grid_label.visible = false
+		item_grid_label.custom_minimum_size = Vector2.ZERO
+	if is_instance_valid(item_grid):
+		for child in item_grid.get_children():
+			child.queue_free()
 		item_grid.visible = false
-		return
-	else:
-		item_grid_label.visible = false
-		item_grid.visible = true
-		item_grid.columns = unit_definition.item_slot_count
-
-	var all_instances_db = _get_all_instances_db()
-	if all_instances_db.is_empty():
-		return
-
-	# Iterate through all defined slots and populate them.
-	for i in range(unit_definition.item_slot_count):
-		var slot_view = item_grid.get_child(i)
-		
-		# CRITICAL: Create a valid LocationIdentifier for EVERY slot, empty or not.
-		var loc = LocationIdentifier.new()
-		loc.container = C.CONTAINER_EQUIPPED_ITEM
-		loc.index = i
-		loc.unit_uuid = _instance.ball_uuid
-		slot_view.populate(loc) # This makes the empty slot a valid drop target.
-		slot_view.set_slot_color(loc.container) # Ensure correct texture (ItemSlot.png)
-		
-		# Set interaction context for the slot
-		var slot_interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
-		slot_view.set_interaction_context(slot_interaction_mode, _window_group_id)
-
-		var item_uuid = _instance.get_equipped_item_uuid(i)
-
-		if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
-			var item_instance = all_instances_db[item_uuid]
-			
-			# Enhanced contextual behavior for player vs enemy units
-			var is_interactive = not _is_enemy_context
-			var single_click_inspect = _is_enemy_context
-			var interaction_mode = &"INSPECTION_ONLY" if _is_enemy_context else &"FULLY_INTERACTIVE"
-			
-			# Use adapter to create visual data
-			var visual_data = VisualDataAdapter.create_visual_data(item_instance)
-			slot_view.set_content(visual_data, true, _is_enemy_context)
-			
-			if slot_view.get_child_count() > 0:
-				var gacha_view = slot_view.get_child(0)
-				if gacha_view is GachaBallView:
-					gacha_view.set_is_interactive(is_interactive)
-					gacha_view.set_interaction_context(interaction_mode, &"ITEM", _window_group_id)
+		item_grid.custom_minimum_size = Vector2.ZERO
 
 	
 func _update_description() -> void:
@@ -240,6 +199,11 @@ func _update_description() -> void:
 	for entry in _instance.get_active_ability_entries(all_instances_db):
 		var ability_def: AbilityDefinition = entry.get("ability_def")
 		if not ability_def or ability_def.id == &"basic_attack":
+			continue
+		
+		# Units with equipped items don't show item abilities in the unit window,
+		# since the item's own inspection window is opened at the same time alongside.
+		if entry.get("source_type") == &"EQUIPMENT":
 			continue
 		
 		if seen_ability_ids.has(ability_def.id):
@@ -283,31 +247,6 @@ func _update_description() -> void:
 		if not full_text.is_empty():
 			full_text += "\n\n"
 		full_text += abilities_block
-	
-	# --- Source-Aware Stat Breakdown ---
-	var breakdown = _instance.get_stat_breakdown(all_instances_db)
-	var breakdown_lines: Array[String] = []
-	breakdown_lines.append("\n[color=gray][i]--- Stat Breakdown ---[/i][/color]")
-	
-	var hp_line = "[b]HP[/b]: %d" % breakdown.current.hp
-	var hp_parts: Array[String] = []
-	hp_parts.append("%d Base" % breakdown.base.hp)
-	if breakdown.persistent.hp != 0: hp_parts.append("%+d Merge" % breakdown.persistent.hp)
-	if breakdown.equipment.hp != 0: hp_parts.append("%+d Item" % breakdown.equipment.hp)
-	if breakdown.battle.hp != 0: hp_parts.append("%+d Battle" % breakdown.battle.hp)
-	if hp_parts.size() > 1: hp_line += " (%s)" % ", ".join(hp_parts)
-	breakdown_lines.append(hp_line)
-	
-	var pwr_line = "[b]PWR[/b]: %d" % breakdown.current.pwr
-	var pwr_parts: Array[String] = []
-	pwr_parts.append("%d Base" % breakdown.base.pwr)
-	if breakdown.persistent.pwr != 0: pwr_parts.append("%+d Merge" % breakdown.persistent.pwr)
-	if breakdown.equipment.pwr != 0: pwr_parts.append("%+d Item" % breakdown.equipment.pwr)
-	if breakdown.battle.pwr != 0: pwr_parts.append("%+d Battle" % breakdown.battle.pwr)
-	if pwr_parts.size() > 1: pwr_line += " (%s)" % ", ".join(pwr_parts)
-	breakdown_lines.append(pwr_line)
-	
-	full_text += "\n" + "\n".join(breakdown_lines)
 
 	if not full_text.is_empty():
 		full_text = DescriptionParser.parse(full_text)
@@ -316,11 +255,55 @@ func _update_description() -> void:
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")
 	final_text = regex.sub(final_text, "\n", true)
-	description_label.text = final_text
+	
+	var font = Database.get_current_locale_font()
+	var font_size = 32
+	var plain_text = DescriptionParser.strip_bbcode(final_text)
+	
+	description_label.add_theme_font_override("normal_font", font)
+	description_label.add_theme_font_override("bold_font", font)
+	if is_instance_valid(bottom_description_label):
+		bottom_description_label.add_theme_font_override("normal_font", font)
+		bottom_description_label.add_theme_font_override("bold_font", font)
+
+	var p = TextParagraph.new()
+	p.width = 256.0
+	p.set_line_spacing(-4)
+	p.add_string(plain_text, font, font_size)
+	
+	var max_view_h = 212.0
+	var cutoff_line := -1
+	var cum_h := 0.0
+	for i in range(p.get_line_count()):
+		var line_h = p.get_line_size(i).y - 4
+		if cum_h + line_h <= max_view_h:
+			cum_h += line_h
+			cutoff_line = i
+		else:
+			break
+	
+	if cutoff_line >= 0 and cutoff_line < p.get_line_count() - 1:
+		var split_char_idx = p.get_line_range(cutoff_line + 1).x
+		var parts = DescriptionParser.split_bbcode(final_text, split_char_idx)
+		description_label.text = parts[0]
+		if is_instance_valid(bottom_description_label):
+			bottom_description_label.text = parts[1]
+			bottom_description_label.visible = true
+			bottom_description_label.set_meta("definition", unit_definition)
+			bottom_description_label.set_meta("effect_definition", unit_definition)
+	else:
+		description_label.text = final_text
+		if is_instance_valid(bottom_description_label):
+			bottom_description_label.text = ""
+			bottom_description_label.visible = false
+			bottom_description_label.custom_minimum_size = Vector2.ZERO
+			
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
 ## Granular stat change handler - updates description when any stat changes
 func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
+	if _is_preview:
+		return
 	if unit_uuid == _inspected_unit_uuid:
 		# Update the instance reference and refresh the description
 		var all_instances: Dictionary = _get_all_instances_db()
@@ -328,10 +311,11 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 		if is_instance_valid(current_instance):
 			_instance = current_instance
 			_update_description()
+			_update_unit_view()
 			_reset_window_size()
 
 func _on_inventory_changed() -> void:
-	if not is_instance_valid(self):
+	if _is_preview or not is_instance_valid(self):
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances: Dictionary = _get_all_instances_db()
@@ -343,13 +327,14 @@ func _on_inventory_changed() -> void:
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
 	_update_description()
+	_update_unit_view()
 	_rebuild_item_grid()
 	_update_trait_display()
 	_update_recipe_display()
 	_reset_window_size()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	if not is_instance_valid(self):
+	if _is_preview or not is_instance_valid(self):
 		return
 	
 	# Only update if the changed unit is the one we're inspecting
@@ -379,6 +364,9 @@ func _get_all_instances_db() -> Dictionary:
 	else:
 		result = GameManager.run_state.run_instances if is_instance_valid(GameManager.run_state) else {}
 	
+	if _is_preview and is_instance_valid(_instance):
+		result = result.duplicate()
+		result[_instance.ball_uuid] = _instance
 	return result
 
 func get_child_window_specs() -> Array[Dictionary]:
@@ -392,6 +380,8 @@ func get_child_window_specs() -> Array[Dictionary]:
 	var text_to_search: String = ""
 	if is_instance_valid(description_label):
 		text_to_search += description_label.text + " "
+	if is_instance_valid(bottom_description_label) and bottom_description_label.visible:
+		text_to_search += bottom_description_label.text + " "
 	
 	var keywords = DescriptionParser.find_keywords(text_to_search)
 	for kw in keywords:
@@ -477,12 +467,62 @@ func _calculate_unit_trait_counts() -> Dictionary:
 	
 	return counts
 
+## Populate the ViewContainer to show the resulting unit's view at 2x scale.
+func _update_unit_view() -> void:
+	if not is_instance_valid(view_container):
+		return
+	
+	for child in view_container.get_children():
+		view_container.remove_child(child)
+		child.queue_free()
+	
+	if not is_instance_valid(_instance):
+		view_container.visible = false
+		return
+	
+	var slot_view: SlotView = _SlotView.instantiate()
+	slot_view.show_background = false
+	slot_view.set_size_scale(2.0)
+	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	
+	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"PlayerBench"
+	slot_view.set_slot_color(slot_color)
+	
+	# Disconnect interactive / indicator signals for inspection view
+	if SignalBus.show_slot_indicators.is_connected(slot_view._on_show_slot_indicators):
+		SignalBus.show_slot_indicators.disconnect(slot_view._on_show_slot_indicators)
+	if SignalBus.hide_slot_indicators.is_connected(slot_view._on_hide_slot_indicators):
+		SignalBus.hide_slot_indicators.disconnect(slot_view._on_hide_slot_indicators)
+	if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
+		SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
+	
+	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+	
+	view_container.add_child(slot_view)
+	view_container.visible = true
+
+	var all_instances_db = _get_all_instances_db()
+	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
+	slot_view.set_content(visual_data, false, false)
+	
+	for child in slot_view.get_children():
+		if child is GachaBallView:
+			child.show_capsule_overlay = false
+			child.set_is_interactive(false)
+			var overlay = child.get_node_or_null("GachaBallOverlay")
+			if is_instance_valid(overlay):
+				overlay.queue_free()
+			var trait_count = child.get_node_or_null("%TraitCountLabel")
+			if is_instance_valid(trait_count):
+				trait_count.visible = false
+
 ## Populate the RecipeContainer to show the merge ingredients for this unit.
 func _update_recipe_display() -> void:
 	if not is_instance_valid(recipe_container):
 		return
 	
 	for child in recipe_container.get_children():
+		recipe_container.remove_child(child)
 		child.queue_free()
 	
 	var unit_def = _instance.get_definition() if is_instance_valid(_instance) else null
@@ -490,7 +530,11 @@ func _update_recipe_display() -> void:
 		recipe_container.visible = false
 		return
 	
-	var recipe: MergeRecipe = Database.get_recipe_for_result(unit_def.id)
+	var recipe: MergeRecipe = null
+	if not _explicit_recipe_id.is_empty():
+		recipe = Database.recipes.get(_explicit_recipe_id)
+	if not is_instance_valid(recipe):
+		recipe = Database.get_recipe_for_result(unit_def.id)
 	if not is_instance_valid(recipe):
 		recipe_container.visible = false
 		return

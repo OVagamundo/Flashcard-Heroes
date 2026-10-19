@@ -5,7 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_beginners_charm"
-name_key = ""
 description_key = ""
 trigger = &"minigame_start"
 priority = 50

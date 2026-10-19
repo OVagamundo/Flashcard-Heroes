@@ -31,6 +31,7 @@ static func _get_action_map() -> Dictionary:
 			"DrawRewardAction": DrawRewardAction,
 			"CollectRewardAction": CollectRewardAction,
 			"SellRewardAction": SellRewardAction,
+			"RerollRewardAction": RerollRewardAction,
 			"StudyRewardAction": StudyRewardAction,
 			"LeaveRewardAction": LeaveRewardAction,
 			"DrawRestSiteAction": DrawRestSiteAction,

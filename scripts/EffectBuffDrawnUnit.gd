@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Effect that buffs Level 1 units when they enter the board.
-## Used by Royal Insignia trinket to grant +1 HP, +1 PWR to Level 1 units.
+## Used by Novice Insignia to grant +1 HP and +1 PWR to Level 1 units.
 ## Expected parameters:
 ##   - hp_amount: int (default 1) - HP buff amount
 ##   - pwr_amount: int (default 1) - PWR buff amount
@@ -82,7 +82,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.is_hero:
 			continue
 		
-		# Royal Insignia applies to Level 1 units only (no tier requirement)
+		# Novice Insignia applies to Level 1 units only (no tier requirement)
 		if target_instance.level != 1:
 			continue
 		
@@ -125,7 +125,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if is_instance_valid(trinket_def):
 			trinket_name = tr(trinket_def.name_key)
 	if trinket_name.is_empty():
-		trinket_name = "Royal Insignia"
+		trinket_name = "Novice Insignia"
 
 
 

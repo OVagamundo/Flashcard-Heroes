@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_ability")
 id = "ability_grant_spikes"
-name_key = "ability.grant_spikes.name"
 description_key = "ability.grant_spikes.desc"
 trigger = &""
 effects = Array[Resource]([ExtResource("2_effect")])

@@ -26,6 +26,7 @@ var _touch_press_active: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
+	add_to_group("physics_gacha_ball")
 	# Shift interaction detection from the physics body to the UI node
 	ui_anchor.mouse_entered.connect(_on_mouse_entered)
 	ui_anchor.mouse_exited.connect(_on_mouse_exited)

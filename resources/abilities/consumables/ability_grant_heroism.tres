@@ -8,7 +8,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_grant_heroism"
-name_key = "ability.grant_heroism.name"
 description_key = "ability.grant_heroism.desc"
 trigger = &"manual_activation"
 effects = Array[Resource]([ExtResource("2_hp"), ExtResource("3_pwr"), ExtResource("4_armor")])

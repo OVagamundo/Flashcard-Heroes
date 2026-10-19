@@ -1,181 +1,220 @@
-# Flashcard Heroes - Game Design Document
-**Flashcard Heroes** is a single-player roguelike deckbuilder, auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system as resource generation mechanic. Players build a collection of **GachaBalls** (Units and Items) to survive encounters and defeat bosses.
+# Flashcard Heroes - Game Design Document (GDD)
 
-22. Core Gameplay Architecture & Loop
-The game operates on a **deterministic, event-driven command pipeline** (*Slay the Spire 2* architecture) with no continuous core game loop. The game state advances purely as discrete reactions to validated player input commands (`GameAction` enqueued to `ActionQueue`).
-1. **Loadout**: Select a Hero, a Flashcard Deck, and the Deck Size ("Full" for a complete run or "Quick/Half" for a shorter, faster run).
-2. **Encounter Selection**: Choose 1 of 3 encounter choices (Battles, Shop, and others) generated via seeded PRNG (`RNGManager.map_rng`).
-3. **Resolution**: Resolve the encounter and advance the **Day** (Difficulty scaling).
-4. **Conclusion**: Victory (Final Boss defeated) or Permadeath (Hero HP = 0).
+**Flashcard Heroes** is a single-player roguelike deckbuilder and auto-battler (inspired by *Super Auto Pets* and *Slay the Spire*) that integrates an *Anki*-style spaced repetition system (SRS) as its core resource generation engine. Players build and curate a collection of **GachaBalls** (Units and Items) to solve deterministic combat encounters, navigate path choices, and defeat bosses.
 
-3. Player Resources
-- **Hero Health (HP)**: Persistent unit health for the run. 0 HP = Defeat. No Max HP cap.
-- **Gold**: Persistent currency for Shop nodes. Lost at end of run.
-- **Gacha Tokens**: Temporary encounter currency earned via Flashcards. Resets to zero after encounter.
+---
 
-4. Flashcard System (SRS)
-Timed mini-game that generates **Gacha Tokens** for use in the current encounter.
-- **The Deck**: Starts with 6 unlocked active cards; new cards are introduced over time with an info screen before each mini-game.
-- **The Mini-Game**: A timed session of multiple-choice questions. Correct answers increase card "Mastery" and earn tokens. Incorrect answers decrease mastery.
-- **Spaced Repetition**: An *Anki*-style weighted algorithm ensures cards with lower Mastery and more time since last used appear more frequently. The same card will not appear twice in a row and there's a small random factor to keep it from being too predictable.
+## 1. Core Philosophy & Design Pillars
 
-### 4.1 Mid-Mini Game Card Unlock (3-Streak Progression)
-While playing the mini game, answering 3 questions correctly one after the other triggers an immediate mid-mini game card unlock:
-- **Mechanic**:
-  - The next locked card from the deck pool is unlocked and immediately queued as the very next question displayed.
-  - Grants an immediate **+1.0s Bonus Time** extension directly to the mini game timer.
-  - Celebrated with multi-point fireworks, golden window flash, bright white timer bar flash with a glowing white `+1.0s` buff popup over the timer label, and an animated announcement banner.
-  - Can only trigger once per minigame session.
-  - The unlocked card is marked as already presented, allowing the next minigame's start popup to introduce the subsequent locked card—effectively doubling deck progression rate (1 card at the start review popup + 1 card mid-mini game).
+1. **Design by Synthesis:**
+   Every entity in the game (Units, Items, Trinkets) is a legible synthesis of clear attributes: Tier, level, and traits. Upgrades, leveling, and merges follow deterministic, transparent rules rather than arbitrary branching.
+2. **Total Information Transparency:**
+   The player is never kept in the dark. All active board states, enemy abilities, upcoming actions, machine draw probabilities, remaining pool contents, status effects, and discard piles are fully inspectable at all times. Combat is a tactical puzzle to be solved, not a gamble. The player does not have to make all the math in their head to play, but they could if needed, although it might be overwhelming once too many factors and chain reactions are present.
+3. **Strict Determinism:**
+   Combat outcomes are the exact mathematical consequence of team composition, stats, item synergies, positioning, and reaction priorities. There are some RNG aspects like random targeting and select random events that are not directly affected by or predictable to the player, but the RNG itself is seeded and deterministic.
+4. **Decoupled Truth & Visual Clarity:**
+   Underlying state mutations resolve atomically and deterministically. The presentation layer needs to clearly communicate every cause, reaction, and effect through distinct visual trajectories and feedback before the next interaction can begin.
 
-### 4.2 Design Rationale: Pacing, Economics & Natural Difficulty Balancing
-This mechanic was introduced to solve three core game design challenges:
-1. **Pacing & Run Duration for Mastered Players**:
-   - Players who have already mastered a substantial portion of the flashcard deck in prior runs shouldn't be forced to unlock cards at the same slow, beginner pace.
-   - Unlocking an additional card mid-mini game on a 3-streak allows knowledgeable players to progress through familiar cards twice as fast, reaching their unfamiliar, focus-study material in half the run time.
-   - This keeps run duration tight, prevents early runs from feeling repetitive, and accelerates engagement with meaningful study content.
-2. **Systemic Difficulty Economics & Snowball Mitigation**:
-   - In *Flashcard Heroes*, the daily enemy team budget scales linearly by day, whereas a player with high flashcard mastery answers questions rapidly and earns maximum tokens and gold every single encounter.
-   - If runs take too many days to reach new cards, knowledgeable players snowball exponentially ahead of the encounter generator's budget curve, eliminating tactical tension in combat.
-   - Introducing new cards faster naturally exposes the player to unfamiliar cards earlier in the run, curbing excessive token generation before their lineup outpaces the game's economic difficulty curve.
-3. **Natural Dynamic Difficulty Balancing (Organic Risk/Reward)**:
-   - For beginners, pacing remains deliberate, measured, and approachable: novice players rarely achieve 3-question streaks, allowing them to learn cards at a comfortable, gradual pace.
-   - For experienced players, rapid card unlocks introduce an elegant dilemma: an expert trying to deliberately delay card expansion would have to intentionally skip or miss questions. Intentionally missing or skipping questions directly sacrifices Gacha Tokens, yielding fewer resources for battle and making subsequent combat encounters harder.
-   - This creates an organic, systemic difficulty balance dictated naturally by player knowledge and confidence without artificial handicap sliders.
+---
 
-5. GachaBall System
-**GachaBalls** are the core collectible tokens (Units and Items) that form your collection, functioning similarly to cards in a deckbuilding game.
-- **Units**: Characters with HP (Health) and PWR (Power) stats, along with unique passive or active abilities. HP and PWR scale upwards through leveling, equipment, or training.
-- **Items**: Equipment or consumables that provide stat bonuses or unique abilities when placed on a unit. Consumables are single-use per encounter, while standard equipment persists across battles.
-- **Attributes**: Every GachaBall is defined by its Tier (1-3), Level, and Rarity (Normal, Prismatic, etc.). Synergy Tags (Fire, Water, Earth, Air, etc.) represent elemental affiliations that contribute to powerful team-wide traits.
-    - **Item Slots**: All units (including the Hero) are restricted to a single item slot, emphasizing critical choice.
-    - **Evolutionary Levels**: Leveling up a unit elevates it to a more powerful tier or evolutionary state (e.g., Lv. 1 Tiger evolves into Lv. 2 Tiger), modifying its base stats and abilities while maintaining token cost (but gold cost still increases).
+## 2. Win & Loss Conditions
 
-6. Inventories & Drawing 
-- **Run Inventory**: Your persistent collection (deck) for the run.
-    - **Capacity**: 39 slots per tier.
-    - **Random Eviction**: Acquiring a ball when a tier is full (39 items) permanently deletes a random ball of that tier.
-- **Battle Inventory & Machines**:
-    - Each battle starts with your Run Inventory as the initial draw pool. After that, units can be merged, removed, summoned, buffed, etc. So the Battle Inventory can and will become very different from the Run Inventory during the battle but these changes do not affect the Run Inventory and are not saved or carry over between encounters
-    - **Gacha Machines**: Spend tokens to draw balls from Tier 1, 2, or 3.
-    - **Discard**: Defeated units and overflow go to Discard Pile where they remain permanently for the rest of the battle. (Some effects can retrieve items/units from the discard pile or use the number of balls in the discard pile as for effects and abilities)
+- **Winning a Run**: A run is successfully completed when the player defeats the **Final Boss**, without letting the Hero die.
+- **Losing a Run (Permadeath)**: A run is lost immediately if the **Hero's health (HP) reaches zero**.
+  - **Permadeath**: Upon victory or defeat, the run's save checkpoint is permanently cleared, enforcing true roguelike stakes.
+  - **Hero Combatant Rules**: The Hero participates directly on the active battle board alongside standard units, behaving as an active combatant subject to damage, healing, buffs, and attacking.
+  - **Board Restriction**: The Hero is bound to the active team lineup and cannot be benched or moved to inventory.
+  - **Single Item Slot**: Like all other units, the Hero possesses strictly one item slot.
 
-### 6.2 Economy & The Core Duality
-The game operates on a dual-economy system that defines encounter difficulty and player progression. It is critical to distinguish between the **Run Economy** (Curating and improving your Run Inventory (deck)) and the **Battle Economy** (Realizing Value).
+---
 
-| Tier | Gold Cost (Shop) | Draw Cost (Tokens) | Note |
+## 3. Core Gameplay Loop
+
+The game progresses through discrete player decisions and turn phases without an unprompted real-time background loop:
+
+1. **Loadout Selection**: Select a Hero, a Flashcard Deck, and deck order (Random, Regular, Inverted).
+2. **Path Navigation & Encounter Selection**: Choose 1 of 3 encounter choices on the map (Battles, Shops, Surprise Events, etc.).
+3. **Encounter Resolution**: Resolve the selected encounter using earned resources, tactical board positioning, inventory management, or encounter-specific choices.
+4. **Day Progression**: Resolving an encounter advances the **Day** counter, which scales enemy team difficulty and unlocks higher-tier content.
+5. **Conclusion**: Victory (Final Boss defeated) or Defeat (Hero HP = 0).
+
+---
+
+## 4. Player Resources
+
+- **Hero and Unit Stats (HP, PWR)**: Persistent health and power for the entire run. Carries over between all encounters. Reaching 0 HP for the Hero ends the run immediately. There is no maximum HP or PWR in this game, only base stats (used across all encounters for the entire run) and current stats (modified dynamically during battle and reset at encounter conclusion).
+- **Gold**: Persistent run currency. Earned by winning battles, selling reward capsules, and through select abilities and encounter choices. Spent outside of combat for shop purchases, removal of unwanted GachaBalls, transformations, training sessions, and encounter-specific uses or ability scaling.
+- **Gacha Tokens**: Transient encounter currency. Earned primarily through the Flashcard minigame (and select abilities). Spent during encounters to draw units and items from tiered Gacha Machines or for other encounter-specific uses. Does not carry over between encounters.
+
+---
+
+## 5. Flashcard Resource Engine (Spaced Repetition System)
+
+The Spaced Repetition System (SRS) serves as the game's active resource generation engine, bridging study mechanics with roguelike strategy.
+
+### 5.1 The Minigame
+At the beginning of each turn (in battles) or upon entering non-combat study sites, players engage in a fast-paced, timed multiple-choice session:
+- **Starting Deck**: Runs begin with 5 active starter cards. New cards are introduced over the course of the run, preceded by an informational review window.
+- **SRS Weighting Algorithm**: Questions are selected dynamically based on card mastery and time elapsed since last review. Cards with lower mastery appear more frequently, while mastered cards appear less often. The same card never appears twice in a row.
+- **Scoring & Resource Generation**:
+  - **Correct Answer**: Awards 1 Token, increases card mastery, grants a +0.5s timer extension, and builds the correct-answer streak.
+  - **Incorrect Answer**: Awards no tokens, decreases card mastery by 1, and resets the streak.
+  - **Skip**: Awards no tokens, decreases card mastery by 1, grants a +0.5s timer extension, but preserves the active streak without penalty.
+
+### 5.2 Mid-Minigame Card Unlock (3-Streak Progression)
+To reward knowledgeable players and maintain engaging pacing, answering 3 questions correctly in succession triggers an immediate mid-minigame card unlock with bonus time, accelerating deck progression for players who have already mastered early study material.
+
+### 5.3 Design Rationale: Pacing, Economics & Natural Difficulty Balancing
+This mechanic addresses three core design imperatives:
+1. **Pacing & Run Duration for Mastered Players**: Players who already know the deck material in prior runs should not be forced into a slow, beginner pace. A 3-streak unlock allows proficient players to advance through familiar cards twice as fast, reaching unfamiliar material in half the run time.
+2. **Systemic Difficulty Economics & Snowball Mitigation**: Enemy encounter budgets scale linearly by Day, while players with high flashcard accuracy earn maximum tokens every turn. Accelerating card introductions exposes knowledgeable players to unfamiliar cards earlier, curbing runaway token generation before their lineup outpaces the difficulty curve.
+3. **Natural Dynamic Difficulty Balancing (Organic Risk/Reward)**: Novice players learn at a comfortable, gradual pace with rare 3-streaks. Proficient players naturally encounter tougher cards faster. Deliberately dodging new cards would require intentionally missing or skipping questions, directly sacrificing Gacha Tokens and increasing combat tension organically.
+
+---
+
+## 6. GachaBalls & Collection Architecture
+
+**GachaBalls** are the collectible entities (Units and Items) that comprise the player's lineup, bench, and inventory.
+
+### 6.1 Entity Types
+- **Units**: Combatants defined by **Health (HP)** and **Power (PWR)** stats, along with unique passive or reactive abilities. Units act front-to-back in combat.
+  - **Item Slot**: Every unit (including the Hero) is restricted to strictly **one item slot**, enforcing critical strategic trade-offs.
+  - **Evolutionary Levels**: Units possess Levels (1 to 3). Leveling increases base stats (+1 HP and +1 PWR per level) and enhances ability potency.
+- **Items**: Equipment or consumables that provide stat buffs or abilities:
+  - **Equipment**: Equippable from the bench onto a unit. Remains attached across battles until replaced or stripped.
+  - **Consumables**: Single-use items (potions, scrolls) activated from the bench. Consumable stat buffs stack additively and are conserved across unit merges.
+  - **Trinkets**: Unique artifacts that confer powerful, game-altering effects. Trinkets persist across all encounters within a run. They serve as strategic tools that define unique builds and synergies.
+
+### 6.2 Inventories & Lifecycle
+- **Run Inventory**: The player's persistent collection (deck) for the run, categorized into Tier 1, Tier 2, and Tier 3 containers (capacity of 39 slots per tier).
+- **Battle Inventory & Machines**: At battle start, the player's Run Inventory forms the initial contents of the three tiered Gacha Machines. As units are drawn, merged, or summoned, the Battle Inventory shifts dynamically without altering the persistent Run Inventory.
+- **The Discard Pile**: Defeated units, discarded items, and bench overflow are placed permanently into the Battle Discard Pile for the remainder of the battle.
+
+---
+
+## 7. Game Economic Theories & The Core Dual Economy
+
+The game operates on a dual-economy system that cleanly separates long-term deck curation from in-battle tactical execution.
+
+### 7.1 Run Economy (Gold) vs. Battle Economy (Tokens)
+
+| Tier | Gold Cost (Shop Curation) | Token Cost (Battle Draw) | Role & Power Scale |
 | :--- | :--- | :--- | :--- |
-| **Tier 1** | 1 Gold × 2^(L-1) | 1 Token | Basic units/items. |
-| **Tier 2** | 2 Gold × 2^(L-1) | 2 Tokens | Advanced synergies. |
-| **Tier 3** | 4 Gold × 2^(L-1) | 3 Tokens | Elite/Boss power levels. |
+| **Tier 1** | 1 Gold * 2^(Level - 1) | 1 Token | Foundational units, swarming, cheap execution. |
+| **Tier 2** | 2 Gold * 2^(Level - 1) | 2 Tokens | Hybrid synergies, concentrated slot value. |
+| **Tier 3** | 4 Gold * 2^(Level - 1) | 3 Tokens | Capstone powers, multiplicative battle-turning abilities. |
 
 #### **Unit Leveling & Shop Value Scaling**
-Units have both **Tiers** (1 to 3) and **Levels** (1 to 3). Leveling up a unit requires merging duplicate copies (2 of the same unit at Level 1 to make a Level 2 unit, and 2 at Level 2 to make a Level 3 unit). This merging requirement directly impacts their Shop value/Gold cost, following the formula `BaseTierCost × 2^(L-1)`:
-- **Tier 1**: Costs **1 Gold** at Lv. 1, **2 Gold** at Lv. 2, and **4 Gold** at Lv. 3 (Maximum Level).
-- **Tier 2**: Costs **2 Gold** at Lv. 1, **4 Gold** at Lv. 2, and **8 Gold** at Lv. 3.
-- **Tier 3**: Costs **4 Gold** at Lv. 1, **8 Gold** at Lv. 2, and **16 Gold** at Lv. 3.
+Leveling up a unit requires merging duplicate copies (2 Level 1 units form a Level 2 unit; 2 Level 2 units form a Level 3 unit). This doubles the Gold valuation per level:
+- **Tier 1**: 1 Gold (Lv. 1) -> 2 Gold (Lv. 2) -> 4 Gold (Lv. 3).
+- **Tier 2**: 2 Gold (Lv. 1) -> 4 Gold (Lv. 2) -> 8 Gold (Lv. 3).
+- **Tier 3**: 4 Gold (Lv. 1) -> 8 Gold (Lv. 2) -> 16 Gold (Lv. 3).
 
-#### **Strategic Duality & Deployment Efficiency**
-This exponential Gold cost is a cornerstone of the game's economy and deck curation strategy:
-- **Low Draw Cost, High Power**: A Level 3 Tier 1 unit represents a substantial **4 Gold** run investment (equivalent to a Level 1 Tier 3 unit), but when drawn in battle, its Gacha Machine token cost remains only **1 Token**.
-- **Stat and Ability Scaling**: Each level brings a slight base stat buff (approximately **+1 HP and +1 PWR** per level gained) and, more importantly, significantly improved, higher-impact versions of their unique abilities.
-- **Deployment Efficiency via Gold**: Permanent modifications performed outside of battle—including permanent merges, level-ups, and stat buffs—all cost **Gold**. This Gold investment is what yields true **Deployment Efficiency**, allowing a player to permanently upgrade units in their Run Inventory so they can later be drawn during battle for low token costs.
-- **In-Battle Merges vs. Run Merges**: Merging and leveling up units *during* a battle on the bench/board only costs the **Tokens** required to draw the constituent parent units from Gacha Machines. While dynamically useful to increase lineup strength, in-battle merges do NOT grant deployment efficiency. For example, to level up a Tier 1 unit to Level 2 in battle, a player must spend 2 Tokens to draw the two Level 1 units needed, completely offsetting the token cost advantage of drawing a single pre-leveled unit from the deck.
+#### **Deployment Efficiency via Gold**
+This exponential Gold curve establishes the core deck-curation dynamic:
+- **Low Draw Cost, High Power**: A Level 3 Tier 1 unit requires 4 Gold of run investment, but in battle its draw cost remains strictly **1 Token**.
+- **Run Merges vs. In-Battle Merges**: Permanent merges outside combat cost Gold and provide true **Deployment Efficiency**. In-battle merges are dynamically useful to respond to threats, but offer no token efficiency (spending 2 tokens to draw two Level 1 units offsets the cost benefit of drawing a pre-leveled unit).
 
-- **Run Economy (Gold)**: Used in the game to modify your Run inventory (decks) like buying gachaballs, removing them, transforming, upgrading, buffing and merging them.
-    - **Efficiency Penalty & Dilution**: Every non-synergistic unit added to the deck serves as a "dilution" of the draw pool, making it mathematically harder to draw specific "Engine" or "Anchor" pieces during battle.
-    - **Mitigation Systems**: Shop and Event nodes provide **Remove** and **Transform** mechanics as the primary tools for maintaining a "Lean" deck and maximizing the Average Value per Token spent.
-- **Battle Economy (Tokens)**: Earned via Flashcards. Used only during battle to "Realize" the value of your Run Inventory by drawing from Gacha Machines.
+### 7.2 Deck Curation vs. Dilution & Power Creep
+In *Flashcard Heroes*, strength is governed by the **Density of Synergy** rather than raw volume:
+- **Dilution Penalty**: Adding non-synergistic units to the collection dilutes the Gacha Machine pools, making key synergy pieces harder to draw when needed.
+- **Lean Deck vs. Deck Exhaustion**:
+  - Keeping a deck ultra-lean maximizes draw predictability.
+  - However, because defeated units and replaced items are committed permanently to the Discard Pile for the remainder of the encounter, an excessively lean deck risks complete pool exhaustion in protracted Elite or Boss battles.
+  - Players must balance tactical draw predictability against the raw endurance needed to outlast multi-turn boss encounters.
 
-### 6.3 Deck Curation vs. Power Creep
-In Flashcard Heroes, power is not just about having more units, but about the **Density of Synergy**. A smaller, high-synergy deck is often more powerful than a large deck of high-stat units due to the predictable nature of the draw pool. Players must constantly weigh the benefit of a new addition against the dilution of their core strategy.
+### 7.3 Combinatorial Pool Economics & Hero Content Packs
+Unrestricted roster expansion in merge-based deckbuilders leads to catastrophic pool bloat:
+- **The Combinatorial Explosion Problem**:
+  - With 4 base Tier-1 units, there are 4 choose 2 = 6 Tier-2 crossbreeds, and 6 choose 2 = 15 Tier-3 units, yielding an ideal base pool of **25 units**.
+  - Unrestrictedly adding just 1 new Tier-1 unit increases Tier-2 to 10 units and Tier-3 to 45 units (60 total units). This pool explosion completely destroys shop roll consistency, making duplicate merges and leveling mathematically unviable.
+- **The 11-Unit Hero Content Pack Model**:
+  - To provide deep asymmetric replayability without pool bloat, each playable Hero introduces a dedicated, closed-loop 11-unit lineage pack:
+    - **1 Hero Starter Unit (H1)** (Tier 1).
+    - **4 Hero Crossbreeds (H2_a through H2_d)** (Tier 2): Formed exclusively by merging H1 with each of the 4 neutral base Tier-1 units.
+    - **6 Hero Capstones (H3_1 through H3_6)** (Tier 3): Formed exclusively by merging pairs of Hero Tier-2 units (4 choose 2 = 6).
+  - Hero Tier-2 units do not cross-merge with neutral Tier-2 units, completely walling off combinatorial explosion.
+  - Similarly, each Hero introduces a unique Tier 1 item that can be merged with the 2 base Tier 1 items to form 2 possible Tier 2 items, which can in turn be merged to form a capstone Tier 3 item.
+  - Select unique consumables and trinkets may also be introduced as part of the Hero pack, including a trait trinket unique to that Hero and their units.
+- **The 36-Unit Active Working Pool**:
+  - Every run features an active roster of:
+    `Total Working Pool = 25 (Neutral Base) + 11 (Selected Hero Pack) = 36 Active Units`
+  - This guarantees that shop roll probabilities, upgrade frequencies, and duplicate leveling remain perfectly balanced regardless of how many Heroes exist in the game.
+- **Standalone Wildcards**:
+  - Standalone units have no merge recipes and cannot be crafted from lower tiers; they appear directly in shops or elite rewards. They possess standard traits and can be leveled via duplicate self-merging, allowing trait deficit patching without cascading recipe requirements.
 
-#### **The Strategic Trade-Off: Predictability vs. Deck Exhaustion**
-With the integration of **permanent in-battle discards**, deck curation becomes a high-stakes balancing act:
-- **The Case for a Lean Deck**: Keeping your deck small significantly increases the predictability of your draws. You can reliably pull key synergy tags and core engines with fewer Gacha Token spins.
-- **The Threat of Exhaustion**: Since defeated units and overflow balls are placed in the Discard Pile *permanently* for the remainder of the battle, an ultra-lean deck carries a severe survival risk. In prolonged, multi-turn engagements (such as intense Elite or Boss battles), a player can fully deplete their draw pool. 
-- **The Survival Threshold**: Running out of GachaBalls in the draw pool leaves the player unable to field new units, leading to rapid defeat. Consequently, players cannot simply reduce their deck to a micro-size; they must maintain a "survival threshold" of total units to last through prolonged battles, balancing perfect synergy predictability against raw endurance.
+---
 
-7. Battle System
-7. Battle System: The Tactical Puzzle
-Battles are deterministic contests where the outcome is decided during the **Management Phase**. Each turn functions as a tactical puzzle where you must counter the enemy's formation using limited resources.
+## 8. Merge System
 
-- **Phase 1: Performance (Flashcards)**: Your accuracy and speed in the mini-game determine your **Gacha Token** budget for the turn.
-- **Phase 2: Management (The Puzzle)**:
-    - **Resource Spending**: Decide how to spend tokens across the three Tiered Gacha Machines (Tier 1/2/3), each having its own cost and unique pool of units/items.
-    - **Formation & Order**: Units act **Front-to-Back**. Since combat is deterministic (no crits/misses), the specific order of units and item placement is the deciding factor between victory and defeat.
-    - **Counter-Play**: Analyze the enemy's stats, upcoming actions and reactions based on their abilities and equipment, trinkets, stat effects, etc to optimize your lineup placement, bench, and item usage.
-- **Phase 3: Execution (Combat)**: All actions resolve automatically and sequentially. Success depends entirely on your preparation in the Management Phase with the availble drawn "hand" and board state.
+Merging allows players to evolve units, adapt to enemy lineups, and preserve stat investments.
 
-8. Merge System
-Combining GachaBalls is a core tool to increase adaptability to the enemy's formation, preserve stat improvements, and evolve units into more powerful definitions.
-
-### 8.1 Merge Types & Progression Rules
-We distinguish between two distinct merging pathways:
+### 8.1 Merge Types
 - **Merge to Level Up (Evolutionary)**:
-  - **Requirement**: Uses **identical** units (e.g., Tiger Lv. 1 + Tiger Lv. 1 $\rightarrow$ Tiger Lv. 2).
-  - **Outcome**: Elevates the unit to a higher level of the same base definition. The unit retains its original Tier, tag synergies, and battle draw cost, but receives improved ability scaling and stats.
+  - **Requirement**: Two identical units of matching level (below Level 3).
+  - **Outcome**: The unit elevates to the next level (e.g., Lv. 1 Tiger + Lv. 1 Tiger -> Lv. 2 Tiger). It retains its Tier, traits, and battle token draw cost, while gaining improved stats (+1 HP / +1 PWR) and upgraded ability scaling or features.
 - **Merge to Tier Up (Recipe-Based)**:
-  - **Requirement**: Uses **different** specific units according to active recipes (e.g., Unit A + Unit B $\rightarrow$ Unit C).
-  - **Outcome**: Creates a completely new, higher-tier unit definition. This unit has a **completely different ability**, a higher tier, and consequently a higher token draw cost in battle.
-  - **Level Resets but Stats Inherit**: When merging different units to tier up, if the parent units have levels, their stats are still fully added together (preserving the stat surplus inheritance). However, the **new higher-tier unit always starts at Level 1**; the levels of the parent units do not carry over.
+  - **Requirement**: Two different constituent units of any level combined according to an unlocked recipe.
+  - **Outcome**: Creates a completely new, higher-tier unit definition with a new ability, higher tier, different set of traits, and increased draw cost. The new unit always starts at Level 1, but inherits surplus stats from its parent units.
 
-### 8.2 In-Battle vs. Permanent Merges
-- **Permanent Merges (Run Economy - Gold)**:
-  - Performed in the Run Inventory outside of battle.
-  - **Resource Cost**: Merging, leveling up, and applying permanent stat buffs outside battle all cost **Gold**.
-  - **Strategic Value**: This is the source of **Deployment Efficiency**. Permanently leveling up a Tier 1 unit to Lv. 3 in the run deck means it can be drawn during battle for only 1 Token while enjoying Lv. 3 stats and abilities.
-- **In-Battle Merges (Battle Economy - Tokens)**:
-  - Performed on the bench or lineup during the Management Phase.
-  - **Resource Cost**: Merging/leveling up in battle is free to execute but requires the **Tokens** used to draw the parent units from the Gacha Machines to the board first.
-  - **No Deployment Efficiency**: While in-battle leveling is strategically useful to strengthen the lineup dynamically, it does not provide deployment token efficiency. To get a Lv. 2 Tier 1 unit on the board in-battle, the player must spend 2 Tokens to draw the two Lv. 1 Tier 1 units required, offsetting the cost benefits of drawing a pre-leveled unit.
+### 8.2 Stat Surplus Inheritance
+Merged units conserve stat bonuses from their constituents:
+- **Tier Evolution**: Parents' stats are summed together.
+- **Leveling**: The unit retains its base stats, gains a flat +1 HP and +1 PWR per level, and inherits all accumulated extra stats (training, buffs, parent inheritance).
 
-### 8.3 Recipe Discovery
-- **Recipes**: Valid combinations are defined by recipes. Recipes are **locked** until the resulting higher-tier unit is first acquired in the run.
+---
 
-### 8.4 Stat Inheritance
-- **Stat Inheritance**: Result units inherit a "stat surplus" from their parents via a persistent **Merge Inheritance Component**:
-  - **Tier Evolution**: Parents' stats are added together.
-  - **Leveling**: Unit keeps its original base stats plus a flat **+1 Stat Point per level gained**, and sums only the "Extra Stats" (inheritance/buffs) from parents.
+## 9. Combat System: The Tactical Puzzle
 
-### 8.5 Visual Affordances & Merge Indicators
-- **Contextual Merge Highlights**: When dragging or selecting a GachaBall:
-  - **Cyan Outline**: Marks target units that will self-merge to Level Up (matching level < Lv. 3).
-  - **Magenta Outline**: Marks target units or items that will combine via an unlocked recipe to Tier Up into a higher-tier entity.
-- **Recipe Discovery Cues**: Units in Shop and Post-Battle Reward scenes that produce unacquired/locked recipes are outlined in **Violet**, signaling recipe discovery potential.
+Battles are deterministic contests resolved in three distinct phases:
 
-9. Core Entities & Systems
-- **Hero Unit**: Your central character. HP = Run Health. restricted to the PlayerLineup.
-- **Trinkets**: Non-GachaBall items providing run-wide passive bonuses.
-- **Encounters**: Choices that define your run's journey and difficulty scaling, including:
-    - **Battles**: Common, Elite, and Boss encounters. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
-    - **Shops**: Standard **Shop** (buy, reroll, or remove/transform GachaBalls) and the **Black Market** (specialized vendor with exotic or rare inventory).
-    - **Standalone Encounters**: Dedicated sites for permanent improvements: **Merge Encounter** (advanced gachaball combining bypassing recipes) and **Unit Training Ground** (stat-boosting projectile training minigame).
-    - **Surprise Events**: Randomly selected mini-encounters including the **Rest Site** (Hero HP boosts), **Gambling Den** (Gold boosts), and **Training Grounds** (Hero PWR boosts).
-- **Ability System**: Event-driven (triggers like `ON_ATTACK`, `ON_DEATH`). Every unit an items has an ability or more besides sometimes passive stats.
-- **Status Effects**: Temporary effects that stack and typically decay at turn end, per activation, etc.
+1. **Phase 1: Performance (Flashcard Minigame)**:
+   Speed and accuracy determine the turn's Gacha Token budget.
+2. **Phase 2: Management (The Tactical Puzzle)**:
+   - **Spending Tokens**: Draw units and items from Tier 1, 2, or 3 machines.
+   - **Formation & Order**: Units are deployed on the active lineup (up to 5 slots) and act **Front-to-Back**.
+   - **Counter-Play**: Inspect enemy lineup positions, upcoming attacks, and equipment to optimize counter-formations, merges, item assignments, and consumable usage.
+3. **Phase 3: Execution (Deterministic Combat)**:
+   All attacks, abilities, status decays, and reactions resolve sequentially without player intervention. Success depends entirely on the player's preparation during the Management Phase.
 
-| Effect | Description |
-| :--- | :--- |
-| **Burn** | Damage at turn end equal to stacks. |
-| **Armor** | Blocks incoming damage. |
-| **Spikes** | Deals damage back to attackers. |
-| **Static** | Consumed stack-by-stack when the holder suffers any stat change. Deals 1 armor-ignoring damage per consumed stack. |
-- **Traits**: Persistent team-wide bonuses based on the active units and emblems in your lineup. Each unit contributes 1 **Soul** to a specific element (Fire, Earth, Water, Wind).
-    - **Fire**: Offensive pressure (Burn application).
-    - **Earth**: Defense and sustain (Armor and Spikes).
-    - **Water**: Resilience (Adjacent healing).
-    - **Wind**: Disruption (PWR theft).
+---
 
-10. Progression & Meta-Systems
-- **Difficulty Scaling**: Enemy teams grow stronger each **Day** via the Encounter Budget System (scaling Gold budget for more/better units/items/trinkets and even starting stats).
-- **Achievements & Unlocks**: Completing in-game milestones permanently unlocks new Heroes, Decks, GachaBalls, and Recipes for future runs.
-- **The Codex**: An in-game encyclopedia of discovered units, items, and merge recipes.
+## 10. Run Structure & Encounters
 
-11. UI/UX Principles
-- **Cross-Platform Interaction**: Optimized for Mouse (Drag-and-Drop, Click-to-Select) and Touch (Tap, Long-press Peek).
-- **Intent Priority**: All interactions are resolved in the order: **Merge > Equip > Use > Swap**.
-- **Transparency**: Board states, enemy stats, and all Gacha machine pools (the "Drawer") are fully visible for tactical planning.
-- **Inspection System**: Hierarchical window system; clicking "locks" a hover/peek window open for detailed analysis.
+### 10.1 Encounter Node Types
+- **Battles**: Common, Elite, and Boss fights. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
+- **Shops**: Spend Gold to buy units/items, reroll inventory, or purchase upgrades.
+- **Black Market**: Specialized vendor offering unit purges (deck thinning) and transformations.
+- **Unit Merge Encounter**: Special encounter that allows players to merge units and items outside of combat.
+- **Unit Training Grounds (Dojo)**: Targeted stat training minigames to permanently increase individual unit stats.
+- **Surprise Events & Gambling Dens**: Risk/reward encounters offering Gold or stat boosts for the Hero and other special interactions.
 
-*Detailed interaction priorities, game rules, and expected behaviors are preserved in [Game Rules & Expected Behaviors.md](Game%20Rules%20&%20Expected%20Behaviors.md).*
+### 10.2 Boss & Elite Scheduling
+- **Boss Scheduling**: Boss encounters are paced by **Flashcard Deck Mastery Milestones** rather than rigid day counts. In a Full Deck, a Boss is triggered every 20% of the deck introduced (up to 5 Bosses); in a Half Deck, every 33.3% (up to 3 Bosses).
+- **Elite Scheduling**: Elite encounters are paced by progress toward the upcoming Boss, guaranteed at intermediate card mastery thresholds (20%, 40%, 60%, 80%) with a quota limit of 4 elite battles per boss tier.
+
+---
+
+## 11. Status Effects, Traits & Meta-Progression
+
+### 11.1 Status Effects
+- **Burn**: Deals damage at turn end equal to active stacks, then stacks decay by half per turn. Damages directly through Armor.
+- **Armor**: Absorbs incoming damage point-for-point before Health is lost. Decays at turn end.
+- **Spikes**: Deals direct retaliatory damage back to attackers upon taking attack damage equal to active stacks. Decays by 1 stack per activation and is mitigated by Armor.
+- **Static**: Deals collateral damage to adjacent units upon the holder's death equal to active stacks. Decays by 1 stack per turn and is mitigated by Armor.
+
+### 11.2 Traits & Elemental Affiliations
+Units contribute elemental souls to team-wide traits based on their elemental tags:
+- **Fire**: Offensive pressure (Burn application).
+- **Earth**: Defense and sustain (Armor and Spikes generation).
+- **Water**: Resilience and team sustain (healing).
+- **Wind**: Disruption and control (Power theft and tempo advantage).
+
+### 11.3 Meta-Progression & Persistence
+- **Achievements & Unlocks**: Completing in-run milestones permanently unlocks new Heroes, Decks, GachaBalls, and Recipes for future runs.
+- **The Codex**: An in-game encyclopedia cataloging all discovered units, items, and merge recipes across all runs.
+- **Run Checkpointing**: Run state is saved at the start of each Day. In the event of victory or defeat, the save checkpoint is deleted to preserve roguelike tension.
+
+---
+
+*For detailed player-facing rules and behavioral contracts, see [Game Rules & Expected Behaviors.md](Game%20Rules%20&%20Expected%20Behaviors.md). For engineering architecture and class contracts, see [Flashcard Heroes TDD.md](Flashcard%20Heroes%20TDD%20(Technichal%20Design%20Document)%20V9.0.md).*

@@ -13,7 +13,6 @@ target_type = &"NONE"
 [resource]
 script = ExtResource("1_script")
 id = &"unit_tier3c_soul_summon_l3"
-name_key = "ability.unit_tier3c_soul_summon.name"
 description_key = "ability.unit_tier3c_soul_summon_l3.desc"
 trigger = &"on_death"
 priority = 205

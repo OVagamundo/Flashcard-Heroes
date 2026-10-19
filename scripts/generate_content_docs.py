@@ -82,6 +82,10 @@ def parse_tres(file_path):
     cat_match = re.search(r'^category\s*=\s*&?"([^"]+)"', res_body, re.M)
     data["category"] = cat_match.group(1) if cat_match else ""
 
+    linked_trait_match = re.search(r'^linked_trait_id\s*=\s*&?"([^"]+)"', res_body, re.M)
+    if linked_trait_match:
+        data["linked_trait_id"] = linked_trait_match.group(1)
+
     tags = []
     tags_match = re.search(r'^tags\s*=\s*(?:Array\[StringName\]\()?\s*\[(.*?)\](?:\))?', res_body, re.M | re.S)
     if tags_match:
@@ -179,6 +183,19 @@ def build_docs():
 
     for title, folder, filt in sections:
         md += f"\n\n## {title}\n"
+        if title == "Trinkets":
+            md += """
+
+### Sigils and Insignias
+Sigils and Insignias have separate roles. A trait **Sigil** lists the activation thresholds and descriptions for that trait's abilities. An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the board. Sigils use standalone trait symbols; Insignias use distinct ribboned badge icons.
+
+| Insignia group | Items | Effect |
+|---|---|---|
+| Level Insignias | Novice (Level 1), Veteran (Level 2), Master (Level 3) | Grant +1 HP and +1 PWR to units of the matching level. |
+| Tier Insignias | Cheap (Tier 1), Fair (Tier 2), Premium (Tier 3) | Grant +1 HP and +1 PWR to units of the matching tier, regardless of level. |
+| Trait Insignias | One for each of the 15 traits listed below | Grant +1 HP and +1 PWR to units with the matching trait, regardless of level or tier. |
+
+"""
         folder_path = os.path.join(PROJECT_ROOT, folder)
         if not os.path.exists(folder_path):
             continue
@@ -223,10 +240,16 @@ def build_docs():
             tag_str = ", ".join([t.replace("SOUL_", "") for t in item["tags"]])
 
             abils = []
-            for a in item["abilities"]:
+            # Trait Sigils present their threshold list as the complete description.
+            # Their linked trait ability summaries must not be rendered as though
+            # they were Sigil effects.
+            ability_entries = [] if title == "Trinkets" and item.get("linked_trait_id") else item["abilities"]
+            for a in ability_entries:
                 n_key = a.get('name_key', '')
                 d_key = a.get('desc_key', '')
-                raw_name = t_md(n_key).strip() if (folder != "resources/units" and n_key in localization) else ""
+                if title == "Trinkets" and d_key and t(d_key) == t(item.get("desc_key", "")):
+                    continue
+                raw_name = ""
                 raw_desc = t_md(d_key).strip() if d_key in localization else ""
                 if not raw_name and not raw_desc:
                     continue
@@ -243,12 +266,29 @@ def build_docs():
 
             if not abils:
                 if item.get("linked_trait_id"):
-                    abils.append(f"**Linked Trait**: {item['linked_trait_id']}")
-                elif title == "Trinkets" and item.get("desc_key") in localization:
+                    if title != "Trinkets":
+                        abils.append(f"**Linked Trait**: {item['linked_trait_id']}")
+                elif title == "Trinkets" and not item["abilities"] and item.get("desc_key") in localization:
                     abils.append(t_md(item["desc_key"]))
 
             abil_str = "<br><br>".join(abils)
-            md += f"| `{item['id']}` | **{t_md(item['name_key'])}**<br>_{t_md(item['desc_key'])}_ | {stats} | {tag_str} | {abil_str} |\n"
+            description = t_md(item["desc_key"])
+            # The entity summary and its detailed ability list can describe the
+            # same effects. Keep one copy in the generated reference document.
+            ability_descriptions = list(dict.fromkeys(
+                t(a.get("desc_key", ""))
+                for a in ability_entries
+                if a.get("desc_key") and t(a.get("desc_key", ""))
+            ))
+            raw_description = t(item["desc_key"])
+            repeated_summary = bool(abils) and bool(ability_descriptions) and (
+                raw_description in ability_descriptions
+                or all(ability_description in raw_description for ability_description in ability_descriptions)
+            )
+            if repeated_summary:
+                description = ""
+            description_cell = f"<br>_{description}_" if description else ""
+            md += f"| `{item['id']}` | **{t_md(item['name_key'])}**{description_cell} | {stats} | {tag_str} | {abil_str} |\n"
 
     # Add Core Stats & Combat Attributes section
     md += """
@@ -289,10 +329,10 @@ def build_docs():
     md += """
 
 ## Traits & Synergies
-The game features 15 traits across three categories: 4 Elemental Traits (Souls: 3 to 32), 4 Class Traits (Units: 2 to 5), and 7 Visual Archetype Traits (Units: 2 to 5). Equipping the corresponding Trait Trinket enables team-wide combat synergies.
+The game features 15 traits across three categories: 4 Elemental Traits (Souls: 3 to 32), 4 Class Traits (Units: 2 to 5), and 7 Visual Archetype Traits (Units: 2 to 5). Each trait has a matching Sigil that lists the activation thresholds for that trait's abilities. Trait Insignias are separate stat-bonus trinkets.
 
 ### Elemental Traits (Souls: 3, 6, 12, 20, 32)
-Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresponding elemental Trinket activates synergies based on active lineup souls:
+Units carry elemental Soul tags (Fire, Earth, Water, Air). The elemental Sigils list the Soul thresholds for their abilities:
 | Trait | Focus | Synergy Thresholds | Overview |
 |---|---|---|---|
 | **Fire** | Offensive Pressure | 3 / 6 / 12 / 20 / 32 Souls | Applies Burn on attack, spreads Burn on tick, deals bonus attack damage against burning targets, and redistributes Burn on kill. |
@@ -301,7 +341,7 @@ Units carry elemental Soul tags (Fire, Earth, Water, Air). Equipping the corresp
 | **Air** | Static Discharge | 3 / 6 / 12 / 20 / 32 Souls | Inflicts Static on attack, splashes Static to adjacent enemies, pre-combat team Static, and scales attack Static with unit PWR. |
 
 ### Class & Visual Archetype Traits (Units: 2, 3, 4, 5)
-Class and Visual traits activate when the team equips that trait's trinket and field the required unit count:
+The Class and Visual Sigils list the unit-count thresholds for their abilities:
 | Trait Category | Traits | Synergy Thresholds | Archetype Mechanic |
 |---|---|---|---|
 | **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | **Tank**: Frontline Armor, backward Armor passing, attack interception, Armor-to-Spikes.<br>**Fighter**: Bonus damage vs higher HP, ranged counter-attack, cleave splash, extra action on kill.<br>**Support**: Positional +HP (front) / +PWR (behind), turn-start lowest-stat buffs, Hero empowerment.<br>**Specialist**: Opening tokens, Gacha discount, gold on kill, bench combat clone, +PWR per 5 Gold. |
@@ -314,7 +354,10 @@ Class and Visual traits activate when the team equips that trait's trinket and f
     def write_csv(filepath, data_list, is_unit=False):
         with open(filepath, "w", newline="", encoding="utf-8") as f:
             writer = csv.writer(f)
-            writer.writerow(["ID", "Name", "Description", "Tier", "Cost", "Base HP", "Base PWR", "Ability 1 Name", "Ability 1 Desc", "Ability 2 Name", "Ability 2 Desc", "Ability 3 Name", "Ability 3 Desc"])
+            headers = ["ID", "Name", "Description", "Tier", "Cost", "Base HP", "Base PWR"]
+            for i in range(1, 4):
+                headers.append(f"Ability {i} Description")
+            writer.writerow(headers)
             for item in data_list:
                 row = [
                     item["id"],
@@ -325,7 +368,20 @@ Class and Visual traits activate when the team equips that trait's trinket and f
                     item.get("hp", ""),
                     item.get("pwr", "")
                 ]
-                named_abilities = [a for a in item["abilities"] if a.get("name_key") or a.get("desc_key")]
+                # Sigils are fully described by their threshold text above. Do
+                # not repeat the linked trait's underlying ability in the CSV.
+                # Insignia ability resources often share their concise item
+                # description, so omit those duplicates as well.
+                named_abilities = [
+                    a for a in item["abilities"]
+                    if (a.get("name_key") or a.get("desc_key"))
+                    and not (not is_unit and item.get("linked_trait_id"))
+                    and not (
+                        not is_unit
+                        and a.get("desc_key")
+                        and t(a.get("desc_key", "")) == t(item.get("desc_key", ""))
+                    )
+                ]
                 seen_descs = set()
                 deduped_abils = []
                 for a in named_abilities:
@@ -333,19 +389,15 @@ Class and Visual traits activate when the team equips that trait's trinket and f
                     if signature not in seen_descs:
                         seen_descs.add(signature)
                         deduped_abils.append(a)
-                if not deduped_abils and item.get("linked_trait_id"):
-                    deduped_abils.append({"name_key": "", "desc_key": item.get("desc_key", ""), "mechanics": [f"[Linked Trait: {item['linked_trait_id']}]"]})
                 for i in range(3):
                     if i < len(deduped_abils):
-                        n_key = deduped_abils[i].get("name_key", "")
                         d_key = deduped_abils[i].get("desc_key", "")
-                        row.append("" if is_unit else (t(n_key) if n_key in localization else ""))
                         desc = t(d_key) if d_key in localization else ""
                         if deduped_abils[i]["mechanics"]:
                             desc += " " + " ".join(deduped_abils[i]["mechanics"])
                         row.append(desc)
                     else:
-                        row.extend(["", ""])
+                        row.append("")
                 writer.writerow(row)
 
     write_csv(DOCS_UNITS_CSV, all_data["resources/units"], is_unit=True)

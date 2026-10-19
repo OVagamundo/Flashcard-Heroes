@@ -66,6 +66,7 @@ const TRAIT_OUTLINE_COLORS = [
 	Color(1.0, 0.84, 0.0), # Gold
 	Color(0.5, 1.0, 1.0) # Prismatic/Cyan
 ]
+const TRAIT_OUTLINE_WIDTH := 5.0
 
 # Local input state to disambiguate click vs drag
 var _pressed_pending_click: bool = false
@@ -1539,8 +1540,14 @@ func _get_all_instances_db() -> Dictionary:
 ## Create gachaball overlay for inventory windows
 ## Match the physics inventory composition: capsule behind the unit sprite.
 func _create_gachaball_overlay() -> void:
-	if not is_instance_valid(icon_rect):
+	if not show_capsule_overlay or not is_instance_valid(icon_rect):
 		return
+	
+	var p = get_parent()
+	while p:
+		if "InspectionWindow" in p.name or "ChoiceWindow" in p.name:
+			return
+		p = p.get_parent()
 	
 	# Check if overlay already exists (prevent duplication on repopulate)
 	var existing_overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
@@ -1965,7 +1972,7 @@ func _update_outline_visuals() -> void:
 		outline_enabled = true
 		var color_idx = min(_last_trait_level - 1, TRAIT_OUTLINE_COLORS.size() - 1)
 		outline_color = TRAIT_OUTLINE_COLORS[color_idx]
-		outline_width = 18.0
+		outline_width = TRAIT_OUTLINE_WIDTH
 	else:
 		outline_enabled = false
 
@@ -2065,6 +2072,7 @@ func animate_leap_return() -> void:
 		await controller.animate_leap_return()
 
 var force_inventory_mode: bool = false
+var show_capsule_overlay: bool = true
 
 ## Heuristic to check if we should render in "Inventory Mode" (2x scale, 192px slot, circle outline)
 ## 1. Checks if parent name contains "InventoryWindow"

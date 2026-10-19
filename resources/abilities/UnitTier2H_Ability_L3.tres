@@ -14,7 +14,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_t2_h_ability_l3"
-name_key = "ability.unit_t2_h.name"
 trigger = &"on_pre_combat"
 effects = Array[Resource]([SubResource("EffectGrantStats")])
 description_key = "ability.unit_t2_h_l3.desc"

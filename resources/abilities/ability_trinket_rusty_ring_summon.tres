@@ -6,7 +6,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"ability_trinket_rusty_ring_summon"
-name_key = ""
 description_key = ""
 trigger = &"on_ally_summon"
 priority = 50

@@ -5,11 +5,15 @@ extends Node
 
 const C = preload("res://scripts/Constants.gd")
 
-func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances_db: Dictionary) -> Dictionary:
+func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances_db: Dictionary, recipe_id: StringName = &"") -> Dictionary:
 	if not instance_a or not instance_b:
 		return {}
 		
-	var recipe: MergeRecipe = find_recipe(instance_a, instance_b, source_loc, target_loc, all_instances_db)
+	var recipe: MergeRecipe = null
+	if not recipe_id.is_empty():
+		recipe = Database.recipes.get(recipe_id)
+	if not is_instance_valid(recipe):
+		recipe = find_recipe(instance_a, instance_b, source_loc, target_loc, all_instances_db)
 	if not recipe:
 		return {}
 
@@ -194,6 +198,29 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		"items_to_discard": items_to_discard
 	}
 
+## Calculates and returns a preview GachaBallInstance representing the outcome of a merge.
+## Does NOT mutate any game state, data owner, or parent instances.
+func get_preview_merge_instance(source_instance: GachaBallInstance, target_instance: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, all_instances_db: Dictionary, recipe_id: StringName = &"") -> GachaBallInstance:
+	var merge_result := calculate_merge_result(source_instance, target_instance, source_loc, target_loc, all_instances_db, recipe_id)
+	if merge_result.is_empty():
+		return null
+	var preview_instance: GachaBallInstance = merge_result.get("merged_instance")
+	if not is_instance_valid(preview_instance):
+		return null
+	var result_def = preview_instance.get_definition()
+	if not is_instance_valid(result_def):
+		return null
+	
+	if result_def.category == &"UNIT":
+		var items_to_equip: Array = merge_result.get("items_to_equip", [])
+		var max_slots: int = preview_instance.equipped_item_uuids.size()
+		for i in range(mini(items_to_equip.size(), max_slots)):
+			var it: GachaBallInstance = items_to_equip[i]
+			if is_instance_valid(it):
+				preview_instance.equipped_item_uuids[i] = it.ball_uuid
+				preview_instance.equip_item_bonus(it, {"silent": true})
+	
+	return preview_instance
 
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
@@ -549,7 +576,7 @@ func _check_and_apply_level_up_insignia(instance_a: GachaBallInstance, instance_
 	var trinket_name := ""
 	if parent_level == 1:
 		trinket_id = &"trinket_royal_insignia"
-		trinket_name = "Royal Insignia"
+		trinket_name = "Novice Insignia"
 	elif parent_level == 2:
 		trinket_id = &"trinket_veteran_insignia"
 		trinket_name = "Veteran Insignia"

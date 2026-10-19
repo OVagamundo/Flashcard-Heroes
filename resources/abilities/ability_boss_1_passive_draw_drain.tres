@@ -17,7 +17,6 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_script")
 id = &"ability_boss_1_draw_drain"
-name_key = "ability.boss_1_draw_drain.name"
 description_key = "ability.boss_1_draw_drain.desc"
 trigger = &"on_draw"
 priority = 0

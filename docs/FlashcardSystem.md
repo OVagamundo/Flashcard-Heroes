@@ -195,14 +195,14 @@ The mini-game operates in four sequential phases:
 
 Question selection calculates priority weights for every eligible card in `_active_deck_ids`:
 
-$$\text{Weight} = \text{MasteryComponent} + \text{TimeComponent} + \text{RandomComponent}$$
+`Weight = MasteryComponent + TimeComponent + RandomComponent`
 
 1. **Mastery Component (Priority 1 - High)**:
-   $$\text{MasteryComponent} = (6 - \text{mastery\_level})^2$$
+   `MasteryComponent = (6 - mastery_level)^2`
 2. **Recency Component (Priority 2 - Medium)**:
-   $$\text{TimeComponent} = (\text{current\_day} - \text{last\_review\_day}) \times 1.0$$
+   `TimeComponent = (current_day - last_review_day) * 1.0`
 3. **Random Component (Priority 3 - Low)**:
-   $$\text{RandomComponent} = \text{randf}() \times 0.1$$
+   `RandomComponent = randf() * 0.1`
 
 ### Mastery Dampening Multipliers
 To ensure mastered cards do not crowd out active study material, selection weights are dampened:
@@ -261,7 +261,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
 - **Beginner's Charm (`trinket_beginners_charm`)**:
   - Awards **2 Gacha Tokens** instead of 1 when answering a card at Level 1 mastery (`MASTERY_MIN`).
 - **Sprint Charm (`trinket_time_sprint_charm`)**:
-  - When in battle, increases base session duration by **+2.0s** (7.0s base $\rightarrow$ 9.0s).
+  - When in battle, increases base session duration by **+2.0s** (7.0s base -> 9.0s).
 
 ---
 
