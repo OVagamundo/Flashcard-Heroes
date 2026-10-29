@@ -247,10 +247,15 @@ func _find_inspectable_view_at_position(pos: Vector2) -> Control:
 
 ## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
-	# Full input lock during COMBAT: swallow ESC/background clicks
+	# Full input lock during COMBAT: swallow background clicks
 	# UNLESS the player is currently inspecting something (the game is frozen).
 	# If we are inspecting, allow background clicks to close the inspection window and unfreeze!
+	# Allow ESC during combat to toggle pause menu!
 	if _is_combat_phase and not _is_inspection_locked:
+		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
+			if is_instance_valid(WindowManager):
+				WindowManager.toggle_options_window()
+				get_viewport().set_input_as_handled()
 		return
 	# ESC: cancel drag, then modals, then contextual windows, then selection
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
@@ -265,21 +270,30 @@ func _unhandled_input(event: InputEvent) -> void:
 				_end_drag_visuals(false)
 			return
 		# 2) Try to close a modal (WindowManager listens to this signal)
-		if SignalBus.has_signal("close_modal_requested"):
-			SignalBus.emit_signal("close_modal_requested")
+		if is_instance_valid(WindowManager) and WindowManager.is_modal_open():
+			if SignalBus.has_signal("close_modal_requested"):
+				SignalBus.emit_signal("close_modal_requested")
 			return
 		# 3) Clear lock state
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1
 		# 4) Close contextual windows (guarded by suppression) and clear selection
-		if not _is_close_suppressed_now():
-			_execute_close_all_inspection_windows()
+		if is_instance_valid(WindowManager) and WindowManager.has_any_contextual_windows():
+			if not _is_close_suppressed_now():
+				_execute_close_all_inspection_windows()
+			return
 		if not is_vcr_playing() and not _is_combat_phase:
 			if is_instance_valid(ActionQueue) and _current_selection != null:
 				ActionQueue.request(DeselectAction.new())
-			else:
+				return
+			elif _current_selection != null:
 				_execute_deselect()
+				return
+		# 5) If nothing else was open or selected, toggle Options / Pause menu
+		if is_instance_valid(WindowManager):
+			WindowManager.toggle_options_window()
 		return
+
 
 	# True background click: left mouse press not handled by any Control
 	if InputUtils.is_primary_pointer_press(event):
@@ -694,7 +708,7 @@ func _is_valid_move_target(selection: InteractionContext, target: InteractionCon
 func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
 	if not _window_manager:
 		return false
-	if _is_black_market_target_context(context):
+	if _is_shrine_target_context(context):
 		return true
 	var view: Control = _find_view_by_instance_id(context.source_view_instance_id)
 	if not view:
@@ -702,10 +716,10 @@ func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
 	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
 	return is_instance_valid(parent_window)
 
-func _is_black_market_target_context(context: InteractionContext) -> bool:
+func _is_shrine_target_context(context: InteractionContext) -> bool:
 	if context == null or not is_instance_valid(context.location):
 		return false
-	return context.location.container == &"BlackMarket" and WindowManager.is_run_inventory_window_open()
+	return context.location.container == &"Shrine" and WindowManager.is_run_inventory_window_open()
 
 ## Temporary suppression after in-window actions: prevent closing the parent inspection window
 func _activate_close_suppression_for_view(view: Control, duration_msec: int = 200) -> void:

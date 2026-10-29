@@ -90,7 +90,7 @@ Centralized interpretation of user intent to decouple Views from Logic:
     - **ModalLayer (120)**: Pop-ups and Inspections.
     - **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions.
     - **CursorLayer (1024)**: Software Cursor (Sprite2D).
--   **Interactive Overlays**: Programmatic service zones (Shop, Black Market, Rewards) that use the `DropZone.gd` component to provide native Godot drag-and-drop stability. They feature a **VFX Proxy** system to eliminate visual gaps during animated transactions.
+-   **Interactive Overlays**: Programmatic service zones (Shop, Shrine, Rewards) that use the `DropZone.gd` component to provide native Godot drag-and-drop stability. They feature a **VFX Proxy** system to eliminate visual gaps during animated transactions.
 -   **Inventory Manager**: Stateless executor of `REQUEST_ACTION` commands. It bridges the GIR and the data owners (RunState/BattleManager).
 -   **Audio System**: Decoupled SFX/BGM management via semantic IDs (`unit_hop`, `ui_click`).
     -   (See `docs/AudioSystem.md`)

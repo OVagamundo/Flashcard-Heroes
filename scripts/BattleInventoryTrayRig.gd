@@ -4,13 +4,13 @@ extends Node2D
 const PhysicsBallScene = preload("res://scenes/PhysicsGachaBall.tscn")
 
 @export var tier: int = 1
-@export var container_size: Vector2 = Vector2(640, 680)
-@export var left_wall_padding: float = 14.0
-@export var right_wall_padding: float = 14.0
-@export var bottom_wall_padding: float = 15.0
+@export var container_size: Vector2 = Vector2(500, 540)
+@export var left_wall_padding: float = 20.0
+@export var right_wall_padding: float = 20.0
+@export var bottom_wall_padding: float = 22.0
 @export var side_wall_thickness: float = 5000.0
 @export var floor_thickness: float = 5000.0
-@export var spawn_y: float = 250.0
+@export var spawn_y: float = 200.0
 @export var back_texture: Texture2D
 @export var overlay_texture: Texture2D
 
@@ -232,9 +232,9 @@ func _spawn_ball(inst) -> void:
 	ball.physics_interpolation_mode = Node.PHYSICS_INTERPOLATION_MODE_ON
 	
 	# SUIKA STYLE PHYSICS SPREAD:
-	# Keep horizontal offset extremely tight to the center so they never safely overlap
-	# the side walls upon spawning, which completely prevents them from falling out.
-	var random_offset = Vector2(RNGManager.cosmetic_rng.randf_range(-150.0, 150.0), RNGManager.cosmetic_rng.randf_range(-20.0, 20.0))
+	# Keep horizontal offset tight to the center so balls never overlap
+	# the side walls of the 500px container upon spawning.
+	var random_offset = Vector2(RNGManager.cosmetic_rng.randf_range(-110.0, 110.0), RNGManager.cosmetic_rng.randf_range(-20.0, 20.0))
 	
 	# Use direct local relative offsets to ensure the ball is placed correctly 
 	# regardless of the tray's global position or stale transform updates.

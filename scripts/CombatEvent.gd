@@ -28,7 +28,8 @@ enum Type {
 	DRAW, # New for Async Draw Chains
 	ITEM_DISCARD, # Replaced/discarded item arcs to Discard Pile button
 	ITEM_EQUIP, # Equipped item appears on unit view
-	MERGE # Merge action on battle board
+	MERGE, # Merge action on battle board
+	GOLD_SPEND # Payload: { "amount": int }
 }
 
 var type: Type

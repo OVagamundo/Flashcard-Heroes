@@ -161,7 +161,7 @@ During Management Phase, the player may:
    * **Note**: The Physics Drawers are **Read-Only**. Actions listed below (3-7) cannot be performed directly on balls within the drawers. Hover inspections are only allowed for entities inside the drawer while it is open (Rule S8).
 
 3. **Place Units**
-   * Drag from bench to lineup and vice versa(5 slots).
+   * Drag from bench (8 slots) to lineup (5 slots) and vice versa.
    * Lineup grid is fixed; units do not shift automatically.
 
 4. **Rearrange Units**
@@ -512,7 +512,7 @@ Tier 3:
     - Reset: Resets to 1 Gold on next shop entry.
     - **Stock Type**: Draws exclusively from the World Pool (all unlocked definitions of the appropriate tier).
 
-## 14.3 Black Market Node
+## 14.3 Shrine Node
 - **Primary Actions**:
     - **Remove**: Permanently deletes a Gachaball from the run collection.
     - **Transform**: Replaces a Gachaball with a random one of the same tier.

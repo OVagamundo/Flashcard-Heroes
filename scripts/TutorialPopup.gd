@@ -320,13 +320,13 @@ func _advance_page() -> void:
 	_update_pointer()
 
 func _on_next_pressed() -> void:
-	Audio.play_sfx("ui_button_click")
+	Audio.play_sfx("ui_click")
 	var action := AdvanceTutorialPageAction.new(_tutorial_id, _current_page + 1)
 	ActionQueue.request(action)
 
 func _on_got_it_pressed() -> void:
 	if modulate.a < 1.0: return # Prevent early clicks during animation
-	Audio.play_sfx("ui_button_click")
+	Audio.play_sfx("ui_click")
 	var action := DismissTutorialAction.new(_tutorial_id)
 	ActionQueue.request(action)
 

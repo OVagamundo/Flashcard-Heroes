@@ -30,7 +30,14 @@ var _move_original_position: Vector2 = Vector2.ZERO
 var _move_original_local_position: Vector2 = Vector2.ZERO
 var _move_original_size: Vector2 = Vector2.ZERO
 var _move_original_top_level: bool = false
+var _move_original_sprite_y: float = C.SLOT_UNIT_OFFSET_Y
 var _is_active: bool = true
+
+# Shadow tracking state
+var _shadow_sprite: TextureRect = null
+var _is_lunging: bool = false
+var _anim_start_pos: Vector2 = Vector2.ZERO
+var _anim_target_pos: Vector2 = Vector2.ZERO
 
 func set_active(active: bool) -> void:
 	if _is_active == active:
@@ -52,6 +59,7 @@ func _ready() -> void:
 	if not is_inside_tree():
 		return
 	_icon_rect = _view.icon_rect
+	_shadow_sprite = _get_shadow_sprite()
 	
 	if _is_active:
 		_connect_signals()
@@ -61,6 +69,45 @@ func _exit_tree() -> void:
 	_kill_active_tweens()
 	# Reset sprite scale on cleanup
 	_reset_sprite_scale()
+	_reset_shadow()
+
+func _process(_delta: float) -> void:
+	if not _is_active or not is_inside_tree() or not is_instance_valid(_view):
+		return
+	var shadow := _get_shadow_sprite()
+	if not is_instance_valid(shadow) or not shadow.visible:
+		return
+	_update_shadow(shadow)
+
+func _get_shadow_sprite() -> TextureRect:
+	if not is_instance_valid(_shadow_sprite) or not _shadow_sprite.is_inside_tree():
+		if is_instance_valid(_icon_rect):
+			_shadow_sprite = _icon_rect.get_node_or_null("ShadowSprite")
+		elif is_instance_valid(_view) and is_instance_valid(_view.icon_rect):
+			_shadow_sprite = _view.icon_rect.get_node_or_null("ShadowSprite")
+	return _shadow_sprite
+
+func _reset_shadow() -> void:
+	var shadow := _get_shadow_sprite()
+	if is_instance_valid(shadow):
+		shadow.position.y = C.SHADOW_OFFSET_Y
+		shadow.scale = Vector2.ONE
+		shadow.modulate.a = C.SHADOW_ALPHA
+
+func _update_shadow(shadow: TextureRect) -> void:
+	# The shadow remains pinned to the platform surface at the base of the unit.
+	shadow.position.y = C.SHADOW_OFFSET_Y
+	
+	# Track vertical changes of the unit sprite (e.g. jump arc, buff hop, summon drop, death levitate)
+	var sprite := _get_sprite()
+	var sprite_hop: float = 0.0
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite_hop = maxf(0.0, C.SLOT_UNIT_OFFSET_Y - sprite.position.y)
+	
+	var t = clampf(sprite_hop / 150.0, 0.0, 1.0)
+	shadow.scale.x = lerpf(1.0, 0.25, t)
+	shadow.scale.y = 1.0
+	shadow.modulate.a = lerpf(C.SHADOW_ALPHA, 0.0, t)
 
 func _connect_signals() -> void:
 	var bus = get_node_or_null("/root/SignalBus")
@@ -162,6 +209,10 @@ func _restore_move_layout_state() -> void:
 	if not is_instance_valid(_view):
 		return
 
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = _move_original_sprite_y
+
 	_view.top_level = _move_original_top_level
 	if _move_original_top_level:
 		_view.global_position = _move_original_position
@@ -171,6 +222,7 @@ func _restore_move_layout_state() -> void:
 		_view.position = _move_original_local_position
 		if _move_original_size != Vector2.ZERO:
 			_view.size = _move_original_size
+	_reset_shadow()
 
 # Legacy alias for compatibility
 func _reset_icon_scale() -> void:
@@ -181,6 +233,19 @@ func _reset_icon_scale() -> void:
 ## would have been restored by their finished callbacks. Without this,
 ## top_level remains true and position stays at (0,0).
 func _kill_active_tweens() -> void:
+	_is_lunging = false
+	_reset_shadow()
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
+		sprite.modulate.a = 1.0
+	if is_instance_valid(_view):
+		var stats_overlay = _view.get_node_or_null("%StatsOverlay") as Control
+		var stats_underlay = _view.get_node_or_null("%StatsUnderlay") as Control
+		var unit_overlay = _view.get_node_or_null("UnitOverlay") as Control
+		if is_instance_valid(stats_overlay): stats_overlay.modulate.a = 1.0
+		if is_instance_valid(stats_underlay): stats_underlay.modulate.a = 1.0
+		if is_instance_valid(unit_overlay): unit_overlay.modulate.a = 1.0
 	if _flash_tween and _flash_tween.is_valid():
 		_flash_tween.kill()
 		_flash_tween = null
@@ -236,6 +301,7 @@ func _on_unit_bump_attack(unit_uuid: String, direction: Vector2) -> void:
 	tween.finished.connect(_on_bump_tween_finished)
 
 func _on_bump_tween_finished() -> void:
+	_reset_shadow()
 	SignalBus.emit_signal("unit_bump_finished", _get_uuid())
 
 # =============================================================================
@@ -260,14 +326,16 @@ func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void
 			_view.global_position = gp
 	_reset_sprite_scale()
 	
-	var original_position: Vector2 = _view.position
-	var levitate_target := Vector2(original_position.x, original_position.y - AC.DEATH_LEVITATE_HEIGHT)
+	var sprite := _get_sprite()
+	var sprite_start_y: float = sprite.position.y if (is_instance_valid(sprite) and sprite != _icon_rect) else float(C.SLOT_UNIT_OFFSET_Y)
+	var levitate_target_y = sprite_start_y - AC.DEATH_LEVITATE_HEIGHT
 	
 	var fade_tween = _view.create_tween()
 	_move_tween = fade_tween
 	fade_tween.set_parallel(true)
 	
-	fade_tween.tween_property(_view, "position", levitate_target, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		fade_tween.tween_property(sprite, "position:y", levitate_target_y, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	fade_tween.tween_property(_view, "modulate:a", 0.0, AC.scaled(AC.DEATH_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 	
 	var mat = _get_active_material()
@@ -278,6 +346,7 @@ func _on_unit_death_fade(unit_uuid: String, stay_in_place: bool = false) -> void
 	fade_tween.finished.connect(_on_death_fade_tween_finished)
 
 func _on_death_fade_tween_finished() -> void:
+	_reset_shadow()
 	SignalBus.emit_signal("unit_death_fade_finished", _get_uuid())
 
 # =============================================================================
@@ -292,12 +361,12 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	var sprite := _get_sprite()
 	_ensure_pivot() # Set bottom-center pivot on sprite
 	
-	var original_position: Vector2 = _view.position
-	var start_position := Vector2(original_position.x, original_position.y - AC.SUMMON_DROP_HEIGHT)
+	var sprite_target_y := float(C.SLOT_UNIT_OFFSET_Y)
+	var sprite_start_y := sprite_target_y - AC.SUMMON_DROP_HEIGHT
 	
 	_view.modulate.a = 0.0
-	_view.position = start_position
-	if is_instance_valid(sprite):
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = sprite_start_y
 		sprite.scale = AC.SQUISH_SCALE # Start narrow & tall (stretched in direction of fall)
 	
 	var mat = _get_active_material()
@@ -307,10 +376,11 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	var fade_tween = _view.create_tween()
 	_move_tween = fade_tween
 	
-	# Phase 1: Drop + fade in (parallel)
+	# Phase 1: Drop sprite + fade in _view (parallel)
 	fade_tween.set_parallel(true)
-	fade_tween.tween_property(_view, "position", original_position, AC.scaled(AC.SUMMON_DROP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	fade_tween.tween_property(_view, "modulate:a", 1.0, AC.scaled(AC.SUMMON_FADE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		fade_tween.tween_property(sprite, "position:y", sprite_target_y, AC.scaled(AC.SUMMON_DROP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
 	
 	if mat:
 		fade_tween.tween_method(func(v): mat.set_shader_parameter("alpha_multiplier", v), 0.0, 1.0, AC.scaled(AC.SUMMON_FADE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
@@ -326,7 +396,14 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	fade_tween.finished.connect(_on_summon_fade_tween_finished)
 
 func _on_summon_fade_tween_finished() -> void:
+	if is_instance_valid(_view):
+		_view.modulate.a = 1.0
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
+		sprite.modulate.a = 1.0
 	_reset_sprite_scale()
+	_reset_shadow()
 	SignalBus.emit_signal("unit_summon_fade_finished", _get_uuid())
 
 # =============================================================================
@@ -342,37 +419,40 @@ func _on_unit_melee_lunge(unit_uuid: String, target_position: Vector2) -> void:
 	_melee_origin_position = _view.global_position
 	_original_z_index = _view.z_index
 	_view.z_index = 100
+	_anim_start_pos = _melee_origin_position
+	_anim_target_pos = target_position
+	_is_lunging = true
 	
 	_ensure_pivot() # Set bottom-center pivot on sprite
 	
-	var mid_y = min(_melee_origin_position.y, target_position.y) - AC.MELEE_ARC_HEIGHT
-	var direction_to_target = (target_position - _melee_origin_position).normalized()
-	var windup_pos = _melee_origin_position - (direction_to_target * AC.MELEE_WINDUP_DISTANCE)
+	var dir_x = signf(target_position.x - _melee_origin_position.x)
+	if is_zero_approx(dir_x): dir_x = 1.0
+	var windup_x = _melee_origin_position.x - (dir_x * AC.MELEE_WINDUP_DISTANCE)
 	
 	var tween = _view.create_tween()
 	_move_tween = tween
 	
-	# Windup: Move back + SQUISH sprite (narrow & tall)
+	# Windup: Move back horizontally + SQUISH sprite (narrow & tall)
 	tween.set_parallel(true)
-	tween.tween_property(_view, "global_position", windup_pos, AC.scaled(AC.MELEE_WINDUP_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	tween.tween_property(_view, "global_position:x", windup_x, AC.scaled(AC.MELEE_WINDUP_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if is_instance_valid(sprite):
 		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.MELEE_WINDUP_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	tween.set_parallel(false)
 	
-	# Lunge: Bezier arc with STRETCH sprite (wide & short)
+	# Lunge: Horizontal movement on _view, vertical parabolic jump arc on sprite
+	var lunge_duration = AC.scaled(AC.MELEE_LUNGE_DURATION - AC.DEFORM_DURATION)
+	tween.set_parallel(true)
 	if is_instance_valid(sprite):
 		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
-	tween.tween_method(
-		func(t: float):
-			var p0 = windup_pos
-			var current_mid_x = (p0.x + target_position.x) / 2.0
-			var p1 = Vector2(current_mid_x, mid_y)
-			var p2 = target_position
-			var one_minus_t = 1.0 - t
-			_view.global_position = (one_minus_t * one_minus_t * p0) + (2.0 * one_minus_t * t * p1) + (t * t * p2),
-		0.0, 1.0, AC.scaled(AC.MELEE_LUNGE_DURATION - AC.DEFORM_DURATION)
-	).set_trans(Tween.TRANS_LINEAR)
+		if sprite != _icon_rect:
+			tween.tween_method(
+				func(t: float):
+					var hop = 4.0 * AC.MELEE_ARC_HEIGHT * t * (1.0 - t)
+					sprite.position.y = C.SLOT_UNIT_OFFSET_Y - hop,
+				0.0, 1.0, lunge_duration
+			)
+	tween.tween_property(_view, "global_position:x", target_position.x, lunge_duration).set_trans(Tween.TRANS_LINEAR)
+	tween.set_parallel(false)
 	
 	# Impact: Quick SQUISH on hit
 	if is_instance_valid(sprite):
@@ -416,6 +496,9 @@ func set_selection_outline(enabled: bool) -> void:
 
 
 func _on_melee_lunge_tween_finished() -> void:
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
 	SignalBus.emit_signal("unit_melee_lunge_finished", _get_uuid())
 
 func _on_unit_melee_return(unit_uuid: String) -> void:
@@ -426,6 +509,11 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 	
 	var sprite := _get_sprite()
 	_ensure_pivot() # Set bottom-center pivot on sprite
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
+	_anim_start_pos = _view.global_position
+	_anim_target_pos = _melee_origin_position
+	_is_lunging = true
 	
 	var tween = _view.create_tween()
 	_move_tween = tween
@@ -434,8 +522,8 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 	if is_instance_valid(sprite):
 		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Move back to origin
-	tween.tween_property(_view, "global_position", _melee_origin_position, AC.scaled(AC.MELEE_RETURN_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Move back to origin X
+	tween.tween_property(_view, "global_position:x", _melee_origin_position.x, AC.scaled(AC.MELEE_RETURN_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
 	# Land: SQUISH then normalize with elastic
 	if is_instance_valid(sprite):
@@ -447,7 +535,12 @@ func _on_unit_melee_return(unit_uuid: String) -> void:
 func _on_melee_return_tween_finished() -> void:
 	_view.z_index = _original_z_index
 	_view.global_position = _melee_origin_position
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
 	_reset_sprite_scale()
+	_is_lunging = false
+	_reset_shadow()
 	SignalBus.emit_signal("unit_melee_return_finished", _get_uuid())
 
 # =============================================================================
@@ -483,10 +576,11 @@ func _flash_unit_color(flash_color: Color) -> void:
 	
 	var original_position: Vector2 = _view.global_position
 	
-	# Only detach and save position if we are doing a position hop
-	if is_heal_or_buff:
+	# Only detach and save position if we are doing a position recoil (hurt)
+	if not is_heal_or_buff:
 		_flash_original_position = original_position
 		_view.top_level = true
+		_view.global_position = _flash_original_position
 	else:
 		_flash_original_position = Vector2.ZERO
 	
@@ -500,31 +594,21 @@ func _flash_unit_color(flash_color: Color) -> void:
 	
 	if is_heal_or_buff:
 		_ensure_pivot() # Set bottom-center pivot on sprite
+		var sprite_start_y: float = sprite.position.y if is_instance_valid(sprite) else float(C.SLOT_UNIT_OFFSET_Y)
+		var hop_target_y = sprite_start_y - AC.FLASH_HOP_HEIGHT
 		
 		# HOP: Squish anticipation -> Stretch up -> Squish land -> Normalize
-		var hop_target = Vector2(original_position.x, original_position.y - AC.FLASH_HOP_HEIGHT)
-		
-		# Squish down (anticipation)
 		if is_instance_valid(sprite):
+			# Step 1: Squish down (anticipation)
 			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		
-		# Stretch and jump up
-		_flash_tween.set_parallel(true)
-		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_flash_tween.tween_property(_view, "global_position", hop_target, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		_flash_tween.set_parallel(false)
-		
-		# Fall and squish on landing
-		_flash_tween.set_parallel(true)
-		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		_flash_tween.tween_property(_view, "global_position", original_position, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		_flash_tween.set_parallel(false)
-		
-		# Return to normal scale
-		if is_instance_valid(sprite):
-			_flash_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+			# Step 2: Stretch and jump up (in parallel, chained after anticipation)
+			_flash_tween.chain().tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			_flash_tween.parallel().tween_property(sprite, "position:y", hop_target_y, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+			# Step 3: Fall and squish on landing (in parallel, chained after jump up)
+			_flash_tween.chain().tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			_flash_tween.parallel().tween_property(sprite, "position:y", sprite_start_y, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+			# Step 4: Return to normal scale (chained after landing)
+			_flash_tween.chain().tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	else:
 		# HURT: Instant recoil + stretch -> return to normal
 		var recoil_direction := Vector2.RIGHT if _icon_rect.flip_h else Vector2.LEFT
@@ -557,6 +641,9 @@ func _on_flash_tween_finished() -> void:
 		_view.top_level = false # Re-attach to parent layout
 		_view.global_position = _flash_original_position
 		_flash_original_position = Vector2.ZERO
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
 	_reset_sprite_scale()
 	SignalBus.emit_signal("unit_flash_finished", _get_uuid())
 
@@ -579,8 +666,9 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 		_move_original_local_position = Vector2.ZERO
 		_move_original_top_level = false
 	
-	var original_position: Vector2 = _view.position
-	var levitate_target := Vector2(original_position.x, original_position.y - AC.LETHAL_SAVE_LEVITATE_HEIGHT)
+	var sprite := _get_sprite()
+	var sprite_start_y: float = sprite.position.y if (is_instance_valid(sprite) and sprite != _icon_rect) else float(C.SLOT_UNIT_OFFSET_Y)
+	var levitate_target_y = sprite_start_y - AC.LETHAL_SAVE_LEVITATE_HEIGHT
 	
 	var mat = _get_active_material()
 	
@@ -589,7 +677,8 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	
 	# Phase 1: Float up while turning golden
 	save_tween.set_parallel(true)
-	save_tween.tween_property(_view, "position", levitate_target, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		save_tween.tween_property(sprite, "position:y", levitate_target_y, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	if mat:
 		mat.set_shader_parameter("flash_color", AC.COLOR_GOLD)
 		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 0.0, 1.0, AC.scaled(AC.LETHAL_SAVE_RISE_DURATION))
@@ -601,7 +690,8 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	
 	# Phase 2: Land back down
 	save_tween.set_parallel(true)
-	save_tween.tween_property(_view, "position", original_position, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION)).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		save_tween.tween_property(sprite, "position:y", sprite_start_y, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION)).set_trans(Tween.TRANS_BOUNCE).set_ease(Tween.EASE_OUT)
 	if mat:
 		save_tween.tween_method(func(v): mat.set_shader_parameter("flash_intensity", v), 1.0, 0.0, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION))
 	save_tween.tween_property(_view, "modulate", Color.WHITE, AC.scaled(AC.LETHAL_SAVE_LAND_DURATION))
@@ -610,6 +700,10 @@ func _on_unit_lethal_save(unit_uuid: String) -> void:
 	save_tween.finished.connect(_on_lethal_save_tween_finished)
 
 func _on_lethal_save_tween_finished() -> void:
+	var sprite := _get_sprite()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
+	_reset_shadow()
 	_move_tween = null
 	SignalBus.emit_signal("unit_lethal_save_finished", _get_uuid())
 
@@ -630,38 +724,48 @@ func animate_leap_to(target_center: Vector2) -> void:
 		target_center.y - _view.size.y / 2
 	)
 	
-	var mid_x = (_guardian_original_position.x + target_pos.x) / 2.0
-	var mid_y = min(_guardian_original_position.y, target_pos.y) - AC.GUARDIAN_ARC_HEIGHT
+	_anim_start_pos = _guardian_original_position
+	_anim_target_pos = target_pos
+	_is_lunging = true
+	
+	var sprite := _get_sprite()
+	_ensure_pivot() # Recalculate pivot with current size
 	
 	var tween = _view.create_tween()
 	_move_tween = tween
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	# Phase 1: Squish sprite before leap (anticipation)
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Phase 1: Squish icon before leap (anticipation)
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 2: Stretch sprite and leap
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Phase 2: Stretch icon and leap
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 3: Move horizontally to target position, parabolic arc vertically on sprite
+	var leap_duration = AC.scaled(AC.GUARDIAN_LEAP_DURATION - AC.DEFORM_DURATION * 2)
+	tween.set_parallel(true)
+	tween.tween_property(_view, "global_position:x", target_pos.x, leap_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		tween.tween_method(
+			func(t: float):
+				var hop = 4.0 * AC.GUARDIAN_ARC_HEIGHT * t * (1.0 - t)
+				sprite.position.y = C.SLOT_UNIT_OFFSET_Y - hop,
+			0.0, 1.0, leap_duration
+		)
+	tween.set_parallel(false)
 	
-	# Phase 3: Arc to target position
-	tween.tween_method(
-		func(t: float):
-			var p0 = _guardian_original_position
-			var p1 = Vector2(mid_x, mid_y)
-			var p2 = target_pos
-			var one_minus_t = 1.0 - t
-			_view.global_position = (one_minus_t * one_minus_t * p0) + (2.0 * one_minus_t * t * p1) + (t * t * p2),
-		0.0, 1.0, AC.scaled(AC.GUARDIAN_LEAP_DURATION - AC.DEFORM_DURATION * 2)
-	).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	# Phase 4: Squish sprite on landing
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Phase 4: Squish icon on landing
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
-	# Phase 5: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 5: Return sprite to normal scale
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
 
 func animate_leap_return() -> void:
 	if _guardian_original_position == Vector2.ZERO:
@@ -671,27 +775,40 @@ func animate_leap_return() -> void:
 		_move_tween.kill()
 		_restore_move_layout_state()
 	
+	_anim_start_pos = _view.global_position
+	_anim_target_pos = _guardian_original_position
+	_is_lunging = true
+	
+	var sprite := _get_sprite()
+	_ensure_pivot() # Recalculate pivot with current size
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
+	
 	var tween = _view.create_tween()
 	_move_tween = tween
 	
-	_ensure_pivot() # Recalculate pivot with current size
+	# Phase 1: Stretch sprite for return jump
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Phase 1: Stretch icon for return jump
-	tween.tween_property(_icon_rect, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 2: Return to origin position X
+	var return_duration = AC.scaled(AC.GUARDIAN_RETURN_DURATION - AC.DEFORM_DURATION * 2)
+	tween.tween_property(_view, "global_position:x", _guardian_original_position.x, return_duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	
-	# Phase 2: Return to origin position
-	tween.tween_property(_view, "global_position", _guardian_original_position, AC.scaled(AC.GUARDIAN_RETURN_DURATION - AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	# Phase 3: Squish sprite on landing
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
-	# Phase 3: Squish icon on landing
-	tween.tween_property(_icon_rect, "scale", AC.SQUISH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	
-	# Phase 4: Return icon to normal scale
-	tween.tween_property(_icon_rect, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# Phase 4: Return sprite to normal scale
+	if is_instance_valid(sprite):
+		tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	
 	await tween.finished
 	
 	_view.z_index = _original_z_index
-	_reset_icon_scale()
+	_reset_sprite_scale()
+	if is_instance_valid(sprite) and sprite != _icon_rect:
+		sprite.position.y = C.SLOT_UNIT_OFFSET_Y
 	_guardian_original_position = Vector2.ZERO
 	if is_instance_valid(_view):
 		_view.top_level = false
@@ -699,6 +816,8 @@ func animate_leap_return() -> void:
 		_move_original_local_position = Vector2.ZERO
 		_move_original_position = _view.global_position
 		_move_original_top_level = false
+	_is_lunging = false
+	_reset_shadow()
 	_move_tween = null
 
 # =============================================================================
@@ -795,6 +914,27 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 		_move_tween.kill()
 		_restore_move_layout_state()
 	
+	if move_type == &"HOP":
+		var sprite := _get_sprite()
+		if not is_instance_valid(sprite):
+			SignalBus.emit_signal("unit_move_finished", _get_uuid())
+			return
+		
+		_move_original_sprite_y = sprite.position.y
+		var hop_target_y = _move_original_sprite_y - AC.FLASH_HOP_HEIGHT
+		
+		_move_tween = _view.create_tween()
+		_move_tween.tween_property(sprite, "position:y", hop_target_y, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+		_move_tween.tween_property(sprite, "position:y", _move_original_sprite_y, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+		
+		_move_tween.finished.connect(func():
+			if is_instance_valid(sprite):
+				sprite.position.y = _move_original_sprite_y
+			_move_tween = null
+			SignalBus.emit_signal("unit_move_finished", _get_uuid())
+		)
+		return
+	
 	# CRITICAL: Capture global position BEFORE detaching from parent
 	_move_original_position = _view.global_position
 	_move_original_local_position = _view.position
@@ -810,11 +950,6 @@ func _on_unit_move(unit_uuid: String, move_type: StringName, direction: Vector2)
 	_move_tween = _view.create_tween()
 	
 	match move_type:
-		&"HOP":
-			var hop_target = Vector2(_move_original_position.x, _move_original_position.y - AC.FLASH_HOP_HEIGHT)
-			_move_tween.tween_property(_view, "global_position", hop_target, AC.scaled(AC.FLASH_HOP_UP_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-			_move_tween.tween_property(_view, "global_position", _move_original_position, AC.scaled(AC.FLASH_HOP_DOWN_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-		
 		&"RECOIL":
 			var recoil_target = _move_original_position + (direction.normalized() * AC.HURT_RECOIL_DISTANCE)
 			_move_tween.tween_property(_view, "global_position", recoil_target, AC.scaled(AC.FLASH_RECOIL_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

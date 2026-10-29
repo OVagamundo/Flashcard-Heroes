@@ -477,47 +477,62 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	var placed_container: StringName = &""
 	var placed_index: int = -1
 
-	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
-	if not is_same_unit_item_merge:
-		data_owner.remove_instance(source_instance.ball_uuid)
-		data_owner.remove_instance(target_instance.ball_uuid)
-
-	if target_is_equipped:
-		if is_same_unit_item_merge:
-			data_owner.remove_instance(source_instance.ball_uuid)
-			data_owner.remove_instance(target_instance.ball_uuid)
-		data_owner.add_instance(new_instance, &"PlayerBench", -1)
-		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
-		placed_container = C.CONTAINER_EQUIPPED_ITEM
-		placed_index = target_loc.index
-	elif is_board_merge:
-		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
-		placed_container = target_loc.container
-		placed_index = target_loc.index
-	elif ("tier" in result_def) and ("tier" in source_instance.get_definition()) and result_def.tier > source_instance.get_definition().tier:
-		var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
-		var new_container_tag = &"%s%d" % [prefix, result_def.tier]
-		data_owner.add_instance(new_instance, new_container_tag, -1)
-		placed_container = new_container_tag
-		placed_index = -1
-	else:
-		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
-		placed_container = target_loc.container
-		placed_index = target_loc.index
-
-	if result_def.category == &"UNIT":
-		var max_slots = new_instance.equipped_item_uuids.size()
-		for i in range(min(all_parent_items.size(), max_slots)):
-			var it: GachaBallInstance = all_parent_items[i]
-			if is_instance_valid(it):
-				data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i, true)
-
 	for discarded_item in parent_items_to_discard:
 		if is_instance_valid(discarded_item):
 			if GameManager.is_in_battle and data_owner.has_method("bm_move_instance_to_discard"):
 				data_owner.bm_move_instance_to_discard(discarded_item.ball_uuid)
 			else:
 				data_owner.remove_instance(discarded_item.ball_uuid)
+
+	var is_same_unit_item_merge := source_is_equipped and target_is_equipped and source_loc.unit_uuid == target_loc.unit_uuid
+
+	if target_is_equipped:
+		data_owner.remove_instance(source_instance.ball_uuid)
+		data_owner.remove_instance(target_instance.ball_uuid)
+		data_owner.register_and_equip_item(new_instance, target_loc.unit_uuid, target_loc.index)
+		placed_container = C.CONTAINER_EQUIPPED_ITEM
+		placed_index = target_loc.index
+	else:
+		var dest_container_tag: StringName
+		var dest_index: int
+		if is_board_merge:
+			dest_container_tag = target_loc.container
+			dest_index = target_loc.index
+		elif ("tier" in result_def) and ("tier" in source_instance.get_definition()) and result_def.tier > source_instance.get_definition().tier:
+			var prefix = "BattleInventoryT" if GameManager.is_in_battle else "RunInventoryT"
+			dest_container_tag = &"%s%d" % [prefix, result_def.tier]
+			dest_index = -1
+		else:
+			dest_container_tag = target_loc.container
+			dest_index = target_loc.index
+
+		if data_owner.has_method("replace_units_for_merge"):
+			var keep_items: Array = all_parent_items if result_def.category == &"UNIT" else []
+			var replaced_ok: bool = data_owner.replace_units_for_merge(
+				source_instance.ball_uuid,
+				target_instance.ball_uuid,
+				new_instance,
+				dest_container_tag,
+				dest_index,
+				keep_items
+			)
+			if not replaced_ok:
+				_finish_merge_action_if_active()
+				return
+			placed_container = new_instance.location_container_tag
+			placed_index = new_instance.location_slot_index
+		else:
+			data_owner.remove_instance(source_instance.ball_uuid)
+			data_owner.remove_instance(target_instance.ball_uuid)
+			data_owner.add_instance(new_instance, dest_container_tag, dest_index)
+			placed_container = dest_container_tag
+			placed_index = new_instance.location_slot_index
+			if result_def.category == &"UNIT":
+				var max_slots = new_instance.equipped_item_uuids.size()
+				for i in range(min(all_parent_items.size(), max_slots)):
+					var it: GachaBallInstance = all_parent_items[i]
+					if is_instance_valid(it):
+						data_owner.equip_item(it.ball_uuid, new_instance.ball_uuid, i, true)
 
 	# Calculate on_merge trigger context for Battle Animator
 	var should_trigger_on_merge: bool = false
@@ -564,36 +579,6 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 
 	
-# --- Single-Responsibility Helpers ---
-
-func _perform_equip(item_instance: GachaBallInstance, unit_instance: GachaBallInstance, target_item_slot: int) -> void:
-	if not is_instance_valid(item_instance) or not is_instance_valid(unit_instance): return
-
-	# If the item was previously equipped on another unit, unequip its bonus from that unit
-	if not item_instance.equipped_on_uuid.is_empty() and item_instance.equipped_on_uuid != unit_instance.ball_uuid:
-		var data_owner = _get_data_owner()
-		if is_instance_valid(data_owner):
-			var prev_unit: GachaBallInstance = data_owner.get_all_instances().get(item_instance.equipped_on_uuid)
-			if is_instance_valid(prev_unit):
-				prev_unit.unequip_item_bonus(item_instance)
-
-	# If the item was previously equipped on this unit, unequip from old slot
-	if item_instance.equipped_on_uuid == unit_instance.ball_uuid:
-		unit_instance.unequip_item_bonus(item_instance)
-
-	item_instance.equipped_on_uuid = unit_instance.ball_uuid
-	item_instance.equipped_slot_index = target_item_slot
-	item_instance.location_container_tag = &""
-	item_instance.location_slot_index = -1
-
-	if target_item_slot < unit_instance.equipped_item_uuids.size():
-		unit_instance.equipped_item_uuids[target_item_slot] = item_instance.ball_uuid
-
-	# Equip the bonus to the new unit
-	unit_instance.equip_item_bonus(item_instance)
-
-	SignalBus.emit_signal("unit_inventory_changed", unit_instance.ball_uuid)
-
 # --- Other Helpers ---
 
 func _is_battle_board_container(container_tag: StringName) -> bool:

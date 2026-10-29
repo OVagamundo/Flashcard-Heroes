@@ -90,9 +90,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			# Each unit behind receives a COPY of the item
 			var new_item = GachaBallInstance.new()
 			new_item.initialize(item_def)
-			battle_manager._state.bm_add_instance(new_item, "", -1)
 			var equip_events: Array[CombatEvent] = []
-			battle_manager.bm_equip_item(new_item.ball_uuid, tgt_uuid, 0, true, equip_events)
+			battle_manager.bm_register_and_equip_item(new_item, tgt_uuid, 0, true, equip_events)
 			
 			var new_pwr: int = tgt.current_pwr
 			var new_hp: int = tgt.current_hp

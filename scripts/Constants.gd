@@ -11,6 +11,7 @@ const BATTLE_CONTAINER_TAGS = {
 	ENEMY_LINEUP = &"EnemyLineup",
 	ENEMY_BENCH = &"EnemyBench",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
+	ENEMY_GRAVEYARD = &"EnemyGraveyard",
 	ENEMY_TRINKETS = &"EnemyTrinkets",
 	PLAYER_TRINKETS = &"PlayerTrinkets",
 }
@@ -99,6 +100,7 @@ const TRIGGER_ON_ALLY_HURT = &"on_ally_hurt" # Another ally on the same team rec
 const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased by a Heal action
 const TRIGGER_ON_STAT_INCREASED = &"on_stat_increased" # This unit's HP or PWR increased by a Buff action
 const TRIGGER_ON_STAT_DECREASED = &"on_stat_decreased" # This unit's HP or PWR decreased by a Debuff action
+const TRIGGER_ON_GOLD_EARNED = &"on_gold_earned" # When gold is earned (fires per 1 gold)
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"
@@ -109,6 +111,9 @@ const TARGET_ATTACKER = &"ATTACKER"
 const TARGET_FRONTMOST_ENEMY = &"FRONTMOST_ENEMY"
 const TARGET_RANDOM_ENEMY = &"RANDOM_ENEMY"
 const TARGET_RANDOM_ALLY = &"RANDOM_ALLY"
+const TARGET_LOWEST_HP_ALLY = &"LOWEST_HP_ALLY"
+const TARGET_RANDOM_UNMARKED_ENEMY = &"RANDOM_UNMARKED_ENEMY"
+const TARGET_HERO_ALLY = &"HERO_ALLY"
 const TARGET_ALLY_BEHIND = &"ALLY_BEHIND"
 const TARGET_ALLY_SLOT_AHEAD = &"ALLY_SLOT_AHEAD"
 const TARGET_ADJACENT_ALLIES = &"ADJACENT_ALLIES"
@@ -116,6 +121,8 @@ const TARGET_ALL_ALLIES = &"ALL_ALLIES"
 const TARGET_ALLIES_IN_FRONT = &"ALLIES_IN_FRONT"
 const TARGET_ALLIES_BEHIND = &"ALLIES_BEHIND"
 const TARGET_HIGHEST_HP_ENEMY = &"HIGHEST_HP_ENEMY"
+const TARGET_ATTACK_TARGET_AND_RANDOM_UNMARKED = &"ATTACK_TARGET_AND_RANDOM_UNMARKED"
+const TARGET_ATTACK_TARGET_AND_ADJACENT = &"ATTACK_TARGET_AND_ADJACENT"
 
 # --- Ability System Condition Types ---
 const COND_TEAM_SIZE_LESS_THAN_ENEMY = &"TEAM_SIZE_LESS_THAN_ENEMY"
@@ -127,6 +134,8 @@ const COND_IS_TURN_INITIATED_ATTACK = &"IS_TURN_INITIATED_ATTACK"
 const COND_COMPOSITE = &"COMPOSITE"
 const COND_TRIGGER_CAUSE_MATCH = &"TRIGGER_CAUSE_MATCH"
 const COND_DYING_UNIT_IS_DUST = &"DYING_UNIT_IS_DUST"
+const COND_MIN_TRAIT_COUNT = &"MIN_TRAIT_COUNT"
+const COND_MIN_GOLD = &"MIN_GOLD"
 
 # --- Trigger Context Causes ---
 # Who/What initiated the event chain?
@@ -147,11 +156,20 @@ const PRIORITY_TRAIT_BURN = 100 # Trait burn application
 
 # --- UI Sizing ---
 const SLOT_SIZE_BASE: int = 96
-const SLOT_SIZE_2X: int = 192
+const SLOT_SIZE_2X: int = 188
 const UNIT_SPRITE_SIZE: int = 128
-const SLOT_CENTER_OFFSET: int = 32 # (192-128)/2
-const PLAYER_TRINKET_CAP: int = 20
-const ENEMY_TRINKET_CAP: int = 5
+const SLOT_CENTER_OFFSET: int = 30 # (188-128)/2
+const SLOT_UNIT_OFFSET_Y: int = 5 # 188 - 55 - 128 = 5: base sits in the middle of platform surface (55px from bottom edge)
+const SHADOW_WIDTH_2X: int = 128 # Scaled 2x to match 128px unit
+const SHADOW_HEIGHT_2X: int = 10 # Scaled 2x (native is 5px)
+const SHADOW_OFFSET_Y: int = 128 # Vertical center at y = 133 (133 - 10/2 = 128)
+const SHADOW_ALPHA: float = 0.5
+const PLAYER_TRINKET_CAP: int = 9
+const ENEMY_TRINKET_CAP: int = 9
+const LINEUP_CAP: int = 5
+const BENCH_CAP: int = 8
+const PLAYER_BENCH_CAP: int = 8
+const RUN_INVENTORY_CAP: int = 25
 
 # --- Ability System Priority Bands ---
 # Priority determines the resolution order of abilities triggering simultaneously.
@@ -204,11 +222,11 @@ const WINDOW_RESULTS = &"ResultsPopup"
 
 const TRAIT_SORT_ORDER: Array[String] = [
 	"FIRE", "EARTH", "WATER", "AIR",
-	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST",
+	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST", "MERCENARY",
 	"FOOD", "MECHA", "ANIMAL", "PLANT", "TOY", "APPLIANCE", "COSTUME"
 ]
 
-const CLASS_TRAITS: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist"]
+const CLASS_TRAITS: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary"]
 const VISUAL_TRAITS: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
 
 # --- Trait Definitions ---
@@ -380,6 +398,17 @@ const TRAIT_DEFINITIONS = {
 			{"min": 3, "desc_key": "trait.costume.3"},
 			{"min": 4, "desc_key": "trait.costume.4"},
 			{"min": 5, "desc_key": "trait.costume.5"}
+		]
+	},
+	"MERCENARY": {
+		"display_name_key": "trait.mercenary.name",
+		"trinket_id": &"trinket_trait_mercenary",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/MercenarySigil.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.mercenary.2"},
+			{"min": 3, "desc_key": "trait.mercenary.3"},
+			{"min": 4, "desc_key": "trait.mercenary.4"},
+			{"min": 5, "desc_key": "trait.mercenary.5"}
 		]
 	}
 }

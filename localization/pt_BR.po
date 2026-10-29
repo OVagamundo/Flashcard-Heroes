@@ -10,7 +10,7 @@ msgid "hero.name"
 msgstr "Caçador de Recompensas"
 
 msgid "hero.desc"
-msgstr "Ganha 1 ouro quando este herói mata um inimigo. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+msgstr "Especializado em acumular e gastar Ouro. Traço Fixo: Mercenário (Inicia com o Selo de Mercenário). No início da jornada, recebe 1 alma Elemental aleatória e 1 traço de Classe ou Visual."
 
 msgid "enemy_hero.name"
 msgstr "Herói Inimigo"
@@ -220,7 +220,7 @@ msgid "hero_timekeeper.desc"
 msgstr "Minijogo: +1s ao acertar, -0,5s ao errar. Ganha 5 fichas por turno em Batalhas e Locais de Descanso. No início de cada turno, concede +2 HP às unidades à frente e +2 PWR às unidades atrás."
 
 msgid "ability.hero_timekeeper_gold_on_kill.desc"
-msgstr "Ganha 1 ouro quando este herói mata um inimigo."
+msgstr "Recompensa: Quando este herói derrota um inimigo, ganha 1 de Ouro."
 
 msgid "ability.hero_timekeeper_time_warp.desc"
 msgstr "Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
@@ -550,7 +550,7 @@ msgid "ui.take_gold_amount"
 msgstr "Prefiro %d de Ouro"
 
 msgid "ui.discard_pile_count"
-msgstr "Pilha de Descarte (%d)"
+msgstr "Descarte (%d)"
 
 msgid "ui.tokens_count"
 msgstr "Fichas: %d"
@@ -570,8 +570,11 @@ msgstr "Batalha de Elite"
 msgid "ui.shop_node"
 msgstr "Loja"
 
-msgid "ui.black_market_node"
-msgstr "Mercado Negro"
+msgid "ui.shrine_node"
+msgstr "Santuário"
+
+msgid "ui.merge_node"
+msgstr "Encontro de Fusão"
 
 msgid "ui.rest_node"
 msgstr "Local de Descanso"
@@ -588,16 +591,16 @@ msgstr "Campus de Treinamento"
 msgid "ui.gambling_den"
 msgstr "Canto das Apostas"
 
-msgid "ui.black_market_title"
-msgstr "Mercado Negro"
+msgid "ui.shrine_title"
+msgstr "Santuário"
 
-msgid "ui.black_market_open_inventory"
+msgid "ui.shrine_open_inventory"
 msgstr "REMOVER OU TRANSFORMAR"
 
-msgid "ui.black_market_prompt"
+msgid "ui.shrine_prompt"
 msgstr "O que você quer fazer com %s?"
 
-msgid "ui.black_market_instructions"
+msgid "ui.shrine_instructions"
 msgstr "Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro)."
 
 msgid "ui.remove_cost"
@@ -606,11 +609,11 @@ msgstr "Remover (%d Ouro)"
 msgid "ui.transform_cost"
 msgstr "Transformar (%d Ouro)"
 
-msgid "tutorial.black_market_intro.title"
+msgid "tutorial.shrine_intro.title"
 msgstr "Removendo e Transformando"
 
-msgid "tutorial.black_market_intro"
-msgstr "O Mercado Negro permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
+msgid "tutorial.shrine_intro"
+msgstr "O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
 
 msgid "tutorial.training_grounds"
 msgstr "Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
@@ -851,6 +854,12 @@ msgstr "Estático"
 
 msgid "STATUS_STATIC_DESC"
 msgstr "Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
+
+msgid "STATUS_BOUNTY"
+msgstr "Recompensa"
+
+msgid "STATUS_BOUNTY_DESC"
+msgstr "Quando esta unidade é derrotada por qualquer meio, concede 1 de Ouro. Permanece até a unidade morrer ou a batalha terminar."
 
 msgid "trinket.novice_insignia.name"
 msgstr "Insígnia do Novato"
@@ -1380,7 +1389,7 @@ msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]"
 msgid "ui.drop_zone_sell_multi"
 msgstr "Arraste ou clique aqui para\n[font_size=72]VENDER[/font_size]"
 
-msgid "ui.bm_instruction"
+msgid "ui.shrine_instruction"
 msgstr "Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário."
 
 msgid "ui.reward_instruction"
@@ -1689,16 +1698,16 @@ msgstr "Fundir ({cost} Ouro)"
 msgid "ui.btn_swap"
 msgstr "Trocar"
 
-msgid "ui.black_market_desc"
+msgid "ui.shrine_desc"
 msgstr "Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
 
 msgid "ui.shop_desc"
 msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
 
-msgid "ui.bm_drop_transform"
+msgid "ui.shrine_drop_transform"
 msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
 
-msgid "ui.bm_drop_remove"
+msgid "ui.shrine_drop_remove"
 msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
 
 msgid "ui.utg_desc"
@@ -2222,4 +2231,277 @@ msgstr "Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 H
 
 msgid "trinket.trinity_charm.name"
 msgstr "Amuleto da Trindade"
+
+msgid "trait.mercenary.name"
+msgstr "Mercenário"
+
+msgid "trait.mercenary.desc"
+msgstr "Conta unidades com o traço Mercenário no alinhamento ativo. Desbloqueia bônus sempre que Ouro for obtido ou possuído."
+
+msgid "trait.mercenary.2"
+msgstr "Sempre que Ouro for obtido, a unidade aliada com menor HP atual ganha +1 HP."
+
+msgid "trait.mercenary.3"
+msgstr "Além do Bronze, sempre que Ouro for obtido, o Herói ganha +1 PWR."
+
+msgid "trait.mercenary.4"
+msgstr "Além do Bronze e Prata, no pré-combate cada unidade Mercenária ganha +1 de Armadura para cada 10 de Ouro possuídos."
+
+msgid "trait.mercenary.5"
+msgstr "Além de todos os níveis anteriores, ganha 1 de Ouro no pré-combate uma vez por turno."
+
+msgid "ability.trait_mercenary.desc"
+msgstr "Conta unidades Mercenárias. Bronze: Aliado com menor Vida ganha +1 HP quando Ouro é ganho. Prata: Herói ganha +1 PWR quando Ouro é ganho. Ouro: Mercenários ganham +1 de Armadura por 10 de Ouro no pré-combate. Prismático: Ganha 1 de Ouro no pré-combate."
+
+msgid "ability.trait_mercenary.bronze.desc"
+msgstr "Sempre que Ouro for obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+
+msgid "ability.trait_mercenary.silver.desc"
+msgstr "Sempre que Ouro for obtido, o Herói ganha +1 de Poder."
+
+msgid "ability.trait_mercenary.pre_combat.desc"
+msgstr "No pré-combate: Com 4 Mercenários, cada um ganha +1 de Armadura por 10 de Ouro possuído. Com 5 Mercenários, ganha 1 de Ouro uma vez por turno."
+
+msgid "ability.trait_mercenary_on_gold_bronze.desc"
+msgstr "Sempre que Ouro é obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+
+msgid "ability.trait_mercenary_on_gold_silver.desc"
+msgstr "Sempre que Ouro é obtido, o Herói ganha +1 de Poder."
+
+msgid "ability.trait_mercenary_pre_combat.desc"
+msgstr "No pré-combate, ganha 1 de Ouro se Prismático (5 Mercenários), e cada Mercenário ganha +1 de Armadura por 10 de Ouro possuído se Ouro (4 Mercenários)."
+
+msgid "?MerSpe.name"
+msgstr "?MerSpe"
+
+msgid "?MerSpe.desc"
+msgstr "Sempre que 1 de Ouro é obtido enquanto esta unidade está no alinhamento ativo, ela ganha +1 de Vida e +1 de Poder."
+
+msgid "ability.e_mer_spe.desc"
+msgstr "Sempre que 1 de Ouro é obtido no alinhamento ativo, ganha +1 de Vida e +1 de Poder."
+
+msgid "?ASpeMerFodToy.name"
+msgstr "?ASpeMerFodToy"
+
+msgid "?ASpeMerFodToy.desc"
+msgstr "Pré-combate: Ganha +1 / +2 / +3 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.ea_spe_mer_fod_toy.l1.desc"
+msgstr "Pré-combate: Ganha +1 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.ea_spe_mer_fod_toy.l2.desc"
+msgstr "Pré-combate: Ganha +2 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.ea_spe_mer_fod_toy.l3.desc"
+msgstr "Pré-combate: Ganha +3 de Poder para cada 10 de Ouro possuído."
+
+msgid "E?TnkMerPlaToy.name"
+msgstr "E?TnkMerPlaToy"
+
+msgid "E?TnkMerPlaToy.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +1 / +2 / +3 de Armadura e +1 / +2 / +3 de Espinhos."
+
+msgid "ability.ee_tnk_mer_pla_toy.l1.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +1 de Armadura e +1 de Espinhos."
+
+msgid "ability.ee_tnk_mer_pla_toy.l2.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +2 de Armadura e +2 de Espinhos."
+
+msgid "ability.ee_tnk_mer_pla_toy.l3.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +3 de Armadura e +3 de Espinhos."
+
+msgid "F?FigMerMecApp.name"
+msgstr "F?FigMerMecApp"
+
+msgid "F?FigMerMecApp.desc"
+msgstr "Quando esta unidade à distância ataca, marca seu alvo com Recompensa. Derrotar uma unidade marcada concede 1 de Ouro."
+
+msgid "ability.ef_fig_mer_mec_app.l1.desc"
+msgstr "Ao atacar, marca o alvo com Recompensa se não estiver marcado."
+
+msgid "ability.ef_fig_mer_mec_app.l2.desc"
+msgstr "Ao atacar, marca o alvo e 1 unidade aleatória desmarcada com Recompensa."
+
+msgid "ability.ef_fig_mer_mec_app.l3.desc"
+msgstr "Ao atacar, marca o alvo e unidades adjacentes com Recompensa."
+
+msgid "W?SupMerAniCos.name"
+msgstr "W?SupMerAniCos"
+
+msgid "W?SupMerAniCos.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida."
+
+msgid "ability.ew_sup_mer_ani_cos.l1.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+
+msgid "ability.ew_sup_mer_ani_cos.l2.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+
+msgid "ability.ew_sup_mer_ani_cos.l3.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+
+msgid "E??ATnkSpeMerFodPlaToy.name"
+msgstr "E??ATnkSpeMerFodPlaToy"
+
+msgid "E??ATnkSpeMerFodPlaToy.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 / +2 / +3 de Armadura e Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 de Armadura e +1 de Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l2.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +2 de Armadura e +2 de Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l3.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +3 de Armadura e +3 de Espinhos por 10 de Ouro possuído."
+
+msgid "FW??FigSupMerAniMecAppCos.name"
+msgstr "FW??FigSupMerAniMecAppCos"
+
+msgid "FW??FigSupMerAniMecAppCos.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 / +2 / +3 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l1.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l2.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +2 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l3.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +3 de dano bônus por 10 de Ouro possuído."
+
+msgid "W??ASupSpeMerFodAniToyCos.name"
+msgstr "W??ASupSpeMerFodAniToyCos"
+
+msgid "W??ASupSpeMerFodAniToyCos.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida por 1 de Ouro ganho."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l1.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l2.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+
+msgid "F??AFigSpeMerFodMecToyApp.name"
+msgstr "F??AFigSpeMerFodMecToyApp"
+
+msgid "F??AFigSpeMerFodMecToyApp.desc"
+msgstr "Ao atacar: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro e aplica 1 / 2 / 3 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l1.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 1 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l2.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 2 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l3.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 3 de Queimadura por 10 de Ouro possuído."
+
+msgid "EF??TnkFigMerMecPlaToyApp.name"
+msgstr "EF??TnkFigMerMecPlaToyApp"
+
+msgid "EF??TnkFigMerMecPlaToyApp.desc"
+msgstr "Ao ser ferido, antes do dano: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para mitigar 1 / 2 / 3 de dano recebido por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l1.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 1 por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 2 por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l3.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 3 por 10 de Ouro possuído."
+
+msgid "EW??TnkSupMerAniPlaToyCos.name"
+msgstr "EW??TnkSupMerAniPlaToyCos"
+
+msgid "EW??TnkSupMerAniPlaToyCos.desc"
+msgstr "Início do turno: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para ganhar +1 / +2 / +3 de Vida e Poder por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l1.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +1 de Vida e +1 de Poder por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l2.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +2 de Vida e +2 de Poder por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l3.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +3 de Vida e +3 de Poder por 10 de Ouro possuído."
+
+msgid "item.claim_ticket.name"
+msgstr "Bilhete de Reivindicação"
+
+msgid "item.claim_ticket.desc"
+msgstr "Quando o portador morre, ganha 1 de Ouro."
+
+msgid "ability.item_claim_ticket.desc"
+msgstr "Quando o portador morre, ganha 1 de Ouro."
+
+msgid "item.interest_ledger.name"
+msgstr "Livro-Razão de Juros"
+
+msgid "item.interest_ledger.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+
+msgid "ability.item_interest_ledger.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+
+msgid "item.loaded_contract.name"
+msgstr "Contrato Turbinado"
+
+msgid "item.loaded_contract.desc"
+msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+
+msgid "ability.item_loaded_contract.desc"
+msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+
+msgid "item.golden_seal.name"
+msgstr "Selo Dourado"
+
+msgid "item.golden_seal.desc"
+msgstr "Concede dinamicamente +1 de Vida e +1 de Poder para cada 10 de Ouro atualmente possuído."
+
+msgid "ability.item_golden_seal.desc"
+msgstr "Concede dinamicamente +1 de Vida e +1 de Poder por 10 de Ouro atualmente possuído."
+
+msgid "item.mercenary_emblem.name"
+msgstr "Emblema do Mercenário"
+
+msgid "item.mercenary_emblem.desc"
+msgstr "Concede o traço Mercenário. Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+
+msgid "ability.item_mercenary_emblem.desc"
+msgstr "Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+
+msgid "trinket.mercenary_sigil.name"
+msgstr "Sigilo do Mercenário"
+
+msgid "trinket.mercenary_sigil.desc"
+msgstr "Ativa e rastreia os níveis cumulativos do traço Mercenário."
+
+msgid "trinket.trait_mercenary.name"
+msgstr "Sigilo do Mercenário"
+
+msgid "trinket.trait_mercenary.desc"
+msgstr "Os efeitos do traço Mercenário são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.recruiting_charm.name"
+msgstr "Amuleto de Recrutamento"
+
+msgid "trinket.recruiting_charm.desc"
+msgstr "No início do turno, se você tiver pelo menos 1 de Ouro e um espaço aberto no banco, gasta 1 de Ouro para contratar um ?MerSpe de Nível 1."
+
+msgid "ability.trinket_recruiting_charm.desc"
+msgstr "No início do turno, gasta 1 de Ouro para contratar um ?MerSpe Nível 1 se houver espaço no banco."
+
+msgid "trinket.wanted_poster.name"
+msgstr "Cartaz de Procurado"
+
+msgid "trinket.wanted_poster.desc"
+msgstr "No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
+
+msgid "ability.trinket_wanted_poster.desc"
+msgstr "No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
 

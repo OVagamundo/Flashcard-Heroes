@@ -5,10 +5,15 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 const AnimationConstants = preload("res://scripts/animations/AnimationConstants.gd")
 const SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slot.png")
 const BATTLE_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotBattle.png")
+const BATTLE_SPRING_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattlePlatformSlot.png")
+const BATTLE_BURN_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleBurnPlatformSlot.png")
+const BATTLE_STATIC_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleStaticPlatformSlot.png")
+const BATTLE_SLOT_SELECTION_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleSlotSelection.png")
 const BURN_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotBurn.png")
 const LIGHTNING_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotlightning.png")
 const DEATH_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotDeath.png")
 const DEATH_SLOT_OVERLAY_TEXTURE = preload("res://assets/Realistic/ui/textures/slotX.png")
+const BATTLE_TRINKET_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleTrinketSlot.png")
 
 var _location: LocationIdentifier
 
@@ -46,6 +51,26 @@ var show_background: bool = true:
 			if is_instance_valid(_background_style):
 				add_theme_stylebox_override("panel", _background_style)
 
+## Whether to show empty trinket slots (only during trinket acquisition states like RewardElite)
+var show_empty_trinket_slot: bool = false:
+	set(value):
+		show_empty_trinket_slot = value
+		if is_node_ready():
+			_update_slot_appearance()
+
+var is_trinket_slot: bool:
+	get:
+		return _container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets"
+
+## Check if this slot currently has an active GachaBallView content item
+func has_content() -> bool:
+	for child in get_children():
+		if child.has_meta("slot_persistent_child"):
+			continue
+		if child is GachaBallView and not child.is_queued_for_deletion():
+			return true
+	return false
+
 ## Set size scale for gachaball views in this slot
 ## NOTE: This only sets internal scale for GachaBallView. Caller is responsible for slot size.
 func set_size_scale(size_scale: float) -> void:
@@ -55,6 +80,8 @@ func _ready() -> void:
 	# Reset node modulation to ensure transparency isn't coming from scene state
 	self.modulate = Color.WHITE
 	self.self_modulate = Color.WHITE
+	z_as_relative = false
+	z_index = 0
 	
 	# Configure the slot background using properties to render the texture
 	_background_style = StyleBoxTexture.new()
@@ -97,31 +124,60 @@ func _update_slot_appearance(animate_transition: bool = false) -> void:
 	if not show_background or not is_instance_valid(_background_style):
 		return
 	
-	# Determine if this is a battle slot
-	var is_battle_slot = (_container_name == &"PlayerLineup" or _container_name == &"EnemyLineup" or _container_name == &"PlayerBench" or _container_name == &"EnemyBench" or _container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets")
+	var is_trinket_slot = (_container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets")
+	var is_battle_slot = (_container_name == &"PlayerLineup" or _container_name == &"EnemyLineup" or _container_name == &"PlayerBench" or _container_name == &"EnemyBench")
 	
-	if _slot_effect == &"burn" and is_battle_slot:
-		_background_style.texture = ArtStyleManager.get_themed_texture(BURN_SLOT_TEXTURE)
-		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
-		_background_style.expand_margin_bottom = -15.0
+	if is_trinket_slot:
+		if has_content():
+			# An equipped trinket never shows the slot frame behind it
+			_background_style.texture = null
+			add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+		elif show_empty_trinket_slot:
+			# Empty trinket slot is only shown when player is acquiring a new trinket
+			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_TRINKET_SLOT_TEXTURE)
+			_background_style.expand_margin_top = 0.0
+			_background_style.expand_margin_bottom = 0.0
+			_background_style.expand_margin_left = 0.0
+			_background_style.expand_margin_right = 0.0
+			_background_style.modulate_color = Color.WHITE
+			add_theme_stylebox_override("panel", _background_style)
+		else:
+			# Normal gameplay: empty trinket slots are transparent
+			_background_style.texture = null
+			add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	elif _slot_effect == &"burn" and is_battle_slot:
+		_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_BURN_PLATFORM_SLOT_TEXTURE)
+		_background_style.expand_margin_top = 0.0
+		_background_style.expand_margin_bottom = 0.0
+		_background_style.expand_margin_left = 0.0
+		_background_style.expand_margin_right = 0.0
 		_background_style.modulate_color = Color.WHITE
-	elif _slot_effect == &"lightning" and is_battle_slot:
-		_background_style.texture = ArtStyleManager.get_themed_texture(LIGHTNING_SLOT_TEXTURE)
-		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
-		_background_style.expand_margin_bottom = -15.0
+		add_theme_stylebox_override("panel", _background_style)
+	elif (_slot_effect == &"lightning" or _slot_effect == &"static") and is_battle_slot:
+		_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_STATIC_PLATFORM_SLOT_TEXTURE)
+		_background_style.expand_margin_top = 0.0
+		_background_style.expand_margin_bottom = 0.0
+		_background_style.expand_margin_left = 0.0
+		_background_style.expand_margin_right = 0.0
 		_background_style.modulate_color = Color.WHITE
+		add_theme_stylebox_override("panel", _background_style)
 	elif _slot_effect == &"death" and is_battle_slot:
 		_background_style.texture = ArtStyleManager.get_themed_texture(DEATH_SLOT_TEXTURE)
-		_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
-		_background_style.expand_margin_bottom = -15.0
+		_background_style.expand_margin_top = 0.0
+		_background_style.expand_margin_bottom = 0.0
+		_background_style.expand_margin_left = 0.0
+		_background_style.expand_margin_right = 0.0
 		_background_style.modulate_color = Color.WHITE
+		add_theme_stylebox_override("panel", _background_style)
 	else:
 		if is_battle_slot:
-			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_SLOT_TEXTURE)
-			# Expand the top margin instead so the base stays at the bottom to touch the unit's feet
-			# Shift the slot up by 15px via a negative bottom margin, compensating at the top to preserve ratio
-			_background_style.expand_margin_top = (40.0 * _size_scale) + 15.0
-			_background_style.expand_margin_bottom = -15.0
+			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_SPRING_PLATFORM_SLOT_TEXTURE)
+			_background_style.expand_margin_top = 0.0
+			_background_style.expand_margin_bottom = 0.0
+			_background_style.expand_margin_left = 0.0
+			_background_style.expand_margin_right = 0.0
+			_background_style.modulate_color = Color.WHITE
+			add_theme_stylebox_override("panel", _background_style)
 		elif _container_name == &"EquippedItem": # C.CONTAINER_EQUIPPED_ITEM
 			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/ItemSlot.png"))
 			_background_style.expand_margin_bottom = 0.0
@@ -129,16 +185,19 @@ func _update_slot_appearance(animate_transition: bool = false) -> void:
 			_background_style.texture = ArtStyleManager.get_themed_texture(load("res://assets/Realistic/ui/textures/slot.png"))
 			_background_style.expand_margin_bottom = 0.0
 			
-		# Tint the slot background texture based on container type
-		match _container_name:
-			&"PlayerLineup":
-				_background_style.modulate_color = Color(0.3, 0.5, 0.8)
-			&"PlayerBench":
-				_background_style.modulate_color = Color(0.3, 0.7, 0.3)
-			&"EnemyLineup":
-				_background_style.modulate_color = Color(0.8, 0.3, 0.3)
-			_:
-				_background_style.modulate_color = Color(0.5, 0.5, 0.5)
+		# Tint non-battle slots based on container type
+		if not is_battle_slot:
+			match _container_name:
+				&"EquippedItem":
+					_background_style.modulate_color = Color.WHITE
+				_:
+					_background_style.modulate_color = Color(0.5, 0.5, 0.5)
+
+	if is_instance_valid(_indicator):
+		if is_battle_slot:
+			_indicator.texture = ArtStyleManager.get_themed_texture(BATTLE_SLOT_SELECTION_TEXTURE)
+		else:
+			_indicator.texture = ArtStyleManager.get_themed_texture(INDICATOR_TEXTURE)
 	
 	_update_slot_effect_overlay(animate_transition and _slot_effect == &"death")
 
@@ -334,6 +393,8 @@ func _start_slot_effect_pulse() -> void:
 func populate(loc: LocationIdentifier) -> void:
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
+	if is_instance_valid(loc) and loc.container != &"":
+		set_slot_color(loc.container)
 
 ## Set the content of this slot using VisualData
 func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy: bool = false) -> GachaBallView:
@@ -345,14 +406,15 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 		child.queue_free()
 	
 	if visual_data.is_empty():
-		return
+		_update_slot_appearance()
+		return null
 	
 	
 	var gacha_ball_view_scene = load("res://scenes/GachaBallView.tscn")
 	
 	if not is_instance_valid(gacha_ball_view_scene):
 		push_error("[SlotView] GachaBallViewScene failed to load!")
-		return
+		return null
 		
 	var view = gacha_ball_view_scene.instantiate()
 	
@@ -394,6 +456,7 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 	if not is_instance_valid(_location):
 		_recursively_set_mouse_filter_ignore(view)
 	
+	_update_slot_appearance()
 	return view
 
 ## Helper to recursively set mouse filter to ignore

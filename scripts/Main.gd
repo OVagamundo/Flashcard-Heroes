@@ -13,12 +13,14 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var gacha_machine_1: Control = %GachaMachine1
 @onready var gacha_machine_2: Control = %GachaMachine2
 @onready var gacha_machine_3: Control = %GachaMachine3
+@onready var gacha_machine_discard: Control = %GachaMachineDiscard
 @onready var bottom_area: PanelContainer = %BottomArea
 
 # Knob buttons for drawing
 @onready var knob_button_1: TextureButton = %GachaMachine1.get_knob_button() if %GachaMachine1.has_method("get_knob_button") else %GachaMachine1.get_node_or_null("KnobButton")
 @onready var knob_button_2: TextureButton = %GachaMachine2.get_knob_button() if %GachaMachine2.has_method("get_knob_button") else %GachaMachine2.get_node_or_null("KnobButton")
 @onready var knob_button_3: TextureButton = %GachaMachine3.get_knob_button() if %GachaMachine3.has_method("get_knob_button") else %GachaMachine3.get_node_or_null("KnobButton")
+@onready var knob_button_discard: TextureButton = %GachaMachineDiscard.get_knob_button() if %GachaMachineDiscard.has_method("get_knob_button") else %GachaMachineDiscard.get_node_or_null("KnobButton")
 
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
@@ -26,6 +28,13 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var flashcard_progress_bar: HBoxContainer = %FlashcardProgressBar
 
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
+
+# Speed and Pause/Menu Controls
+@onready var speed_1x_btn: Button = %Speed1xBtn
+@onready var speed_2x_btn: Button = %Speed2xBtn
+@onready var speed_4x_btn: Button = %Speed4xBtn
+@onready var pause_btn: Button = %PauseBtn
+
 
 # Machine inventory count labels
 @onready var machine_1_count_label: Label = %GachaMachine1.get_count_label() if %GachaMachine1.has_method("get_count_label") else %GachaMachine1.get_node_or_null("CountLabel")
@@ -67,7 +76,7 @@ var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for r
 
 var _visual_machine_counts: Dictionary = {1: 0, 2: 0, 3: 0}
 
-# Black Market split drop zones (Remove / Transform)
+# Shrine split drop zones (Remove / Transform)
 var _split_action_drop_zone_container: PanelContainer = null
 var _action_zone_2: PanelContainer = null
 var _action_zone_1: PanelContainer = null
@@ -89,7 +98,7 @@ var _action_instruction_overlay: PanelContainer = null
 var _action_instruction_label: Label = null
 var _action_instruction_visible: bool = false
 
-# Configurable drop zone labels (set by content scenes like BlackMarket/UnitTrainingGround)
+# Configurable drop zone labels (set by content scenes like Shrine/UnitTrainingGround)
 var _action_zone_1_text: String = "" # Left zone custom text
 var _action_zone_2_text: String = "" # Right zone custom text
 
@@ -101,6 +110,8 @@ func _ready() -> void:
 	knob_button_1.pressed.connect(func(): _on_draw_button_pressed(knob_button_1, 1))
 	knob_button_2.pressed.connect(func(): _on_draw_button_pressed(knob_button_2, 2))
 	knob_button_3.pressed.connect(func(): _on_draw_button_pressed(knob_button_3, 3))
+	if is_instance_valid(knob_button_discard):
+		knob_button_discard.pressed.connect(func(): _on_draw_discard_button_pressed(knob_button_discard))
 	
 	# Connect hover animations for knob buttons
 	knob_button_1.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_1))
@@ -109,11 +120,18 @@ func _ready() -> void:
 	knob_button_2.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_2))
 	knob_button_3.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_3))
 	knob_button_3.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_3))
+	if is_instance_valid(knob_button_discard):
+		knob_button_discard.mouse_entered.connect(func(): _on_knob_hover_enter(knob_button_discard))
+		knob_button_discard.mouse_exited.connect(func(): _on_knob_hover_exit(knob_button_discard))
 	
 	# Connect machine containers to open inventory when clicked (outside knob button)
 	gacha_machine_1.gui_input.connect(func(event): _on_machine_gui_input(event))
 	gacha_machine_2.gui_input.connect(func(event): _on_machine_gui_input(event))
 	gacha_machine_3.gui_input.connect(func(event): _on_machine_gui_input(event))
+	
+	# Connect discard machine base to open discard pile
+	if is_instance_valid(gacha_machine_discard):
+		gacha_machine_discard.pressed.connect(_on_discard_machine_pressed)
 	
 
 	
@@ -154,21 +172,41 @@ func _ready() -> void:
 	SignalBus.selection_changed.connect(_on_selection_changed_for_drop_zone)
 	SignalBus.drag_started.connect(_on_drag_started_for_drop_zone)
 	SignalBus.drag_ended.connect(_on_drag_ended_for_drop_zone)
-	
+	# Connect speed and pause/menu buttons
+	if is_instance_valid(speed_1x_btn):
+		speed_1x_btn.pressed.connect(func(): _on_speed_button_pressed(1.0))
+	if is_instance_valid(speed_2x_btn):
+		speed_2x_btn.pressed.connect(func(): _on_speed_button_pressed(2.0))
+	if is_instance_valid(speed_4x_btn):
+		speed_4x_btn.pressed.connect(func(): _on_speed_button_pressed(4.0))
+	if is_instance_valid(pause_btn):
+		pause_btn.pressed.connect(_on_pause_menu_button_pressed)
+
+	if SignalBus.has_signal("combat_speed_changed"):
+		SignalBus.combat_speed_changed.connect(_on_combat_speed_changed)
+	if SignalBus.has_signal("combat_pause_changed"):
+		SignalBus.combat_pause_changed.connect(_on_combat_pause_changed)
+
+	_setup_speed_button_hover(speed_1x_btn)
+	_setup_speed_button_hover(speed_2x_btn)
+	_setup_speed_button_hover(speed_4x_btn)
+	_setup_speed_button_hover(pause_btn)
+
 	_on_battle_state_changed(false)
+
 	
 	# Build the confirm drop zone overlay (programmatic, not in .tscn)
 	_build_confirm_drop_zone()
-	# Build the black market split drop zones
+	# Build the shrine split drop zones
 	_build_split_action_drop_zones()
 	_build_reward_drop_zones()
 
 	SignalBus.emit_signal("path_choice_scene_requested")
 
+	_populate_player_trinkets()
 	if is_instance_valid(GameManager.run_state):
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
-		_populate_player_trinkets()
 		_populate_flashcard_progress()
 	
 	# Initial sync of machine counts based on model data
@@ -185,6 +223,11 @@ func _exit_tree() -> void:
 		SignalBus.drag_started.disconnect(_on_drag_started_for_drop_zone)
 	if SignalBus.drag_ended.is_connected(_on_drag_ended_for_drop_zone):
 		SignalBus.drag_ended.disconnect(_on_drag_ended_for_drop_zone)
+	if SignalBus.has_signal("combat_speed_changed") and SignalBus.combat_speed_changed.is_connected(_on_combat_speed_changed):
+		SignalBus.combat_speed_changed.disconnect(_on_combat_speed_changed)
+	if SignalBus.has_signal("combat_pause_changed") and SignalBus.combat_pause_changed.is_connected(_on_combat_pause_changed):
+		SignalBus.combat_pause_changed.disconnect(_on_combat_pause_changed)
+
 
 func _on_content_area_gui_input(event: InputEvent) -> void:
 	# Handle background clicks and drag end on the main game area
@@ -245,6 +288,14 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 		if InputUtils.is_touch_pointer_event(event):
 			accept_event()
 
+func _on_discard_machine_pressed() -> void:
+	if is_instance_valid(GameManager) and GameManager.is_in_battle:
+		return # Handled by BattleView during battle
+	if is_instance_valid(WindowManager) and WindowManager.is_discard_pile_window_open():
+		ActionQueue.request(CloseDiscardPileAction.new())
+	else:
+		ActionQueue.request(OpenDiscardPileAction.new())
+
 func _on_knob_hover_enter(button: TextureButton) -> void:
 	if button.disabled:
 		return
@@ -266,7 +317,10 @@ var _is_drawing_token: bool = false
 
 func _is_mouse_over_draw_mechanic() -> bool:
 	var mouse_pos = get_viewport().get_mouse_position()
-	var draw_controls = [gacha_machine_1, gacha_machine_2, gacha_machine_3, knob_button_1, knob_button_2, knob_button_3]
+	var draw_controls = [
+		gacha_machine_1, gacha_machine_2, gacha_machine_3, gacha_machine_discard,
+		knob_button_1, knob_button_2, knob_button_3, knob_button_discard
+	]
 	for ctrl in draw_controls:
 		if is_instance_valid(ctrl) and ctrl.is_visible_in_tree():
 			if ctrl.get_global_rect().has_point(mouse_pos):
@@ -317,8 +371,14 @@ func _notify_scene_transition_complete(instance: Node) -> void:
 		if is_instance_valid(act):
 			if act is SelectPathAction and instance.get_node_or_null("BattleManager") != null:
 				return # Handled authoritatively by BattleManager.start_battle once battle setup is complete
-			if act is SelectPathAction or act is LeaveShopAction or act is LeaveRewardAction or act is LeaveRestSiteAction or act is LeaveTrainingAction or act is LeaveBlackMarketAction or act is LeaveMergeEncounterAction or act is AcknowledgeBattleResultsAction:
+			if act is SelectPathAction or act is LeaveShopAction or act is LeaveRewardAction or act is LeaveRestSiteAction or act is LeaveTrainingAction or act is LeaveShrineAction or act is LeaveMergeEncounterAction or act is AcknowledgeBattleResultsAction:
 				ActionQueue.finish_action(act)
+
+func sync_scene_background(scene_instance: Node = null) -> void:
+	"""Public method to update the full-screen background texture from the current or specified scene instance"""
+	var target = scene_instance if is_instance_valid(scene_instance) else _current_content_node
+	if is_instance_valid(target):
+		_sync_scene_background(target)
 
 func _sync_scene_background(scene_instance: Node) -> void:
 	"""Extract background texture from loaded scene and apply to full-screen SceneBackground"""
@@ -328,7 +388,10 @@ func _sync_scene_background(scene_instance: Node) -> void:
 	# Look for a Background TextureRect child in the scene
 	var bg_node = scene_instance.get_node_or_null("Background")
 	if is_instance_valid(bg_node) and bg_node is TextureRect:
-		scene_background.texture = bg_node.texture
+		var tex = bg_node.texture
+		if is_instance_valid(ArtStyleManager) and is_instance_valid(tex):
+			tex = ArtStyleManager.get_themed_texture(tex)
+		scene_background.texture = tex
 		# Hide the scene's internal background since we're using the full-screen one
 		bg_node.visible = false
 	else:
@@ -383,7 +446,110 @@ func get_knob_button(tier: int) -> BaseButton:
 		1: return knob_button_1
 		2: return knob_button_2
 		3: return knob_button_3
+		4: return knob_button_discard
 	return null
+
+func get_discard_knob_button() -> BaseButton:
+	return knob_button_discard
+
+func _on_draw_discard_button_pressed(button: BaseButton) -> void:
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		return
+	var action := DrawDiscardAction.new()
+	if is_instance_valid(ActionQueue):
+		var accepted = ActionQueue.request(action)
+		if not accepted and not ActionQueue.is_busy():
+			var token_group = get_node_or_null("%TokenGroup")
+			if is_instance_valid(gacha_machine_discard):
+				RejectionFeedbackScript.play_rejection_with_counter(gacha_machine_discard, token_group, get_tree())
+	else:
+		execute_draw_discard_visuals(button)
+
+func execute_draw_discard_visuals(button: BaseButton) -> void:
+	var bm = get_tree().get_first_node_in_group("battle_manager")
+	while _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+		await get_tree().process_frame
+	const cost := 1
+	if is_instance_valid(bm):
+		var can_draw = true
+		if bm.has_method("can_draw_from_discard"):
+			can_draw = bm.can_draw_from_discard()
+		elif bm.has_method("get_gacha_tokens"):
+			var current_tokens: int = bm.get_gacha_tokens()
+			if current_tokens < cost:
+				can_draw = false
+		
+		if not can_draw:
+			var token_group = get_node_or_null("%TokenGroup")
+			if is_instance_valid(gacha_machine_discard):
+				RejectionFeedbackScript.play_rejection_with_counter(gacha_machine_discard, token_group, get_tree())
+			if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
+				ActionQueue.finish_action(ActionQueue.get_active_action())
+			return
+
+	if is_instance_valid(button):
+		button.release_focus()
+		button.rotation_degrees = 0.0
+		var knob_tween = create_tween()
+		knob_tween.tween_property(button, "rotation_degrees", 360.0, AnimationConstants.scaled(0.4)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0)
+
+	_is_drawing_token = true
+
+	if is_instance_valid(WindowManager):
+		if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
+			WindowManager.close_discard_pile_window()
+		if WindowManager.is_battle_inventory_window_open() or WindowManager.is_run_inventory_window_open():
+			var is_battle: bool = (is_instance_valid(GameManager) and GameManager.is_in_battle)
+			WindowManager.close_inventory_window(is_battle)
+		if WindowManager.is_any_inspection_window_open():
+			WindowManager.close_all_inspection_windows(false)
+
+	var context = InteractionContext.new()
+	if is_instance_valid(button):
+		context.source_view_instance_id = button.get_instance_id()
+	context.event_type = &"SINGLE_CLICK"
+	context.location = null
+	context.entity_uuid = ""
+	context.entity_type = &"GLOBAL_BACKGROUND"
+	context.interaction_mode = &"FULLY_INTERACTIVE"
+	context.window_group_id = 0
+	SignalBus.emit_signal("interaction_context_received", context)
+
+	_animate_token_spend_to_discard(cost, button)
+
+func _animate_token_spend_to_discard(cost: int, _button: BaseButton) -> void:
+	"""Animate tokens flying from counter to discard machine before drawing"""
+	if not is_instance_valid(gacha_machine_discard):
+		_is_drawing_token = false
+		SignalBus.emit_signal("draw_from_discard_requested")
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
+			await bm.management_animation_queue_completed
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+		return
+
+	var machine_rect = gacha_machine_discard.get_global_rect()
+	var target_pos = Vector2(
+		machine_rect.position.x + machine_rect.size.x * 0.75,
+		machine_rect.position.y + machine_rect.size.y * 0.4
+	)
+
+	var on_token_landed := func(_pos: Vector2):
+		_on_coin_landed_on_machine(_pos, gacha_machine_discard)
+
+	var on_complete := func():
+		_is_drawing_token = false
+		SignalBus.emit_signal("draw_from_discard_requested")
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
+			await bm.management_animation_queue_completed
+		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
+			ActionQueue.finish_action(ActionQueue.get_active_action())
+
+	CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed, on_complete)
 
 func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
 	var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -523,20 +689,41 @@ func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	
 	_play_machine_bounce(machine)
 
-## Public function to trigger machine bounce and update inventory counts visually
+### Public function to trigger machine bounce and update inventory counts visually
 ## Used when gachballs visually arrive at or depart from a machine
 func animate_machine_inventory_change(tier: int, amount: int) -> void:
 	_visual_machine_counts[tier] = max(0, _visual_machine_counts[tier] + amount)
 	_update_machine_count_labels()
 	
-	var target_machine: Control = null
-	match tier:
-		1: target_machine = gacha_machine_1
-		2: target_machine = gacha_machine_2
-		3: target_machine = gacha_machine_3
-	
+	var target_machine: Control = get_gacha_machine(tier)
 	if is_instance_valid(target_machine):
-		_play_machine_bounce(target_machine)
+		if amount > 0:
+			play_machine_landing_bounce(target_machine)
+		else:
+			_play_machine_bounce(target_machine)
+
+## Plays a subtle, purely vertical landing bounce on any machine (compression -> hop -> squish -> settle)
+## Strictly vertical (scale.x = 1.0) so flush machines never overlap horizontally.
+func play_machine_landing_bounce(machine: Control) -> void:
+	assert(is_instance_valid(machine), "play_machine_landing_bounce: machine must be valid")
+	machine.pivot_offset = Vector2(machine.size.x / 2.0, machine.size.y)
+	if machine.has_meta("_landing_bounce_tween"):
+		var old_tween = machine.get_meta("_landing_bounce_tween")
+		if is_instance_valid(old_tween) and old_tween.is_valid():
+			old_tween.kill()
+	var tween = machine.create_tween()
+	machine.set_meta("_landing_bounce_tween", tween)
+	# 1. Compress downwards upon impact
+	tween.tween_property(machine, "scale", Vector2(1.0, 0.94), AnimationConstants.scaled(0.05)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# 2. Hop upwards (rebound)
+	tween.tween_property(machine, "scale", Vector2(1.0, 1.05), AnimationConstants.scaled(0.09)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# 3. Land back down with a little squish
+	tween.tween_property(machine, "scale", Vector2(1.0, 0.98), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# 4. Settle back to resting
+	tween.tween_property(machine, "scale", Vector2.ONE, AnimationConstants.scaled(0.05)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+
+func animate_machine_bump(machine: Control) -> void:
+	play_machine_landing_bounce(machine)
 
 func _play_machine_bounce(machine: Control) -> void:
 	"""Internal function that plays the bounce and flash animation on a machine"""
@@ -552,12 +739,12 @@ func _play_machine_bounce(machine: Control) -> void:
 	var reaction_tween = create_tween()
 	reaction_tween.set_parallel(true)
 	
-	# Quick scale bounce - squash then stretch back
+	# Quick scale bounce - squash then stretch back purely vertically
 	var b1 = AnimationConstants.scaled(0.04)
 	var b2 = AnimationConstants.scaled(0.06)
 	var b3 = AnimationConstants.scaled(0.08)
-	reaction_tween.tween_property(machine, "scale", Vector2(1.03, 0.97), b1).set_trans(Tween.TRANS_SINE)
-	reaction_tween.tween_property(machine, "scale", Vector2(0.98, 1.02), b2).set_delay(b1).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 0.96), b1).set_trans(Tween.TRANS_SINE)
+	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.03), b2).set_delay(b1).set_trans(Tween.TRANS_SINE)
 	reaction_tween.tween_property(machine, "scale", Vector2(1.0, 1.0), b3).set_delay(b1 + b2).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
 	
 	# Flash bright on the machine image
@@ -572,6 +759,8 @@ func _on_battle_inventory_changed() -> void:
 	knob_button_1.disabled = false
 	knob_button_2.disabled = false
 	knob_button_3.disabled = false
+	if is_instance_valid(knob_button_discard):
+		knob_button_discard.disabled = false
 	
 	# Check for combat phase lock
 	var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -588,6 +777,14 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 	knob_button_1.disabled = not is_in_battle
 	knob_button_2.disabled = not is_in_battle
 	knob_button_3.disabled = not is_in_battle
+	if is_instance_valid(knob_button_discard):
+		knob_button_discard.disabled = not is_in_battle
+	
+	# Speed controls: in battle all controls are shown; out of battle only the pause/menu button
+	if is_instance_valid(speed_1x_btn): speed_1x_btn.visible = is_in_battle
+	if is_instance_valid(speed_2x_btn): speed_2x_btn.visible = is_in_battle
+	if is_instance_valid(speed_4x_btn): speed_4x_btn.visible = is_in_battle
+	if is_instance_valid(pause_btn): pause_btn.visible = true
 	
 	if is_in_battle:
 		# Entering battle - snap visual counters to model state
@@ -595,8 +792,70 @@ func _on_battle_state_changed(is_in_battle: bool) -> void:
 		var bm = GameManager.get_battle_manager()
 		if is_instance_valid(bm):
 			set_visual_tokens(bm.get_gacha_tokens(), false)
+		_update_speed_button_styles(AnimationConstants.speed_factor)
+	else:
+		_update_speed_button_styles(AnimationConstants.speed_factor)
+
+func _on_speed_button_pressed(speed: float) -> void:
+	if WindowManager.is_options_window_open():
+		WindowManager.close_options_window()
+	var action := SetCombatSpeedAction.new(speed)
+	if is_instance_valid(ActionQueue):
+		ActionQueue.request(action)
+	else:
+		AnimationConstants.speed_factor = speed
+		_update_speed_button_styles(speed)
+
+func _on_pause_menu_button_pressed() -> void:
+	WindowManager.toggle_options_window()
+
+func _on_combat_speed_changed(speed: float) -> void:
+	_update_speed_button_styles(speed)
+
+func _on_combat_pause_changed(is_paused: bool) -> void:
+	if is_paused:
+		_update_speed_button_styles(-1.0)
+	else:
+		_update_speed_button_styles(AnimationConstants.speed_factor)
+
+func _setup_speed_button_hover(btn: Button) -> void:
+	if not is_instance_valid(btn):
+		return
+	btn.mouse_entered.connect(func():
+		var tween = create_tween()
+		tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		btn.pivot_offset = btn.size / 2.0
+		tween.tween_property(btn, "scale", Vector2(1.08, 1.08), 0.1)
+	)
+	btn.mouse_exited.connect(func():
+		var tween = create_tween()
+		tween.set_ease(Tween.EASE_OUT).set_trans(Tween.TRANS_QUAD)
+		tween.tween_property(btn, "scale", Vector2(1.0, 1.0), 0.1)
+	)
+
+func _update_speed_button_styles(active_speed: float) -> void:
+	var buttons = [
+		{"btn": speed_1x_btn, "speed": 1.0},
+		{"btn": speed_2x_btn, "speed": 2.0},
+		{"btn": speed_4x_btn, "speed": 4.0},
+		{"btn": pause_btn, "speed": -1.0}
+	]
+	var in_battle: bool = GameManager.is_in_battle if is_instance_valid(GameManager) else false
+	for entry in buttons:
+		var btn: Button = entry["btn"]
+		if not is_instance_valid(btn):
+			continue
+		var target_speed: float = entry["speed"]
+		var is_active: bool = is_equal_approx(target_speed, active_speed)
+		if is_active and in_battle:
+			btn.self_modulate = Color(0.35, 0.75, 1.0) # Active cyan/blue highlight
+		elif target_speed == -1.0 and not in_battle:
+			btn.self_modulate = Color(0.9, 0.9, 0.95) # Neutral pause/menu out of battle
+		else:
+			btn.self_modulate = Color(0.68, 0.7, 0.76) # Inactive clean
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
+
 	# If we just exited COMBAT, we must redraw the trinkets to reflect the final state
 	if phase_name != &"COMBAT":
 		_populate_player_trinkets()
@@ -772,11 +1031,9 @@ func _on_run_data_changed() -> void:
 		_populate_flashcard_progress()
 
 func _populate_player_trinkets() -> void:
-	if not is_instance_valid(GameManager.run_state):
+	if not is_instance_valid(player_trinket_bar):
 		return
-	var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-	if not is_instance_valid(trinket_container):
-		return
+	var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS) if is_instance_valid(GameManager.run_state) else null
 	var slots = player_trinket_bar.get_children()
 	for i in range(slots.size()):
 		var slot_view = slots[i]
@@ -797,7 +1054,7 @@ func _populate_player_trinkets() -> void:
 			slot_view.populate(loc)
 			if slot_view.has_method("set_interaction_context"):
 				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
-		var instance = GameManager.get_instance_from_location(loc)
+		var instance = GameManager.get_instance_from_location(loc) if is_instance_valid(trinket_container) else null
 		if is_instance_valid(instance):
 			var visual_data = VisualDataAdapter.create_visual_data(instance)
 			slot_view.set_content(visual_data, true, false)
@@ -805,6 +1062,22 @@ func _populate_player_trinkets() -> void:
 				var view = slot_view.get_child(0)
 				if view is GachaBallView and view.has_method("set_interaction_context"):
 					view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+		else:
+			slot_view.set_content({})
+
+func show_empty_trinket_slots() -> void:
+	if not is_instance_valid(player_trinket_bar):
+		return
+	for slot in player_trinket_bar.get_children():
+		if slot is SlotView and slot.is_trinket_slot:
+			slot.show_empty_trinket_slot = true
+
+func hide_empty_trinket_slots() -> void:
+	if not is_instance_valid(player_trinket_bar):
+		return
+	for slot in player_trinket_bar.get_children():
+		if slot is SlotView and slot.is_trinket_slot:
+			slot.show_empty_trinket_slot = false
 
 func _populate_flashcard_progress() -> void:
 	"""Populate the flashcard progress bar with colored rectangles for each card in main deck."""
@@ -914,11 +1187,11 @@ func _build_confirm_drop_zone() -> void:
 	_confirm_drop_zone.name = "ConfirmDropZone"
 	_confirm_drop_zone.unique_name_in_owner = true
 	
-	# Match BottomArea anchors: full width, bottom-anchored, 260px tall
+	# Match BottomArea anchors: full width, bottom-anchored, 220px tall
 	_confirm_drop_zone.layout_mode = 1 # Anchored
 	_confirm_drop_zone.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_confirm_drop_zone.custom_minimum_size = Vector2(0, 260)
-	_confirm_drop_zone.offset_top = -260
+	_confirm_drop_zone.custom_minimum_size = Vector2(0, 220)
+	_confirm_drop_zone.offset_top = -220
 	_confirm_drop_zone.offset_bottom = 0
 	
 	# Warm white rounded rectangle style
@@ -1033,7 +1306,7 @@ func _on_selection_changed_for_drop_zone(new_location: LocationIdentifier) -> vo
 	else:
 		call_deferred("_deferred_maybe_hide_drop_zone")
 	
-	# Handle Black Market / Training Ground
+	# Handle Shrine / Training Ground
 	if _action_instruction_visible or _split_action_drop_zones_visible:
 		var is_inventory_source = new_location and String(new_location.container).begins_with("RunInventoryT")
 		
@@ -1122,7 +1395,7 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 			_drop_zone_drag_context = origin_context
 			show_confirm_drop_zone(&"Shop")
 		elif (_action_instruction_visible or _split_action_drop_zones_visible) and String(origin_context.location.container).begins_with("RunInventoryT") and not MergeManager.is_merge_encounter_active():
-			# Dragging from inventory while Black Market context is active
+			# Dragging from inventory while Shrine context is active
 			
 			# Validation: If we are in training mode, only show for units
 			if _action_zone_1_text == tr("ui.utg_drop_hp"):
@@ -1139,12 +1412,12 @@ func _on_drag_started_for_drop_zone(origin_context: InteractionContext) -> void:
 func _on_drag_ended_for_drop_zone(_was_handled: bool) -> void:
 	"""Check if drag ended over any drop zone and trigger appropriate action."""
 	var saved_ctx = _drop_zone_drag_context
-	var saved_bm_ctx = _action_drop_zone_drag_context
+	var saved_action_ctx = _action_drop_zone_drag_context
 	_drop_zone_drag_context = null
 	_action_drop_zone_drag_context = null
 	
-	# Check Black Market zones first (independent from confirm zone)
-	if _check_action_drag_drop_on_zones_with_context(saved_bm_ctx):
+	# Check Shrine zones first (independent from confirm zone)
+	if _check_action_drag_drop_on_zones_with_context(saved_action_ctx):
 		return
 	
 	# Check Reward zones
@@ -1210,19 +1483,19 @@ func is_point_inside_active_drop_zone(pos: Vector2) -> bool:
 	return false
 
 # =============================================================================
-# BLACK MARKET SPLIT DROP ZONES (Remove / Transform)
+# SHRINE SPLIT DROP ZONES (Remove / Transform)
 # =============================================================================
 
 func _build_split_action_drop_zones() -> void:
-	"""Build two side-by-side drop zones for Black Market Remove and Transform."""
+	"""Build two side-by-side drop zones for Shrine Remove and Transform."""
 	_split_action_drop_zone_container = PanelContainer.new()
-	_split_action_drop_zone_container.name = "BlackMarketDropZones"
+	_split_action_drop_zone_container.name = "ShrineDropZones"
 	
-	# Match BottomArea anchors: full width, bottom-anchored, 260px tall
+	# Match BottomArea anchors: full width, bottom-anchored, 220px tall
 	_split_action_drop_zone_container.layout_mode = 1
 	_split_action_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_split_action_drop_zone_container.custom_minimum_size = Vector2(0, 260)
-	_split_action_drop_zone_container.offset_top = -260
+	_split_action_drop_zone_container.custom_minimum_size = Vector2(0, 220)
+	_split_action_drop_zone_container.offset_top = -220
 	_split_action_drop_zone_container.offset_bottom = 0
 	
 	# Transparent panel (children provide the visuals)
@@ -1239,7 +1512,7 @@ func _build_split_action_drop_zones() -> void:
 	_split_action_drop_zone_container.add_child(hbox)
 	
 	# Left zone: Transform
-	_action_zone_1 = _create_bm_zone_panel(tr("ui.drop_zone_transform_multi"), Color(0.93, 0.96, 0.98, 0.95))
+	_action_zone_1 = _create_action_zone_panel(tr("ui.drop_zone_transform_multi"), Color(0.93, 0.96, 0.98, 0.95))
 	_action_zone_1.name = "TransformZone"
 	_action_label_1 = _action_zone_1.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_action_zone_1)
@@ -1247,7 +1520,7 @@ func _build_split_action_drop_zones() -> void:
 	_action_zone_1.gui_input.connect(_on_action_zone_1_gui_input)
 	
 	# Right zone: Remove
-	_action_zone_2 = _create_bm_zone_panel(tr("ui.drop_zone_remove_multi"), Color(0.98, 0.93, 0.93, 0.95))
+	_action_zone_2 = _create_action_zone_panel(tr("ui.drop_zone_remove_multi"), Color(0.98, 0.93, 0.93, 0.95))
 	_action_zone_2.name = "RemoveZone"
 	_action_label_2 = _action_zone_2.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_action_zone_2)
@@ -1267,14 +1540,14 @@ func _build_split_action_drop_zones() -> void:
 	_build_action_instruction_overlay()
 
 func _build_action_instruction_overlay() -> void:
-	"""Build the black background instruction overlay for Black Market."""
+	"""Build the dark background instruction overlay for Shrine."""
 	_action_instruction_overlay = PanelContainer.new()
-	_action_instruction_overlay.name = "BlackMarketInstruction"
+	_action_instruction_overlay.name = "ShrineInstruction"
 	
 	_action_instruction_overlay.layout_mode = 1
 	_action_instruction_overlay.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_action_instruction_overlay.custom_minimum_size = Vector2(0, 260)
-	_action_instruction_overlay.offset_top = -260
+	_action_instruction_overlay.custom_minimum_size = Vector2(0, 220)
+	_action_instruction_overlay.offset_top = -220
 	_action_instruction_overlay.offset_bottom = 0
 	
 	var style = StyleBoxFlat.new()
@@ -1292,7 +1565,7 @@ func _build_action_instruction_overlay() -> void:
 	_action_instruction_overlay.add_child(center)
 	
 	_action_instruction_label = Label.new()
-	_action_instruction_label.text = tr("ui.bm_instruction")
+	_action_instruction_label.text = tr("ui.shrine_instruction")
 	_action_instruction_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_action_instruction_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	_action_instruction_label.add_theme_font_size_override("font_size", 24)
@@ -1322,10 +1595,10 @@ func _update_programmatic_labels() -> void:
 	if is_instance_valid(_action_label_2):
 		_action_label_2.text = "[center]" + tr("ui.drop_zone_remove_multi") + "[/center]"
 	if is_instance_valid(_action_instruction_label):
-		_action_instruction_label.text = tr("ui.bm_instruction")
+		_action_instruction_label.text = tr("ui.shrine_instruction")
 
-func _create_bm_zone_panel(text: String, bg_color: Color) -> PanelContainer:
-	"""Create a single BM zone panel with centered label."""
+func _create_action_zone_panel(text: String, bg_color: Color) -> PanelContainer:
+	"""Create a single action zone panel with centered label."""
 	var panel = PanelContainer.new()
 	var style = StyleBoxFlat.new()
 	style.bg_color = bg_color
@@ -1390,7 +1663,7 @@ func set_action_zone_texts(left_text: String, right_text: String) -> void:
 	_action_zone_2_text = right_text
 
 func hide_split_action_drop_zones() -> void:
-	"""Hide the two-zone Black Market overlay."""
+	"""Hide the two-zone Shrine overlay."""
 	if not is_instance_valid(_split_action_drop_zone_container):
 		return
 	if not _split_action_drop_zones_visible:
@@ -1410,9 +1683,9 @@ func show_action_instruction(text: String = "") -> void:
 			_action_instruction_label.text = text
 	else:
 		if is_instance_valid(_action_instruction_label):
-			_action_instruction_label.text = tr("ui.bm_instruction")
+			_action_instruction_label.text = tr("ui.shrine_instruction")
 
-	"""Show the black background instruction overlay for Black Market."""
+	"""Show the dark background instruction overlay for Shrine."""
 	if not is_instance_valid(_action_instruction_overlay):
 		return
 	if _action_instruction_visible:
@@ -1424,7 +1697,7 @@ func show_action_instruction(text: String = "") -> void:
 	tween.tween_property(_action_instruction_overlay, "modulate:a", 1.0, 0.2).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 
 func hide_action_instruction() -> void:
-	"""Hide the black background instruction overlay for Black Market."""
+	"""Hide the dark background instruction overlay for Shrine."""
 	if not is_instance_valid(_action_instruction_overlay):
 		return
 	if not _action_instruction_visible:
@@ -1502,8 +1775,8 @@ func _build_reward_drop_zones() -> void:
 	
 	_reward_drop_zone_container.layout_mode = 1
 	_reward_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_reward_drop_zone_container.custom_minimum_size = Vector2(0, 260)
-	_reward_drop_zone_container.offset_top = -260
+	_reward_drop_zone_container.custom_minimum_size = Vector2(0, 220)
+	_reward_drop_zone_container.offset_top = -220
 	_reward_drop_zone_container.offset_bottom = 0
 	
 	var container_style = StyleBoxFlat.new()
@@ -1517,14 +1790,14 @@ func _build_reward_drop_zones() -> void:
 	hbox.set_anchors_preset(Control.PRESET_FULL_RECT)
 	_reward_drop_zone_container.add_child(hbox)
 	
-	_reward_collect_zone = _create_bm_zone_panel(tr("Drag or click here to add it to your collection"), Color(0.93, 0.98, 0.93, 0.95))
+	_reward_collect_zone = _create_action_zone_panel(tr("Drag or click here to add it to your collection"), Color(0.93, 0.98, 0.93, 0.95))
 	_reward_collect_zone.name = "CollectZone"
 	_reward_collect_label = _reward_collect_zone.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_reward_collect_zone)
 	_reward_collect_zone.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_reward_collect_zone.gui_input.connect(_on_reward_collect_zone_gui_input)
 	
-	_reward_sell_zone = _create_bm_zone_panel(tr("Drag or click here to sell it"), Color(0.98, 0.93, 0.93, 0.95))
+	_reward_sell_zone = _create_action_zone_panel(tr("Drag or click here to sell it"), Color(0.98, 0.93, 0.93, 0.95))
 	_reward_sell_zone.name = "SellZone"
 	_reward_sell_label = _reward_sell_zone.get_child(0).get_child(0) as RichTextLabel
 	hbox.add_child(_reward_sell_zone)
@@ -1619,7 +1892,11 @@ func get_gacha_machine(tier: int) -> Control:
 		1: return gacha_machine_1
 		2: return gacha_machine_2
 		3: return gacha_machine_3
+		4: return gacha_machine_discard
 	return null
+
+func get_discard_machine() -> Control:
+	return gacha_machine_discard
 
 func get_reward_collect_zone() -> Control:
 	return _reward_collect_zone

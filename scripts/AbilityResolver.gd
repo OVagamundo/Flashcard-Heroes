@@ -149,6 +149,14 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# All living units respond to any unit death
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
+		&"on_gold_earned":
+			# Living units respond if in active lineup (AMer does not trigger while benched)
+			var container: StringName = unit.location_container_tag
+			return unit.current_hp > 0 and (
+				container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+				container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			)
+			
 		&"on_stat_increased", &"on_stat_decreased":
 			# Units respond if they are on the battle board and alive
 			# Loop Prevention: Do not respond if this unit caused the stat modification
@@ -220,7 +228,7 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var fainting_uuid = context.get("fainting_ally_uuid", "")
 			return holder_uuid != fainting_uuid
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat", &"on_gold_earned":
 			# All equipped items on living holders respond
 			return true
 		
@@ -260,7 +268,7 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			var fainting_team = context.get("fainting_ally_team", "")
 			return trinket_team == fainting_team
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
+		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat", &"on_gold_earned":
 			# All trinkets respond
 			return true
 		
@@ -308,6 +316,10 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 func process_trigger(trigger: StringName, context: Dictionary) -> void:
 	# Add trigger_type to context so it flows through to CombatEvents
 	context["trigger_type"] = trigger
+	if is_instance_valid(GameManager.run_state):
+		context["gold_tens"] = int(GameManager.run_state.gold / 10)
+	else:
+		context["gold_tens"] = 0
 	
 	# Get the current BattleManager
 	var battle_manager = get_tree().get_first_node_in_group("battle_manager")

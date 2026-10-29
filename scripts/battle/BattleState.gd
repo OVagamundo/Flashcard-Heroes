@@ -57,6 +57,8 @@ var staged_enemy_placements: Array = []
 
 ## Staged hero placement for entrance
 var staged_hero_placement: Dictionary = {}
+var staged_hero_instance: GachaBallInstance = null
+var staged_hero_items: Array[GachaBallInstance] = []
 
 
 # ============================================================================
@@ -64,28 +66,29 @@ var staged_hero_placement: Dictionary = {}
 # ============================================================================
 
 func get_container(container_name: StringName) -> DataContainer:
+	if container_name.is_empty() or container_name == C.CONTAINER_EQUIPPED_ITEM:
+		return null
 	if _containers.has(container_name):
 		return _containers[container_name]
 
-	var new_container: DataContainer
+	var new_container: DataContainer = null
 
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
-			new_container = FixedArrayContainer.new(5)
+			new_container = FixedArrayContainer.new(C.LINEUP_CAP)
 		BATTLE_CONTAINER_TAGS.PLAYER_BENCH, BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
-			new_container = FixedArrayContainer.new(5)
-		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+			new_container = FixedArrayContainer.new(C.BENCH_CAP)
+		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD:
 			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 			new_container = FixedArrayContainer.new(C.ENEMY_TRINKET_CAP)
 		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 			new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
-		_: # Default case for BattleInventoryT*
-			if container_name.begins_with("BattleInventoryT"):
+		_:
+			if String(container_name).begins_with("BattleInventoryT"):
 				new_container = GrowableGridContainer.new(24)
 			else:
-				# Failsafe for unknown container types
-				new_container = FixedArrayContainer.new(1)
+				return null
 
 	_containers[container_name] = new_container
 	return new_container
@@ -133,9 +136,17 @@ func get_location_for_uuid(uuid: String) -> LocationIdentifier:
 	return null
 
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
-	if not is_instance_valid(loc): return null
+	if not is_instance_valid(loc):
+		return null
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent := get_instance(loc.unit_uuid)
+		if is_instance_valid(parent) and loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
+			var eq_uuid := parent.equipped_item_uuids[loc.index]
+			return get_instance(eq_uuid) if not eq_uuid.is_empty() else null
+		return null
 	var container = get_container(loc.container)
-	if not is_instance_valid(container): return null
+	if not is_instance_valid(container):
+		return null
 	var uuid = container.get_uuid(loc.index)
 	return get_instance(uuid) if not uuid.is_empty() else null
 
@@ -144,29 +155,124 @@ func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 # ============================================================================
 
 func update_instance_location(uuid: String, container_name: StringName, index: int) -> void:
+	assert(not container_name.is_empty(), "update_instance_location: container_name cannot be empty for active instance %s" % uuid)
 	var instance = get_instance(uuid)
-	if not is_instance_valid(instance): return
-	
+	if not is_instance_valid(instance):
+		return
+
 	instance.location_container_tag = container_name
 	instance.location_slot_index = index
-	# Only clear equip linkage when moving to a physical container or clearing location.
 	if container_name != C.CONTAINER_EQUIPPED_ITEM:
 		instance.equipped_on_uuid = ""
 		instance.equipped_slot_index = -1
 
-func remove_instance_from_container(instance: GachaBallInstance) -> void:
-	assert(is_instance_valid(instance), "remove_instance_from_container: instance is null")
-	var loc = get_location_for_uuid(instance.ball_uuid)
-	assert(is_instance_valid(loc), "remove_instance_from_container: instance has no location")
-	var container = get_container(loc.container)
-	if is_instance_valid(container):
-		var uuids = container.get_all_uuids()
-		var idx: int = uuids.find(instance.ball_uuid)
-		if idx != -1:
-			container.set_uuid(idx, "")
-			update_instance_location(instance.ball_uuid, &"", -1)
+## Atomically transfer a registered instance from its current location (container or equipped slot)
+## into a destination container slot. Validates destination BEFORE mutating source.
+## Returns the destination slot index on success, or -1 if destination has no valid slot.
+func transfer_instance_to_container(instance: GachaBallInstance, dest_container_name: StringName, dest_index: int = -1, unequip_bonus: bool = true) -> int:
+	assert(is_instance_valid(instance), "transfer_instance_to_container: instance is null")
+	assert(_battle_instances.has(instance.ball_uuid), "transfer_instance_to_container: instance %s is not registered in BattleState" % instance.ball_uuid)
+	assert(not dest_container_name.is_empty() and dest_container_name != C.CONTAINER_EQUIPPED_ITEM, "transfer_instance_to_container: invalid destination container '%s'" % String(dest_container_name))
+
+	var dest_container := get_container(dest_container_name)
+	assert(is_instance_valid(dest_container), "transfer_instance_to_container: unknown destination container '%s'" % String(dest_container_name))
+
+	var loc := instance.get_location()
+	assert(is_instance_valid(loc), "transfer_instance_to_container: instance %s has invalid location" % instance.ball_uuid)
+
+	# No-op if already at exact destination container and slot
+	if loc.container == dest_container_name and dest_index >= 0 and loc.index == dest_index:
+		return dest_index
+
+	# Validate destination slot BEFORE mutating source
+	var slot := dest_index
+	if slot < 0:
+		slot = dest_container.find_first_empty_slot()
+		if slot == -1:
+			return -1
+	else:
+		if slot >= dest_container.get_size():
+			return -1
+		var existing := dest_container.get_uuid(slot)
+		if not existing.is_empty():
+			return -1
+
+	# Clear source location
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent := get_instance(loc.unit_uuid)
+		assert(is_instance_valid(parent), "transfer_instance_to_container: missing parent unit %s for item %s" % [loc.unit_uuid, instance.ball_uuid])
+		if loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
+			if parent.equipped_item_uuids[loc.index] == instance.ball_uuid:
+				if unequip_bonus:
+					parent.unequip_item_bonus(instance)
+				parent.equipped_item_uuids[loc.index] = ""
+	else:
+		var src_container := get_container(loc.container)
+		assert(is_instance_valid(src_container), "transfer_instance_to_container: missing source container '%s' for %s" % [String(loc.container), instance.ball_uuid])
+		assert(src_container.get_uuid(loc.index) == instance.ball_uuid, "transfer_instance_to_container: source slot %s:%d mismatch for %s" % [String(loc.container), loc.index, instance.ball_uuid])
+		src_container.set_uuid(loc.index, "")
+
+	# Place into destination container and update location atomically
+	dest_container.set_uuid(slot, instance.ball_uuid)
+	update_instance_location(instance.ball_uuid, dest_container_name, slot)
+	return slot
+
+## Atomically place the staged hero (and register any equipped hero items) into PlayerLineup.
+func place_staged_hero() -> GachaBallInstance:
+	if staged_hero_placement.is_empty() or not is_instance_valid(staged_hero_instance):
+		return null
+	var hero_inst := staged_hero_instance
+	var hero_items := staged_hero_items.duplicate()
+	var pos: int = int(staged_hero_placement.get("position", 0))
+	staged_hero_placement.clear()
+	staged_hero_instance = null
+	staged_hero_items.clear()
+
+	var added := bm_add_instance(hero_inst, BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, pos)
+	assert(added, "place_staged_hero: failed to place hero %s at PlayerLineup:%d" % [hero_inst.ball_uuid, pos])
+	for item_inst in hero_items:
+		if is_instance_valid(item_inst):
+			_battle_instances[item_inst.ball_uuid] = item_inst
+	return hero_inst
+
+## Atomically replace a unit in its container slot with a new unit, transferring equipped items directly.
+func replace_unit_preserving_items(old_unit: GachaBallInstance, new_unit: GachaBallInstance) -> bool:
+	assert(is_instance_valid(old_unit) and is_instance_valid(new_unit), "replace_unit_preserving_items: invalid unit")
+	var loc := old_unit.get_location()
+	assert(is_instance_valid(loc) and not loc.container.is_empty() and loc.container != C.CONTAINER_EQUIPPED_ITEM, "replace_unit_preserving_items: invalid source location")
+	var container := get_container(loc.container)
+	assert(is_instance_valid(container) and container.get_uuid(loc.index) == old_unit.ball_uuid, "replace_unit_preserving_items: source slot mismatch")
+
+	container.set_uuid(loc.index, new_unit.ball_uuid)
+	_battle_instances[new_unit.ball_uuid] = new_unit
+	update_instance_location(new_unit.ball_uuid, loc.container, loc.index)
+
+	for slot_idx in range(old_unit.equipped_item_uuids.size()):
+		var item_uuid := old_unit.equipped_item_uuids[slot_idx]
+		if item_uuid.is_empty():
+			continue
+		var item_inst := get_instance(item_uuid)
+		old_unit.equipped_item_uuids[slot_idx] = ""
+		if not is_instance_valid(item_inst):
+			continue
+		old_unit.unequip_item_bonus(item_inst)
+		if slot_idx < new_unit.equipped_item_uuids.size() and new_unit.equipped_item_uuids[slot_idx].is_empty():
+			new_unit.equipped_item_uuids[slot_idx] = item_inst.ball_uuid
+			item_inst.equipped_on_uuid = new_unit.ball_uuid
+			item_inst.equipped_slot_index = slot_idx
+			item_inst.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+			item_inst.location_slot_index = slot_idx
+			new_unit.equip_item_bonus(item_inst)
 		else:
-			push_error("Remove failed: %s not found in stated container %s" % [instance.ball_uuid, String(loc.container)])
+			var fallback_tag := BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE if is_player_owned(new_unit) else BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD
+			var fallback_container := get_container(fallback_tag)
+			var f_slot := fallback_container.find_first_empty_slot()
+			assert(f_slot != -1, "replace_unit_preserving_items: failed to allocate overflow slot")
+			fallback_container.set_uuid(f_slot, item_inst.ball_uuid)
+			update_instance_location(item_inst.ball_uuid, fallback_tag, f_slot)
+
+	_battle_instances.erase(old_unit.ball_uuid)
+	return true
 
 # ============================================================================
 # TURN/DEATH TRACKING
@@ -232,7 +338,7 @@ func is_player_owned(instance: GachaBallInstance) -> bool:
 ## Reshuffle instances of specified tier from discard back to draw pool
 func reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	var source_container = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-	var dest_container_tag = "BattleInventoryT%d" % tier_to_reshuffle
+	var dest_container_tag: StringName = &"BattleInventoryT%d" % tier_to_reshuffle
 	var dest_container = get_container(dest_container_tag)
 	if not is_instance_valid(source_container) or not is_instance_valid(dest_container):
 		return false
@@ -247,12 +353,8 @@ func reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 	for instance in instances_to_move:
 		# Restore stats to base values before moving back to draw pool
 		instance.reset_battle_stats()
-		remove_instance_from_container(instance)
-		var new_index = dest_container.find_first_empty_slot()
-		if new_index == -1:
-			new_index = dest_container.get_all_uuids().size()
-		dest_container.set_uuid(new_index, instance.ball_uuid)
-		update_instance_location(instance.ball_uuid, dest_container_tag, new_index)
+		var new_index := transfer_instance_to_container(instance, dest_container_tag, -1)
+		assert(new_index != -1, "reshuffle_tier_from_discard: failed to transfer %s to %s" % [instance.ball_uuid, String(dest_container_tag)])
 	return true
 
 # ============================================================================
@@ -270,6 +372,8 @@ func clear() -> void:
 	enemy_slot_effects = [&"", &"", &"", &"", &""]
 	staged_enemy_placements.clear()
 	staged_hero_placement.clear()
+	staged_hero_instance = null
+	staged_hero_items.clear()
 
 
 func register_instance(instance: GachaBallInstance) -> void:
@@ -299,20 +403,22 @@ func is_in_player_container_tag(tag: StringName) -> bool:
 # ATOMIC MUTATION API (Pure Data - No Signals)
 # ============================================================================
 
-## Add an instance to a container. Returns true on success.
+## Add a new instance to a container. Returns true on success.
 ## NOTE: Does NOT emit signals - caller is responsible for that.
 func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
 	assert(is_instance_valid(instance), "bm_add_instance: instance is null")
+	assert(not container_name.is_empty() and container_name != C.CONTAINER_EQUIPPED_ITEM, "bm_add_instance: invalid container_name '%s' for %s" % [String(container_name), instance.ball_uuid])
 	var container = get_container(container_name)
-	if not is_instance_valid(container):
-		return false
+	assert(is_instance_valid(container), "bm_add_instance: unknown battle container '%s'" % String(container_name))
 	var slot := index
 	if slot < 0:
 		slot = container.find_first_empty_slot()
 		if slot == -1:
 			return false
 	else:
-		# If index is specified, ensure it is empty
+		if slot >= container.get_size():
+			push_error("bm_add_instance rejected: slot %d out of bounds in %s (capacity=%d)" % [slot, container_name, container.get_size()])
+			return false
 		var existing := container.get_uuid(slot)
 		if not existing.is_empty():
 			push_error("bm_add_instance rejected: slot %d in %s is already occupied by %s" % [slot, container_name, existing])
@@ -322,63 +428,57 @@ func bm_add_instance(instance: GachaBallInstance, container_name: StringName, in
 	update_instance_location(instance.ball_uuid, container_name, slot)
 	return true
 
-## Remove an instance from the battle. Returns result dict with success and signals_to_emit.
+## Remove an instance from the battle. Returns result dict with success and unit_changed_uuid.
 ## NOTE: Does NOT emit signals - caller is responsible for emitting signals from the result.
 func bm_remove_instance(uuid: String) -> Dictionary:
 	var result := {"success": false, "unit_changed_uuid": ""}
-	
+
 	assert(not uuid.is_empty(), "bm_remove_instance: uuid is empty")
 	var instance := get_instance(uuid)
 	assert(is_instance_valid(instance), "bm_remove_instance: instance not found for uuid " + uuid)
 	var loc := instance.get_location()
-	
-	# Only attempt to clear from containers if the location is valid
-	if is_instance_valid(loc):
-		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-			var parent := get_instance(loc.unit_uuid)
-			if not is_instance_valid(parent):
-				return result
-			if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
-				return result
-			# Remove bonuses from the parent before clearing the mapping
-			parent.unequip_item_bonus(instance)
-			parent.equipped_item_uuids[loc.index] = ""
-			instance.equipped_on_uuid = ""
-			instance.equipped_slot_index = -1
-			update_instance_location(instance.ball_uuid, &"", -1)
-			result.unit_changed_uuid = parent.ball_uuid
-		else:
-			# If this is a player unit with equipped items, unequip and move them to inventory
-			if instance.equipped_item_uuids.size() > 0:
-				if is_player_unit(instance):
-					var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-					for i in range(instance.equipped_item_uuids.size()):
-						var it_uuid := instance.equipped_item_uuids[i]
-						if it_uuid.is_empty():
-							continue
-						var it := get_instance(it_uuid)
-						if not is_instance_valid(it):
-							continue
+	assert(is_instance_valid(loc), "bm_remove_instance: instance %s has invalid location" % uuid)
+
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent := get_instance(loc.unit_uuid)
+		if not is_instance_valid(parent):
+			return result
+		if loc.index < 0 or loc.index >= parent.equipped_item_uuids.size():
+			return result
+		parent.unequip_item_bonus(instance)
+		parent.equipped_item_uuids[loc.index] = ""
+		result.unit_changed_uuid = parent.ball_uuid
+	else:
+		if instance.equipped_item_uuids.size() > 0:
+			if is_player_owned(instance):
+				var bench := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+				for i in range(instance.equipped_item_uuids.size()):
+					var it_uuid := instance.equipped_item_uuids[i]
+					if it_uuid.is_empty():
+						continue
+					var it := get_instance(it_uuid)
+					if not is_instance_valid(it):
 						instance.equipped_item_uuids[i] = ""
-						it.equipped_on_uuid = ""
-						it.equipped_slot_index = -1
-						if is_instance_valid(inv):
-							var empty := inv.find_first_empty_slot()
-							if empty != -1:
-								inv.set_uuid(empty, it.ball_uuid)
-								update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
-								result.unit_changed_uuid = instance.ball_uuid
-							else:
-								push_warning("Inventory full while unequipping item %s" % it.ball_uuid)
-				else:
-					pass
-			
-			if loc.container != &"":
-				var c = get_container(loc.container)
-				if is_instance_valid(c) and loc.index >= 0:
-					if c.get_uuid(loc.index) == instance.ball_uuid:
-						c.set_uuid(loc.index, "")
-	# Finally remove it, even if it had no valid container location
+						continue
+					var dest_tag := BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+					if not is_instance_valid(bench) or bench.find_first_empty_slot() == -1:
+						dest_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+					var moved_slot := transfer_instance_to_container(it, dest_tag, -1, true)
+					assert(moved_slot != -1, "bm_remove_instance: failed to rehome item %s from %s" % [it.ball_uuid, instance.ball_uuid])
+					result.unit_changed_uuid = instance.ball_uuid
+			else:
+				for i in range(instance.equipped_item_uuids.size()):
+					var it_uuid := instance.equipped_item_uuids[i]
+					if it_uuid.is_empty():
+						continue
+					instance.equipped_item_uuids[i] = ""
+					_battle_instances.erase(it_uuid)
+
+		var c := get_container(loc.container)
+		assert(is_instance_valid(c), "bm_remove_instance: missing container '%s' for %s" % [String(loc.container), uuid])
+		if loc.index >= 0 and c.get_uuid(loc.index) == instance.ball_uuid:
+			c.set_uuid(loc.index, "")
+
 	_battle_instances.erase(uuid)
 	result.success = true
 	return result
@@ -387,9 +487,9 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 # VALIDATION
 # ============================================================================
 
-## Validate state consistency (Golden Rule check)
-## Returns true if state is valid, false otherwise
-func validate_state_consistency(deferred_erasures: Array = []) -> bool:
+## Validate state consistency (Golden Rule check).
+## Every instance in _battle_instances must be either in a valid container slot or equipped on a registered parent unit.
+func validate_state_consistency() -> bool:
 	# Pass 1: scan containers, detect duplicates and equipped-item leaks
 	var occurrences: Dictionary = {}
 	for cname in _containers.keys():
@@ -404,7 +504,7 @@ func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 			if occurrences.has(u):
 				push_error("Duplicate UUID %s also present at %s:%d" % [u, String(cname), i])
 				return false
-			occurrences[u] = [ {"container": cname, "index": i}]
+			occurrences[u] = [{"container": cname, "index": i}]
 			var inst: GachaBallInstance = _battle_instances.get(u)
 			if not is_instance_valid(inst):
 				push_error("Container references missing battle instance %s" % u)
@@ -412,17 +512,16 @@ func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 			if inst.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
 				push_error("Equipped item %s appears in a battle container slot at %s:%d" % [u, String(cname), i])
 				return false
-	# Pass 2: verify each instance's declared location matches container truth
+	# Pass 2: verify every registered instance's declared location matches container/equipment truth
 	for u in _battle_instances.keys():
 		var inst: GachaBallInstance = _battle_instances[u]
 		if not is_instance_valid(inst):
-			continue
-		# Skip dead units and deferred erasures - they may be pending cleanup and have no container temporarily
-		if _dead_this_turn.has(u) or deferred_erasures.has(u):
-			continue
+			push_error("Invalid battle instance registered for UUID %s" % u)
+			return false
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):
-			continue
+			push_error("Instance %s returned invalid LocationIdentifier" % u)
+			return false
 		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 			var parent: GachaBallInstance = _battle_instances.get(loc.unit_uuid)
 			if not is_instance_valid(parent):
@@ -435,7 +534,6 @@ func validate_state_consistency(deferred_erasures: Array = []) -> bool:
 				push_error("Equipped item %s mapping mismatch on %s at slot %d" % [u, parent.ball_uuid, loc.index])
 				return false
 		else:
-			# Instances MUST always have a valid container
 			if loc.container == &"" or loc.container.is_empty():
 				push_error("Golden Rule violation: instance %s has empty container (left in unplaced state)" % u)
 				return false

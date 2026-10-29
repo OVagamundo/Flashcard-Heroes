@@ -65,6 +65,7 @@ func _ready() -> void:
 	# Create/destroy the battle inventory window when entering/leaving battle
 	if SignalBus.has_signal("battle_state_changed"):
 		SignalBus.battle_state_changed.connect(_on_battle_state_changed_wm)
+	window_closed.connect(_on_window_closed_options_check)
 
 func _setup_persistent_inventory() -> void:
 	if not _window_scenes.has(&"Inventory"):
@@ -564,8 +565,77 @@ func request_close_inspection_window(window: Control, _cause: StringName = &"") 
 	stop_tracking_window(window_id)
 	_queue_free_with_optional_inventory_animation(window)
 
+var _combat_paused_by_options: bool = false
+
+func has_any_contextual_windows() -> bool:
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w.is_visible_in_tree() and not (w.has_meta(_WM_META_CLOSING) and bool(w.get_meta(_WM_META_CLOSING))):
+			return true
+	return false
+
+func is_options_window_open() -> bool:
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w.get_meta("window_type", &"") == &"Options":
+			return not (w.has_meta(_WM_META_CLOSING) and bool(w.get_meta(_WM_META_CLOSING)))
+	for w in _modal_stack:
+		if is_instance_valid(w) and w.get_meta("window_type", &"") == &"Options":
+			return not (w.has_meta(_WM_META_CLOSING) and bool(w.get_meta(_WM_META_CLOSING)))
+	return false
+
+func get_options_window() -> Control:
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w.get_meta("window_type", &"") == &"Options":
+			return w
+	for w in _modal_stack:
+		if is_instance_valid(w) and w.get_meta("window_type", &"") == &"Options":
+			return w
+	return null
+
+func open_options_window() -> Control:
+	if is_options_window_open():
+		return get_options_window()
+	if is_instance_valid(GameManager) and GameManager.is_in_battle:
+		var animator = Engine.get_main_loop().root.get_node_or_null("/root/BattleAnimator")
+		var is_already_paused = is_instance_valid(animator) and animator.has_method("is_paused") and animator.is_paused()
+		if not is_already_paused:
+			_combat_paused_by_options = true
+			if is_instance_valid(ActionQueue):
+				ActionQueue.request(PauseRunAction.new(true))
+			else:
+				var bv = get_tree().get_first_node_in_group("battle_view")
+				if is_instance_valid(bv) and bv.has_method("execute_pause"):
+					bv.execute_pause()
+	var context: Dictionary = {
+		"window_type": &"Options",
+		"populate_context": {}
+	}
+	return _open_contextual_window(context)
+
+func close_options_window() -> void:
+	var win = get_options_window()
+	if is_instance_valid(win):
+		request_close_inspection_window(win, &"USER_CLOSE")
+
+func toggle_options_window() -> void:
+	if is_options_window_open():
+		close_options_window()
+	else:
+		open_options_window()
+
+func _on_window_closed_options_check(window: Control) -> void:
+	if is_instance_valid(window) and window.get_meta("window_type", &"") == &"Options":
+		if _combat_paused_by_options:
+			_combat_paused_by_options = false
+			if is_instance_valid(ActionQueue):
+				ActionQueue.request(PauseRunAction.new(false))
+			else:
+				var bv = get_tree().get_first_node_in_group("battle_view")
+				if is_instance_valid(bv) and bv.has_method("execute_speed"):
+					bv.execute_speed(AnimationConstants.speed_factor)
+
 
 # --- CORE INTERNAL LOGIC ---
+
 
 # This unified function handles the creation and management of ALL Contextual Windows.
 func _open_contextual_window(context: Dictionary) -> Control:
@@ -1358,8 +1428,8 @@ func get_vfx_layer() -> CanvasLayer:
 			_vfx_layer = CanvasLayer.new()
 			_vfx_layer.name = "GlobalVFXLayer"
 			_vfx_layer.layer = 150 # Above all UI
-			get_tree().root.add_child(_vfx_layer)
 			_vfx_layer.add_to_group("vfx_layer")
+			get_tree().root.call_deferred("add_child", _vfx_layer)
 	return _vfx_layer
 
 func clear_vfx_layer() -> void:
@@ -1591,13 +1661,12 @@ func _animate_inventory_window_open(window: Control) -> void:
 	
 	Audio.play_sfx("ui_window_open")
 
-	# Base layout is driven by anchors for the window.
-	# The inner PanelContainer has an offset_top of 162 natively.
-	var base_top: float = 162.0
-	var base_bottom: float = -238.0
+	# The inner PanelContainer sits at Y = 320..860 natively (flush above the 200px machine bases at Y = 860).
+	var base_top: float = 320.0
+	var base_bottom: float = 860.0
 	
-	# Start panel completely below screen
-	var start_delta: float = get_viewport().get_visible_rect().size.y
+	# Start panel just below the Y = 860 clip line (inside the machine bases)
+	var start_delta: float = 540.0
 	_apply_vertical_offset_delta(start_delta, anim_target, base_top, base_bottom)
 	
 	var tween: Tween = window.create_tween()
@@ -1653,15 +1722,15 @@ func _animate_inventory_window_close(window: Control) -> bool:
 	
 	_kill_inventory_motion_tween(window)
 	
-	var base_top: float = 162.0
-	var base_bottom: float = -238.0
-	var final_delta: float = get_viewport().get_visible_rect().size.y
+	var base_top: float = 320.0
+	var base_bottom: float = 860.0
+	var final_delta: float = 540.0
 	
 	var tween: Tween = window.create_tween()
 	window.set_meta(_WM_META_ANIM_TWEEN, tween)
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	
-	# Slide the panel container back down
+	# Slide the panel container back down behind the machine bases (Y = 860)
 	tween.tween_method(
 		Callable(self , "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
 		0.0,

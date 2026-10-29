@@ -75,7 +75,7 @@ Logical locations are categorized by their lifecycle:
   - `ModalLayer` (Layer 120): Modals, popups, and locked inspection windows.
   - `GlobalVFXLayer` (Layer 150): High-priority currency animations (Gold/Token Gain/Spend) and screen transitions.
   - `CursorLayer` (Layer 1024): 1000Hz raw software cursor overlay (`CursorManager.gd`).
-- **Interactive Overlays**: Dedicated service zones (Shop, Black Market, Rewards) using `DropZone.gd` and visual proxies for stable drag-and-drop transactions.
+- **Interactive Overlays**: Dedicated service zones (Shop, Shrine, Rewards) using `DropZone.gd` and visual proxies for stable drag-and-drop transactions.
 - **Audio System (`AudioManager.gd` & `Audio.gd`)**: Global SFX pooling (16 pre-instantiated players), dynamic BGM pitch tweens, and semantic sound registry mapping. (See [AudioSystem.md](AudioSystem.md)).
 
 ---
@@ -160,7 +160,7 @@ To guarantee that gameplay decisions, combat outcomes, and replays remain 100% d
 - **Stream Isolation (`RNGManager.gd`)**: Game systems are strictly prohibited from calling global unseeded random methods (`randi()`, `randf()`). All randomness routes through dedicated `SeededRNG` streams derived from `RunState.run_seed`:
   - `map_rng`: Node generation and path randomization.
   - `gacha_rng`: In-combat gacha machine draw order and distractor picks.
-  - `shop_rng`: Shop inventory generation and Black Market transformations.
+  - `shop_rng`: Shop inventory generation and Shrine transformations.
   - `combat_rng`: Combat targeting choices (`TARGET_RANDOM_ENEMY`, `TARGET_RANDOM_ALLY`) and effect rolls.
   - `reward_rng`: Post-battle reward capsules and trinket offerings.
 - **State Capture**: When saving a checkpoint, the internal state of each RNG stream is serialized into `rng_state`, guaranteeing identical outcome sequences upon run continuation.

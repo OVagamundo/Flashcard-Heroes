@@ -83,7 +83,7 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
    
 1. **Greedy Weighted Selection**
    - Priority weights: Units (3) > Items (2) > Trinkets (1)
-   - Respects slot limits: Max 5 units, max 5 trinkets
+   - Respects slot limits: Max 5 units, max 9 trinkets
    - Items limited by the single item slot constraint (1 item per unit, max 5 items total)
 
 2. **Gap-Fill Phase**
@@ -102,7 +102,7 @@ The `EncounterGenerator` uses a **"Greedy Fill + Knapsack Top-up"** algorithm th
 
 - **Units:** 5 max
 - **Items:** Strictly 1 item per unit (max 5 items per team)
-- **Trinkets:** 5 max per encounter. Trinkets are strictly unique per team; the Generator guarantees the enemy encounter will never be assigned duplicate trinkets.
+- **Trinkets:** 9 max per encounter. Trinkets are strictly unique per team; the Generator guarantees the enemy encounter will never be assigned duplicate trinkets.
 
 
 ## EncounterDefinition Schema
@@ -165,8 +165,8 @@ When the player selects their next encounter, a weighted RNG system driven by `R
 - **Elite Battles (Priority 2)**: Configured with a base weight of **350** when eligible and under quota (4 per mini-boss, 20 per run), guaranteed to appear upon reaching the 20%, 40%, 60%, and 80% progress thresholds.
 - **Non-Battle Encounters (Equal Priority)**: All non-battle encounters share an equal base weight of **100**:
   - **Shop** (`SHOP`)
-  - **Merge Encounter** (`REST`)
-  - **Black Market** (`BLACK_MARKET`)
+  - **Merge Encounter** (`MERGE`)
+  - **Shrine** (`SHRINE`)
   - **Surprise Event** (`SURPRISE`)
   - **Unit Training Ground / Dojo** (`DOJO`)
   Because they all share the exact same base weight (100) and have no limits, they appear with equal probability across path choices.

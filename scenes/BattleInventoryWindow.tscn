@@ -17,10 +17,12 @@
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_lid3"]
 
 [node name="BattleInventoryWindow" type="Control"]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -220.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -30,12 +32,14 @@ script = ExtResource("1_biw_script")
 
 [node name="Tier1Tray" type="Node2D" parent="PhysicsRoot"]
 unique_name_in_owner = true
+position = Vector2(20, 0)
 script = ExtResource("2_tray_script")
 tier = 1
-container_size = Vector2(640, 680)
-left_wall_padding = 14.0
-right_wall_padding = 14.0
-bottom_wall_padding = 15.0
+container_size = Vector2(500, 540)
+left_wall_padding = 20.0
+right_wall_padding = 20.0
+bottom_wall_padding = 22.0
+spawn_y = 200.0
 back_texture = ExtResource("3_tier1_back")
 overlay_texture = ExtResource("6_overlay")
 
@@ -60,12 +64,14 @@ wait_time = 0.12
 
 [node name="Tier2Tray" type="Node2D" parent="PhysicsRoot"]
 unique_name_in_owner = true
+position = Vector2(520, 0)
 script = ExtResource("2_tray_script")
 tier = 2
-container_size = Vector2(640, 680)
-left_wall_padding = 14.0
-right_wall_padding = 14.0
-bottom_wall_padding = 15.0
+container_size = Vector2(500, 540)
+left_wall_padding = 20.0
+right_wall_padding = 20.0
+bottom_wall_padding = 22.0
+spawn_y = 200.0
 back_texture = ExtResource("4_tier2_back")
 overlay_texture = ExtResource("6_overlay")
 
@@ -90,12 +96,14 @@ wait_time = 0.12
 
 [node name="Tier3Tray" type="Node2D" parent="PhysicsRoot"]
 unique_name_in_owner = true
+position = Vector2(1020, 0)
 script = ExtResource("2_tray_script")
 tier = 3
-container_size = Vector2(640, 680)
-left_wall_padding = 14.0
-right_wall_padding = 14.0
-bottom_wall_padding = 15.0
+container_size = Vector2(500, 540)
+left_wall_padding = 20.0
+right_wall_padding = 20.0
+bottom_wall_padding = 22.0
+spawn_y = 200.0
 back_texture = ExtResource("5_tier3_back")
 overlay_texture = ExtResource("6_overlay")
 

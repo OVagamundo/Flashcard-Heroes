@@ -101,15 +101,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				var dest_container: StringName
 				var dest_slot: int
 
-				if empty_slot != -1 and empty_slot < 5:
+				if empty_slot != -1 and empty_slot < C.BENCH_CAP:
 					dest_container = bench_tag
 					dest_slot = empty_slot
 				else:
 					dest_container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-					var discard = battle_manager._state.get_container(dest_container)
-					dest_slot = discard.find_first_empty_slot() if is_instance_valid(discard) else 0
-					if dest_slot == -1:
-						dest_slot = discard.get_all_uuids().size()
+					dest_slot = -1
 
 				var copy = chosen_unit.create_battle_copy(battle_manager.get_all_instances())
 				if is_instance_valid(copy):
@@ -119,11 +116,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					copy.equipped_slot_index = -1
 					copy.current_hp = copy.get_effective_starting_hp(battle_manager.get_all_instances())
 					copy.current_pwr = copy.get_effective_starting_pwr(battle_manager.get_all_instances())
-					battle_manager._state.bm_add_instance(copy, dest_container, dest_slot)
+					var placed_ok: bool = battle_manager._state.bm_add_instance(copy, dest_container, dest_slot)
+					assert(placed_ok, "EffectTraitSpecialistPreCombat: failed to place combat copy %s in %s" % [copy.ball_uuid, String(dest_container)])
 
 					var VisualDataAdapter = preload("res://scripts/VisualDataAdapter.gd")
 					var snap = VisualDataAdapter.create_visual_data(copy, battle_manager.get_all_instances())
-					var loc = LocationIdentifier.new(dest_container, dest_slot)
+					var loc = copy.get_location()
 					var summon_payload = EffectHandlers._make_summon_payload("", copy.ball_uuid, loc, snap, source_uuid, copy.get_definition().tier)
 
 					result.add_event(CombatEvent.new(CombatEvent.Type.SUMMON, {

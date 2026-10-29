@@ -17,7 +17,7 @@ extends Resource
 @export var total_tokens_earned: int = 0
 @export var current_room_tokens: int = 0
 @export var elapsed_simulation_time: float = 0.0
-@export var black_market_remove_cost: int = 5
+@export var shrine_remove_cost: int = 5
 @export var elite_reward_reroll_cost: int = 5
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
@@ -148,6 +148,12 @@ func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
 func get_instance_by_location(loc: LocationIdentifier) -> GachaBallInstance:
 	if not is_instance_valid(loc):
 		return null
+	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent := get_instance_by_uuid(loc.unit_uuid)
+		if is_instance_valid(parent) and loc.index >= 0 and loc.index < parent.equipped_item_uuids.size():
+			var eq_uuid := parent.equipped_item_uuids[loc.index]
+			return get_instance_by_uuid(eq_uuid) if not eq_uuid.is_empty() else null
+		return null
 	var container = get_container(loc.container)
 	if not is_instance_valid(container):
 		return null
@@ -274,15 +280,17 @@ func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
 		return _containers[container_name]
 	
-	# Handle standard containers with default sizes if they don't exist yet
-	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-		_containers[container_name] = FixedArrayContainer.new(5)
+	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP:
+		_containers[container_name] = FixedArrayContainer.new(C.LINEUP_CAP)
+		return _containers[container_name]
+	elif container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+		_containers[container_name] = FixedArrayContainer.new(C.BENCH_CAP)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 		_containers[container_name] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		return _containers[container_name]
 	elif String(container_name).begins_with("RunInventoryT"):
-		_containers[container_name] = FixedArrayContainer.new(39)
+		_containers[container_name] = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
 		return _containers[container_name]
 	
 	return null
@@ -324,6 +332,7 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 
 	var container = get_container(container_name)
 	if not is_instance_valid(container):
+		assert(not container_name.is_empty() and container_name != C.CONTAINER_EQUIPPED_ITEM, "RunState.add_instance: invalid container_name '%s'" % String(container_name))
 		return false
 	var slot := index
 	if slot < 0:
@@ -340,9 +349,17 @@ func add_instance(instance: GachaBallInstance, container_name: StringName, index
 					slot = loc_to_replace.index
 					# Permanently remove the chosen instance from the run to make space
 					remove_instance(uuid_to_replace)
-			
+
 			if slot == -1:
 				return false
+	else:
+		if slot >= container.get_size():
+			push_error("RunState.add_instance rejected: slot %d out of bounds in %s (capacity=%d)" % [slot, String(container_name), container.get_size()])
+			return false
+		var existing_uuid := container.get_uuid(slot)
+		if not existing_uuid.is_empty():
+			push_error("RunState.add_instance rejected: slot %d in %s already occupied by %s" % [slot, String(container_name), existing_uuid])
+			return false
 	# Update Index
 	container.set_uuid(slot, instance.ball_uuid)
 	# Update Truth
@@ -524,8 +541,10 @@ func remove_instance(uuid: String) -> bool:
 	return true
 
 func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
-	# Moves an instance from source to target. Handles equipping when target is equipped_item.
+	# Moves an instance from source to target atomically. Handles equipping when target is equipped_item.
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
+		return false
+	if source_loc.container.is_empty() or target_loc.container.is_empty():
 		return false
 	var instance: GachaBallInstance = get_instance_by_location(source_loc)
 	if not is_instance_valid(instance):
@@ -536,23 +555,42 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 		if not is_instance_valid(unit_instance):
 			return false
 		return equip_item(instance.ball_uuid, unit_instance.ball_uuid, target_loc.index)
-	# Default move between containers
-	var from_container: DataContainer = get_container(source_loc.container)
+
+	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
+		return true
+
+	# Pre-validate target container and slot BEFORE mutating source
 	var to_container: DataContainer = get_container(target_loc.container)
-	if not is_instance_valid(from_container) or not is_instance_valid(to_container):
+	if not is_instance_valid(to_container) or not to_container.is_valid_index(target_loc.index):
 		return false
-	# Clear all status effects (burn, etc.)
-	if source_loc.container != C.CONTAINER_EQUIPPED_ITEM:
-		if from_container.get_uuid(source_loc.index) == instance.ball_uuid:
-			from_container.set_uuid(source_loc.index, "")
-	# Place into target index (Index)
+	if not to_container.get_uuid(target_loc.index).is_empty():
+		push_error("RunState.move_instance rejected: target slot %s:%d is occupied" % [String(target_loc.container), target_loc.index])
+		return false
+
+	# Clear source location
+	if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		var parent_unit: GachaBallInstance = get_instance_by_uuid(source_loc.unit_uuid)
+		if not is_instance_valid(parent_unit) or source_loc.index < 0 or source_loc.index >= parent_unit.equipped_item_uuids.size():
+			return false
+		if parent_unit.equipped_item_uuids[source_loc.index] != instance.ball_uuid:
+			return false
+		parent_unit.unequip_item_bonus(instance)
+		parent_unit.equipped_item_uuids[source_loc.index] = ""
+	else:
+		var from_container: DataContainer = get_container(source_loc.container)
+		if not is_instance_valid(from_container) or not from_container.is_valid_index(source_loc.index):
+			return false
+		if from_container.get_uuid(source_loc.index) != instance.ball_uuid:
+			return false
+		from_container.set_uuid(source_loc.index, "")
+
+	# Place into target index and update truth atomically
 	to_container.set_uuid(target_loc.index, instance.ball_uuid)
-	# Update Truth
 	instance.location_container_tag = target_loc.container
 	instance.location_slot_index = target_loc.index
 	instance.equipped_on_uuid = ""
 	instance.equipped_slot_index = -1
-	# Validate and emit
+
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	SignalBus.emit_signal("run_data_changed")
@@ -560,65 +598,106 @@ func move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifie
 	return true
 
 func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
-	# Swaps two instances across containers, supporting equipped slots.
+	# Swaps two instances across containers, supporting equipped slots atomically.
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return false
+	if source_loc.container.is_empty() or target_loc.container.is_empty():
+		return false
+
+	# Normalize so if only one side is an equipped slot, it is target_loc
+	if source_loc.container == C.CONTAINER_EQUIPPED_ITEM and target_loc.container != C.CONTAINER_EQUIPPED_ITEM:
+		return swap_instances(target_loc, source_loc)
+
 	var a: GachaBallInstance = get_instance_by_location(source_loc)
 	var b: GachaBallInstance = get_instance_by_location(target_loc)
 	if not is_instance_valid(a) or not is_instance_valid(b):
 		return false
-	# If swapping with an equipped slot
+
+	# Swapping with an equipped slot
 	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		# Equip A onto target unit; move B to source slot
 		var target_unit: GachaBallInstance = run_instances.get(target_loc.unit_uuid)
 		if not is_instance_valid(target_unit):
 			return false
 		var target_slot := target_loc.index
-		# Remove A from its source index
-		if source_loc.container != C.CONTAINER_EQUIPPED_ITEM:
-			var src_container: DataContainer = get_container(source_loc.container)
-			if not is_instance_valid(src_container):
-				return false
-			if src_container.get_uuid(source_loc.index) == a.ball_uuid:
-				src_container.set_uuid(source_loc.index, "")
-		# If slot occupied by B, move B to source
-		var _moved_b_to_source := false
-		if is_instance_valid(b) and b.ball_uuid != "":
-			# If B is currently equipped, clear its equip slot
-			if b.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
-				var parent: GachaBallInstance = run_instances.get(target_loc.unit_uuid)
-				if is_instance_valid(parent) and target_slot >= 0 and target_slot < parent.equipped_item_uuids.size():
-					parent.equipped_item_uuids[target_slot] = ""
-					b.equipped_on_uuid = ""
-					b.equipped_slot_index = -1
-			# Place B into source container slot
-			var src_container2: DataContainer = get_container(source_loc.container)
-			if is_instance_valid(src_container2):
-				src_container2.set_uuid(source_loc.index, b.ball_uuid)
-				b.location_container_tag = source_loc.container
-				b.location_slot_index = source_loc.index
-				b.equipped_on_uuid = ""
-				b.equipped_slot_index = -1
-				_moved_b_to_source = true
-		# Equip A into target slot
-		var ok := equip_item(a.ball_uuid, target_unit.ball_uuid, target_slot)
-		if not ok:
+		if target_slot < 0 or target_slot >= target_unit.equipped_item_uuids.size():
 			return false
+		var a_def = a.get_definition()
+		var b_def = b.get_definition()
+		if not is_instance_valid(a_def) or a_def.category != &"ITEM":
+			return false
+		if not is_instance_valid(b_def) or b_def.category != &"ITEM":
+			return false
+
+		if source_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+			if source_loc.unit_uuid == target_loc.unit_uuid and source_loc.index == target_loc.index:
+				return true
+			var src_unit: GachaBallInstance = run_instances.get(source_loc.unit_uuid)
+			if not is_instance_valid(src_unit) or source_loc.index < 0 or source_loc.index >= src_unit.equipped_item_uuids.size():
+				return false
+			if src_unit.equipped_item_uuids[source_loc.index] != a.ball_uuid or target_unit.equipped_item_uuids[target_slot] != b.ball_uuid:
+				return false
+
+			src_unit.unequip_item_bonus(a)
+			src_unit.equipped_item_uuids[source_loc.index] = ""
+			target_unit.unequip_item_bonus(b)
+			target_unit.equipped_item_uuids[target_slot] = ""
+
+			src_unit.equipped_item_uuids[source_loc.index] = b.ball_uuid
+			b.equipped_on_uuid = src_unit.ball_uuid
+			b.equipped_slot_index = source_loc.index
+			b.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+			b.location_slot_index = source_loc.index
+			src_unit.equip_item_bonus(b)
+
+			target_unit.equipped_item_uuids[target_slot] = a.ball_uuid
+			a.equipped_on_uuid = target_unit.ball_uuid
+			a.equipped_slot_index = target_slot
+			a.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+			a.location_slot_index = target_slot
+			target_unit.equip_item_bonus(a)
+		else:
+			var src_container: DataContainer = get_container(source_loc.container)
+			if not is_instance_valid(src_container) or not src_container.is_valid_index(source_loc.index):
+				return false
+			if src_container.get_uuid(source_loc.index) != a.ball_uuid or target_unit.equipped_item_uuids[target_slot] != b.ball_uuid:
+				return false
+
+			src_container.set_uuid(source_loc.index, b.ball_uuid)
+			target_unit.unequip_item_bonus(b)
+			target_unit.equipped_item_uuids[target_slot] = ""
+			b.location_container_tag = source_loc.container
+			b.location_slot_index = source_loc.index
+			b.equipped_on_uuid = ""
+			b.equipped_slot_index = -1
+
+			target_unit.equipped_item_uuids[target_slot] = a.ball_uuid
+			a.equipped_on_uuid = target_unit.ball_uuid
+			a.equipped_slot_index = target_slot
+			a.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+			a.location_slot_index = target_slot
+			target_unit.equip_item_bonus(a)
+
 		if OS.is_debug_build():
 			_validate_state_consistency()
+		SignalBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
 		return true
+
 	# General container-to-container swap
+	if source_loc.container == target_loc.container and source_loc.index == target_loc.index:
+		return true
 	var a_container := get_container(source_loc.container)
 	var b_container := get_container(target_loc.container)
 	if not is_instance_valid(a_container) or not is_instance_valid(b_container):
 		return false
-	# Swap index values
-	if a_container.get_uuid(source_loc.index) != a.ball_uuid:
+	if not a_container.is_valid_index(source_loc.index) or not b_container.is_valid_index(target_loc.index):
 		return false
+	if a_container.get_uuid(source_loc.index) != a.ball_uuid or b_container.get_uuid(target_loc.index) != b.ball_uuid:
+		return false
+
 	var b_uuid := b.ball_uuid
 	b_container.set_uuid(target_loc.index, a.ball_uuid)
 	a_container.set_uuid(source_loc.index, b_uuid)
-	# Update Truth
 	a.location_container_tag = target_loc.container
 	a.location_slot_index = target_loc.index
 	a.equipped_on_uuid = ""
@@ -627,7 +706,7 @@ func swap_instances(source_loc: LocationIdentifier, target_loc: LocationIdentifi
 	b.location_slot_index = source_loc.index
 	b.equipped_on_uuid = ""
 	b.equipped_slot_index = -1
-	# Validate and emit
+
 	if OS.is_debug_build():
 		_validate_state_consistency()
 	SignalBus.emit_signal("run_data_changed")
@@ -667,11 +746,11 @@ func spend_gold(amount: int, silent: bool = false) -> bool:
 		SignalBus.emit_signal("run_data_changed")
 	return true
 
-func get_black_market_remove_cost() -> int:
-	return max(5, black_market_remove_cost)
+func get_shrine_remove_cost() -> int:
+	return max(5, shrine_remove_cost)
 
-func increase_black_market_remove_cost() -> void:
-	black_market_remove_cost = get_black_market_remove_cost() + 1
+func increase_shrine_remove_cost() -> void:
+	shrine_remove_cost = get_shrine_remove_cost() + 1
 	SignalBus.emit_signal("run_data_changed")
 
 func get_elite_reward_reroll_cost() -> int:
@@ -682,8 +761,203 @@ func increase_elite_reward_reroll_cost() -> void:
 	SignalBus.emit_signal("run_data_changed")
 
 
+func register_and_equip_item(item: GachaBallInstance, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
+	assert(is_instance_valid(item), "RunState.register_and_equip_item: item is null")
+	assert(not run_instances.has(item.ball_uuid), "RunState.register_and_equip_item: item %s already registered" % item.ball_uuid)
+	if unit_uuid.is_empty():
+		return false
+	var unit := get_instance_by_uuid(unit_uuid)
+	if not is_instance_valid(unit):
+		return false
+	var item_def = item.get_definition()
+	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
+		return false
+
+	var target_slot := slot_index
+	if target_slot < 0:
+		var empty_idx := unit.equipped_item_uuids.find("")
+		target_slot = empty_idx if empty_idx != -1 else 0
+	if target_slot >= unit.equipped_item_uuids.size():
+		return false
+
+	var existing_uuid := unit.equipped_item_uuids[target_slot]
+	var existing_item: GachaBallInstance = get_instance_by_uuid(existing_uuid) if not existing_uuid.is_empty() else null
+	var bench_container: DataContainer = null
+	var bench_empty_slot: int = -1
+	if is_instance_valid(existing_item):
+		bench_container = get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+		if not is_instance_valid(bench_container):
+			return false
+		bench_empty_slot = bench_container.find_first_empty_slot()
+		if bench_empty_slot == -1:
+			return false
+
+	if is_instance_valid(existing_item):
+		bench_container.set_uuid(bench_empty_slot, existing_item.ball_uuid)
+		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+		existing_item.location_slot_index = bench_empty_slot
+		existing_item.equipped_on_uuid = ""
+		existing_item.equipped_slot_index = -1
+
+	run_instances[item.ball_uuid] = item
+	unit.equipped_item_uuids[target_slot] = item.ball_uuid
+	item.equipped_on_uuid = unit.ball_uuid
+	item.equipped_slot_index = target_slot
+	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+	item.location_slot_index = target_slot
+
+	if is_instance_valid(existing_item):
+		unit.replace_item_bonus(existing_item, item)
+	else:
+		unit.equip_item_bonus(item)
+
+	if OS.is_debug_build():
+		_validate_state_consistency()
+	if not silent:
+		SignalBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
+	return true
+
+func replace_units_for_merge(
+	source_uuid: String,
+	target_uuid: String,
+	new_instance: GachaBallInstance,
+	dest_container_name: StringName,
+	dest_index: int,
+	items_to_equip: Array
+) -> bool:
+	var source := get_instance_by_uuid(source_uuid)
+	var target := get_instance_by_uuid(target_uuid)
+	if not is_instance_valid(source) or not is_instance_valid(target) or not is_instance_valid(new_instance):
+		return false
+	var dest_container := get_container(dest_container_name)
+	if not is_instance_valid(dest_container):
+		return false
+
+	var src_loc := source.get_location()
+	var tgt_loc := target.get_location()
+	if not is_instance_valid(src_loc) or not is_instance_valid(tgt_loc):
+		return false
+
+	# Validate destination slot availability BEFORE mutating anything
+	if dest_index >= 0:
+		if dest_index >= dest_container.get_size():
+			return false
+		var cur := dest_container.get_uuid(dest_index)
+		if not cur.is_empty() and cur != source_uuid and cur != target_uuid:
+			return false
+
+	var keep_uuids: Dictionary = {}
+	var max_slots := new_instance.equipped_item_uuids.size()
+	for i in range(min(items_to_equip.size(), max_slots)):
+		var keep_it: GachaBallInstance = items_to_equip[i]
+		if is_instance_valid(keep_it):
+			keep_uuids[keep_it.ball_uuid] = true
+
+	var extra_items: Array[GachaBallInstance] = []
+	for parent_u in [source, target]:
+		for eq_uuid in parent_u.equipped_item_uuids:
+			if not eq_uuid.is_empty() and not keep_uuids.has(eq_uuid):
+				var eq_inst := get_instance_by_uuid(eq_uuid)
+				if is_instance_valid(eq_inst):
+					extra_items.append(eq_inst)
+
+	if not extra_items.is_empty():
+		var bench := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+		if not is_instance_valid(bench):
+			return false
+		var free_count := 0
+		for u in bench.get_all_uuids():
+			if String(u).is_empty():
+				free_count += 1
+		if src_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+			free_count += 1
+		if tgt_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+			free_count += 1
+		if dest_container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+			free_count -= 1
+		if free_count < extra_items.size():
+			return false
+
+	# Unlink kept items from parent units
+	var parent_units: Array[GachaBallInstance] = [source, target]
+	for parent_u in parent_units:
+		for s_idx in range(parent_u.equipped_item_uuids.size()):
+			var eq_uuid: String = parent_u.equipped_item_uuids[s_idx]
+			if eq_uuid.is_empty():
+				continue
+			var eq_inst := get_instance_by_uuid(eq_uuid)
+			parent_u.equipped_item_uuids[s_idx] = ""
+			if is_instance_valid(eq_inst):
+				parent_u.unequip_item_bonus(eq_inst)
+
+	# Remove source and target from their containers/slots and registry
+	for pair in [[source, src_loc], [target, tgt_loc]]:
+		var inst_p: GachaBallInstance = pair[0]
+		var loc_p: LocationIdentifier = pair[1]
+		if loc_p.container == C.CONTAINER_EQUIPPED_ITEM:
+			var p_unit := get_instance_by_uuid(loc_p.unit_uuid)
+			if is_instance_valid(p_unit) and loc_p.index >= 0 and loc_p.index < p_unit.equipped_item_uuids.size():
+				if p_unit.equipped_item_uuids[loc_p.index] == inst_p.ball_uuid:
+					p_unit.unequip_item_bonus(inst_p)
+					p_unit.equipped_item_uuids[loc_p.index] = ""
+		else:
+			var c_p := get_container(loc_p.container)
+			if is_instance_valid(c_p) and loc_p.index >= 0 and c_p.get_uuid(loc_p.index) == inst_p.ball_uuid:
+				c_p.set_uuid(loc_p.index, "")
+		run_instances.erase(inst_p.ball_uuid)
+
+	# Place new_instance into dest_container
+	var final_slot := dest_index
+	if final_slot < 0:
+		final_slot = dest_container.find_first_empty_slot()
+		if final_slot == -1 and String(dest_container_name).begins_with("RunInventoryT"):
+			var all_uuids := dest_container.get_all_non_empty_uuids()
+			if all_uuids.size() > 0:
+				var uuid_to_replace = RNGManager.gacha_rng.pick_random(all_uuids)
+				var loc_to_replace := get_location_for_uuid(uuid_to_replace)
+				final_slot = loc_to_replace.index
+				remove_instance(uuid_to_replace)
+		assert(final_slot != -1, "RunState.replace_units_for_merge: failed to allocate destination slot in %s" % String(dest_container_name))
+
+	dest_container.set_uuid(final_slot, new_instance.ball_uuid)
+	new_instance.location_container_tag = dest_container_name
+	new_instance.location_slot_index = final_slot
+	new_instance.equipped_on_uuid = ""
+	new_instance.equipped_slot_index = -1
+	run_instances[new_instance.ball_uuid] = new_instance
+
+	# Rehome any extra items to PlayerBench
+	if not extra_items.is_empty():
+		var bench2 := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+		for ex_it in extra_items:
+			var b_slot := bench2.find_first_empty_slot()
+			assert(b_slot != -1, "RunState.replace_units_for_merge: bench overflow on extra item")
+			bench2.set_uuid(b_slot, ex_it.ball_uuid)
+			ex_it.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+			ex_it.location_slot_index = b_slot
+			ex_it.equipped_on_uuid = ""
+			ex_it.equipped_slot_index = -1
+
+	# Directly equip kept items onto new_instance
+	for i in range(min(items_to_equip.size(), max_slots)):
+		var keep_it: GachaBallInstance = items_to_equip[i]
+		if is_instance_valid(keep_it):
+			new_instance.equipped_item_uuids[i] = keep_it.ball_uuid
+			keep_it.equipped_on_uuid = new_instance.ball_uuid
+			keep_it.equipped_slot_index = i
+			keep_it.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
+			keep_it.location_slot_index = i
+			new_instance.equip_item_bonus(keep_it)
+
+	if OS.is_debug_build():
+		_validate_state_consistency()
+	SignalBus.emit_signal("run_data_changed")
+	SignalBus.emit_signal("inventory_ui_refresh_requested")
+	return true
+
 func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, silent: bool = false) -> bool:
-	# Equips an item onto a unit. Units now use a single slot, so default equips replace.
+	# Equips an item onto a unit atomically. Pre-validates all preconditions before mutating state.
 	if item_uuid.is_empty() or unit_uuid.is_empty():
 		return false
 	var item := get_instance_by_uuid(item_uuid)
@@ -693,61 +967,91 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, sile
 	var item_def = item.get_definition()
 	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
 		return false
+
 	# Determine slot
 	var target_slot := slot_index
 	if target_slot < 0:
-		target_slot = 0
+		var empty_idx := unit.equipped_item_uuids.find("")
+		target_slot = empty_idx if empty_idx != -1 else 0
 	if target_slot >= unit.equipped_item_uuids.size():
 		return false
-	# If the item is currently equipped (same or different unit), clear the previous mapping
-	# and remove bonuses first to avoid ghost copies and double-apply during intra-unit moves.
-	var prev_parent_uuid := item.equipped_on_uuid
-	if not prev_parent_uuid.is_empty():
-		var prev_parent := get_instance_by_uuid(prev_parent_uuid)
-		if is_instance_valid(prev_parent):
-			if item.equipped_slot_index >= 0 and item.equipped_slot_index < prev_parent.equipped_item_uuids.size():
-				prev_parent.equipped_item_uuids[item.equipped_slot_index] = ""
-				# Remove previous bonus (even if same unit; will re-apply after placing)
-				prev_parent.unequip_item_bonus(item)
-				# NOTE: unequip_item_bonus() already emits granular unit_stat_changed signals
-	# If item currently in a container, remove it from index
+
+	# Self-equip no-op
+	if item.equipped_on_uuid == unit.ball_uuid and item.equipped_slot_index == target_slot:
+		return true
+
+	# Pre-validate item's current source location BEFORE mutating anything
 	var item_loc := item.get_location()
-	if is_instance_valid(item_loc) and item_loc.container != C.CONTAINER_EQUIPPED_ITEM:
-		var src_container := get_container(item_loc.container)
-		if is_instance_valid(src_container) and src_container.get_uuid(item_loc.index) == item.ball_uuid:
-			src_container.set_uuid(item_loc.index, "")
-	# If target slot occupied, unequip existing item to PlayerBench (fallback: first empty)
+	if not is_instance_valid(item_loc):
+		return false
+
+	var prev_parent: GachaBallInstance = null
+	var prev_slot: int = -1
+	var src_container: DataContainer = null
+	var src_slot: int = -1
+
+	if item_loc.container == C.CONTAINER_EQUIPPED_ITEM:
+		prev_parent = get_instance_by_uuid(item.equipped_on_uuid)
+		if not is_instance_valid(prev_parent):
+			return false
+		prev_slot = item.equipped_slot_index
+		if prev_slot < 0 or prev_slot >= prev_parent.equipped_item_uuids.size() or prev_parent.equipped_item_uuids[prev_slot] != item.ball_uuid:
+			return false
+	else:
+		src_container = get_container(item_loc.container)
+		if not is_instance_valid(src_container) or not src_container.is_valid_index(item_loc.index):
+			return false
+		if src_container.get_uuid(item_loc.index) != item.ball_uuid:
+			return false
+		src_slot = item_loc.index
+
+	# Pre-validate bench capacity if replacing an existing item
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	var existing_item: GachaBallInstance = null
-	if not existing_uuid.is_empty():
+	var bench_container: DataContainer = null
+	if not existing_uuid.is_empty() and existing_uuid != item.ball_uuid:
 		existing_item = get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
-			existing_item.equipped_on_uuid = ""
-			existing_item.equipped_slot_index = -1
-			# Place into PlayerBench (or any available appropriate container)
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
-			if is_instance_valid(inv):
-				var empty := inv.find_first_empty_slot()
-				if empty != -1:
-					inv.set_uuid(empty, existing_item.ball_uuid)
-					existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
-					existing_item.location_slot_index = empty
-				else:
-					return false
+			bench_container = get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+			if not is_instance_valid(bench_container):
+				return false
+			# If item is coming from PlayerBench, freeing src_slot guarantees at least 1 empty bench slot
+			var item_frees_bench_slot: bool = (item_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH)
+			if not item_frees_bench_slot and bench_container.find_first_empty_slot() == -1:
+				return false
+
+	# All preconditions verified — execute transition atomically
+	if is_instance_valid(prev_parent):
+		prev_parent.unequip_item_bonus(item)
+		prev_parent.equipped_item_uuids[prev_slot] = ""
+	elif is_instance_valid(src_container):
+		src_container.set_uuid(src_slot, "")
+
+	if is_instance_valid(existing_item):
+		var empty := bench_container.find_first_empty_slot()
+		assert(empty != -1, "RunState.equip_item: expected empty bench slot after precondition check")
+		bench_container.set_uuid(empty, existing_item.ball_uuid)
+		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+		existing_item.location_slot_index = empty
+		existing_item.equipped_on_uuid = ""
+		existing_item.equipped_slot_index = -1
+
 	unit.equipped_item_uuids[target_slot] = item.ball_uuid
 	item.equipped_on_uuid = unit.ball_uuid
 	item.equipped_slot_index = target_slot
 	item.location_container_tag = C.CONTAINER_EQUIPPED_ITEM
 	item.location_slot_index = target_slot
-	# Apply item bonuses (replace_item_bonus calculates net delta directly)
+
 	if is_instance_valid(existing_item):
 		unit.replace_item_bonus(existing_item, item)
 	else:
 		unit.equip_item_bonus(item)
-	SignalBus.emit_signal("run_data_changed")
-	SignalBus.emit_signal("inventory_ui_refresh_requested")
+
 	if OS.is_debug_build():
 		_validate_state_consistency()
+	if not silent:
+		SignalBus.emit_signal("run_data_changed")
+		SignalBus.emit_signal("inventory_ui_refresh_requested")
 	return true
 
 # ------------------------------------------------------------------
@@ -755,9 +1059,13 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, sile
 # ------------------------------------------------------------------
 
 func _validate_state_consistency() -> bool:
+	var valid := _check_state_consistency()
+	assert(valid, "RunState consistency invariant violated")
+	return valid
+
+func _check_state_consistency() -> bool:
 	# Ensures no duplicate UUIDs across containers and truth matches index.
 	var seen: Dictionary = {}
-	# Validate container slots
 	for cname in _containers.keys():
 		var c: DataContainer = _containers[cname]
 		if not is_instance_valid(c):
@@ -775,18 +1083,18 @@ func _validate_state_consistency() -> bool:
 			if not is_instance_valid(inst):
 				push_error("Container references missing instance %s" % u)
 				return false
-			# Equipped items should not appear in container slots
 			if inst.get_location().container == C.CONTAINER_EQUIPPED_ITEM:
 				push_error("Equipped item %s appears in a container slot" % u)
 				return false
-	# Validate instances' truth against index
 	for u in run_instances.keys():
 		var inst: GachaBallInstance = run_instances[u]
 		if not is_instance_valid(inst):
-			continue
+			push_error("Invalid run instance registered for UUID %s" % u)
+			return false
 		var loc := inst.get_location()
 		if not is_instance_valid(loc):
-			continue
+			push_error("Run instance %s returned invalid LocationIdentifier" % u)
+			return false
 		if loc.container == C.CONTAINER_EQUIPPED_ITEM:
 			var parent: GachaBallInstance = run_instances.get(loc.unit_uuid)
 			if not is_instance_valid(parent):
@@ -799,6 +1107,9 @@ func _validate_state_consistency() -> bool:
 				push_error("Equipped mapping mismatch for %s" % u)
 				return false
 		else:
+			if loc.container == &"" or loc.container.is_empty():
+				push_error("Run instance %s has empty container" % u)
+				return false
 			var c2 := get_container(loc.container)
 			if not is_instance_valid(c2):
 				push_error("Missing container %s for %s" % [String(loc.container), u])
@@ -823,7 +1134,7 @@ func start_new_run() -> void:
 	elite_milestones_offered.clear()
 	total_enemies_defeated = 0
 	total_gold_earned = 0
-	black_market_remove_cost = 5
+	shrine_remove_cost = 5
 	elite_reward_reroll_cost = 5
 	run_instances.clear()
 	_containers.clear()
@@ -850,6 +1161,26 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		self.hero_instance.initialize(hero_def)
 		# Register hero via atomic API in the first lineup slot
 		add_instance(self.hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+		
+		# Bounty Hunter hero trait assignment: 1 Elemental soul + 1 Class or Visual trait
+		if hero_def_id == &"hero_bounty_hunter" or hero_def_id == &"hero":
+			var elemental_souls: Array[StringName] = [&"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR"]
+			var class_visual_traits: Array[StringName] = [
+				&"Tank", &"Fighter", &"Support", &"Specialist",
+				&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"
+			]
+			var rolled_element: StringName = elemental_souls[RNGManager.map_rng.randi() % elemental_souls.size()]
+			var rolled_class_visual: StringName = class_visual_traits[RNGManager.map_rng.randi() % class_visual_traits.size()]
+			
+			var hero_tags_comp := TagComponent.new()
+			hero_tags_comp.id = &"bounty_hunter_run_traits"
+			hero_tags_comp.category = &"TAG"
+			hero_tags_comp.source_type = &"RUN_STATE"
+			hero_tags_comp.is_persistent = true
+			hero_tags_comp.tags_to_add = [rolled_element, rolled_class_visual]
+			self.hero_instance.components.append(hero_tags_comp)
+			
+			_adapt_hero_pack(hero_def_id, rolled_element)
 		
 	# Test-mode: Timekeeper starts with 1000 gold
 	if hero_def_id == &"hero_timekeeper":
@@ -900,7 +1231,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
 		var container_name: StringName = &"RunInventoryT%d" % t
-		_containers[container_name] = FixedArrayContainer.new(39)
+		_containers[container_name] = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
 
 	# Create player trinket container
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
@@ -942,7 +1273,19 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	if GameManager.is_test_mode:
 		unlock_all_recipes_for_testing()
 
-func _get_starters_for_hero(_hero_id: StringName) -> Array[StringName]:
+func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
+		return [
+			&"?MerSpe", &"?MerSpe", &"?MerSpe",
+			&"ETnkPlaToy", &"ETnkPlaToy",
+			&"FFigMecApp", &"FFigMecApp",
+			&"WSupAniCos", &"WSupAniCos",
+			&"ASpeFodToy", &"ASpeFodToy",
+			&"item_claim_ticket", &"item_claim_ticket",
+			&"item_t1_a", &"item_t1_a",
+			&"item_t1_b", &"item_t1_b",
+			&"trinket_trait_mercenary"
+		]
 	return [
 		&"ETnkPlaToy", &"ETnkPlaToy", &"ETnkPlaToy",
 		&"FFigMecApp", &"FFigMecApp", &"FFigMecApp",
@@ -951,6 +1294,28 @@ func _get_starters_for_hero(_hero_id: StringName) -> Array[StringName]:
 		&"item_t1_a", &"item_t1_a",
 		&"item_t1_b", &"item_t1_b"
 	]
+
+func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
+	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
+		var bounty_hunter_unit_tags: Dictionary = {
+			&"?MerSpe": [rolled_element, &"Mercenary", &"Specialist"],
+			&"?ASpeMerFodToy": [rolled_element, &"SOUL_AIR", &"Specialist", &"Mercenary", &"Food", &"Toy"],
+			&"E?TnkMerPlaToy": [&"SOUL_EARTH", rolled_element, &"Tank", &"Mercenary", &"Plant", &"Toy"],
+			&"F?FigMerMecApp": [&"SOUL_FIRE", rolled_element, &"Fighter", &"Mercenary", &"Mecha", &"Appliance"],
+			&"W?SupMerAniCos": [&"SOUL_WATER", rolled_element, &"Support", &"Mercenary", &"Animal", &"Costume"],
+			&"E??ATnkSpeMerFodPlaToy": [&"SOUL_EARTH", rolled_element, rolled_element, &"SOUL_AIR", &"Tank", &"Specialist", &"Mercenary", &"Food", &"Plant", &"Toy"],
+			&"FW??FigSupMerAniMecAppCos": [&"SOUL_FIRE", &"SOUL_WATER", rolled_element, rolled_element, &"Fighter", &"Support", &"Mercenary", &"Animal", &"Mecha", &"Appliance", &"Costume"],
+			&"W??ASupSpeMerFodAniToyCos": [&"SOUL_WATER", rolled_element, rolled_element, &"SOUL_AIR", &"Support", &"Specialist", &"Mercenary", &"Food", &"Animal", &"Toy", &"Costume"],
+			&"F??AFigSpeMerFodMecToyApp": [&"SOUL_FIRE", rolled_element, rolled_element, &"SOUL_AIR", &"Fighter", &"Specialist", &"Mercenary", &"Food", &"Mecha", &"Toy", &"Appliance"],
+			&"EF??TnkFigMerMecPlaToyApp": [&"SOUL_EARTH", &"SOUL_FIRE", rolled_element, rolled_element, &"Tank", &"Fighter", &"Mercenary", &"Mecha", &"Plant", &"Toy", &"Appliance"],
+			&"EW??TnkSupMerAniPlaToyCos": [&"SOUL_EARTH", &"SOUL_WATER", rolled_element, rolled_element, &"Tank", &"Support", &"Mercenary", &"Animal", &"Plant", &"Toy", &"Costume"]
+		}
+		for unit_id in bounty_hunter_unit_tags:
+			var def: GachaBallDefinition = Database.units[unit_id]
+			var updated_tags: Array[StringName] = []
+			for tag in bounty_hunter_unit_tags[unit_id]:
+				updated_tags.append(tag)
+			def.tags = updated_tags
 
 func has_locked_cards() -> bool:
 	if deck_def_id == &"":
@@ -1013,7 +1378,7 @@ func to_save_dict() -> Dictionary:
 		"total_tokens_earned": total_tokens_earned,
 		"current_room_tokens": current_room_tokens,
 		"elapsed_simulation_time": elapsed_simulation_time,
-		"black_market_remove_cost": black_market_remove_cost,
+		"shrine_remove_cost": shrine_remove_cost,
 		"elite_reward_reroll_cost": elite_reward_reroll_cost,
 		"merge_encounter_cost": merge_encounter_cost,
 		"get_tokens_cost": get_tokens_cost,
@@ -1074,7 +1439,7 @@ func from_save_dict(data: Dictionary) -> void:
 	total_tokens_earned = data.get("total_tokens_earned", 0)
 	current_room_tokens = data.get("current_room_tokens", 0)
 	elapsed_simulation_time = data.get("elapsed_simulation_time", 0.0)
-	black_market_remove_cost = data.get("black_market_remove_cost", 5)
+	shrine_remove_cost = data.get("shrine_remove_cost", data.get("black_market_remove_cost", 5))
 	elite_reward_reroll_cost = data.get("elite_reward_reroll_cost", 5)
 	merge_encounter_cost = data.get("merge_encounter_cost", 5)
 	get_tokens_cost = data.get("get_tokens_cost", 5)
@@ -1101,9 +1466,11 @@ func from_save_dict(data: Dictionary) -> void:
 		var container: DataContainer
 		# Create appropriate container type based on name
 		if cname_str.begins_with("RunInventoryT"):
-			container = FixedArrayContainer.new(39)
-		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-			container = FixedArrayContainer.new(5)
+			container = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP:
+			container = FixedArrayContainer.new(C.LINEUP_CAP)
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+			container = FixedArrayContainer.new(C.BENCH_CAP)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 			container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		else:

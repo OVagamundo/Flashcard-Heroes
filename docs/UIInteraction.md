@@ -272,13 +272,13 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
   5. Default -> Outline disabled.
 
 ### 5.5 Interactive Overlays
-To streamline interactions in Reward, Shop, and Black Market scenes, the game uses **Interactive Overlays** instead of modal choice windows.
+To streamline interactions in Reward, Shop, and Shrine scenes, the game uses **Interactive Overlays** instead of modal choice windows.
 - **Implementation**: Managed programmatically by `Main.gd` and synchronized with inventory window states.
 - **Mode 1: Get or Sell Drop Zones**: Both standard Reward and Elite Reward scenes implement a split action layout consisting of a **Collect ("Get")** zone and a **Sell** zone.
   - **Standard Rewards**: Items can be collected or sold for their base tier value.
   - **Elite Rewards**: Selling grants a flat premium of **10 Gold**.
   - **Auto-Collection**: Trying to leave the scene with rewards still on board automatically triggers sequential collection of all remaining items to prevent player loss.
-- **Mode 2: Split Action Zones**: Two side-by-side zones used for the Black Market ("Transform" / "Remove").
+- **Mode 2: Split Action Zones**: Two side-by-side zones used for the Shrine ("Transform" / "Remove").
 - **Native Drag-Drop**: All overlays use `DropZone.gd` to integrate with Godot's built-in drag-and-drop system. This prevents "snap-back" glitches by reporting successful drops to the engine.
 - **VFX Proxy Pipeline**: To ensure fluid visuals during gold-spending animations, a static "proxy" view of the gachaball is spawned at the drop point until the financial transaction completes and the final movement animation begins.
 - **UI Context**: Overlays are anchored to the `BottomArea` and render on the `HUDLayer` (Z-index 5) to ensure they are always accessible above machine bases.

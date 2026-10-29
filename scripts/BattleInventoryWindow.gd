@@ -7,23 +7,26 @@ extends Control
 
 
 
-var _base_y: float = 162.0
-var _closed_y: float = 1300.0
+var _base_y: float = 320.0
+var _closed_y: float = 880.0
 var _is_open: bool = false
 var _data_source: Dictionary
 
 func _ready() -> void:
-	# Ensure the trays are spaced out properly across the 1920 width
+	# Clip trays at Y = 860 (offset_bottom = -220.0) so they emerge from behind the machine bases
+	clip_contents = true
+	
+	# Position the three 500x540 trays directly above the three 500x200 machine bases (X = 20, 520, 1020)
 	if is_instance_valid(tier_1_tray):
-		tier_1_tray.position = Vector2(0.0, 0.0)
+		tier_1_tray.position = Vector2(20.0, 0.0)
 	if is_instance_valid(tier_2_tray):
-		tier_2_tray.position = Vector2(640.0, 0.0)
+		tier_2_tray.position = Vector2(520.0, 0.0)
 	if is_instance_valid(tier_3_tray):
-		tier_3_tray.position = Vector2(1280.0, 0.0)
+		tier_3_tray.position = Vector2(1020.0, 0.0)
 		
-	tier_1_tray.position.x = 0.0
-	tier_2_tray.position.x = 640.0
-	tier_3_tray.position.x = 1280.0
+	tier_1_tray.position.x = 20.0
+	tier_2_tray.position.x = 520.0
+	tier_3_tray.position.x = 1020.0
 	
 	# Connect to game signals
 	SignalBus.battle_inventory_changed.connect(_on_battle_inventory_changed)

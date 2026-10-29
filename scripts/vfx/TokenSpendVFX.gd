@@ -5,10 +5,21 @@ extends Node2D
 ## Token spend animation - token is TOSSED from counter to gacha machine
 ## Natural parabolic arc like throwing a coin into a machine slot
 
-const TOKEN_TEXTURE = preload("res://assets/Realistic/ui/textures/token_100yen.png")
+const TOKEN_TEXTURE = preload("res://assets/PixelArt/ui/textures/TokenRotationSpriteSheet.png")
+
+const ROTATION_STEPS: Array[Dictionary] = [
+	{"frame": 0, "flip_h": false},
+	{"frame": 1, "flip_h": false},
+	{"frame": 2, "flip_h": false},
+	{"frame": 3, "flip_h": false},
+	{"frame": 4, "flip_h": false},
+	{"frame": 3, "flip_h": true},
+	{"frame": 2, "flip_h": true},
+	{"frame": 1, "flip_h": true},
+]
 
 # Animation parameters - tuned for satisfying "toss" feel
-const COIN_SCALE := 0.375 # 0.375 * 256px = 96px, matching top bar icon perfectly (texture is 4x original)
+const COIN_SCALE := 1.5 # 1.5 * 64px = 96px, matching target coin visual size
 const TOSS_DURATION := 0.45 # Total flight time
 const SPIN_COUNT := 3 # Number of full spins during flight
 const GRAVITY_FACTOR := 1.8 # How much the arc curves down
@@ -34,6 +45,10 @@ func _ready() -> void:
 		add_child(token_sprite)
 	
 	token_sprite.texture = TOKEN_TEXTURE
+	token_sprite.hframes = 5
+	token_sprite.vframes = 1
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
 	token_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
 
 func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
@@ -46,6 +61,8 @@ func play(start_pos: Vector2, target_pos: Vector2, delay: float = 0.0) -> void:
 	token_sprite.modulate = Color.WHITE
 	token_sprite.scale = Vector2(COIN_SCALE, COIN_SCALE)
 	token_sprite.rotation = 0
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
 	
 	# Wait for stagger delay
 	if delay > 0:
@@ -106,6 +123,10 @@ func _on_landing() -> void:
 	if _wobble_tween and _wobble_tween.is_valid():
 		_wobble_tween.kill()
 	
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
+	token_sprite.rotation = 0.0
+	
 	# Quick flash on impact
 	token_sprite.modulate = Color(1.5, 1.4, 1.0, 1.0)
 	
@@ -125,15 +146,14 @@ func _on_landing() -> void:
 func _start_spin() -> void:
 	"""Spin the coin during flight - like a flipping coin"""
 	_flip_tween = create_tween()
-	
-	var spin_duration = _effective_toss_duration / SPIN_COUNT / 4.0
-	
-	# Full rotation cycle using scale.x (creates flip illusion)
-	_flip_tween.set_loops(SPIN_COUNT)
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, spin_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", -COIN_SCALE, spin_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, spin_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", COIN_SCALE, spin_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flip_tween.tween_method(_apply_spin_step, 0.0, float(SPIN_COUNT), _effective_toss_duration).set_trans(Tween.TRANS_LINEAR)
+
+func _apply_spin_step(progress: float) -> void:
+	var total_steps: int = ROTATION_STEPS.size()
+	var step_idx: int = int(fposmod(progress, 1.0) * float(total_steps)) % total_steps
+	var step: Dictionary = ROTATION_STEPS[step_idx]
+	token_sprite.frame = step["frame"]
+	token_sprite.flip_h = step["flip_h"]
 
 func _start_wobble() -> void:
 	"""Add a slight rotation wobble for natural tumbling feel"""

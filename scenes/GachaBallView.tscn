@@ -24,6 +24,8 @@ content_margin_bottom = 6.0
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_unit"]
 
 [node name="GachaBallView" type="PanelContainer"]
+z_index = 2
+z_as_relative = false
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0

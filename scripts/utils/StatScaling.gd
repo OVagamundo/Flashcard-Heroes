@@ -70,10 +70,15 @@ static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, scrip
 	final_value += source_pwr * pwr_multiplier
 	final_value += source_hp * hp_multiplier
 	
-	# Complex: Dynamic multiplier from context (e.g., "tokens_spent")
+	# Complex: Dynamic multiplier from context (e.g., "tokens_spent", "gold_tens")
 	var multiplier_key: String = param_dict.get("context_multiplier_key", "")
 	if not multiplier_key.is_empty():
-		var context_val = context.get(multiplier_key, 1)
+		var context_val = context.get(multiplier_key, null)
+		if context_val == null:
+			if multiplier_key == "gold_tens":
+				context_val = int(GameManager.run_state.gold / 10) if is_instance_valid(GameManager.run_state) else 0
+			else:
+				context_val = 1
 		if context_val is int or context_val is float:
 			final_value *= float(context_val)
 	

@@ -10,6 +10,7 @@ const CannonballProjectileScene = preload("res://scenes/vfx/CannonballProjectile
 const BuffNumberProjectileScene = preload("res://scenes/vfx/BuffNumberProjectile.tscn")
 const FloatingDamageNumberScene = preload("res://scenes/vfx/FloatingDamageNumber.tscn")
 const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
+const CapsulePopVFXScene = preload("res://scenes/vfx/CapsulePopVFX.tscn")
 
 # -----------------------------------------------------------------------------
 # FACTORY METHODS
@@ -28,6 +29,10 @@ func create_damage_number() -> Node:
 ## Create an item activation popup
 func create_item_popup() -> Node:
 	return ItemPopupScene.instantiate()
+
+## Create a capsule pop VFX instance
+func create_capsule_pop() -> Node:
+	return CapsulePopVFXScene.instantiate()
 
 # -----------------------------------------------------------------------------
 # HELPER METHODS
@@ -205,3 +210,17 @@ func launch_projectile_between(animator: Node, source_uuid: String, target_uuid:
 		var duration = custom_duration if custom_duration > 0.0 else AnimationConstants.scaled(0.6)
 		projectile.launch(duration)
 	return projectile
+
+## Spawn and play a capsule pop VFX on the specified layer (or global effects layer)
+func spawn_capsule_pop_vfx(spawn_pos: Vector2, parent_layer: Node = null, base_scale: float = CapsulePopVFX.DEFAULT_SCALE, incoming_velocity: Vector2 = Vector2.ZERO) -> Node:
+	var vfx = create_capsule_pop()
+	var target_layer = parent_layer if is_instance_valid(parent_layer) else get_effects_layer()
+	if is_instance_valid(target_layer):
+		target_layer.add_child(vfx)
+		vfx.setup(spawn_pos, base_scale, incoming_velocity)
+		vfx.play()
+		return vfx
+	else:
+		push_warning("[VFXFactory] No valid layer to spawn CapsulePopVFX")
+		vfx.queue_free()
+		return null

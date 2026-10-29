@@ -12,7 +12,21 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var player_bench: HBoxContainer = %PlayerBench
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
 
-@onready var discard_pile_button: Button = %DiscardPileButton
+var discard_pile_button: Control:
+	get:
+		if is_instance_valid(_discard_pile_button):
+			return _discard_pile_button
+		if has_node("%DiscardPileButton"):
+			return get_node("%DiscardPileButton")
+		var main_node = GameManager.get_main_node()
+		if is_instance_valid(main_node):
+			var node = main_node.get_node_or_null("%GachaMachineDiscard")
+			if is_instance_valid(node):
+				return node
+		return null
+	set(val):
+		_discard_pile_button = val
+var _discard_pile_button: Control = null
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 
@@ -25,7 +39,7 @@ var _trait_hud_root: Control = null
 
 const TRAIT_SORT_ORDER: Array[String] = [
 	"FIRE", "EARTH", "WATER", "AIR",
-	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST",
+	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST", "MERCENARY",
 	"FOOD", "MECHA", "ANIMAL", "PLANT", "TOY", "APPLIANCE", "COSTUME"
 ]
 const TRAIT_HUD_Y: float = 10.0
@@ -33,17 +47,9 @@ const TRAIT_TRACKER_SPACING: float = 8.0
 const TRAIT_SCREEN_MARGIN: float = 24.0
 const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 
-# Combat Controls
-@onready var combat_controls_panel: PanelContainer = %CombatControlsPanel
-@onready var speed_label: Label = %SpeedLabel
-@onready var pause_btn: Button = %PauseBtn
-@onready var speed_1x_btn: Button = %Speed1xBtn
-@onready var speed_2x_btn: Button = %Speed2xBtn
-@onready var speed_4x_btn: Button = %Speed4xBtn
-
-var _speed_buttons: Array[Button] = []
 var _battle_animator: Node = null
 var _pending_board_redraw: bool = false
+
 var _waiting_for_management_tutorial: bool = false
 var _waiting_for_first_draw_tutorial: bool = false
 
@@ -55,6 +61,7 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 	var slots: Array = ui_container.get_children()
 	for i in range(slots.size()):
 		var child = slots[i]
+		var slot_view: PanelContainer = null
 		if child is PanelContainer and child.get_script() != preload("res://scripts/SlotView.gd"):
 			var loc := LocationIdentifier.new()
 			loc.container = container_name
@@ -62,28 +69,38 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 			var parent: Node = child.get_parent()
 			var idx: int = child.get_index()
 			child.free()
-			var slot_view: PanelContainer = SlotViewScene.instantiate()
+			slot_view = SlotViewScene.instantiate()
 			parent.add_child(slot_view)
 			parent.move_child(slot_view, idx)
 			slot_view.populate(loc)
+		elif child is PanelContainer:
+			slot_view = child
+			var loc := LocationIdentifier.new()
+			loc.container = container_name
+			loc.index = i
+			if slot_view.has_method("populate"):
+				slot_view.populate(loc)
+		
+		if not is_instance_valid(slot_view):
+			continue
 			
-			# Apply battle-specific layout settings (responsive width, fixed height)
-			if not is_instance_valid(slot_view):
-				continue
-				
-			slot_view.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-			# All battle slots use 2x scale
+		if container_name == &"EnemyTrinkets":
+			slot_view.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+			slot_view.custom_minimum_size = Vector2(98, 98)
+			if slot_view.has_method("set_size_scale"):
+				slot_view.set_size_scale(1.0)
+		else:
+			slot_view.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
 			slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-			
 			if slot_view.has_method("set_size_scale"):
 				slot_view.set_size_scale(2.0)
-				
-			# Apply container-specific color scheme
-			if slot_view.has_method("set_slot_color"):
-				slot_view.set_slot_color(container_name)
-			# EnemyLineup must be inspection-only: configure SlotView accordingly
-			if container_name == &"EnemyLineup":
-				slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+			
+		# Apply container-specific color scheme
+		if slot_view.has_method("set_slot_color"):
+			slot_view.set_slot_color(container_name)
+		# EnemyLineup and EnemyTrinkets must be inspection-only: configure SlotView accordingly
+		if container_name in [&"EnemyLineup", &"EnemyTrinkets"]:
+			slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 
 func _ready() -> void:
 	# Main.tscn reserves the large HUD regions, and battle still needs a modest
@@ -122,12 +139,9 @@ func _ready() -> void:
 	
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(_on_end_turn_button_pressed)
-	discard_pile_button.pressed.connect(func():
-		if is_instance_valid(WindowManager) and WindowManager.is_discard_pile_window_open():
-			ActionQueue.request(CloseDiscardPileAction.new())
-		else:
-			ActionQueue.request(OpenDiscardPileAction.new())
-	)
+	if is_instance_valid(discard_pile_button):
+		if not discard_pile_button.pressed.is_connected(_on_discard_pile_pressed):
+			discard_pile_button.pressed.connect(_on_discard_pile_pressed)
 	
 	# Connect to locale changes to update button text
 	SignalBus.locale_changed.connect(_update_localized_text)
@@ -155,19 +169,14 @@ func _ready() -> void:
 	
 	# The entry animation is now triggered by BattleManager emitting battle_entry_animation_requested
 	
-	# Initialize combat controls styling/connections
+	# Initialize combat speed
 	_resolve_battle_animator()
-	
-	_speed_buttons = [pause_btn, speed_1x_btn, speed_2x_btn, speed_4x_btn]
-	if is_instance_valid(pause_btn): pause_btn.pressed.connect(_on_pause_button_pressed)
-	if is_instance_valid(speed_1x_btn): speed_1x_btn.pressed.connect(func(): _on_speed_button_pressed(1.0))
-	if is_instance_valid(speed_2x_btn): speed_2x_btn.pressed.connect(func(): _on_speed_button_pressed(2.0))
-	if is_instance_valid(speed_4x_btn): speed_4x_btn.pressed.connect(func(): _on_speed_button_pressed(4.0))
-	if is_instance_valid(combat_controls_panel): combat_controls_panel.visible = true
 	var current_speed = AnimationConstants.speed_factor
 	if is_instance_valid(_battle_animator):
 		_battle_animator.play_continuous(current_speed)
-	_update_speed_button_styles(current_speed)
+	if SignalBus.has_signal("combat_speed_changed"):
+		SignalBus.emit_signal("combat_speed_changed", current_speed)
+
 
 func _resolve_battle_animator() -> void:
 	if not is_instance_valid(_battle_animator):
@@ -184,36 +193,12 @@ func _on_turn_animation_finished_redraw() -> void:
 		_redraw_board()
 
 func _apply_battle_vertical_padding() -> void:
-	var team_areas = %TeamAreas
-	if not is_instance_valid(team_areas):
-		return
-	for area_name in ["PlayerArea", "EnemyArea"]:
-		var area := team_areas.get_node_or_null(area_name) as BoxContainer
-		if not is_instance_valid(area):
-			continue
-		
-		# Use engine-level centering biasing towards the top via a bottom spacer.
-		# This raises the board by exactly 15px to hit the shelf centers in the background.
-		area.alignment = BoxContainer.ALIGNMENT_CENTER
-		var bottom_spacer := Control.new()
-		bottom_spacer.custom_minimum_size = Vector2(0.0, 30.0)
-		bottom_spacer.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		area.add_child(bottom_spacer)
+	# Battle slots have exact pixel positions per UI specification
+	pass
 
 func _position_combat_controls() -> void:
-	if not is_instance_valid(combat_controls_panel):
-		return
-	var controls_parent = combat_controls_panel.get_parent()
-	if not is_instance_valid(controls_parent):
-		return
-	var controls_row := combat_controls_panel.get_node_or_null("OuterVBox/ControlsRow") as HBoxContainer
-	if is_instance_valid(controls_row):
-		controls_row.alignment = BoxContainer.ALIGNMENT_BEGIN
-	
-	# Allow the control row to sit naturally on the right without fixed width or shrink-begin overrides
-	combat_controls_panel.custom_minimum_size = Vector2.ZERO
-	combat_controls_panel.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	combat_controls_panel.size_flags_horizontal = Control.SIZE_FILL
+	pass
+
 
 func _on_battle_entry_animation_requested() -> void:
 	"""Called when battle starts - triggers entry animation on turn 1"""
@@ -230,14 +215,23 @@ func _on_results_acknowledged() -> void:
 	else:
 		_waiting_for_management_tutorial = true
 
+func _exit_tree() -> void:
+	if is_instance_valid(discard_pile_button) and discard_pile_button.pressed.is_connected(_on_discard_pile_pressed):
+		discard_pile_button.pressed.disconnect(_on_discard_pile_pressed)
+
+func _on_discard_pile_pressed() -> void:
+	if is_instance_valid(WindowManager) and WindowManager.is_discard_pile_window_open():
+		ActionQueue.request(CloseDiscardPileAction.new())
+	else:
+		ActionQueue.request(OpenDiscardPileAction.new())
+
 func _update_localized_text() -> void:
 	if is_instance_valid(end_turn_button):
 		end_turn_button.text = tr("ui.end_turn")
 	if is_instance_valid(discard_pile_button):
 		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
-	
-	if is_instance_valid(speed_label):
-		speed_label.text = tr("battle.speed.label")
+
+
 
 ## Initializes visual discard count from turn start snapshot or live state
 func init_visual_discard_count(initial_count: int) -> void:
@@ -250,10 +244,31 @@ func animate_discard_pile_arrival(amount: int = 1) -> void:
 	_visual_discard_count += amount
 	if is_instance_valid(discard_pile_button):
 		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
-		var bump_tween = discard_pile_button.create_tween()
-		discard_pile_button.pivot_offset = discard_pile_button.size / 2.0
-		bump_tween.tween_property(discard_pile_button, "scale", Vector2(1.15, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		bump_tween.tween_property(discard_pile_button, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+		var main_node = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+		if is_instance_valid(main_node) and main_node.has_method("play_machine_landing_bounce"):
+			main_node.play_machine_landing_bounce(discard_pile_button)
+		else:
+			play_machine_landing_bounce(discard_pile_button)
+
+## Subtle vertical landing bounce for machines and discard pile (compression -> hop -> squish -> settle)
+func play_machine_landing_bounce(machine: Control) -> void:
+	if not is_instance_valid(machine):
+		return
+	machine.pivot_offset = Vector2(machine.size.x / 2.0, machine.size.y)
+	if machine.has_meta("_landing_bounce_tween"):
+		var old_tween = machine.get_meta("_landing_bounce_tween")
+		if is_instance_valid(old_tween) and old_tween.is_valid():
+			old_tween.kill()
+	var tween = machine.create_tween()
+	machine.set_meta("_landing_bounce_tween", tween)
+	# 1. Compress downwards upon impact (purely vertical)
+	tween.tween_property(machine, "scale", Vector2(1.0, 0.94), AnimationConstants.scaled(0.05)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# 2. Hop upwards (rebound)
+	tween.tween_property(machine, "scale", Vector2(1.0, 1.05), AnimationConstants.scaled(0.09)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	# 3. Land back down with a little squish
+	tween.tween_property(machine, "scale", Vector2(1.0, 0.98), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
+	# 4. Settle back to resting
+	tween.tween_property(machine, "scale", Vector2.ONE, AnimationConstants.scaled(0.05)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 
 
 func _animate_initial_unit_entry() -> void:
@@ -341,7 +356,8 @@ func _redraw_board() -> void:
 	if is_instance_valid(discard_container):
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
 		_visual_discard_count = discard_count
-		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		if is_instance_valid(discard_pile_button):
+			discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
 
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
@@ -469,7 +485,8 @@ func _on_battle_phase_changed(phase_name: StringName) -> void:
 	# End Turn is only available during MANAGEMENT
 	end_turn_button.disabled = not is_management_phase
 	# Contextual/discovery buttons should be disabled only during COMBAT
-	discard_pile_button.disabled = is_combat
+	if is_instance_valid(discard_pile_button):
+		discard_pile_button.disabled = is_combat
 	
 	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node): return
@@ -559,9 +576,9 @@ func _populate_enemy_trinkets() -> void:
 		if not is_instance_valid(slot_view):
 			continue
 			
-		# Use 2x scale for enemy trinkets (128x128 display, 64x64 native texture)
+		# Use 1x scale for enemy trinkets (64x64 native texture in 98x98 cell)
 		if slot_view.has_method("set_size_scale"):
-			slot_view.set_size_scale(2.0)
+			slot_view.set_size_scale(1.0)
 		if slot_view.has_method("populate"):
 			slot_view.populate(loc)
 			if slot_view.has_method("set_interaction_context"):
@@ -580,6 +597,10 @@ func _populate_enemy_trinkets() -> void:
 							break
 					if is_instance_valid(view) and view.has_method("set_interaction_context"):
 						view.set_interaction_context(&"INSPECTION_ONLY", &"TRINKET", 0)
+			else:
+				slot_view.set_content({})
+		else:
+			slot_view.set_content({})
 
 func _update_traits(team: String) -> void:
 	if not is_instance_valid(battle_manager):
@@ -800,57 +821,82 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		_force_refresh_after_anim()
 		return
 	
-	# Assuming machines are GachaMachine1, GachaMachine2, GachaMachine3
-	# and we need to map Tier (int) to Machine (1/2/3)
+	var is_from_discard: bool = (draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile")
 	var tier = 1
-	if draw_result.source_container.ends_with("T2"): tier = 2
-	elif draw_result.source_container.ends_with("T3"): tier = 3
-	
-	# Use Scene Unique Name lookup on Main which is the owner of the machines
-	var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % tier)
-	var knob_node = machine_node.get_node_or_null("KnobButton") if machine_node else null
-	
 	var start_pos: Vector2
-	if knob_node:
-		start_pos = knob_node.get_global_rect().get_center()
-	else:
-		start_pos = get_viewport_rect().get_center() # Fallback
-	
-	# Trigger machine bounce when ball pops out and decrement count visually
-	if main_node.has_method("animate_machine_inventory_change"):
-		main_node.animate_machine_inventory_change(tier, -1)
-	
-	# Determine End Position
 	var end_pos: Vector2
 	var dest_slot_view: Control = null
-	
-	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
-		end_pos = discard_pile_button.get_global_rect().get_center()
-	else:
-		# Map destination container to UI container
-		var target_ui_container: HBoxContainer = null
-		if draw_result.dest_container == "PlayerBench":
-			target_ui_container = player_bench
-		
-		if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
-			dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
-			end_pos = dest_slot_view.get_global_rect().get_center()
+
+	if is_from_discard:
+		var discard_machine = main_node.get_discard_machine()
+		var discard_knob = discard_machine.get_node_or_null("KnobButton") if discard_machine else null
+		if is_instance_valid(discard_knob):
+			start_pos = discard_knob.get_global_rect().get_center()
+		elif is_instance_valid(discard_machine):
+			start_pos = discard_machine.get_global_rect().get_center()
 		else:
-			# Fallback if slot not found
+			start_pos = get_viewport_rect().get_center()
+
+		if draw_result.dest_container.ends_with("T2"): tier = 2
+		elif draw_result.dest_container.ends_with("T3"): tier = 3
+
+		var target_machine = main_node.get_gacha_machine(tier)
+		var target_knob = target_machine.get_node_or_null("KnobButton") if target_machine else null
+		if is_instance_valid(target_knob):
+			end_pos = target_knob.get_global_rect().get_center()
+		elif is_instance_valid(target_machine):
+			end_pos = target_machine.get_global_rect().get_center()
+		else:
 			end_pos = start_pos
+
+		if is_instance_valid(discard_machine) and main_node.has_method("_play_machine_bounce"):
+			main_node._play_machine_bounce(discard_machine)
+	else:
+		if draw_result.source_container.ends_with("T2"): tier = 2
+		elif draw_result.source_container.ends_with("T3"): tier = 3
+
+		# Use Scene Unique Name lookup on Main which is the owner of the machines
+		var machine_node = main_node.get_node_or_null("%%GachaMachine%d" % tier)
+		var knob_node = machine_node.get_node_or_null("KnobButton") if machine_node else null
+
+		if knob_node:
+			start_pos = knob_node.get_global_rect().get_center()
+		else:
+			start_pos = get_viewport_rect().get_center() # Fallback
+
+		# Trigger machine bounce when ball pops out and decrement count visually
+		if main_node.has_method("animate_machine_inventory_change"):
+			main_node.animate_machine_inventory_change(tier, -1)
+
+		if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
+			end_pos = discard_pile_button.get_global_rect().get_center()
+		else:
+			# Map destination container to UI container
+			var target_ui_container: HBoxContainer = null
+			if draw_result.dest_container == "PlayerBench":
+				target_ui_container = player_bench
+
+			if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
+				dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
+				end_pos = dest_slot_view.get_global_rect().get_center()
+			else:
+				# Fallback if slot not found
+				end_pos = start_pos
 	
 	# Spawn animated ball
 	var anim_ball = GachaBallViewScene.instantiate()
 	
-	# Add to effects layer FIRST (ensures @onready vars are initialized)
-	var effects_layer = main_node.get_node_or_null("EffectsLayer")
-	if effects_layer:
+	# Add to VFX layer on root window (layer 150, renders in front of HUDLayer and all machines)
+	var effects_layer = WindowManager.get_vfx_layer() if is_instance_valid(WindowManager) else null
+	if is_instance_valid(effects_layer):
 		effects_layer.add_child(anim_ball)
 	else:
 		add_child(anim_ball)
 	
 	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
 	anim_ball.force_inventory_mode = true
+	anim_ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	anim_ball.z_index = 100
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	anim_ball.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
@@ -876,14 +922,25 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	var end_center: Vector2 = end_pos
 	
 	# Initial setup: place ball at start (small scale, centered on knob)
-	var initial_scale := 0.3
+	var initial_scale := 0.4
 	anim_ball.scale = Vector2(initial_scale, initial_scale)
-	# Position so that visual center is at start_center
-	anim_ball.global_position = start_center - (anim_ball.pivot_offset * initial_scale)
+	anim_ball.global_position = start_center - anim_ball.pivot_offset
 	
-	# Arc parameters
-	var arc_height := 400.0 # Peak height above the highest point
-	var duration := 0.45 / AnimationConstants.speed_factor # Snappy fast animation, scale with speed
+	# Horizontal throw distance
+	var horiz_dist := absf(end_center.x - start_center.x)
+	
+	# Dynamic arc height proportional to horizontal distance (basketball shot physics)
+	# Short throw (Machine 3, ~680px) -> arc_height ~ 270px
+	# Mid throw (Machine 2, ~1100px) -> arc_height ~ 350px
+	# Long throw (Machine 1, ~1520px) -> arc_height ~ 420px
+	var arc_height: float
+	var duration: float
+	if is_from_discard:
+		arc_height = clampf(horiz_dist * 0.30 + 320.0, 500.0, 780.0)
+		duration = clampf(horiz_dist / 5000.0 + 0.22, 0.32, 0.46) / AnimationConstants.speed_factor
+	else:
+		arc_height = 400.0
+		duration = 0.45 / AnimationConstants.speed_factor
 	
 	# Quadratic Bezier curve for natural basketball arc
 	# P0 = start_center (launch point)
@@ -894,18 +951,17 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		min(start_center.y, end_center.y) - arc_height # Above both points
 	)
 	
-	# Use tween_method to animate along the Bezier curve
+	# Use tween_method to animate along the curve
 	var tween = create_tween()
 	tween.set_trans(Tween.TRANS_LINEAR)
 	
 	# Animate t from 0 to 1
 	tween.tween_method(func(t: float):
-		# VIOLENT POP-OUT with snappy landing
-		# Ball shoots out fast, slows at peak, then accelerates down
-		var eased_t = pow(t, 0.55) # Fast start AND snappy landing
+		# Cannonball physics: explosive fast start out of the knob, continuously decelerating/easing out towards landing
+		var eased_t = pow(t, 0.60)
 		
-		# Scale animation (grows quickly then settles)
-		var scale_eased = 1.0 - pow(1.0 - t, 2)
+		# Scale animation: expands out of knob rapidly during launch
+		var scale_eased = 1.0 - pow(1.0 - t, 2.0)
 		var current_scale = lerp(initial_scale, 1.0, scale_eased)
 		anim_ball.scale = Vector2(current_scale, current_scale)
 		
@@ -915,12 +971,30 @@ func _on_gacha_draw_animated(draw_result) -> void:
 				  (2.0 * inv_t * eased_t * control_point) + \
 				  (eased_t * eased_t * end_center)
 		
-		# Position ball so its CENTER is at pos
-		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+		anim_ball.global_position = pos - anim_ball.pivot_offset
 	, 0.0, 1.0, duration)
 	
 	# Clean up after animation
 	tween.tween_callback(func():
+		if is_from_discard:
+			# Arrived at the appropriate tier machine!
+			Audio.play_sfx("coin_land")
+			if main_node.has_method("animate_machine_inventory_change"):
+				main_node.animate_machine_inventory_change(tier, 1)
+			_visual_discard_count = max(0, _visual_discard_count - 1)
+			if is_instance_valid(discard_pile_button) and discard_pile_button.has_method("set_count"):
+				discard_pile_button.set_count(_visual_discard_count)
+			elif is_instance_valid(discard_pile_button):
+				discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		else:
+			var is_bench = (draw_result != null and not draw_result.went_to_discard and str(draw_result.dest_container) == "PlayerBench")
+			if is_bench:
+				var pop_scale = anim_ball.size.x / 128.0 if is_instance_valid(anim_ball) and anim_ball.size.x > 0 else 1.5
+				var incoming_vel = end_center - control_point
+				VFXFactory.spawn_capsule_pop_vfx(end_center, self, pop_scale, incoming_vel)
+			elif draw_result != null and (draw_result.went_to_discard or str(draw_result.dest_container) == "DiscardPile"):
+				Audio.play_sfx("coin_land")
+				animate_discard_pile_arrival(1)
 		anim_ball.queue_free()
 		_force_refresh_after_anim(draw_result)
 	)
@@ -935,6 +1009,9 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result == null:
 		return
 	
+	if draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile":
+		return
+
 	# Trigger bounce/bump for discard pile
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		Audio.play_sfx("coin_land")
@@ -1046,93 +1123,19 @@ func _on_end_turn_button_pressed() -> void:
 # COMBAT CONTROLS LOGIC
 # =============================================================================
 
-func _on_pause_button_pressed() -> void:
-	_resolve_battle_animator()
-	var is_currently_paused = is_instance_valid(_battle_animator) and _battle_animator.is_paused()
-	var action := PauseRunAction.new(not is_currently_paused)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		if is_currently_paused:
-			execute_speed(AnimationConstants.speed_factor)
-		else:
-			execute_pause()
-
 func execute_pause() -> void:
 	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.pause_combat()
-	_update_speed_button_styles(-1.0) # -1.0 represents Paused
-
-func _on_speed_button_pressed(speed: float) -> void:
-	var action := SetCombatSpeedAction.new(speed)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_speed(speed)
+	if SignalBus.has_signal("combat_pause_changed"):
+		SignalBus.emit_signal("combat_pause_changed", true)
 
 func execute_speed(speed: float) -> void:
 	_resolve_battle_animator()
 	if is_instance_valid(_battle_animator):
 		_battle_animator.play_continuous(speed)
-	_update_speed_button_styles(speed)
+	if SignalBus.has_signal("combat_speed_changed"):
+		SignalBus.emit_signal("combat_speed_changed", speed)
 
-func _update_speed_button_styles(active_speed: float) -> void:
-	var speeds := [-1.0, 1.0, 2.0, 4.0]
-	for i in range(mini(_speed_buttons.size(), speeds.size())):
-		var btn = _speed_buttons[i]
-		if not is_instance_valid(btn): continue
-		var is_active = is_equal_approx(speeds[i], active_speed)
-		
-		var normal_style := StyleBoxFlat.new()
-		normal_style.corner_radius_top_left = 6
-		normal_style.corner_radius_top_right = 6
-		normal_style.corner_radius_bottom_left = 6
-		normal_style.corner_radius_bottom_right = 6
-		
-		var hover_style := normal_style.duplicate() as StyleBoxFlat
-		var pressed_style := normal_style.duplicate() as StyleBoxFlat
-		
-		if is_active:
-			normal_style.bg_color = Color(0.24, 0.48, 0.82)
-			normal_style.border_width_left = 2
-			normal_style.border_width_top = 2
-			normal_style.border_width_right = 2
-			normal_style.border_width_bottom = 2
-			normal_style.border_color = Color(0.65, 0.85, 1.0)
-			
-			hover_style.bg_color = Color(0.28, 0.54, 0.90)
-			hover_style.border_width_left = 2
-			hover_style.border_width_top = 2
-			hover_style.border_width_right = 2
-			hover_style.border_width_bottom = 2
-			hover_style.border_color = Color(0.8, 0.92, 1.0)
-			
-			pressed_style.bg_color = Color(0.20, 0.42, 0.74)
-			btn.add_theme_color_override("font_color", Color.WHITE)
-			btn.add_theme_color_override("font_hover_color", Color.WHITE)
-			btn.add_theme_color_override("font_pressed_color", Color.WHITE)
-		else:
-			normal_style.bg_color = Color(0.18, 0.19, 0.23)
-			normal_style.border_width_left = 1
-			normal_style.border_width_top = 1
-			normal_style.border_width_right = 1
-			normal_style.border_width_bottom = 1
-			normal_style.border_color = Color(0.28, 0.29, 0.35)
-			
-			hover_style.bg_color = Color(0.26, 0.28, 0.35)
-			hover_style.border_width_left = 1
-			hover_style.border_width_top = 1
-			hover_style.border_width_right = 1
-			hover_style.border_width_bottom = 1
-			hover_style.border_color = Color(0.4, 0.42, 0.5)
-			
-			pressed_style.bg_color = Color(0.14, 0.15, 0.18)
-			btn.add_theme_color_override("font_color", Color(0.75, 0.75, 0.8))
-			btn.add_theme_color_override("font_hover_color", Color.WHITE)
-			btn.add_theme_color_override("font_pressed_color", Color(0.6, 0.6, 0.65))
-		
-		btn.add_theme_stylebox_override("normal", normal_style)
-		btn.add_theme_stylebox_override("hover", hover_style)
-		btn.add_theme_stylebox_override("pressed", pressed_style)
-		btn.add_theme_stylebox_override("focus", StyleBoxEmpty.new())
+
+

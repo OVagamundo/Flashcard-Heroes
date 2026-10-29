@@ -34,7 +34,8 @@ const MAX_PERSPECTIVE_Y: float = 0.15
 const CARD_TEXTURES = {
 	"BATTLE": "res://assets/Realistic/ui/textures/BattlePath.png",
 	"SHOP": "res://assets/Realistic/ui/textures/ShopCard.png",
-	"BLACK_MARKET": "res://assets/Realistic/ui/textures/BlackMarketPath.png",
+	"SHRINE": "res://assets/Realistic/ui/textures/ShrinePath.png",
+	"MERGE": "res://assets/Realistic/ui/textures/MergePath.png",
 	"REST": "res://assets/Realistic/ui/textures/RestSitePath.png",
 	"DOJO": "res://assets/Realistic/ui/textures/trainingGroundspath.png",
 	"GOLD": "res://assets/Realistic/ui/textures/GamblingDenPath.png",
@@ -68,8 +69,10 @@ func populate(node_def) -> void:
 			bg_color = Color(0.6, 0.2, 0.2) # Battle Red
 	elif type == "SHOP":
 		bg_color = Color(0.5, 0.4, 0.2) # Shop Brown/Gold
-	elif type == "BLACK_MARKET":
-		bg_color = Color(0.12, 0.12, 0.12) # Black Market charcoal
+	elif type == "SHRINE":
+		bg_color = Color(0.12, 0.12, 0.12) # Shrine charcoal
+	elif type == "MERGE":
+		bg_color = Color(0.35, 0.2, 0.5) # Merge Violet
 	elif type == "REST":
 		bg_color = Color(0.2, 0.3, 0.6) # Rest Blue
 	elif type == "DOJO":
@@ -116,7 +119,7 @@ func populate(node_def) -> void:
 		label.visible = true
 	
 	# Allow supported path nodes to be enabled.
-	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"BLACK_MARKET", &"REST", &"DOJO", &"GOLD", &"SURPRISE"])
+	disabled = not (node_def.node_type in [&"BATTLE", &"SHOP", &"SHRINE", &"REST", &"DOJO", &"GOLD", &"SURPRISE", &"MERGE"])
 	_refresh_interaction_state()
 
 func _on_pressed() -> void:

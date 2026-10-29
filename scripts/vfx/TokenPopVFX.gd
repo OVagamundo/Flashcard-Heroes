@@ -6,12 +6,23 @@ extends Node2D
 ## Token pops up with a satisfying arc, spins, and flies to the token counter
 ## Includes scale bounce, gold glow trail, and satisfying landing effects
 
-const TOKEN_TEXTURE = preload("res://assets/Realistic/ui/textures/token_100yen.png")
+const TOKEN_TEXTURE = preload("res://assets/PixelArt/ui/textures/TokenRotationSpriteSheet.png")
+
+const ROTATION_STEPS: Array[Dictionary] = [
+	{"frame": 0, "flip_h": false},
+	{"frame": 1, "flip_h": false},
+	{"frame": 2, "flip_h": false},
+	{"frame": 3, "flip_h": false},
+	{"frame": 4, "flip_h": false},
+	{"frame": 3, "flip_h": true},
+	{"frame": 2, "flip_h": true},
+	{"frame": 1, "flip_h": true},
+]
 
 # Animation parameters - tuned for satisfying "juice"
-const INITIAL_SCALE := 0.1875 # Start small for dramatic pop (texture is 4x original)
-const MAX_SCALE := 0.5625 # Overshoot scale at peak (texture is 4x original)
-const FINAL_SCALE := 0.375 # 0.375 * 256px = 96px, matching normal coin size on HUD (texture is 4x original)
+const INITIAL_SCALE := 0.75 # Start small for dramatic pop (0.75 * 64px = 48px)
+const MAX_SCALE := 2.25 # Overshoot scale at peak (2.25 * 64px = 144px)
+const FINAL_SCALE := 1.5 # 1.5 * 64px = 96px, matching target coin visual size
 const POP_HEIGHT := 180.0 # Height of initial pop
 const POP_UP_DURATION := 0.18 # Time to reach peak (slower = more satisfying)
 const HANG_TIME := 0.05 # Brief pause at peak
@@ -41,6 +52,10 @@ func _ready() -> void:
 		add_child(token_sprite)
 	
 	token_sprite.texture = TOKEN_TEXTURE
+	token_sprite.hframes = 5
+	token_sprite.vframes = 1
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
 	token_sprite.scale = Vector2(INITIAL_SCALE, INITIAL_SCALE)
 
 func setup(spawn_position: Vector2, target_pos: Vector2 = Vector2.ZERO) -> void:
@@ -61,6 +76,8 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	# Start with white flash and small scale
 	token_sprite.modulate = Color.WHITE
 	token_sprite.scale = Vector2(INITIAL_SCALE, INITIAL_SCALE)
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
 	
 	# Determine juice multipliers based on streak
 	var max_scale = MAX_SCALE
@@ -137,6 +154,10 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 	if _wobble_tween and _wobble_tween.is_valid():
 		_wobble_tween.kill()
 	
+	token_sprite.frame = 0
+	token_sprite.flip_h = false
+	token_sprite.rotation = 0.0
+	
 	# Quick scale squash on "impact"
 	var squash_tween = create_tween()
 	token_sprite.scale = Vector2(FINAL_SCALE * 0.8, FINAL_SCALE * 0.4) # Squash
@@ -162,16 +183,15 @@ func play(target_pos: Vector2 = Vector2.ZERO, streak: int = 0) -> void:
 func _start_horizontal_flip(count: int, pop_dur: float, hang: float, fly_dur: float) -> void:
 	"""Animate spinning coin effect"""
 	_flip_tween = create_tween()
-	_flip_tween.set_loops(count)
-	
 	var total_duration = pop_dur + hang + fly_dur
-	var flip_duration = total_duration / count / 4.0
-	
-	# Full rotation cycle using scale.x
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", -FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
-	_flip_tween.tween_property(token_sprite, "scale:x", 0.0, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
-	_flip_tween.tween_property(token_sprite, "scale:x", FINAL_SCALE, flip_duration).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_flip_tween.tween_method(_apply_spin_step, 0.0, float(count), total_duration).set_trans(Tween.TRANS_LINEAR)
+
+func _apply_spin_step(progress: float) -> void:
+	var total_steps: int = ROTATION_STEPS.size()
+	var step_idx: int = int(fposmod(progress, 1.0) * float(total_steps)) % total_steps
+	var step: Dictionary = ROTATION_STEPS[step_idx]
+	token_sprite.frame = step["frame"]
+	token_sprite.flip_h = step["flip_h"]
 
 func _start_wobble(delay: float, fly_dur: float) -> void:
 	"""Add a subtle side-to-side wobble during flight"""

@@ -11,6 +11,7 @@ const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
 
 # Gachaball overlay texture path for inventory items
 const GACHABALL_OVERLAY_PATH = "res://assets/Realistic/ui/textures/gachaballcapsule.png"
+const SHADOW_TEXTURE = preload("res://assets/PixelArt/ui/textures/Shadow.png")
 
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
@@ -117,7 +118,7 @@ var _press_tween: Tween = null
 var _hover_amount: float = 0.0
 var _press_amount: float = 0.0
 var _is_hovered: bool = false
-var _base_z_index: int = 0
+var _base_z_index: int = 2
 var _slot_view_ref: Control = null
 var _slot_base_z_index: int = 0
 var _inspection_trigger: InspectionTrigger = null
@@ -127,6 +128,8 @@ var _touch_press_position: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	add_to_group("gachaball_view")
+	z_as_relative = false
+	z_index = 2
 	_base_z_index = z_index
 	_slot_view_ref = get_parent() as Control
 	if is_instance_valid(_slot_view_ref):
@@ -439,6 +442,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 				icon_rect.texture = null # Clear main texture
 				
+				# Setup shadow on platform surface behind unit/item
+				_setup_shadow_sprite()
+				
 				# Use child sprite for strictly sized unit/item
 				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
 				if not unit_sprite:
@@ -450,11 +456,16 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				_match_icon_texture_filter(unit_sprite)
 				
+				# Ensure UnitSprite is drawn on top of ShadowSprite
+				var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
+				if shadow_sprite:
+					icon_rect.move_child(shadow_sprite, 0)
+				
 				# Configure unit sprite size and position
 				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
 				unit_sprite.size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
-				# Center in 2x slot
-				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_CENTER_OFFSET)
+				# Position unit sprite standing on the middle of the platform surface (55px from bottom edge)
+				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_UNIT_OFFSET_Y)
 				unit_sprite.texture = visual_data.get("icon")
 				unit_sprite.visible = true
 				# CRITICAL: Copy shader material so flash effects work on visible sprite
@@ -465,6 +476,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				_setup_battle_stats_layout()
 			elif _has_overlay_heuristic():
 				# Inventory Mode: Fixed slot size based on scale, Unit centered inside
+				var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
+				if shadow_sprite: shadow_sprite.visible = false
+				
 				# Ensure Overlay Layout
 				_setup_overlay_stats_layout()
 				var current_slot_size = C.SLOT_SIZE_BASE * _size_scale
@@ -496,6 +510,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.material = icon_rect.material.duplicate()
 			else:
 				# Compact Mode: Native size (1x scale) for TopArea trinkets
+				var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
+				if shadow_sprite: shadow_sprite.visible = false
+				
 				# Ensure Layout (Compact uses overlay usually? or nothing? Assuming overlay/hidden)
 				_setup_overlay_stats_layout()
 				# Use native texture size and center in the slot
@@ -508,6 +525,9 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				if unit_sprite: unit_sprite.queue_free()
 		else:
 			# Fallback for missing textures
+			var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
+			if shadow_sprite: shadow_sprite.visible = false
+			
 			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			
@@ -932,7 +952,10 @@ func _update_hover_animation(delta: float) -> void:
 	_apply_hover_visuals(mode)
 
 func _apply_hover_visuals(mode: int) -> void:
-	pivot_offset = size / 2.0
+	if mode == HoverFxMode.INVENTORY_SPHERE:
+		pivot_offset = size / 2.0
+	else:
+		pivot_offset = Vector2(size.x / 2.0, C.SLOT_UNIT_OFFSET_Y + C.UNIT_SPRITE_SIZE)
 	var transform_factor: float = INVENTORY_TRANSFORM_FACTOR if mode == HoverFxMode.INVENTORY_SPHERE else 1.0
 
 	var hover_scale = 1.0 + (HOVER_SCALE * _hover_amount * transform_factor)
@@ -1586,6 +1609,30 @@ func _create_gachaball_overlay() -> void:
 		get_parent().clip_contents = false
 
 
+
+## Setup platform shadow sprite for battle slots
+func _setup_shadow_sprite() -> TextureRect:
+	if not icon_rect:
+		return null
+	var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
+	if not shadow_sprite:
+		shadow_sprite = TextureRect.new()
+		shadow_sprite.name = "ShadowSprite"
+		icon_rect.add_child(shadow_sprite)
+		shadow_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		shadow_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		shadow_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+	_match_icon_texture_filter(shadow_sprite)
+	shadow_sprite.texture = SHADOW_TEXTURE
+	shadow_sprite.custom_minimum_size = Vector2(C.SHADOW_WIDTH_2X, C.SHADOW_HEIGHT_2X)
+	shadow_sprite.size = Vector2(C.SHADOW_WIDTH_2X, C.SHADOW_HEIGHT_2X)
+	shadow_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SHADOW_OFFSET_Y)
+	shadow_sprite.pivot_offset = Vector2(C.SHADOW_WIDTH_2X / 2.0, C.SHADOW_HEIGHT_2X / 2.0)
+	shadow_sprite.modulate = Color(1.0, 1.0, 1.0, C.SHADOW_ALPHA)
+	shadow_sprite.scale = Vector2.ONE
+	shadow_sprite.visible = true
+	icon_rect.move_child(shadow_sprite, 0)
+	return shadow_sprite
 
 func _find_slot_anchor() -> Control:
 	# First, try to find a SlotView parent (the most stable anchor)

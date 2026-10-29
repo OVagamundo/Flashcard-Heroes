@@ -256,6 +256,10 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 	var turn_log: Array[CombatEvent] = []
 	
 	while not _actor_queue.is_empty():
+		# STABILITY GATE: Flush all deaths from previous reaction cascades before popping the next actor
+		battle_manager._check_for_deaths_with_counter_delay(true, turn_log, death_tracking)
+		battle_manager._process_completed_counter_deaths(turn_log, death_tracking)
+		
 		var current_actor: GachaBallInstance = _actor_queue.pop_front()
 		_current_acting_unit = current_actor
 		
@@ -333,6 +337,9 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 		var deferred_death_events: Array[CombatEvent] = []
 		battle_manager._process_completed_counter_deaths(deferred_death_events, death_tracking)
 		CombatCommand.append_unified_events(events, deferred_death_events)
+		
+		# Immediately resolve any cascading deaths triggered by completed counter-attacks
+		battle_manager._check_for_deaths_with_counter_delay(true, events, death_tracking)
 		
 	return events
 
@@ -416,17 +423,20 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	# Filter out dead targets to prevent ghost attacks
 	# NOTE: Must check location_container_tag because reset_battle_stats_silent() restores HP before discard
 	var valid_targets: Array[String] = []
+	var allow_dying_target: bool = (request.trigger_context.get("trigger_type") == &"on_death" and is_instance_valid(request.effect_definition) and request.effect_definition.get("target_type") == &"ALLY_BEHIND")
 	for target_uuid in exec_targets:
 		var target_inst = bm.get_instance_by_uuid(target_uuid)
-		if is_instance_valid(target_inst) and target_inst.current_hp > 0:
-			# Also verify the target is still in an active battle container (not discard/removed)
-			var loc_tag: StringName = target_inst.location_container_tag
-			var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
-								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-								 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
-								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
-			if is_in_battle:
-				valid_targets.append(target_uuid)
+		if is_instance_valid(target_inst):
+			var is_target_alive_or_chaining: bool = (target_inst.current_hp > 0 or (allow_dying_target and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and target_inst.location_container_tag != &""))
+			if is_target_alive_or_chaining:
+				# Also verify the target is still in an active battle container (not discard/removed)
+				var loc_tag: StringName = target_inst.location_container_tag
+				var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+				if is_in_battle:
+					valid_targets.append(target_uuid)
 	
 	# Allow targetless effects (e.g., summons) to proceed
 	# They will provide their own targets in the return data

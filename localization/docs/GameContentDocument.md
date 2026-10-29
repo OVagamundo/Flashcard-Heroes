@@ -6,6 +6,7 @@
 ## Units (Tier 1)
 | ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
+| `?MerSpe` | **?MerSpe**<br>_Whenever 1 Gold is earned while this unit is in the active lineup, it gains +1 HP and +1 PWR._ | 1 HP / 1 PWR | ?, Mercenary, Specialist | Deal (PWR) damage to the frontmost enemy.<br><br>Whenever 1 Gold is earned while in the active lineup, gain +1 HP and +1 PWR. [Target: SELF] |
 | `ASpeFodToy` | **ASpeFodToy** | 1 HP / 1 PWR | AIR, Specialist, Food, Toy | Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>When this unit dies, grant its current PWR to the ally behind. [Target: ALLY_BEHIND]<br><br>When this unit dies, grant its current PWR to the ally behind, and half of that to the next ally. [Target: ALLY_BEHIND]<br><br>When this unit dies, grant its current PWR to the ally behind, half to the next, and half to the next. [Target: ALLY_BEHIND] |
 | `ETnkPlaToy` | **ETnkPlaToy** | 2 HP / 1 PWR | EARTH, Tank, Plant, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>When hurt BY AN ATTACK, Heal this unit by 1 HP. [Target: HOLDER]<br><br>When hurt BY AN ATTACK, Heal this unit by 2 HP. [Target: HOLDER]<br><br>When hurt BY AN ATTACK, Heal this unit by 3 HP. [Target: HOLDER] |
 | `FFigMecApp` | **FFigMecApp** | 1 HP / 2 PWR | FIRE, Fighter, Mecha, Appliance | Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. Triggers even if lethal. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to another random enemy, dealing half damage. [Target: ATTACKER] [Trigger: CAUSE_ATTACK]<br><br>When hurt BY AN ATTACK, shoot a projectile at the attacker dealing damage equal to PWR. The projectile then bounces to 2 random enemies, dealing half damage per bounce. [Target: ATTACKER] [Trigger: CAUSE_ATTACK] |
@@ -15,20 +16,26 @@
 ## Units (Tier 2)
 | ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
+| `?ASpeMerFodToy` | **?ASpeMerFodToy**<br>_Pre-combat: Gain +1 / +2 / +3 PWR for every full 10 Gold held._ | 2 HP / 3 PWR | ?, AIR, Specialist, Mercenary, Food, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>Pre-combat: Gain +1 PWR for every full 10 Gold held. [Target: SELF]<br><br>Pre-combat: Gain +2 PWR for every full 10 Gold held. [Target: SELF]<br><br>Pre-combat: Gain +3 PWR for every full 10 Gold held. [Target: SELF] |
+| `E?TnkMerPlaToy` | **E?TnkMerPlaToy**<br>_Whenever 1 Gold is earned, gain +1 / +2 / +3 Armor and +1 / +2 / +3 Spikes._ | 3 HP / 1 PWR | EARTH, ?, Tank, Mercenary, Plant, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>Whenever 1 Gold is earned, gain +1 Armor and +1 Spikes. [Target: SELF]<br><br>Whenever 1 Gold is earned, gain +2 Armor and +2 Spikes. [Target: SELF]<br><br>Whenever 1 Gold is earned, gain +3 Armor and +3 Spikes. [Target: SELF] |
 | `EASpeFodToy` | **EASpeFodToy** | 3 HP / 2 PWR | EARTH, AIR, Specialist, Food, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>Initial PWR equals your current Gold multiplied by 50% when drawn or spawned. [Target: SELF]<br><br>Initial PWR equals your current Gold multiplied by 100% when drawn or spawned. [Target: SELF]<br><br>Initial PWR equals your current Gold multiplied by 150% when drawn or spawned. [Target: SELF] |
 | `EFTnkAniCos` | **EFTnkAniCos** | 3 HP / 2 PWR | EARTH, FIRE, Tank, Animal, Costume | When healed, gain 1 Armor and 1 Spikes.<br><br>When healed, gain 2 Armor and 2 Spikes.<br><br>When healed, gain 3 Armor and 3 Spikes. |
 | `EWFigCosToy` | **EWFigCosToy** | 3 HP / 3 PWR | EARTH, WATER, Fighter, Costume, Toy | When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF]<br><br>When an ally is defeated, gain +2 HP and +1 PWR. [Target: SELF]<br><br>When an ally is defeated, gain +2 HP and +2 PWR. [Target: SELF] |
+| `F?FigMerMecApp` | **F?FigMerMecApp**<br>_When this ranged unit attacks, mark its target with Bounty. Defeating a marked unit awards 1 Gold._ | 2 HP / 3 PWR | FIRE, ?, Fighter, Mercenary, Mecha, Appliance | Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>On attack, mark the target with Bounty if unmarked. [Target: ATTACK_TARGET]<br><br>On attack, mark the target and 1 random unmarked unit with Bounty. [Target: ATTACK_TARGET_AND_RANDOM_UNMARKED]<br><br>On attack, mark the target and adjacent units with Bounty. [Target: ATTACK_TARGET_AND_ADJACENT] |
 | `FASpeMecApp` | **FASpeMecApp** | 2 HP / 3 PWR | FIRE, AIR, Specialist, Mecha, Appliance | Deal (PWR) damage to the frontmost enemy.<br><br>Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change. [Target: SELF]<br><br>Gains extra PWR equal to 150% of current Tokens, updating whenever Tokens change. [Target: SELF]<br><br>Gains extra PWR equal to 200% of current Tokens, updating whenever Tokens change. [Target: SELF] |
 | `FWSpeAppFod` | **FWSpeAppFod** | 2 HP / 3 PWR | FIRE, WATER, Specialist, Appliance, Food | Deal (PWR) damage to the frontmost enemy.<br><br>When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount.<br><br>When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces to 1 extra target, halving the stacks applied.<br><br>When this unit is healed, shoot a bouncing burn projectile at a random enemy, applying Burn stacks equal to the heal amount. It bounces up to 2 extra targets, halving the stacks applied each bounce. |
+| `W?SupMerAniCos` | **W?SupMerAniCos**<br>_Whenever 1 Gold is earned, heal a random allied unit for 1 / 2 / 3 HP._ | 3 HP / 2 PWR | WATER, ?, Support, Mercenary, Animal, Costume | Deal (PWR) damage to the frontmost enemy.<br><br>Whenever 1 Gold is earned, heal a random allied unit for 1 HP. [Target: RANDOM_ALLY]<br><br>Whenever 1 Gold is earned, heal a random allied unit for 2 HP. [Target: RANDOM_ALLY]<br><br>Whenever 1 Gold is earned, heal a random allied unit for 3 HP. [Target: RANDOM_ALLY] |
 | `WATnkPlaAni` | **WATnkPlaAni** | 2 HP / 2 PWR | WATER, AIR, Tank, Plant, Animal | Deal (PWR) damage to the frontmost enemy.<br><br>At start of combat, gain +1 HP and +1 PWR for each empty slot in your team. [Target: SELF]<br><br>At start of combat, gain +2 HP and +2 PWR for each empty slot in your team. [Target: SELF]<br><br>At start of combat, gain +3 HP and +3 PWR for each empty slot in your team. [Target: SELF] |
 
 
 ## Units (Tier 3)
 | ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
+| `E??ATnkSpeMerFodPlaToy` | **E??ATnkSpeMerFodPlaToy**<br>_Pre-combat: Spend 1 Gold to gain +1 / +2 / +3 Armor and Spikes per 10 Gold held._ | 5 HP / 5 PWR | EARTH, ?, ?, AIR, Tank, Specialist, Mercenary, Food, Plant, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>Pre-combat: Spend 1 Gold to gain +1 Armor and +1 Spikes per 10 Gold held. [Target: SELF]<br><br>Pre-combat: Spend 1 Gold to gain +2 Armor and +2 Spikes per 10 Gold held. [Target: SELF]<br><br>Pre-combat: Spend 1 Gold to gain +3 Armor and +3 Spikes per 10 Gold held. [Target: SELF] |
 | `EEFASpeFodCos` | **EEFASpeFodCos** | 6 HP / 4 PWR | EARTH, EARTH, FIRE, AIR, Specialist, Food, Costume | Before its turn action, transforms into the enemy unit in the mirror slot (+0 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE]<br><br>Before its turn action, transforms into the enemy unit in the mirror slot (+1 Level). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE]<br><br>Before its turn action, transforms into the enemy unit in the mirror slot (Level 3 MAX). The newly transformed unit then takes its turn immediately. If there is no unit in the mirror slot, performs a regular basic attack instead. [Target: NONE] |
 | `EEFWFigTnkPlaToy` | **EEFWFigTnkPlaToy** | 6 HP / 5 PWR | EARTH, EARTH, FIRE, WATER, Fighter, Tank, Plant, Toy | Grants +1 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>Grants +2 HP and +1 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES]<br><br>Grants +2 HP and +2 PWR to adjacent allies when hurt by an attack. [Target: ADJACENT_ALLIES] |
 | `EEWAFigFodAniCos` | **EEWAFigFodAniCos** | 6 HP / 5 PWR | EARTH, EARTH, WATER, AIR, Fighter, Food, Animal, Costume | Deals damage to enemies equal to 100% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>Deals damage to enemies equal to 150% of PWR when they are summoned. [Target: TRIGGERING_ENTITY]<br><br>Deals damage to enemies equal to 200% of PWR when they are summoned. [Target: TRIGGERING_ENTITY] |
+| `EF??TnkFigMerMecPlaToyApp` | **EF??TnkFigMerMecPlaToyApp**<br>_When hurt, before damage: If holding at least 10 Gold, spend 1 Gold to mitigate 1 / 2 / 3 incoming damage per 10 Gold held._ | 5 HP / 5 PWR | EARTH, FIRE, ?, ?, Tank, Fighter, Mercenary, Mecha, Plant, Toy, Appliance | Deal (PWR) damage to the frontmost enemy.<br><br>Before taking damage: Spend 1 Gold to reduce incoming damage by 1 per 10 Gold held. [Target: SELF]<br><br>Before taking damage: Spend 1 Gold to reduce incoming damage by 2 per 10 Gold held. [Target: SELF]<br><br>Before taking damage: Spend 1 Gold to reduce incoming damage by 3 per 10 Gold held. [Target: SELF] |
 | `EFAASupToy` | **EFAASupToy** | 5 HP / 5 PWR | EARTH, FIRE, AIR, AIR, Support, Toy | Summons a random Level 1 Tier 2 unit on death. [Target: NONE]<br><br>Summons a random Level 2 Tier 2 unit on death. [Target: NONE]<br><br>Summons a random Level 3 Tier 2 unit on death. [Target: NONE] |
 | `EFFASupPlaToy` | **EFFASupPlaToy** | 5 HP / 5 PWR | EARTH, FIRE, FIRE, AIR, Support, Plant, Toy | Grants +3 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>Grants +5 HP to newly summoned allies. [Target: TRIGGERING_ENTITY]<br><br>Grants +7 HP to newly summoned allies. [Target: TRIGGERING_ENTITY] |
 | `EFFWSupMecApp` | **EFFWSupMecApp** | 5 HP / 5 PWR | EARTH, FIRE, FIRE, WATER, Support, Mecha, Appliance | Deal (PWR) damage to the frontmost enemy.<br><br>Whenever a merge happens on the battle board, gain +2 HP and PWR. [Target: SELF]<br><br>Whenever a merge happens on the battle board, gain +3 HP and PWR. [Target: SELF]<br><br>Whenever a merge happens on the battle board, gain +4 HP and PWR. [Target: SELF] |
@@ -36,11 +43,15 @@
 | `EFWASupFodToy` | **EFWASupFodToy**<br>_Gains +3 PWR for each other Doppleganger in battle. Summons 1 copy of itself on death into the Gacha Machine._ | 5 HP / 4 PWR | EARTH, FIRE, WATER, AIR, Support, Food, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>Gains +3 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>Gains +4 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>Gains +5 PWR for each other Doppleganger in battle. [Target: NONE]<br><br>Summons 1 copy of itself on death into the Gacha Machine. [Target: NONE] |
 | `EFWATnkCosMec` | **EFWATnkCosMec** | 5 HP / 6 PWR | EARTH, FIRE, WATER, AIR, Tank, Costume, Mecha | Gain +2 HP before taking damage. [Target: SELF]<br><br>Gain +4 HP before taking damage. [Target: SELF]<br><br>Gain +6 HP before taking damage. [Target: SELF] |
 | `EFWWFigSpeAniFodMecCos` | **EFWWFigSpeAniFodMecCos** | 5 HP / 6 PWR | EARTH, FIRE, WATER, WATER, Specialist, Fighter, Animal, Food, Mecha, Costume | Deals 100% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>Deals 150% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN]<br><br>Deals 200% cascade AOE damage to front enemy and units behind. [Target: FRONTMOST_ENEMY] [Trigger: CAUSE_TURN] |
+| `EW??TnkSupMerAniPlaToyCos` | **EW??TnkSupMerAniPlaToyCos**<br>_Turn start: If holding at least 10 Gold, spend 1 Gold to gain +1 / +2 / +3 HP and PWR per 10 Gold held._ | 5 HP / 5 PWR | EARTH, WATER, ?, ?, Tank, Support, Mercenary, Animal, Plant, Toy, Costume | Deal (PWR) damage to the frontmost enemy.<br><br>Turn start: Spend 1 Gold to gain +1 HP and +1 PWR per 10 Gold held. [Target: SELF]<br><br>Turn start: Spend 1 Gold to gain +2 HP and +2 PWR per 10 Gold held. [Target: SELF]<br><br>Turn start: Spend 1 Gold to gain +3 HP and +3 PWR per 10 Gold held. [Target: SELF] |
 | `EWAASpePlaApp` | **EWAASpePlaApp** | 5 HP / 4 PWR | EARTH, WATER, AIR, AIR, Specialist, Plant, Appliance | Deal (PWR) damage to the frontmost enemy.<br><br>At the start of each turn, permanently gain +3 HP and +3 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>At the start of each turn, permanently gain +4 HP and +4 PWR for every 5 Gold you currently have. [Target: SELF]<br><br>At the start of each turn, permanently gain +5 HP and +5 PWR for every 5 Gold you currently have. [Target: SELF] |
 | `EWWATnkMecApp` | **EWWATnkMecApp** | 5 HP / 5 PWR | intercept_lethal, EARTH, WATER, WATER, AIR, Tank, Mecha, Appliance | Leaps to intercept lethal damage on allies. [Target: SELF]<br><br>Leaps to intercept lethal damage on allies and gains 1 Armor. [Target: SELF]<br><br>Leaps to intercept lethal damage on allies and gains 2 Armor. [Target: SELF] |
+| `F??AFigSpeMerFodMecToyApp` | **F??AFigSpeMerFodMecToyApp**<br>_On attack: If holding at least 10 Gold, spend 1 Gold and apply 1 / 2 / 3 Burn per 10 Gold held._ | 5 HP / 5 PWR | FIRE, ?, ?, AIR, Fighter, Specialist, Mercenary, Food, Mecha, Toy, Appliance | Deal (PWR) damage to the frontmost enemy.<br><br>On attack: Spend 1 Gold to apply 1 Burn per 10 Gold held. [Target: SELF]<br><br>On attack: Spend 1 Gold to apply 2 Burn per 10 Gold held. [Target: SELF]<br><br>On attack: Spend 1 Gold to apply 3 Burn per 10 Gold held. [Target: SELF] |
 | `FFWASpeSupMecAniApp` | **FFWASpeSupMecAniApp** | 5 HP / 5 PWR | FIRE, FIRE, WATER, AIR, Specialist, Support, Mecha, Animal, Appliance | On death, transfers its equipped item to the ally directly behind it. [Target: ALLY_BEHIND]<br><br>On death, transfers its equipped item to the ally behind and 1 copy behind them. [Target: ALLY_BEHIND]<br><br>On death, transfers its equipped item to the ally behind and 2 copies behind them. [Target: ALLY_BEHIND] |
+| `FW??FigSupMerAniMecAppCos` | **FW??FigSupMerAniMecAppCos**<br>_On attack: Spend 1 Gold to deal +1 / +2 / +3 bonus damage per 10 Gold held._ | 5 HP / 5 PWR | FIRE, WATER, ?, ?, Fighter, Support, Mercenary, Animal, Mecha, Appliance, Costume | Deal (PWR) damage to the enemy in the mirror slot. [Ranged Attack] [Target: MIRROR_SLOT_ENEMY]<br><br>On attack: Spend 1 Gold to deal +1 bonus damage per 10 Gold held. [Ranged Damage] [Target: SELF]<br><br>On attack: Spend 1 Gold to deal +2 bonus damage per 10 Gold held. [Ranged Damage] [Target: SELF]<br><br>On attack: Spend 1 Gold to deal +3 bonus damage per 10 Gold held. [Ranged Damage] [Target: SELF] |
 | `FWAASupToy` | **FWAASupToy** | 4 HP / 5 PWR | FIRE, WATER, AIR, AIR, Support, Toy | Deal (PWR) damage to the frontmost enemy.<br><br>If on the player bench at start of turn, gain +3 HP and PWR. [Target: SELF]<br><br>If on the player bench at start of turn, gain +5 HP and PWR. [Target: SELF]<br><br>If on the player bench at start of turn, gain +7 HP and PWR. [Target: SELF] |
 | `FWWASupAniToy` | **FWWASupAniToy** | 4 HP / 5 PWR | FIRE, WATER, WATER, AIR, Support, Animal, Toy | Grants an additional copy of any buff received by an adjacent ally at 100% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>Grants an additional copy of any buff received by an adjacent ally at 150% effectiveness. [Target: TRIGGERING_ENTITY]<br><br>Grants an additional copy of any buff received by an adjacent ally at 200% effectiveness. [Target: TRIGGERING_ENTITY] |
+| `W??ASupSpeMerFodAniToyCos` | **W??ASupSpeMerFodAniToyCos**<br>_Whenever Gold is earned, heal a random allied unit for 1 / 2 / 3 HP per 1 Gold earned._ | 5 HP / 5 PWR | WATER, ?, ?, AIR, Support, Specialist, Mercenary, Food, Animal, Toy, Costume | Deal (PWR) damage to the frontmost enemy.<br><br>Whenever Gold is earned, heal a random allied unit for 1 HP. [Target: RANDOM_ALLY]<br><br>Whenever Gold is earned, heal a random allied unit for 2 HP. [Target: RANDOM_ALLY]<br><br>Whenever Gold is earned, heal a random allied unit for 3 HP. [Target: RANDOM_ALLY] |
 
 
 ## Heroes
@@ -48,7 +59,7 @@
 |---|---|---|---|---|
 | `hero_avenger` | **Avenger** | 6 HP / 2 PWR |  | When an ally dies, leap and attack the frontmost enemy. [Target: FRONTMOST_ENEMY] |
 | `hero_bastion` | **Bastion** | 10 HP / 2 PWR |  | When an ally dies, gain 1 Armor and 1 Spikes. Armor does not decay at the end of the turn. [Target: SELF] |
-| `hero_bounty_hunter` | **Bounty Hunter** | 10 HP / 2 PWR |  | Gain 1 gold when this hero kills an enemy. [Target: SELF]<br><br>When an ally is defeated, gain +1 HP and +1 PWR. [Target: SELF] |
+| `hero_bounty_hunter` | **Bounty Hunter**<br>_Specializes in accumulating and spending Gold. Fixed Trait: Mercenary (Starts with Mercenary Sigil). At run start, receives 1 random Elemental soul and 1 random Class or Visual trait._ | 10 HP / 2 PWR | Mercenary | Bounty: When this hero defeats an enemy, earn 1 Gold. [Target: SELF] |
 | `hero_pyro` | **Pyromancer** | 8 HP / 2 PWR |  | On attack, instead of dealing damage, apply Burn stacks equal to your Power. [Target: ATTACK_TARGET] |
 | `hero_starter` | **Starter**<br>_Gain at least 3 Tokens from each minigame._ | 10 HP / 2 PWR |  | When an ally dies, gain HP equal to their PWR. [Target: SELF] |
 | `hero_timekeeper` | **Timekeeper** | 50 HP / 2 PWR |  | Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.<br><br>At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind. [Target: ALLIES_IN_FRONT] |
@@ -75,10 +86,15 @@
 | ID | Name | Stats | Tags | Abilities |
 |---|---|---|---|---|
 | `consumable_potion_plunder` | **Potion of Plunder** | - |  | Steals a random item from the target and sends it to your Gacha Machine of the matching tier. |
+| `item_claim_ticket` | **Claim Ticket**<br>_When the holder dies, earn 1 Gold._ | +1 HP |  | When holder dies, earn 1 Gold. [Target: NONE] |
 | `item_emblem_air` | **Air Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Air[/b] soul, allowing the unit to benefit from Air trait synergies._ | +2 HP / +1 PWR | ITEM, AIR |  |
 | `item_emblem_earth` | **Earth Emblem**<br>_When equipped, grants +4 HP and the [b]Earth[/b] soul, allowing the unit to benefit from Earth trait synergies._ | +4 HP | ITEM, EARTH |  |
 | `item_emblem_fire` | **Fire Emblem**<br>_When equipped, grants +2 PWR and the [b]Fire[/b] soul, allowing the unit to benefit from Fire trait synergies._ | +2 PWR | ITEM, FIRE |  |
 | `item_emblem_water` | **Water Emblem**<br>_When equipped, grants +2 HP, +1 PWR, and the [b]Water[/b] soul, allowing the unit to benefit from Water trait synergies._ | +2 HP / +1 PWR | ITEM, WATER |  |
+| `item_golden_seal` | **Golden Seal**<br>_Dynamically grants +1 HP and +1 PWR for every full 10 Gold currently held._ | +2 HP / +2 PWR |  | Dynamically grants +1 HP and +1 PWR per 10 Gold currently held. [Target: HOLDER] |
+| `item_interest_ledger` | **Interest Ledger** | +2 HP |  | Whenever 1 Gold is earned, heal the holder for 1 HP. [Target: HOLDER] |
+| `item_loaded_contract` | **Loaded Contract** | +2 PWR |  | Whenever 1 Gold is earned, the holder gains +1 PWR. [Target: HOLDER] |
+| `item_mercenary_emblem` | **Mercenary Emblem** | - | ITEM, Mercenary | Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR. [Target: HOLDER] |
 | `item_potion_heroism` | **Heroism Potion** | - | TIER_2, POTION | Grants +3 HP, +3 PWR, and 3 Armor stacks. |
 | `item_potion_spikes` | **Thorn Potion** | - | TIER_2, POTION | Grants 4 Spikes stacks |
 | `item_potion_t1` | **Minor Healing Potion** | - | TIER_1, POTION | Restores 4 HP. |
@@ -132,6 +148,7 @@ Sigils and Insignias have separate roles. A trait **Sigil** lists the activation
 | `trinket_plant_insignia` | **Plant Insignia**<br>_When a unit with the Plant trait enters the board, it gains +1 HP and +1 PWR._ | - |  |  |
 | `trinket_polished_plate` | **Polished Plate**<br>_Armor does not decay at turn end._ | - |  | Armor does not decay at turn end. |
 | `trinket_purifying_pendant` | **Purifying Pendant**<br>_When an ally takes damage from a negative status effect, removes all remaining stacks of that effect._ | - |  |  |
+| `trinket_recruiting_charm` | **Recruiting Charm**<br>_At turn start, if you have at least 1 Gold and an open bench slot, spend 1 Gold to hire one Level 1 ?MerSpe._ | - |  | At turn start, spend 1 Gold to hire a Level 1 ?MerSpe if a bench slot is open. [Target: NONE] |
 | `trinket_royal_insignia` | **Novice Insignia**<br>_When a Level 1 unit enters the board, it gains +1 HP and +1 PWR._ | - |  |  |
 | `trinket_rusty_ring` | **Rusty Ring**<br>_Grants +1 HP and +1 PWR to all units with no equipment. Equipping an item cancels this buff._ | - |  |  |
 | `trinket_soul_echo` | **Soul Echo**<br>_When an ally dies, resurrect the first non-hero unit that died this turn._ | - |  |  |
@@ -154,6 +171,7 @@ Sigils and Insignias have separate roles. A trait **Sigil** lists the activation
 | `trinket_trait_fire` | **Fire Sigil**<br>_Fire trait effects activate at 3, 6, 12, 20, and 32 units._ | - |  |  |
 | `trinket_trait_food` | **Food Sigil**<br>_Food trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
 | `trinket_trait_mecha` | **Mecha Sigil**<br>_Mecha trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
+| `trinket_trait_mercenary` | **Mercenary Sigil**<br>_Mercenary trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
 | `trinket_trait_plant` | **Plant Sigil**<br>_Plant trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
 | `trinket_trait_specialist` | **Specialist Sigil**<br>_Specialist trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
 | `trinket_trait_support` | **Support Sigil**<br>_Support trait effects activate at 2, 3, 4, and 5 units._ | - |  |  |
@@ -165,6 +183,7 @@ Sigils and Insignias have separate roles. A trait **Sigil** lists the activation
 | `trinket_underdog_emblem` | **Underdog Emblem**<br>_Pre-Combat: If your team has fewer units than the enemy, all allies gain 2 Armor for each unit difference._ | - |  |  |
 | `trinket_vengeance` | **Vengeance Charm**<br>_When an ally dies, grant +1 HP and +1 PWR to a random ally._ | - |  |  |
 | `trinket_veteran_insignia` | **Veteran Insignia**<br>_When a Level 2 unit enters the board, it gains +1 HP and +1 PWR._ | - |  |  |
+| `trinket_wanted_poster` | **Wanted Poster**<br>_At turn start, mark a random unmarked enemy with Bounty._ | - |  |  |
 | `trinket_water_insignia` | **Water Insignia**<br>_When a unit with the Water trait enters the board, it gains +1 HP and +1 PWR._ | - |  |  |
 
 
@@ -212,3 +231,45 @@ The Class and Visual Sigils list the unit-count thresholds for their abilities:
 |---|---|---|---|
 | **Class Traits** | Tank, Fighter, Support, Specialist | 2 / 3 / 4 / 5 Units | **Tank**: Frontline Armor, backward Armor passing, attack interception, Armor-to-Spikes.<br>**Fighter**: Bonus damage vs higher HP, ranged counter-attack, cleave splash, extra action on kill.<br>**Support**: Positional +HP (front) / +PWR (behind), turn-start lowest-stat buffs, Hero empowerment.<br>**Specialist**: Opening tokens, Gacha discount, gold on kill, bench combat clone, +PWR per 5 Gold. |
 | **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | **Food**: Feeds ally behind when hurt (+HP/+PWR), passes all PWR on death.<br>**Mecha**: Spikes & Armor, Static on attack & hit, merge laser strikes, death revenge salvos.<br>**Animal**: Random alpha +PWR, healing per attack (scaling with PWR).<br>**Plant**: Frontline Spikes, turn-start healing, team Spikes & HP, converts incoming heals to Spikes.<br>**Toy**: Melee Static reflection, death explosion detonating highest Static enemy.<br>**Appliance**: Static immunity, pre-combat Static/Burn, status reflection, converts debuffs to PWR/HP.<br>**Costume**: Pre-combat status and stat theft from mirror enemies and highest-status targets. |
+
+
+### Trait Distribution & Balance Matrix
+The game operates on a closed 36-unit active run pool consisting of the **25 Neutral Base Units** ($4\text{ T1} + 6\text{ T2} + 15\text{ T3}$) and an **11-Unit Hero Content Pack** ($1\text{ T1} + 4\text{ T2} + 6\text{ T3}$).
+
+#### 1. Elemental Souls Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Elemental traits scale on total accumulated souls across units (thresholds: 3, 6, 12, 20, 32).*
+
+| Element | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter [?] (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Rolled Element (`?`)** | 1 / 3 / 15 | **19** | 1 / 5 / 15 | **21** | **40** |
+| **Other Elements (Each)** | 1 / 3 / 15 | **19** | 0 / 1 / 3 | **4** | **23** |
+
+*Note: The neutral base roster is 100% symmetrical (19 souls per element). With Bounty Hunter's starter unit (`?MerSpe`) dynamically inheriting the Hero's rolled elemental soul (`?`), whichever element is assigned contributes 21 souls, while the other three elements contribute 4 souls each (40 vs 23 total in the 36-unit active pool). Because `?` is rolled with equal 25% probability across all 4 elements, the expected distribution across all runs is mathematically 100% symmetrical (27.25 expected souls per element).*
+
+#### 2. Class Traits Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Class traits scale on active unit count (thresholds: 2, 3, 4, 5).*
+
+| Class | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Fighter** | 1 / 1 / 4 | **6** | 0 / 1 / 3 | **4** | **10** |
+| **Tank** | 1 / 2 / 3 | **6** | 0 / 1 / 3 | **4** | **10** |
+| **Support** | 1 / 0 / 7 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Specialist** | 1 / 3 / 5 | **9** | 1 / 1 / 3 | **5** | **14** |
+| **Mercenary** | 0 / 0 / 0 | **0** | 1 / 4 / 6 | **11** | **11** |
+
+*Note: Bounty Hunter is perfectly balanced across Fighter, Tank, and Support (4 each, with 1 in T2 and 3 in T3). Specialist has 5 (+1 in T1) because `?MerSpe` is a Specialist. Mercenary provides an engine across all tiers (1 T1, 4 T2, 6 T3).*
+
+#### 3. Visual Archetype Traits Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Visual traits scale on active unit count (thresholds: 2, 3, 4, 5).*
+
+| Visual Archetype | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Animal** | 1 / 2 / 5 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Appliance** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Costume** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Food** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Mecha** | 1 / 1 / 6 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Plant** | 1 / 1 / 3 | **5** | 0 / 1 / 3 | **4** | **9** |
+| **Toy** | 2 / 2 / 6 | **10** | 0 / 2 / 5 | **7** | **17** |
+
+*Note: `?MerSpe` carries no visual traits, so Bounty Hunter units inherit visual tags purely from neutral recipe parents. In the neutral Tier 1 base, Toy appears on two units (`ASpeFodToy` and `ETnkPlaToy`), causing Toy to inherit into 2 Tier 2 and 5 Tier 3 Mercenary units. All other 6 visual archetypes are perfectly balanced with 1 in T2 and 3 in T3 (4 each in BH).*

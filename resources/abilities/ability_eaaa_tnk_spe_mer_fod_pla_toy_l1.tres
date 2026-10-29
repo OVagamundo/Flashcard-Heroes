@@ -1,0 +1,45 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Resource" path="res://resources/conditions/condition_min_gold_10.tres" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/effects/EffectSpendGold.gd" id="3_spend"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="4_status"]
+
+[sub_resource type="Resource" id="Effect_Spend"]
+script = ExtResource("3_spend")
+parameters = {
+"amount": 1
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="Effect_Armor_1"]
+script = ExtResource("4_status")
+parameters = {
+"amount": {
+"base_value": 1,
+"context_multiplier_key": "gold_tens"
+},
+"status_id": "armor"
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="Effect_Spikes_1"]
+script = ExtResource("4_status")
+parameters = {
+"amount": {
+"base_value": 1,
+"context_multiplier_key": "gold_tens"
+},
+"status_id": "spikes"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_eaaa_tnk_spe_mer_fod_pla_toy_l1"
+description_key = "ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc"
+trigger = &"on_pre_combat"
+condition = ExtResource("2_cond")
+effects = Array[Resource]([SubResource("Effect_Spend"), SubResource("Effect_Armor_1"), SubResource("Effect_Spikes_1")])
+priority = 0
+max_level = 1

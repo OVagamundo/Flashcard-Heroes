@@ -1,0 +1,16 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/vfx/CapsulePopVFX.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/GachaCapsuletop.png" id="2_top"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/GachaCapsuleBottom.png" id="3_bottom"]
+
+[node name="CapsulePopVFX" type="Node2D"]
+z_index = 1
+z_as_relative = false
+script = ExtResource("1_script")
+
+[node name="TopSprite" type="Sprite2D" parent="."]
+texture = ExtResource("2_top")
+
+[node name="BottomSprite" type="Sprite2D" parent="."]
+texture = ExtResource("3_bottom")

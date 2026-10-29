@@ -89,14 +89,15 @@ func _swap_node_texture(node: Node) -> void:
 		if prop.type == TYPE_OBJECT:
 			# Wrap in a try-catch equivalent to ensure safety
 			var val = node.get(prop.name)
-			if val is Texture2D:
-				var new_tex = get_themed_texture(val)
-				if new_tex != val:
-					node.set(prop.name, new_tex)
-			elif val is StyleBoxTexture and val.texture:
-				var new_tex = get_themed_texture(val.texture)
-				if new_tex != val.texture:
-					val.texture = new_tex
+			if is_instance_valid(val):
+				if val is Texture2D:
+					var new_tex = get_themed_texture(val)
+					if new_tex != val:
+						node.set(prop.name, new_tex)
+				elif val is StyleBoxTexture and val.texture:
+					var new_tex = get_themed_texture(val.texture)
+					if new_tex != val.texture:
+						val.texture = new_tex
 
 func get_available_styles() -> Array[String]:
 	var styles: Array[String] = []

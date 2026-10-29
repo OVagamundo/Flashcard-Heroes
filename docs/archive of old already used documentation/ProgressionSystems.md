@@ -74,16 +74,16 @@ If content were added unrestrictedly across the whole roster:
 To deliver deep, asymmetric replayability without causing cross-roster combinatorial bloat, each playable Hero introduces a dedicated, self-contained 11-unit lineage pack.
 
 When a player selects a Hero at run start, exactly 11 Hero-exclusive units are added to the neutral pool:
-- 1 Hero-Exclusive Tier-1 Unit (H1)
-- 4 Hero-Exclusive Tier-2 Units (H2_a, H2_b, H2_c, H2_d)
-- 6 Hero-Exclusive Capstone Tier-3 Units (All pairs of Hero Tier-2 units)
+- 1 Hero-Exclusive Tier-1 Unit (H1, carrying the dynamic `?` soul inherited from the Hero's loadout roll)
+- 4 Hero-Exclusive Tier-2 Units (H2_a, H2_b, H2_c, H2_d, carrying 1 `?` soul + 1 neutral parent soul)
+- 6 Hero-Exclusive Capstone Tier-3 Units (All pairs of Hero Tier-2 units, carrying 2 `?` souls + 2 neutral parent souls)
 
 Total Active Units in a Run:
   25 (Neutral Base Roster) + 11 (Selected Hero Pack) = 36 Active Units.
 
 #### Tier-by-Tier Lineage & Rules:
 1. **Tier 1 (Hero Starter)**:
-   - Exactly 1 new Tier-1 unit (H1) tied to the Hero's thematic traits and element.
+   - Exactly 1 new Tier-1 unit (H1) tied to the Hero's thematic traits and dynamic elemental soul (`?`).
    - Appears in the shop alongside the 4 neutral base units (`ETnkPlaToy`, `FFigMecApp`, `WSupAniCos`, `ASpeFodToy`).
 2. **Tier 2 (Hero x Neutral Hybrids)**:
    - The Hero Tier-1 unit (H1) merges exclusively with the 4 neutral Tier-1 units:

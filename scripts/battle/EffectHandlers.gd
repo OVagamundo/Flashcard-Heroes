@@ -896,7 +896,7 @@ static func handle_summon_units(
 	
 	var summon_list: Array = effect_data.get("summon_units", [])
 	var team: String = effect_data.get("team", "ENEMY")
-	var target_container_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+	var target_container_tag: StringName = effect_data.get("container_tag", C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 	
 	# Get container for slot finding
 	var lineup_container = battle_manager.get_container(target_container_tag)
@@ -1001,42 +1001,32 @@ static func handle_mirror_transform(
 		return SummonResult.new() # Failed
 	
 	var my_loc = source.get_location()
-	if not is_instance_valid(my_loc) or my_loc.container.is_empty():
+	if not is_instance_valid(my_loc) or my_loc.container.is_empty() or my_loc.container == C.CONTAINER_EQUIPPED_ITEM:
 		return SummonResult.new()
 	var my_container: StringName = my_loc.container
 	var my_slot: int = my_loc.index
-	
+
+	var new_def = Database.get_definition(target_unit_id)
+	if not is_instance_valid(new_def):
+		return SummonResult.new()
+
 	var result := SummonResult.new()
-	
+
 	# 1. Log Event
 	var source_display_name = BattleHelpers.get_instance_display_name(source)
 	if source_display_name == "": source_display_name = "Mimic"
-	
+
 	result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
 		"text": "%s transforms into %s!" % [source_display_name, target_name]
 	}))
-	
+
 	# 2. Visual Event (Transform: Hop & Vanish)
 	result.events.append(CombatEvent.new(CombatEvent.Type.TRANSFORM, {
 		"target_uuids": [self_uuid],
 		"visual_payload": _make_transform_payload()
 	}))
-	
-	# 3. State Mutation: Preserve items for the new unit
-	var items_to_transfer = []
-	for slot_idx in range(source.equipped_item_uuids.size()):
-		var item_uuid = source.equipped_item_uuids[slot_idx]
-		if not item_uuid.is_empty():
-			var item_inst = battle_manager.get_instance_by_uuid(item_uuid)
-			if is_instance_valid(item_inst):
-				items_to_transfer.append({"uuid": item_uuid, "slot": slot_idx})
-				source.unequip_item_bonus(item_inst)
-				item_inst.equipped_on_uuid = ""
-				item_inst.equipped_slot_index = -1
-	# Clear on source
-	source.equipped_item_uuids.fill("")
-	
-	# 4. State Mutation: Preserve permanent training and in-combat stat buffs
+
+	# 3. Collect permanent training and in-combat stat buffs before replacing source
 	var persistent_components_to_transfer: Array[GachaBallComponent] = []
 	for comp in source.components:
 		if comp is StatComponent:
@@ -1044,7 +1034,7 @@ static func handle_mirror_transform(
 			if comp.source_type == &"CONDITIONAL_TRINKET" or String(comp.id).ends_with("_conditional") or String(comp.id).begins_with("rusty_ring_"):
 				continue
 			persistent_components_to_transfer.append(comp.duplicate(true))
-	
+
 	var battle_components_to_transfer: Array[GachaBallComponent] = []
 	var in_combat_hp_delta := 0
 	var in_combat_pwr_delta := 0
@@ -1067,76 +1057,61 @@ static func handle_mirror_transform(
 						in_combat_hp_delta += hp_val
 					if pwr_val > 0:
 						in_combat_pwr_delta += pwr_val
-	
-	# 5. State Mutation: Remove Self (Vanish)
-	battle_manager._state.bm_remove_instance(self_uuid)
-	
-	# 6. Determine Summon Location & Instantiate New Unit
-	var target_level: int = transform_data.get("target_level", 1)
 
-	var new_def = Database.get_definition(target_unit_id)
-	if is_instance_valid(new_def):
-		var new_unit = GachaBallInstance.new()
-		new_unit.initialize(new_def)
-		new_unit.level = target_level
-		
-		# Add level bonus if target_level > 1
-		if target_level > 1:
-			var level_delta_bonus: int = target_level - 1
-			new_unit.add_or_update_stat_component(
-				&"level_bonus",
-				&"LEVEL_BONUS",
-				"level_scaling",
-				level_delta_bonus,
-				level_delta_bonus,
-				false
-			)
-		
-		# Inherit persistent training components from Mimic
-		for p_comp in persistent_components_to_transfer:
-			new_unit.components.append(p_comp)
-		
-		new_unit.reset_battle_stats_silent()
-		
-		# Place it in the container
-		battle_manager._state.bm_add_instance(new_unit, my_container, my_slot)
-		
-		# Transfer preserved items to the new unit
-		for transfer_data in items_to_transfer:
-			InventoryOperations.equip_item(battle_manager._state, transfer_data["uuid"], new_unit.ball_uuid, transfer_data["slot"])
-		
-		# Inherit in-combat buffs
-		for b_comp in battle_components_to_transfer:
-			new_unit.battle_components.append(b_comp)
-		if in_combat_hp_delta > 0:
-			new_unit.current_hp += in_combat_hp_delta
-		if in_combat_pwr_delta > 0:
-			new_unit.current_pwr += in_combat_pwr_delta
-		
-		# Populate result
-		result.new_instances.append(new_unit)
-		result.container_updates.append({
-			"container_tag": my_container,
-			"slot": my_slot,
-			"uuid": new_unit.ball_uuid,
-			"insert_into_queue": false
-		})
-		
-		# Construct robust SUMMON event with visual style
-		var new_loc := LocationIdentifier.new()
-		new_loc.container = my_container
-		new_loc.index = my_slot
-		var summon_payload := _make_summon_payload("", new_unit.ball_uuid, new_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
-		summon_payload.visual_style = "yellow_flash"
-		
-		result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
-			"target_uuids": [new_unit.ball_uuid],
-			"visual_payload": summon_payload
-		}))
-		result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "%s appeared!" % [BattleHelpers.get_definition_display_name(new_def)]
-		}))
-			
+	# 4. Instantiate New Unit and atomically swap in place while preserving equipped items
+	var target_level: int = transform_data.get("target_level", 1)
+	var new_unit = GachaBallInstance.new()
+	new_unit.initialize(new_def)
+	new_unit.level = target_level
+
+	if target_level > 1:
+		var level_delta_bonus: int = target_level - 1
+		new_unit.add_or_update_stat_component(
+			&"level_bonus",
+			&"LEVEL_BONUS",
+			"level_scaling",
+			level_delta_bonus,
+			level_delta_bonus,
+			false
+		)
+
+	for p_comp in persistent_components_to_transfer:
+		new_unit.components.append(p_comp)
+
+	new_unit.reset_battle_stats_silent()
+
+	battle_manager._state.replace_unit_preserving_items(source, new_unit)
+
+	for b_comp in battle_components_to_transfer:
+		new_unit.battle_components.append(b_comp)
+	if in_combat_hp_delta > 0:
+		new_unit.current_hp += in_combat_hp_delta
+	if in_combat_pwr_delta > 0:
+		new_unit.current_pwr += in_combat_pwr_delta
+
+	result.new_instances.append(new_unit)
+	result.container_updates.append({
+		"container_tag": my_container,
+		"slot": my_slot,
+		"uuid": new_unit.ball_uuid,
+		"insert_into_queue": false
+	})
+
+	# Construct robust SUMMON event with visual style
+	var new_loc := LocationIdentifier.new()
+	new_loc.container = my_container
+	new_loc.index = my_slot
+	var summon_payload := _make_summon_payload("", new_unit.ball_uuid, new_loc, VisualDataAdapter.create_visual_data(new_unit, battle_manager.get_all_instances()))
+	summon_payload.visual_style = "yellow_flash"
+
+	result.events.append(CombatEvent.new(CombatEvent.Type.SUMMON, {
+		"target_uuids": [new_unit.ball_uuid],
+		"visual_payload": summon_payload
+	}))
+	result.events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+		"text": "%s appeared!" % [BattleHelpers.get_definition_display_name(new_def)]
+	}))
+
 	return result
 
 static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1, spawn_source_location: LocationIdentifier = null) -> CombatPayload:

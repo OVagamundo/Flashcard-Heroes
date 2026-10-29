@@ -13,7 +13,7 @@ func meets_prerequisites(state) -> bool:
 		return false
 	return true
 
-## The primary type of the node ("BATTLE", "SHOP", "EVENT", "REST")
+## The primary type of the node ("BATTLE", "SHOP", "MERGE", "SHRINE", "DOJO", "SURPRISE")
 @export var node_type: StringName
 
 ## A variant of the node type ("COMMON", "ELITE", "MINIBOSS", "BOSS", etc.)
@@ -66,4 +66,14 @@ static func from_dict(data: Dictionary) -> PathNodeDefinition:
 	def.base_weight = int(data.get("base_weight", 0))
 	def.min_day_required = int(data.get("min_day_required", 1))
 	def.required_mastery_threshold = float(data.get("required_mastery_threshold", 0.0))
+	
+	if def.node_type == &"BLACK_MARKET":
+		def.node_type = &"SHRINE"
+	if def.display_name_key == "ui.black_market_node":
+		def.display_name_key = "ui.shrine_node"
+	if def.node_type == &"REST":
+		def.node_type = &"MERGE"
+	if def.display_name_key == "ui.rest_node":
+		def.display_name_key = "ui.merge_node"
+		
 	return def

@@ -51,11 +51,11 @@ static func get_death_info(state: BattleState, unit_uuid: String) -> Dictionary:
 ## NOTE: This modifies state directly. Caller handles signals/events.
 static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstance, deferred_erasures: Array) -> void:
 	assert(is_instance_valid(unit), "perform_unit_death_cleanup: unit is null")
-	
+
 	# Guard against duplicate cleanup
-	if unit.location_container_tag == &"" or unit.location_container_tag == &"DiscardPile":
+	if unit.location_container_tag == C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE or unit.location_container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD:
 		return
-	
+
 	if state.is_player_owned(unit):
 		# Player unit: move equipped items to discard then move unit to discard
 		# CRITICAL: Iterate over a COPY because move_instance_to_discard modifies the original array
@@ -65,23 +65,23 @@ static func perform_unit_death_cleanup(state: BattleState, unit: GachaBallInstan
 				if is_instance_valid(item_instance):
 					InventoryOperations.move_instance_to_discard(state, item_instance)
 		unit.equipped_item_uuids.fill("")
-		
+
 		# Reset unit state before moving to discard
 		unit.reset_battle_stats_silent()
-		
+
 		InventoryOperations.move_instance_to_discard(state, unit)
 	else:
-		# Enemy unit: clear equipped linkage and defer erasure
-		# CRITICAL: Iterate over a COPY because update_instance_location might indirectly affect iteration (though less likely here, safe is better)
+		# Enemy unit: transfer equipped items and unit atomically to EnemyGraveyard until deferred erasure
 		for item_uuid in unit.equipped_item_uuids.duplicate():
 			if not item_uuid.is_empty():
 				var item_instance := state.get_instance(item_uuid)
 				if is_instance_valid(item_instance):
-					item_instance.equipped_on_uuid = ""
-					item_instance.equipped_slot_index = -1
-					state.update_instance_location(item_instance.ball_uuid, &"", -1)
+					var item_slot := state.transfer_instance_to_container(item_instance, C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD, -1, false)
+					assert(item_slot != -1, "perform_unit_death_cleanup: failed to move enemy item %s to EnemyGraveyard" % item_instance.ball_uuid)
 					deferred_erasures.append(item_instance.ball_uuid)
 		unit.equipped_item_uuids.fill("")
+		var unit_slot := state.transfer_instance_to_container(unit, C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD, -1, false)
+		assert(unit_slot != -1, "perform_unit_death_cleanup: failed to move enemy unit %s to EnemyGraveyard" % unit.ball_uuid)
 		deferred_erasures.append(unit.ball_uuid)
 
 # ============================================================================
@@ -276,6 +276,12 @@ static func process_completed_counter_deaths(out_events, death_tracking, bm) -> 
 			}
 			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 			
+			_process_food_death_pass(bm, unit, death_location, team, out_events)
+			_process_static_collateral_damage(bm, unit, death_location, team, out_events)
+			_process_toy_death_detonation(bm, unit, team, out_events)
+			_process_mecha_ally_death(bm, unit, team, out_events)
+			_process_bounty_death(bm, unit)
+			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
 			
@@ -417,186 +423,186 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 		for evt in lethal_evts:
 			out_events.append(evt)
 
-	# PRIORITY FIX: Collect all dying units and their data FIRST, then fire triggers in batches
-	# This ensures priority sorting works across BOTH on_death (item, priority 200) AND 
-	# on_ally_death (trinket, priority 210) triggers.
-	var dying_units_data: Array[Dictionary] = [] # [{unit, death_location, team}]
-	
-	# Check player units (LINEUP only - bench items are not combatants)
-	var player_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
-	for unit in player_units:
-		# Only process UNIT category (not items/trinkets)
-		var def = unit.get_definition()
-		if not is_instance_valid(def) or def.category != &"UNIT":
-			continue
-		if unit.current_hp <= 0:
-			something_changed = true
-			if is_simulation and out_events != null:
-				if death_tracking != null:
+	# ITERATIVE CASUALTY DRAIN LOOP
+	# Auto-battler standard: Repeat until all casualties and resulting death cascades
+	# (e.g. collateral damage, toy explosions) have fully resolved.
+	var cascade_safety_limit := 20
+	while cascade_safety_limit > 0:
+		cascade_safety_limit -= 1
+		var dying_units_data: Array[Dictionary] = [] # [{unit, death_location, team, has_lethal_counter, equipped_items}]
+		
+		# Check player units (LINEUP only - bench items are not combatants)
+		var player_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
+		for unit in player_units:
+			# Only process UNIT category (not items/trinkets)
+			var def = unit.get_definition()
+			if not is_instance_valid(def) or def.category != &"UNIT":
+				continue
+			if unit.current_hp <= 0 and not is_dead_this_turn(bm._state, unit.ball_uuid):
+				something_changed = true
+				if is_simulation and out_events != null:
+					if death_tracking != null:
+						if register_death(bm._state, unit, &"COMBAT"):
+							# Track first-killed for resurrection
+							track_first_killed(bm, unit, "PLAYER")
+							
+							var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+							var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
+							dying_units_data.append({
+								"unit": unit,
+								"death_location": death_location,
+								"team": "PLAYER",
+								"has_lethal_counter": has_lethal,
+								"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
+							})
+							if has_lethal:
+								deferred_deaths.append(unit.ball_uuid)
+				elif not is_simulation:
 					if register_death(bm._state, unit, &"COMBAT"):
-						# Track first-killed for resurrection
-						track_first_killed(bm, unit, "PLAYER")
-						
-						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
-						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
-						dying_units_data.append({
-							"unit": unit,
-							"death_location": death_location,
-							"team": "PLAYER",
-							"has_lethal_counter": has_lethal,
-							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
-						})
-						if has_lethal:
-							deferred_deaths.append(unit.ball_uuid)
-			elif not is_simulation:
-				if register_death(bm._state, unit, &"COMBAT"):
-					bm._perform_unit_death_cleanup(unit)
-	
-	# Check enemy units (LINEUP only - bench items are not combatants)
-	var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
-	for unit in enemy_units:
-		# Only process UNIT category (not items/trinkets)
-		var def = unit.get_definition()
-		if not is_instance_valid(def) or def.category != &"UNIT":
-			continue
-		if unit.current_hp <= 0:
-			something_changed = true
-			if is_simulation and out_events != null:
-				if death_tracking != null:
+						bm._perform_unit_death_cleanup(unit)
+		
+		# Check enemy units (LINEUP only - bench items are not combatants)
+		var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
+		for unit in enemy_units:
+			# Only process UNIT category (not items/trinkets)
+			var def = unit.get_definition()
+			if not is_instance_valid(def) or def.category != &"UNIT":
+				continue
+			if unit.current_hp <= 0 and not is_dead_this_turn(bm._state, unit.ball_uuid):
+				something_changed = true
+				if is_simulation and out_events != null:
+					if death_tracking != null:
+						if register_death(bm._state, unit, &"COMBAT"):
+							# Track first-killed for resurrection
+							track_first_killed(bm, unit, "ENEMY")
+							
+							var death_location = bm.get_location_for_uuid(unit.ball_uuid)
+							var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
+							dying_units_data.append({
+								"unit": unit,
+								"death_location": death_location,
+								"team": "ENEMY",
+								"has_lethal_counter": has_lethal,
+								"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
+							})
+							if has_lethal:
+								deferred_deaths.append(unit.ball_uuid)
+				elif not is_simulation:
 					if register_death(bm._state, unit, &"COMBAT"):
-						# Track first-killed for resurrection
-						track_first_killed(bm, unit, "ENEMY")
-						
-						var death_location = bm.get_location_for_uuid(unit.ball_uuid)
-						var has_lethal = has_lethal_counter_abilities(unit, bm._battle_instances)
-						dying_units_data.append({
-							"unit": unit,
-							"death_location": death_location,
-							"team": "ENEMY",
-							"has_lethal_counter": has_lethal,
-							"equipped_items": snapshot_equipped_items(unit, bm._battle_instances)
-						})
-						if has_lethal:
-							deferred_deaths.append(unit.ball_uuid)
-			elif not is_simulation:
-				if register_death(bm._state, unit, &"COMBAT"):
-					bm._perform_unit_death_cleanup(unit)
-	
-	# -------------------------------------------------------------------------
-	# UNIFIED PRIORITY BATCHING
-	# We must collect ALL triggers (on_death and on_ally_death) BEFORE draining.
-	# If we drain early, lower priority items from Phase 1 might execute before
-	# higher priority trinkets from Phase 2.
-	# -------------------------------------------------------------------------
+						bm._perform_unit_death_cleanup(unit)
+		
+		# If no new casualties in this iteration, all deaths in the cascade are resolved
+		if dying_units_data.is_empty():
+			break
 
-	# STATIC COLLATERAL: Process static discharge damage on death before death triggers
-	for data in dying_units_data:
-		_process_static_collateral_damage(bm, data.unit, data.death_location, data.team, out_events)
-		_process_food_death_pass(bm, data.unit, data.death_location, data.team, out_events)
-		_process_toy_death_detonation(bm, data.unit, data.team, out_events)
-		_process_mecha_ally_death(bm, data.unit, data.team, out_events)
+		# PHASE 1: Positive Stat Passes & on_death Triggers FIRST
+		# Direct on_death abilities (e.g. EmpathicLink buffing ally behind) and Food trait stat transfers
+		# must resolve BEFORE secondary collateral explosions (Static, Toy detonation) damage the board.
+		var trait_events: Array[CombatEvent] = []
+		for data in dying_units_data:
+			_process_food_death_pass(bm, data.unit, data.death_location, data.team, trait_events)
+			if not data.has_lethal_counter:
+				var death_ctx := {
+					"dying_uuid": data.unit.ball_uuid,
+					"dying_team": data.team,
+					"dying_location": data.death_location,
+					"equipped_items": data.equipped_items,
+					"source_pwr": data.unit.current_pwr
+				}
+				AbilityResolver.process_trigger(&"on_death", death_ctx)
 
-	# PHASE 1: Fire ALL on_death triggers (queues item summons, priority 200)
-	for data in dying_units_data:
-		if not data.has_lethal_counter:
-			var death_ctx := {
-				"dying_uuid": data.unit.ball_uuid,
-				"dying_team": data.team,
-				"dying_location": data.death_location,
-				"equipped_items": data.equipped_items,
-				"source_pwr": data.unit.current_pwr
-			}
-			AbilityResolver.process_trigger(&"on_death", death_ctx)
-	
+		# PHASE 2: Secondary Collateral & Trait Detonations
+		# Environmental consequences (Static discharge, Toy detonation, Mecha armor buff).
+		# Note: If these reduce any adjacent units to <= 0 HP, they will be caught and resolved
+		# on the next iteration of the while loop.
+		for data in dying_units_data:
+			_process_static_collateral_damage(bm, data.unit, data.death_location, data.team, trait_events)
+			_process_toy_death_detonation(bm, data.unit, data.team, trait_events)
+			_process_mecha_ally_death(bm, data.unit, data.team, trait_events)
+			_process_bounty_death(bm, data.unit)
 
-	# PHASE 2: Fire ALL on_ally_death triggers (queues trinket resurrection, priority 210)
-	# and emit DEATH events
-	var pending_death_events: Array[CombatEvent] = []
-	for data in dying_units_data:
-		if data.has_lethal_counter:
-			_defer_ally_death(bm, data.unit, data.death_location, data.team.to_lower())
-		else:
-			# Emit DEATH event with container_tag for player unit detection (deferred until after cascade)
-			var death_container_tag: StringName = data.death_location.container if is_instance_valid(data.death_location) else &""
-			var unit_snap = snapshot_unit(data.unit)
-			var is_player = (data.team == "PLAYER")
-			var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag, is_player, unit_snap, data.equipped_items)
-			if death_event != null:
-				pending_death_events.append(death_event)
-			
-			# Fire on_ally_death trigger
-			var ally_death_ctx := {
-				"fainting_ally_uuid": data.unit.ball_uuid,
-				"fainting_ally_location": data.death_location,
-				"fainting_ally_team": data.team,
-				"fainting_ally_pwr": data.unit.current_pwr
-			}
-			AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
-			
-			# Fire on_unit_death trigger (World trigger, all teams)
-			var dying_tier: int = 0
-			var dying_def = data.unit.get_definition()
-			if is_instance_valid(dying_def):
-				dying_tier = dying_def.tier
-				
-			var unit_death_ctx := {
-				"dying_uuid": data.unit.ball_uuid,
-				"dying_team": data.team,
-				"dying_location": data.death_location,
-				"dying_tier": dying_tier,
-				"dying_definition_id": String(data.unit.definition_id)
-			}
-			AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
-
-	
-	# Store deferred deaths for processing after counter-attacks complete
-	if not deferred_deaths.is_empty():
-		var existing_deferred: Array = bm.get_meta("deferred_deaths", [])
-		existing_deferred.append_array(deferred_deaths)
-		bm.set_meta("deferred_deaths", existing_deferred)
-	
-	# PHASE 3: Drain ALL reactions AFTER both trigger types have queued
-	# Priority sorting now correctly orders trinket (210) before item (200)
-	if is_simulation and out_events != null:
-		var cascade_evts: Array[CombatEvent] = []
-		if not bm._pending_reactions.is_empty():
-			cascade_evts = bm.drain_cascade()
-			
-		var pre_death_slice: Array[CombatEvent] = []
-		var post_death_slice: Array[CombatEvent] = []
-
-		for evt in cascade_evts:
-			var is_gacha_summon = (evt.type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null and String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"))
-			
-			if is_gacha_summon:
-				pre_death_slice.append(evt)
+		# PHASE 3: Fire on_ally_death, on_unit_death, and create DEATH events
+		var pending_death_events: Array[CombatEvent] = []
+		for data in dying_units_data:
+			if data.has_lethal_counter:
+				_defer_ally_death(bm, data.unit, data.death_location, data.team.to_lower())
 			else:
-				post_death_slice.append(evt)
+				var death_container_tag: StringName = data.death_location.container if is_instance_valid(data.death_location) else &""
+				var unit_snap = snapshot_unit(data.unit)
+				var is_player = (data.team == "PLAYER")
+				var death_event = create_death_event_if_needed(data.unit.ball_uuid, death_tracking, death_container_tag, is_player, unit_snap, data.equipped_items)
+				if death_event != null:
+					pending_death_events.append(death_event)
+				
+				# Fire on_ally_death trigger
+				var ally_death_ctx := {
+					"fainting_ally_uuid": data.unit.ball_uuid,
+					"fainting_ally_location": data.death_location,
+					"fainting_ally_team": data.team,
+					"fainting_ally_pwr": data.unit.current_pwr
+				}
+				AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+				
+				# Fire on_unit_death trigger (World trigger, all teams)
+				var dying_tier: int = 0
+				var dying_def = data.unit.get_definition()
+				if is_instance_valid(dying_def):
+					dying_tier = dying_def.tier
+					
+				var unit_death_ctx := {
+					"dying_uuid": data.unit.ball_uuid,
+					"dying_team": data.team,
+					"dying_location": data.death_location,
+					"dying_tier": dying_tier,
+					"dying_definition_id": String(data.unit.definition_id)
+				}
+				AbilityResolver.process_trigger(&"on_unit_death", unit_death_ctx)
 
-		# Insert DEATH events between pre-death reactions (like Gacha duplication) and post-death consequences (summons, ally death buffs like Knight)
-		# This ensures the Animator plays the dying unit's fade-out BEFORE surviving allies react to its death.
-		out_events.append_array(pre_death_slice)
-		out_events.append_array(pending_death_events)
-		out_events.append_array(post_death_slice)
-		pending_death_events.clear()
-		
-		# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
-		# The kamikaze animation handles the death at the target position
-		var kamikaze_sources: Array[String] = []
-		for evt in out_events:
-			if evt.type == CombatEvent.Type.KAMIKAZE_ATTACK:
-				var src = evt.visual_payload.source_uuid
-				if not src.is_empty():
-					kamikaze_sources.append(src)
-		
-		if not kamikaze_sources.is_empty():
-			for i in range(out_events.size() - 1, -1, -1):
-				var evt = out_events[i]
-				if evt.type == CombatEvent.Type.DEATH:
-					for target_uuid in evt.target_uuids:
-						if kamikaze_sources.has(target_uuid):
-							out_events.remove_at(i)
-							break
+		# Store deferred deaths for processing after counter-attacks complete
+		if not deferred_deaths.is_empty():
+			var existing_deferred: Array = bm.get_meta("deferred_deaths", [])
+			existing_deferred.append_array(deferred_deaths)
+			bm.set_meta("deferred_deaths", existing_deferred)
+			deferred_deaths.clear()
+
+		# PHASE 4: Drain ALL reactions generated by this wave
+		if is_simulation and out_events != null:
+			var cascade_evts: Array[CombatEvent] = []
+			if not bm._pending_reactions.is_empty():
+				cascade_evts = bm.drain_cascade()
+				
+			var pre_death_slice: Array[CombatEvent] = []
+			var post_death_slice: Array[CombatEvent] = []
+
+			for evt in cascade_evts:
+				var is_gacha_summon = (evt.type == CombatEvent.Type.SUMMON and evt.visual_payload != null and evt.visual_payload.old_unit_location != null and String(evt.visual_payload.old_unit_location.container).begins_with("BattleInventoryT"))
+				if is_gacha_summon:
+					pre_death_slice.append(evt)
+				else:
+					post_death_slice.append(evt)
+
+			out_events.append_array(pre_death_slice)
+			out_events.append_array(pending_death_events)
+			out_events.append_array(post_death_slice)
+			out_events.append_array(trait_events)
+			pending_death_events.clear()
+			
+			# KAMIKAZE FIX: Remove DEATH events for units with KAMIKAZE_ATTACK events
+			var kamikaze_sources: Array[String] = []
+			for evt in out_events:
+				if evt.type == CombatEvent.Type.KAMIKAZE_ATTACK:
+					var src = evt.visual_payload.source_uuid
+					if not src.is_empty():
+						kamikaze_sources.append(src)
+			
+			if not kamikaze_sources.is_empty():
+				for i in range(out_events.size() - 1, -1, -1):
+					var evt = out_events[i]
+					if evt.type == CombatEvent.Type.DEATH:
+						for target_uuid in evt.target_uuids:
+							if kamikaze_sources.has(target_uuid):
+								out_events.remove_at(i)
+								break
 	
 	if something_changed and not is_simulation:
 		bm._emit_battle_inventory_changed()
@@ -651,6 +657,16 @@ static func _emit_immediate_death(bm, unit: GachaBallInstance, death_location, t
 		"fainting_ally_pwr": unit.current_pwr
 	}
 	AbilityResolver.process_trigger(&"on_ally_death", ally_death_ctx)
+
+static func _process_bounty_death(bm, unit: GachaBallInstance) -> void:
+	if not is_instance_valid(unit):
+		return
+	var bounty_stacks = unit.get_status_effect_amount(&"bounty")
+	if bounty_stacks <= 0:
+		return
+	unit.clear_status_effect(&"bounty")
+	if is_instance_valid(bm) and bm.has_method("earn_gold"):
+		bm.earn_gold(1, unit.ball_uuid)
 
 static func _process_static_collateral_damage(bm, unit: GachaBallInstance, death_location, team: String, out_events) -> void:
 	if not is_instance_valid(unit):
@@ -715,7 +731,7 @@ static func _process_food_death_pass(bm, unit: GachaBallInstance, death_location
 	if traits.get("FOOD", 0) < 5 or not bm.has_trait(unit, "FOOD"):
 		return
 
-	var ally_behind = bm._get_ally_behind(unit)
+	var ally_behind = bm._get_ally_behind(unit, true)
 	if not is_instance_valid(ally_behind) and is_instance_valid(death_location):
 		var death_slot: int = death_location.index
 		var behind_slot: int = death_slot - 1 if team == "PLAYER" else death_slot + 1
@@ -726,7 +742,7 @@ static func _process_food_death_pass(bm, unit: GachaBallInstance, death_location
 			if not behind_uuid.is_empty():
 				ally_behind = bm.get_instance_by_uuid(behind_uuid)
 
-	if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
+	if is_instance_valid(ally_behind) and (ally_behind.current_hp > 0 or (ally_behind.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and ally_behind.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and ally_behind.location_container_tag != &"")):
 		var pwr_to_pass = max(1, unit.current_pwr)
 		var old_p = ally_behind.current_pwr
 		var new_p = bm.apply_stat_delta(ally_behind, "pwr", pwr_to_pass, unit.ball_uuid, C.ACTION_BUFF)

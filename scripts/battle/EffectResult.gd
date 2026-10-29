@@ -102,6 +102,9 @@ var summon_units_request: Array = []
 ## Team for summon_units_request ("PLAYER" or "ENEMY").
 var summon_team: String = ""
 
+## Container tag for summon_units_request (optional, defaults to lineup).
+var summon_container_tag: StringName = &""
+
 ## Cascade damage request for AOE effects like Shockwave.
 var cascade_request: CascadeRequest = null
 

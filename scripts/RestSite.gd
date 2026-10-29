@@ -13,7 +13,13 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 
 enum SiteType { HP, PWR, GOLD }
 
-@export var site_type: SiteType = SiteType.HP
+@export var site_type: SiteType = SiteType.HP:
+	set(val):
+		site_type = val
+		if is_node_ready():
+			_update_localized_text()
+			_setup_machine_visuals()
+			_update_background_visuals()
 
 # Machine references
 @onready var tier1_machine: Control = %Tier1Machine
@@ -25,6 +31,7 @@ enum SiteType { HP, PWR, GOLD }
 @onready var tier3_draw_button: Button = tier3_machine.get_draw_button() if tier3_machine.has_method("get_draw_button") else tier3_machine.get_node_or_null("DrawButton")
 
 # UI references
+@onready var background: TextureRect = $Background
 @onready var study_button: Button = %StudyButton
 @onready var leave_button: Button = %LeaveButton
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
@@ -73,11 +80,37 @@ func _ready() -> void:
 	_update_button_states()
 	_populate_hero_slot()
 	_setup_prize_slot_clicks()
+	_update_background_visuals()
 
 func setup_site() -> void:
 	"""Call this after setting site_type to correctly initialize visuals and tutorials"""
 	_update_localized_text()
 	_setup_machine_visuals()
+	_update_background_visuals()
+
+func _update_background_visuals() -> void:
+	var bg_texture: Texture2D = null
+	match site_type:
+		SiteType.PWR:
+			bg_texture = preload("res://assets/Realistic/ui/BGs/training.png")
+		SiteType.GOLD:
+			bg_texture = preload("res://assets/Realistic/ui/BGs/gambling.png")
+		SiteType.HP, _:
+			bg_texture = preload("res://assets/Realistic/ui/BGs/rest.png")
+	
+	if is_instance_valid(ArtStyleManager):
+		bg_texture = ArtStyleManager.get_themed_texture(bg_texture)
+	
+	var bg_node := background if is_instance_valid(background) else get_node_or_null("Background") as TextureRect
+	if is_instance_valid(bg_node):
+		bg_node.texture = bg_texture
+	
+	var main_node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		if main_node.has_method("sync_scene_background"):
+			main_node.sync_scene_background(self)
+		elif main_node.has_method("_sync_scene_background"):
+			main_node._sync_scene_background(self)
 
 func _update_localized_text() -> void:
 	var cost = 5

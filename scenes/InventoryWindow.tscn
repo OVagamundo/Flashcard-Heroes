@@ -14,10 +14,12 @@
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_clean"]
 
 [node name="InventoryWindow" type="Control"]
+clip_contents = true
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_bottom = -220.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -26,13 +28,11 @@ script = ExtResource("1_yvw8v")
 [node name="PanelContainer" type="PanelContainer" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_top = 162.0
-offset_bottom = -238.0
-grow_horizontal = 2
-grow_vertical = 2
+anchors_preset = 0
+offset_left = 20.0
+offset_top = 320.0
+offset_right = 1520.0
+offset_bottom = 860.0
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
 
@@ -43,13 +43,13 @@ theme_override_constants/separation = 0
 
 [node name="GridsArea" type="HBoxContainer" parent="PanelContainer/VBoxContainer"]
 layout_mode = 2
-mouse_filter = 2
 size_flags_vertical = 3
-theme_override_constants/separation = -2
-alignment = 1
+mouse_filter = 2
+theme_override_constants/separation = 0
+alignment = 0
 
 [node name="Tier1Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
-custom_minimum_size = Vector2(640, 680)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
@@ -67,22 +67,23 @@ expand_mode = 0
 stretch_mode = 3
 
 [node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
-custom_minimum_size = Vector2(640, 0)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column"]
-custom_minimum_size = Vector2(576, 0)
+custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Tier1Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column/ScrollContainer"]
 unique_name_in_owner = true
@@ -90,11 +91,13 @@ name = "Tier1InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("11_staggered_grid")
-columns = 6
+columns = 5
 h_separation = 0.0
-v_separation = -12.86
+v_separation = 0.0
+staggered = false
 
 [node name="Tier1Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel/Tier1Column" instance=ExtResource("10_physics_tier")]
+visible = false
 layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3
@@ -118,7 +121,7 @@ expand_mode = 0
 stretch_mode = 3
 
 [node name="Tier2Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
-custom_minimum_size = Vector2(640, 680)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
@@ -136,22 +139,23 @@ expand_mode = 0
 stretch_mode = 3
 
 [node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
-custom_minimum_size = Vector2(640, 0)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column"]
-custom_minimum_size = Vector2(576, 0)
+custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Tier2Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column/ScrollContainer"]
 unique_name_in_owner = true
@@ -159,11 +163,13 @@ name = "Tier2InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("11_staggered_grid")
-columns = 6
+columns = 5
 h_separation = 0.0
-v_separation = -12.86
+v_separation = 0.0
+staggered = false
 
 [node name="Tier2Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel/Tier2Column" instance=ExtResource("10_physics_tier")]
+visible = false
 layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3
@@ -188,7 +194,7 @@ expand_mode = 0
 stretch_mode = 3
 
 [node name="Tier3Panel" type="PanelContainer" parent="PanelContainer/VBoxContainer/GridsArea"]
-custom_minimum_size = Vector2(640, 680)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
@@ -206,22 +212,23 @@ expand_mode = 0
 stretch_mode = 3
 
 [node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
-custom_minimum_size = Vector2(640, 0)
+custom_minimum_size = Vector2(500, 540)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
+mouse_filter = 2
+theme_override_constants/separation = 0
 
 [node name="TopInset" type="Control" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
-custom_minimum_size = Vector2(0, 30)
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
 mouse_filter = 2
 
 [node name="ScrollContainer" type="ScrollContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column"]
-custom_minimum_size = Vector2(576, 0)
+custom_minimum_size = Vector2(480, 0)
 layout_mode = 2
-mouse_filter = 2
 size_flags_horizontal = 4
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Tier3Grid" type="Container" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column/ScrollContainer"]
 unique_name_in_owner = true
@@ -229,11 +236,13 @@ name = "Tier3InventoryGrid"
 size_flags_horizontal = 3
 size_flags_vertical = 3
 script = ExtResource("11_staggered_grid")
-columns = 6
+columns = 5
 h_separation = 0.0
-v_separation = -12.86
+v_separation = 0.0
+staggered = false
 
 [node name="Tier3Physics" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel/Tier3Column" instance=ExtResource("10_physics_tier")]
+visible = false
 layout_mode = 2
 anchors_preset = 15
 size_flags_vertical = 3

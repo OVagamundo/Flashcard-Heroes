@@ -1,7 +1,7 @@
 [gd_scene format=3]
 
 [ext_resource type="Script" path="res://scripts/vfx/TokenPopVFX.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="2_token"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/TokenRotationSpriteSheet.png" id="2_token"]
 [sub_resource type="ParticleProcessMaterial" id="ParticleProcessMaterial_sparkle"]
 emission_shape = 1
 emission_sphere_radius = 10.0
@@ -19,6 +19,7 @@ script = ExtResource("1_script")
 
 [node name="TokenSprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_token")
+hframes = 5
 
 [node name="Particles" type="GPUParticles2D" parent="."]
 emitting = false

@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_Bounty_L2"]
+script = ExtResource("2_effect")
+parameters = {
+"amount": 1,
+"status_id": "bounty"
+}
+target_type = &"ATTACK_TARGET_AND_RANDOM_UNMARKED"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_fa_fig_mer_mec_app_l2"
+description_key = "ability.ef_fig_mer_mec_app.l2.desc"
+trigger = &"on_attack"
+effects = Array[Resource]([SubResource("Effect_Bounty_L2")])
+priority = 0
+required_level = 2
+max_level = 2

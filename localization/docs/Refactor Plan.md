@@ -47,7 +47,7 @@ The implementing programmer agent must adhere to the following firm guardrails:
 ### Precaution 1: Strict Data Purity in Actions (NO UI Coordinates or Object Pointers)
 * `GameAction` payloads must contain **ONLY logical game state data** (`int`, `StringName`, `String`, `bool`, `LocationIdentifier`).
 * **NEVER pass screen pixel coordinates (`Vector2`), mouse positions, Viewport transforms, UI Control references, or engine Resource object pointers into a `GameAction`.**
-* **Presentation Responsibility:** The UI View (e.g. `Shop.gd`, `BlackMarket.gd`, `RestSite.gd`) owns its own visual elements and layout. If an animation requires screen coordinates (such as spawning coin VFX at a button or flying a gachaball from a slot), the UI View must determine those coordinates locally from its own node hierarchy and slot indices. The Action payload must remain purely logical data.
+* **Presentation Responsibility:** The UI View (e.g. `Shop.gd`, `Shrine.gd`, `RestSite.gd`) owns its own visual elements and layout. If an animation requires screen coordinates (such as spawning coin VFX at a button or flying a gachaball from a slot), the UI View must determine those coordinates locally from its own node hierarchy and slot indices. The Action payload must remain purely logical data.
 
 ### Precaution 2: Respect Existing Visual Pacing and Timing
 * In several rooms (e.g., Shop purchases, Rest Site draws), the original game's visual design plays an animation (e.g. coins flying to the button/slot) *before* the transaction commits, followed by an animation of the resulting gachaball flying to the machine.
@@ -108,9 +108,9 @@ The following player decisions represent the interactions across the game that a
 | **Rest Site** | `LeaveRestSiteAction` | Auto-apply remaining capsules and exit rest site. |
 | **Dojo / Training** | `StartTrainingAction` | Spend gold/tokens to train a specific unit stat. |
 | **Dojo / Training** | `LeaveTrainingAction` | Exit the training ground. |
-| **Black Market** | `RemoveBlackMarketAction` | Pay gold to purge a unit/item from the run. |
-| **Black Market** | `TransformBlackMarketAction` | Pay gold to reroll a unit/item into a new instance. |
-| **Black Market** | `LeaveBlackMarketAction` | Exit the black market. |
+| **Shrine** | `RemoveShrineAction` | Pay gold to purge a unit/item from the run. |
+| **Shrine** | `TransformShrineAction` | Pay gold to reroll a unit/item into a new instance. |
+| **Shrine** | `LeaveShrineAction` | Exit the shrine. |
 
 *(Note: The active programmer agent should inspect the active codebase to verify exact parameters and room state implementations.)*
 

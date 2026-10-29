@@ -225,7 +225,11 @@ func _on_language_selected(index: int) -> void:
 	Database.set_locale(selected_locale)
 
 func _on_close_pressed() -> void:
-	queue_free()
+	if is_instance_valid(WindowManager):
+		WindowManager.close_options_window()
+	else:
+		queue_free()
+
 
 func populate(_context: Dictionary = {}) -> void:
 	# Options window doesn't need external context

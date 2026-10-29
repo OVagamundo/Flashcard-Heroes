@@ -12,8 +12,12 @@ var summon_units_request: Dictionary
 
 func _init(p_request: EffectRequest, p_combat_sim: CombatSimulator, p_bm: Node, p_effect_result: EffectResult) -> void:
 	super._init(p_request, p_combat_sim, p_bm)
-	# EffectHandlers expects the raw dictionary containing "summon_units"
-	summon_units_request = {"summon_units": p_effect_result.summon_units_request}
+	# EffectHandlers expects dictionary containing summon_units, team, and optional container_tag
+	summon_units_request = {
+		"summon_units": p_effect_result.summon_units_request,
+		"team": p_effect_result.summon_team if not p_effect_result.summon_team.is_empty() else "ENEMY",
+		"container_tag": p_effect_result.summon_container_tag
+	}
 
 func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
 	var summon_result := EffectHandlers.handle_summon_units(request, summon_units_request, battle_manager)

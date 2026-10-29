@@ -84,6 +84,13 @@ signal battle_start_requested(encounter_def: EncounterDefinition)
 ## @param results: Dictionary - Battle results (winner, rewards, etc.)
 signal battle_ended(results: Dictionary)
 
+## Emitted when combat playback speed multiplier changes (1.0, 2.0, 4.0).
+signal combat_speed_changed(speed: float)
+
+## Emitted when combat is paused or resumed.
+signal combat_pause_changed(is_paused: bool)
+
+
 ## Emitted when a specific stat on a unit changes (HP, PWR, armor_stacks, burn_stacks, etc.)
 ## Granular signal that specifies WHICH stat changed - handlers update only that stat
 ## @param unit_uuid: String - The UUID of the unit whose stat changed
@@ -251,6 +258,7 @@ signal end_turn_requested
 ## Emitted when gacha draw is requested
 ## @param tier: int - The tier to draw from
 signal draw_gacha_requested(tier: int)
+signal draw_from_discard_requested
 
 ## Emitted when gacha draw result needs to be animated
 ## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
@@ -263,9 +271,9 @@ signal gacha_tokens_changed(new_amount: int)
 ## @deprecated - Use gacha_tokens_changed instead. Preserved only for backward compatibility.
 signal gacha_tokens_visual_changed(new_amount: int)
 
-## Emitted when the black market receives a user action (remove or transform)
+## Emitted when the shrine receives a user action (remove or transform)
 ## @param payload: Dictionary containing 'type', 'instance_uuid', etc.
-signal black_market_action_requested(payload: Dictionary)
+signal shrine_action_requested(payload: Dictionary)
 
 ## Emitted when BattleManager wants the UI to play the battle entry animation
 signal battle_entry_animation_requested()
@@ -381,7 +389,7 @@ signal reward_reroll_requested
 ## Used by Reward and Shop scenes to trigger confirm/buy actions
 signal confirm_drop_zone_activated(is_drag: bool, mouse_position: Vector2)
 
-# Split Action Drop Zone signals (Used by Black Market, Unit Training, etc.)
+# Split Action Drop Zone signals (Used by Shrine, Unit Training, etc.)
 signal action_drop_zone_1_activated(is_drag: bool, mouse_position: Vector2)
 signal action_drop_zone_2_activated(is_drag: bool, mouse_position: Vector2)
 

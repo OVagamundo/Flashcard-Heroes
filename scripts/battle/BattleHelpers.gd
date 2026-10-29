@@ -35,7 +35,10 @@ static func get_instance_display_name(inst: GachaBallInstance) -> String:
 # ============================================================================
 
 ## Get the ally behind a source unit (for pass-through abilities)
-static func get_ally_behind(state: BattleState, source_instance: GachaBallInstance) -> GachaBallInstance:
+## @param state: BattleState - The battle state
+## @param source_instance: GachaBallInstance - The unit looking behind
+## @param allow_dying: bool - If true, allow targeting an ally in the lineup whose death has not yet finalized (for causal on-death chains)
+static func get_ally_behind(state: BattleState, source_instance: GachaBallInstance, allow_dying: bool = false) -> GachaBallInstance:
 	if not is_instance_valid(source_instance):
 		return null
 	var container_name := source_instance.location_container_tag
@@ -44,6 +47,8 @@ static func get_ally_behind(state: BattleState, source_instance: GachaBallInstan
 		return null
 	
 	var source_index := container.get_index_of_uuid(source_instance.ball_uuid)
+	if source_index == -1:
+		source_index = source_instance.location_slot_index
 	if source_index == -1:
 		return null
 	
@@ -65,8 +70,14 @@ static func get_ally_behind(state: BattleState, source_instance: GachaBallInstan
 		return null
 	
 	var inst := state.get_instance(behind_uuid)
-	if is_instance_valid(inst) and inst.current_hp > 0:
+	if not is_instance_valid(inst):
+		return null
+	if inst.current_hp > 0:
 		return inst
+	if allow_dying:
+		var loc: StringName = inst.location_container_tag
+		if loc != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and loc != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and loc != &"":
+			return inst
 	return null
 
 ## Find a unit with the intercept_lethal tag on the specified team that can intercept damage.

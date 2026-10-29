@@ -1,0 +1,23 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectModifyStatsByGold.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_AASpeMerFodToy_1"]
+script = ExtResource("2_effect")
+parameters = {
+"gold_step": 10,
+"hp_per_gold_step": 0,
+"is_permanent": false,
+"pwr_per_gold_step": 1
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_aa_spe_mer_fod_toy_l1"
+description_key = "ability.ea_spe_mer_fod_toy.l1.desc"
+trigger = &"on_pre_combat"
+effects = Array[Resource]([SubResource("Effect_AASpeMerFodToy_1")])
+priority = 0
+max_level = 1

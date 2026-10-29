@@ -35,7 +35,7 @@ Each run follows a structured progression loop:
 [Loadout Selection]
        │
        ▼
-   [Day 1 Map] ──► [Encounter Node] ──► [Rewards / Shop / Rest / Dojo / Black Market]
+   [Day 1 Map] ──► [Encounter Node] ──► [Rewards / Shop / Rest / Dojo / Shrine]
        │
        ▼
    [Day 2 Map] ──► [Encounter Node] ──► ...
@@ -80,7 +80,7 @@ Before starting a run, the player configures their starting setup:
 The game operates on a dual-economy system that separates long-term collection curation from tactical combat execution:
 
 ## 3.1 Gold (Run Economy)
-* **Purpose**: Spent outside of combat to purchase units/items from Shops, purge or transform units at the Black Market, buy training sessions at the Dojo, and heal/upgrade at Rest Sites.
+* **Purpose**: Spent outside of combat to purchase units/items from Shops, purge or transform units at the Shrine, buy training sessions at the Dojo, and heal/upgrade at Rest Sites.
 * **Acquisition**: Earned by winning battles or selling reward capsules.
 * **Difficulty Role**: Accumulated Gold and collection size inform the encounter generator's budget curve.
 * **Tier Gold Costs (Shop & Encounter Generator)**:
@@ -413,7 +413,7 @@ Activated when the team holds the required count of units possessing that trait 
 * **Path Choice Priorities**:
   * **Regular Battles**: Dominant appearance priority (~96%–98% of 3-path choices).
   * **Elite Battles**: Paced by progress toward the upcoming Boss (guaranteed at 20%, 40%, 60%, and 80% card unlock milestones; capped at 4 elite encounters per boss tier, max 20 per run).
-  * **Non-Battle Encounters**: Shop, Merge Encounter, Black Market, Surprise Events, and Unit Training Ground share equal base weights with anti-starvation weight bonuses when not offered.
+  * **Non-Battle Encounters**: Shop, Merge Encounter, Shrine, Surprise Events, and Unit Training Ground share equal base weights with anti-starvation weight bonuses when not offered.
 
 ## 10.2 Standard Nodes
 * **Regular Battles**: Standard budget-based combat encounters.
@@ -421,7 +421,7 @@ Activated when the team holds the required count of units possessing that trait 
   * Offers 3 random GachaBalls from the unlocked pool.
   * Undiscovered merge recipes for the current run highlight in Violet.
   * **Reroll Cost**: Starts at **1 Gold**, increases by **+1 Gold** per reroll in that visit, and resets to 1 Gold on the next visit.
-* **Black Market Node**:
+* **Shrine Node**:
   * **Remove**: Permanently purges a GachaBall from the run deck (starts at 5 Gold, increases by +1 Gold per removal across the run).
   * **Transform**: Replaces a GachaBall with a random alternative of the same tier for a flat fee of **5 Gold**.
 * **Post-Battle Rewards**:
@@ -504,7 +504,7 @@ The player can select one of the currently available path nodes to transition to
 * **Rest Site**: Start the study session; draw stat capsules; apply prizes to the Hero; open/close inventory; leave.
 * **Merge Encounter**: Open inventory; select two eligible GachaBalls; confirm permanent merge or swap; leave.
 * **Unit Training Ground**: Open inventory; select a unit and training stat (HP or Power); pay gold to start study; spend tokens to roll stat buffs; close popup; leave.
-* **Black Market**: Open inventory; select a GachaBall; remove or transform it for the displayed gold fee; leave.
+* **Shrine**: Open inventory; select a GachaBall; remove or transform it for the displayed gold fee; leave.
 
 ## 12.6 Flashcard Minigame Prompts
 * Review newly introduced cards and select priority review cards when prompted.

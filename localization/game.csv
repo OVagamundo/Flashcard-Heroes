@@ -1,6 +1,6 @@
 keys,en,pt_BR
 hero.name,Bounty Hunter,Caçador de Recompensas
-hero.desc,"Gain 1 gold when this hero kills an enemy. When an ally is defeated, gain +1 HP and +1 PWR.","Ganha 1 ouro quando este herói mata um inimigo. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+hero.desc,"Specializes in accumulating and spending Gold. Fixed Trait: Mercenary (Starts with Mercenary Sigil). At run start, receives 1 random Elemental soul and 1 random Class or Visual trait.","Especializado em acumular e gastar Ouro. Traço Fixo: Mercenário (Inicia com o Selo de Mercenário). No início da jornada, recebe 1 alma Elemental aleatória e 1 traço de Classe ou Visual."
 enemy_hero.name,Enemy Hero,Herói Inimigo
 enemy_hero.desc,Deal (PWR) damage to the frontmost enemy.,Cause (PWR) de dano ao inimigo mais à frente.
 ability.unit_t2_d_power_l1.desc,"Gains extra PWR equal to 100% of current Tokens, updating whenever Tokens change.","Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
@@ -70,7 +70,7 @@ item_t2_b.desc,"When the holder defeats an enemy, they act again immediately (on
 ability.item_tier2b_bloodlust.desc,"When the holder defeats an enemy, they act again immediately (once per turn).","Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
 hero_timekeeper.name,Timekeeper,Guardião do Tempo
 hero_timekeeper.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites. At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","Minijogo: +1s ao acertar, -0,5s ao errar. Ganha 5 fichas por turno em Batalhas e Locais de Descanso. No início de cada turno, concede +2 HP às unidades à frente e +2 PWR às unidades atrás."
-ability.hero_timekeeper_gold_on_kill.desc,Gain 1 gold when this hero kills an enemy.,Ganha 1 ouro quando este herói mata um inimigo.
+ability.hero_timekeeper_gold_on_kill.desc,"Bounty: When this hero defeats an enemy, earn 1 Gold.","Recompensa: Quando este herói derrota um inimigo, ganha 1 de Ouro."
 ability.hero_timekeeper_time_warp.desc,"Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites.","Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
 ability.hero_timekeeper_temporal_aura.desc,"At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind.","No início de cada turno, concede +2 HP às unidades na frente e +2 PWR às unidades atrás."
 boss_1.name,The Awakened Guardian,O Guardião Desperto
@@ -180,27 +180,28 @@ ui.mastery_level_3,Mastery 3 (Medium),Domínio 3 (Médio)
 ui.mastery_level_4,Mastery 4 (Easy),Domínio 4 (Fácil)
 ui.mastery_level_5,Mastery 5 (Very Easy),Domínio 5 (Muito Fácil)
 ui.take_gold_amount,Take %d Gold instead,Prefiro %d de Ouro
-ui.discard_pile_count,Discard Pile (%d),Pilha de Descarte (%d)
+ui.discard_pile_count,Discard (%d),Descarte (%d)
 ui.tokens_count,Tokens: %d,Fichas: %d
 ui.day,Day %d,Dia %d
 ui.boss,Boss %d,Chefe %d
 ui.battle_node,Battle,Batalha
 ui.elite_battle_node,Elite Battle,Batalha de Elite
 ui.shop_node,Shop,Loja
-ui.black_market_node,Black Market,Mercado Negro
+ui.shrine_node,Shrine,Santuário
+ui.merge_node,Merge Encounter,Encontro de Fusão
 ui.rest_node,Rest Site,Local de Descanso
 ui.training_grounds_node,Training Grounds,Campus de Treinamento
 ui.gambling_den_node,Gambling Den,Canto das Apostas
 ui.training_grounds,Training Grounds,Campus de Treinamento
 ui.gambling_den,Gambling Den,Canto das Apostas
-ui.black_market_title,Black Market,Mercado Negro
-ui.black_market_open_inventory,REMOVE OR TRANSFORM,REMOVER OU TRANSFORMAR
-ui.black_market_prompt,What would you like to do with %s?,O que você quer fazer com %s?
-ui.black_market_instructions,Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it.,Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro).
+ui.shrine_title,Shrine,Santuário
+ui.shrine_open_inventory,REMOVE OR TRANSFORM,REMOVER OU TRANSFORMAR
+ui.shrine_prompt,What would you like to do with %s?,O que você quer fazer com %s?
+ui.shrine_instructions,Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it.,Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro).
 ui.remove_cost,Remove (%d Gold),Remover (%d Ouro)
 ui.transform_cost,Transform (%d Gold),Transformar (%d Ouro)
-tutorial.black_market_intro.title,Removing and Transforming,Removendo e Transformando
-tutorial.black_market_intro,The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase.,O Mercado Negro permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação.
+tutorial.shrine_intro.title,Removing and Transforming,Removendo e Transformando
+tutorial.shrine_intro,The Shrine lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase.,O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação.
 tutorial.training_grounds,A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades.,Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder.
 tutorial.gambling_den,Risk it all for gold. Earn tokens from the minigame to spend on these machines for immediate gold rewards.,Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro.
 ui.effects,Effects,Efeitos
@@ -281,6 +282,8 @@ STATUS_SPIKES,Spikes,Espinhos
 STATUS_SPIKES_DESC,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.,Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação.
 STATUS_STATIC,Static,Estático
 STATUS_STATIC_DESC,"When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn.","Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
+STATUS_BOUNTY,Bounty,Recompensa
+STATUS_BOUNTY_DESC,"When this unit is defeated by any means, awards 1 Gold. Stays until this unit dies or the battle ends.","Quando esta unidade é derrotada por qualquer meio, concede 1 de Ouro. Permanece até a unidade morrer ou a batalha terminar."
 trinket.novice_insignia.name,Novice Insignia,Insígnia do Novato
 trinket.novice_insignia.desc,"When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
 ability.novice_insignia.desc,"When a Level 1 unit enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
@@ -457,7 +460,7 @@ ui.drop_zone_buy_multi,Drag or click here to\n[font_size=72]BUY[/font_size],Arra
 ui.drop_zone_remove_multi,Drag or click here to\n[font_size=72]REMOVE[/font_size],Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]
 ui.drop_zone_transform_multi,Drag or click here to\n[font_size=72]TRANSFORM[/font_size],Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]
 ui.drop_zone_sell_multi,Drag or click here to\n[font_size=72]SELL[/font_size],Arraste ou clique aqui para\n[font_size=72]VENDER[/font_size]
-ui.bm_instruction,Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.,Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário.
+ui.shrine_instruction,Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory.,Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário.
 ui.reward_instruction,Move the gacha ball here to: Get or Sell.\nClick anywhere to close the inventory.,Mova a gacha ball para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário.
 ui.reward_elite_instruction,Move the Trinket here to: Get or Sell.\nClick anywhere to close the inventory.,Mova o Amuleto para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário.
 ability_dust_elite_spawn_enemy_death.desc,Spawns a Dust unit when an Enemy dies.,Invoca um Recruta de Poeira quando um Inimigo morre.
@@ -560,10 +563,10 @@ ui.gambling_den_desc,"Play to earn tokens, then spend them for a chance to win b
 ui.btn_merge,Merge,Fundir
 ui.btn_merge_cost,Merge ({cost} Gold),Fundir ({cost} Ouro)
 ui.btn_swap,Swap,Trocar
-ui.black_market_desc,"Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold.","Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
+ui.shrine_desc,"Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold.","Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
 ui.shop_desc,"Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!","Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
-ui.bm_drop_transform,Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold),Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)
-ui.bm_drop_remove,Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold),Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)
+ui.shrine_drop_transform,Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold),Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)
+ui.shrine_drop_remove,Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold),Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)
 ui.utg_desc,"Shape your units!\nOpen your inventory to drag a unit here,\nand train its HP or Power by spending tokens.","Molde suas unidades!\nAbra o inventário para arrastar uma unidade aqui,\ne treine seu HP ou Poder gastando fichas."
 ui.rest_study,Get Tokens! (%d Gold),Ganhar Fichas! (%d Ouro)
 ui.reward_desc,Get tokens to spend on prizes in the machines below!,Ganhe fichas para gastar em prêmios nas máquinas abaixo!
@@ -738,3 +741,94 @@ trinket.costume_insignia.name,Costume Insignia,Insígnia da Fantasia
 trinket.costume_insignia.desc,"When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
 ability.costume_insignia.desc,"When a unit with the Costume trait enters the board, it gains +1 HP and +1 PWR.","Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
 trinket.trinity_charm.name,Trinity Charm,Amuleto da Trindade
+trait.mercenary.name,Mercenary,Mercenário
+trait.mercenary.desc,"Counts Mercenary-tagged units in the active lineup. Unlocks bonuses whenever Gold is earned or held.","Conta unidades com o traço Mercenário no alinhamento ativo. Desbloqueia bônus sempre que Ouro for obtido ou possuído."
+trait.mercenary.2,"Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP.","Sempre que Ouro for obtido, a unidade aliada com menor HP atual ganha +1 HP."
+trait.mercenary.3,"In addition to Bronze, whenever Gold is earned, the Hero gains +1 PWR.","Além do Bronze, sempre que Ouro for obtido, o Herói ganha +1 PWR."
+trait.mercenary.4,"In addition to Bronze and Silver, at pre-combat each Mercenary unit gains +1 Armor for every full 10 Gold currently held.","Além do Bronze e Prata, no pré-combate cada unidade Mercenária ganha +1 de Armadura para cada 10 de Ouro possuídos."
+trait.mercenary.5,"In addition to all previous levels, earn 1 Gold at pre-combat once per turn.","Além de todos os níveis anteriores, ganha 1 de Ouro no pré-combate uma vez por turno."
+ability.trait_mercenary.desc,"Counts Mercenary units. Bronze: Lowest HP ally gains +1 HP when Gold is earned. Silver: Hero gains +1 PWR when Gold is earned. Gold: Mercenaries gain +1 Armor per 10 Gold pre-combat. Prismatic: Earn 1 Gold pre-combat.","Conta unidades Mercenárias. Bronze: Aliado com menor Vida ganha +1 HP quando Ouro é ganho. Prata: Herói ganha +1 PWR quando Ouro é ganho. Ouro: Mercenários ganham +1 de Armadura por 10 de Ouro no pré-combate. Prismático: Ganha 1 de Ouro no pré-combate."
+ability.trait_mercenary.bronze.desc,"Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP.","Sempre que Ouro for obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+ability.trait_mercenary.silver.desc,"Whenever Gold is earned, the Hero gains +1 PWR.","Sempre que Ouro for obtido, o Herói ganha +1 de Poder."
+ability.trait_mercenary.pre_combat.desc,"At pre-combat: At 4 Mercenaries, each gains +1 Armor per 10 Gold held. At 5 Mercenaries, earn 1 Gold once per turn.","No pré-combate: Com 4 Mercenários, cada um ganha +1 de Armadura por 10 de Ouro possuído. Com 5 Mercenários, ganha 1 de Ouro uma vez por turno."
+ability.trait_mercenary_on_gold_bronze.desc,"Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP.","Sempre que Ouro é obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+ability.trait_mercenary_on_gold_silver.desc,"Whenever Gold is earned, the Hero gains +1 PWR.","Sempre que Ouro é obtido, o Herói ganha +1 de Poder."
+ability.trait_mercenary_pre_combat.desc,"At pre-combat, earn 1 Gold if Prismatic (5 Mercenaries), and each Mercenary gains +1 Armor per 10 Gold held if Gold (4 Mercenaries).","No pré-combate, ganha 1 de Ouro se Prismático (5 Mercenários), e cada Mercenário ganha +1 de Armadura por 10 de Ouro possuído se Ouro (4 Mercenários)."
+?MerSpe.name,?MerSpe,?MerSpe
+?MerSpe.desc,"Whenever 1 Gold is earned while this unit is in the active lineup, it gains +1 HP and +1 PWR.","Sempre que 1 de Ouro é obtido enquanto esta unidade está no alinhamento ativo, ela ganha +1 de Vida e +1 de Poder."
+ability.e_mer_spe.desc,"Whenever 1 Gold is earned while in the active lineup, gain +1 HP and +1 PWR.","Sempre que 1 de Ouro é obtido no alinhamento ativo, ganha +1 de Vida e +1 de Poder."
+?ASpeMerFodToy.name,?ASpeMerFodToy,?ASpeMerFodToy
+?ASpeMerFodToy.desc,"Pre-combat: Gain +1 / +2 / +3 PWR for every full 10 Gold held.","Pré-combate: Ganha +1 / +2 / +3 de Poder para cada 10 de Ouro possuído."
+ability.ea_spe_mer_fod_toy.l1.desc,"Pre-combat: Gain +1 PWR for every full 10 Gold held.","Pré-combate: Ganha +1 de Poder para cada 10 de Ouro possuído."
+ability.ea_spe_mer_fod_toy.l2.desc,"Pre-combat: Gain +2 PWR for every full 10 Gold held.","Pré-combate: Ganha +2 de Poder para cada 10 de Ouro possuído."
+ability.ea_spe_mer_fod_toy.l3.desc,"Pre-combat: Gain +3 PWR for every full 10 Gold held.","Pré-combate: Ganha +3 de Poder para cada 10 de Ouro possuído."
+E?TnkMerPlaToy.name,E?TnkMerPlaToy,E?TnkMerPlaToy
+E?TnkMerPlaToy.desc,"Whenever 1 Gold is earned, gain +1 / +2 / +3 Armor and +1 / +2 / +3 Spikes.","Sempre que 1 de Ouro é obtido, ganha +1 / +2 / +3 de Armadura e +1 / +2 / +3 de Espinhos."
+ability.ee_tnk_mer_pla_toy.l1.desc,"Whenever 1 Gold is earned, gain +1 Armor and +1 Spikes.","Sempre que 1 de Ouro é obtido, ganha +1 de Armadura e +1 de Espinhos."
+ability.ee_tnk_mer_pla_toy.l2.desc,"Whenever 1 Gold is earned, gain +2 Armor and +2 Spikes.","Sempre que 1 de Ouro é obtido, ganha +2 de Armadura e +2 de Espinhos."
+ability.ee_tnk_mer_pla_toy.l3.desc,"Whenever 1 Gold is earned, gain +3 Armor and +3 Spikes.","Sempre que 1 de Ouro é obtido, ganha +3 de Armadura e +3 de Espinhos."
+F?FigMerMecApp.name,F?FigMerMecApp,F?FigMerMecApp
+F?FigMerMecApp.desc,"When this ranged unit attacks, mark its target with Bounty. Defeating a marked unit awards 1 Gold.","Quando esta unidade à distância ataca, marca seu alvo com Recompensa. Derrotar uma unidade marcada concede 1 de Ouro."
+ability.ef_fig_mer_mec_app.l1.desc,"On attack, mark the target with Bounty if unmarked.","Ao atacar, marca o alvo com Recompensa se não estiver marcado."
+ability.ef_fig_mer_mec_app.l2.desc,"On attack, mark the target and 1 random unmarked unit with Bounty.","Ao atacar, marca o alvo e 1 unidade aleatória desmarcada com Recompensa."
+ability.ef_fig_mer_mec_app.l3.desc,"On attack, mark the target and adjacent units with Bounty.","Ao atacar, marca o alvo e unidades adjacentes com Recompensa."
+W?SupMerAniCos.name,W?SupMerAniCos,W?SupMerAniCos
+W?SupMerAniCos.desc,"Whenever 1 Gold is earned, heal a random allied unit for 1 / 2 / 3 HP.","Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida."
+ability.ew_sup_mer_ani_cos.l1.desc,"Whenever 1 Gold is earned, heal a random allied unit for 1 HP.","Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+ability.ew_sup_mer_ani_cos.l2.desc,"Whenever 1 Gold is earned, heal a random allied unit for 2 HP.","Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+ability.ew_sup_mer_ani_cos.l3.desc,"Whenever 1 Gold is earned, heal a random allied unit for 3 HP.","Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+E??ATnkSpeMerFodPlaToy.name,E??ATnkSpeMerFodPlaToy,E??ATnkSpeMerFodPlaToy
+E??ATnkSpeMerFodPlaToy.desc,"Pre-combat: Spend 1 Gold to gain +1 / +2 / +3 Armor and Spikes per 10 Gold held.","Pré-combate: Gasta 1 de Ouro para ganhar +1 / +2 / +3 de Armadura e Espinhos por 10 de Ouro possuído."
+ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc,"Pre-combat: Spend 1 Gold to gain +1 Armor and +1 Spikes per 10 Gold held.","Pré-combate: Gasta 1 de Ouro para ganhar +1 de Armadura e +1 de Espinhos por 10 de Ouro possuído."
+ability.eeea_tnk_spe_mer_fod_pla_toy.l2.desc,"Pre-combat: Spend 1 Gold to gain +2 Armor and +2 Spikes per 10 Gold held.","Pré-combate: Gasta 1 de Ouro para ganhar +2 de Armadura e +2 de Espinhos por 10 de Ouro possuído."
+ability.eeea_tnk_spe_mer_fod_pla_toy.l3.desc,"Pre-combat: Spend 1 Gold to gain +3 Armor and +3 Spikes per 10 Gold held.","Pré-combate: Gasta 1 de Ouro para ganhar +3 de Armadura e +3 de Espinhos por 10 de Ouro possuído."
+FW??FigSupMerAniMecAppCos.name,FW??FigSupMerAniMecAppCos,FW??FigSupMerAniMecAppCos
+FW??FigSupMerAniMecAppCos.desc,"On attack: Spend 1 Gold to deal +1 / +2 / +3 bonus damage per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para causar +1 / +2 / +3 de dano bônus por 10 de Ouro possuído."
+ability.eefw_fig_sup_mer_ani_mec_app_cos.l1.desc,"On attack: Spend 1 Gold to deal +1 bonus damage per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para causar +1 de dano bônus por 10 de Ouro possuído."
+ability.eefw_fig_sup_mer_ani_mec_app_cos.l2.desc,"On attack: Spend 1 Gold to deal +2 bonus damage per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para causar +2 de dano bônus por 10 de Ouro possuído."
+ability.eefw_fig_sup_mer_ani_mec_app_cos.l3.desc,"On attack: Spend 1 Gold to deal +3 bonus damage per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para causar +3 de dano bônus por 10 de Ouro possuído."
+W??ASupSpeMerFodAniToyCos.name,W??ASupSpeMerFodAniToyCos,W??ASupSpeMerFodAniToyCos
+W??ASupSpeMerFodAniToyCos.desc,"Whenever Gold is earned, heal a random allied unit for 1 / 2 / 3 HP per 1 Gold earned.","Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida por 1 de Ouro ganho."
+ability.eewa_sup_spe_mer_fod_ani_toy_cos.l1.desc,"Whenever Gold is earned, heal a random allied unit for 1 HP.","Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+ability.eewa_sup_spe_mer_fod_ani_toy_cos.l2.desc,"Whenever Gold is earned, heal a random allied unit for 2 HP.","Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc,"Whenever Gold is earned, heal a random allied unit for 3 HP.","Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+F??AFigSpeMerFodMecToyApp.name,F??AFigSpeMerFodMecToyApp,F??AFigSpeMerFodMecToyApp
+F??AFigSpeMerFodMecToyApp.desc,"On attack: If holding at least 10 Gold, spend 1 Gold and apply 1 / 2 / 3 Burn per 10 Gold held.","Ao atacar: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro e aplica 1 / 2 / 3 de Queimadura por 10 de Ouro possuído."
+ability.eefa_fig_spe_mer_fod_mec_toy_app.l1.desc,"On attack: Spend 1 Gold to apply 1 Burn per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para aplicar 1 de Queimadura por 10 de Ouro possuído."
+ability.eefa_fig_spe_mer_fod_mec_toy_app.l2.desc,"On attack: Spend 1 Gold to apply 2 Burn per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para aplicar 2 de Queimadura por 10 de Ouro possuído."
+ability.eefa_fig_spe_mer_fod_mec_toy_app.l3.desc,"On attack: Spend 1 Gold to apply 3 Burn per 10 Gold held.","Ao atacar: Gasta 1 de Ouro para aplicar 3 de Queimadura por 10 de Ouro possuído."
+EF??TnkFigMerMecPlaToyApp.name,EF??TnkFigMerMecPlaToyApp,EF??TnkFigMerMecPlaToyApp
+EF??TnkFigMerMecPlaToyApp.desc,"When hurt, before damage: If holding at least 10 Gold, spend 1 Gold to mitigate 1 / 2 / 3 incoming damage per 10 Gold held.","Ao ser ferido, antes do dano: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para mitigar 1 / 2 / 3 de dano recebido por 10 de Ouro possuído."
+ability.eeef_tnk_fig_mer_mec_pla_toy_app.l1.desc,"Before taking damage: Spend 1 Gold to reduce incoming damage by 1 per 10 Gold held.","Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 1 por 10 de Ouro possuído."
+ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc,"Before taking damage: Spend 1 Gold to reduce incoming damage by 2 per 10 Gold held.","Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 2 por 10 de Ouro possuído."
+ability.eeef_tnk_fig_mer_mec_pla_toy_app.l3.desc,"Before taking damage: Spend 1 Gold to reduce incoming damage by 3 per 10 Gold held.","Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 3 por 10 de Ouro possuído."
+EW??TnkSupMerAniPlaToyCos.name,EW??TnkSupMerAniPlaToyCos,EW??TnkSupMerAniPlaToyCos
+EW??TnkSupMerAniPlaToyCos.desc,"Turn start: If holding at least 10 Gold, spend 1 Gold to gain +1 / +2 / +3 HP and PWR per 10 Gold held.","Início do turno: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para ganhar +1 / +2 / +3 de Vida e Poder por 10 de Ouro possuído."
+ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l1.desc,"Turn start: Spend 1 Gold to gain +1 HP and +1 PWR per 10 Gold held.","Início do turno: Gasta 1 de Ouro para ganhar +1 de Vida e +1 de Poder por 10 de Ouro possuído."
+ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l2.desc,"Turn start: Spend 1 Gold to gain +2 HP and +2 PWR per 10 Gold held.","Início do turno: Gasta 1 de Ouro para ganhar +2 de Vida e +2 de Poder por 10 de Ouro possuído."
+ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l3.desc,"Turn start: Spend 1 Gold to gain +3 HP and +3 PWR per 10 Gold held.","Início do turno: Gasta 1 de Ouro para ganhar +3 de Vida e +3 de Poder por 10 de Ouro possuído."
+item.claim_ticket.name,Claim Ticket,Bilhete de Reivindicação
+item.claim_ticket.desc,"When the holder dies, earn 1 Gold.","Quando o portador morre, ganha 1 de Ouro."
+ability.item_claim_ticket.desc,"When holder dies, earn 1 Gold.","Quando o portador morre, ganha 1 de Ouro."
+item.interest_ledger.name,Interest Ledger,Livro-Razão de Juros
+item.interest_ledger.desc,"Whenever 1 Gold is earned, heal the holder for 1 HP.","Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+ability.item_interest_ledger.desc,"Whenever 1 Gold is earned, heal the holder for 1 HP.","Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+item.loaded_contract.name,Loaded Contract,Contrato Turbinado
+item.loaded_contract.desc,"Whenever 1 Gold is earned, the holder gains +1 PWR.","Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+ability.item_loaded_contract.desc,"Whenever 1 Gold is earned, the holder gains +1 PWR.","Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+item.golden_seal.name,Golden Seal,Selo Dourado
+item.golden_seal.desc,"Dynamically grants +1 HP and +1 PWR for every full 10 Gold currently held.","Concede dinamicamente +1 de Vida e +1 de Poder para cada 10 de Ouro atualmente possuído."
+ability.item_golden_seal.desc,"Dynamically grants +1 HP and +1 PWR per 10 Gold currently held.","Concede dinamicamente +1 de Vida e +1 de Poder por 10 de Ouro atualmente possuído."
+item.mercenary_emblem.name,Mercenary Emblem,Emblema do Mercenário
+item.mercenary_emblem.desc,"Grants Mercenary trait. Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR.","Concede o traço Mercenário. Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+ability.item_mercenary_emblem.desc,"Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR.","Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+trinket.mercenary_sigil.name,Mercenary Sigil,Sigilo do Mercenário
+trinket.mercenary_sigil.desc,"Enables and tracks the cumulative Mercenary trait levels.","Ativa e rastreia os níveis cumulativos do traço Mercenário."
+trinket.trait_mercenary.name,Mercenary Sigil,Sigilo do Mercenário
+trinket.trait_mercenary.desc,"Mercenary trait effects activate at 2, 3, 4, and 5 units.","Os efeitos do traço Mercenário são ativados com 2, 3, 4 e 5 unidades."
+trinket.recruiting_charm.name,Recruiting Charm,Amuleto de Recrutamento
+trinket.recruiting_charm.desc,"At turn start, if you have at least 1 Gold and an open bench slot, spend 1 Gold to hire one Level 1 ?MerSpe.","No início do turno, se você tiver pelo menos 1 de Ouro e um espaço aberto no banco, gasta 1 de Ouro para contratar um ?MerSpe de Nível 1."
+ability.trinket_recruiting_charm.desc,"At turn start, spend 1 Gold to hire a Level 1 ?MerSpe if a bench slot is open.","No início do turno, gasta 1 de Ouro para contratar um ?MerSpe Nível 1 se houver espaço no banco."
+trinket.wanted_poster.name,Wanted Poster,Cartaz de Procurado
+trinket.wanted_poster.desc,"At turn start, mark a random unmarked enemy with Bounty.","No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
+ability.trinket_wanted_poster.desc,"At turn start, mark a random unmarked enemy with Bounty.","No início do turno, marca um inimigo aleatório desmarcado com Recompensa."

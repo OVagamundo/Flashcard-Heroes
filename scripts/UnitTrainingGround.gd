@@ -3,7 +3,7 @@ class_name UnitTrainingGround
 extends Control
 
 ## Unit Training Ground - Train units' HP or PWR using flashcard tokens
-## Mirrors BlackMarket UI flow with training-specific drop zones
+## Mirrors Shrine UI flow with training-specific drop zones
 
 const TRAIN_COST_GOLD: int = 5
 const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
@@ -101,7 +101,7 @@ func _update_localized_text() -> void:
 	open_inventory_button.text = tr("ui.utg_btn")
 	leave_button.text = tr("ui.leave")
 
-# --- Inventory helpers (reused from BlackMarket pattern) ---
+# --- Inventory helpers (reused from Shrine pattern) ---
 
 func _is_run_inventory_source(source_loc: LocationIdentifier) -> bool:
 	return String(source_loc.container).begins_with("RunInventoryT")
@@ -596,7 +596,7 @@ func _close_training_popup() -> void:
 	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is CloseTrainingPopupAction:
 		ActionQueue.finish_action(ActionQueue.get_active_action())
 
-# --- Animation helpers (reused from BlackMarket pattern) ---
+# --- Animation helpers (reused from Shrine pattern) ---
 
 func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallView:
 	var anim_ball = GachaBallViewScene.instantiate()

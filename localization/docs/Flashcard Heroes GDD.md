@@ -119,7 +119,7 @@ We distinguish between two distinct merging pathways:
 - **Trinkets**: Non-GachaBall items providing run-wide passive bonuses.
 - **Encounters**: Choices that define your run's journey and difficulty scaling, including:
     - **Battles**: Common, Elite, and Boss encounters. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
-    - **Shops**: Standard **Shop** (buy, reroll, or remove/transform GachaBalls) and the **Black Market** (specialized vendor with exotic or rare inventory).
+    - **Shops & Shrines**: Standard **Shop** (buy or reroll GachaBalls) and the **Shrine** (specialized encounter offering unit removal and transformations).
     - **Standalone Encounters**: Dedicated sites for permanent improvements: **Merge Encounter** (advanced gachaball combining bypassing recipes) and **Unit Training Ground** (stat-boosting projectile training minigame).
     - **Surprise Events**: Randomly selected mini-encounters including the **Rest Site** (Hero HP boosts), **Gambling Den** (Gold boosts), and **Training Grounds** (Hero PWR boosts).
 - **Ability System**: Event-driven (triggers like `ON_ATTACK`, `ON_DEATH`). Every unit an items has an ability or more besides sometimes passive stats.

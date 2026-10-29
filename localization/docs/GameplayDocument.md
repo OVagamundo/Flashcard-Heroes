@@ -207,7 +207,7 @@ Difficulty increases as the player resolves nodes and advances the Day counter, 
 ## 11.1 Standard Nodes
 *   **Regular Battles**: Standard budget-based combat encounters.
 *   **Shops**: Offer a random selection of GachaBalls. Players can spend Gold to reroll the shop's selection, with the cost escalating on subsequent rerolls during the same visit.
-*   **Black Market**: Specialized nodes for curating deck composition. Players spend Gold to permanently **Remove** a GachaBall from their Run Inventory (with escalating costs) or **Transform** a GachaBall into a random alternative of the same tier (flat cost).
+*   **Shrine**: Specialized nodes for curating deck composition. Players spend Gold to permanently **Remove** a GachaBall from their Run Inventory (with escalating costs) or **Transform** a GachaBall into a random alternative of the same tier (flat cost).
 *   **Post-Battle Rewards**: Displays a lineup of random GachaBalls. The player can drag them to the **Collect** zone to add them to their Run Inventory, or to the **Sell** zone to discard them for Gold. Any uncollected rewards are automatically collected when leaving the node.
 
 ## 11.2 Standalone Encounters
@@ -275,10 +275,10 @@ To enforce a fully deterministic architecture (for replays, headless QA bots, an
 - `SellRewardAction`: Dragging a drawn reward to the "Sell" drop zone. (Drag & Drop).
 - `LeaveRewardAction`: Clicking the Leave button. (Click / Tap).
 
-**5. Black Market Node (Black Market Context)**
-- `RemoveBlackMarketAction`: Dragging an inventory item into the "Remove" zone. (Drag & Drop).
-- `TransformBlackMarketAction`: Dragging an inventory item into the "Transform" zone. (Drag & Drop).
-- `LeaveBlackMarketAction`: Clicking the Leave button. (Click / Tap).
+**5. Shrine Node (Shrine Context)**
+- `RemoveShrineAction`: Dragging an inventory item into the "Remove" zone. (Drag & Drop).
+- `TransformShrineAction`: Dragging an inventory item into the "Transform" zone. (Drag & Drop).
+- `LeaveShrineAction`: Clicking the Leave button. (Click / Tap).
 
 **6. Rest Site Node (Rest Site Context)**
 - `StudyRestSiteAction`: Clicking the "Study" book icon to start the Flashcard Minigame. (Click / Tap).

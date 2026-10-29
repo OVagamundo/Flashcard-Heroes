@@ -58,6 +58,8 @@ func _exit_tree() -> void:
 			GameManager._active_main_node.hide_action_instruction()
 		if GameManager._active_main_node.has_method("hide_reward_drop_zones"):
 			GameManager._active_main_node.hide_reward_drop_zones()
+		if GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
+			GameManager._active_main_node.hide_empty_trinket_slots()
 
 var _last_inventory_open: bool = false
 func _process(_delta: float) -> void:
@@ -143,7 +145,8 @@ func populate(context: Dictionary) -> void:
 	back_to_path_button.modulate.a = 0.0
 	back_to_path_button.disabled = true
 	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	gold_button.visible = false # Keep hidden, replaced by Sell zone
+	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("show_empty_trinket_slots"):
+		GameManager._active_main_node.show_empty_trinket_slots()
 	
 	_animate_staggered_entry(created_views)
 
@@ -442,6 +445,8 @@ func _complete_choice() -> void:
 			ball_tween.tween_callback(ball.queue_free)
 	
 	_reward_instances.clear()
+	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
+		GameManager._active_main_node.hide_empty_trinket_slots()
 
 func _clear_reward_slot(index: int) -> void:
 	var slot_nodes = choices_container.get_children()
@@ -464,8 +469,11 @@ func _on_back_to_path_pressed() -> void:
 		execute_leave_visuals()
 
 func execute_leave_visuals() -> void:
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-		GameManager._active_main_node.hide_reward_drop_zones()
+	if is_instance_valid(GameManager._active_main_node):
+		if GameManager._active_main_node.has_method("hide_reward_drop_zones"):
+			GameManager._active_main_node.hide_reward_drop_zones()
+		if GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
+			GameManager._active_main_node.hide_empty_trinket_slots()
 	SignalBus.emit_signal("path_choice_scene_requested")
 	queue_free()
 
@@ -502,6 +510,7 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	
 	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 400)
 	var tween = create_tween()
+	var slot_hidden: bool = false
 	tween.tween_method(func(t: float):
 		var eased_t = pow(t, 0.55)
 		var current_scale = lerp(2.0, 1.0, t) 
@@ -509,6 +518,12 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
 		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
 		anim_ball.scale = Vector2(current_scale, current_scale)
+		
+		# Disappear the target slot just before taking its place (at 85% progress)
+		if t >= 0.85 and not slot_hidden:
+			slot_hidden = true
+			if is_instance_valid(target_slot) and "show_empty_trinket_slot" in target_slot:
+				target_slot.show_empty_trinket_slot = false
 	, 0.0, 1.0, 0.45)
 	await tween.finished
 	anim_ball.queue_free()

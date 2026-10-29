@@ -85,14 +85,10 @@ static func register_test_item_on_unit(bm, item_def_id: StringName, unit_uuid: S
 		push_warning("[TestMode] Unit %s has no empty equipment slots" % unit_uuid)
 		return null
 	
-	# Create item through the same flow as battle inventory operations.
+	# Create and equip item atomically without intermediate bench placement.
 	var item_inst: GachaBallInstance = GachaBallInstance.new()
 	item_inst.initialize(item_def)
-	if not bm.bm_add_instance(item_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH):
-		push_warning("[TestMode] Failed to add item to PlayerBench before equip")
-		return null
-	if not bm.bm_equip_item(item_inst.ball_uuid, unit_uuid, -1):
-		bm.bm_remove_instance(item_inst.ball_uuid)
+	if not bm.bm_register_and_equip_item(item_inst, unit_uuid, -1):
 		push_warning("[TestMode] Failed to equip item %s on unit %s" % [item_def_id, unit_uuid])
 		return null
 	return item_inst

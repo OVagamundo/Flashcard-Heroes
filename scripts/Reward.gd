@@ -679,8 +679,12 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 	anim_ball.populate(null, visual_data)
 	anim_ball.pivot_offset = anim_ball.size / 2.0
 	
+	if is_instance_valid(target_slot) and "show_empty_trinket_slot" in target_slot:
+		target_slot.show_empty_trinket_slot = true
+
 	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 400)
 	var tween = create_tween()
+	var slot_hidden: bool = false
 	tween.tween_method(func(t: float):
 		var eased_t = pow(t, 0.55)
 		var scale_eased = 1.0 - pow(1.0 - t, 2)
@@ -689,6 +693,12 @@ func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictiona
 		var inv_t = 1.0 - eased_t
 		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
 		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
+		
+		# Disappear the target slot just before taking its place (at 85% progress)
+		if t >= 0.85 and not slot_hidden:
+			slot_hidden = true
+			if is_instance_valid(target_slot) and "show_empty_trinket_slot" in target_slot:
+				target_slot.show_empty_trinket_slot = false
 	, 0.0, 1.0, 0.45)
 	
 	await tween.finished
@@ -716,8 +726,11 @@ func execute_leave_visuals() -> void:
 	tier3_draw_button.disabled = true
 	
 	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
-		main_node.hide_reward_drop_zones()
+	if is_instance_valid(main_node):
+		if main_node.has_method("hide_reward_drop_zones"):
+			main_node.hide_reward_drop_zones()
+		if main_node.has_method("hide_empty_trinket_slots"):
+			main_node.hide_empty_trinket_slots()
 	
 	# Collect all remaining sequentially
 	for i in range(_prizes.size()):

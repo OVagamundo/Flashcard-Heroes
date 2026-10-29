@@ -8,7 +8,7 @@ var director_run_state: DirectorRunState = DirectorRunState.new()
 
 ## Slot limits
 const MAX_UNITS := 5
-const MAX_TRINKETS := 5
+const MAX_TRINKETS := C.ENEMY_TRINKET_CAP
 
 func _update_director_run_state() -> void:
 	if is_instance_valid(GameManager.run_state):

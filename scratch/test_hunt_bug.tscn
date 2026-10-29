@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://c34huntertest"]
+
+[ext_resource type="Script" path="res://scratch/test_hunt_bug.gd" id="1_test"]
+
+[node name="TestHuntBug" type="Node"]
+script = ExtResource("1_test")

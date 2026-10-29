@@ -1,0 +1,11 @@
+[gd_resource type="Resource" script_class="ConditionDefinition" load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="1_cond"]
+
+[resource]
+script = ExtResource("1_cond")
+condition_type = &"MIN_GOLD"
+parameters = {
+"min_gold": 10
+}
+invert_result = false

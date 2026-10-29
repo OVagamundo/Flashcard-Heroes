@@ -348,6 +348,51 @@ The Class and Visual Sigils list the unit-count thresholds for their abilities:
 | **Visual Archetypes** | Food, Mecha, Animal, Plant, Toy, Appliance, Costume | 2 / 3 / 4 / 5 Units | **Food**: Feeds ally behind when hurt (+HP/+PWR), passes all PWR on death.<br>**Mecha**: Spikes & Armor, Static on attack & hit, merge laser strikes, death revenge salvos.<br>**Animal**: Random alpha +PWR, healing per attack (scaling with PWR).<br>**Plant**: Frontline Spikes, turn-start healing, team Spikes & HP, converts incoming heals to Spikes.<br>**Toy**: Melee Static reflection, death explosion detonating highest Static enemy.<br>**Appliance**: Static immunity, pre-combat Static/Burn, status reflection, converts debuffs to PWR/HP.<br>**Costume**: Pre-combat status and stat theft from mirror enemies and highest-status targets. |
 """
 
+    # Add Trait Distribution section
+    md += """
+
+### Trait Distribution & Balance Matrix
+The game operates on a closed 36-unit active run pool consisting of the **25 Neutral Base Units** ($4\\text{ T1} + 6\\text{ T2} + 15\\text{ T3}$) and an **11-Unit Hero Content Pack** ($1\\text{ T1} + 4\\text{ T2} + 6\\text{ T3}$).
+
+#### 1. Elemental Souls Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Elemental traits scale on total accumulated souls across units (thresholds: 3, 6, 12, 20, 32).*
+
+| Element | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter [?] (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Rolled Element (`?`)** | 1 / 3 / 15 | **19** | 1 / 5 / 15 | **21** | **40** |
+| **Other Elements (Each)** | 1 / 3 / 15 | **19** | 0 / 1 / 3 | **4** | **23** |
+
+*Note: The neutral base roster is 100% symmetrical (19 souls per element). With Bounty Hunter's starter unit (`?MerSpe`) dynamically inheriting the Hero's rolled elemental soul (`?`), whichever element is assigned contributes 21 souls, while the other three elements contribute 4 souls each (40 vs 23 total in the 36-unit active pool). Because `?` is rolled with equal 25% probability across all 4 elements, the expected distribution across all runs is mathematically 100% symmetrical (27.25 expected souls per element).*
+
+#### 2. Class Traits Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Class traits scale on active unit count (thresholds: 2, 3, 4, 5).*
+
+| Class | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Fighter** | 1 / 1 / 4 | **6** | 0 / 1 / 3 | **4** | **10** |
+| **Tank** | 1 / 2 / 3 | **6** | 0 / 1 / 3 | **4** | **10** |
+| **Support** | 1 / 0 / 7 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Specialist** | 1 / 3 / 5 | **9** | 1 / 1 / 3 | **5** | **14** |
+| **Mercenary** | 0 / 0 / 0 | **0** | 1 / 4 / 6 | **11** | **11** |
+
+*Note: Bounty Hunter is perfectly balanced across Fighter, Tank, and Support (4 each, with 1 in T2 and 3 in T3). Specialist has 5 (+1 in T1) because `?MerSpe` is a Specialist. Mercenary provides an engine across all tiers (1 T1, 4 T2, 6 T3).*
+
+#### 3. Visual Archetype Traits Distribution (Tier 1 / Tier 2 / Tier 3 / Total)
+*Visual traits scale on active unit count (thresholds: 2, 3, 4, 5).*
+
+| Visual Archetype | Neutral Base (T1 / T2 / T3) | Neutral Total | Bounty Hunter (T1 / T2 / T3) | BH Total | Combined Active Pool (36 Units) |
+|---|:---:|:---:|:---:|:---:|:---:|
+| **Animal** | 1 / 2 / 5 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Appliance** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Costume** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Food** | 1 / 2 / 4 | **7** | 0 / 1 / 3 | **4** | **11** |
+| **Mecha** | 1 / 1 / 6 | **8** | 0 / 1 / 3 | **4** | **12** |
+| **Plant** | 1 / 1 / 3 | **5** | 0 / 1 / 3 | **4** | **9** |
+| **Toy** | 2 / 2 / 6 | **10** | 0 / 2 / 5 | **7** | **17** |
+
+*Note: `?MerSpe` carries no visual traits, so Bounty Hunter units inherit visual tags purely from neutral recipe parents. In the neutral Tier 1 base, Toy appears on two units (`ASpeFodToy` and `ETnkPlaToy`), causing Toy to inherit into 2 Tier 2 and 5 Tier 3 Mercenary units. All other 6 visual archetypes are perfectly balanced with 1 in T2 and 3 in T3 (4 each in BH).*
+"""
+
     with open(DOCS_MD_FILE, "w", encoding="utf-8") as f:
         f.write(md)
 

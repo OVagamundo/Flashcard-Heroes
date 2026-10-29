@@ -2,7 +2,7 @@
 extends Node
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
-const BLACK_MARKET_SCENE = preload("res://scenes/BlackMarket.tscn")
+const SHRINE_SCENE = preload("res://scenes/Shrine.tscn")
 const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
 
 ## Manages the persistent state of the current run by holding a RunState resource.
@@ -65,7 +65,7 @@ func _ready() -> void:
 	SignalBus.shop_purchase_requested.connect(_on_shop_purchase_requested)
 	SignalBus.shop_reroll_requested.connect(_on_shop_reroll_requested)
 	SignalBus.reward_reroll_requested.connect(_on_reward_reroll_requested)
-	SignalBus.black_market_action_requested.connect(_on_black_market_action_requested)
+	SignalBus.shrine_action_requested.connect(_on_shrine_action_requested)
 	SignalBus.path_choice_scene_requested.connect(_on_path_choice_scene_requested)
 
 # ADD THESE TWO FUNCTIONS
@@ -757,7 +757,9 @@ func get_instance_from_location(loc: LocationIdentifier) -> GachaBallInstance:
 
 	# Step 1: Determine the current context (battle or run) to get the right data source.
 	var data_owner: Object
-	if is_in_battle:
+	if String(loc.container).begins_with("RunInventoryT"):
+		data_owner = run_state
+	elif is_in_battle:
 		data_owner = _active_battle_manager
 	else:
 		data_owner = run_state
@@ -836,10 +838,10 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				_active_main_node._on_battle_start_requested(encounter_def)
 		"SHOP":
 			_enter_shop()
-		"BLACK_MARKET":
+		"SHRINE":
 			if is_instance_valid(_active_main_node):
-				_active_main_node.load_content(BLACK_MARKET_SCENE)
-		"REST":
+				_active_main_node.load_content(SHRINE_SCENE)
+		"MERGE":
 			if is_instance_valid(_active_main_node):
 				_active_main_node.load_content(preload("res://scenes/MergeEncounter.tscn"))
 		"DOJO":
@@ -1071,7 +1073,7 @@ func use_gacha_discount(tier: int) -> void:
 func reset_gacha_discounts() -> void:
 	gacha_discounts_used = {1: false, 2: false, 3: false}
 
-func get_black_market_transform_cost() -> int:
+func get_shrine_transform_cost() -> int:
 	return 5
 
 func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDefinition:
@@ -1091,7 +1093,7 @@ func get_transform_result(source_definition: GachaBallDefinition) -> GachaBallDe
 		return null
 	return RNGManager.gacha_rng.pick_random(eligible)
 
-func _on_black_market_action_requested(payload: Dictionary) -> void:
+func _on_shrine_action_requested(payload: Dictionary) -> void:
 	if not is_instance_valid(run_state):
 		return
 		
@@ -1100,8 +1102,8 @@ func _on_black_market_action_requested(payload: Dictionary) -> void:
 		var instance_uuid: String = payload.instance_uuid
 		if run_state.spend_gold(cost):
 			run_state.remove_instance(instance_uuid)
-			if run_state.has_method("increase_black_market_remove_cost"):
-				run_state.increase_black_market_remove_cost()
+			if run_state.has_method("increase_shrine_remove_cost"):
+				run_state.increase_shrine_remove_cost()
 				
 	elif payload.type == "transform":
 		var cost: int = payload.cost
@@ -1178,8 +1180,8 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 			var candidate_types = [
 				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
 				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
-				{"type": "REST", "subtype": "", "name": "ui.rest_node", "base_w": 100},
-				{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "base_w": 100},
+				{"type": "MERGE", "subtype": "", "name": "ui.merge_node", "base_w": 100},
+				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100},
 				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
 				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
 			]
@@ -1218,8 +1220,8 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 			var candidate_types = [
 				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
 				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
-				{"type": "REST", "subtype": "", "name": "ui.rest_node", "base_w": 100},
-				{"type": "BLACK_MARKET", "subtype": "", "name": "ui.black_market_node", "base_w": 100},
+				{"type": "MERGE", "subtype": "", "name": "ui.merge_node", "base_w": 100},
+				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100},
 				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
 				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
 			]

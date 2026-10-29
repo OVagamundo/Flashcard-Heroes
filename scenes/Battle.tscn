@@ -4,9 +4,8 @@
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 [ext_resource type="Script" path="res://scripts/TestEnvironmentManager.gd" id="5_testenv"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/battle.png" id="8_bg"]
+[ext_resource type="Texture2D" uid="uid://bas2ifuq47flt" path="res://assets/PixelArt/ui/BGs/BattleSpring.png" id="8_bg"]
 
-[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_controls"]
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -33,7 +32,7 @@ stretch_mode = 6
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
 
-[node name="TeamAreas" type="HBoxContainer" parent="."]
+[node name="TeamAreas" type="Control" parent="."]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -42,192 +41,157 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-theme_override_constants/separation = 0
-alignment = 1
 
-[node name="PlayerArea" type="VBoxContainer" parent="TeamAreas"]
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
-theme_override_constants/separation = 80
-alignment = 1
-
-[node name="PlayerLineup" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
+[node name="PlayerLineup" type="HBoxContainer" parent="TeamAreas"]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-mouse_filter = 2
+top_level = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 342.0
+offset_right = 960.0
+offset_bottom = 530.0
+custom_minimum_size = Vector2(940, 188)
 theme_override_constants/separation = 0
-alignment = 1
-
-[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/PlayerLineup"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="BenchAndInventory" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
-layout_mode = 2
-size_flags_horizontal = 3
+alignment = 0
 mouse_filter = 2
-theme_override_constants/separation = 0
-alignment = 1
 
-[node name="PlayerBench" type="HBoxContainer" parent="TeamAreas/PlayerArea/BenchAndInventory"]
+[node name="LineupSlot0" parent="TeamAreas/PlayerLineup" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot1" parent="TeamAreas/PlayerLineup" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot2" parent="TeamAreas/PlayerLineup" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot3" parent="TeamAreas/PlayerLineup" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot4" parent="TeamAreas/PlayerLineup" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="EnemyLineupContainer" type="HBoxContainer" parent="TeamAreas"]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 2
+top_level = true
+layout_mode = 0
+offset_left = 960.0
+offset_top = 342.0
+offset_right = 1900.0
+offset_bottom = 530.0
+custom_minimum_size = Vector2(940, 188)
 theme_override_constants/separation = 0
-alignment = 1
-
-[node name="BenchSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="BenchSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="BenchSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="BenchSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="BenchSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="EnemyArea" type="VBoxContainer" parent="TeamAreas"]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
+alignment = 0
 mouse_filter = 2
-theme_override_constants/separation = 80
-alignment = 1
 
-[node name="EnemyLineupContainer" type="HBoxContainer" parent="TeamAreas/EnemyArea"]
-unique_name_in_owner = true
+[node name="LineupSlot0" parent="TeamAreas/EnemyLineupContainer" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 4
-mouse_filter = 2
+
+[node name="LineupSlot1" parent="TeamAreas/EnemyLineupContainer" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot2" parent="TeamAreas/EnemyLineupContainer" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot3" parent="TeamAreas/EnemyLineupContainer" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="LineupSlot4" parent="TeamAreas/EnemyLineupContainer" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="PlayerBench" type="HBoxContainer" parent="TeamAreas"]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 0
+offset_left = 20.0
+offset_top = 591.0
+offset_right = 1524.0
+offset_bottom = 779.0
+custom_minimum_size = Vector2(1504, 188)
 theme_override_constants/separation = 0
-alignment = 1
-
-[node name="LineupSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="LineupSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyLineupContainer"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
-
-[node name="EnemyBenchComposite" type="VBoxContainer" parent="TeamAreas/EnemyArea"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 0
+alignment = 0
 mouse_filter = 2
-theme_override_constants/separation = 10
-alignment = 1
 
-[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+[node name="BenchSlot0" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot1" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot2" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot3" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot4" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot5" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot6" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="BenchSlot7" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(188, 188)
+layout_mode = 2
+
+[node name="EnemyTrinketBar" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
+top_level = true
+layout_mode = 0
+offset_left = 1018.0
+offset_top = 163.0
+offset_right = 1900.0
+offset_bottom = 261.0
+custom_minimum_size = Vector2(882, 98)
 theme_override_constants/separation = 0
-alignment = 1
+alignment = 0
+mouse_filter = 2
 
-[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
+[node name="TrinketSlot0" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
 
-[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
+[node name="TrinketSlot1" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
 
-[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
+[node name="TrinketSlot2" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
 
-[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
+[node name="TrinketSlot3" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
 
-[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
-custom_minimum_size = Vector2(192, 192)
-layout_mode = 2
-size_flags_horizontal = 3
-mouse_filter = 1
+[node name="TrinketSlot4" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
+
+[node name="TrinketSlot5" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
+
+[node name="TrinketSlot6" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
+
+[node name="TrinketSlot7" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
+
+[node name="TrinketSlot8" parent="EnemyTrinketBar" instance=ExtResource("5_slotview")]
+custom_minimum_size = Vector2(98, 98)
 
 [node name="BottomControlRow" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
@@ -245,66 +209,6 @@ mouse_filter = 2
 theme_override_constants/separation = 10
 alignment = 2
 
-[node name="CombatControlsPanel" type="PanelContainer" parent="BottomControlRow"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-size_flags_vertical = 4
-theme_override_styles/panel = SubResource("StyleBoxEmpty_controls")
-
-[node name="OuterVBox" type="VBoxContainer" parent="BottomControlRow/CombatControlsPanel"]
-layout_mode = 2
-alignment = 1
-
-[node name="ControlsRow" type="HBoxContainer" parent="BottomControlRow/CombatControlsPanel/OuterVBox"]
-layout_mode = 2
-theme_override_constants/separation = 6
-alignment = 1
-
-[node name="SpeedLabel" type="Label" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_color = Color(0.7, 0.7, 0.7, 1)
-text = "Speed:"
-
-[node name="PauseBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 54)
-layout_mode = 2
-focus_mode = 0
-text = "⏸"
-
-[node name="Speed1xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 54)
-layout_mode = 2
-focus_mode = 0
-text = "1x"
-
-[node name="Speed2xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 54)
-layout_mode = 2
-focus_mode = 0
-text = "2x"
-
-[node name="Speed4xBtn" type="Button" parent="BottomControlRow/CombatControlsPanel/OuterVBox/ControlsRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(72, 54)
-layout_mode = 2
-focus_mode = 0
-text = "4x"
-
-
-[node name="DiscardPileButton" type="Button" parent="BottomControlRow"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(240, 54)
-layout_mode = 2
-size_flags_vertical = 4
-mouse_filter = 1
-theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
-theme_override_constants/outline_size = 0
-text = "Discard Pile (0)"
 
 [node name="EndTurnButton" type="Button" parent="BottomControlRow"]
 unique_name_in_owner = true

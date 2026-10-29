@@ -10,7 +10,7 @@ msgid "hero.name"
 msgstr "Bounty Hunter"
 
 msgid "hero.desc"
-msgstr "Gain 1 gold when this hero kills an enemy. When an ally is defeated, gain +1 HP and +1 PWR."
+msgstr "Specializes in accumulating and spending Gold. Fixed Trait: Mercenary (Starts with Mercenary Sigil). At run start, receives 1 random Elemental soul and 1 random Class or Visual trait."
 
 msgid "enemy_hero.name"
 msgstr "Enemy Hero"
@@ -220,7 +220,7 @@ msgid "hero_timekeeper.desc"
 msgstr "Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites. At the start of each turn, grants +2 HP to units in front and +2 PWR to units behind."
 
 msgid "ability.hero_timekeeper_gold_on_kill.desc"
-msgstr "Gain 1 gold when this hero kills an enemy."
+msgstr "Bounty: When this hero defeats an enemy, earn 1 Gold."
 
 msgid "ability.hero_timekeeper_time_warp.desc"
 msgstr "Minigame: +1s correct, -0.5s wrong. Gains 5 tokens per turn in Battle and Rest Sites."
@@ -550,7 +550,7 @@ msgid "ui.take_gold_amount"
 msgstr "Take %d Gold instead"
 
 msgid "ui.discard_pile_count"
-msgstr "Discard Pile (%d)"
+msgstr "Discard (%d)"
 
 msgid "ui.tokens_count"
 msgstr "Tokens: %d"
@@ -570,8 +570,11 @@ msgstr "Elite Battle"
 msgid "ui.shop_node"
 msgstr "Shop"
 
-msgid "ui.black_market_node"
-msgstr "Black Market"
+msgid "ui.shrine_node"
+msgstr "Shrine"
+
+msgid "ui.merge_node"
+msgstr "Merge Encounter"
 
 msgid "ui.rest_node"
 msgstr "Rest Site"
@@ -588,16 +591,16 @@ msgstr "Training Grounds"
 msgid "ui.gambling_den"
 msgstr "Gambling Den"
 
-msgid "ui.black_market_title"
-msgstr "Black Market"
+msgid "ui.shrine_title"
+msgstr "Shrine"
 
-msgid "ui.black_market_open_inventory"
+msgid "ui.shrine_open_inventory"
 msgstr "REMOVE OR TRANSFORM"
 
-msgid "ui.black_market_prompt"
+msgid "ui.shrine_prompt"
 msgstr "What would you like to do with %s?"
 
-msgid "ui.black_market_instructions"
+msgid "ui.shrine_instructions"
 msgstr "Drop a GachaBall here to Remove (%d Gold) or Transform (%d Gold) it."
 
 msgid "ui.remove_cost"
@@ -606,11 +609,11 @@ msgstr "Remove (%d Gold)"
 msgid "ui.transform_cost"
 msgstr "Transform (%d Gold)"
 
-msgid "tutorial.black_market_intro.title"
+msgid "tutorial.shrine_intro.title"
 msgstr "Removing and Transforming"
 
-msgid "tutorial.black_market_intro"
-msgstr "The Black Market lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase."
+msgid "tutorial.shrine_intro"
+msgstr "The Shrine lets you shape your Gacha Collection for this run.\n\nRemove a capsule to take it out of your current collection for the rest of the run.\nRemoval costs 5 gold and increases by 1 each time for the rest of the run.\n\nTransform a capsule into a different random capsule of the same tier.\nTransforming always costs 5 gold and does not increase."
 
 msgid "tutorial.training_grounds"
 msgstr "A place to hone your hero's power. Earn tokens from the minigame to spend on these machines for permanent Power upgrades."
@@ -851,6 +854,12 @@ msgstr "Static"
 
 msgid "STATUS_STATIC_DESC"
 msgstr "When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn."
+
+msgid "STATUS_BOUNTY"
+msgstr "Bounty"
+
+msgid "STATUS_BOUNTY_DESC"
+msgstr "When this unit is defeated by any means, awards 1 Gold. Stays until this unit dies or the battle ends."
 
 msgid "trinket.novice_insignia.name"
 msgstr "Novice Insignia"
@@ -1380,7 +1389,7 @@ msgstr "Drag or click here to\n[font_size=72]TRANSFORM[/font_size]"
 msgid "ui.drop_zone_sell_multi"
 msgstr "Drag or click here to\n[font_size=72]SELL[/font_size]"
 
-msgid "ui.bm_instruction"
+msgid "ui.shrine_instruction"
 msgstr "Move the gacha ball here to: Transform or Remove.\nClick anywhere to close the inventory."
 
 msgid "ui.reward_instruction"
@@ -1689,16 +1698,16 @@ msgstr "Merge ({cost} Gold)"
 msgid "ui.btn_swap"
 msgstr "Swap"
 
-msgid "ui.black_market_desc"
+msgid "ui.shrine_desc"
 msgstr "Shape your collection!\nRemove capsules for an increasing Gold cost,\nor Transform them into a random capsule of the same tier for 5 Gold."
 
 msgid "ui.shop_desc"
 msgstr "Spend Gold to expand your collection. Reroll the stock if needed, but the reroll price rises each time!"
 
-msgid "ui.bm_drop_transform"
+msgid "ui.shrine_drop_transform"
 msgstr "Drag or click here to\n[font_size=72]TRANSFORM[/font_size]\n({cost} Gold)"
 
-msgid "ui.bm_drop_remove"
+msgid "ui.shrine_drop_remove"
 msgstr "Drag or click here to\n[font_size=72]REMOVE[/font_size]\n({cost} Gold)"
 
 msgid "ui.utg_desc"
@@ -2222,4 +2231,277 @@ msgstr "When a unit with the Costume trait enters the board, it gains +1 HP and 
 
 msgid "trinket.trinity_charm.name"
 msgstr "Trinity Charm"
+
+msgid "trait.mercenary.name"
+msgstr "Mercenary"
+
+msgid "trait.mercenary.desc"
+msgstr "Counts Mercenary-tagged units in the active lineup. Unlocks bonuses whenever Gold is earned or held."
+
+msgid "trait.mercenary.2"
+msgstr "Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP."
+
+msgid "trait.mercenary.3"
+msgstr "In addition to Bronze, whenever Gold is earned, the Hero gains +1 PWR."
+
+msgid "trait.mercenary.4"
+msgstr "In addition to Bronze and Silver, at pre-combat each Mercenary unit gains +1 Armor for every full 10 Gold currently held."
+
+msgid "trait.mercenary.5"
+msgstr "In addition to all previous levels, earn 1 Gold at pre-combat once per turn."
+
+msgid "ability.trait_mercenary.desc"
+msgstr "Counts Mercenary units. Bronze: Lowest HP ally gains +1 HP when Gold is earned. Silver: Hero gains +1 PWR when Gold is earned. Gold: Mercenaries gain +1 Armor per 10 Gold pre-combat. Prismatic: Earn 1 Gold pre-combat."
+
+msgid "ability.trait_mercenary.bronze.desc"
+msgstr "Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP."
+
+msgid "ability.trait_mercenary.silver.desc"
+msgstr "Whenever Gold is earned, the Hero gains +1 PWR."
+
+msgid "ability.trait_mercenary.pre_combat.desc"
+msgstr "At pre-combat: At 4 Mercenaries, each gains +1 Armor per 10 Gold held. At 5 Mercenaries, earn 1 Gold once per turn."
+
+msgid "ability.trait_mercenary_on_gold_bronze.desc"
+msgstr "Whenever Gold is earned, the allied unit with the lowest current HP gains +1 HP."
+
+msgid "ability.trait_mercenary_on_gold_silver.desc"
+msgstr "Whenever Gold is earned, the Hero gains +1 PWR."
+
+msgid "ability.trait_mercenary_pre_combat.desc"
+msgstr "At pre-combat, earn 1 Gold if Prismatic (5 Mercenaries), and each Mercenary gains +1 Armor per 10 Gold held if Gold (4 Mercenaries)."
+
+msgid "?MerSpe.name"
+msgstr "?MerSpe"
+
+msgid "?MerSpe.desc"
+msgstr "Whenever 1 Gold is earned while this unit is in the active lineup, it gains +1 HP and +1 PWR."
+
+msgid "ability.e_mer_spe.desc"
+msgstr "Whenever 1 Gold is earned while in the active lineup, gain +1 HP and +1 PWR."
+
+msgid "?ASpeMerFodToy.name"
+msgstr "?ASpeMerFodToy"
+
+msgid "?ASpeMerFodToy.desc"
+msgstr "Pre-combat: Gain +1 / +2 / +3 PWR for every full 10 Gold held."
+
+msgid "ability.ea_spe_mer_fod_toy.l1.desc"
+msgstr "Pre-combat: Gain +1 PWR for every full 10 Gold held."
+
+msgid "ability.ea_spe_mer_fod_toy.l2.desc"
+msgstr "Pre-combat: Gain +2 PWR for every full 10 Gold held."
+
+msgid "ability.ea_spe_mer_fod_toy.l3.desc"
+msgstr "Pre-combat: Gain +3 PWR for every full 10 Gold held."
+
+msgid "E?TnkMerPlaToy.name"
+msgstr "E?TnkMerPlaToy"
+
+msgid "E?TnkMerPlaToy.desc"
+msgstr "Whenever 1 Gold is earned, gain +1 / +2 / +3 Armor and +1 / +2 / +3 Spikes."
+
+msgid "ability.ee_tnk_mer_pla_toy.l1.desc"
+msgstr "Whenever 1 Gold is earned, gain +1 Armor and +1 Spikes."
+
+msgid "ability.ee_tnk_mer_pla_toy.l2.desc"
+msgstr "Whenever 1 Gold is earned, gain +2 Armor and +2 Spikes."
+
+msgid "ability.ee_tnk_mer_pla_toy.l3.desc"
+msgstr "Whenever 1 Gold is earned, gain +3 Armor and +3 Spikes."
+
+msgid "F?FigMerMecApp.name"
+msgstr "F?FigMerMecApp"
+
+msgid "F?FigMerMecApp.desc"
+msgstr "When this ranged unit attacks, mark its target with Bounty. Defeating a marked unit awards 1 Gold."
+
+msgid "ability.ef_fig_mer_mec_app.l1.desc"
+msgstr "On attack, mark the target with Bounty if unmarked."
+
+msgid "ability.ef_fig_mer_mec_app.l2.desc"
+msgstr "On attack, mark the target and 1 random unmarked unit with Bounty."
+
+msgid "ability.ef_fig_mer_mec_app.l3.desc"
+msgstr "On attack, mark the target and adjacent units with Bounty."
+
+msgid "W?SupMerAniCos.name"
+msgstr "W?SupMerAniCos"
+
+msgid "W?SupMerAniCos.desc"
+msgstr "Whenever 1 Gold is earned, heal a random allied unit for 1 / 2 / 3 HP."
+
+msgid "ability.ew_sup_mer_ani_cos.l1.desc"
+msgstr "Whenever 1 Gold is earned, heal a random allied unit for 1 HP."
+
+msgid "ability.ew_sup_mer_ani_cos.l2.desc"
+msgstr "Whenever 1 Gold is earned, heal a random allied unit for 2 HP."
+
+msgid "ability.ew_sup_mer_ani_cos.l3.desc"
+msgstr "Whenever 1 Gold is earned, heal a random allied unit for 3 HP."
+
+msgid "E??ATnkSpeMerFodPlaToy.name"
+msgstr "E??ATnkSpeMerFodPlaToy"
+
+msgid "E??ATnkSpeMerFodPlaToy.desc"
+msgstr "Pre-combat: Spend 1 Gold to gain +1 / +2 / +3 Armor and Spikes per 10 Gold held."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc"
+msgstr "Pre-combat: Spend 1 Gold to gain +1 Armor and +1 Spikes per 10 Gold held."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l2.desc"
+msgstr "Pre-combat: Spend 1 Gold to gain +2 Armor and +2 Spikes per 10 Gold held."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l3.desc"
+msgstr "Pre-combat: Spend 1 Gold to gain +3 Armor and +3 Spikes per 10 Gold held."
+
+msgid "FW??FigSupMerAniMecAppCos.name"
+msgstr "FW??FigSupMerAniMecAppCos"
+
+msgid "FW??FigSupMerAniMecAppCos.desc"
+msgstr "On attack: Spend 1 Gold to deal +1 / +2 / +3 bonus damage per 10 Gold held."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l1.desc"
+msgstr "On attack: Spend 1 Gold to deal +1 bonus damage per 10 Gold held."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l2.desc"
+msgstr "On attack: Spend 1 Gold to deal +2 bonus damage per 10 Gold held."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l3.desc"
+msgstr "On attack: Spend 1 Gold to deal +3 bonus damage per 10 Gold held."
+
+msgid "W??ASupSpeMerFodAniToyCos.name"
+msgstr "W??ASupSpeMerFodAniToyCos"
+
+msgid "W??ASupSpeMerFodAniToyCos.desc"
+msgstr "Whenever Gold is earned, heal a random allied unit for 1 / 2 / 3 HP per 1 Gold earned."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l1.desc"
+msgstr "Whenever Gold is earned, heal a random allied unit for 1 HP."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l2.desc"
+msgstr "Whenever Gold is earned, heal a random allied unit for 2 HP."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc"
+msgstr "Whenever Gold is earned, heal a random allied unit for 3 HP."
+
+msgid "F??AFigSpeMerFodMecToyApp.name"
+msgstr "F??AFigSpeMerFodMecToyApp"
+
+msgid "F??AFigSpeMerFodMecToyApp.desc"
+msgstr "On attack: If holding at least 10 Gold, spend 1 Gold and apply 1 / 2 / 3 Burn per 10 Gold held."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l1.desc"
+msgstr "On attack: Spend 1 Gold to apply 1 Burn per 10 Gold held."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l2.desc"
+msgstr "On attack: Spend 1 Gold to apply 2 Burn per 10 Gold held."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l3.desc"
+msgstr "On attack: Spend 1 Gold to apply 3 Burn per 10 Gold held."
+
+msgid "EF??TnkFigMerMecPlaToyApp.name"
+msgstr "EF??TnkFigMerMecPlaToyApp"
+
+msgid "EF??TnkFigMerMecPlaToyApp.desc"
+msgstr "When hurt, before damage: If holding at least 10 Gold, spend 1 Gold to mitigate 1 / 2 / 3 incoming damage per 10 Gold held."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l1.desc"
+msgstr "Before taking damage: Spend 1 Gold to reduce incoming damage by 1 per 10 Gold held."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc"
+msgstr "Before taking damage: Spend 1 Gold to reduce incoming damage by 2 per 10 Gold held."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l3.desc"
+msgstr "Before taking damage: Spend 1 Gold to reduce incoming damage by 3 per 10 Gold held."
+
+msgid "EW??TnkSupMerAniPlaToyCos.name"
+msgstr "EW??TnkSupMerAniPlaToyCos"
+
+msgid "EW??TnkSupMerAniPlaToyCos.desc"
+msgstr "Turn start: If holding at least 10 Gold, spend 1 Gold to gain +1 / +2 / +3 HP and PWR per 10 Gold held."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l1.desc"
+msgstr "Turn start: Spend 1 Gold to gain +1 HP and +1 PWR per 10 Gold held."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l2.desc"
+msgstr "Turn start: Spend 1 Gold to gain +2 HP and +2 PWR per 10 Gold held."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l3.desc"
+msgstr "Turn start: Spend 1 Gold to gain +3 HP and +3 PWR per 10 Gold held."
+
+msgid "item.claim_ticket.name"
+msgstr "Claim Ticket"
+
+msgid "item.claim_ticket.desc"
+msgstr "When the holder dies, earn 1 Gold."
+
+msgid "ability.item_claim_ticket.desc"
+msgstr "When holder dies, earn 1 Gold."
+
+msgid "item.interest_ledger.name"
+msgstr "Interest Ledger"
+
+msgid "item.interest_ledger.desc"
+msgstr "Whenever 1 Gold is earned, heal the holder for 1 HP."
+
+msgid "ability.item_interest_ledger.desc"
+msgstr "Whenever 1 Gold is earned, heal the holder for 1 HP."
+
+msgid "item.loaded_contract.name"
+msgstr "Loaded Contract"
+
+msgid "item.loaded_contract.desc"
+msgstr "Whenever 1 Gold is earned, the holder gains +1 PWR."
+
+msgid "ability.item_loaded_contract.desc"
+msgstr "Whenever 1 Gold is earned, the holder gains +1 PWR."
+
+msgid "item.golden_seal.name"
+msgstr "Golden Seal"
+
+msgid "item.golden_seal.desc"
+msgstr "Dynamically grants +1 HP and +1 PWR for every full 10 Gold currently held."
+
+msgid "ability.item_golden_seal.desc"
+msgstr "Dynamically grants +1 HP and +1 PWR per 10 Gold currently held."
+
+msgid "item.mercenary_emblem.name"
+msgstr "Mercenary Emblem"
+
+msgid "item.mercenary_emblem.desc"
+msgstr "Grants Mercenary trait. Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR."
+
+msgid "ability.item_mercenary_emblem.desc"
+msgstr "Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR."
+
+msgid "trinket.mercenary_sigil.name"
+msgstr "Mercenary Sigil"
+
+msgid "trinket.mercenary_sigil.desc"
+msgstr "Enables and tracks the cumulative Mercenary trait levels."
+
+msgid "trinket.trait_mercenary.name"
+msgstr "Mercenary Sigil"
+
+msgid "trinket.trait_mercenary.desc"
+msgstr "Mercenary trait effects activate at 2, 3, 4, and 5 units."
+
+msgid "trinket.recruiting_charm.name"
+msgstr "Recruiting Charm"
+
+msgid "trinket.recruiting_charm.desc"
+msgstr "At turn start, if you have at least 1 Gold and an open bench slot, spend 1 Gold to hire one Level 1 ?MerSpe."
+
+msgid "ability.trinket_recruiting_charm.desc"
+msgstr "At turn start, spend 1 Gold to hire a Level 1 ?MerSpe if a bench slot is open."
+
+msgid "trinket.wanted_poster.name"
+msgstr "Wanted Poster"
+
+msgid "trinket.wanted_poster.desc"
+msgstr "At turn start, mark a random unmarked enemy with Bounty."
+
+msgid "ability.trinket_wanted_poster.desc"
+msgstr "At turn start, mark a random unmarked enemy with Bounty."
 

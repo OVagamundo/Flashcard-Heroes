@@ -26,43 +26,68 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if is_instance_valid(GameManager.run_state):
 		gold = GameManager.run_state.gold
 		
-	var multiplier: int = gold / 5
+	var gold_step: int = parameters.get("gold_step", 5)
+	var multiplier: int = gold / gold_step
 	if multiplier <= 0:
 		return EffectResult.empty()
 		
 	# Apply Stats
-	var hp_scale = parameters.get("hp_per_5_gold", 3)
-	var pwr_scale = parameters.get("pwr_per_5_gold", 3)
+	var hp_scale = parameters.get("hp_per_gold_step", parameters.get("hp_per_5_gold", 0))
+	var pwr_scale = parameters.get("pwr_per_gold_step", parameters.get("pwr_per_5_gold", 0))
 	var hp_amount: int = multiplier * hp_scale
 	var pwr_amount: int = multiplier * pwr_scale
 	
+	if hp_amount == 0 and pwr_amount == 0:
+		return EffectResult.empty()
+	
 	var old_hp = source_unit.current_hp
 	var old_pwr = source_unit.current_pwr
+	var is_permanent: bool = parameters.get("is_permanent", true)
 	
-	var hp_res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", hp_amount, source_uuid)
 	var new_hp = old_hp + hp_amount
-	if hp_res is Dictionary:
-		new_hp = hp_res.get("new_hp", old_hp + hp_amount)
-	elif hp_res != null:
-		new_hp = int(hp_res)
-
-	var pwr_res = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", pwr_amount, source_uuid)
 	var new_pwr = old_pwr + pwr_amount
-	if pwr_res is Dictionary:
-		new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)
-	elif pwr_res != null:
-		new_pwr = int(pwr_res)
+	if is_permanent:
+		var hp_res = battle_manager.apply_permanent_stat_delta(source_unit, "hp", hp_amount, source_uuid)
+		if hp_res is Dictionary:
+			new_hp = hp_res.get("new_hp", old_hp + hp_amount)
+		elif hp_res != null:
+			new_hp = int(hp_res)
+
+		var pwr_res = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", pwr_amount, source_uuid)
+		if pwr_res is Dictionary:
+			new_pwr = pwr_res.get("new_pwr", old_pwr + pwr_amount)
+		elif pwr_res != null:
+			new_pwr = int(pwr_res)
+	else:
+		if hp_amount > 0:
+			new_hp = battle_manager.apply_stat_delta(source_unit, "hp", hp_amount, source_uuid, C.ACTION_BUFF)
+		if pwr_amount > 0:
+			new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", pwr_amount, source_uuid, C.ACTION_BUFF)
 	
 	var result := EffectResult.new()
 	var ability_id = context.get("ability_id", &"gold_stat_growth")
 	
 	# LOG Message
-	var log_text = "%s's investments pay off! Gained +%d HP / +%d PWR from Gold (%d Gold)" % [
-		BattleHelpers.get_instance_display_name(source_unit),
-		hp_amount,
-		pwr_amount,
-		gold
-	]
+	var log_text: String = ""
+	if hp_amount > 0 and pwr_amount > 0:
+		log_text = "%s's investments pay off! Gained +%d HP / +%d PWR from Gold (%d Gold)" % [
+			BattleHelpers.get_instance_display_name(source_unit),
+			hp_amount,
+			pwr_amount,
+			gold
+		]
+	elif hp_amount > 0:
+		log_text = "%s's investments pay off! Gained +%d HP from Gold (%d Gold)" % [
+			BattleHelpers.get_instance_display_name(source_unit),
+			hp_amount,
+			gold
+		]
+	else:
+		log_text = "%s's investments pay off! Gained +%d PWR from Gold (%d Gold)" % [
+			BattleHelpers.get_instance_display_name(source_unit),
+			pwr_amount,
+			gold
+		]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
 	# Unified BUFF visual

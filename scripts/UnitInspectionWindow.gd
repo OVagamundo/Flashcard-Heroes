@@ -27,6 +27,7 @@ const TRAIT_COLORS: Dictionary = {
 	"FIGHTER": Color(0.72, 0.12, 0.22, 1.0),    # Ruby Crimson
 	"SUPPORT": Color(0.12, 0.65, 0.48, 1.0),    # Emerald Mint
 	"SPECIALIST": Color(0.58, 0.22, 0.78, 1.0), # Royal Violet
+	"MERCENARY": Color(0.85, 0.65, 0.15, 1.0),  # Mercenary Amber/Gold
 	"FOOD": Color(0.90, 0.52, 0.08, 1.0),       # Warm Tangerine
 	"MECHA": Color(0.24, 0.28, 0.33, 1.0),      # Dark Gunmetal
 	"ANIMAL": Color(0.48, 0.56, 0.18, 1.0),     # Wild Olive

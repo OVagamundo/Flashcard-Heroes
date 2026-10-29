@@ -140,6 +140,14 @@ Unrestricted roster expansion in merge-based deckbuilders leads to catastrophic 
   - Every run features an active roster of:
     `Total Working Pool = 25 (Neutral Base) + 11 (Selected Hero Pack) = 36 Active Units`
   - This guarantees that shop roll probabilities, upgrade frequencies, and duplicate leveling remain perfectly balanced regardless of how many Heroes exist in the game.
+- **Dynamic Elemental Hero Content Packs (`?` Notation)**:
+  - Playable Heroes roll a random Elemental Soul (Earth, Fire, Water, or Air) upon run loadout.
+  - To maximize run-to-run diversity and prevent permanent elemental bias, the Hero's 11-unit lineage dynamically inherits the Hero's rolled element.
+  - In design documentation, the placeholder prefix `?` denotes this dynamic elemental soul:
+    - **Tier 1 (H1)**: Carries 1 dynamic `?` soul (e.g. `?MerSpe` for Bounty Hunter, `?TnkFigSch` for Aprendice).
+    - **Tier 2 (H2_a through H2_d)**: Merges H1 with each neutral Tier 1 unit, inheriting 1 `?` soul + the neutral parent's elemental soul.
+    - **Tier 3 (H3_1 through H3_6)**: Merges pairs of Hero Tier 2 units, carrying 2 `?` souls + the two neutral parents' souls.
+  - Across all playthroughs, this ensures a 100% uniform 25% distribution across all four elements for every Hero, while infusing each individual run with a distinct elemental identity.
 - **Standalone Wildcards**:
   - Standalone units have no merge recipes and cannot be crafted from lower tiers; they appear directly in shops or elite rewards. They possess standard traits and can be leveled via duplicate self-merging, allowing trait deficit patching without cascading recipe requirements.
 
@@ -184,7 +192,7 @@ Battles are deterministic contests resolved in three distinct phases:
 ### 10.1 Encounter Node Types
 - **Battles**: Common, Elite, and Boss fights. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
 - **Shops**: Spend Gold to buy units/items, reroll inventory, or purchase upgrades.
-- **Black Market**: Specialized vendor offering unit purges (deck thinning) and transformations.
+- **Shrine**: Specialized encounter offering unit purges (deck thinning) and transformations.
 - **Unit Merge Encounter**: Special encounter that allows players to merge units and items outside of combat.
 - **Unit Training Grounds (Dojo)**: Targeted stat training minigames to permanently increase individual unit stats.
 - **Surprise Events & Gambling Dens**: Risk/reward encounters offering Gold or stat boosts for the Hero and other special interactions.

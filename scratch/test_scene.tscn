@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cmiskxw81741m"]
+
+[ext_resource type="Script" path="res://scratch/test_reproduce_draw.gd" id="1_script"]
+
+[node name="TestNode" type="Node"]
+script = ExtResource("1_script")

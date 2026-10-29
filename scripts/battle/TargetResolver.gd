@@ -68,6 +68,38 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
 					return [target_uuid]
 			return []
+		C.TARGET_ATTACK_TARGET_AND_RANDOM_UNMARKED:
+			var target_uuid: String = context.get("target_uuid", "")
+			var res_targets: Array[String] = []
+			if not target_uuid.is_empty():
+				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
+				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
+					res_targets.append(target_uuid)
+			var enemy_container = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+			if is_instance_valid(enemy_container):
+				var unmarked: Array[String] = []
+				for uuid in enemy_container.get_all_uuids():
+					if uuid == target_uuid:
+						continue
+					var u = battle_manager.get_instance_by_uuid(uuid)
+					if is_instance_valid(u) and u.current_hp > 0 and u.get_status_effect_amount(&"bounty") == 0:
+						unmarked.append(uuid)
+				if not unmarked.is_empty():
+					var idx = RNGManager.combat_rng.randi_range(0, unmarked.size() - 1)
+					res_targets.append(unmarked[idx])
+			return res_targets
+		C.TARGET_ATTACK_TARGET_AND_ADJACENT:
+			var target_uuid: String = context.get("target_uuid", "")
+			var res_targets: Array[String] = []
+			if not target_uuid.is_empty():
+				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
+				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
+					res_targets.append(target_uuid)
+					var adj_allies = BattleHelpers.get_adjacent_allies(battle_manager._state, target_instance)
+					for adj in adj_allies:
+						if is_instance_valid(adj) and adj.current_hp > 0:
+							res_targets.append(adj.ball_uuid)
+			return res_targets
 		C.TARGET_TRIGGERING_ENTITY:
 			var triggering_uuid: String = context.get("triggering_uuid", "")
 			if not triggering_uuid.is_empty():
@@ -117,8 +149,31 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				var random_ally = RNGManager.combat_rng.pick_random(allies)
 				return [random_ally.ball_uuid]
 			return []
+		C.TARGET_LOWEST_HP_ALLY:
+			var allies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(u): return u.current_hp > 0)
+			if allies.is_empty():
+				return []
+			var lowest = allies[0]
+			for ally in allies:
+				if ally.current_hp < lowest.current_hp:
+					lowest = ally
+			return [lowest.ball_uuid]
+		C.TARGET_RANDOM_UNMARKED_ENEMY:
+			var enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u):
+				return u.current_hp > 0 and u.get_status_effect_amount(&"bounty") == 0
+			)
+			if not enemies.is_empty():
+				var picked = RNGManager.combat_rng.pick_random(enemies)
+				return [picked.ball_uuid]
+			return []
+		C.TARGET_HERO_ALLY:
+			var hero = battle_manager.get_hero_on_team(is_player_team)
+			if is_instance_valid(hero) and hero.current_hp > 0:
+				return [hero.ball_uuid]
+			return []
 		C.TARGET_ALLY_BEHIND:
-			var ally_behind = battle_manager._get_ally_behind(source_instance)
+			var allow_dying: bool = (context.get("trigger_type") == &"on_death" or context.has("dying_uuid"))
+			var ally_behind = battle_manager._get_ally_behind(source_instance, allow_dying)
 			if is_instance_valid(ally_behind):
 				return [ally_behind.ball_uuid]
 			return []
@@ -335,6 +390,19 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 					var dying_inst = battle_manager.get_instance_by_uuid(dying_uuid)
 					if is_instance_valid(dying_inst):
 						result = String(dying_inst.definition_id).to_lower().contains("dust")
+		C.COND_MIN_TRAIT_COUNT:
+			var trait_id: String = String(condition_def.parameters.get("trait_id", ""))
+			var min_count: int = int(condition_def.parameters.get("min_count", 1))
+			var is_player: bool = true
+			if battle_manager.has_method("_is_player_unit"):
+				is_player = battle_manager._is_player_unit(source_instance)
+			var team: String = "PLAYER" if is_player else "ENEMY"
+			var active_traits: Dictionary = battle_manager.get_active_traits(team)
+			result = int(active_traits.get(trait_id, 0)) >= min_count
+		C.COND_MIN_GOLD:
+			var min_gold: int = int(condition_def.parameters.get("min_gold", 0))
+			var current_gold: int = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
+			result = current_gold >= min_gold
 		_:
 			result = false
 	

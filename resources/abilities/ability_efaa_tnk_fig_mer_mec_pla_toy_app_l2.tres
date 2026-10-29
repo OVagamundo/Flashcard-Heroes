@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Resource" path="res://resources/conditions/condition_min_gold_10.tres" id="2_cond"]
+[ext_resource type="Script" path="res://scripts/effects/EffectSpendGold.gd" id="3_spend"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="4_heal"]
+
+[sub_resource type="Resource" id="Effect_Spend"]
+script = ExtResource("3_spend")
+parameters = {
+"amount": 1
+}
+target_type = &"SELF"
+
+[sub_resource type="Resource" id="Effect_ReduceDamage_2"]
+script = ExtResource("4_heal")
+parameters = {
+"action_type": "HEAL",
+"base_value": 2,
+"context_multiplier_key": "gold_tens",
+"stat": "hp"
+}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_efaa_tnk_fig_mer_mec_pla_toy_app_l2"
+description_key = "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc"
+trigger = &"on_before_damage"
+condition = ExtResource("2_cond")
+effects = Array[Resource]([SubResource("Effect_Spend"), SubResource("Effect_ReduceDamage_2")])
+priority = 10
+required_level = 2
+max_level = 2

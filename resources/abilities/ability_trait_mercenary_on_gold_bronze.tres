@@ -1,0 +1,34 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/ConditionDefinition.gd" id="3_cond"]
+
+[sub_resource type="Resource" id="Cond_MercenaryBronze"]
+script = ExtResource("3_cond")
+id = &"cond_mercenary_bronze"
+condition_type = &"MIN_TRAIT_COUNT"
+parameters = {
+"min_count": 2,
+"trait_id": "MERCENARY"
+}
+invert_result = false
+
+[sub_resource type="Resource" id="Effect_MercenaryBronze"]
+script = ExtResource("2_effect")
+parameters = {
+"action_type": "BUFF",
+"base_value": 1,
+"stat": "hp"
+}
+target_type = &"LOWEST_HP_ALLY"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_trait_mercenary_bronze"
+description_key = "ability.trait_mercenary.bronze.desc"
+trigger = &"on_gold_earned"
+conditions = Array[Resource]([SubResource("Cond_MercenaryBronze")])
+effects = Array[Resource]([SubResource("Effect_MercenaryBronze")])
+priority = 0
+max_level = 1

@@ -2,7 +2,7 @@
 class_name StaggeredGridContainer
 extends Container
 
-@export var columns: int = 6:
+@export var columns: int = 5:
 	set(value):
 		columns = maxi(1, value)
 		queue_sort()
@@ -12,7 +12,7 @@ extends Container
 		h_separation = value
 		queue_sort()
 
-@export var v_separation: float = -12.86:
+@export var v_separation: float = 0.0:
 	set(value):
 		v_separation = value
 		queue_sort()
@@ -22,11 +22,31 @@ extends Container
 		bottom_padding = value
 		queue_sort()
 
+@export var staggered: bool = false:
+	set(value):
+		staggered = value
+		queue_sort()
+
 func _notification(what: int) -> void:
 	if what == NOTIFICATION_SORT_CHILDREN:
 		_sort_staggered_children()
 	elif what == NOTIFICATION_THEME_CHANGED:
 		queue_sort()
+
+func _calculate_row_count(total_items: int) -> int:
+	if total_items <= 0:
+		return 0
+	if not staggered:
+		return int(ceil(float(total_items) / float(columns)))
+	var items_per_pair = columns + (columns - 1)
+	var full_pairs = int(floor(float(total_items) / float(items_per_pair)))
+	var remaining_items = total_items % items_per_pair
+	var rows = full_pairs * 2
+	if remaining_items > 0:
+		rows += 1
+		if remaining_items > columns:
+			rows += 1
+	return rows
 
 func _sort_staggered_children() -> void:
 	var valid_children = []
@@ -61,23 +81,12 @@ func _sort_staggered_children() -> void:
 	
 	# Calculate total rows to enable bottom-to-top filling
 	var total_items = valid_children.size()
-	var items_per_pair = columns + (columns - 1)
-	var full_pairs = int(floor(float(total_items) / float(items_per_pair)))
-	var remaining_items = total_items % items_per_pair
-	
-	var total_num_rows = full_pairs * 2
-	if remaining_items > 0:
-		total_num_rows += 1
-		if remaining_items > columns:
-			total_num_rows += 1
-			
-	if total_num_rows == 0:
-		total_num_rows = 1
+	var total_num_rows = maxi(1, _calculate_row_count(total_items))
 	
 	for child in valid_children:
 		var stagger_offset = 0.0
-		# Odd rows are staggered (offset by half a cell width)
-		if row % 2 != 0:
+		# Odd rows are staggered only when staggered mode is enabled
+		if staggered and (row % 2 != 0):
 			stagger_offset = (cell_size.x + h_separation) / 2.0
 		
 		# Invert row for bottom-to-top layout
@@ -99,8 +108,8 @@ func _sort_staggered_children() -> void:
 		# Wrap to next row
 		col += 1
 		
-		# Odd rows have 1 less column to fit perfectly without horizontal scrolling
-		var max_cols_in_row = columns if (row % 2 == 0) else (columns - 1)
+		# In staggered mode, odd rows have 1 less column; in regular mode, all rows have `columns`
+		var max_cols_in_row = (columns - 1) if (staggered and (row % 2 != 0)) else columns
 		
 		if col >= max_cols_in_row:
 			col = 0
@@ -124,19 +133,8 @@ func _get_minimum_size() -> Vector2:
 	if total_items == 0:
 		return Vector2.ZERO
 		
-	# Calculate rows more accurately based on alternating column counts
-	var items_per_pair = columns + (columns - 1)
-	var full_pairs = int(floor(float(total_items) / float(items_per_pair)))
-	var remaining_items = total_items % items_per_pair
-	
-	var rows = full_pairs * 2
-	if remaining_items > 0:
-		rows += 1
-		if remaining_items > columns:
-			rows += 1
-	
+	var rows = _calculate_row_count(total_items)
 	var min_w = columns * cell_size.x + (columns - 1) * h_separation
-	
 	var min_h = rows * cell_size.y + (rows - 1) * v_separation + bottom_padding
 	
 	return Vector2(min_w, min_h)

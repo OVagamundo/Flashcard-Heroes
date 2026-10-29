@@ -14,11 +14,12 @@ Use the existing descriptive placeholder IDs as names. The ID records elemental 
 
 | Group | Codes |
 |---|---|
-| Elemental souls | `E` = Earth, `F` = Fire, `W` = Water, `A` = Air. Soul letters use the game's established order. A Tier 1 has one soul, Tier 2 has two, and Tier 3 has four. |
+| Elemental souls | `E` = Earth, `F` = Fire, `W` = Water, `A` = Air. In Hero lineage templates, `?` denotes the dynamic Elemental Soul assigned to the Hero at run start (Earth, Fire, Water, or Air). Repeat a letter for multiple souls. A Tier 1 has one soul, Tier 2 has two, and Tier 3 has four. |
 | Class traits | `Tnk` = Tank, `Fig` = Fighter, `Sup` = Support, `Spe` = Specialist. `Sch` is added for Scholars after the other class codes. |
 | Visual traits | `Fod` = Food, `Mec` = Mecha, `Ani` = Animal, `Pla` = Plant, `Toy` = Toy, `App` = Appliance, `Cos` = Costume. |
 
-The unique Tier 1 Scholar is assigned Air, Tank, Fighter, and Scholars. Tank and Fighter give the affordable starter unit defensive and offensive trait hooks. The neutral Tier 1 recipe parents are `ASpeFodToy`, `ETnkPlaToy`, `FFigMecApp`, and `WSupAniCos`.
+The unique Tier 1 Scholar is assigned the dynamic `?` soul, Tank, Fighter, and Scholars. At run start, it inherits whichever elemental soul Aprendice was assigned after loadout, preserving the 1 / 2 / 4 soul progression and dynamically adapting all Tier 2 and Tier 3 combinations for that run. Tank and Fighter give the affordable starter unit defensive and offensive trait hooks. The neutral Tier 1 recipe parents are `ASpeFodToy`, `ETnkPlaToy`, `FFigMecApp`, and `WSupAniCos`.
+This trait trinket should track and display the number of correct answers from the last played mini game.
 
 ## 2. Hero
 
@@ -27,7 +28,7 @@ The unique Tier 1 Scholar is assigned Air, Tank, Fighter, and Scholars. Tank and
 | Name | **Aprendice** |
 | Unlock | Starting Hero, available from the beginning. Other Heroes are unlocked through progression. |
 | Base stats | 10 HP / 2 PWR, retaining Starter's current values. |
-| Traits | Fixed **Scholars**, plus one random Elemental trait and one random thematic Class or Visual trait. Roll the two random traits once when the Hero is selected and keep them for the run. |
+| Traits | Fixed **Scholars**, plus one random Elemental trait and one random thematic Class or Visual trait. Roll the two random traits once when the Hero is selected and keep them for the run. The rolled Elemental Soul is dynamically inherited by the Hero's 11-unit lineage for that run. |
 | Token guarantee | At the end of each token-awarding minigame, if that session generated fewer than 3 Tokens, grant enough to reach 3. If it generated 3 or more, grant nothing. Count the session's Token awards, not Tokens already carried into the session. |
 | Study time | Each correct answer adds Timekeeper's extra +1.0 second, in addition to the normal +0.5 seconds, in battle and non-battle minigames. This passive works outside of battle minigames as well. Aprendice has no timer penalty for an incorrect submitted answer. Skip is resolved separately. |
 | Ally deaths | Whenever an allied unit dies in battle, Aprendice gains +1 HP and +1 PWR. |
@@ -65,20 +66,17 @@ The unique Tier 1 merges only with the four neutral Tier 1 recipe parents below.
 
 | Placeholder ID / name | Tags | Level 1 / 2 / 3 stats | Ability at Levels 1 / 2 / 3 |
 |---|---|---:|---|
-| `ATnkFigSch` | Air, Tank, Fighter, Scholars | 1/2, 2/3, 3/4 HP/PWR | While this unit is in the lineup, each correct answer during the battle minigame gives +1 / +2 / +3 Armor to the frontmost Scholar in the allied lineup. Token gains from other sources do not trigger this ability. Armor follows normal end-of-turn decay. |
+| `?TnkFigSch` | `?` (Rolled Soul), Tank, Fighter, Scholars | 1/2, 2/3, 3/4 HP/PWR| when this unit dies, add +1 second to the starting timer of the next battle minigame. this can stack.    | |
 
 ### Tier 2 crossbreeds
 
 | Placeholder ID / name | Recipe | Level 1 stats | Additional tags | Ability at Levels 1 / 2 / 3 |
 |---|---|---:|---|---|
-| `AATnkFigSpeSchFodToy` | `ATnkFigSch` + `ASpeFodToy` | 2 HP / 3 PWR | Specialist, Scholars, Food, Toy | **At minigame end:** Gain +1 / +2 / +3 PWR for each correct answer to a Level 1 mastery card in that session. |
-| `EATnkFigSchPlaToy` | `ATnkFigSch` + `ETnkPlaToy` | 3 HP / 3 PWR | Tank, Fighter, Scholars, Plant, Toy | **Pre-combat:** Gain +1 / +2 / +3 Armor for each correct answer in the previous minigame. Armor decays normally at turn end. |
-| `FATnkFigSchMecApp` | `ATnkFigSch` + `FFigMecApp` | 2 HP / 4 PWR | Tank, Fighter, Scholars, Mecha, Appliance | **At minigame end:** Gain +1 / +2 / +3 PWR for every 2 correct answers in that session. Count full pairs of correct answers; this does not require them to be consecutive. |
-| `WATnkFigSupSchAniCos` | `ATnkFigSch` + `WSupAniCos` | 2 HP / 3 PWR | Tank, Fighter, Support, Scholars, Animal, Costume | **At minigame end:** If the player answered at least 1 card correctly, add +1 / +2 / +3 seconds to the starting timer of the next battle minigame. This is a one-session bonus, not a permanent timer increase. |
+| `?ATnkFigSpeSchFodToy` | `?TnkFigSch` + `ASpeFodToy` | 2 HP / 3 PWR | `?`, Air, Specialist, Scholars, Food, Toy | **At minigame end:** Gain +1 / +2 / +3 PWR for each correct answer to a Level 1 mastery card in that session. |
+| `E?TnkFigSchPlaToy` | `?TnkFigSch` + `ETnkPlaToy` | 3 HP / 3 PWR | Earth, `?`, Tank, Scholars, Plant, Toy | **At minigame end:** Gain +1 / +2 / +3 Armor for each correct answer in the previous minigame. Armor decays normally at turn end. |
+| `F?TnkFigSchMecApp` | `?TnkFigSch` + `FFigMecApp` | 2 HP / 4 PWR | Fire, `?`, Tank, Fighter, Scholars, Mecha, Appliance | **At minigame end:** Gain +1 / +2 / +3 PWR for every 2 correct answers in that session. Count full pairs of correct answers; this does not require them to be consecutive. |
+| `W?TnkFigSupSchAniCos` | `?TnkFigSch` + `WSupAniCos` | 2 HP / 3 PWR | Water, `?`, Tank, Fighter, Support, Scholars, Animal, Costume | **At turn start:** For each 2 Tokens saved in the previous turn, grant +1 HP to each other Scholar unit. This unit does not buff itself. |
 
-Minigame-end and pre-combat effects resolve for the living holder while it is on the player's battle board. Effects that directly target the frontmost Scholar require that Scholar to be in the active lineup.
-
-Ability-granted HP and PWR modify the battle copy, persist for the rest of that encounter, and do not permanently change the Run Inventory unit. Temporary statuses such as Armor follow their normal duration rules.
 
 ### Tier 3 crossbreeds
 
@@ -86,12 +84,12 @@ All six Tier 2 pairings are recipes. Token-held scaling is concentrated here. He
 
 | Placeholder ID / name | Recipe | Level 1 stats | Ability at Levels 1 / 2 / 3 |
 |---|---|---:|---|
-| `EAAATnkFigSpeSchFodPlaToy` | `AATnkFigSpeSchFodToy` + `EATnkFigSchPlaToy` | 5 HP / 6 PWR | **Pre-combat:** Gain +1 / +2 / +3 Armor for every full 5 Tokens held. Spending Tokens on draws lowers this opening Armor. |
-| `FAAATnkFigSpeSchFodMecToyApp` | `AATnkFigSpeSchFodToy` + `FATnkFigSchMecApp` | 4 HP / 7 PWR | **At minigame end:** Gain +1 / +2 / +3 PWR for each correct answer in that session. |
-| `WAAATnkFigSupSpeSchFodAniToyCos` | `AATnkFigSpeSchFodToy` + `WATnkFigSupSchAniCos` | 4 HP / 6 PWR | **On death:** If defeated in battle, add +2 / +3 / +4 seconds to the starting timer of the next battle minigame. |
-| `EFAATnkFigSchMecPlaToyApp` | `EATnkFigSchPlaToy` + `FATnkFigSchMecApp` | 5 HP / 7 PWR | **Pre-combat:** Gain +1 / +2 / +3 PWR for every full 5 Tokens held. This is a battle stat bonus based on the post-management balance. |
-| `EWAATnkFigSupSchAniPlaToyCos` | `EATnkFigSchPlaToy` + `WATnkFigSupSchAniCos` | 5 HP / 6 PWR | **On attack:** If at least 5 Tokens are held, spend 1 Token to deal +1 / +2 / +3 bonus damage for every full 5 Tokens held before the spend. If fewer than 5 are held, do not spend a Token. |
-| `FWAATnkFigSupSchMecAniAppCos` | `FATnkFigSchMecApp` + `WATnkFigSupSchAniCos` | 4 HP / 7 PWR | **At minigame end:** If the correct-answer streak reaches 3 in that session, gain +1 / +2 / +3 HP and +1 / +2 / +3 PWR. This triggers once at the first 3-streak; the separate Prismatic trait reward is one Token. |
+| `E??ATnkFigSpeSchFodPlaToy` | `?ATnkFigSpeSchFodToy` + `E?TnkFigSchPlaToy` | 5 HP / 6 PWR | **turn start:** Gain +1 / +2 / +3 spikes for every 2 Tokens held.  |
+| `F??ATnkFigSpeSchFodMecToyApp` | `?ATnkFigSpeSchFodToy` + `F?TnkFigSchMecApp` | 4 HP / 7 PWR | **turn start:** Gain +1 / +2 / +3 Armor for every 2 Tokens held.  |
+| `W??ATnkFigSupSpeSchFodAniToyCos` | `?ATnkFigSpeSchFodToy` + `W?TnkFigSupSchAniCos` | 4 HP / 6 PWR | **On death:** If defeated in battle, add +2 / +3 / +4 seconds to the starting timer of the next battle minigame. |
+| `EF??TnkFigSchMecPlaToyApp` | `E?TnkFigSchPlaToy` + `F?TnkFigSchMecApp` | 5 HP / 7 PWR | **Pre-combat:** Gain +1 / +2 / +3 PWR for every full 5 Tokens held. This is a battle stat bonus based on the post-management balance. |
+| `EW??TnkFigSupSchAniPlaToyCos` | `E?TnkFigSchPlaToy` + `W?TnkFigSupSchAniCos` | 5 HP / 6 PWR | **On attack:** If at least 5 Tokens are held, spend 1 Token to deal +1 / +2 / +3 bonus damage for every full 5 Tokens held before the spend. If fewer than 5 are held, do not spend a Token. |
+| `FW??TnkFigSupSchMecAniAppCos` | `F?TnkFigSchMecApp` + `W?TnkFigSupSchAniCos` | 4 HP / 7 PWR | **At minigame end:** If the correct-answer streak reaches 3 in that session, gain +1 / +2 / +3 HP and +1 / +2 / +3 PWR. This triggers once at the first 3-streak; the separate Prismatic trait reward is one Token. |
 
 The three Token-scaled capstones give different choices: save Tokens for Armor, save them for PWR, or spend them on an attack bonus. The other capstones turn correct answers, a three-streak, and even a battle loss into future progress or extra study time.
 

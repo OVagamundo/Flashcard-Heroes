@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://scratch/verify_atomic_state.gd" id="1_verify"]
+
+[node name="VerifyAtomicState" type="Node"]
+script = ExtResource("1_verify")

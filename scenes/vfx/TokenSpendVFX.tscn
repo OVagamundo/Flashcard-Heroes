@@ -1,10 +1,12 @@
 [gd_scene format=3 uid="uid://cfq4aqci8pr62"]
 
 [ext_resource type="Script" path="res://scripts/vfx/TokenSpendVFX.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/token_100yen.png" id="2_token"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/TokenRotationSpriteSheet.png" id="2_token"]
 
 [node name="TokenSpendVFX" type="Node2D"]
 script = ExtResource("1_script")
 
 [node name="TokenSprite" type="Sprite2D" parent="."]
 texture = ExtResource("2_token")
+hframes = 5
+

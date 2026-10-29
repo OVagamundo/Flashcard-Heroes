@@ -43,7 +43,8 @@ func _notification(what: int) -> void:
 			process_mode = PROCESS_MODE_INHERIT if visible else PROCESS_MODE_DISABLED
 
 func _configure_scroll_navigation() -> void:
-	# Keep overflow bounded by inventory/tier panels.
+	# Keep overflow bounded by inventory/tier panels and clip at machine base top (Y = 860).
+	clip_contents = true
 	panel_container.clip_contents = true
 	tier_1_panel.clip_contents = true
 	tier_2_panel.clip_contents = true
@@ -54,7 +55,7 @@ func _configure_scroll_navigation() -> void:
 			continue
 		# Keep slot visuals strictly contained inside each tier container artwork.
 		scroll.clip_contents = true
-		scroll.custom_minimum_size.x = maxf(scroll.custom_minimum_size.x, 608.0)
+		scroll.custom_minimum_size.x = 480.0
 		scroll.mouse_filter = Control.MOUSE_FILTER_PASS
 		
 		var vbar: VScrollBar = scroll.get_v_scroll_bar()
@@ -238,8 +239,8 @@ func _initialize_grids_if_needed() -> void:
 		if not is_instance_valid(container):
 			continue
 			
-		var slot_count = 39 # HARDCAP: Staggered grid max capacity at 0 padding
-		grid_node.bottom_padding = 24.0 # Add space for overflowing HP/PWR stats at the bottom
+		var slot_count = C.RUN_INVENTORY_CAP # HARDCAP: 5x5 regular grid capacity (25 slots)
+		grid_node.bottom_padding = 16.0 # Space for overflowing HP/PWR stats at the bottom row
 		for i in range(slot_count):
 			var slot_view = _SlotView.instantiate()
 			# Use 1x scale for inventory window

@@ -170,11 +170,18 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 						"center": Vector2(rect.position.x + rect.size.x / 2, rect.position.y + rect.size.y / 2)
 					}
 		
-		# Also scan EffectsLayer for in-flight views (Gacha Draws)
+		# Also scan EffectsLayer and VFXLayer for in-flight views (Gacha Draws)
 		# This handles race conditions where a unit is targeted while still animating/flying
+		var layers_to_scan: Array[Node] = []
 		var effects_layer = get_tree().get_first_node_in_group("effects_layer")
 		if is_instance_valid(effects_layer):
-			for child in effects_layer.get_children():
+			layers_to_scan.append(effects_layer)
+		if is_instance_valid(WindowManager) and WindowManager.has_method("get_vfx_layer"):
+			var vfx_layer = WindowManager.get_vfx_layer()
+			if is_instance_valid(vfx_layer) and not (vfx_layer in layers_to_scan):
+				layers_to_scan.append(vfx_layer)
+		for layer in layers_to_scan:
+			for child in layer.get_children():
 				if child is GachaBallView:
 					var uuid = child.get_instance_uuid()
 					if not uuid.is_empty():
@@ -241,7 +248,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	# currency event in the turn has been animated, so the assertion fires only
 	# once — after visual and authoritative are guaranteed to match.
 	var _currency_main = GameManager._active_main_node if is_instance_valid(GameManager) else null
-	var _has_gold_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.GOLD_GAIN)
+	var _has_gold_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.GOLD_GAIN or e.type == CombatEvent.Type.GOLD_SPEND)
 	var _has_token_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.TOKEN_GAIN)
 
 	if _has_gold_events and is_instance_valid(_currency_main):
@@ -584,6 +591,14 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var target_gold_amount = payload.target_gold_amount
 				if has_method("_animate_gold_gain"):
 					await _animate_gold_gain(origin_uuid, amount, target_gold_amount)
+
+			CombatEvent.Type.GOLD_SPEND:
+				var payload = event.visual_payload
+				var amount = payload.amount
+				var origin_uuid = payload.origin_uuid
+				var target_gold_amount = payload.target_gold_amount
+				if has_method("_animate_gold_spend"):
+					await _animate_gold_spend(origin_uuid, amount, target_gold_amount)
 
 			CombatEvent.Type.TOKEN_GAIN:
 				var payload = event.visual_payload
@@ -945,12 +960,30 @@ func _animate_gold_gain(origin_uuid: String, amount: int, _target_gold_amount: i
 		start_pos = pos_data["center"]
 	else:
 		var view = _visual_registry.get(origin_uuid)
+		if not is_instance_valid(view) or not view.is_inside_tree():
+			view = _find_trinket_view(origin_uuid, &"", false)
 		if is_instance_valid(view) and view.is_inside_tree():
 			start_pos = view.get_global_rect().get_center()
 	if start_pos == Vector2.ZERO:
 		var window_size = get_viewport().get_visible_rect().size
 		start_pos = window_size / 2.0
 	await CurrencyAnimator.animate_gold_gain(amount, start_pos)
+
+func _animate_gold_spend(origin_uuid: String, amount: int, _target_gold_amount: int = -1) -> void:
+	var pos_data = _position_snapshot.get(origin_uuid, {})
+	var target_pos = Vector2.ZERO
+	if not pos_data.is_empty():
+		target_pos = pos_data["center"]
+	else:
+		var view = _visual_registry.get(origin_uuid)
+		if not is_instance_valid(view) or not view.is_inside_tree():
+			view = _find_trinket_view(origin_uuid, &"", false)
+		if is_instance_valid(view) and view.is_inside_tree():
+			target_pos = view.get_global_rect().get_center()
+	if target_pos == Vector2.ZERO:
+		var window_size = get_viewport().get_visible_rect().size
+		target_pos = window_size / 2.0
+	await CurrencyAnimator.animate_gold_spend(amount, target_pos)
 
 func _animate_token_gain(origin_uuid: String, amount: int, _target_token_amount: int = -1) -> void:
 	# 1. Get origin position from snapshot
