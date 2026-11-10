@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectStormshroudHealOnHurt.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_WANovCos"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_wa_nov_cos"
+description_key = "W??ANovCos.desc"
+trigger = &"when_taking_damage"
+effects = Array[Resource]([SubResource("Effect_WANovCos")])
+sub_phase = 50
+max_level = 3

@@ -3,13 +3,13 @@
 extends EffectDefinition
 
 ## Effect that buffs Level 1 units when they enter the board.
-## Used by Novice Insignia to grant +1 HP and +1 PWR to Level 1 units.
+## Used by Apprentice Insignia to grant +1 HP and +1 PWR to Level 1 units.
 ## Expected parameters:
 ##   - hp_amount: int (default 1) - HP buff amount
 ##   - pwr_amount: int (default 1) - PWR buff amount
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Get the target unit UUID from context
 	# Context key depends on trigger:
@@ -22,13 +22,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
 	else:
-		var ctx_uuid: String = context.get("drawn_uuid", "")
+		var ctx_uuid: String = context.drawn_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("summoned_uuid", "")
+			ctx_uuid = context.summoned_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("merged_uuid", "")
+			ctx_uuid = context.merged_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("source_uuid", "")
+			ctx_uuid = context.source_uuid
 		if not ctx_uuid.is_empty():
 			targets_to_process.append(ctx_uuid)
 	
@@ -82,7 +82,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.is_hero:
 			continue
 		
-		# Novice Insignia applies to Level 1 units only (no tier requirement)
+		# Apprentice Insignia applies to Level 1 units only (no tier requirement)
 		if target_instance.level != 1:
 			continue
 		
@@ -125,7 +125,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if is_instance_valid(trinket_def):
 			trinket_name = tr(trinket_def.name_key)
 	if trinket_name.is_empty():
-		trinket_name = "Novice Insignia"
+		trinket_name = "Apprentice Insignia"
 
 
 
@@ -141,7 +141,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": &"ability_trinket_royal_insignia",
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.both_stats_change(
@@ -156,7 +156,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": &"ability_trinket_royal_insignia",
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
@@ -166,7 +166,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": &"ability_trinket_royal_insignia",
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)

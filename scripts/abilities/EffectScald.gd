@@ -2,7 +2,7 @@
 class_name EffectScald
 extends EffectDefinition
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var result := EffectResult.new()
 	
 	# Only trigger if the unit is in the lineup (Player or Enemy)
@@ -16,7 +16,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		return result
 	
 	# Get heal amount from context
-	var heal_amount: int = context.get("heal_amount", 0)
+	var heal_amount: int = context.heal_amount
 	if heal_amount <= 0:
 		return result
 		
@@ -48,7 +48,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			CombatEvent.Type.STATUS_EFFECT,
 			{
 				"target_uuids": [current_target_uuid],
-				"is_simulation": context.get("is_simulation", false),
+				"is_simulation": context.is_simulation,
 				"visual_payload": CombatPayload.status_change(current_source_uuid, current_burn_amount, "burn_stacks", [old_burn], [new_burn], Color.ORANGE_RED)
 			}
 		)

@@ -6,35 +6,986 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Language: pt_BR\n"
 
-msgid "hero.name"
-msgstr "Caçador de Recompensas"
+msgid "({cost} Gold per action)\""
+msgstr ""
 
-msgid "hero.desc"
-msgstr "Especializado em acumular e gastar Ouro. Traço Fixo: Mercenário (Inicia com o Selo de Mercenário). No início da jornada, recebe 1 alma Elemental aleatória e 1 traço de Classe ou Visual."
+msgid "({cost} Ouro por ação)\""
+msgstr ""
 
-msgid "enemy_hero.name"
-msgstr "Herói Inimigo"
+msgid "?ANovFod.desc"
+msgstr "[color=#ffd166][b]Pré-Batalha[/b][/color], Carrega um Ataque Fortalecido que inflige 1 / 2 / 3 de Estática no alvo para cada 2 Fichas Atuais possuídas."
 
-msgid "enemy_hero.desc"
-msgstr "Cause (PWR) de dano ao inimigo mais à frente."
+msgid "?ANovFod.name"
+msgstr "Gustpuff"
 
-msgid "ability.unit_t2_d_power_l1.desc"
-msgstr "Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
+msgid "?ASpeMerFodToy.desc"
+msgstr "Pré-combate: Ganha +1 / +2 / +3 de Poder para cada 10 de Ouro possuído."
 
-msgid "ability.unit_t2_d_power_l2.desc"
-msgstr "Ganha PWR adicional igual a 150% das Fichas atuais, atualizando conforme as Fichas mudam."
+msgid "?ASpeMerFodToy.name"
+msgstr "Doughpuff"
 
-msgid "ability.unit_t2_d_power_l3.desc"
-msgstr "Ganha PWR adicional igual a 200% das Fichas atuais, atualizando conforme as Fichas mudam."
+msgid "?MerSpe.desc"
+msgstr "Sempre que 1 de Ouro é obtido enquanto esta unidade está no alinhamento ativo, ela ganha +1 de Vida e +1 de Poder."
 
-msgid "ability.unit_t2_f_gold_pwr_l1.desc"
+msgid "?MerSpe.name"
+msgstr "Coinling"
+
+msgid "?NovPla.desc"
+msgstr "[color=#ffd166][b]Quando Nocauteado[/b][/color], adiciona 1 / 2 / 3 segundos ao Tempo Inicial do próximo minijogo de batalha. Este efeito acumula."
+
+msgid "?NovPla.name"
+msgstr "Novisprout"
+
+msgid "ASpeFod.desc"
+msgstr "Quando esta unidade é nocauteada, concede seu PWR atual ao aliado atrás. No Nível 2, também concede 50% ao segundo aliado atrás; no Nível 3, concede 25% ao terceiro aliado atrás."
+
+msgid "ASpeFod.name"
+msgstr "Puffcorn"
+
+msgid "ASpeFodToy.desc"
+msgstr "Quando esta unidade morre, concede seu PWR atual ao aliado atrás."
+
+msgid "ASpeFodToy.name"
+msgstr "ASpeFodToy"
+
+msgid "E??ANovPla.desc"
+msgstr "[color=#ffd166][b]Pré-Batalha[/b][/color], gasta 1 Ficha para ganhar 1 / 2 / 3 de Armadura para cada Ficha Atual possuída e 1 / 2 / 3 de Espinhos para cada 2 Fichas Atuais possuídas antes do gasto."
+
+msgid "E??ANovPla.name"
+msgstr "Galebloom"
+
+msgid "E??ATnkSpeMerFodPlaToy.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 / +2 / +3 de Armadura e Espinhos por 10 de Ouro possuído."
+
+msgid "E??ATnkSpeMerFodPlaToy.name"
+msgstr "Bullionbark"
+
+msgid "E?NovPla.desc"
+msgstr "[color=#ffd166][b]Pré-Batalha[/b][/color], ganha 1 / 2 / 3 de Armadura para cada 2 Fichas Atuais possuídas."
+
+msgid "E?NovPla.name"
+msgstr "Rootguard"
+
+msgid "E?TnkMerPlaToy.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +1 / +2 / +3 de Armadura e +1 / +2 / +3 de Espinhos."
+
+msgid "E?TnkMerPlaToy.name"
+msgstr "Vaultbark"
+
+msgid "EASpeFodToy.desc"
 msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
 
-msgid "ability.unit_t2_f_gold_pwr_l2.desc"
-msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado."
+msgid "EASpeFodToy.name"
+msgstr "EASpeFodToy"
 
-msgid "ability.unit_t2_f_gold_pwr_l3.desc"
-msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
+msgid "EASupToy.desc"
+msgstr "Ao ser nocauteada, invoca uma unidade aleatória de Tier 1 no mesmo nível desta unidade."
+
+msgid "EASupToy.name"
+msgstr "Matryodust"
+
+msgid "EEFASpeCos.desc"
+msgstr "Antes da sua ação de turno, transforma-se na versão de Nível 1 / 2 / 3 do inimigo no espaço espelhado e realiza seu turno imediatamente. Se não houver unidade no espaço espelhado, realiza um [color=#ffd166]Ataque Corpo a Corpo[/color]."
+
+msgid "EEFASpeCos.name"
+msgstr "Mimicloak"
+
+msgid "EEFASpeFodCos.desc"
+msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+
+msgid "EEFASpeFodCos.name"
+msgstr "EEFASpeFodCos"
+
+msgid "EEFWFigTnkPlaToy.desc"
+msgstr "Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+
+msgid "EEFWFigTnkPlaToy.name"
+msgstr "EEFWFigTnkPlaToy"
+
+msgid "EEFWSupPla.desc"
+msgstr "Quando sofre dano de ataque, concede aos aliados adjacentes +1 HP e +1 PWR no Nível 1, +2 HP e +1 PWR no Nível 2, ou +2 HP e +2 PWR no Nível 3. Se faltar um aliado adjacente, a parte dele vai para esta unidade; se não houver aliados adjacentes, todos os bônus vão para esta unidade."
+
+msgid "EEFWSupPla.name"
+msgstr "Oakbark"
+
+msgid "EEWAFigAni.desc"
+msgstr "Enquanto estiver na formação ativa, causa dano de [color=#ffd166]Ataque à Distância[/color] conforme seu nível sempre que qualquer unidade entrar na formação ao sair da reserva, ser invocada, fundida ou transformada."
+
+msgid "EEWAFigAni.name"
+msgstr "Griffoam"
+
+msgid "EEWAFigFodAniCos.desc"
+msgstr "Causa dano aos inimigos igual a 100% do PWR quando eles são invocados."
+
+msgid "EEWAFigFodAniCos.name"
+msgstr "EEWAFigFodAniCos"
+
+msgid "EF??NovApp.desc"
+msgstr "[color=#ffd166][b]Ao Atacar[/b][/color], gasta 1 Ficha para Carregar um Ataque Fortalecido que aplica 1 / 2 / 3 de Queimadura ao alvo por Ficha Atual possuída antes do gasto."
+
+msgid "EF??NovApp.name"
+msgstr "Magmarange"
+
+msgid "EF??TnkFigMerMecPlaToyApp.desc"
+msgstr "Ao ser ferido, antes do dano: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para mitigar 1 / 2 / 3 de dano recebido por 10 de Ouro possuído."
+
+msgid "EF??TnkFigMerMecPlaToyApp.name"
+msgstr "Furnasafe"
+
+msgid "EFAASupToy.desc"
+msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
+
+msgid "EFAASupToy.name"
+msgstr "Matryoshkan"
+
+msgid "EFFASupMec.desc"
+msgstr "Quando uma unidade aliada é invocada, concede [+3 / +5 / +7] HP."
+
+msgid "EFFASupMec.name"
+msgstr "Mechamom"
+
+msgid "EFFASupPlaToy.desc"
+msgstr "Concede +3 de HP a aliados recém-invocados."
+
+msgid "EFFASupPlaToy.name"
+msgstr "EFFASupPlaToy"
+
+msgid "EFFWSpeApp.desc"
+msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
+
+msgid "EFFWSpeApp.name"
+msgstr "Blendroid"
+
+msgid "EFFWSupMecApp.desc"
+msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
+
+msgid "EFFWSupMecApp.name"
+msgstr "EFFWSupMecApp"
+
+msgid "EFTnkAniCos.desc"
+msgstr "Quando curado, ganha 1 de Armadura e 1 de Espinhos."
+
+msgid "EFTnkAniCos.name"
+msgstr "EFTnkAniCos"
+
+msgid "EFTnkMec.desc"
+msgstr "Quando recebe cura, ganha [1 / 2 / 3] de Armadura e [1 / 2 / 3] de Espinhos."
+
+msgid "EFTnkMec.name"
+msgstr "Branblee"
+
+msgid "EFWAFigMec.desc"
+msgstr "Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
+
+msgid "EFWAFigMec.name"
+msgstr "Pachinkannon"
+
+msgid "EFWAFigSpeAniMec.desc"
+msgstr "Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
+
+msgid "EFWAFigSpeAniMec.name"
+msgstr "EFWAFigSpeAniMec"
+
+msgid "EFWASpeFod.desc"
+msgstr "Ganha +3 / +4 / +5 PWR para cada outro BubbleGunger em batalha. Quando é nocauteado, invoca 1 cópia de si mesmo na Máquina de Gacha."
+
+msgid "EFWASpeFod.name"
+msgstr "BubbleGunger"
+
+msgid "EFWASupFodToy.desc"
+msgstr "Ganha +3 de PWR para cada outro Doppleganger em batalha. Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+
+msgid "EFWASupFodToy.name"
+msgstr "EFWASupFodToy"
+
+msgid "EFWATnkApp.desc"
+msgstr "Ao ser alvo de um ataque, cura [2 / 4 / 6] HP antes de receber dano."
+
+msgid "EFWATnkApp.name"
+msgstr "Reizokun"
+
+msgid "EFWATnkCosMec.desc"
+msgstr "Ganha +2 de HP antes de receber dano."
+
+msgid "EFWATnkCosMec.name"
+msgstr "EFWATnkCosMec"
+
+msgid "EFWWFigCos.desc"
+msgstr "Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+
+msgid "EFWWFigCos.name"
+msgstr "Tsunamantle"
+
+msgid "EFWWFigSpeAniFodMecCos.desc"
+msgstr "Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
+
+msgid "EFWWFigSpeAniFodMecCos.name"
+msgstr "EFWWFigSpeAniFodMecCos"
+
+msgid "ETnkPla.desc"
+msgstr "Quando sofre dano de ataque, esta unidade cura a si mesma em [1 / 2 / 3] HP."
+
+msgid "ETnkPla.name"
+msgstr "Stumpling"
+
+msgid "ETnkPlaToy.desc"
+msgstr "Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
+
+msgid "ETnkPlaToy.name"
+msgstr "ETnkPlaToy"
+
+msgid "EW??NovPla.desc"
+msgstr "[color=#ffd166][b]Ao Atacar[/b][/color], gasta 1 Ficha para causar 1 / 2 / 3 de Dano Bônus por Ficha Atual possuída antes do gasto."
+
+msgid "EW??NovPla.name"
+msgstr "Mirethicket"
+
+msgid "EW??TnkSupMerAniPlaToyCos.desc"
+msgstr "Início do turno: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para ganhar +1 / +2 / +3 de Vida e Poder por 10 de Ouro possuído."
+
+msgid "EW??TnkSupMerAniPlaToyCos.name"
+msgstr "Mosstycoon"
+
+msgid "EWAASpeApp.desc"
+msgstr "No início de cada turno, ganha permanentemente [+3 / +4 / +5] HP e PWR para cada 5 de Ouro possuídos."
+
+msgid "EWAASpeApp.name"
+msgstr "Sojikun"
+
+msgid "EWAASpePlaApp.desc"
+msgstr "No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
+
+msgid "EWAASpePlaApp.name"
+msgstr "EWAASpePlaApp"
+
+msgid "EWFigCos.desc"
+msgstr "Quando um aliado é nocauteado, ganha +1 HP e +1 PWR no Nível 1, +2 HP e +1 PWR no Nível 2, ou +2 HP e +2 PWR no Nível 3."
+
+msgid "EWFigCos.name"
+msgstr "Bogmantle"
+
+msgid "EWFigCosToy.desc"
+msgstr "Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
+
+msgid "EWFigCosToy.name"
+msgstr "EWFigCosToy"
+
+msgid "EWWATnkMecApp.desc"
+msgstr "Salta para interceptar dano letal em aliados."
+
+msgid "EWWATnkMecApp.name"
+msgstr "EWWATnkMecApp"
+
+msgid "EWWATnkToy.desc"
+msgstr "Quando um aliado receberia dano letal, esta unidade salta para interceptá-lo. Ao interceptar, ganha 0 / 1 / 2 de Armadura."
+
+msgid "EWWATnkToy.name"
+msgstr "Komatop"
+
+msgid "F??AFigSpeMerFodMecToyApp.desc"
+msgstr "Ao atacar: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro e aplica 1 / 2 / 3 de Queimadura por 10 de Ouro possuído."
+
+msgid "F??AFigSpeMerFodMecToyApp.name"
+msgstr "Coinroaster"
+
+msgid "F??ANovFod.desc"
+msgstr "[color=#ffd166][b]Ao Atacar[/b][/color], gasta 1 Ficha para infligir 1 / 2 / 3 de Estática no alvo por Ficha Atual possuída antes do gasto."
+
+msgid "F??ANovFod.name"
+msgstr "Zephyrcrisp"
+
+msgid "F?FigMerMecApp.desc"
+msgstr "Quando esta unidade à distância ataca, marca seu alvo com Recompensa. Derrotar uma unidade marcada concede 1 de Ouro."
+
+msgid "F?FigMerMecApp.name"
+msgstr "Cashcannon"
+
+msgid "F?NovApp.desc"
+msgstr "[color=#ffd166][b]Pré-Batalha[/b][/color], Carrega um Ataque Fortalecido que aplica 1 / 2 / 3 de Queimadura ao alvo para cada 2 Fichas Atuais possuídas."
+
+msgid "F?NovApp.name"
+msgstr "Ignikettle"
+
+msgid "FASpeApp.desc"
+msgstr "Ganha PWR adicional igual a [100% / 150% / 200%] das Fichas atuais, atualizando sempre que as Fichas mudam."
+
+msgid "FASpeApp.name"
+msgstr "Furnair"
+
+msgid "FASpeMecApp.desc"
+msgstr "Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
+
+msgid "FASpeMecApp.name"
+msgstr "FASpeMecApp"
+
+msgid "FFWASpeSupMecAniApp.desc"
+msgstr "Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
+
+msgid "FFWASpeSupMecAniApp.name"
+msgstr "FFWASpeSupMecAniApp"
+
+msgid "FFWASupMec.desc"
+msgstr "Quando é nocauteado, transfere seu item equipado ao aliado diretamente atrás. No Nível 2, também transfere 1 cópia ao próximo aliado atrás; no Nível 3, também transfere 2 cópias aos próximos aliados atrás."
+
+msgid "FFWASupMec.name"
+msgstr "Relaytron"
+
+msgid "FFigMec.desc"
+msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se nocauteado."
+
+msgid "FFigMec.name"
+msgstr "Vulcannon"
+
+msgid "FFigMecApp.desc"
+msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
+
+msgid "FFigMecApp.name"
+msgstr "FFigMecApp"
+
+msgid "FW??FigSupMerAniMecAppCos.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 / +2 / +3 de dano bônus por 10 de Ouro possuído."
+
+msgid "FW??FigSupMerAniMecAppCos.name"
+msgstr "Jackpotron"
+
+msgid "FW??NovAni.desc"
+msgstr "[color=#ffd166][b]Quando Nocauteado[/b][/color], adiciona 1 / 2 / 3 segundos ao Tempo Inicial do próximo minijogo de batalha e ganha 1 / 2 / 3 Fichas."
+
+msgid "FW??NovAni.name"
+msgstr "Steampaw"
+
+msgid "FWAASpeToy.desc"
+msgstr "Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
+
+msgid "FWAASpeToy.name"
+msgstr "Wind-up-kun"
+
+msgid "FWAASupToy.desc"
+msgstr "Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
+
+msgid "FWAASupToy.name"
+msgstr "FWAASupToy"
+
+msgid "FWFigFod.desc"
+msgstr "Quando recebe cura, dispara um projétil de Chamas que ricocheteia em um inimigo aleatório e aplica acúmulos de Chamas iguais ao valor da cura. O projétil ricocheteia para [0 / 1 / 2] alvos extras, reduzindo os acúmulos pela metade a cada ricochete."
+
+msgid "FWFigFod.name"
+msgstr "Pepspray"
+
+msgid "FWSpeAppFod.desc"
+msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
+
+msgid "FWSpeAppFod.name"
+msgstr "FWSpeAppFod"
+
+msgid "FWWASupAniToy.desc"
+msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
+
+msgid "FWWASupAniToy.name"
+msgstr "FWWASupAniToy"
+
+msgid "FWWATnkFod.desc"
+msgstr "Sempre que um aliado adjacente recebe um bônus de HP ou PWR, repete [100% / 150% / 200%] desse bônus nele."
+
+msgid "FWWATnkFod.name"
+msgstr "Nuton"
+
+msgid "GLOSSARY_ATTACK_OVERRIDE"
+msgstr "Substituição de Ataque"
+
+msgid "GLOSSARY_ATTACK_OVERRIDE_DESC"
+msgstr "Substitui o ataque básico padrão por uma habilidade especializada ou padrão de dano."
+
+msgid "GLOSSARY_BOUNCE"
+msgstr "Ricochete"
+
+msgid "GLOSSARY_BOUNCE_DESC"
+msgstr "Atinge o alvo principal e salta para inimigos aleatórios adicionais, reduzindo o dano ou acúmulos pela metade a cada salto."
+
+msgid "GLOSSARY_EMPOWERED_ATTACK"
+msgstr "Ataque Fortalecido"
+
+msgid "GLOSSARY_EMPOWERED_ATTACK_DESC"
+msgstr "Uma ação de ataque aprimorada que se consome ao ser executada para causar Dano Bônus ou aplicar Efeitos ao alvo."
+
+msgid "GLOSSARY_EXTRA_ACTION"
+msgstr "Ação Extra"
+
+msgid "GLOSSARY_EXTRA_ACTION_DESC"
+msgstr "Age novamente de imediato com uma ação de turno completa, reavaliando todas as habilidades (uma vez por turno)."
+
+msgid "GLOSSARY_EXTRA_ATTACK"
+msgstr "Ataque Extra"
+
+msgid "GLOSSARY_EXTRA_ATTACK_DESC"
+msgstr "Realiza uma ação de ataque adicional imediata durante este turno (uma vez por turno)."
+
+msgid "GLOSSARY_INTERCEPT"
+msgstr "Interceptar"
+
+msgid "GLOSSARY_INTERCEPT_DESC"
+msgstr "Salta à frente de um aliado para absorver um ataque no lugar dele."
+
+msgid "GLOSSARY_LIFESTEAL"
+msgstr "Roubo de Vida"
+
+msgid "GLOSSARY_LIFESTEAL_DESC"
+msgstr "Cura o atacante em uma porcentagem do dano real causado à Vida do alvo."
+
+msgid "GLOSSARY_MELEE"
+msgstr "Ataque Corpo a Corpo"
+
+msgid "GLOSSARY_MELEE_DESC"
+msgstr "Golpeia o inimigo mais à frente. Mitigado por ARMADURA; ativa os ESPINHOS do defensor."
+
+msgid "GLOSSARY_RANGED"
+msgstr "Ataque à Distância"
+
+msgid "GLOSSARY_RANGED_DESC"
+msgstr "Golpeia o inimigo na posição espelhada. Se o espaço estiver vazio, atinge o inimigo mais atrás. Mitigado por ARMADURA; ignora os ESPINHOS do defensor."
+
+msgid "GLOSSARY_SHOCKWAVE"
+msgstr "Onda de Choque"
+
+msgid "GLOSSARY_SHOCKWAVE_DESC"
+msgstr "Atinge o alvo principal e espalha dano para até 2 posições atrás com 50% de redução por posição."
+
+msgid "STATUS_ARMOR"
+msgstr "Armadura"
+
+msgid "STATUS_ARMOR_DESC"
+msgstr "Armadura: Absorve uma quantidade de dano igual ao valor de Armadura. Desaparece ao final do turno."
+
+msgid "STATUS_BOUNTY"
+msgstr "Recompensa"
+
+msgid "STATUS_BOUNTY_DESC"
+msgstr "Quando esta unidade é derrotada por qualquer meio, concede 1 de Ouro. Permanece até a unidade morrer ou a batalha terminar."
+
+msgid "STATUS_BURN"
+msgstr "Chamas"
+
+msgid "STATUS_BURN_DESC"
+msgstr "Causa dano igual ao valor de Chamas ao final do turno. Após o dano o valor cai pela metade."
+
+msgid "STATUS_REINFORCE"
+msgstr "Reforço"
+
+msgid "STATUS_REINFORCE_DESC"
+msgstr "Impede que a ARMADURA decaia no início do turno. Perde 1 acúmulo no início do turno."
+
+msgid "STATUS_SPIKES"
+msgstr "Espinhos"
+
+msgid "STATUS_SPIKES_DESC"
+msgstr "Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação."
+
+msgid "STATUS_STATIC"
+msgstr "Estático"
+
+msgid "STATUS_STATIC_DESC"
+msgstr "Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
+
+msgid "W??ANovCos.desc"
+msgstr "[color=#ffd166][b]Ao Receber Dano[/b][/color] de um ataque, gasta 1 Ficha para curar-se em 1 / 2 / 3 de Vida para cada Ficha Atual possuída antes do gasto."
+
+msgid "W??ANovCos.name"
+msgstr "Stormshroud"
+
+msgid "W??ASupSpeMerFodAniToyCos.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida por 1 de Ouro ganho."
+
+msgid "W??ASupSpeMerFodAniToyCos.name"
+msgstr "Bountifur"
+
+msgid "W?NovCos.desc"
+msgstr "[color=#ffd166][b]Ao Receber Dano[/b][/color] de um ataque, cura-se em 1 / 2 / 3 de Vida para cada 2 Fichas Atuais possuídas."
+
+msgid "W?NovCos.name"
+msgstr "Tidecloak"
+
+msgid "W?SupMerAniCos.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida."
+
+msgid "W?SupMerAniCos.name"
+msgstr "Pennypaw"
+
+msgid "WATnkAni.desc"
+msgstr "No início da batalha, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
+
+msgid "WATnkAni.name"
+msgstr "Soliwhale"
+
+msgid "WATnkPlaAni.desc"
+msgstr "No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
+
+msgid "WATnkPlaAni.name"
+msgstr "WATnkPlaAni"
+
+msgid "WSupAni.desc"
+msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
+
+msgid "WSupAni.name"
+msgstr "Ripplepup"
+
+msgid "WSupAniCos.desc"
+msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
+
+msgid "WSupAniCos.name"
+msgstr "WSupAniCos"
+
+msgid "ability.aegis.desc"
+msgstr "Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
+
+msgid "ability.air_insignia.desc"
+msgstr "Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.animal_insignia.desc"
+msgstr "Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.appliance_insignia.desc"
+msgstr "Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.apprentice_insignia.desc"
+msgstr "Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.armor_aura.desc"
+msgstr "No início do turno, todos os aliados ganham 3 de Armadura."
+
+msgid "ability.bargain_charm.desc"
+msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
+
+msgid "ability.basic_attack.desc"
+msgstr "Causa (PWR) de dano ao inimigo da frente."
+
+msgid "ability.basic_attack_ranged_mirror.desc"
+msgstr "Causa (PWR) de dano ao inimigo no espaço espelhado."
+
+msgid "ability.boss_1_draw_drain.desc"
+msgstr "Toda vez que você saca um gachaball, este chefe ganha +1 HP."
+
+msgid "ability.boss_2_token_drain.desc"
+msgstr "Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
+
+msgid "ability.boss_3_ally_growth.desc"
+msgstr "Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+
+msgid "ability.boss_summon.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios."
+
+msgid "ability.costume_insignia.desc"
+msgstr "Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.doppleganger_death.desc"
+msgstr "Gera um Doppleganger na Máquina Gacha de Nível 3 ao morrer."
+
+msgid "ability.doppleganger_death_l1.desc"
+msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+
+msgid "ability.doppleganger_death_l2.desc"
+msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+
+msgid "ability.doppleganger_death_l3.desc"
+msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
+
+msgid "ability.doppleganger_scale.desc"
+msgstr "Ganha [**+3 / +4 / +5 de PWR**] para cada outro Doppleganger em batalha."
+
+msgid "ability.doppleganger_scale_l1.desc"
+msgstr "Ganha +3 de PWR para cada outro Doppleganger em batalha."
+
+msgid "ability.doppleganger_scale_l2.desc"
+msgstr "Ganha +4 de PWR para cada outro Doppleganger em batalha."
+
+msgid "ability.doppleganger_scale_l3.desc"
+msgstr "Ganha +5 de PWR para cada outro Doppleganger em batalha."
+
+msgid "ability.dust_growth.desc"
+msgstr "Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
+
+msgid "ability.e_mer_spe.desc"
+msgstr "Sempre que 1 de Ouro é obtido no alinhamento ativo, ganha +1 de Vida e +1 de Poder."
+
+msgid "ability.ea_spe_fod_toy_summon_l1.desc"
+msgstr "Invoca uma unidade aleatória de Tier 1 no Nível 1 ao ser nocauteado."
+
+msgid "ability.ea_spe_fod_toy_summon_l2.desc"
+msgstr "Invoca uma unidade aleatória de Tier 1 no Nível 2 ao ser nocauteado."
+
+msgid "ability.ea_spe_fod_toy_summon_l3.desc"
+msgstr "Invoca uma unidade aleatória de Tier 1 no Nível 3 ao ser nocauteado."
+
+msgid "ability.ea_spe_mer_fod_toy.l1.desc"
+msgstr "Pré-combate: Ganha +1 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.ea_spe_mer_fod_toy.l2.desc"
+msgstr "Pré-combate: Ganha +2 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.ea_spe_mer_fod_toy.l3.desc"
+msgstr "Pré-combate: Ganha +3 de Poder para cada 10 de Ouro possuído."
+
+msgid "ability.earth_insignia.desc"
+msgstr "Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.echoing_orb_death.desc"
+msgstr "Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."
+
+msgid "ability.echoing_orb_scale.desc"
+msgstr "Concede ao portador +2 PWR para cada Orbe Ressonante em batalha."
+
+msgid "ability.ee_tnk_mer_pla_toy.l1.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +1 de Armadura e +1 de Espinhos."
+
+msgid "ability.ee_tnk_mer_pla_toy.l2.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +2 de Armadura e +2 de Espinhos."
+
+msgid "ability.ee_tnk_mer_pla_toy.l3.desc"
+msgstr "Sempre que 1 de Ouro é obtido, ganha +3 de Armadura e +3 de Espinhos."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 de Armadura e +1 de Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l2.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +2 de Armadura e +2 de Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l3.desc"
+msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +3 de Armadura e +3 de Espinhos por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l1.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 1 por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 2 por 10 de Ouro possuído."
+
+msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l3.desc"
+msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 3 por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l1.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +1 de Vida e +1 de Poder por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l2.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +2 de Vida e +2 de Poder por 10 de Ouro possuído."
+
+msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l3.desc"
+msgstr "Início do turno: Gasta 1 de Ouro para ganhar +3 de Vida e +3 de Poder por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l1.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 1 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l2.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 2 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l3.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 3 de Queimadura por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l1.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l2.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +2 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l3.desc"
+msgstr "Ao atacar: Gasta 1 de Ouro para causar +3 de dano bônus por 10 de Ouro possuído."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l1.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l2.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+
+msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc"
+msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+
+msgid "ability.ef_fig_mer_mec_app.l1.desc"
+msgstr "Ao atacar, marca o alvo com Recompensa se não estiver marcado."
+
+msgid "ability.ef_fig_mer_mec_app.l2.desc"
+msgstr "Ao atacar, marca o alvo e 1 unidade aleatória desmarcada com Recompensa."
+
+msgid "ability.ef_fig_mer_mec_app.l3.desc"
+msgstr "Ao atacar, marca o alvo e unidades adjacentes com Recompensa."
+
+msgid "ability.ew_sup_mer_ani_cos.l1.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+
+msgid "ability.ew_sup_mer_ani_cos.l2.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+
+msgid "ability.ew_sup_mer_ani_cos.l3.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+
+msgid "ability.fighter_insignia.desc"
+msgstr "Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.fire_insignia.desc"
+msgstr "Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.food_insignia.desc"
+msgstr "Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.grant_heroism.desc"
+msgstr "Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
+
+msgid "ability.grant_spikes.desc"
+msgstr "Concede 4 pilhas de Espinhos"
+
+msgid "ability.hero_avenger_ally_death_attack.desc"
+msgstr "Quando um aliado morre, salta e ataca o inimigo da frente."
+
+msgid "ability.hero_bastion_ally_death_spikes_armor.desc"
+msgstr "Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
+
+msgid "ability.hero_bastion_pre_battle_reinforce.desc"
+msgstr "Antes da batalha, concede 1 acúmulo de Reforço a todos os aliados."
+
+msgid "ability.hero_bounty_hunter_ally_death_buff.desc"
+msgstr "Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
+
+msgid "ability.hero_catalyst.desc"
+msgstr "Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
+
+msgid "ability.hero_pyro_attack_burn.desc"
+msgstr "Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
+
+msgid "ability.hero_shiken_gold_on_kill.desc"
+msgstr "Quando este herói derrota um inimigo, ganha 1 de Ouro."
+
+msgid "ability.hero_starter_ally_death_absorb.desc"
+msgstr "Quando um aliado morre, ganha HP igual ao PWR dele."
+
+msgid "ability.hero_timekeeper_gold_on_kill.desc"
+msgstr "Recompensa: Quando este herói derrota um inimigo, ganha 1 de Ouro."
+
+msgid "ability.hero_timekeeper_temporal_aura.desc"
+msgstr "No início de cada turno, concede +1 HP às unidades à frente e +1 PWR às unidades atrás."
+
+msgid "ability.hero_timekeeper_time_warp.desc"
+msgstr "Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
+
+msgid "ability.item_claim_ticket.desc"
+msgstr "Quando o portador morre, ganha 1 de Ouro."
+
+msgid "ability.item_golden_seal.desc"
+msgstr "Concede dinamicamente +1 de Vida e +1 de Poder por 10 de Ouro atualmente possuído."
+
+msgid "ability.item_interest_ledger.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+
+msgid "ability.item_loaded_contract.desc"
+msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+
+msgid "ability.item_mercenary_emblem.desc"
+msgstr "Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+
+msgid "ability.item_t2_c_summon.desc"
+msgstr "Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
+
+msgid "ability.item_t3a_on_hurt_heal.desc"
+msgstr "Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
+
+msgid "ability.item_t3b_on_attack_buff.desc"
+msgstr "Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
+
+msgid "ability.item_t3c_on_attack_lifesteal.desc"
+msgstr "Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
+
+msgid "ability.item_t3e_death_damage.desc"
+msgstr "Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP."
+
+msgid "ability.item_t3f_power_drain.desc"
+msgstr "Após causar dano rouba metade do PWR do alvo (mín. 1)."
+
+msgid "ability.item_tier1a_turn_start_heal.desc"
+msgstr "No início do turno, cura o portador em 2 HP."
+
+msgid "ability.item_tier1b_extra_attack.desc"
+msgstr "Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
+
+msgid "ability.item_tier2b_bloodlust.desc"
+msgstr "Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
+
+msgid "ability.item_tier2c_passive_heal.desc"
+msgstr "Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
+
+msgid "ability.item_tier3d_retaliate.desc"
+msgstr "Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
+
+msgid "ability.level3_insignia.desc"
+msgstr "Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.mecha_insignia.desc"
+msgstr "Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.mercenary_insignia.desc"
+msgstr "Quando uma unidade com o traço Mercenário entra em campo, recebe +1 HP e +1 PWR."
+
+msgid "ability.merge_damage_charm.desc"
+msgstr "Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
+
+msgid "ability.mud_coating_l1.desc"
+msgstr "Quando curado, ganha 1 de Armadura e 1 de Espinhos."
+
+msgid "ability.mud_coating_l2.desc"
+msgstr "Quando curado, ganha 2 de Armadura e 2 de Espinhos."
+
+msgid "ability.mud_coating_l3.desc"
+msgstr "Quando curado, ganha 3 de Armadura e 3 de Espinhos."
+
+msgid "ability.novice_insignia.desc"
+msgstr "Quando uma unidade com o traço Novato entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.plant_insignia.desc"
+msgstr "Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.polished_plate.desc"
+msgstr "No início do turno, ganha 2 de Armadura."
+
+msgid "ability.potion_plunder.desc"
+msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
+
+msgid "ability.potion_t1.desc"
+msgstr "Restaura 4 HP."
+
+msgid "ability.scald_l1.desc"
+msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
+
+msgid "ability.scald_l2.desc"
+msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para 1 alvo extra, reduzindo pela metade os acúmulos aplicados."
+
+msgid "ability.scald_l3.desc"
+msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
+
+msgid "ability.slime_cell_death.desc"
+msgstr "Quando é nocauteado, este item gera uma Célula de Slime na Máquina de Gacha do Tier 2."
+
+msgid "ability.slime_cell_scale.desc"
+msgstr "Concede +1 PWR ao portador para cada Célula de Slime em batalha."
+
+msgid "ability.soul_echo.desc"
+msgstr "Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
+
+msgid "ability.specialist_insignia.desc"
+msgstr "Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.support_insignia.desc"
+msgstr "Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.tank_insignia.desc"
+msgstr "Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.tier1_insignia.desc"
+msgstr "Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.tier2_insignia.desc"
+msgstr "Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.tier3_insignia.desc"
+msgstr "Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.time_sprint_charm.desc"
+msgstr "O cronômetro do minigame ganha um aumento de 2 segundos em batalhas."
+
+msgid "ability.token_return_charm.desc"
+msgstr "A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nível."
+
+msgid "ability.toy_insignia.desc"
+msgstr "Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "ability.trait_air.desc"
+msgstr "Unidades de Ar eletrificam alvos com Estática ao atacar, espalhando cargas para inimigos adjacentes."
+
+msgid "ability.trait_animal.desc"
+msgstr "Concede +1 de Poder a um Animal alfa no pré-combate e cura Animais a cada ataque."
+
+msgid "ability.trait_appliance.desc"
+msgstr "Ataques de Eletrodomésticos aplicam Estática e Chamas. Concede imunidade e purificação pré-combate a ambos, reflete efeitos de status e converte penalidades em atributos."
+
+msgid "ability.trait_costume.desc"
+msgstr "Pré-Combate: Rouba efeitos benéficos ou atributos básicos de inimigos espelhados e líderes adversários."
+
+msgid "ability.trait_earth.desc"
+msgstr "Concede Armadura e Espinhos a unidades de Terra e aliados, capacitando Espinhos a causar dano bônus ao atacar."
+
+msgid "ability.trait_fighter.desc"
+msgstr "Causa dano bônus contra alvos com mais Vida, contra-ataca ao sofrer dano, desfere golpe disperso atrás do alvo e encadeia ataques ao abater."
+
+msgid "ability.trait_fire.desc"
+msgstr "Capacita unidades de Fogo a queimar inimigos ao atacar, espalhar chamas e causar dano bônus a alvos queimando."
+
+msgid "ability.trait_food.desc"
+msgstr "Cura e fortalece o aliado logo atrás ao sofrer dano, e transfere todo seu Poder ao morrer."
+
+msgid "ability.trait_mecha.desc"
+msgstr "Concede Armadura e Espinhos, aplica Estática ao atacar, dispara lasers em fusões aliadas e detona lasers de retaliação ao morrer."
+
+msgid "ability.trait_mercenary.bronze.desc"
+msgstr "Sempre que Ouro for obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+
+msgid "ability.trait_mercenary.desc"
+msgstr "Conta unidades Mercenárias. Bronze: Aliado com menor Vida ganha +1 HP quando Ouro é ganho. Prata: Herói ganha +1 PWR quando Ouro é ganho. Ouro: Mercenários ganham +1 de Armadura por 10 de Ouro no pré-combate. Prismático: Ganha 1 de Ouro no pré-combate."
+
+msgid "ability.trait_mercenary.pre_combat.desc"
+msgstr "No pré-combate: Com 4 Mercenários, cada um ganha +1 de Armadura por 10 de Ouro possuído. Com 5 Mercenários, ganha 1 de Ouro uma vez por turno."
+
+msgid "ability.trait_mercenary.silver.desc"
+msgstr "Sempre que Ouro for obtido, o Herói ganha +1 de Poder."
+
+msgid "ability.trait_mercenary_on_gold_bronze.desc"
+msgstr "Sempre que Ouro é obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+
+msgid "ability.trait_mercenary_on_gold_silver.desc"
+msgstr "Sempre que Ouro é obtido, o Herói ganha +1 de Poder."
+
+msgid "ability.trait_mercenary_pre_combat.desc"
+msgstr "No pré-combate, ganha 1 de Ouro se Prismático (5 Mercenários), e cada Mercenário ganha +1 de Armadura por 10 de Ouro possuído se Ouro (4 Mercenários)."
+
+msgid "ability.trait_plant.desc"
+msgstr "Concede Espinhos e Vida no pré-combate, e converte toda cura recebida em Espinhos."
+
+msgid "ability.trait_plant_turn_start.desc"
+msgstr "No início do turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
+
+msgid "ability.trait_specialist.desc"
+msgstr "Garante fichas iniciais, dá desconto no gacha, ganha ouro ao abater e invoca clone de combate no banco."
+
+msgid "ability.trait_specialist_turn_start.desc"
+msgstr "No início do turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
+
+msgid "ability.trait_support.desc"
+msgstr "Concede +1 de Vida ao aliado à frente, +1 de Poder ao aliado atrás e +1 de Vida/+1 de Poder ao Herói."
+
+msgid "ability.trait_support_turn_start.desc"
+msgstr "No início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
+
+msgid "ability.trait_tank.desc"
+msgstr "Concede Armadura no pré-combate, repassa armadura para trás ao absorver, intercepta ataques e espelha armadura como espinhos."
+
+msgid "ability.trait_tank_turn_start.desc"
+msgstr "No início do turno, concede 1 de Armadura ao Guardião mais à frente."
+
+msgid "ability.trait_toy.desc"
+msgstr "Aplica Estática a atacantes corpo a corpo, e detona o inimigo com mais Estática ao morrer."
+
+msgid "ability.trait_water.desc"
+msgstr "Unidades de Água curam aliados à frente e removem efeitos negativos no pré-combate."
+
+msgid "ability.trait_water_turn_start.desc"
+msgstr "No início do turno, cura o aliado com menor Vida e converte status negativos em cura."
+
+msgid "ability.trinket_recruiting_charm.desc"
+msgstr "No início do turno, gasta 1 de Ouro para contratar um ?MerSpe Nível 1 se houver espaço no banco."
+
+msgid "ability.trinket_spiked_armor.desc"
+msgstr "No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
+
+msgid "ability.trinket_wanted_poster.desc"
+msgstr "No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
+
+msgid "ability.twin_charm_scale.desc"
+msgstr "Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
+
+msgid "ability.underdog_emblem.desc"
+msgstr "Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
 
 msgid "ability.unit_t1_c_ally_shield.desc"
 msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
@@ -54,6 +1005,78 @@ msgstr "Quando esta unidade morre, concede seu PWR atual ao aliado atrás, e met
 msgid "ability.unit_t1_d_empathic_link_l3.desc"
 msgstr "Quando esta unidade morre, concede seu PWR atual ao aliado atrás, metade ao próximo, e metade ao próximo."
 
+msgid "ability.unit_t2_d_power_l1.desc"
+msgstr "Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
+
+msgid "ability.unit_t2_d_power_l2.desc"
+msgstr "Ganha PWR adicional igual a 150% das Fichas atuais, atualizando conforme as Fichas mudam."
+
+msgid "ability.unit_t2_d_power_l3.desc"
+msgstr "Ganha PWR adicional igual a 200% das Fichas atuais, atualizando conforme as Fichas mudam."
+
+msgid "ability.unit_t2_e_mimic.desc"
+msgstr "No início do turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de HP e PWR."
+
+msgid "ability.unit_t2_f_gold_pwr_l1.desc"
+msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
+
+msgid "ability.unit_t2_f_gold_pwr_l2.desc"
+msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado."
+
+msgid "ability.unit_t2_f_gold_pwr_l3.desc"
+msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
+
+msgid "ability.unit_t2_g_buff_echo.desc"
+msgstr "Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
+
+msgid "ability.unit_t2_h_l1.desc"
+msgstr "No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
+
+msgid "ability.unit_t2_h_l2.desc"
+msgstr "No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazio no seu time."
+
+msgid "ability.unit_t2_h_l3.desc"
+msgstr "No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
+
+msgid "ability.unit_t3_h.desc"
+msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, se esta unidade estiver no tabuleiro de batalha, ganha [**+2 / +3 / +4 de HP e PWR**]."
+
+msgid "ability.unit_t3_j_ability_l1.desc"
+msgstr "Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
+
+msgid "ability.unit_t3_j_ability_l2.desc"
+msgstr "Ao morrer, transfere seu item equipado para o aliado atrás e 1 cópia para trás deles."
+
+msgid "ability.unit_t3_j_ability_l3.desc"
+msgstr "Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias para trás deles."
+
+msgid "ability.unit_t3_l_l1.desc"
+msgstr "No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
+
+msgid "ability.unit_t3_l_l2.desc"
+msgstr "No início de cada turno, ganha permanentemente +4 HP e +4 PWR para cada 5 de Ouro que você possuir no momento."
+
+msgid "ability.unit_t3_l_l3.desc"
+msgstr "No início de cada turno, ganha permanentemente +5 HP e +5 PWR para cada 5 de Ouro que você possuir no momento."
+
+msgid "ability.unit_t3_mimic_l1.desc"
+msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+
+msgid "ability.unit_t3_mimic_l2.desc"
+msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+1 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+
+msgid "ability.unit_t3_mimic_l3.desc"
+msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (Nível 3 MAX). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
+
+msgid "ability.unit_t3_shadow_l1.desc"
+msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
+
+msgid "ability.unit_t3_shadow_l2.desc"
+msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 150% de eficácia."
+
+msgid "ability.unit_t3_shadow_l3.desc"
+msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 200% de eficácia."
+
 msgid "ability.unit_tier1a_passive_heal.desc"
 msgstr "Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
 
@@ -72,80 +1095,20 @@ msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando d
 msgid "ability.unit_tier1b_counter_on_hurt_l3.desc"
 msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. O projétil então rebate para 2 inimigos aleatórios, causando metade do dano por salto."
 
-msgid "item_t1_a.name"
-msgstr "Bênção da Carpa"
+msgid "ability.unit_tier2a_defensive_stance.desc"
+msgstr "Ao ser alvo de um ataque, cura [2 / 4 / 6] HP antes de receber dano."
 
-msgid "item_t1_a.desc"
-msgstr "No início do turno, cura o portador em 2 HP."
+msgid "ability.unit_tier2a_defensive_stance_l1.desc"
+msgstr "Ganha +2 de HP antes de receber dano."
 
-msgid "item_t1_b.name"
-msgstr "Espírito do Tigre"
+msgid "ability.unit_tier2a_defensive_stance_l2.desc"
+msgstr "Ganha +4 de HP antes de receber dano."
 
-msgid "item_t1_b.desc"
-msgstr "Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
+msgid "ability.unit_tier2a_defensive_stance_l3.desc"
+msgstr "Ganha +6 de HP antes de receber dano."
 
-msgid "item_t2_c.name"
-msgstr "Elixir da Fênix"
-
-msgid "item_t2_c.desc"
-msgstr "Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
-
-msgid "ability.basic_attack.desc"
-msgstr "Causa (PWR) de dano ao inimigo da frente."
-
-msgid "ability.basic_attack_ranged_mirror.desc"
-msgstr "Causa (PWR) de dano ao inimigo no espaço espelhado."
-
-msgid "ability.item_tier1b_extra_attack.desc"
-msgstr "Ao atacar, se o alvo tiver mais HP que o portador, realiza um ataque extra."
-
-msgid "item.effect.hp"
-msgstr "Adiciona (HP) HP à unidade."
-
-msgid "item.effect.pwr"
-msgstr "Adiciona (PWR) PWR à unidade."
-
-msgid "item.effect.both"
-msgstr "Adiciona (HP) HP e (PWR) PWR à unidade."
-
-msgid "trinket.polished_plate.name"
-msgstr "Placa Polida"
-
-msgid "trinket.polished_plate.desc"
-msgstr "A Armadura não decai no fim do turno."
-
-msgid "ability.polished_plate.desc"
-msgstr "No início do turno, ganha 2 de Armadura."
-
-msgid "options.audio.master"
-msgstr "Volume Geral"
-
-msgid "options.audio.music"
-msgstr "Volume da Música"
-
-msgid "options.audio.sfx"
-msgstr "Volume de Efeitos"
-
-msgid "options.language"
-msgstr "Idioma"
-
-msgid "options.reset_data"
-msgstr "Resetar Progresso"
-
-msgid "tutorial.btn.next"
-msgstr "Próximo"
-
-msgid "tutorial.btn.got_it"
-msgstr "Entendi!"
-
-msgid "battle.speed.label"
-msgstr "Velocidade:"
-
-msgid "ability.item_tier2c_passive_heal.desc"
-msgstr "Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
-
-msgid "ability.item_tier1a_turn_start_heal.desc"
-msgstr "No início do turno, cura o portador em 2 HP."
+msgid "ability.unit_tier2b_shockwave.desc"
+msgstr "O ataque causa dano em cascata: [100% / 150% / 200%] à frente, 50% à unidade atrás, 25% à próxima."
 
 msgid "ability.unit_tier2c_ally_death_buff_l1.desc"
 msgstr "Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
@@ -156,1572 +1119,6 @@ msgstr "Quando um aliado é derrotado, ganha +2 de HP e +1 de PWR."
 msgid "ability.unit_tier2c_ally_death_buff_l3.desc"
 msgstr "Quando um aliado é derrotado, ganha +2 de HP e +2 de PWR."
 
-msgid "ability.hero_bounty_hunter_ally_death_buff.desc"
-msgstr "Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
-
-msgid "ability.item_tier3d_retaliate.desc"
-msgstr "Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
-
-msgid "ability.unit_tier3d_resilient_aura.desc"
-msgstr "Ao ser ferido POR UM ATAQUE, concede +1 HP e +1 PWR aos aliados adjacentes."
-
-msgid "item_t2_a.name"
-msgstr "Pergaminho de Invocação"
-
-msgid "item_t2_a.desc"
-msgstr "Quando o portador morre, invoque uma unidade de Tier 1."
-
-msgid "item_t3_e.name"
-msgstr "Barganha da Morte"
-
-msgid "item_t3_e.desc"
-msgstr "Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP."
-
-msgid "item_t3_f.name"
-msgstr "Sifão de Almas"
-
-msgid "item_t3_f.desc"
-msgstr "Após causar dano rouba metade do PWR do alvo (mín. 1)."
-
-msgid "item_t3_g.name"
-msgstr "Mira de Precisão"
-
-msgid "item_t3_g.desc"
-msgstr "Ataques básicos têm como alvo o inimigo no espaço espelhado."
-
-msgid "ability.item_t3f_power_drain.desc"
-msgstr "Após causar dano rouba metade do PWR do alvo (mín. 1)."
-
-msgid "ability.item_t3e_death_damage.desc"
-msgstr "Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP."
-
-msgid "ability.item_t2_c_summon.desc"
-msgstr "Quando o portador morre, invoca uma unidade Nível 1 aleatória no lugar."
-
-msgid "ability.unit_tier2a_defensive_stance.desc"
-msgstr "Ao ser alvo de um ataque, cura [2 / 4 / 6] HP antes de receber dano."
-
-msgid "ability.unit_tier2b_shockwave.desc"
-msgstr "O ataque causa dano em cascata: [100% / 150% / 200%] à frente, 50% à unidade atrás, 25% à próxima."
-
-msgid "item_t2_b.name"
-msgstr "Lâmina Sanguinária"
-
-msgid "item_t2_b.desc"
-msgstr "Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
-
-msgid "ability.item_tier2b_bloodlust.desc"
-msgstr "Quando o portador derrota um inimigo, ele age novamente imediatamente (uma vez por turno)."
-
-msgid "hero_timekeeper.name"
-msgstr "Guardião do Tempo"
-
-msgid "hero_timekeeper.desc"
-msgstr "Minijogo: +1s ao acertar, -0,5s ao errar. Ganha 5 fichas por turno em Batalhas e Locais de Descanso. No início de cada turno, concede +2 HP às unidades à frente e +2 PWR às unidades atrás."
-
-msgid "ability.hero_timekeeper_gold_on_kill.desc"
-msgstr "Recompensa: Quando este herói derrota um inimigo, ganha 1 de Ouro."
-
-msgid "ability.hero_timekeeper_time_warp.desc"
-msgstr "Minigame: +1s correto, -0.5s errado. Ganha 5 fichas por turno em Batalhas e Locais de Descanso."
-
-msgid "ability.hero_timekeeper_temporal_aura.desc"
-msgstr "No início de cada turno, concede +2 HP às unidades na frente e +2 PWR às unidades atrás."
-
-msgid "boss_1.name"
-msgstr "O Guardião Desperto"
-
-msgid "boss_1.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você saca um gachaball, este chefe ganha +1 HP."
-
-msgid "boss_2.name"
-msgstr "O Guardião das Sombras"
-
-msgid "boss_2.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
-
-msgid "boss_3.name"
-msgstr "O Arauto da Tempestade"
-
-msgid "boss_3.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
-
-msgid "boss_4.name"
-msgstr "O Titã Ancestral"
-
-msgid "boss_4.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios."
-
-msgid "boss_5.name"
-msgstr "O Árbitro Final"
-
-msgid "boss_5.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios."
-
-msgid "ability.boss_summon.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios."
-
-msgid "ability.boss_1_draw_drain.desc"
-msgstr "Toda vez que você saca um gachaball, este chefe ganha +1 HP."
-
-msgid "ability.boss_2_token_drain.desc"
-msgstr "Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
-
-msgid "ability.boss_3_ally_growth.desc"
-msgstr "Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
-
-msgid "trinket.soul_echo.name"
-msgstr "Eco da Alma"
-
-msgid "trinket.soul_echo.desc"
-msgstr "Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
-
-msgid "ability.soul_echo.desc"
-msgstr "Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
-
-msgid "trinket.vengeance.name"
-msgstr "Amuleto de Vingança"
-
-msgid "trinket.vengeance.desc"
-msgstr "Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
-
-msgid "ability.vengeance.desc"
-msgstr "Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
-
-msgid "trinket.aegis.name"
-msgstr "Amuleto Égide"
-
-msgid "trinket.aegis.desc"
-msgstr "Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
-
-msgid "ability.aegis.desc"
-msgstr "Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
-
-msgid "trinket.twin_charm.name"
-msgstr "Amuleto Gêmeo"
-
-msgid "trinket.twin_charm.desc"
-msgstr "Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
-
-msgid "ability.twin_charm_scale.desc"
-msgstr "Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
-
-msgid "ability.unit_tier3a_mirror_strike.desc"
-msgstr "Ataca o inimigo na posição oposta, causando [100% / 150% / 200%] de dano. Se vazio, ataca o inimigo do fundo."
-
-msgid "ability.unit_tier3b_guardian_sacrifice.desc"
-msgstr "Quando um aliado receberia dano letal, intercepta e recebe [100% / 75% / 50%] do dano no lugar."
-
-msgid "ability.unit_tier3c_soul_summon.desc"
-msgstr "Quando esta unidade morre, invoca uma unidade Nível 2 aleatória com [+0 / +2 / +4] de HP e PWR."
-
-msgid "item_t3_a.name"
-msgstr "Pedra do Coração"
-
-msgid "item_t3_a.desc"
-msgstr "Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
-
-msgid "ability.item_t3a_on_hurt_heal.desc"
-msgstr "Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
-
-msgid "item_t3_b.name"
-msgstr "Amuleto de Poder"
-
-msgid "item_t3_b.desc"
-msgstr "Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
-
-msgid "ability.item_t3b_on_attack_buff.desc"
-msgstr "Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
-
-msgid "item_t3_c.name"
-msgstr "Anel de Roubo de Vida"
-
-msgid "item_t3_c.desc"
-msgstr "Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
-
-msgid "ability.item_t3c_on_attack_lifesteal.desc"
-msgstr "Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
-
-msgid "item_t3_d.name"
-msgstr "Espinho Vingativo"
-
-msgid "item_t3_d.desc"
-msgstr "Ao ser ferido POR UM ATAQUE, causa metade do PWR do portador como dano a um inimigo aleatório."
-
-msgid "ui.title"
-msgstr "FLASHCARD HEROES"
-
-msgid "ui.loadout_selection"
-msgstr "Seleção de Loadout"
-
-msgid "ui.start_run"
-msgstr "Jogar"
-
-msgid "ui.options"
-msgstr "Opções"
-
-msgid "ui.choose_hero"
-msgstr "Escolher Herói"
-
-msgid "ui.choose_deck"
-msgstr "Escolher Deck"
-
-msgid "ui.test_mode"
-msgstr "Modo Teste"
-
-msgid "ui.victory"
-msgstr "VITÓRIA"
-
-msgid "ui.defeat"
-msgstr "DERROTA"
-
-msgid "ui.continue"
-msgstr "Continuar"
-
-msgid "ui.return_to_path"
-msgstr "Voltar ao Caminho"
-
-msgid "ui.shop"
-msgstr "Loja"
-
-msgid "ui.buy"
-msgstr "Comprar"
-
-msgid "ui.reroll"
-msgstr "Novas Opções (1 Ouro)"
-
-msgid "ui.back_to_path"
-msgstr "Voltar ao Caminho"
-
-msgid "ui.end_turn"
-msgstr "Lutar!"
-
-msgid "ui.discard_pile"
-msgstr "Pilha de Descarte"
-
-msgid "ui.tokens"
-msgstr "Fichas"
-
-msgid "ui.inventory"
-msgstr "Inventário"
-
-msgid "ui.tier"
-msgstr "Nível"
-
-msgid "ui.rest_site"
-msgstr "Local de Descanso"
-
-msgid "ui.train_hp"
-msgstr "Treinar HP"
-
-msgid "ui.train_pwr"
-msgstr "Treinar PWR"
-
-msgid "ui.leave"
-msgstr "Sair"
-
-msgid "ui.choose_reward"
-msgstr "Escolha Sua Recompensa"
-
-msgid "ui.confirm_selection"
-msgstr "Confirmar Seleção"
-
-msgid "ui.take_gold"
-msgstr "Pegar Ouro"
-
-msgid "ui.run_complete"
-msgstr "JOGATINA COMPLETA!"
-
-msgid "ui.congratulations"
-msgstr "Parabéns!"
-
-msgid "ui.return_to_title"
-msgstr "Voltar ao Início"
-
-msgid "ui.exit_game"
-msgstr "Sair do Jogo"
-
-msgid "ui.battle_log"
-msgstr "Registro de Batalha"
-
-msgid "ui.hide"
-msgstr "Esconder"
-
-msgid "ui.clear"
-msgstr "Limpar"
-
-msgid "ui.language"
-msgstr "Idioma"
-
-msgid "ui.english"
-msgstr "Inglês"
-
-msgid "ui.portuguese"
-msgstr "Português"
-
-msgid "ui.equipped_items"
-msgstr "Itens Equipados:"
-
-msgid "ui.results"
-msgstr "Resultados"
-
-msgid "ui.confirm"
-msgstr "Confirmar"
-
-msgid "ui.got_it"
-msgstr "Entendi!"
-
-msgid "ui.choose_action"
-msgstr "Escolha uma ação para realizar."
-
-msgid "ui.training_complete"
-msgstr "Treinamento Completo!"
-
-msgid "ui.no_gains"
-msgstr "Nenhum ganho desta vez."
-
-msgid "ui.hero_gained"
-msgstr "Seu Herói ganhou +%d %s."
-
-msgid "ui.buy_gold"
-msgstr "Comprar (%d Ouro)"
-
-msgid "ui.reroll_gold"
-msgstr "Novas Opções (%d Ouro)"
-
-msgid "ui.gold_price"
-msgstr "%d Ouro"
-
-msgid "ui.tier_1"
-msgstr "Nível 1"
-
-msgid "ui.tier_2"
-msgstr "Nível 2"
-
-msgid "ui.tier_3"
-msgstr "Nível 3"
-
-msgid "ui.show"
-msgstr "Mostrar"
-
-msgid "ui.run_complete_message"
-msgstr "Você derrotou todos os %d chefes e completou sua jogatina!"
-
-msgid "ui.final_statistics"
-msgstr "Estatísticas Finais"
-
-msgid "ui.days_survived"
-msgstr "Dias Sobrevividos"
-
-msgid "ui.bosses_defeated"
-msgstr "Chefes Derrotados"
-
-msgid "ui.elites_defeated"
-msgstr "Elites Derrotados"
-
-msgid "ui.enemies_slain"
-msgstr "Inimigos Derrotados"
-
-msgid "ui.gold_earned"
-msgstr "Ouro Ganho"
-
-msgid "ui.tokens_earned"
-msgstr "Fichas Ganhas"
-
-msgid "ui.flashcards_mastered"
-msgstr "Flashcards Dominados"
-
-msgid "ui.mastery_breakdown"
-msgstr "Níveis de Domínio"
-
-msgid "ui.mastery_level_2"
-msgstr "Domínio 2 (Difícil)"
-
-msgid "ui.mastery_level_3"
-msgstr "Domínio 3 (Médio)"
-
-msgid "ui.mastery_level_4"
-msgstr "Domínio 4 (Fácil)"
-
-msgid "ui.mastery_level_5"
-msgstr "Domínio 5 (Muito Fácil)"
-
-msgid "ui.take_gold_amount"
-msgstr "Prefiro %d de Ouro"
-
-msgid "ui.discard_pile_count"
-msgstr "Descarte (%d)"
-
-msgid "ui.tokens_count"
-msgstr "Fichas: %d"
-
-msgid "ui.day"
-msgstr "Dia %d"
-
-msgid "ui.boss"
-msgstr "Chefe %d"
-
-msgid "ui.battle_node"
-msgstr "Batalha"
-
-msgid "ui.elite_battle_node"
-msgstr "Batalha de Elite"
-
-msgid "ui.shop_node"
-msgstr "Loja"
-
-msgid "ui.shrine_node"
-msgstr "Santuário"
-
-msgid "ui.merge_node"
-msgstr "Encontro de Fusão"
-
-msgid "ui.rest_node"
-msgstr "Local de Descanso"
-
-msgid "ui.training_grounds_node"
-msgstr "Campus de Treinamento"
-
-msgid "ui.gambling_den_node"
-msgstr "Canto das Apostas"
-
-msgid "ui.training_grounds"
-msgstr "Campus de Treinamento"
-
-msgid "ui.gambling_den"
-msgstr "Canto das Apostas"
-
-msgid "ui.shrine_title"
-msgstr "Santuário"
-
-msgid "ui.shrine_open_inventory"
-msgstr "REMOVER OU TRANSFORMAR"
-
-msgid "ui.shrine_prompt"
-msgstr "O que você quer fazer com %s?"
-
-msgid "ui.shrine_instructions"
-msgstr "Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro)."
-
-msgid "ui.remove_cost"
-msgstr "Remover (%d Ouro)"
-
-msgid "ui.transform_cost"
-msgstr "Transformar (%d Ouro)"
-
-msgid "tutorial.shrine_intro.title"
-msgstr "Removendo e Transformando"
-
-msgid "tutorial.shrine_intro"
-msgstr "O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
-
-msgid "tutorial.training_grounds"
-msgstr "Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
-
-msgid "tutorial.gambling_den"
-msgstr "Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro."
-
-msgid "ui.effects"
-msgstr "Efeitos"
-
-msgid "ui.no_effects"
-msgstr "Esta unidade não possui efeitos especiais."
-
-msgid "ui.no_effect_details"
-msgstr "Nenhum detalhe disponível para este efeito."
-
-msgid "ui.score"
-msgstr "Pontuação: %d"
-
-msgid "ui.answer"
-msgstr "Resposta: %s"
-
-msgid "ui.explanation"
-msgstr "Explicação: %s"
-
-msgid "ui.no_explanation"
-msgstr "Nenhuma explicação disponível"
-
-msgid "ui.study"
-msgstr "Ganhar Fichas!"
-
-msgid "ui.stat_prize"
-msgstr "Prêmio de Atributo"
-
-msgid "ui.show_tutorials"
-msgstr "Mostrar Tutoriais e Dicas"
-
-msgid "ui.review_title"
-msgstr "Ganhar Fichas!"
-
-msgid "ui.skip"
-msgstr "PULAR"
-
-msgid "ui.priority_cards"
-msgstr "Cartas de Prioridade (clique para prévia):"
-
-msgid "ui.ready"
-msgstr "Pronto!"
-
-msgid "ui.intro_new_card"
-msgstr "Introdução de Nova Carta"
-
-msgid "ui.midgame_card_unlocked"
-msgstr "★ NOVA CARTA DESBLOQUEADA! ★"
-
-msgid "ui.midgame_bonus_info"
-msgstr "+1.0s TEMPO BÔNUS!"
-
-msgid "ui.play"
-msgstr "Jogar"
-
-msgid "tutorial.loadout"
-msgstr "Escolha seu herói e deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck é o baralho de flashcards que será usado por toda a jogatina."
-
-msgid "tutorial.path_choice_intro.title"
-msgstr "Escolha do caminho"
-
-msgid "tutorial.path_choice_1"
-msgstr "Escolha sua proxima parada! Cada parada conta como um dia e seus adversarios ficam mais fortes a cada dia. Escolha bem!"
-
-msgid "tutorial.gacha_inspect_run.title"
-msgstr "Coleção Gacha"
-
-msgid "tutorial.gacha_inspect_run.mouse"
-msgstr "Esta é a sua coleção atual. Passe o cursor ou segure o clique em uma GachaBall para inspecioná-la (um clique rápido seleciona). Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta clicar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
-
-msgid "tutorial.gacha_inspect_run.touch"
-msgstr "Esta é a sua coleção atual. Toque e segure uma GachaBall para inspecioná-la (um toque rápido seleciona). Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta tocar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
-
-msgid "tutorial.gacha_inspect_battle"
-msgstr "Fundir ou destruir gachaballs em batalha afeta apenas o encontro atual. Sua coleção permanente permanece inalterada. Cada batalha redefine seus gachaballs para seu estado base."
-
-msgid "tutorial.shop"
-msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se estiver procurando algo específico, mas cuidado: o preço sobe a cada rolagem!"
-
-msgid "tutorial.rest_site"
-msgstr "Um momento de descanso. Domine o minigame de flashcards para ganhar fichas e use-as nestas máquinas para upgrades permanentes do Herói."
-
-msgid "tutorial.new_card_intro.title"
-msgstr "Novo Flashcard e Revisão!"
-
-msgid "tutorial.new_card_intro"
-msgstr "Aqui é onde novos flashcards são adicionados ao seu Deck de Domínio.\n\nUm novo será adicionado a cada mini game.\n\nVocê começa com 6 flashcards já desbloqueados.\n\nTente memorizar alguns antes de começar o mini-jogo.\n\nSeus recursos na batalha dependem disso."
-
-msgid "tutorial.battle_management_intro.title"
-msgstr "Fichas e Máquinas de Gacha"
-
-msgid "tutorial.battle_management"
-msgstr "Use suas fichas nas Máquinas de Gacha abaixo para obter unidades e itens!\n\nCada máquina tem um custo diferente. Gaste suas fichas com sabedoria!"
-
-msgid "tutorial.first_draw.title"
-msgstr "Montando sua equipe"
-
-msgid "tutorial.first_draw_1"
-msgstr "Novas cápsulas são enviadas para a sua Reserva.\n\nDe lá, você pode posicionar unidades na Formação de Batalha ou equipar itens nas suas unidades, ou usá-los.\n\nSe a Reserva estiver cheia, qualquer nova cápsula será enviada diretamente para o Descarte."
-
-msgid "tutorial.first_draw_combat.title"
-msgstr "Como a Batalha Funciona"
-
-msgid "tutorial.first_draw_2"
-msgstr "Sua equipe age primeiro, começando pela unidade da frente até a última. Em seguida, a equipe inimiga age na mesma ordem.\n\nDerrote todas as unidades inimigas para vencer. Se o seu herói morrer, você perde.\n\nSe nenhum dos lados for derrotado, um novo turno começa.\n\nPressione \"Lutar!\" quando estiver satisfeito com sua equipe."
-
-msgid "tutorial.equip"
-msgstr "Escolha seu equipamento com sabedoria. Unidades têm espaços limitados e, uma vez equipado, um item não pode ser removido. Cada escolha conta!"
-
-msgid "tutorial.merge_choice"
-msgstr "Escolha Fundir para combinar dois em uma única entidade mais poderosa, ou Trocar para reorganizar suas fileiras? A escolha é sua."
-
-msgid "tutorial.gacha_inspect_battle.title"
-msgstr "Cápsulas de Batalha"
-
-msgid "tooltip.gacha_t1"
-msgstr "Máquina Nível 1 - Custo: 1 ficha. Gachaballs fracos mas abundantes."
-
-msgid "tooltip.gacha_t2"
-msgstr "Máquina Nível 2 - Custo: 2 fichas. Poder e custo balanceados."
-
-msgid "tooltip.gacha_t3"
-msgstr "Máquina Nível 3 - Custo: 3 fichas. Alta potência alto risco."
-
-msgid "tooltip.gold"
-msgstr "Ouro - Gaste nas lojas para comprar gachaballs e rerolar estoque."
-
-msgid "tooltip.tokens"
-msgstr "Fichas - Ganhe do minigame de flashcards. Gaste para sacar gachaballs."
-
-msgid "tooltip.day"
-msgstr "Dia - Inimigos ficam mais fortes a cada dia. Quanto tempo você sobrevive?"
-
-msgid "tooltip.hero_hp"
-msgstr "Vida do Herói - Se chegar a zero sua jogatina termina."
-
-msgid "tooltip.end_turn"
-msgstr "Finalize sua fase de gerenciamento e inicie o combate."
-
-msgid "tooltip.discard_pile"
-msgstr "Veja unidades derrotadas e itens descartados."
-
-msgid "tooltip.inventory"
-msgstr "Inspecione sua coleção de gachaballs em todos os níveis."
-
-msgid "tooltip.bench_slot"
-msgstr "Espaço reserva - Unidades e itens aqui esperam para serem implantados ou equipados."
-
-msgid "tooltip.lineup_slot"
-msgstr "Espaço de batalha - Unidades aqui lutam no combate."
-
-msgid "tooltip.item_slot"
-msgstr "Espaço de item equipado - Itens equipados nesta unidade fornecem bônus."
-
-msgid "tooltip.trinket_slot"
-msgstr "Trinket - Fornece bônus passivos para toda sua jogatina."
-
-msgid "tooltip.reroll"
-msgstr "Atualiza estoque da loja. Custo aumenta a cada rerolar."
-
-msgid "tooltip.train_hp"
-msgstr "Gaste fichas do minigame para aumentar permanentemente o HP do herói."
-
-msgid "tooltip.train_pwr"
-msgstr "Gaste fichas do minigame para aumentar permanentemente o PWR do herói."
-
-msgid "ui.choose_your_hero"
-msgstr "Escolha Seu Herói"
-
-msgid "ui.choose_your_deck"
-msgstr "Escolha Seu Deck"
-
-msgid "ui.locked_hero"
-msgstr "Bloqueado"
-
-msgid "ui.cards"
-msgstr "cartas"
-
-msgid "ui.ability"
-msgstr "Habilidade"
-
-msgid "ui.hp"
-msgstr "HP"
-
-msgid "ui.pwr"
-msgstr "PWR"
-
-msgid "deck.katakana.desc"
-msgstr "Aprenda o silabário japonês angular usado para palavras estrangeiras e empréstimos."
-
-msgid "deck.hiragana.desc"
-msgstr "Domine o silabário japonês fluido para palavras nativas e gramática."
-
-msgid "deck.kanji_100.desc"
-msgstr "Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa."
-
-msgid "deck.german_100.desc"
-msgstr "Construa seu vocabulário alemão com 100 palavras comuns e essenciais."
-
-msgid "deck.portuguese_100.desc"
-msgstr "Expanda seu vocabulário português com 100 palavras essenciais do dia a dia."
-
-msgid "deck.korean_hangul.desc"
-msgstr "Aprenda o alfabeto coreano Hangul e as regras de pronúncia"
-
-msgid "ability.unit_tier3e_ambush_predator.desc"
-msgstr "Quando uma unidade inimiga é invocada, ataca-a causando [50% / 75% / 100%] do PWR desta unidade."
-
-msgid "ability.unit_tier3f_summon_blessing.desc"
-msgstr "Quando uma unidade aliada é invocada, concede [+3 / +5 / +7] HP."
-
-msgid "STATUS_BURN"
-msgstr "Chamas"
-
-msgid "STATUS_BURN_DESC"
-msgstr "Causa dano igual ao valor de Chamas ao final do turno. Após o dano o valor cai pela metade."
-
-msgid "STATUS_ARMOR"
-msgstr "Armadura"
-
-msgid "STATUS_ARMOR_DESC"
-msgstr "Armadura: Absorve uma quantidade de dano igual ao valor de Armadura. Desaparece ao final do turno."
-
-msgid "STATUS_SPIKES"
-msgstr "Espinhos"
-
-msgid "STATUS_SPIKES_DESC"
-msgstr "Espinhos: Devolve dano ao atacante igual ao valor de Espinhos. Perde 1 de Espinhos a cada ativação."
-
-msgid "STATUS_STATIC"
-msgstr "Estático"
-
-msgid "STATUS_STATIC_DESC"
-msgstr "Quando esta unidade morre, causa dano colateral igual aos seus acúmulos de Estática a aliados adjacentes vivos na formação, mitigado por Armadura. Acúmulos decaem em 1 no fim de cada turno."
-
-msgid "STATUS_BOUNTY"
-msgstr "Recompensa"
-
-msgid "STATUS_BOUNTY_DESC"
-msgstr "Quando esta unidade é derrotada por qualquer meio, concede 1 de Ouro. Permanece até a unidade morrer ou a batalha terminar."
-
-msgid "trinket.novice_insignia.name"
-msgstr "Insígnia do Novato"
-
-msgid "trinket.novice_insignia.desc"
-msgstr "Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.novice_insignia.desc"
-msgstr "Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.veteran_insignia.name"
-msgstr "Insígnia do Veterano"
-
-msgid "trinket.veteran_insignia.desc"
-msgstr "Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.veteran_insignia.desc"
-msgstr "Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.trait_fire.name"
-msgstr "Sigilo de Fogo"
-
-msgid "trinket.trait_fire.desc"
-msgstr "Os efeitos do traço Fogo são ativados com 3, 6, 12, 20 e 32 unidades."
-
-msgid "trinket.trait_earth.name"
-msgstr "Sigilo da Terra"
-
-msgid "trinket.trait_earth.desc"
-msgstr "Os efeitos do traço Terra são ativados com 3, 6, 12, 20 e 32 unidades."
-
-msgid "trinket.trait_water.name"
-msgstr "Sigilo da Água"
-
-msgid "trinket.trait_water.desc"
-msgstr "Os efeitos do traço Água são ativados com 3, 6, 12, 20 e 32 unidades."
-
-msgid "trinket.trait_air.name"
-msgstr "Sigilo do Ar"
-
-msgid "trinket.trait_air.desc"
-msgstr "Os efeitos do traço Ar são ativados com 3, 6, 12, 20 e 32 unidades."
-
-msgid "trinket.trait_tank.name"
-msgstr "Sigilo do Guardião"
-
-msgid "trinket.trait_tank.desc"
-msgstr "Os efeitos do traço Guardião são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_fighter.name"
-msgstr "Sigilo do Lutador"
-
-msgid "trinket.trait_fighter.desc"
-msgstr "Os efeitos do traço Lutador são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_support.name"
-msgstr "Sigilo de Suporte"
-
-msgid "trinket.trait_support.desc"
-msgstr "Os efeitos do traço Suporte são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_specialist.name"
-msgstr "Sigilo do Especialista"
-
-msgid "trinket.trait_specialist.desc"
-msgstr "Os efeitos do traço Especialista são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_food.name"
-msgstr "Sigilo da Comida"
-
-msgid "trinket.trait_food.desc"
-msgstr "Os efeitos do traço Comida são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_mecha.name"
-msgstr "Sigilo Mecha"
-
-msgid "trinket.trait_mecha.desc"
-msgstr "Os efeitos do traço Mecha são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_animal.name"
-msgstr "Sigilo Animal"
-
-msgid "trinket.trait_animal.desc"
-msgstr "Os efeitos do traço Animal são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_plant.name"
-msgstr "Sigilo da Planta"
-
-msgid "trinket.trait_plant.desc"
-msgstr "Os efeitos do traço Planta são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_toy.name"
-msgstr "Sigilo do Brinquedo"
-
-msgid "trinket.trait_toy.desc"
-msgstr "Os efeitos do traço Brinquedo são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_appliance.name"
-msgstr "Sigilo do Eletrodoméstico"
-
-msgid "trinket.trait_appliance.desc"
-msgstr "Os efeitos do traço Eletrodoméstico são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trinket.trait_costume.name"
-msgstr "Sigilo da Fantasia"
-
-msgid "trinket.trait_costume.desc"
-msgstr "Os efeitos do traço Fantasia são ativados com 2, 3, 4 e 5 unidades."
-
-msgid "trait.fire.name"
-msgstr "Fogo"
-
-msgid "trait.fire.3"
-msgstr "Ataques de unidades de Fogo aplicam 1 de Chamas no alvo."
-
-msgid "trait.fire.6"
-msgstr "...e aplica +1 de Chamas adicional se o alvo já tiver Chamas."
-
-msgid "trait.fire.12"
-msgstr "Além disso, quando um inimigo sofre dano de Chamas no fim do turno, espalha 1 de Chamas para cada aliado adjacente."
-
-msgid "trait.fire.20"
-msgstr "...e unidades de Fogo causam dano de ataque bônus igual às Chamas atuais do alvo."
-
-msgid "trait.fire.32"
-msgstr "Além disso, quando um inimigo com Chamas é derrotado por uma unidade de Fogo, suas Chamas restantes são distribuídas entre inimigos adjacentes."
-
-msgid "item.emblem_fire.name"
-msgstr "Emblema de Fogo"
-
-msgid "item.emblem_fire.desc"
-msgstr "Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
-
-msgid "trait.earth.name"
-msgstr "Terra"
-
-msgid "trait.earth.3"
-msgstr "Pré-Combate: A unidade de Terra mais à frente ganha 1 de Armadura."
-
-msgid "trait.earth.6"
-msgstr "...e também ganha 1 de Espinhos."
-
-msgid "trait.earth.12"
-msgstr "Adiciona +1 de Armadura e +1 de Espinhos ao efeito, e todas as outras unidades de Terra também ganham isso."
-
-msgid "trait.earth.20"
-msgstr "Adiciona +1 de Armadura e +1 de Espinhos a unidades de Terra, e todos os outros aliados ganham 1 de Armadura e 1 de Espinhos."
-
-msgid "trait.earth.32"
-msgstr "...e unidades de Terra causam dano de ataque bônus igual aos seus Espinhos atuais (consome 1 pilha de Espinhos por ataque)."
-
-msgid "item.emblem_earth.name"
-msgstr "Emblema de Terra"
-
-msgid "item.emblem_earth.desc"
-msgstr "Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que a unidade se beneficie das sinergias do traço de Terra."
-
-msgid "trait.water.name"
-msgstr "Água"
-
-msgid "trait.water.3"
-msgstr "Pré-Combate: Unidades de Água curam o aliado diretamente à frente em 1 de Vida."
-
-msgid "trait.water.6"
-msgstr "...e também removem 1 efeito negativo (Chamas/Estática) desse aliado."
-
-msgid "trait.water.12"
-msgstr "Além disso, no início do turno, cura o aliado com menor Vida em 1 de Vida."
-
-msgid "trait.water.20"
-msgstr "Além disso, Pré-Combate: Todos os aliados da equipe removem 1 efeito negativo."
-
-msgid "trait.water.32"
-msgstr "Além disso, no início do turno, aliados consomem todos os seus efeitos negativos para curar 1 de Vida por efeito consumido."
-
-msgid "item.emblem_water.name"
-msgstr "Emblema de Água"
-
-msgid "item.emblem_water.desc"
-msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
-
-msgid "trait.air.name"
-msgstr "Ar"
-
-msgid "trait.air.3"
-msgstr "Ataques de unidades de Ar aplicam 1 de Estática no alvo."
-
-msgid "trait.air.6"
-msgstr "Aumenta para 2 de Estática por ataque."
-
-msgid "trait.air.12"
-msgstr "...e ataques espalham metade da Estática aplicada (mínimo 1) para inimigos adjacentes."
-
-msgid "trait.air.20"
-msgstr "Além disso, Pré-Combate: Aplica 1 de Estática a todos os inimigos."
-
-msgid "trait.air.32"
-msgstr "Estática aplicada ao atacar escala para igualar o Poder da unidade de Ar (espalha metade para inimigos adjacentes)."
-
-msgid "item.emblem_air.name"
-msgstr "Emblema de Ar"
-
-msgid "item.emblem_air.desc"
-msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
-
-msgid "trait.tank.name"
-msgstr "Guardião"
-
-msgid "trait.tank.2"
-msgstr "Pré-Combate: O Guardião mais à frente ganha 1 de Armadura."
-
-msgid "trait.tank.3"
-msgstr "Todos os Guardiões agora ganham 1 de Armadura. Quando a Armadura de um Guardião absorve dano, o aliado diretamente atrás ganha 1 de Armadura."
-
-msgid "trait.tank.4"
-msgstr "Além disso, no início do turno, o Guardião mais à frente ganha 1 de Armadura, e Guardiões interceptam ataques direcionados ao aliado diretamente atrás."
-
-msgid "trait.tank.5"
-msgstr "...e sempre que um Guardião ganha Armadura de qualquer fonte, ganha a mesma quantidade de Espinhos."
-
-msgid "trait.fighter.name"
-msgstr "Lutador"
-
-msgid "trait.fighter.2"
-msgstr "Lutadores causam +1 de dano em ataques se o alvo tiver mais Vida que eles."
-
-msgid "trait.fighter.3"
-msgstr "Além disso, quando um Lutador sofre dano de ataque, contra-ataca com 1 de dano à distância (uma vez por turno)."
-
-msgid "trait.fighter.4"
-msgstr "Além disso, ataques de Lutadores causam metade do Poder como dano disperso (mínimo 1) ao inimigo diretamente atrás do alvo."
-
-msgid "trait.fighter.5"
-msgstr "...e quando um Lutador derrota um inimigo, ganha +1 de Poder e ataca imediatamente o próximo inimigo (uma vez por turno)."
-
-msgid "trait.support.name"
-msgstr "Suporte"
-
-msgid "trait.support.2"
-msgstr "Pré-Combate: Unidades de Suporte concedem +1 de Vida ao aliado diretamente à frente."
-
-msgid "trait.support.3"
-msgstr "...e também concedem +1 de Poder ao aliado diretamente atrás."
-
-msgid "trait.support.4"
-msgstr "Além disso, no início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
-
-msgid "trait.support.5"
-msgstr "Além disso, Pré-Combate: Concede +1 de Vida e +1 de Poder à unidade Heroica."
-
-msgid "trait.specialist.name"
-msgstr "Especialista"
-
-msgid "trait.specialist.2"
-msgstr "Início do Combate: Se você tiver 0 fichas restantes, ganha 1 Ficha."
-
-msgid "trait.specialist.3"
-msgstr "...e o primeiro sorteio do Gacha em cada batalha custa 1 Ficha a menos (mínimo 1)."
-
-msgid "trait.specialist.4"
-msgstr "Além disso, derrotar um inimigo com um Especialista concede +1 de Ouro (máx 1/turno, 5/batalha)."
-
-msgid "trait.specialist.5"
-msgstr "Além disso, invoca uma cópia de combate da sua unidade de menor nível/tier no banco no pré-combate, e no início do turno, o Especialista mais à frente ganha +1 de Poder a cada 5 de Ouro."
-
-msgid "trait.food.name"
-msgstr "Comida"
-
-msgid "trait.food.2"
-msgstr "Quando uma unidade de Comida é ferida por um ataque, cura o aliado diretamente atrás em 1 de Vida."
-
-msgid "trait.food.3"
-msgstr "Aumenta a cura para 2 de Vida."
-
-msgid "trait.food.4"
-msgstr "Aumenta a cura para 3 de Vida e também concede +1 de Poder a esse aliado."
-
-msgid "trait.food.5"
-msgstr "Aumenta a cura para 4 de Vida e +2 de Poder. Além disso, ao morrer, passa todo seu Poder atual para o aliado diretamente atrás."
-
-msgid "trait.mecha.name"
-msgstr "Mecha"
-
-msgid "trait.mecha.2"
-msgstr "Pré-Combate: Unidades Mecha ganham 1 de Espinhos."
-
-msgid "trait.mecha.3"
-msgstr "...e também ganham 1 de Armadura. Além disso, Mechas aplicam 1 de Estática ao atacar e quando sua Armadura absorve dano."
-
-msgid "trait.mecha.4"
-msgstr "Além disso, sempre que ocorre uma fusão no tabuleiro, cada Mecha dispara um laser causando 1 de dano e 1 de Estática a um inimigo aleatório."
-
-msgid "trait.mecha.5"
-msgstr "Além disso, quando um Mecha morre, Mechas sobreviventes ganham 2 de Armadura e 2 de Espinhos, e disparam um laser causando 2 de dano e 2 de Estática a um inimigo aleatório."
-
-msgid "trait.animal.name"
-msgstr "Animal"
-
-msgid "trait.animal.2"
-msgstr "Pré-Combate: Um Animal aleatório ganha +1 de Poder. Animais curam 1 de Vida por ataque."
-
-msgid "trait.animal.3"
-msgstr "Cura por ataque aumenta para 2 de Vida."
-
-msgid "trait.animal.4"
-msgstr "Cura por ataque aumenta para 3 de Vida."
-
-msgid "trait.animal.5"
-msgstr "Cura por ataque aumenta para 3 de Vida + 25% do Poder (mínimo +1)."
-
-msgid "trait.plant.name"
-msgstr "Planta"
-
-msgid "trait.plant.2"
-msgstr "Pré-Combate: A Planta mais à frente ganha 1 de Espinhos."
-
-msgid "trait.plant.3"
-msgstr "Além disso, no início do turno, a Planta com menor Vida recupera 1 de Vida."
-
-msgid "trait.plant.4"
-msgstr "Além disso, Pré-Combate: Todas as Plantas ganham 1 de Espinhos e +1 de Vida (a mais à frente ganha 2 de Espinhos)."
-
-msgid "trait.plant.5"
-msgstr "Além disso, no início do turno, todas as Plantas ganham 1 de Espinhos e +1 de Vida. Sempre que uma Planta recebe cura, ganha 1 de Espinhos."
-
-msgid "trait.toy.name"
-msgstr "Brinquedo"
-
-msgid "trait.toy.2"
-msgstr "Inimigos que atingem um Brinquedo com ataque corpo a corpo recebem 2 de Estática."
-
-msgid "trait.toy.3"
-msgstr "Aumenta para 3 de Estática."
-
-msgid "trait.toy.4"
-msgstr "Aumenta para 4 de Estática."
-
-msgid "trait.toy.5"
-msgstr "Além disso, ao morrer, detona toda a Estática no inimigo com mais Estática, causando dano igual às pilhas e removendo-as."
-
-msgid "trait.appliance.name"
-msgstr "Eletrodoméstico"
-
-msgid "trait.appliance.2"
-msgstr "Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate."
-
-msgid "trait.appliance.3"
-msgstr "...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate."
-
-msgid "trait.appliance.4"
-msgstr "Além disso, quando um inimigo tenta aplicar Estática ou Chamas a um Eletrodoméstico, o efeito é refletido de volta para quem aplicou."
-
-msgid "trait.appliance.5"
-msgstr "Além disso, tentativas de aplicar efeitos negativos concedem atributos: cada Estática concede +1 de Poder, e cada Chamas concede +1 de Vida."
-
-msgid "trait.costume.name"
-msgstr "Fantasia"
-
-msgid "trait.costume.2"
-msgstr "Pré-Combate: Rouba 1 pilha do maior efeito benéfico do inimigo espelhado, ou 1 ponto do maior atributo dele."
-
-msgid "trait.costume.3"
-msgstr "Em vez do acima, Pré-Combate: Rouba todo o maior efeito benéfico do inimigo espelhado, ou 1 de Vida e 1 de Poder."
-
-msgid "trait.costume.4"
-msgstr "Melhora para roubar todos os efeitos benéficos do inimigo espelhado, ou 2 de Vida e 2 de Poder."
-
-msgid "trait.costume.5"
-msgstr "Pré-Combate: Executado uma vez pela equipe. O Herói rouba toda a Armadura e Espinhos, mais 3 de Vida e 3 de Poder, do inimigo com maior soma de Armadura e Espinhos."
-
-msgid "item.potion_t1.name"
-msgstr "Poção de Cura Menor"
-
-msgid "item.potion_t1.desc"
-msgstr "Restaura 4 HP."
-
-msgid "ability.potion_t1.desc"
-msgstr "Restaura 4 HP."
-
-msgid "item.potion_spikes.name"
-msgstr "Poção de Espinhos"
-
-msgid "item.potion_spikes.desc"
-msgstr "Concede 4 pilhas de Espinhos"
-
-msgid "ability.grant_spikes.desc"
-msgstr "Concede 4 pilhas de Espinhos"
-
-msgid "item.potion_heroism.name"
-msgstr "Poção de Heroísmo"
-
-msgid "item.potion_heroism.desc"
-msgstr "Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
-
-msgid "ability.grant_heroism.desc"
-msgstr "Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
-
-msgid "item.potion_plunder.name"
-msgstr "Poção do Saqueador"
-
-msgid "item.potion_plunder.desc"
-msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
-
-msgid "ability.potion_plunder.desc"
-msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
-
-msgid "ability.unit_t2_e_mimic.desc"
-msgstr "No início do turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de HP e PWR."
-
-msgid "ability.unit_t2_g_buff_echo.desc"
-msgstr "Quando um aliado adjacente recebe um buff de HP ou PWR, esta unidade repete [100% / 150% / 200%] desse buff nele."
-
-msgid "ability.unit_t2_h_l1.desc"
-msgstr "No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
-
-msgid "ability.unit_t2_h_l2.desc"
-msgstr "No início do combate, ganha +2 de HP e +2 de PWR para cada espaço vazio no seu time."
-
-msgid "ability.unit_t2_h_l3.desc"
-msgstr "No início do combate, ganha +3 de HP e +3 de PWR para cada espaço vazio no seu time."
-
-msgid "ability.mud_coating_l1.desc"
-msgstr "Quando curado, ganha 1 de Armadura e 1 de Espinhos."
-
-msgid "ability.mud_coating_l2.desc"
-msgstr "Quando curado, ganha 2 de Armadura e 2 de Espinhos."
-
-msgid "ability.mud_coating_l3.desc"
-msgstr "Quando curado, ganha 3 de Armadura e 3 de Espinhos."
-
-msgid "ability.scald_l1.desc"
-msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
-
-msgid "ability.scald_l2.desc"
-msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para 1 alvo extra, reduzindo pela metade os acúmulos aplicados."
-
-msgid "ability.scald_l3.desc"
-msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura. O projétil salta para até 2 alvos extras, reduzindo pela metade os acúmulos aplicados a cada salto."
-
-msgid "ability.unit_t3_h.desc"
-msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, se esta unidade estiver no tabuleiro de batalha, ganha [**+2 / +3 / +4 de HP e PWR**]."
-
-msgid "unit_dust_t2.name"
-msgstr "Recruta de Poeira (T2)"
-
-msgid "unit_dust_t2.desc"
-msgstr "Causa (PWR) de dano ao inimigo da frente."
-
-msgid "unit_dust_t3.name"
-msgstr "Recruta de Poeira (T3)"
-
-msgid "unit_dust_t3.desc"
-msgstr "Causa (PWR) de dano ao inimigo da frente."
-
-msgid "unit_dust_elite_t1.name"
-msgstr "Guarda de Poeira (T1)"
-
-msgid "unit_dust_elite_t1.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no início do turno. Invoca um Recruta de Poeira ao atacar."
-
-msgid "unit_dust_elite_t2.name"
-msgstr "Sentinela de Poeira (T2)"
-
-msgid "unit_dust_elite_t3.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
-
-msgid "ability_dust_elite_spawn.desc"
-msgstr "Invoca um Recruta de Poeira no inventário do jogador."
-
-msgid "unit_dust_t1.name"
-msgstr "Recruta de Poeira (T1)"
-
-msgid "unit_dust_t1.desc"
-msgstr "Causa (PWR) de dano ao inimigo da frente."
-
-msgid "unit_dust_elite_t3.name"
-msgstr "Soberano de Poeira (T3)"
-
-msgid "ability_dust_elite_spawn_turn.desc"
-msgstr "Invoca um Recruta de Poeira no início do turno."
-
-msgid "ability_dust_elite1_spawn_death.desc"
-msgstr "Invoca um Recruta de Poeira T1 quando um aliado morre."
-
-msgid "ability_dust_elite2_spawn_death.desc"
-msgstr "Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre."
-
-msgid "ability_dust_elite_spawn_death.desc"
-msgstr "Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre."
-
-msgid "ability_dust_elite_spawn_hurt.desc"
-msgstr "Invoca um Recruta de Poeira ao sofrer dano."
-
-msgid "ability_dust_elite_spawn_attack.desc"
-msgstr "Invoca um Recruta de Poeira ao atacar."
-
-msgid "unit_dust_elite_t2.desc"
-msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no inventário do jogador."
-
-msgid "ability.dust_growth.desc"
-msgstr "Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
-
-msgid "ui.drop_zone_get"
-msgstr "Pegar"
-
-msgid "ui.drop_zone_buy"
-msgstr "Comprar"
-
-msgid "ui.drop_zone_remove"
-msgstr "Remover"
-
-msgid "ui.drop_zone_transform"
-msgstr "Transformar"
-
-msgid "ui.drop_zone_get_multi"
-msgstr "Arraste ou clique aqui para\n[font_size=72]PEGAR[/font_size]"
-
-msgid "ui.drop_zone_buy_multi"
-msgstr "Arraste ou clique aqui para\n[font_size=72]COMPRAR[/font_size]"
-
-msgid "ui.drop_zone_remove_multi"
-msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]"
-
-msgid "ui.drop_zone_transform_multi"
-msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]"
-
-msgid "ui.drop_zone_sell_multi"
-msgstr "Arraste ou clique aqui para\n[font_size=72]VENDER[/font_size]"
-
-msgid "ui.shrine_instruction"
-msgstr "Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário."
-
-msgid "ui.reward_instruction"
-msgstr "Mova a gacha ball para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
-
-msgid "ui.reward_elite_instruction"
-msgstr "Mova o Amuleto para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
-
-msgid "ability_dust_elite_spawn_enemy_death.desc"
-msgstr "Invoca um Recruta de Poeira quando um Inimigo morre."
-
-msgid "trinket.armor_aura.name"
-msgstr "Aura de Armadura"
-
-msgid "trinket.armor_aura.desc"
-msgstr "No início do turno, todos os aliados ganham 3 de Armadura."
-
-msgid "ability.armor_aura.desc"
-msgstr "No início do turno, todos os aliados ganham 3 de Armadura."
-
-msgid "ui.audio_settings"
-msgstr "Configurações de Áudio"
-
-msgid "ui.master_volume"
-msgstr "Volume Geral"
-
-msgid "ui.music_volume"
-msgstr "Volume da Música"
-
-msgid "ui.sfx_volume"
-msgstr "Volume de Efeitos"
-
-msgid "ui.close"
-msgstr "Fechar"
-
-msgid "ui.yes"
-msgstr "Sim"
-
-msgid "ui.no"
-msgstr "Não"
-
-msgid "ui.confirm_reset"
-msgstr "Tem certeza que deseja resetar todo o progresso?"
-
-msgid "ui.crt_effect"
-msgstr "Efeito CRT"
-
-msgid "ui.fullscreen"
-msgstr "Tela Cheia"
-
-msgid "ui.glow_effect"
-msgstr "Efeito de Brilho"
-
-msgid "ui.glow_debug"
-msgstr "Debug de Brilho:"
-
-msgid "ui.tutorial_title"
-msgstr "Tutorial"
-
-msgid "tutorial.traits.title"
-msgstr "Sinergias"
-
-msgid "tutorial.traits"
-msgstr "Sinergias são efeitos e bônus especiais que são ativados conforme o número de Almas ou unidades de um mesmo tipo que você possui em seu time.\n\nToque nas unidades para conferir quais Sinergias elas possuem."
-
-msgid "hero_avenger.name"
-msgstr "Vingador"
-
-msgid "hero_avenger.desc"
-msgstr "Quando um aliado morre, salta e ataca o inimigo da frente."
-
-msgid "ability.hero_avenger_ally_death_attack.desc"
-msgstr "Quando um aliado morre, salta e ataca o inimigo da frente."
-
-msgid "hero_bastion.name"
-msgstr "Bastião"
-
-msgid "hero_bastion.desc"
-msgstr "Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
-
-msgid "ability.hero_bastion_ally_death_spikes_armor.desc"
-msgstr "Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
-
-msgid "hero_pyro.name"
-msgstr "Piromante"
-
-msgid "hero_pyro.desc"
-msgstr "Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
-
-msgid "ability.hero_pyro_attack_burn.desc"
-msgstr "Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
-
-msgid "options.art_style"
-msgstr "Estilo de Arte"
-
-msgid "options.style.realistic"
-msgstr "Realista"
-
-msgid "options.style.pixelart"
-msgstr "Pixel Art"
-
-msgid "ui.surprise_node"
-msgstr "Evento Surpresa"
-
-msgid "ui.utg_title"
-msgstr "Campo de Treinamento"
-
-msgid "ui.utg_btn"
-msgstr "TREINAMENTO"
-
-msgid "ui.utg_instruction"
-msgstr "Arraste ou selecione uma unidade para iniciar o treinamento.\nClique em qualquer lugar para fechar o inventário."
-
-msgid "ui.utg_drop_hp"
-msgstr "Arraste ou clique aqui para\n[font_size=72]TREINAR HP[/font_size]\n(custo: 5 ouro)"
-
-msgid "ui.utg_drop_pwr"
-msgstr "Arraste ou clique aqui para\n[font_size=72]TREINAR PWR[/font_size]\n(custo: 5 ouro)"
-
-msgid "ui.utg_popup_title"
-msgstr "Use suas Fichas para treinar!"
-
-msgid "ui.utg_done"
-msgstr "Pronto!"
-
-msgid "ui.merge_encounter_title"
-msgstr "Encontro de Fusão"
-
-msgid "ui.merge_encounter_open_inventory"
-msgstr "CLIQUE AQUI PARA FUNDIR!"
-
-msgid "ui.merge_encounter_instruction"
-msgstr "Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
-
-msgid "ability.doppleganger_scale.desc"
-msgstr "Ganha [**+3 / +4 / +5 de PWR**] para cada outro Doppleganger em batalha."
-
-msgid "ability.doppleganger_death.desc"
-msgstr "Gera um Doppleganger na Máquina Gacha de Nível 3 ao morrer."
-
-msgid "item_t2_d.name"
-msgstr "Orbe Ressonante"
-
-msgid "item_t2_d.desc"
-msgstr "Concede ao portador +2 PWR para cada Orbe Ressonante em batalha. Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."
-
-msgid "ability.echoing_orb_scale.desc"
-msgstr "Concede ao portador +2 PWR para cada Orbe Ressonante em batalha."
-
-msgid "ability.echoing_orb_death.desc"
-msgstr "Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."
-
-msgid "ability.unit_t3_j_ability_l1.desc"
-msgstr "Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
-
-msgid "ability.unit_t3_j_ability_l2.desc"
-msgstr "Ao morrer, transfere seu item equipado para o aliado atrás e 1 cópia para trás deles."
-
-msgid "ability.unit_t3_j_ability_l3.desc"
-msgstr "Ao morrer, transfere seu item equipado para o aliado atrás e 2 cópias para trás deles."
-
-msgid "ui.transfer_item_msg"
-msgstr "%s transfere %s para %s!"
-
-msgid "ability.unit_t3_l_l1.desc"
-msgstr "No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
-
-msgid "ability.unit_t3_l_l2.desc"
-msgstr "No início de cada turno, ganha permanentemente +4 HP e +4 PWR para cada 5 de Ouro que você possuir no momento."
-
-msgid "ability.unit_t3_l_l3.desc"
-msgstr "No início de cada turno, ganha permanentemente +5 HP e +5 PWR para cada 5 de Ouro que você possuir no momento."
-
-msgid "options.audio.pronunciation"
-msgstr "Pronúncia de Cartas"
-
-msgid "trinket.underdog_emblem.name"
-msgstr "Emblema do Azarão"
-
-msgid "trinket.underdog_emblem.desc"
-msgstr "Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
-
-msgid "ability.underdog_emblem.desc"
-msgstr "Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
-
-msgid "trinket.bargain_charm.name"
-msgstr "Charme de Barganha"
-
-msgid "trinket.bargain_charm.desc"
-msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
-
-msgid "ability.bargain_charm.desc"
-msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
-
-msgid "trinket.token_return_charm.name"
-msgstr "Amuleto de Retorno de Fichas"
-
-msgid "trinket.token_return_charm.desc"
-msgstr "Quando a primeira unidade morre a cada rodada, retorna Fichas iguais ao Tier dela."
-
-msgid "ability.token_return_charm.desc"
-msgstr "A primeira unidade a morrer a cada rodada retorna fichas equivalentes ao seu nível."
-
-msgid "trinket.time_sprint_charm.name"
-msgstr "Amuleto de Arrancada"
-
-msgid "trinket.time_sprint_charm.desc"
-msgstr "O cronômetro do minigame ganha um aumento de 2 segundos em batalhas."
-
-msgid "ability.time_sprint_charm.desc"
-msgstr "O cronômetro do minigame ganha um aumento de 2 segundos em batalhas."
-
-msgid "trinket.merge_damage_charm.name"
-msgstr "Centelha de Fusão"
-
-msgid "trinket.merge_damage_charm.desc"
-msgstr "Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
-
-msgid "ability.merge_damage_charm.desc"
-msgstr "Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
-
-msgid "hero_starter.name"
-msgstr "Iniciante"
-
-msgid "hero_starter.desc"
-msgstr "Ganha pelo menos 3 Fichas em cada minijogo."
-
-msgid "ability.hero_starter_ally_death_absorb.desc"
-msgstr "Quando um aliado morre, ganha HP igual ao PWR dele."
-
-msgid "trinket.burn_vial.name"
-msgstr "Frasco de Chamas"
-
-msgid "trinket.burn_vial.desc"
-msgstr "Ataques aplicam 1 acúmulo de Queimadura."
-
-msgid "trinket.rusty_ring.name"
-msgstr "Anel Enferrujado"
-
-msgid "trinket.rusty_ring.desc"
-msgstr "Concede +1 HP e +1 PWR a todas as unidades sem equipamentos. Equipar um item cancela esse bônus."
-
-msgid "item.trinket_hero_catalyst.name"
-msgstr "Catalisador do Herói"
-
-msgid "item.trinket_hero_catalyst.desc"
-msgstr "Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
-
-msgid "ability.hero_catalyst.desc"
-msgstr "Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
-
-msgid "trinket.purifying_pendant.name"
-msgstr "Pingente Purificador"
-
-msgid "trinket.purifying_pendant.desc"
-msgstr "Quando um aliado recebe dano de um efeito de status negativo, remove todas as pilhas restantes desse efeito."
-
-msgid "trinket.awe_inspiring_totem.name"
-msgstr "Totem Inspirador"
-
-msgid "trinket.awe_inspiring_totem.desc"
-msgstr "No início do turno, se houver uma unidade de Nível 3 ou Tier 3 na formação, concede +1 HP e +1 PWR a todas as outras unidades de tier e nível inferiores."
-
-msgid "trinket.beginners_charm.name"
-msgstr "Amuleto do Iniciante"
-
-msgid "trinket.beginners_charm.desc"
-msgstr "Minigames: Ganhe 1 ficha extra se o nível de maestria do flashcard respondido for 1 (Muito Difícil)."
-
-msgid "trinket.trinity_charm.desc"
-msgstr "Se você comprar pelo menos uma vez de cada máquina de tier (1, 2 e 3) em um turno ou encontro, ganha 1 Ficha."
-
-msgid "trinket.spiked_armor.name"
-msgstr "Armadura de Espinhos"
-
-msgid "trinket.spiked_armor.desc"
-msgstr "No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
-
-msgid "ability.trinket_spiked_armor.desc"
-msgstr "No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
-
-msgid "ui.merge_encounter_description"
-msgstr ""
-
-msgid "({cost} Gold per action)\""
-msgstr ""
-
-msgid "({cost} Ouro por ação)\""
-msgstr ""
-
-msgid "ui.rest_site_desc"
-msgstr "Jogue para ganhar fichas e gaste-as em melhorias permanentes de HP."
-
-msgid "ui.training_grounds_desc"
-msgstr "Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder."
-
-msgid "ui.gambling_den_desc"
-msgstr "Jogue para ganhar fichas e gaste-as para ter a chance de ganhar muito Ouro."
-
-msgid "ui.btn_merge"
-msgstr "Fundir"
-
-msgid "ui.btn_merge_cost"
-msgstr "Fundir ({cost} Ouro)"
-
-msgid "ui.btn_swap"
-msgstr "Trocar"
-
-msgid "ui.shrine_desc"
-msgstr "Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
-
-msgid "ui.shop_desc"
-msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
-
-msgid "ui.shrine_drop_transform"
-msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
-
-msgid "ui.shrine_drop_remove"
-msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
-
-msgid "ui.utg_desc"
-msgstr "Molde suas unidades!\nAbra o inventário para arrastar uma unidade aqui,\ne treine seu HP ou Poder gastando fichas."
-
-msgid "ui.rest_study"
-msgstr "Ganhar Fichas! (%d Ouro)"
-
-msgid "ui.reward_desc"
-msgstr "Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
-
-msgid "ui.rewards_title"
-msgstr "RECOMPENSAS"
-
 msgid "ability.unit_tier3_berserker_shockwave_l1.desc"
 msgstr "Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
 
@@ -1731,14 +1128,8 @@ msgstr "Causa 150% de dano em cascata em área ao inimigo da frente e às unidad
 msgid "ability.unit_tier3_berserker_shockwave_l3.desc"
 msgstr "Causa 200% de dano em cascata em área ao inimigo da frente e às unidades atrás."
 
-msgid "ability.unit_tier3d_resilient_aura_l1.desc"
-msgstr "Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
-
-msgid "ability.unit_tier3d_resilient_aura_l2.desc"
-msgstr "Concede +2 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
-
-msgid "ability.unit_tier3d_resilient_aura_l3.desc"
-msgstr "Concede +2 HP e +2 PWR aos aliados adjacentes quando ferido por um ataque."
+msgid "ability.unit_tier3a_mirror_strike.desc"
+msgstr "Ataca o inimigo na posição oposta, causando [100% / 150% / 200%] de dano. Se vazio, ataca o inimigo do fundo."
 
 msgid "ability.unit_tier3a_mirror_strike_l1.desc"
 msgstr "Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
@@ -1749,6 +1140,9 @@ msgstr "Ataca o inimigo no espaço espelhado oposto causando 150% de dano."
 msgid "ability.unit_tier3a_mirror_strike_l3.desc"
 msgstr "Ataca o inimigo no espaço espelhado oposto causando 200% de dano."
 
+msgid "ability.unit_tier3b_guardian_sacrifice.desc"
+msgstr "Quando um aliado receberia dano letal, intercepta e recebe [100% / 75% / 50%] do dano no lugar."
+
 msgid "ability.unit_tier3b_guardian_sacrifice_l1.desc"
 msgstr "Salta para interceptar dano letal em aliados."
 
@@ -1757,6 +1151,9 @@ msgstr "Salta para interceptar dano letal em aliados e ganha 1 de Armadura."
 
 msgid "ability.unit_tier3b_guardian_sacrifice_l3.desc"
 msgstr "Salta para interceptar dano letal em aliados e ganha 2 de Armadura."
+
+msgid "ability.unit_tier3c_soul_summon.desc"
+msgstr "Quando esta unidade morre, invoca uma unidade Nível 2 aleatória com [+0 / +2 / +4] de HP e PWR."
 
 msgid "ability.unit_tier3c_soul_summon_l1.desc"
 msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
@@ -1767,6 +1164,21 @@ msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 2 ao morrer."
 msgid "ability.unit_tier3c_soul_summon_l3.desc"
 msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 3 ao morrer."
 
+msgid "ability.unit_tier3d_resilient_aura.desc"
+msgstr "Ao ser ferido POR UM ATAQUE, concede +1 HP e +1 PWR aos aliados adjacentes."
+
+msgid "ability.unit_tier3d_resilient_aura_l1.desc"
+msgstr "Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+
+msgid "ability.unit_tier3d_resilient_aura_l2.desc"
+msgstr "Concede +2 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
+
+msgid "ability.unit_tier3d_resilient_aura_l3.desc"
+msgstr "Concede +2 HP e +2 PWR aos aliados adjacentes quando ferido por um ataque."
+
+msgid "ability.unit_tier3e_ambush_predator.desc"
+msgstr "Quando uma unidade inimiga é invocada, ataca-a causando [50% / 75% / 100%] do PWR desta unidade."
+
 msgid "ability.unit_tier3e_ambush_predator_l1.desc"
 msgstr "Causa dano aos inimigos igual a 100% do PWR quando eles são invocados."
 
@@ -1775,6 +1187,9 @@ msgstr "Causa dano aos inimigos igual a 150% do PWR quando eles são invocados."
 
 msgid "ability.unit_tier3e_ambush_predator_l3.desc"
 msgstr "Causa dano aos inimigos igual a 200% do PWR quando eles são invocados."
+
+msgid "ability.unit_tier3f_summon_blessing.desc"
+msgstr "Quando uma unidade aliada é invocada, concede [+3 / +5 / +7] HP."
 
 msgid "ability.unit_tier3f_summon_blessing_l1.desc"
 msgstr "Concede +3 de HP a aliados recém-invocados."
@@ -1803,440 +1218,554 @@ msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, ganha +3 de HP e
 msgid "ability.unit_tier3h_merge_growth_l3.desc"
 msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, ganha +4 de HP e PWR."
 
-msgid "ability.doppleganger_scale_l1.desc"
-msgstr "Ganha +3 de PWR para cada outro Doppleganger em batalha."
-
-msgid "ability.doppleganger_scale_l2.desc"
-msgstr "Ganha +4 de PWR para cada outro Doppleganger em batalha."
-
-msgid "ability.doppleganger_scale_l3.desc"
-msgstr "Ganha +5 de PWR para cada outro Doppleganger em batalha."
-
-msgid "ability.doppleganger_death_l1.desc"
-msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
-
-msgid "ability.doppleganger_death_l2.desc"
-msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
-
-msgid "ability.doppleganger_death_l3.desc"
-msgstr "Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
-
-msgid "ability.unit_tier2a_defensive_stance_l1.desc"
-msgstr "Ganha +2 de HP antes de receber dano."
-
-msgid "ability.unit_tier2a_defensive_stance_l2.desc"
-msgstr "Ganha +4 de HP antes de receber dano."
-
-msgid "ability.unit_tier2a_defensive_stance_l3.desc"
-msgstr "Ganha +6 de HP antes de receber dano."
-
-msgid "ability.unit_t3_mimic_l1.desc"
-msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
-
-msgid "ability.unit_t3_mimic_l2.desc"
-msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+1 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
-
-msgid "ability.unit_t3_mimic_l3.desc"
-msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (Nível 3 MAX). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
-
-msgid "ability.unit_t3_shadow_l1.desc"
-msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
-
-msgid "ability.unit_t3_shadow_l2.desc"
-msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 150% de eficácia."
-
-msgid "ability.unit_t3_shadow_l3.desc"
-msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 200% de eficácia."
-
-msgid "ETnkPlaToy.name"
-msgstr "ETnkPlaToy"
-
-msgid "ETnkPlaToy.desc"
-msgstr "Quando ferida POR UM ATAQUE, cura esta unidade em 1 de HP."
-
-msgid "FFigMecApp.name"
-msgstr "FFigMecApp"
-
-msgid "FFigMecApp.desc"
-msgstr "Quando ferido POR UM ATAQUE, dispara um projétil no atacante causando dano igual ao PWR. Ativa mesmo se letal."
-
-msgid "WSupAniCos.name"
-msgstr "WSupAniCos"
-
-msgid "WSupAniCos.desc"
-msgstr "Quando o aliado diretamente à frente recebe dano, cura-o por 1 HP."
-
-msgid "ASpeFodToy.name"
-msgstr "ASpeFodToy"
-
-msgid "ASpeFodToy.desc"
-msgstr "Quando esta unidade morre, concede seu PWR atual ao aliado atrás."
-
-msgid "EWFigCosToy.name"
-msgstr "EWFigCosToy"
-
-msgid "EWFigCosToy.desc"
-msgstr "Quando um aliado é derrotado, ganha +1 de HP e +1 de PWR."
-
-msgid "FASpeMecApp.name"
-msgstr "FASpeMecApp"
-
-msgid "FASpeMecApp.desc"
-msgstr "Ganha PWR adicional igual a 100% das Fichas atuais, atualizando conforme as Fichas mudam."
-
-msgid "EASpeFodToy.name"
-msgstr "EASpeFodToy"
-
-msgid "EASpeFodToy.desc"
-msgstr "O PWR inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
-
-msgid "WATnkPlaAni.name"
-msgstr "WATnkPlaAni"
-
-msgid "WATnkPlaAni.desc"
-msgstr "No início do combate, ganha +1 de HP e +1 de PWR para cada espaço vazio no seu time."
-
-msgid "EFTnkAniCos.name"
-msgstr "EFTnkAniCos"
-
-msgid "EFTnkAniCos.desc"
-msgstr "Quando curado, ganha 1 de Armadura e 1 de Espinhos."
-
-msgid "FWSpeAppFod.name"
-msgstr "FWSpeAppFod"
-
-msgid "FWSpeAppFod.desc"
-msgstr "Quando esta unidade é curada, dispara um projétil de fogo saltitante em um inimigo aleatório, aplicando acúmulos de Queimadura iguais ao valor da cura."
-
-msgid "EFWAFigSpeAniMec.name"
-msgstr "EFWAFigSpeAniMec"
-
-msgid "EFWAFigSpeAniMec.desc"
-msgstr "Ataca o inimigo no espaço espelhado oposto causando 100% de dano."
-
-msgid "EWWATnkMecApp.name"
-msgstr "EWWATnkMecApp"
-
-msgid "EWWATnkMecApp.desc"
-msgstr "Salta para interceptar dano letal em aliados."
-
-msgid "EFWWFigSpeAniFodMecCos.name"
-msgstr "EFWWFigSpeAniFodMecCos"
-
-msgid "EFWWFigSpeAniFodMecCos.desc"
-msgstr "Causa 100% de dano em cascata em área ao inimigo da frente e às unidades atrás."
-
-msgid "EFAASupToy.name"
-msgstr "EFAASupToy"
-
-msgid "EFAASupToy.desc"
-msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 1 ao morrer."
-
-msgid "EEFWFigTnkPlaToy.name"
-msgstr "EEFWFigTnkPlaToy"
-
-msgid "EEFWFigTnkPlaToy.desc"
-msgstr "Concede +1 HP e +1 PWR aos aliados adjacentes quando ferido por um ataque."
-
-msgid "EEWAFigFodAniCos.name"
-msgstr "EEWAFigFodAniCos"
-
-msgid "EEWAFigFodAniCos.desc"
-msgstr "Causa dano aos inimigos igual a 100% do PWR quando eles são invocados."
-
-msgid "EFFASupPlaToy.name"
-msgstr "EFFASupPlaToy"
-
-msgid "EFFASupPlaToy.desc"
-msgstr "Concede +3 de HP a aliados recém-invocados."
-
-msgid "FWAASupToy.name"
-msgstr "FWAASupToy"
-
-msgid "FWAASupToy.desc"
-msgstr "Se estiver no banco do jogador no início do turno, ganhe +3 de HP e PWR."
-
-msgid "EFFWSupMecApp.name"
-msgstr "EFFWSupMecApp"
-
-msgid "EFFWSupMecApp.desc"
-msgstr "Sempre que uma fusão acontece no tabuleiro de batalha, ganha +2 de HP e PWR."
-
-msgid "EFWASupFodToy.name"
-msgstr "EFWASupFodToy"
-
-msgid "EFWASupFodToy.desc"
-msgstr "Ganha +3 de PWR para cada outro Doppleganger em batalha. Invoca 1 cópia de si mesmo ao morrer na Máquina de Gacha."
-
-msgid "FFWASpeSupMecAniApp.name"
-msgstr "FFWASpeSupMecAniApp"
-
-msgid "FFWASpeSupMecAniApp.desc"
-msgstr "Ao morrer, transfere seu item equipado para o aliado diretamente atrás."
-
-msgid "EWAASpePlaApp.name"
-msgstr "EWAASpePlaApp"
-
-msgid "EWAASpePlaApp.desc"
-msgstr "No início de cada turno, ganha permanentemente +3 HP e +3 PWR para cada 5 de Ouro que você possuir no momento."
-
-msgid "EEFASpeFodCos.name"
-msgstr "EEFASpeFodCos"
-
-msgid "EEFASpeFodCos.desc"
-msgstr "Antes da sua ação de turno, transforma-se na unidade inimiga no espaço espelhado (+0 Nível). A unidade recém-transformada realiza seu turno imediatamente a seguir. Se não houver unidade no espaço espelhado, realiza um ataque básico normal."
-
-msgid "EFWATnkCosMec.name"
-msgstr "EFWATnkCosMec"
-
-msgid "EFWATnkCosMec.desc"
-msgstr "Ganha +2 de HP antes de receber dano."
-
-msgid "FWWASupAniToy.name"
-msgstr "FWWASupAniToy"
-
-msgid "FWWASupAniToy.desc"
-msgstr "Concede uma cópia adicional de qualquer buff recebido por um aliado adjacente com 100% de eficácia."
-
-msgid "ability.trait_fire.desc"
-msgstr "Capacita unidades de Fogo a queimar inimigos ao atacar, espalhar chamas e causar dano bônus a alvos queimando."
-
-msgid "ability.trait_earth.desc"
-msgstr "Concede Armadura e Espinhos a unidades de Terra e aliados, capacitando Espinhos a causar dano bônus ao atacar."
-
-msgid "ability.trait_water.desc"
-msgstr "Unidades de Água curam aliados à frente e removem efeitos negativos no pré-combate."
-
-msgid "ability.trait_water_turn_start.desc"
-msgstr "No início do turno, cura o aliado com menor Vida e converte status negativos em cura."
-
-msgid "ability.trait_air.desc"
-msgstr "Unidades de Ar eletrificam alvos com Estática ao atacar, espalhando cargas para inimigos adjacentes."
-
-msgid "ability.trait_tank.desc"
-msgstr "Concede Armadura no pré-combate, repassa armadura para trás ao absorver, intercepta ataques e espelha armadura como espinhos."
-
-msgid "ability.trait_tank_turn_start.desc"
-msgstr "No início do turno, concede 1 de Armadura ao Guardião mais à frente."
-
-msgid "ability.trait_fighter.desc"
-msgstr "Causa dano bônus contra alvos com mais Vida, contra-ataca ao sofrer dano, desfere golpe disperso atrás do alvo e encadeia ataques ao abater."
-
-msgid "ability.trait_support.desc"
-msgstr "Concede +1 de Vida ao aliado à frente, +1 de Poder ao aliado atrás e +1 de Vida/+1 de Poder ao Herói."
-
-msgid "ability.trait_support_turn_start.desc"
-msgstr "No início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
-
-msgid "ability.trait_specialist.desc"
-msgstr "Garante fichas iniciais, dá desconto no gacha, ganha ouro ao abater e invoca clone de combate no banco."
-
-msgid "ability.trait_specialist_turn_start.desc"
-msgstr "No início do turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
-
-msgid "ability.trait_food.desc"
-msgstr "Cura e fortalece o aliado logo atrás ao sofrer dano, e transfere todo seu Poder ao morrer."
-
-msgid "ability.trait_mecha.desc"
-msgstr "Concede Armadura e Espinhos, aplica Estática ao atacar, dispara lasers em fusões aliadas e detona lasers de retaliação ao morrer."
-
-msgid "ability.trait_animal.desc"
-msgstr "Concede +1 de Poder a um Animal alfa no pré-combate e cura Animais a cada ataque."
-
-msgid "ability.trait_plant.desc"
-msgstr "Concede Espinhos e Vida no pré-combate, e converte toda cura recebida em Espinhos."
-
-msgid "ability.trait_plant_turn_start.desc"
-msgstr "No início do turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
-
-msgid "ability.trait_toy.desc"
-msgstr "Aplica Estática a atacantes corpo a corpo, e detona o inimigo com mais Estática ao morrer."
-
-msgid "ability.trait_appliance.desc"
-msgstr "Ataques de Eletrodomésticos aplicam Estática e Chamas. Concede imunidade e purificação pré-combate a ambos, reflete efeitos de status e converte penalidades em atributos."
-
-msgid "ability.trait_costume.desc"
-msgstr "Pré-Combate: Rouba efeitos benéficos ou atributos básicos de inimigos espelhados e líderes adversários."
-
-msgid "trinket.master_insignia.name"
-msgstr "Insígnia do Mestre"
-
-msgid "trinket.level3_insignia.desc"
-msgstr "Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.level3_insignia.desc"
-msgstr "Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.cheap_insignia.name"
-msgstr "Insígnia Barata"
-
-msgid "trinket.tier1_insignia.desc"
-msgstr "Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.tier1_insignia.desc"
-msgstr "Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.fair_insignia.name"
-msgstr "Insígnia de Preço Justo"
-
-msgid "trinket.tier2_insignia.desc"
-msgstr "Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.tier2_insignia.desc"
-msgstr "Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.premium_insignia.name"
-msgstr "Insígnia Premium"
-
-msgid "trinket.tier3_insignia.desc"
-msgstr "Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.tier3_insignia.desc"
-msgstr "Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.fire_insignia.name"
-msgstr "Insígnia de Fogo"
-
-msgid "trinket.fire_insignia.desc"
-msgstr "Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.fire_insignia.desc"
-msgstr "Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.earth_insignia.name"
-msgstr "Insígnia da Terra"
-
-msgid "trinket.earth_insignia.desc"
-msgstr "Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "ability.earth_insignia.desc"
-msgstr "Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
-
-msgid "trinket.water_insignia.name"
-msgstr "Insígnia da Água"
-
-msgid "trinket.water_insignia.desc"
-msgstr "Quando uma unidade com o traço Água entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability.vengeance.desc"
+msgstr "Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
+
+msgid "ability.veteran_insignia.desc"
+msgstr "Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
 
 msgid "ability.water_insignia.desc"
 msgstr "Quando uma unidade com o traço Água entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "trinket.air_insignia.name"
-msgstr "Insígnia do Ar"
+msgid "ability_dust_elite1_spawn_death.desc"
+msgstr "Invoca um Recruta de Poeira T1 quando um aliado morre."
 
-msgid "trinket.air_insignia.desc"
-msgstr "Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability_dust_elite2_spawn_death.desc"
+msgstr "Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre."
 
-msgid "ability.air_insignia.desc"
-msgstr "Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability_dust_elite_spawn.desc"
+msgstr "Invoca um Recruta de Poeira no inventário do jogador."
 
-msgid "trinket.tank_insignia.name"
-msgstr "Insígnia do Guardião"
+msgid "ability_dust_elite_spawn_attack.desc"
+msgstr "Invoca um Recruta de Poeira ao atacar."
 
-msgid "trinket.tank_insignia.desc"
-msgstr "Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability_dust_elite_spawn_death.desc"
+msgstr "Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre."
 
-msgid "ability.tank_insignia.desc"
-msgstr "Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability_dust_elite_spawn_enemy_death.desc"
+msgstr "Invoca um Recruta de Poeira quando um Inimigo morre."
 
-msgid "trinket.fighter_insignia.name"
-msgstr "Insígnia do Lutador"
+msgid "ability_dust_elite_spawn_hurt.desc"
+msgstr "Invoca um Recruta de Poeira ao sofrer dano."
 
-msgid "trinket.fighter_insignia.desc"
-msgstr "Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "ability_dust_elite_spawn_turn.desc"
+msgstr "Invoca um Recruta de Poeira no início do turno."
 
-msgid "ability.fighter_insignia.desc"
-msgstr "Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "battle.speed.label"
+msgstr "Velocidade:"
 
-msgid "trinket.support_insignia.name"
-msgstr "Insígnia de Suporte"
+msgid "boss_1.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você saca um gachaball, este chefe ganha +1 HP."
 
-msgid "trinket.support_insignia.desc"
-msgstr "Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_1.name"
+msgstr "O Guardião Desperto"
 
-msgid "ability.support_insignia.desc"
-msgstr "Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_2.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Toda vez que você gasta uma ficha, este chefe ganha +1 HP."
 
-msgid "trinket.specialist_insignia.name"
-msgstr "Insígnia do Especialista"
+msgid "boss_2.name"
+msgstr "O Guardião das Sombras"
 
-msgid "trinket.specialist_insignia.desc"
-msgstr "Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_3.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Quando um aliado é derrotado, ganha +1 HP e +1 PWR."
 
-msgid "ability.specialist_insignia.desc"
-msgstr "Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_3.name"
+msgstr "O Arauto da Tempestade"
 
-msgid "trinket.food_insignia.name"
-msgstr "Insígnia da Comida"
+msgid "boss_4.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios."
 
-msgid "trinket.food_insignia.desc"
-msgstr "Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_4.name"
+msgstr "O Titã Ancestral"
 
-msgid "ability.food_insignia.desc"
-msgstr "Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "boss_5.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios."
 
-msgid "trinket.mecha_insignia.name"
-msgstr "Insígnia Mecha"
+msgid "boss_5.name"
+msgstr "O Árbitro Final"
 
-msgid "trinket.mecha_insignia.desc"
-msgstr "Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "deck.german_100.desc"
+msgstr "Construa seu vocabulário alemão com 100 palavras comuns e essenciais."
 
-msgid "ability.mecha_insignia.desc"
-msgstr "Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "deck.hiragana.desc"
+msgstr "Domine o silabário japonês fluido para palavras nativas e gramática."
 
-msgid "trinket.animal_insignia.name"
-msgstr "Insígnia Animal"
+msgid "deck.kanji_100.desc"
+msgstr "Desafie-se com 100 caracteres chineses essenciais usados na escrita japonesa."
 
-msgid "trinket.animal_insignia.desc"
-msgstr "Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "deck.katakana.desc"
+msgstr "Aprenda o silabário japonês angular usado para palavras estrangeiras e empréstimos."
 
-msgid "ability.animal_insignia.desc"
-msgstr "Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "deck.korean_hangul.desc"
+msgstr "Aprenda o alfabeto coreano Hangul e as regras de pronúncia"
 
-msgid "trinket.plant_insignia.name"
-msgstr "Insígnia da Planta"
+msgid "deck.portuguese_100.desc"
+msgstr "Expanda seu vocabulário português com 100 palavras essenciais do dia a dia."
 
-msgid "trinket.plant_insignia.desc"
-msgstr "Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "enemy_hero.desc"
+msgstr "Cause (PWR) de dano ao inimigo mais à frente."
 
-msgid "ability.plant_insignia.desc"
-msgstr "Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "enemy_hero.name"
+msgstr "Herói Inimigo"
 
-msgid "trinket.toy_insignia.name"
-msgstr "Insígnia do Brinquedo"
+msgid "hero.desc"
+msgstr "Especializado em acumular e gastar Ouro. Traço Fixo: Mercenário (Inicia com o Selo de Mercenário). No início da jornada, recebe 1 alma Elemental aleatória e 1 traço de Classe ou Visual."
 
-msgid "trinket.toy_insignia.desc"
-msgstr "Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero.name"
+msgstr "Shiken"
 
-msgid "ability.toy_insignia.desc"
-msgstr "Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero_avenger.desc"
+msgstr "Quando um aliado morre, salta e ataca o inimigo da frente."
 
-msgid "trinket.appliance_insignia.name"
-msgstr "Insígnia do Eletrodoméstico"
+msgid "hero_avenger.name"
+msgstr "Han"
 
-msgid "trinket.appliance_insignia.desc"
-msgstr "Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero_bastion.desc"
+msgstr "Quando um aliado morre, ganha 1 Armadura e 1 Espinhos. A Armadura não decai no final do turno."
 
-msgid "ability.appliance_insignia.desc"
-msgstr "Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero_bastion.name"
+msgstr "Kon"
 
-msgid "trinket.costume_insignia.name"
-msgstr "Insígnia da Fantasia"
+msgid "hero_pyro.desc"
+msgstr "Ao atacar, em vez de causar dano, aplica acúmulos de Chamas iguais ao seu Poder."
 
-msgid "trinket.costume_insignia.desc"
-msgstr "Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero_pyro.name"
+msgstr "Hiko"
 
-msgid "ability.costume_insignia.desc"
-msgstr "Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
+msgid "hero_starter.desc"
+msgstr "Ganha pelo menos 3 Fichas em cada minijogo."
 
-msgid "trinket.trinity_charm.name"
-msgstr "Amuleto da Trindade"
+msgid "hero_starter.name"
+msgstr "Dan"
 
-msgid "trait.mercenary.name"
-msgstr "Mercenário"
+msgid "hero_timekeeper.desc"
+msgstr "Minijogo: +1s ao acertar, -0,5s ao errar. Ganha 5 fichas por turno em Batalhas e Locais de Descanso. No início de cada turno, concede +2 HP às unidades à frente e +2 PWR às unidades atrás."
 
-msgid "trait.mercenary.desc"
-msgstr "Conta unidades com o traço Mercenário no alinhamento ativo. Desbloqueia bônus sempre que Ouro for obtido ou possuído."
+msgid "hero_timekeeper.name"
+msgstr "Deko"
+
+msgid "item.answer_key.desc"
+msgstr "[color=#ffd166][b]Ao Atacar[/b][/color], enquanto equipado no alinhamento ativo, aplica 1 / 2 / 3 de Queimadura ao alvo para cada Ficha Atual possuída."
+
+msgid "item.answer_key.name"
+msgstr "Esgotamento"
+
+msgid "item.claim_ticket.desc"
+msgstr "Quando o portador é nocauteado, ganha 1 de Ouro."
+
+msgid "item.claim_ticket.name"
+msgstr "Bilhete de Reivindicação"
+
+msgid "item.effect.both"
+msgstr "Adiciona (HP) HP e (PWR) PWR à unidade."
+
+msgid "item.effect.hp"
+msgstr "Adiciona (HP) HP à unidade."
+
+msgid "item.effect.pwr"
+msgstr "Adiciona (PWR) PWR à unidade."
+
+msgid "item.emblem_air.desc"
+msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Ar[/b], permitindo que a unidade se beneficie das sinergias do traço de Ar."
+
+msgid "item.emblem_air.name"
+msgstr "Emblema de Ar"
+
+msgid "item.emblem_earth.desc"
+msgstr "Quando equipado, concede +4 HP e a alma de [b]Terra[/b], permitindo que a unidade se beneficie das sinergias do traço de Terra."
+
+msgid "item.emblem_earth.name"
+msgstr "Emblema de Terra"
+
+msgid "item.emblem_fire.desc"
+msgstr "Quando equipado, concede +2 PWR e a alma de [b]Fogo[/b], permitindo que a unidade se beneficie das sinergias do traço de Fogo."
+
+msgid "item.emblem_fire.name"
+msgstr "Emblema de Fogo"
+
+msgid "item.emblem_water.desc"
+msgstr "Quando equipado, concede +2 HP, +1 PWR e a alma de [b]Água[/b], permitindo que a unidade se beneficie das sinergias do traço de Água."
+
+msgid "item.emblem_water.name"
+msgstr "Emblema de Água"
+
+msgid "item.golden_seal.desc"
+msgstr "Concede dinamicamente +1 de Vida e +1 de Poder para cada 10 de Ouro atualmente possuído."
+
+msgid "item.golden_seal.name"
+msgstr "Selo Dourado"
+
+msgid "item.interest_ledger.desc"
+msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+
+msgid "item.interest_ledger.name"
+msgstr "Cofrinho"
+
+msgid "item.loaded_contract.desc"
+msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+
+msgid "item.loaded_contract.name"
+msgstr "Contrato Viciado"
+
+msgid "item.mercenary_emblem.desc"
+msgstr "Concede o traço Mercenário. Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+
+msgid "item.mercenary_emblem.name"
+msgstr "Emblema do Mercenário"
+
+msgid "item.novice_archive.desc"
+msgstr "[color=#ffd166][b]Ao Atacar[/b][/color], gasta 1 Ficha para causar 1 / 2 / 3 de Dano Bônus por Ficha Atual possuída antes do gasto."
+
+msgid "item.novice_archive.name"
+msgstr "Arquivo do Novato"
+
+msgid "item.novice_emblem.desc"
+msgstr "Contribui com +1 para o traço Novato no alinhamento ativo. [color=#ffd166][b]Ao Dar o Golpe de Nocaute[/b][/color] contra uma unidade inimiga, adiciona 1 segundo ao Tempo Inicial do próximo minijogo de batalha."
+
+msgid "item.novice_emblem.name"
+msgstr "Emblema do Novato"
+
+msgid "item.potion_heroism.desc"
+msgstr "Concede +3 HP, +3 PWR e 3 pilhas de Armadura."
+
+msgid "item.potion_heroism.name"
+msgstr "Bateria"
+
+msgid "item.potion_plunder.desc"
+msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
+
+msgid "item.potion_plunder.name"
+msgstr "Saque"
+
+msgid "item.potion_spikes.desc"
+msgstr "Concede 4 pilhas de Espinhos"
+
+msgid "item.potion_spikes.name"
+msgstr "Suco de Cacto"
+
+msgid "item.potion_t1.desc"
+msgstr "Restaura 4 HP."
+
+msgid "item.potion_t1.name"
+msgstr "Maçã"
+
+msgid "item.review_ledger.desc"
+msgstr "[color=#ffd166][b]Pré-Batalha[/b][/color], enquanto equipado no alinhamento ativo, o portador ganha 1 / 2 / 3 Espinhos para cada Ficha Atual possuída."
+
+msgid "item.review_ledger.name"
+msgstr "Prego"
+
+msgid "item.study_pouch.desc"
+msgstr "[color=#ffd166][b]Quando o Portador é Nocauteado[/b][/color], ganha Fichas iguais ao Grau do portador (1 / 2 / 3 Fichas)."
+
+msgid "item.study_pouch.name"
+msgstr "Ficha"
+
+msgid "item.trinket_hero_catalyst.desc"
+msgstr "Concede ao Herói +1 HP e +1 PWR em qualquer fusão."
+
+msgid "item.trinket_hero_catalyst.name"
+msgstr "Catalisador do Herói"
+
+msgid "item_t1_a.desc"
+msgstr "No início do turno, cura o portador em 2 HP."
+
+msgid "item_t1_a.name"
+msgstr "Doce"
+
+msgid "item_t1_b.desc"
+msgstr "Ao atacar, se o alvo tiver mais Vida que o portador, realiza um [color=#ffd166]Ataque Extra[/color] ([color=#ffd166]Ataque Corpo a Corpo[/color])."
+
+msgid "item_t1_b.name"
+msgstr "Wakizashi"
+
+msgid "item_t2_a.desc"
+msgstr "Quando o portador morre, invoque uma unidade de Tier 1."
+
+msgid "item_t2_a.name"
+msgstr "Pergaminho de Invocação"
+
+msgid "item_t2_b.desc"
+msgstr "Quando o portador derrota um inimigo, realiza uma [color=#ffd166]Ação Extra[/color] imediatamente (uma vez por turno)."
+
+msgid "item_t2_b.name"
+msgstr "Foice"
+
+msgid "item_t2_c.desc"
+msgstr "Ao ser ferido POR UM ATAQUE, cura esta unidade em 1 HP e ganha 1 PWR."
+
+msgid "item_t2_c.name"
+msgstr "Bigorna"
+
+msgid "item_t2_d.desc"
+msgstr "Concede ao portador +2 PWR para cada Orbe Ressonante em batalha. Gera um Orbe Ressonante na Máquina Gacha de Nível 2 ao morrer."
+
+msgid "item_t2_d.name"
+msgstr "Célula de Slime"
+
+msgid "item_t3_a.desc"
+msgstr "Quando o portador é ferido POR UM ATAQUE, cura dois aliados aleatórios em 2 HP cada."
+
+msgid "item_t3_a.name"
+msgstr "Ramune"
+
+msgid "item_t3_b.desc"
+msgstr "Quando o portador ataca, concede +2 PWR a dois aliados aleatórios."
+
+msgid "item_t3_b.name"
+msgstr "Bala Dura"
+
+msgid "item_t3_c.desc"
+msgstr "Ao atacar, cura o portador em 20% do dano causado (mín 1 HP)."
+
+msgid "item_t3_c.name"
+msgstr "Goma Sanguessuga"
+
+msgid "item_t3_d.desc"
+msgstr "Ao sofrer dano DE UM ATAQUE, realiza um [color=#ffd166]Ataque à Distância[/color] causando metade do Poder do portador a um inimigo aleatório."
+
+msgid "item_t3_d.name"
+msgstr "Bola de Borracha"
+
+msgid "item_t3_e.desc"
+msgstr "Quando o portador morre causa dano igual à metade do HP do inimigo com mais HP."
+
+msgid "item_t3_e.name"
+msgstr "Bala Azeda"
+
+msgid "item_t3_f.desc"
+msgstr "Após causar dano rouba metade do PWR do alvo (mín. 1)."
+
+msgid "item_t3_f.name"
+msgstr "Pipoca"
+
+msgid "item_t3_g.desc"
+msgstr "Ataques básicos têm como alvo o inimigo no espaço espelhado."
+
+msgid "item_t3_g.name"
+msgstr "Estilingue"
+
+msgid "options.art_style"
+msgstr "Estilo de Arte"
+
+msgid "options.audio.master"
+msgstr "Volume Geral"
+
+msgid "options.audio.music"
+msgstr "Volume da Música"
+
+msgid "options.audio.pronunciation"
+msgstr "Pronúncia de Cartas"
+
+msgid "options.audio.sfx"
+msgstr "Volume de Efeitos"
+
+msgid "options.language"
+msgstr "Idioma"
+
+msgid "options.reset_data"
+msgstr "Resetar Progresso"
+
+msgid "options.style.pixelart"
+msgstr "Pixel Art"
+
+msgid "options.style.realistic"
+msgstr "Realista"
+
+msgid "tooltip.bench_slot"
+msgstr "Espaço reserva - Unidades e itens aqui esperam para serem implantados ou equipados."
+
+msgid "tooltip.day"
+msgstr "Dia - Inimigos ficam mais fortes a cada dia. Quanto tempo você sobrevive?"
+
+msgid "tooltip.discard_pile"
+msgstr "Veja unidades derrotadas e itens descartados."
+
+msgid "tooltip.end_turn"
+msgstr "Finalize sua fase de gerenciamento e inicie o combate."
+
+msgid "tooltip.gacha_t1"
+msgstr "Máquina Nível 1 - Custo: 1 ficha. Gachaballs fracos mas abundantes."
+
+msgid "tooltip.gacha_t2"
+msgstr "Máquina Nível 2 - Custo: 2 fichas. Poder e custo balanceados."
+
+msgid "tooltip.gacha_t3"
+msgstr "Máquina Nível 3 - Custo: 3 fichas. Alta potência alto risco."
+
+msgid "tooltip.gold"
+msgstr "Ouro - Gaste nas lojas para comprar gachaballs e rerolar estoque."
+
+msgid "tooltip.hero_hp"
+msgstr "Vida do Herói - Se chegar a zero sua jogatina termina."
+
+msgid "tooltip.inventory"
+msgstr "Inspecione sua coleção de gachaballs em todos os níveis."
+
+msgid "tooltip.item_slot"
+msgstr "Espaço de item equipado - Itens equipados nesta unidade fornecem bônus."
+
+msgid "tooltip.lineup_slot"
+msgstr "Espaço de batalha - Unidades aqui lutam no combate."
+
+msgid "tooltip.reroll"
+msgstr "Atualiza estoque da loja. Custo aumenta a cada rerolar."
+
+msgid "tooltip.tokens"
+msgstr "Fichas - Ganhe do minigame de flashcards. Gaste para sacar gachaballs."
+
+msgid "tooltip.train_hp"
+msgstr "Gaste fichas do minigame para aumentar permanentemente o HP do herói."
+
+msgid "tooltip.train_pwr"
+msgstr "Gaste fichas do minigame para aumentar permanentemente o PWR do herói."
+
+msgid "tooltip.trinket_slot"
+msgstr "Trinket - Fornece bônus passivos para toda sua jogatina."
+
+msgid "trait.air.12"
+msgstr "...e ataques espalham metade da Estática aplicada (mínimo 1) para inimigos adjacentes."
+
+msgid "trait.air.20"
+msgstr "Além disso, Pré-Combate: Aplica 1 de Estática a todos os inimigos."
+
+msgid "trait.air.3"
+msgstr "Ataques de unidades de Ar aplicam 1 de Estática no alvo."
+
+msgid "trait.air.32"
+msgstr "Estática aplicada ao atacar escala para igualar o Poder da unidade de Ar (espalha metade para inimigos adjacentes)."
+
+msgid "trait.air.6"
+msgstr "Aumenta para 2 de Estática por ataque."
+
+msgid "trait.air.name"
+msgstr "Ar"
+
+msgid "trait.animal.2"
+msgstr "Pré-Combate: Um Animal aleatório ganha +1 de Poder. Animais curam 1 de Vida por ataque."
+
+msgid "trait.animal.3"
+msgstr "Cura por ataque aumenta para 2 de Vida."
+
+msgid "trait.animal.4"
+msgstr "Cura por ataque aumenta para 3 de Vida."
+
+msgid "trait.animal.5"
+msgstr "Cura por ataque aumenta para 3 de Vida + 25% do Poder (mínimo +1)."
+
+msgid "trait.animal.name"
+msgstr "Animal"
+
+msgid "trait.appliance.2"
+msgstr "Eletrodomésticos aplicam 1 de Estática ao atacar. São imunes a Estática e removem Estática acumulada no pré-combate."
+
+msgid "trait.appliance.3"
+msgstr "...e também aplicam 1 de Chamas ao atacar. Tornam-se imunes a Chamas e removem Chamas acumuladas no pré-combate."
+
+msgid "trait.appliance.4"
+msgstr "Além disso, quando um inimigo tenta aplicar Estática ou Chamas a um Eletrodoméstico, o efeito é refletido de volta para quem aplicou."
+
+msgid "trait.appliance.5"
+msgstr "Além disso, tentativas de aplicar efeitos negativos concedem atributos: cada Estática concede +1 de Poder, e cada Chamas concede +1 de Vida."
+
+msgid "trait.appliance.name"
+msgstr "Eletrodoméstico"
+
+msgid "trait.costume.2"
+msgstr "Pré-Combate: Rouba 1 pilha do maior efeito benéfico do inimigo espelhado, ou 1 ponto do maior atributo dele."
+
+msgid "trait.costume.3"
+msgstr "Em vez do acima, Pré-Combate: Rouba todo o maior efeito benéfico do inimigo espelhado, ou 1 de Vida e 1 de Poder."
+
+msgid "trait.costume.4"
+msgstr "Melhora para roubar todos os efeitos benéficos do inimigo espelhado, ou 2 de Vida e 2 de Poder."
+
+msgid "trait.costume.5"
+msgstr "Pré-Combate: Executado uma vez pela equipe. O Herói rouba toda a Armadura e Espinhos, mais 3 de Vida e 3 de Poder, do inimigo com maior soma de Armadura e Espinhos."
+
+msgid "trait.costume.name"
+msgstr "Fantasia"
+
+msgid "trait.earth.12"
+msgstr "Adiciona +1 de Armadura e +1 de Espinhos ao efeito, e todas as outras unidades de Terra também ganham isso."
+
+msgid "trait.earth.20"
+msgstr "Adiciona +1 de Armadura e +1 de Espinhos a unidades de Terra, e todos os outros aliados ganham 1 de Armadura e 1 de Espinhos."
+
+msgid "trait.earth.3"
+msgstr "Pré-Combate: A unidade de Terra mais à frente ganha 1 de Armadura."
+
+msgid "trait.earth.32"
+msgstr "...e unidades de Terra causam dano de ataque bônus igual aos seus Espinhos atuais (consome 1 pilha de Espinhos por ataque)."
+
+msgid "trait.earth.6"
+msgstr "...e também ganha 1 de Espinhos."
+
+msgid "trait.earth.name"
+msgstr "Terra"
+
+msgid "trait.fighter.2"
+msgstr "Lutadores causam +1 de dano em ataques se o alvo tiver mais Vida que eles."
+
+msgid "trait.fighter.3"
+msgstr "Além disso, quando um Lutador sofre dano de ataque, contra-ataca com 1 de dano à distância (uma vez por turno)."
+
+msgid "trait.fighter.4"
+msgstr "Além disso, ataques de Lutadores causam metade do Poder como dano disperso (mínimo 1) ao inimigo diretamente atrás do alvo."
+
+msgid "trait.fighter.5"
+msgstr "...e quando um Lutador derrota um inimigo, ganha +1 de Poder e ataca imediatamente o próximo inimigo (uma vez por turno)."
+
+msgid "trait.fighter.name"
+msgstr "Lutador"
+
+msgid "trait.fire.12"
+msgstr "Além disso, quando um inimigo sofre dano de Chamas no fim do turno, espalha 1 de Chamas para cada aliado adjacente."
+
+msgid "trait.fire.20"
+msgstr "...e unidades de Fogo causam dano de ataque bônus igual às Chamas atuais do alvo."
+
+msgid "trait.fire.3"
+msgstr "Ataques de unidades de Fogo aplicam 1 de Chamas no alvo."
+
+msgid "trait.fire.32"
+msgstr "Além disso, quando um inimigo com Chamas é derrotado por uma unidade de Fogo, suas Chamas restantes são distribuídas entre inimigos adjacentes."
+
+msgid "trait.fire.6"
+msgstr "...e aplica +1 de Chamas adicional se o alvo já tiver Chamas."
+
+msgid "trait.fire.name"
+msgstr "Fogo"
+
+msgid "trait.food.2"
+msgstr "Quando uma unidade de Comida é ferida por um ataque, cura o aliado diretamente atrás em 1 de Vida."
+
+msgid "trait.food.3"
+msgstr "Aumenta a cura para 2 de Vida."
+
+msgid "trait.food.4"
+msgstr "Aumenta a cura para 3 de Vida e também concede +1 de Poder a esse aliado."
+
+msgid "trait.food.5"
+msgstr "Aumenta a cura para 4 de Vida e +2 de Poder. Além disso, ao morrer, passa todo seu Poder atual para o aliado diretamente atrás."
+
+msgid "trait.food.name"
+msgstr "Comida"
+
+msgid "trait.mecha.2"
+msgstr "Pré-Combate: Unidades Mecha ganham 1 de Espinhos."
+
+msgid "trait.mecha.3"
+msgstr "...e também ganham 1 de Armadura. Além disso, Mechas aplicam 1 de Estática ao atacar e quando sua Armadura absorve dano."
+
+msgid "trait.mecha.4"
+msgstr "Além disso, sempre que ocorre uma fusão no tabuleiro, cada Mecha dispara um laser causando 1 de dano e 1 de Estática a um inimigo aleatório."
+
+msgid "trait.mecha.5"
+msgstr "Além disso, quando um Mecha morre, Mechas sobreviventes ganham 2 de Armadura e 2 de Espinhos, e disparam um laser causando 2 de dano e 2 de Estática a um inimigo aleatório."
+
+msgid "trait.mecha.name"
+msgstr "Mecha"
 
 msgid "trait.mercenary.2"
 msgstr "Sempre que Ouro for obtido, a unidade aliada com menor HP atual ganha +1 HP."
@@ -2250,258 +1779,1125 @@ msgstr "Além do Bronze e Prata, no pré-combate cada unidade Mercenária ganha 
 msgid "trait.mercenary.5"
 msgstr "Além de todos os níveis anteriores, ganha 1 de Ouro no pré-combate uma vez por turno."
 
-msgid "ability.trait_mercenary.desc"
-msgstr "Conta unidades Mercenárias. Bronze: Aliado com menor Vida ganha +1 HP quando Ouro é ganho. Prata: Herói ganha +1 PWR quando Ouro é ganho. Ouro: Mercenários ganham +1 de Armadura por 10 de Ouro no pré-combate. Prismático: Ganha 1 de Ouro no pré-combate."
+msgid "trait.mercenary.desc"
+msgstr "Conta unidades com o traço Mercenário no alinhamento ativo. Desbloqueia bônus sempre que Ouro for obtido ou possuído."
 
-msgid "ability.trait_mercenary.bronze.desc"
-msgstr "Sempre que Ouro for obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+msgid "trait.mercenary.name"
+msgstr "Mercenário"
 
-msgid "ability.trait_mercenary.silver.desc"
-msgstr "Sempre que Ouro for obtido, o Herói ganha +1 de Poder."
+msgid "trait.novice.2"
+msgstr "Adiciona +1,0 segundo ao tempo inicial de cada minijogo de batalha."
 
-msgid "ability.trait_mercenary.pre_combat.desc"
-msgstr "No pré-combate: Com 4 Mercenários, cada um ganha +1 de Armadura por 10 de Ouro possuído. Com 5 Mercenários, ganha 1 de Ouro uma vez por turno."
+msgid "trait.novice.3"
+msgstr "Além do Bronze, alcançar uma sequência de 3 acertos concede 1 de Ouro bônus (uma vez por sessão de minijogo, máx. 5 de Ouro)."
 
-msgid "ability.trait_mercenary_on_gold_bronze.desc"
-msgstr "Sempre que Ouro é obtido, a unidade aliada com a menor Vida atual ganha +1 de Vida."
+msgid "trait.novice.4"
+msgstr "Além da Prata, uma resposta correta em uma carta no Nível de Maestria 1 concede 1 Ficha bônus."
 
-msgid "ability.trait_mercenary_on_gold_silver.desc"
-msgstr "Sempre que Ouro é obtido, o Herói ganha +1 de Poder."
+msgid "trait.novice.5"
+msgstr "Além de todos os níveis anteriores: Cada resposta incorreta adiciona +0,5s ao tempo restante. Uma sequência de 3 acertos concede +1 Ficha bônus."
 
-msgid "ability.trait_mercenary_pre_combat.desc"
-msgstr "No pré-combate, ganha 1 de Ouro se Prismático (5 Mercenários), e cada Mercenário ganha +1 de Armadura por 10 de Ouro possuído se Ouro (4 Mercenários)."
+msgid "trait.novice.desc"
+msgstr "Conta unidades com o traço Novato no alinhamento ativo. Desbloqueia bônus para minijogos e geração de fichas."
 
-msgid "?MerSpe.name"
-msgstr "?MerSpe"
+msgid "trait.novice.name"
+msgstr "Novato"
 
-msgid "?MerSpe.desc"
-msgstr "Sempre que 1 de Ouro é obtido enquanto esta unidade está no alinhamento ativo, ela ganha +1 de Vida e +1 de Poder."
+msgid "trait.plant.2"
+msgstr "Pré-Combate: A Planta mais à frente ganha 1 de Espinhos."
 
-msgid "ability.e_mer_spe.desc"
-msgstr "Sempre que 1 de Ouro é obtido no alinhamento ativo, ganha +1 de Vida e +1 de Poder."
+msgid "trait.plant.3"
+msgstr "Além disso, no início do turno, a Planta com menor Vida recupera 1 de Vida."
 
-msgid "?ASpeMerFodToy.name"
-msgstr "?ASpeMerFodToy"
+msgid "trait.plant.4"
+msgstr "Além disso, Pré-Combate: Todas as Plantas ganham 1 de Espinhos e +1 de Vida (a mais à frente ganha 2 de Espinhos)."
 
-msgid "?ASpeMerFodToy.desc"
-msgstr "Pré-combate: Ganha +1 / +2 / +3 de Poder para cada 10 de Ouro possuído."
+msgid "trait.plant.5"
+msgstr "Além disso, no início do turno, todas as Plantas ganham 1 de Espinhos e +1 de Vida. Sempre que uma Planta recebe cura, ganha 1 de Espinhos."
 
-msgid "ability.ea_spe_mer_fod_toy.l1.desc"
-msgstr "Pré-combate: Ganha +1 de Poder para cada 10 de Ouro possuído."
+msgid "trait.plant.name"
+msgstr "Planta"
 
-msgid "ability.ea_spe_mer_fod_toy.l2.desc"
-msgstr "Pré-combate: Ganha +2 de Poder para cada 10 de Ouro possuído."
+msgid "trait.specialist.2"
+msgstr "Início do Combate: Se você tiver 0 fichas restantes, ganha 1 Ficha."
 
-msgid "ability.ea_spe_mer_fod_toy.l3.desc"
-msgstr "Pré-combate: Ganha +3 de Poder para cada 10 de Ouro possuído."
+msgid "trait.specialist.3"
+msgstr "...e o primeiro sorteio do Gacha em cada batalha custa 1 Ficha a menos (mínimo 1)."
 
-msgid "E?TnkMerPlaToy.name"
-msgstr "E?TnkMerPlaToy"
+msgid "trait.specialist.4"
+msgstr "Além disso, derrotar um inimigo com um Especialista concede +1 de Ouro (máx 1/turno, 5/batalha)."
 
-msgid "E?TnkMerPlaToy.desc"
-msgstr "Sempre que 1 de Ouro é obtido, ganha +1 / +2 / +3 de Armadura e +1 / +2 / +3 de Espinhos."
+msgid "trait.specialist.5"
+msgstr "Além disso, invoca uma cópia de combate da sua unidade de menor nível/tier no banco no pré-combate, e no início do turno, o Especialista mais à frente ganha +1 de Poder a cada 5 de Ouro."
 
-msgid "ability.ee_tnk_mer_pla_toy.l1.desc"
-msgstr "Sempre que 1 de Ouro é obtido, ganha +1 de Armadura e +1 de Espinhos."
+msgid "trait.specialist.name"
+msgstr "Especialista"
 
-msgid "ability.ee_tnk_mer_pla_toy.l2.desc"
-msgstr "Sempre que 1 de Ouro é obtido, ganha +2 de Armadura e +2 de Espinhos."
+msgid "trait.support.2"
+msgstr "Pré-Combate: Unidades de Suporte concedem +1 de Vida ao aliado diretamente à frente."
 
-msgid "ability.ee_tnk_mer_pla_toy.l3.desc"
-msgstr "Sempre que 1 de Ouro é obtido, ganha +3 de Armadura e +3 de Espinhos."
+msgid "trait.support.3"
+msgstr "...e também concedem +1 de Poder ao aliado diretamente atrás."
 
-msgid "F?FigMerMecApp.name"
-msgstr "F?FigMerMecApp"
+msgid "trait.support.4"
+msgstr "Além disso, no início do turno, concede +1 de Vida ao aliado com menor Vida e +1 de Poder ao aliado com menor Poder por Suporte vivo."
 
-msgid "F?FigMerMecApp.desc"
-msgstr "Quando esta unidade à distância ataca, marca seu alvo com Recompensa. Derrotar uma unidade marcada concede 1 de Ouro."
+msgid "trait.support.5"
+msgstr "Além disso, Pré-Combate: Concede +1 de Vida e +1 de Poder à unidade Heroica."
 
-msgid "ability.ef_fig_mer_mec_app.l1.desc"
-msgstr "Ao atacar, marca o alvo com Recompensa se não estiver marcado."
+msgid "trait.support.name"
+msgstr "Suporte"
 
-msgid "ability.ef_fig_mer_mec_app.l2.desc"
-msgstr "Ao atacar, marca o alvo e 1 unidade aleatória desmarcada com Recompensa."
+msgid "trait.tank.2"
+msgstr "Pré-Combate: O Guardião mais à frente ganha 1 de Armadura."
 
-msgid "ability.ef_fig_mer_mec_app.l3.desc"
-msgstr "Ao atacar, marca o alvo e unidades adjacentes com Recompensa."
+msgid "trait.tank.3"
+msgstr "Todos os Guardiões agora ganham 1 de Armadura. Quando a Armadura de um Guardião absorve dano, o aliado diretamente atrás ganha 1 de Armadura."
 
-msgid "W?SupMerAniCos.name"
-msgstr "W?SupMerAniCos"
+msgid "trait.tank.4"
+msgstr "Além disso, no início do turno, o Guardião mais à frente ganha 1 de Armadura, e Guardiões interceptam ataques direcionados ao aliado diretamente atrás."
 
-msgid "W?SupMerAniCos.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida."
+msgid "trait.tank.5"
+msgstr "...e sempre que um Guardião ganha Armadura de qualquer fonte, ganha a mesma quantidade de Espinhos."
 
-msgid "ability.ew_sup_mer_ani_cos.l1.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+msgid "trait.tank.name"
+msgstr "Guardião"
 
-msgid "ability.ew_sup_mer_ani_cos.l2.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+msgid "trait.toy.2"
+msgstr "Inimigos que atingem um Brinquedo com ataque corpo a corpo recebem 2 de Estática."
 
-msgid "ability.ew_sup_mer_ani_cos.l3.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+msgid "trait.toy.3"
+msgstr "Aumenta para 3 de Estática."
 
-msgid "E??ATnkSpeMerFodPlaToy.name"
-msgstr "E??ATnkSpeMerFodPlaToy"
+msgid "trait.toy.4"
+msgstr "Aumenta para 4 de Estática."
 
-msgid "E??ATnkSpeMerFodPlaToy.desc"
-msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 / +2 / +3 de Armadura e Espinhos por 10 de Ouro possuído."
+msgid "trait.toy.5"
+msgstr "Além disso, ao morrer, detona toda a Estática no inimigo com mais Estática, causando dano igual às pilhas e removendo-as."
 
-msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l1.desc"
-msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +1 de Armadura e +1 de Espinhos por 10 de Ouro possuído."
+msgid "trait.toy.name"
+msgstr "Brinquedo"
 
-msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l2.desc"
-msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +2 de Armadura e +2 de Espinhos por 10 de Ouro possuído."
+msgid "trait.water.12"
+msgstr "Além disso, no início do turno, cura o aliado com menor Vida em 1 de Vida."
 
-msgid "ability.eeea_tnk_spe_mer_fod_pla_toy.l3.desc"
-msgstr "Pré-combate: Gasta 1 de Ouro para ganhar +3 de Armadura e +3 de Espinhos por 10 de Ouro possuído."
+msgid "trait.water.20"
+msgstr "Além disso, Pré-Combate: Todos os aliados da equipe removem 1 efeito negativo."
 
-msgid "FW??FigSupMerAniMecAppCos.name"
-msgstr "FW??FigSupMerAniMecAppCos"
+msgid "trait.water.3"
+msgstr "Pré-Combate: Unidades de Água curam o aliado diretamente à frente em 1 de Vida."
 
-msgid "FW??FigSupMerAniMecAppCos.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 / +2 / +3 de dano bônus por 10 de Ouro possuído."
+msgid "trait.water.32"
+msgstr "Além disso, no início do turno, aliados consomem todos os seus efeitos negativos para curar 1 de Vida por efeito consumido."
 
-msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l1.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para causar +1 de dano bônus por 10 de Ouro possuído."
+msgid "trait.water.6"
+msgstr "...e também removem 1 efeito negativo (Chamas/Estática) desse aliado."
 
-msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l2.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para causar +2 de dano bônus por 10 de Ouro possuído."
+msgid "trait.water.name"
+msgstr "Água"
 
-msgid "ability.eefw_fig_sup_mer_ani_mec_app_cos.l3.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para causar +3 de dano bônus por 10 de Ouro possuído."
+msgid "trinket.aegis.desc"
+msgstr "Uma vez por turno: Quando um aliado iria morrer, ele sobrevive com 1 HP."
 
-msgid "W??ASupSpeMerFodAniToyCos.name"
-msgstr "W??ASupSpeMerFodAniToyCos"
+msgid "trinket.aegis.name"
+msgstr "Amuleto Égide"
 
-msgid "W??ASupSpeMerFodAniToyCos.desc"
-msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 / 2 / 3 de Vida por 1 de Ouro ganho."
+msgid "trinket.air_insignia.desc"
+msgstr "Quando uma unidade com o traço Ar entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l1.desc"
-msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 1 de Vida."
+msgid "trinket.air_insignia.name"
+msgstr "Insígnia do Ar"
 
-msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l2.desc"
-msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 2 de Vida."
+msgid "trinket.animal_insignia.desc"
+msgstr "Quando uma unidade com o traço Animal entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc"
-msgstr "Sempre que Ouro é obtido, cura uma unidade aliada aleatória em 3 de Vida."
+msgid "trinket.animal_insignia.name"
+msgstr "Insígnia Animal"
 
-msgid "F??AFigSpeMerFodMecToyApp.name"
-msgstr "F??AFigSpeMerFodMecToyApp"
+msgid "trinket.appliance_insignia.desc"
+msgstr "Quando uma unidade com o traço Eletrodoméstico entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "F??AFigSpeMerFodMecToyApp.desc"
-msgstr "Ao atacar: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro e aplica 1 / 2 / 3 de Queimadura por 10 de Ouro possuído."
+msgid "trinket.appliance_insignia.name"
+msgstr "Insígnia do Eletrodoméstico"
 
-msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l1.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 1 de Queimadura por 10 de Ouro possuído."
+msgid "trinket.apprentice_insignia.desc"
+msgstr "Quando uma unidade de Nível 1 entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l2.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 2 de Queimadura por 10 de Ouro possuído."
+msgid "trinket.apprentice_insignia.name"
+msgstr "Insígnia do Aprendiz"
 
-msgid "ability.eefa_fig_spe_mer_fod_mec_toy_app.l3.desc"
-msgstr "Ao atacar: Gasta 1 de Ouro para aplicar 3 de Queimadura por 10 de Ouro possuído."
+msgid "trinket.armor_aura.desc"
+msgstr "No início do turno, todos os aliados ganham 3 de Armadura."
 
-msgid "EF??TnkFigMerMecPlaToyApp.name"
-msgstr "EF??TnkFigMerMecPlaToyApp"
+msgid "trinket.armor_aura.name"
+msgstr "Aura de Armadura"
 
-msgid "EF??TnkFigMerMecPlaToyApp.desc"
-msgstr "Ao ser ferido, antes do dano: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para mitigar 1 / 2 / 3 de dano recebido por 10 de Ouro possuído."
+msgid "trinket.awe_inspiring_totem.desc"
+msgstr "No início do turno, se houver uma unidade de Nível 3 ou Tier 3 na formação, concede +1 HP e +1 PWR a todas as outras unidades de tier e nível inferiores."
 
-msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l1.desc"
-msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 1 por 10 de Ouro possuído."
+msgid "trinket.awe_inspiring_totem.name"
+msgstr "Totem Inspirador"
 
-msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l2.desc"
-msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 2 por 10 de Ouro possuído."
+msgid "trinket.bargain_charm.desc"
+msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
 
-msgid "ability.eeef_tnk_fig_mer_mec_pla_toy_app.l3.desc"
-msgstr "Antes de receber dano: Gasta 1 de Ouro para reduzir o dano recebido em 3 por 10 de Ouro possuído."
+msgid "trinket.bargain_charm.name"
+msgstr "Charme de Barganha"
 
-msgid "EW??TnkSupMerAniPlaToyCos.name"
-msgstr "EW??TnkSupMerAniPlaToyCos"
+msgid "trinket.beginners_charm.desc"
+msgstr "Minigames: Ganhe 1 ficha extra se o nível de maestria do flashcard respondido for 1 (Muito Difícil)."
 
-msgid "EW??TnkSupMerAniPlaToyCos.desc"
-msgstr "Início do turno: Se tiver pelo menos 10 de Ouro, gasta 1 de Ouro para ganhar +1 / +2 / +3 de Vida e Poder por 10 de Ouro possuído."
+msgid "trinket.beginners_charm.name"
+msgstr "Amuleto do Iniciante"
 
-msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l1.desc"
-msgstr "Início do turno: Gasta 1 de Ouro para ganhar +1 de Vida e +1 de Poder por 10 de Ouro possuído."
+msgid "trinket.burn_vial.desc"
+msgstr "Ataques aplicam 1 acúmulo de Queimadura."
 
-msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l2.desc"
-msgstr "Início do turno: Gasta 1 de Ouro para ganhar +2 de Vida e +2 de Poder por 10 de Ouro possuído."
+msgid "trinket.burn_vial.name"
+msgstr "Frasco de Chamas"
 
-msgid "ability.eeew_tnk_sup_mer_ani_pla_toy_cos.l3.desc"
-msgstr "Início do turno: Gasta 1 de Ouro para ganhar +3 de Vida e +3 de Poder por 10 de Ouro possuído."
+msgid "trinket.cheap_insignia.name"
+msgstr "Insígnia Barata"
 
-msgid "item.claim_ticket.name"
-msgstr "Bilhete de Reivindicação"
+msgid "trinket.costume_insignia.desc"
+msgstr "Quando uma unidade com o traço Fantasia entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "item.claim_ticket.desc"
-msgstr "Quando o portador morre, ganha 1 de Ouro."
+msgid "trinket.costume_insignia.name"
+msgstr "Insígnia da Fantasia"
 
-msgid "ability.item_claim_ticket.desc"
-msgstr "Quando o portador morre, ganha 1 de Ouro."
+msgid "trinket.earth_insignia.desc"
+msgstr "Quando uma unidade com o traço Terra entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "item.interest_ledger.name"
-msgstr "Livro-Razão de Juros"
+msgid "trinket.earth_insignia.name"
+msgstr "Insígnia da Terra"
 
-msgid "item.interest_ledger.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+msgid "trinket.fair_insignia.name"
+msgstr "Insígnia de Preço Justo"
 
-msgid "ability.item_interest_ledger.desc"
-msgstr "Sempre que 1 de Ouro é obtido, cura o portador em 1 de Vida."
+msgid "trinket.fighter_insignia.desc"
+msgstr "Quando uma unidade com o traço Lutador entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "item.loaded_contract.name"
-msgstr "Contrato Turbinado"
+msgid "trinket.fighter_insignia.name"
+msgstr "Insígnia do Lutador"
 
-msgid "item.loaded_contract.desc"
-msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+msgid "trinket.fire_insignia.desc"
+msgstr "Quando uma unidade com o traço Fogo entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "ability.item_loaded_contract.desc"
-msgstr "Sempre que 1 de Ouro é obtido, o portador ganha +1 de Poder."
+msgid "trinket.fire_insignia.name"
+msgstr "Insígnia de Fogo"
 
-msgid "item.golden_seal.name"
-msgstr "Selo Dourado"
+msgid "trinket.food_insignia.desc"
+msgstr "Quando uma unidade com o traço Comida entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "item.golden_seal.desc"
-msgstr "Concede dinamicamente +1 de Vida e +1 de Poder para cada 10 de Ouro atualmente possuído."
+msgid "trinket.food_insignia.name"
+msgstr "Insígnia da Comida"
 
-msgid "ability.item_golden_seal.desc"
-msgstr "Concede dinamicamente +1 de Vida e +1 de Poder por 10 de Ouro atualmente possuído."
+msgid "trinket.level3_insignia.desc"
+msgstr "Quando uma unidade de Nível 3 entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "item.mercenary_emblem.name"
-msgstr "Emblema do Mercenário"
+msgid "trinket.master_insignia.name"
+msgstr "Insígnia do Mestre"
 
-msgid "item.mercenary_emblem.desc"
-msgstr "Concede o traço Mercenário. Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+msgid "trinket.mecha_insignia.desc"
+msgstr "Quando uma unidade com o traço Mecha entra em campo, ela recebe +1 HP e +1 PWR."
 
-msgid "ability.item_mercenary_emblem.desc"
-msgstr "Sempre que 1 de Ouro é obtido enquanto equipado, o portador ganha +1 de Vida e +1 de Poder."
+msgid "trinket.mecha_insignia.name"
+msgstr "Insígnia Mecha"
 
-msgid "trinket.mercenary_sigil.name"
-msgstr "Sigilo do Mercenário"
+msgid "trinket.mercenary_insignia.desc"
+msgstr "Quando uma unidade com o traço Mercenário entra em campo, recebe +1 HP e +1 PWR."
+
+msgid "trinket.mercenary_insignia.name"
+msgstr "Insígnia do Mercenário"
 
 msgid "trinket.mercenary_sigil.desc"
 msgstr "Ativa e rastreia os níveis cumulativos do traço Mercenário."
 
-msgid "trinket.trait_mercenary.name"
+msgid "trinket.mercenary_sigil.name"
 msgstr "Sigilo do Mercenário"
 
-msgid "trinket.trait_mercenary.desc"
-msgstr "Os efeitos do traço Mercenário são ativados com 2, 3, 4 e 5 unidades."
+msgid "trinket.merge_damage_charm.desc"
+msgstr "Sempre que uma fusão for realizada no tabuleiro de batalha, causa 3 de dano a uma unidade inimiga aleatória."
 
-msgid "trinket.recruiting_charm.name"
-msgstr "Amuleto de Recrutamento"
+msgid "trinket.merge_damage_charm.name"
+msgstr "Centelha de Fusão"
+
+msgid "trinket.novice_insignia.desc"
+msgstr "Quando uma unidade com o traço Novato entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.novice_insignia.name"
+msgstr "Insígnia do Novato"
+
+msgid "trinket.plant_insignia.desc"
+msgstr "Quando uma unidade com o traço Planta entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.plant_insignia.name"
+msgstr "Insígnia da Planta"
+
+msgid "trinket.polished_plate.desc"
+msgstr "Antes da batalha, ganha 1 de Armadura. A Armadura não decai no fim do turno."
+
+msgid "trinket.polished_plate.name"
+msgstr "Placa Polida"
+
+msgid "trinket.premium_insignia.name"
+msgstr "Insígnia Premium"
+
+msgid "trinket.purifying_pendant.desc"
+msgstr "Quando um aliado recebe dano de um efeito de status negativo, remove todas as pilhas restantes desse efeito."
+
+msgid "trinket.purifying_pendant.name"
+msgstr "Pingente Purificador"
 
 msgid "trinket.recruiting_charm.desc"
 msgstr "No início do turno, se você tiver pelo menos 1 de Ouro e um espaço aberto no banco, gasta 1 de Ouro para contratar um ?MerSpe de Nível 1."
 
-msgid "ability.trinket_recruiting_charm.desc"
-msgstr "No início do turno, gasta 1 de Ouro para contratar um ?MerSpe Nível 1 se houver espaço no banco."
+msgid "trinket.recruiting_charm.name"
+msgstr "Amuleto de Recrutamento"
 
-msgid "trinket.wanted_poster.name"
-msgstr "Cartaz de Procurado"
+msgid "trinket.rusty_ring.desc"
+msgstr "Concede +1 HP e +1 PWR a todas as unidades sem equipamentos. Equipar um item cancela esse bônus."
+
+msgid "trinket.rusty_ring.name"
+msgstr "Anel Enferrujado"
+
+msgid "trinket.soul_echo.desc"
+msgstr "Quando um aliado morre, ressuscita a primeira unidade não-herói que morreu neste turno."
+
+msgid "trinket.soul_echo.name"
+msgstr "Eco da Alma"
+
+msgid "trinket.specialist_insignia.desc"
+msgstr "Quando uma unidade com o traço Especialista entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.specialist_insignia.name"
+msgstr "Insígnia do Especialista"
+
+msgid "trinket.spiked_armor.desc"
+msgstr "No início do turno, a unidade mais à frente ganha 2 de Armadura e 2 [color=#44CC44]Espinhos[/color]."
+
+msgid "trinket.spiked_armor.name"
+msgstr "Armadura de Espinhos"
+
+msgid "trinket.study_hall_bell.desc"
+msgstr "[color=#ffd166][b]No Início do Turno[/b][/color], se disponível, gasta 1 Ficha para invocar um Novisprout Nível 1 no primeiro espaço aberto do alinhamento (ou no banco se cheio)."
+
+msgid "trinket.study_hall_bell.name"
+msgstr "Sino da Sala de Estudos"
+
+msgid "trinket.support_insignia.desc"
+msgstr "Quando uma unidade com o traço Suporte entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.support_insignia.name"
+msgstr "Insígnia de Suporte"
+
+msgid "trinket.tank_insignia.desc"
+msgstr "Quando uma unidade com o traço Guardião entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.tank_insignia.name"
+msgstr "Insígnia do Guardião"
+
+msgid "trinket.tier1_insignia.desc"
+msgstr "Quando uma unidade de Tier 1 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.tier2_insignia.desc"
+msgstr "Quando uma unidade de Tier 2 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.tier3_insignia.desc"
+msgstr "Quando uma unidade de Tier 3 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.time_sprint_charm.desc"
+msgstr "O cronômetro do minigame ganha um aumento de 2 segundos em batalhas."
+
+msgid "trinket.time_sprint_charm.name"
+msgstr "Amuleto de Arrancada"
+
+msgid "trinket.token_return_charm.desc"
+msgstr "Quando a primeira unidade morre a cada rodada, retorna Fichas iguais ao Tier dela."
+
+msgid "trinket.token_return_charm.name"
+msgstr "Amuleto de Retorno de Fichas"
+
+msgid "trinket.toy_insignia.desc"
+msgstr "Quando uma unidade com o traço Brinquedo entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.toy_insignia.name"
+msgstr "Insígnia do Brinquedo"
+
+msgid "trinket.trait_air.desc"
+msgstr "Os efeitos do traço Ar são ativados com 3, 6, 12, 20 e 32 unidades."
+
+msgid "trinket.trait_air.name"
+msgstr "Sigilo do Ar"
+
+msgid "trinket.trait_animal.desc"
+msgstr "Os efeitos do traço Animal são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_animal.name"
+msgstr "Sigilo Animal"
+
+msgid "trinket.trait_appliance.desc"
+msgstr "Os efeitos do traço Eletrodoméstico são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_appliance.name"
+msgstr "Sigilo do Eletrodoméstico"
+
+msgid "trinket.trait_costume.desc"
+msgstr "Os efeitos do traço Fantasia são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_costume.name"
+msgstr "Sigilo da Fantasia"
+
+msgid "trinket.trait_earth.desc"
+msgstr "Os efeitos do traço Terra são ativados com 3, 6, 12, 20 e 32 unidades."
+
+msgid "trinket.trait_earth.name"
+msgstr "Sigilo da Terra"
+
+msgid "trinket.trait_fighter.desc"
+msgstr "Os efeitos do traço Lutador são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_fighter.name"
+msgstr "Sigilo do Lutador"
+
+msgid "trinket.trait_fire.desc"
+msgstr "Os efeitos do traço Fogo são ativados com 3, 6, 12, 20 e 32 unidades."
+
+msgid "trinket.trait_fire.name"
+msgstr "Sigilo de Fogo"
+
+msgid "trinket.trait_food.desc"
+msgstr "Os efeitos do traço Comida são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_food.name"
+msgstr "Sigilo da Comida"
+
+msgid "trinket.trait_mecha.desc"
+msgstr "Os efeitos do traço Mecha são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_mecha.name"
+msgstr "Sigilo Mecha"
+
+msgid "trinket.trait_mercenary.desc"
+msgstr "Os efeitos do traço Mercenário são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_mercenary.name"
+msgstr "Sigilo do Mercenário"
+
+msgid "trinket.trait_novice.desc"
+msgstr "Garante pelo menos 3 Fichas em cada sessão de minijogo."
+
+msgid "trinket.trait_novice.name"
+msgstr "Sigilo do Novato"
+
+msgid "trinket.trait_plant.desc"
+msgstr "Os efeitos do traço Planta são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_plant.name"
+msgstr "Sigilo da Planta"
+
+msgid "trinket.trait_specialist.desc"
+msgstr "Os efeitos do traço Especialista são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_specialist.name"
+msgstr "Sigilo do Especialista"
+
+msgid "trinket.trait_support.desc"
+msgstr "Os efeitos do traço Suporte são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_support.name"
+msgstr "Sigilo de Suporte"
+
+msgid "trinket.trait_tank.desc"
+msgstr "Os efeitos do traço Guardião são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_tank.name"
+msgstr "Sigilo do Guardião"
+
+msgid "trinket.trait_toy.desc"
+msgstr "Os efeitos do traço Brinquedo são ativados com 2, 3, 4 e 5 unidades."
+
+msgid "trinket.trait_toy.name"
+msgstr "Sigilo do Brinquedo"
+
+msgid "trinket.trait_water.desc"
+msgstr "Os efeitos do traço Água são ativados com 3, 6, 12, 20 e 32 unidades."
+
+msgid "trinket.trait_water.name"
+msgstr "Sigilo da Água"
+
+msgid "trinket.trinity_charm.desc"
+msgstr "Se você comprar pelo menos uma vez de cada máquina de tier (1, 2 e 3) em um turno ou encontro, ganha 1 Ficha."
+
+msgid "trinket.trinity_charm.name"
+msgstr "Amuleto da Trindade"
+
+msgid "trinket.twin_charm.desc"
+msgstr "Suas unidades ganham +1 de PWR para cada 2 cópias dessa mesma unidade no seu conjunto de batalha."
+
+msgid "trinket.twin_charm.name"
+msgstr "Amuleto Gêmeo"
+
+msgid "trinket.underdog_emblem.desc"
+msgstr "Pré-Combate: Se sua equipe tiver menos unidades do que o inimigo, todos os aliados ganham 2 de Armadura para cada unidade de diferença."
+
+msgid "trinket.underdog_emblem.name"
+msgstr "Emblema do Azarão"
+
+msgid "trinket.vengeance.desc"
+msgstr "Quando um aliado morre, concede +1 HP e +1 PWR a um aliado aleatório."
+
+msgid "trinket.vengeance.name"
+msgstr "Amuleto de Vingança"
+
+msgid "trinket.veteran_insignia.desc"
+msgstr "Quando uma unidade de Nível 2 entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.veteran_insignia.name"
+msgstr "Insígnia do Veterano"
 
 msgid "trinket.wanted_poster.desc"
 msgstr "No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
 
-msgid "ability.trinket_wanted_poster.desc"
-msgstr "No início do turno, marca um inimigo aleatório desmarcado com Recompensa."
+msgid "trinket.wanted_poster.name"
+msgstr "Cartaz de Procurado"
+
+msgid "trinket.water_insignia.desc"
+msgstr "Quando uma unidade com o traço Água entra em campo, ela recebe +1 HP e +1 PWR."
+
+msgid "trinket.water_insignia.name"
+msgstr "Insígnia da Água"
+
+msgid "tutorial.battle_management"
+msgstr "Use suas fichas nas Máquinas de Gacha abaixo para obter unidades e itens!\n\nCada máquina tem um custo diferente. Gaste suas fichas com sabedoria!"
+
+msgid "tutorial.battle_management_intro.title"
+msgstr "Fichas e Máquinas de Gacha"
+
+msgid "tutorial.btn.got_it"
+msgstr "Entendi!"
+
+msgid "tutorial.btn.next"
+msgstr "Próximo"
+
+msgid "tutorial.equip"
+msgstr "Escolha seu equipamento com sabedoria. Unidades têm espaços limitados e, uma vez equipado, um item não pode ser removido. Cada escolha conta!"
+
+msgid "tutorial.first_draw.title"
+msgstr "Montando sua equipe"
+
+msgid "tutorial.first_draw_1"
+msgstr "Novas cápsulas são enviadas para a sua Reserva.\n\nDe lá, você pode posicionar unidades na Formação de Batalha ou equipar itens nas suas unidades, ou usá-los.\n\nSe a Reserva estiver cheia, qualquer nova cápsula será enviada diretamente para o Descarte."
+
+msgid "tutorial.first_draw_2"
+msgstr "Sua equipe age primeiro, começando pela unidade da frente até a última. Em seguida, a equipe inimiga age na mesma ordem.\n\nDerrote todas as unidades inimigas para vencer. Se o seu herói morrer, você perde.\n\nSe nenhum dos lados for derrotado, um novo turno começa.\n\nPressione \"Lutar!\" quando estiver satisfeito com sua equipe."
+
+msgid "tutorial.first_draw_combat.title"
+msgstr "Como a Batalha Funciona"
+
+msgid "tutorial.gacha_inspect_battle"
+msgstr "Fundir ou destruir gachaballs em batalha afeta apenas o encontro atual. Sua coleção permanente permanece inalterada. Cada batalha redefine seus gachaballs para seu estado base."
+
+msgid "tutorial.gacha_inspect_battle.title"
+msgstr "Cápsulas de Batalha"
+
+msgid "tutorial.gacha_inspect_run.mouse"
+msgstr "Esta é a sua coleção atual. Passe o cursor ou segure o clique em uma GachaBall para inspecioná-la (um clique rápido seleciona). Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta clicar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
+
+msgid "tutorial.gacha_inspect_run.title"
+msgstr "Coleção Gacha"
+
+msgid "tutorial.gacha_inspect_run.touch"
+msgstr "Esta é a sua coleção atual. Toque e segure uma GachaBall para inspecioná-la (um toque rápido seleciona). Você pode fundir algumas GachaBalls do mesmo nível se já tiver desbloqueado a GachaBall resultante nesta partida ou subir o nível delas fundindo duas unidades de mesmo nível, basta tocar ou arrastar uma sobre a outra. Você desbloqueia receitas de GachaBall ao obtê-las durante o jogo."
+
+msgid "tutorial.gambling_den"
+msgstr "Arrisque tudo por ouro. Ganhe fichas no minigame para gastar nestas máquinas em recompensas imediatas de ouro."
+
+msgid "tutorial.loadout"
+msgstr "Escolha seu herói e deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui e o deck é o baralho de flashcards que será usado por toda a jogatina."
+
+msgid "tutorial.merge_choice"
+msgstr "Escolha Fundir para combinar dois em uma única entidade mais poderosa, ou Trocar para reorganizar suas fileiras? A escolha é sua."
+
+msgid "tutorial.new_card_intro"
+msgstr "Aqui é onde novos flashcards são adicionados ao seu Deck de Domínio.\n\nUm novo será adicionado a cada mini game.\n\nVocê começa com 6 flashcards já desbloqueados.\n\nTente memorizar alguns antes de começar o mini-jogo.\n\nSeus recursos na batalha dependem disso."
+
+msgid "tutorial.new_card_intro.title"
+msgstr "Novo Flashcard e Revisão!"
+
+msgid "tutorial.path_choice_1"
+msgstr "Escolha sua proxima parada! Cada parada conta como um dia e seus adversarios ficam mais fortes a cada dia. Escolha bem!"
+
+msgid "tutorial.path_choice_intro.title"
+msgstr "Escolha do caminho"
+
+msgid "tutorial.rest_site"
+msgstr "Um momento de descanso. Domine o minigame de flashcards para ganhar fichas e use-as nestas máquinas para upgrades permanentes do Herói."
+
+msgid "tutorial.shop"
+msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se estiver procurando algo específico, mas cuidado: o preço sobe a cada rolagem!"
+
+msgid "tutorial.shrine_intro"
+msgstr "O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
+
+msgid "tutorial.shrine_intro.title"
+msgstr "Removendo e Transformando"
+
+msgid "tutorial.training_grounds"
+msgstr "Um lugar para aprimorar o poder do seu herói. Ganhe fichas no minigame para gastar nestas máquinas em upgrades permanentes de Poder."
+
+msgid "tutorial.traits"
+msgstr "Sinergias são efeitos e bônus especiais que são ativados conforme o número de Almas ou unidades de um mesmo tipo que você possui em seu time.\n\nToque nas unidades para conferir quais Sinergias elas possuem."
+
+msgid "tutorial.traits.title"
+msgstr "Sinergias"
+
+msgid "ui.ability"
+msgstr "Habilidade"
+
+msgid "ui.answer"
+msgstr "Resposta: %s"
+
+msgid "ui.attack"
+msgstr "Ataque:"
+
+msgid "ui.attack_override"
+msgstr "Ataque Modificado:"
+
+msgid "ui.audio_settings"
+msgstr "Configurações de Áudio"
+
+msgid "ui.back_to_path"
+msgstr "Voltar ao Caminho"
+
+msgid "ui.battle_log"
+msgstr "Registro de Batalha"
+
+msgid "ui.battle_node"
+msgstr "Batalha"
+
+msgid "ui.boss"
+msgstr "Chefe %d"
+
+msgid "ui.bosses_defeated"
+msgstr "Chefes Derrotados"
+
+msgid "ui.btn_merge"
+msgstr "Fundir"
+
+msgid "ui.btn_merge_cost"
+msgstr "Fundir ({cost} Ouro)"
+
+msgid "ui.btn_swap"
+msgstr "Trocar"
+
+msgid "ui.buy"
+msgstr "Comprar"
+
+msgid "ui.buy_gold"
+msgstr "Comprar (%d Ouro)"
+
+msgid "ui.cards"
+msgstr "cartas"
+
+msgid "ui.choose_action"
+msgstr "Escolha uma ação para realizar."
+
+msgid "ui.choose_deck"
+msgstr "Escolher Deck"
+
+msgid "ui.choose_hero"
+msgstr "Escolher Herói"
+
+msgid "ui.choose_reward"
+msgstr "Escolha Sua Recompensa"
+
+msgid "ui.choose_your_deck"
+msgstr "Escolha Seu Deck"
+
+msgid "ui.choose_your_hero"
+msgstr "Escolha Seu Herói"
+
+msgid "ui.clear"
+msgstr "Limpar"
+
+msgid "ui.close"
+msgstr "Fechar"
+
+msgid "ui.confirm"
+msgstr "Confirmar"
+
+msgid "ui.confirm_reset"
+msgstr "Tem certeza que deseja resetar todo o progresso?"
+
+msgid "ui.confirm_selection"
+msgstr "Confirmar Seleção"
+
+msgid "ui.congratulations"
+msgstr "Parabéns!"
+
+msgid "ui.continue"
+msgstr "Continuar"
+
+msgid "ui.crt_effect"
+msgstr "Efeito CRT"
+
+msgid "ui.day"
+msgstr "Dia %d"
+
+msgid "ui.days_survived"
+msgstr "Dias Sobrevividos"
+
+msgid "ui.defeat"
+msgstr "DERROTA"
+
+msgid "ui.details"
+msgstr "[?] Detalhes (OFF)"
+
+msgid "ui.details_on"
+msgstr "[?] Detalhes (ON)"
+
+msgid "ui.discard_pile"
+msgstr "Pilha de Descarte"
+
+msgid "ui.discard_pile_count"
+msgstr "Descarte (%d)"
+
+msgid "ui.drop_zone_buy"
+msgstr "Comprar"
+
+msgid "ui.drop_zone_buy_multi"
+msgstr "Arraste ou clique aqui para\n[font_size=72]COMPRAR[/font_size]"
+
+msgid "ui.drop_zone_get"
+msgstr "Pegar"
+
+msgid "ui.drop_zone_get_multi"
+msgstr "Arraste ou clique aqui para\n[font_size=72]PEGAR[/font_size]"
+
+msgid "ui.drop_zone_remove"
+msgstr "Remover"
+
+msgid "ui.drop_zone_remove_multi"
+msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]"
+
+msgid "ui.drop_zone_sell_multi"
+msgstr "Arraste ou clique aqui para\n[font_size=72]VENDER[/font_size]"
+
+msgid "ui.drop_zone_transform"
+msgstr "Transformar"
+
+msgid "ui.drop_zone_transform_multi"
+msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]"
+
+msgid "ui.effects"
+msgstr "Efeitos"
+
+msgid "ui.elite_battle_node"
+msgstr "Batalha de Elite"
+
+msgid "ui.elites_defeated"
+msgstr "Elites Derrotados"
+
+msgid "ui.end_turn"
+msgstr "Lutar!"
+
+msgid "ui.enemies_slain"
+msgstr "Inimigos Derrotados"
+
+msgid "ui.english"
+msgstr "Inglês"
+
+msgid "ui.equipped_item"
+msgstr "Item Equipado:"
+
+msgid "ui.equipped_items"
+msgstr "Itens Equipados:"
+
+msgid "ui.exit_game"
+msgstr "Sair do Jogo"
+
+msgid "ui.explanation"
+msgstr "Explicação: %s"
+
+msgid "ui.final_statistics"
+msgstr "Estatísticas Finais"
+
+msgid "ui.flashcards_mastered"
+msgstr "Flashcards Dominados"
+
+msgid "ui.fullscreen"
+msgstr "Tela Cheia"
+
+msgid "ui.gambling_den"
+msgstr "Canto das Apostas"
+
+msgid "ui.gambling_den_desc"
+msgstr "Jogue para ganhar fichas e gaste-as para ter a chance de ganhar muito Ouro."
+
+msgid "ui.gambling_den_node"
+msgstr "Canto das Apostas"
+
+msgid "ui.glow_debug"
+msgstr "Debug de Brilho:"
+
+msgid "ui.glow_effect"
+msgstr "Efeito de Brilho"
+
+msgid "ui.gold_earned"
+msgstr "Ouro Ganho"
+
+msgid "ui.gold_price"
+msgstr "%d Ouro"
+
+msgid "ui.got_it"
+msgstr "Entendi!"
+
+msgid "ui.hero_gained"
+msgstr "Seu Herói ganhou +%d %s."
+
+msgid "ui.hide"
+msgstr "Esconder"
+
+msgid "ui.hp"
+msgstr "HP"
+
+msgid "ui.intro_new_card"
+msgstr "Introdução de Nova Carta"
+
+msgid "ui.inventory"
+msgstr "Inventário"
+
+msgid "ui.language"
+msgstr "Idioma"
+
+msgid "ui.leave"
+msgstr "Sair"
+
+msgid "ui.loadout_selection"
+msgstr "Seleção de Loadout"
+
+msgid "ui.locked_hero"
+msgstr "Bloqueado"
+
+msgid "ui.master_volume"
+msgstr "Volume Geral"
+
+msgid "ui.mastery_breakdown"
+msgstr "Níveis de Domínio"
+
+msgid "ui.mastery_level_2"
+msgstr "Domínio 2 (Difícil)"
+
+msgid "ui.mastery_level_3"
+msgstr "Domínio 3 (Médio)"
+
+msgid "ui.mastery_level_4"
+msgstr "Domínio 4 (Fácil)"
+
+msgid "ui.mastery_level_5"
+msgstr "Domínio 5 (Muito Fácil)"
+
+msgid "ui.merge_encounter_description"
+msgstr ""
+
+msgid "ui.merge_encounter_instruction"
+msgstr "Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
+
+msgid "ui.merge_encounter_open_inventory"
+msgstr "CLIQUE AQUI PARA FUNDIR!"
+
+msgid "ui.merge_encounter_title"
+msgstr "Encontro de Fusão"
+
+msgid "ui.merge_node"
+msgstr "Encontro de Fusão"
+
+msgid "ui.midgame_bonus_info"
+msgstr "+1.0s TEMPO BÔNUS!"
+
+msgid "ui.midgame_card_unlocked"
+msgstr "★ NOVA CARTA DESBLOQUEADA! ★"
+
+msgid "ui.music_volume"
+msgstr "Volume da Música"
+
+msgid "ui.no"
+msgstr "Não"
+
+msgid "ui.no_effect_details"
+msgstr "Nenhum detalhe disponível para este efeito."
+
+msgid "ui.no_effects"
+msgstr "Esta unidade não possui efeitos especiais."
+
+msgid "ui.no_explanation"
+msgstr "Nenhuma explicação disponível"
+
+msgid "ui.no_gains"
+msgstr "Nenhum ganho desta vez."
+
+msgid "ui.options"
+msgstr "Opções"
+
+msgid "ui.play"
+msgstr "Jogar"
+
+msgid "ui.portuguese"
+msgstr "Português"
+
+msgid "ui.priority_cards"
+msgstr "Cartas de Prioridade (clique para prévia):"
+
+msgid "ui.pwr"
+msgstr "PWR"
+
+msgid "ui.ready"
+msgstr "Pronto!"
+
+msgid "ui.remove_cost"
+msgstr "Remover (%d Ouro)"
+
+msgid "ui.reroll"
+msgstr "Novas Opções (1 Ouro)"
+
+msgid "ui.reroll_gold"
+msgstr "Novas Opções (%d Ouro)"
+
+msgid "ui.rest_node"
+msgstr "Local de Descanso"
+
+msgid "ui.rest_site"
+msgstr "Local de Descanso"
+
+msgid "ui.rest_site_desc"
+msgstr "Jogue para ganhar fichas e gaste-as em melhorias permanentes de HP."
+
+msgid "ui.rest_study"
+msgstr "Ganhar Fichas! (%d Ouro)"
+
+msgid "ui.results"
+msgstr "Resultados"
+
+msgid "ui.return_to_path"
+msgstr "Voltar ao Caminho"
+
+msgid "ui.return_to_title"
+msgstr "Voltar ao Início"
+
+msgid "ui.review_title"
+msgstr "Ganhar Fichas!"
+
+msgid "ui.reward_desc"
+msgstr "Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
+
+msgid "ui.reward_elite_instruction"
+msgstr "Mova o Amuleto para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
+
+msgid "ui.reward_instruction"
+msgstr "Mova a gacha ball para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
+
+msgid "ui.rewards_title"
+msgstr "RECOMPENSAS"
+
+msgid "ui.run_complete"
+msgstr "JOGATINA COMPLETA!"
+
+msgid "ui.run_complete_message"
+msgstr "Você derrotou todos os %d chefes e completou sua jogatina!"
+
+msgid "ui.score"
+msgstr "Pontuação: %d"
+
+msgid "ui.sfx_volume"
+msgstr "Volume de Efeitos"
+
+msgid "ui.shop"
+msgstr "Loja"
+
+msgid "ui.shop_desc"
+msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
+
+msgid "ui.shop_node"
+msgstr "Loja"
+
+msgid "ui.show"
+msgstr "Mostrar"
+
+msgid "ui.show_tutorials"
+msgstr "Mostrar Tutoriais e Dicas"
+
+msgid "ui.shrine_desc"
+msgstr "Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
+
+msgid "ui.shrine_drop_remove"
+msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
+
+msgid "ui.shrine_drop_transform"
+msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
+
+msgid "ui.shrine_instruction"
+msgstr "Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário."
+
+msgid "ui.shrine_instructions"
+msgstr "Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro)."
+
+msgid "ui.shrine_node"
+msgstr "Santuário"
+
+msgid "ui.shrine_open_inventory"
+msgstr "REMOVER OU TRANSFORMAR"
+
+msgid "ui.shrine_prompt"
+msgstr "O que você quer fazer com %s?"
+
+msgid "ui.shrine_title"
+msgstr "Santuário"
+
+msgid "ui.skip"
+msgstr "PULAR"
+
+msgid "ui.start_run"
+msgstr "Jogar"
+
+msgid "ui.stat_prize"
+msgstr "Prêmio de Atributo"
+
+msgid "ui.study"
+msgstr "Ganhar Fichas!"
+
+msgid "ui.surprise_node"
+msgstr "Evento Surpresa"
+
+msgid "ui.take_gold"
+msgstr "Pegar Ouro"
+
+msgid "ui.take_gold_amount"
+msgstr "Prefiro %d de Ouro"
+
+msgid "ui.target_frontmost"
+msgstr "(Mais à Frente)"
+
+msgid "ui.target_mirror"
+msgstr "(Posição Espelhada)"
+
+msgid "ui.test_mode"
+msgstr "Modo Teste"
+
+msgid "ui.tier"
+msgstr "Nível"
+
+msgid "ui.tier_1"
+msgstr "Nível 1"
+
+msgid "ui.tier_2"
+msgstr "Nível 2"
+
+msgid "ui.tier_3"
+msgstr "Nível 3"
+
+msgid "ui.title"
+msgstr "FLASHCARD HEROES"
+
+msgid "ui.tokens"
+msgstr "Fichas"
+
+msgid "ui.tokens_count"
+msgstr "Fichas: %d"
+
+msgid "ui.tokens_earned"
+msgstr "Fichas Ganhas"
+
+msgid "ui.train_hp"
+msgstr "Treinar HP"
+
+msgid "ui.train_pwr"
+msgstr "Treinar PWR"
+
+msgid "ui.training_complete"
+msgstr "Treinamento Completo!"
+
+msgid "ui.training_grounds"
+msgstr "Campus de Treinamento"
+
+msgid "ui.training_grounds_desc"
+msgstr "Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder."
+
+msgid "ui.training_grounds_node"
+msgstr "Campus de Treinamento"
+
+msgid "ui.transfer_item_msg"
+msgstr "%s transfere %s para %s!"
+
+msgid "ui.transform_cost"
+msgstr "Transformar (%d Ouro)"
+
+msgid "ui.tutorial_title"
+msgstr "Tutorial"
+
+msgid "ui.utg_btn"
+msgstr "TREINAMENTO"
+
+msgid "ui.utg_desc"
+msgstr "Molde suas unidades!\nAbra o inventário para arrastar uma unidade aqui,\ne treine seu HP ou Poder gastando fichas."
+
+msgid "ui.utg_done"
+msgstr "Pronto!"
+
+msgid "ui.utg_drop_hp"
+msgstr "Arraste ou clique aqui para\n[font_size=72]TREINAR HP[/font_size]\n(custo: 5 ouro)"
+
+msgid "ui.utg_drop_pwr"
+msgstr "Arraste ou clique aqui para\n[font_size=72]TREINAR PWR[/font_size]\n(custo: 5 ouro)"
+
+msgid "ui.utg_instruction"
+msgstr "Arraste ou selecione uma unidade para iniciar o treinamento.\nClique em qualquer lugar para fechar o inventário."
+
+msgid "ui.utg_popup_title"
+msgstr "Use suas Fichas para treinar!"
+
+msgid "ui.utg_title"
+msgstr "Campo de Treinamento"
+
+msgid "ui.victory"
+msgstr "VITÓRIA"
+
+msgid "ui.yes"
+msgstr "Sim"
+
+msgid "unit_dust_elite_t1.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no início do turno. Invoca um Recruta de Poeira ao atacar."
+
+msgid "unit_dust_elite_t1.name"
+msgstr "Guarda de Poeira (T1)"
+
+msgid "unit_dust_elite_t2.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1 ou T2 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2). Invoca um Recruta de Poeira no inventário do jogador."
+
+msgid "unit_dust_elite_t2.name"
+msgstr "Sentinela de Poeira (T2)"
+
+msgid "unit_dust_elite_t3.desc"
+msgstr "No final do turno, invoca unidades para preencher espaços vazios. Invoca um Recruta de Poeira T1, T2 ou T3 aleatório quando um aliado morre. Ganha HP e PWR com base no tier de qualquer unidade de Poeira que morra (ex: +1/+1 para T1, +2/+2 para T2)."
+
+msgid "unit_dust_elite_t3.name"
+msgstr "Soberano de Poeira (T3)"
+
+msgid "unit_dust_t1.desc"
+msgstr "Causa (PWR) de dano ao inimigo da frente."
+
+msgid "unit_dust_t1.name"
+msgstr "Recruta de Poeira (T1)"
+
+msgid "unit_dust_t2.desc"
+msgstr "Causa (PWR) de dano ao inimigo da frente."
+
+msgid "unit_dust_t2.name"
+msgstr "Recruta de Poeira (T2)"
+
+msgid "unit_dust_t3.desc"
+msgstr "Causa (PWR) de dano ao inimigo da frente."
+
+msgid "unit_dust_t3.name"
+msgstr "Recruta de Poeira (T3)"
 

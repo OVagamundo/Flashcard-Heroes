@@ -229,12 +229,11 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		if not is_instance_valid(effect): continue
 		
 		# Create minimal context for the request
-		var trig_context = {
-			"source_category": C.CATEGORY_CONSUMABLE,
-			"source_holder_uuid": target_unit.ball_uuid,
-			"source_consumable_id": def.id,
-			"consumable_uuid": consumable_uuid,
-		}
+		var trig_context := TriggerContext.new()
+		trig_context.source_category = C.CATEGORY_CONSUMABLE
+		trig_context.source_holder_uuid = target_unit.ball_uuid
+		trig_context.source_consumable_id = def.id
+		trig_context.consumable_uuid = consumable_uuid
 		
 		# Construct Request
 		var req = EffectRequest.new(
@@ -243,7 +242,7 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 			effect,
 			targets,
 			trig_context,
-			0 # Priority 0 for manual action
+			C.SubPhase.STANDARD
 		)
 		
 		bm.enqueue_effect_request(req)

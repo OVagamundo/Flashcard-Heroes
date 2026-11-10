@@ -10,14 +10,13 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"EEWAFigFodAniCos"
-display_name_key = "EEWAFigFodAniCos.name"
-description_key = "EEWAFigFodAniCos.desc"
+id = &"EEWAFigAni"
+display_name_key = "EEWAFigAni.name"
+description_key = "EEWAFigAni.desc"
 icon = ExtResource("2_icon")
-tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"Fighter", &"Food", &"Animal", &"Costume"])
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"Fighter", &"Animal"])
 tier = 3
 level = 1
-cost = 4
 category = &"UNIT"
 
 base_hp = 6

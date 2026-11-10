@@ -5,7 +5,7 @@ extends EffectDefinition
 ## An effect that deals damage equal to the source's power to the first target.
 ## This is the default attack effect used when no special abilities are triggered.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	if targets.is_empty():
 		return EffectResult.empty()
 	# Get the target unit UUID from context
@@ -17,14 +17,14 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var damage = StatScaling.calculate(parameters.get("damage"), _context, "BasicAttackEffect")
 	
 	# Apply damage
-	var is_simulation: bool = _context.get("is_simulation", false)
+	var is_simulation: bool = _context.is_simulation
 	
 	# Determine the actual attacker (for items, this is the holder)
 	# Use context data instead of querying the source instance
 	var attacker_uuid: String = source_uuid
-	var source_category: StringName = _context.get("source_category", &"")
+	var source_category: StringName = _context.source_category
 	if source_category == &"ITEM":
-		var holder_uuid: String = _context.get("source_holder_uuid", "")
+		var holder_uuid: String = _context.source_holder_uuid
 		if not holder_uuid.is_empty():
 			attacker_uuid = holder_uuid
 	
@@ -34,23 +34,22 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# 1. Inherit from context (e.g. CAUSE_TURN from BattleManager)
 	# 2. If this is an ABILITY (like Extra Attack), it overrides the cause to CAUSE_ABILITY
 	#    This prevents "Extra Attack" (Cause: ABILITY) from triggering another "Extra Attack" (Requires: CAUSE_TURN)
-	var trigger_cause = _context.get("trigger_cause", &"")
-	var ability_id = _context.get("ability_id", &"")
+	var trigger_cause: StringName = _context.trigger_cause
+	var ability_id: StringName = _context.ability_id
 	if ability_id != &"basic_attack" and not String(ability_id).begins_with("basic_attack"):
 		trigger_cause = &"CAUSE_ABILITY"
 	
 	# WIND-UP PHASE
 	var windup_scope: int = battle_manager.begin_reaction_scope()
-	if not _context.get("on_attack_already_triggered", false):
-		var attack_context: Dictionary = {
-			"attacker_uuid": attacker_uuid,
-			"target_uuid": target_instance.ball_uuid,
-			"target_initial_hp": target_instance.current_hp,
-			"is_simulation": is_simulation,
-			"trigger_cause": trigger_cause,
-			"cause_id": ability_id
-		}
-		AbilityResolver.process_trigger(&"on_attack", attack_context)
+	if not _context.on_attack_already_triggered:
+		var attack_context := TriggerContext.new()
+		attack_context.attacker_uuid = attacker_uuid
+		attack_context.target_uuid = target_instance.ball_uuid
+		attack_context.target_initial_hp = target_instance.current_hp
+		attack_context.is_simulation = is_simulation
+		attack_context.trigger_cause = trigger_cause
+		attack_context.cause_id = ability_id
+		AbilityResolver.process_trigger(C.TRIGGER_WHEN_ATTACKING, attack_context)
 		
 	var windup_events: Array[CombatEvent] = []
 	if is_simulation:
@@ -60,14 +59,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	# PRE-IMPACT PHASE
 	var pre_impact_scope: int = battle_manager.begin_reaction_scope()
-	var before_attack_context: Dictionary = {
-		"source_uuid": target_instance.ball_uuid,
-		"defender_uuid": target_instance.ball_uuid,
-		"attacker_uuid": attacker_uuid,
-		"target_initial_hp": target_instance.current_hp,
-		"is_simulation": is_simulation
-	}
-	AbilityResolver.process_trigger(&"on_before_damage", before_attack_context)
+	var before_attack_context := TriggerContext.new()
+	before_attack_context.source_uuid = target_instance.ball_uuid
+	before_attack_context.defender_uuid = target_instance.ball_uuid
+	before_attack_context.attacker_uuid = attacker_uuid
+	before_attack_context.target_initial_hp = target_instance.current_hp
+	before_attack_context.is_simulation = is_simulation
+	AbilityResolver.process_trigger(C.TRIGGER_BEFORE_TAKING_DAMAGE, before_attack_context)
 	
 	var pre_impact_events: Array[CombatEvent] = []
 	if is_simulation:
@@ -147,17 +145,21 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# Appliance L1 (2 Units): Attacks inflict 1 Static
 	if appliance_level >= 2 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "APPLIANCE"):
 		static_amount += 1
+
+	# Consume Charged Empowered Attack if present
+	if is_instance_valid(source_instance) and not source_instance.charged_empowered_attack.is_empty():
+		var charged: Dictionary = source_instance.charged_empowered_attack
+		damage += int(charged.get("bonus_damage", 0))
+		burn_amount += int(charged.get("burn_stacks", 0))
+		static_amount += int(charged.get("static_stacks", 0))
+		var spend_tokens: int = int(charged.get("spend_tokens", 0))
+		if spend_tokens > 0:
+			battle_manager.spend_gacha_tokens(spend_tokens, source_instance.ball_uuid)
+		source_instance.charged_empowered_attack = {}
+		should_apply_burn = burn_amount > 0
 				
 	var attack_type = parameters.get("attack_type", "melee")
 	
-	# Sniper Aim override
-	if is_instance_valid(source_instance):
-		for item_uuid in source_instance.equipped_item_uuids:
-			if not item_uuid.is_empty():
-				var item = battle_manager.get_instance_by_uuid(item_uuid)
-				if is_instance_valid(item) and item.definition_id == &"item_t3_g":
-					attack_type = "ranged"
-					break
 	var damage_type = C.DamageType.MELEE if attack_type == "melee" else C.DamageType.RANGED
 
 	# Guardian Intercept
@@ -210,15 +212,13 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		}))
 
 	# Static Application & Splash (Air L1, L2, L3, L5, Mecha L2 & Appliance L1)
-	if static_amount > 0 and is_instance_valid(final_target) and final_target.current_hp > 0:
-		var old_static = final_target.get_status_effect_amount(&"static")
-		var new_static = battle_manager.apply_stat_delta(final_target, "static_stacks", static_amount, attacker_uuid)
-		var static_payload := CombatPayload.status_change(attacker_uuid, static_amount, "static_stacks", [old_static], [new_static])
-		impact_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-			"source_uuid": attacker_uuid,
-			"target_uuids": [final_target.ball_uuid],
-			"visual_payload": static_payload
-		}))
+	var old_static: int = 0
+	var new_static: int = 0
+	var should_apply_static := false
+	if static_amount > 0 and is_instance_valid(final_target):
+		old_static = final_target.get_status_effect_amount(&"static")
+		new_static = battle_manager.apply_stat_delta(final_target, "static_stacks", static_amount, attacker_uuid)
+		should_apply_static = true
 		
 		# Air L3 (12 Souls): Attacks splash half of applied Static (min 1) to adjacent enemies
 		if air_level >= 12 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
@@ -326,6 +326,9 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	visual_payload.targets_old_burn.assign([old_burn])
 	visual_payload.targets_new_burn.assign([burn_val])
 	visual_payload.apply_burn = should_apply_burn
+	visual_payload.targets_old_static.assign([old_static] if should_apply_static else [])
+	visual_payload.targets_new_static.assign([new_static] if should_apply_static else [])
+	visual_payload.apply_static = should_apply_static
 	visual_payload.attack_type = attack_type
 	visual_payload.projectile = CombatProjectile.new("hp", abs(damage), "red") if attack_type == "ranged" else null
 	visual_payload.original_target_uuids = [target_instance.ball_uuid]

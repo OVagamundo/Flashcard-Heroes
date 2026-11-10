@@ -7,6 +7,6 @@
 script = ExtResource("1_script")
 id = &"ability_trinket_soul_echo"
 description_key = "ability.soul_echo.desc"
-trigger = &"on_ally_death"
-priority = 210
+trigger = &"when_ally_knocked_out"
+sub_phase = 30
 effects = Array[Resource]([ExtResource("2_effect")])

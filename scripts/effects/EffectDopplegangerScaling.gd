@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Grants +3 PWR for every OTHER Doppleganger in the Battle Pool.
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances = battle_manager.get_all_instances()
 	var copy_count = 0
@@ -20,7 +20,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		var inst = all_instances[uuid]
 		if not is_instance_valid(inst):
 			continue
-		if inst.definition_id == &"EFWASupFodToy": 
+		if inst.definition_id == &"EFWASpeFod" and _is_on_board(inst):
 			if _is_player_unit_team(inst, battle_manager) == source_is_player:
 				copy_count += 1
 	
@@ -57,7 +57,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": visual_source_uuid,
 			"target_uuids": [source_uuid],
-			"ability_id": context.get("ability_id", &"doppleganger_scaling"),
+			"ability_id": (context.ability_id if context.ability_id != &"" else &"doppleganger_scaling"),
 			"ability_holder_uuid": source_uuid,
 			"visual_payload": payload
 		}))
@@ -78,4 +78,4 @@ func _is_on_board(inst: GachaBallInstance) -> bool:
 	if not is_instance_valid(inst):
 		return false
 	var container: StringName = inst.location_container_tag
-	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"
+	return container == &"PlayerLineup" or container == &"EnemyLineup"

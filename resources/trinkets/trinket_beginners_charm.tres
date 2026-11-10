@@ -12,6 +12,7 @@ description_key = "trinket.beginners_charm.desc"
 icon = ExtResource("3_icon")
 category = &"TRINKET"
 is_player_exclusive = true
+set_id = &"NOVICE"
 is_enemy_exclusive = false
 rarity = 1
 ability_definitions = Array[Resource]([ExtResource("2_ability")])

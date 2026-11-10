@@ -13,7 +13,6 @@ var is_in_battle: bool = false:
 	set(val):
 		is_in_battle = val
 		AnimationConstants.is_in_battle = val
-var is_test_mode: bool = false # Global flag for test environment
 var _active_battle_manager: Node = null # ADD THIS LINE
 var gacha_discounts_used: Dictionary = {1: false, 2: false, 3: false}
 
@@ -292,7 +291,6 @@ func start_run_with_seed(hero_def_id: StringName, deck_id: StringName, deck_orde
 		"deck_size": deck_size,
 		"run_options": {
 			"tutorials_enabled": TutorialManager.tutorials_enabled if is_instance_valid(TutorialManager) else true,
-			"is_test_mode": is_test_mode,
 			"test_starting_items": serialized_test_items
 		}
 	}
@@ -319,7 +317,6 @@ func start_replay_from_header(header: Dictionary) -> bool:
 	loading_from_save = false
 	ActionQueue.set_headless_mode(false)
 	var options: Dictionary = header.get("run_options", {})
-	is_test_mode = bool(options.get("is_test_mode", false))
 	test_starting_items.clear()
 	for item_id in options.get("test_starting_items", []):
 		test_starting_items.append(StringName(item_id))
@@ -439,6 +436,10 @@ func _on_new_game_requested() -> void:
 
 func _on_battle_ended(results: Dictionary) -> void:
 	# Centralize post-battle handling per GIR.
+	# Clear encounter-scoped minigame bonus time
+	if is_instance_valid(run_state):
+		run_state.next_battle_minigame_bonus_time = 0.0
+	SignalBus.minigame_bonus_time_changed.emit(0.0)
 	# 1) Flip global battle state off and broadcast.
 	is_in_battle = false
 	SignalBus.emit_signal("battle_state_changed", false)
@@ -698,18 +699,15 @@ func sell_reward_instance(instance_uuid: String) -> int:
 ## Central helper to calculate the gold cost of a definition based on the 1/2/4 economy model.
 func get_item_cost(def: Resource) -> int:
 	if not is_instance_valid(def): return 1
-	
-	var base_cost: int = 1
 	if "cost" in def:
-		base_cost = int(def.cost)
-	
-	# Valuation scales by 2^(Level-1)
-	var level: int = 1
-	if "level" in def:
-		level = int(def.level)
-		
-	var multiplier: int = int(pow(2, level - 1))
-	return base_cost * multiplier
+		return int(def.cost)
+	if "tier" in def:
+		var tier_val: int = int(def.tier)
+		if tier_val <= 0:
+			return 0
+		var level_val: int = maxi(1, int(def.level)) if "level" in def else 1
+		return (1 << (tier_val - 1)) * (1 << (level_val - 1))
+	return 1
 
 ## Central authoritative function to find any instance by its UUID.
 ## This should be used instead of direct lookups in BattleManager or RunState.
@@ -1035,17 +1033,24 @@ func _generate_reward_stock() -> void:
 			_temporary_reward_container.set_uuid(i, inst.ball_uuid)
 
 func has_trinket(trinket_id: StringName) -> bool:
-	if not is_instance_valid(run_state):
-		return false
-	var container = run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-	if not is_instance_valid(container):
-		return false
-	for uuid in container.get_all_non_empty_uuids():
-		var inst = run_state.get_instance_by_uuid(uuid)
-		if is_instance_valid(inst):
-			var def = inst.get_definition()
-			if is_instance_valid(def) and def.id == trinket_id:
-				return true
+	if is_instance_valid(run_state):
+		var container = run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
+		if is_instance_valid(container):
+			for uuid in container.get_all_non_empty_uuids():
+				var inst = run_state.get_instance_by_uuid(uuid)
+				if is_instance_valid(inst):
+					var def = inst.get_definition()
+					if is_instance_valid(def) and def.id == trinket_id:
+						return true
+	if is_in_battle:
+		var bm = get_battle_manager()
+		if is_instance_valid(bm) and is_instance_valid(bm._state):
+			var container = bm._state.get_container(&"PlayerTrinkets")
+			if is_instance_valid(container):
+				for uuid in container.get_all_non_empty_uuids():
+					var inst = bm.get_instance_by_uuid(uuid)
+					if is_instance_valid(inst) and inst.definition_id == trinket_id:
+						return true
 	return false
 
 func get_base_gacha_token_cost(tier: int) -> int:

@@ -19,4 +19,3 @@ is_player_exclusive = false
 is_enemy_exclusive = false
 rarity = 1
 ability_definitions = Array[Resource]([ExtResource("2_ability"), ExtResource("3_ability_summon"), ExtResource("4_ability_battle_start"), ExtResource("5_ability_passive"), ExtResource("6_ability_merge")])
-cost = 10

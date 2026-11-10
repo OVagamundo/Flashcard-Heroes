@@ -14,7 +14,6 @@ icon = ExtResource("2_icon")
 tags = [&"BOSS"]
 is_hero = false
 tier = 3
-cost = 15
 category = &"UNIT"
 
 base_hp = 10

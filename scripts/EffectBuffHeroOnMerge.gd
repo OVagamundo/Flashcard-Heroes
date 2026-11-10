@@ -9,11 +9,11 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Determine the merged unit
-	var merged_uuid: String = context.get("merged_uuid", "")
+	var merged_uuid: String = context.merged_uuid
 	if merged_uuid.is_empty():
 		return EffectResult.empty()
 		
@@ -110,13 +110,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		}))
 		
 		# Unified BUFF event
-		var ability_id = context.get("ability_id", &"ability_trinket_hero_catalyst")
+		var ability_id = (context.ability_id if context.ability_id != &"" else &"ability_trinket_hero_catalyst")
 		if hp_amount > 0 and pwr_amount > 0:
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": [hero_uuid],
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.both_stats_change(
@@ -131,7 +131,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": [hero_uuid],
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.hp_buff(_source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])
@@ -141,7 +141,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": [hero_uuid],
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.pwr_buff(_source_uuid, pwr_amount, [old_pwr], [new_pwr])

@@ -1,0 +1,44 @@
+[gd_scene load_steps=4 format=3 uid="uid://d3j3pl1l00r01"]
+
+[ext_resource type="Script" path="res://scripts/GlossaryTogglePill.gd" id="1_pill"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_pill"]
+bg_color = Color(0.12, 0.12, 0.18, 0.95)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.4, 0.45, 0.6, 0.85)
+corner_radius_top_left = 4
+corner_radius_top_right = 4
+corner_radius_bottom_right = 4
+corner_radius_bottom_left = 4
+content_margin_left = 4.0
+content_margin_top = 2.0
+content_margin_right = 4.0
+content_margin_bottom = 2.0
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_btn"]
+
+[node name="GlossaryTogglePill" type="PanelContainer"]
+custom_minimum_size = Vector2(144, 30)
+offset_right = 144.0
+offset_bottom = 30.0
+mouse_filter = 1
+theme_override_styles/panel = SubResource("StyleBoxFlat_pill")
+script = ExtResource("1_pill")
+
+[node name="ToggleButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+focus_mode = 0
+mouse_filter = 1
+theme_override_font_sizes/font_size = 18
+theme_override_styles/normal = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_btn")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_btn")
+text = "[?] Details"
+flat = true
+alignment = 1
+clip_text = true

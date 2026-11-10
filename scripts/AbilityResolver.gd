@@ -42,65 +42,66 @@ func _get_instance_team(instance: GachaBallInstance, battle_manager: Node) -> St
 ## @param battle_manager: Reference to BattleManager
 ## @return true if this unit should process abilities for this trigger
 func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBallInstance,
-						  context: Dictionary, battle_manager: Node) -> bool:
+						  context: TriggerContext, battle_manager: Node) -> bool:
 	match trigger:
-		&"on_ally_death":
+		C.TRIGGER_WHEN_ALLY_KNOCKED_OUT:
 			# Unit must be: same team as fainting, alive, not the fainting unit
-			var fainting_uuid = context.get("fainting_ally_uuid", "")
-			var fainting_team = context.get("fainting_ally_team", "")
+			var fainting_uuid = context.ally_knocked_out_uuid
+			var fainting_team = context.ally_knocked_out_team
 			var unit_team = _get_instance_team(unit, battle_manager)
 			return unit_team == fainting_team and unit_uuid != fainting_uuid and unit.current_hp > 0
 		
-		&"on_hurt":
+		C.TRIGGER_WHEN_TAKING_DAMAGE:
 			# Only the unit that received damage responds
-			return unit_uuid == context.get("victim_uuid", "")
+			return unit_uuid == context.damaged_uuid
 		
-		&"on_death":
-			# Only the dying unit responds
-			return unit_uuid == context.get("dying_uuid", "")
+		C.TRIGGER_WHEN_KNOCKED_OUT, C.TRIGGER_BEFORE_BEING_KNOCKED_OUT, C.TRIGGER_PREVENT_KNOCKOUT:
+			# Only the affected unit responds (allowing current_hp <= 0)
+			var target_uuid = context.knocked_out_uuid if not context.knocked_out_uuid.is_empty() else context.damaged_uuid
+			return unit_uuid == target_uuid
 		
-		&"passive_intercept":
+		C.TRIGGER_INTERCEPT_ATTACK:
 			# Only the intercepting guardian responds
-			return unit_uuid == context.get("source_uuid", "")
+			return unit_uuid == context.source_uuid
 		
-		&"on_attack", &"on_kill", &"on_damage_dealt":
+		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
 			# Only the attacker responds
-			return unit_uuid == context.get("attacker_uuid", "")
+			return unit_uuid == context.attacker_uuid
 		
-		&"on_before_damage":
+		C.TRIGGER_BEFORE_TAKING_DAMAGE:
 			# Only the unit about to receive attack damage responds
-			return unit_uuid == context.get("defender_uuid", "")
+			return unit_uuid == context.defender_uuid
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat":
+		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT:
 			# All living units ON THE BATTLE BOARD respond
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 		
-		&"on_enemy_summon":
+		C.TRIGGER_WHEN_ENEMY_SUMMONED:
 			# Only units on the OPPOSING team of the summoned unit respond
-			var summoned_team = context.get("summoned_team", "")
+			var summoned_team = context.summoned_team
 			var unit_team = _get_instance_team(unit, battle_manager)
 			# Unit must be alive, on the board, and on the opposite team
 			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team != "" and unit_team != summoned_team
 		
-		&"on_board_enter":
+		C.TRIGGER_ON_ENTER_BOARD:
 			# Only the unit that just entered the board responds
-			return unit_uuid == context.get("entered_uuid", "")
+			return unit_uuid == context.entered_uuid
 		
-		&"on_ally_summon":
+		C.TRIGGER_WHEN_ALLY_SUMMONED:
 			# Only units on the SAME team as the summoned unit respond
-			var summoned_team = context.get("summoned_team", "")
+			var summoned_team = context.summoned_team
 			var unit_team = _get_instance_team(unit, battle_manager)
 			# Unit must be alive, on the board, on the same team, and NOT the summoned unit itself
-			var summoned_uuid = context.get("summoned_uuid", "")
+			var summoned_uuid = context.summoned_uuid
 			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 
-		&"on_merge":
+		C.TRIGGER_ON_MERGE:
 			# Only living units already on battle board (lineup/bench) can respond.
 			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
 
 			# If merge context has a team, only that side responds (Knight-style team scoping).
-			var merged_team: String = context.get("merged_team", "")
+			var merged_team: String = context.merged_team
 			if merged_team.is_empty():
 				return true
 
@@ -112,44 +113,44 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 				unit_team_on_board = "ENEMY"
 			return unit_team_on_board == merged_team
 		
-		&"on_draw":
+		C.TRIGGER_ON_GACHA_DRAW:
 			# Enemy units respond to player draws (draws benefit enemies)
 			# AND the drawn unit itself responds (for initialization effects like Merchant)
 			var unit_team = _get_instance_team(unit, battle_manager)
-			var drawn_uuid = context.get("drawn_uuid", "")
+			var drawn_uuid = context.drawn_uuid
 			
 			if unit_uuid == drawn_uuid:
 				return true # Self-trigger
 				
 			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team == "ENEMY"
 		
-		&"on_token_spent":
+		C.TRIGGER_ON_TOKEN_SPENT:
 			# Only enemy units respond to player token spending
 			var unit_team = _get_instance_team(unit, battle_manager)
 			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team == "ENEMY"
 		
-		&"on_ally_hurt":
+		C.TRIGGER_WHEN_ALLY_TAKES_DAMAGE:
 			# Teammates of the hurt unit respond (not the hurt unit itself)
-			var victim_uuid = context.get("victim_uuid", "")
-			var victim_team = context.get("victim_team", "")
+			var damaged_unit_uuid = context.damaged_uuid
+			var victim_team = context.damaged_team
 			var unit_team = _get_instance_team(unit, battle_manager)
 			# Must be alive, same team as victim, not the victim itself
-			return unit.current_hp > 0 and unit_team == victim_team and unit_uuid != victim_uuid
+			return unit.current_hp > 0 and unit_team == victim_team and unit_uuid != damaged_unit_uuid
 		
-		&"on_healed":
+		C.TRIGGER_WHEN_HEALED:
 			# Only the healed unit itself responds to its own healing
-			var healed_uuid = context.get("healed_uuid", context.get("unit_uuid", ""))
+			var healed_uuid = context.healed_uuid if not context.healed_uuid.is_empty() else context.unit_uuid
 			return unit.current_hp > 0 and unit_uuid == healed_uuid
 		
-		&"on_gacha_tokens_changed":
+		C.TRIGGER_ON_GACHA_TOKENS_CHANGED:
 			# All living units respond to token changes
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
-		&"on_unit_death":
+		C.TRIGGER_WHEN_ANY_UNIT_KNOCKED_OUT:
 			# All living units respond to any unit death
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
-		&"on_gold_earned":
+		C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
 			# Living units respond if in active lineup (AMer does not trigger while benched)
 			var container: StringName = unit.location_container_tag
 			return unit.current_hp > 0 and (
@@ -157,11 +158,11 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 				container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 			)
 			
-		&"on_stat_increased", &"on_stat_decreased":
+		C.TRIGGER_ON_STAT_INCREASED, C.TRIGGER_ON_STAT_DECREASED:
 			# Units respond if they are on the battle board and alive
 			# Loop Prevention: Do not respond if this unit caused the stat modification
-			var target_uuid = context.get("unit_uuid", "")
-			var source_uuid = context.get("source_uuid", "")
+			var target_uuid = context.unit_uuid
+			var source_uuid = context.source_uuid
 			
 			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
@@ -202,50 +203,47 @@ func _is_on_battle_board(unit: GachaBallInstance) -> bool:
 ## @param item: The equipped item instance
 ## @param context: Trigger context with semantic keys
 ## @return true if this item should process abilities for this trigger
-func _should_item_respond(trigger: StringName, item: GachaBallInstance, context: Dictionary) -> bool:
-	# Items can always respond to on_board_changed to update their passive stats, even on the bench
-	if trigger == &"on_board_changed":
+func _should_item_respond(trigger: StringName, item: GachaBallInstance, context: TriggerContext) -> bool:
+	# Items can always respond to on_board_state_changed to update their passive stats, even on the bench
+	if trigger == C.TRIGGER_ON_BOARD_STATE_CHANGED:
 		return true
 
 	var holder_uuid = item.equipped_on_uuid
 	assert(not holder_uuid.is_empty(), "AbilityResolver: item must be equipped to respond to combat triggers")
 	
 	match trigger:
-		&"on_hurt":
-			return holder_uuid == context.get("victim_uuid", "")
+		C.TRIGGER_WHEN_TAKING_DAMAGE:
+			return holder_uuid == context.damaged_uuid
 		
-		&"on_death":
-			return holder_uuid == context.get("dying_uuid", "")
+		C.TRIGGER_WHEN_KNOCKED_OUT, C.TRIGGER_BEFORE_BEING_KNOCKED_OUT, C.TRIGGER_PREVENT_KNOCKOUT:
+			var target_uuid = context.knocked_out_uuid if not context.knocked_out_uuid.is_empty() else context.damaged_uuid
+			return holder_uuid == target_uuid
 		
-		&"on_attack", &"on_kill", &"on_damage_dealt":
-			return holder_uuid == context.get("attacker_uuid", "")
+		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
+			return holder_uuid == context.attacker_uuid
 		
-		&"on_before_damage":
-			return holder_uuid == context.get("defender_uuid", "")
+		C.TRIGGER_BEFORE_TAKING_DAMAGE:
+			return holder_uuid == context.defender_uuid
 		
-		&"on_ally_death":
+		C.TRIGGER_WHEN_ALLY_KNOCKED_OUT:
 			# Items on living allies respond (not on the dying unit)
-			var fainting_uuid = context.get("fainting_ally_uuid", "")
+			var fainting_uuid = context.ally_knocked_out_uuid
 			return holder_uuid != fainting_uuid
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat", &"on_gold_earned":
+		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
 			# All equipped items on living holders respond
 			return true
 		
-		&"on_damage_dealt":
-			# Only items equipped on the attacker respond (for lifesteal effects)
-			var attacker_uuid = context.get("attacker_uuid", "")
-			return holder_uuid == attacker_uuid
-		
-		&"on_draw":
+		C.TRIGGER_ON_GACHA_DRAW:
 			# Items don't respond to on_draw - only trinkets do
 			return false
 		
-		&"on_healed":
-			return holder_uuid == context.get("healed_uuid", context.get("unit_uuid", ""))
+		C.TRIGGER_WHEN_HEALED:
+			var healed_uuid = context.healed_uuid if not context.healed_uuid.is_empty() else context.unit_uuid
+			return holder_uuid == healed_uuid
 		
-		&"on_stat_increased", &"on_stat_decreased":
-			var target_uuid = context.get("unit_uuid", "")
+		C.TRIGGER_ON_STAT_INCREASED, C.TRIGGER_ON_STAT_DECREASED:
+			var target_uuid = context.unit_uuid
 			return holder_uuid == target_uuid
 	
 	return true
@@ -257,38 +255,42 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 ## @param battle_manager: Reference to BattleManager
 ## @return true if this trinket should process abilities for this trigger
 func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
-							 context: Dictionary, battle_manager: Node) -> bool:
+							 context: TriggerContext, battle_manager: Node) -> bool:
 	var trinket_team = _get_instance_team(trinket, battle_manager)
 	var trinket_def = trinket.get_definition()
 	var trinket_name = trinket_def.name_key if is_instance_valid(trinket_def) else "Unknown"
 	
 	match trigger:
-		&"on_ally_death":
+		C.TRIGGER_WHEN_ALLY_KNOCKED_OUT:
 			# Trinkets only respond to deaths on their own team
-			var fainting_team = context.get("fainting_ally_team", "")
+			var fainting_team = context.ally_knocked_out_team
 			return trinket_team == fainting_team
 		
-		&"on_turn_start", &"on_turn_end", &"on_battle_start", &"on_board_changed", &"on_pre_combat", &"on_gold_earned":
+		C.TRIGGER_PREVENT_KNOCKOUT:
+			var target_team = context.damaged_team
+			return trinket_team == target_team
+		
+		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
 			# All trinkets respond
 			return true
 		
-		&"on_draw":
+		C.TRIGGER_ON_GACHA_DRAW:
 			# Only player trinkets respond to player draws
 			# (enemies don't draw, so this is always player team for now)
 			return trinket_team == "PLAYER"
 		
-		&"on_merge":
+		C.TRIGGER_ON_MERGE:
 			# Trinkets only respond to merges on their own team
-			var merged_team = context.get("merged_team", "")
+			var merged_team = context.merged_team
 			return trinket_team == merged_team
 		
-		&"on_ally_summon":
+		C.TRIGGER_WHEN_ALLY_SUMMONED:
 			# Trinkets only respond to ally summons on their own team
-			var summoned_team = context.get("summoned_team", "")
+			var summoned_team = context.summoned_team
 			return trinket_team == summoned_team
 		
-		&"on_stat_increased", &"on_stat_decreased":
-			var target_uuid = context.get("unit_uuid", "")
+		C.TRIGGER_ON_STAT_INCREASED, C.TRIGGER_ON_STAT_DECREASED:
+			var target_uuid = context.unit_uuid
 			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(target_inst):
 				return trinket_team == _get_instance_team(target_inst, battle_manager)
@@ -312,17 +314,21 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 ## 3) Trinkets last
 ##
 ## @param trigger: StringName - The trigger type (e.g., "on_attack", "on_death")
-## @param context: Dictionary - The context with semantic keys (e.g., victim_uuid, attacker_uuid)
-func process_trigger(trigger: StringName, context: Dictionary) -> void:
+## @param context: TriggerContext - The context with semantic properties (e.g., damaged_uuid, attacker_uuid)
+func process_trigger(trigger: StringName, context: TriggerContext = null) -> void:
+	if context == null:
+		context = TriggerContext.new()
 	# Add trigger_type to context so it flows through to CombatEvents
-	context["trigger_type"] = trigger
+	context.trigger_type = trigger
 	if is_instance_valid(GameManager.run_state):
-		context["gold_tens"] = int(GameManager.run_state.gold / 10)
+		context.gold_tens = int(GameManager.run_state.gold / 10)
 	else:
-		context["gold_tens"] = 0
+		context.gold_tens = 0
 	
 	# Get the current BattleManager
-	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
+	var battle_manager = GameManager.get_battle_manager()
+	if not is_instance_valid(battle_manager):
+		battle_manager = get_tree().get_first_node_in_group("battle_manager")
 	assert(is_instance_valid(battle_manager), "AbilityResolver: BattleManager not found")
 
 	# Optimization: Single pass to bucket all instances by category
@@ -344,7 +350,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			unit_instances.append({"uuid": instance_uuid, "inst": instance, "def": definition})
 		elif definition.category == &"ITEM":
 			# Skip unequipped items unless it's a passive stat update trigger
-			if instance.equipped_on_uuid.is_empty() and trigger != &"on_board_changed":
+			if instance.equipped_on_uuid.is_empty() and trigger != C.TRIGGER_ON_BOARD_STATE_CHANGED:
 				continue
 				
 			# Use unified filter to check if item should respond
@@ -386,7 +392,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 			var ability: AbilityDefinition = entry.get("ability_def")
 			if not is_instance_valid(ability):
 				continue
-			if ability.trigger == trigger or (ability.trigger == &"on_gacha_tokens_changed" and (trigger == &"on_board_enter" or trigger == &"on_board_changed")):
+			if ability.trigger == trigger or (ability.trigger == C.TRIGGER_ON_GACHA_TOKENS_CHANGED and (trigger == C.TRIGGER_ON_ENTER_BOARD or trigger == C.TRIGGER_ON_BOARD_STATE_CHANGED)):
 				_process_ability(ability, entry.get("source_instance_uuid", instance_uuid), battle_manager, context)
 
 
@@ -416,8 +422,8 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 		
 		# Add trinket's team to context for effects that need it
 		var trinket_team = _get_instance_team(instance, battle_manager)
-		var trinket_context = context.duplicate()
-		trinket_context["team"] = trinket_team
+		var trinket_context: TriggerContext = context.duplicate_context()
+		trinket_context.team = trinket_team
 		
 		for entry in instance.get_active_ability_entries(all_instances):
 			var ability: AbilityDefinition = entry.get("ability_def")
@@ -432,7 +438,7 @@ func process_trigger(trigger: StringName, context: Dictionary) -> void:
 ## Process a single ability and create EffectRequests for its effects.
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
-func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: Dictionary) -> void:
+func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: TriggerContext) -> void:
 	var source = null
 	# Check if source is dead and ability doesn't allow lethal execution
 	# ONLY for UNITS - items and trinkets don't have HP
@@ -443,8 +449,10 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			# Only check HP for UNIT category - items/trinkets don't have meaningful HP
 			if is_instance_valid(source_def) and source_def.category == &"UNIT":
 				if source.current_hp <= 0:
-					# Source unit is dead - only allow if execute_on_lethal is true
-					if not ability.execute_on_lethal:
+					# Allow if this is the dying unit's own knockout trigger
+					var ko_uuid: String = context.knocked_out_uuid
+					var is_own_death_trigger: bool = (not ko_uuid.is_empty() and ko_uuid == source_uuid)
+					if not is_own_death_trigger and not ability.execute_before_knockout:
 						return
 	
 	# Check condition if present
@@ -492,9 +500,11 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		
 		# Create EffectRequest
 		# For counter-attack abilities, mark the context to identify counter-attack effects
-		var effect_context = context.duplicate()
+		var effect_context: TriggerContext = context.duplicate_context()
+		if ability.replaces_basic_attack:
+			effect_context.on_attack_already_triggered = true
 		if ability.id.contains("counter"):
-			effect_context["is_counter"] = true
+			effect_context.is_counter = true
 		
 		var effect_request = EffectRequest.new(
 			source_uuid,
@@ -502,7 +512,7 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 			effect,
 			resolved_targets,
 			effect_context,
-			ability.priority,
+			ability.sub_phase,
 			category,
 			is_player,
 			slot_index,
@@ -514,5 +524,5 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 
 	# If ability successfully activated (found targets) AND it replaces basic attack, set flag
 	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)
-	if ability_activated and ability.get("replaces_basic_attack") and context.get("trigger_type") == &"on_attack":
-		context["attack_replaced"] = true
+	if ability_activated and ability.replaces_basic_attack and context.trigger_type == C.TRIGGER_WHEN_ATTACKING:
+		context.attack_replaced = true

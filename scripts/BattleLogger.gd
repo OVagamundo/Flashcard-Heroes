@@ -171,7 +171,7 @@ func _on_animation_event(event: CombatEvent) -> void:
 			var is_debuff = (event.type == CombatEvent.Type.DEBUFF) or (amount < 0)
 			log_buff(source_name, primary_target, stat, abs(amount), is_debuff, String(event.ability_id), String(event.trigger_type))
 		
-		CombatEvent.Type.DEATH:
+		CombatEvent.Type.KNOCKOUT:
 			log_death(primary_target)
 		
 		CombatEvent.Type.SUMMON:
@@ -190,6 +190,16 @@ func _on_animation_event(event: CombatEvent) -> void:
 			var payload = event.visual_payload
 			var amount = payload.amount
 			log_system("Gained %d tokens!" % amount)
+
+		CombatEvent.Type.TOKEN_SPEND:
+			var payload = event.visual_payload
+			var amount = payload.amount
+			log_system("Spent %d tokens!" % amount)
+
+		CombatEvent.Type.TIMER_BONUS:
+			var payload = event.visual_payload
+			var amount = payload.amount
+			log_system("Added %s second(s) to the next minigame timer!" % str(amount))
 
 		CombatEvent.Type.ITEM_DISCARD:
 			var payload = event.visual_payload

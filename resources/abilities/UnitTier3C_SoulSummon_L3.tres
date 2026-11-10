@@ -1,12 +1,13 @@
 [gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
-[ext_resource type="Script" path="res://scripts/EffectSummonT2OnDeath.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/effects/EffectSummonUnitOnDeath.gd" id="2_effect"]
 
 [sub_resource type="Resource" id="EffectSummonT2OnDeath_3"]
 script = ExtResource("2_effect")
 parameters = {
-"level": 3
+	"level": 3,
+	"unit_id": &"EASupToy"
 }
 target_type = &"NONE"
 
@@ -14,9 +15,9 @@ target_type = &"NONE"
 script = ExtResource("1_script")
 id = &"unit_tier3c_soul_summon_l3"
 description_key = "ability.unit_tier3c_soul_summon_l3.desc"
-trigger = &"on_death"
-priority = 205
+trigger = &"when_knocked_out"
+sub_phase = 35
 effects = Array[Resource]([SubResource("EffectSummonT2OnDeath_3")])
-execute_on_lethal = true
+execute_before_knockout = true
 required_level = 3
 max_level = 3

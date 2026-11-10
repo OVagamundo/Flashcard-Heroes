@@ -17,16 +17,16 @@ const BM = preload("res://scripts/BattleManager.gd")
 ## Resolve targets for an ability based on target_type.
 ## @param source_uuid: String - The UUID of the source instance
 ## @param target_type: StringName - The type of target to resolve
-## @param context: Dictionary - The context of the event
+## @param context: TriggerContext - The context of the event
 ## @param battle_manager: Node - Reference to BattleManager for lookups
 ## @return Array[String] - Array of target UUIDs
-static func resolve_target(source_uuid: String, target_type: StringName, context: Dictionary, battle_manager: Node) -> Array[String]:
+static func resolve_target(source_uuid: String, target_type: StringName, context: TriggerContext, battle_manager: Node) -> Array[String]:
 	var source_instance = battle_manager.get_instance_by_uuid(source_uuid)
 	var is_player_team := false
 	
 	# Determine team
-	if context.has("team"):
-		is_player_team = (String(context.get("team")) == "PLAYER")
+	if not context.team.is_empty():
+		is_player_team = (context.team == "PLAYER")
 	elif is_instance_valid(source_instance):
 		var src_def = source_instance.get_definition()
 		if is_instance_valid(src_def):
@@ -41,19 +41,6 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 	else:
 		return []
 
-	# Item Override: Sniper Aim (item_t3_g) changes basic attack targeting to Mirror Slot
-	if target_type == C.TARGET_FRONTMOST_ENEMY and context.get("trigger_type") == &"on_attack":
-		if is_instance_valid(source_instance) and source_instance.get_definition().category == &"UNIT":
-			var has_sniper_aim := false
-			for item_uuid in source_instance.equipped_item_uuids:
-				if not item_uuid.is_empty():
-					var item = battle_manager.get_instance_by_uuid(item_uuid)
-					if is_instance_valid(item) and item.definition_id == &"item_t3_g":
-						has_sniper_aim = true
-						break
-			if has_sniper_aim:
-				target_type = &"MIRROR_SLOT_ENEMY"
-
 	match target_type:
 		C.TARGET_SELF:
 			return [source_uuid]
@@ -62,14 +49,30 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				return [source_instance.equipped_on_uuid]
 			return [source_uuid]
 		C.TARGET_ATTACK_TARGET:
-			var target_uuid: String = context.get("target_uuid", "")
+			var target_uuid: String = context.target_uuid
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
 				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
 					return [target_uuid]
 			return []
+		C.TARGET_ATTACK_TARGET_AND_ONE_ADJACENT:
+			var target_uuid: String = context.target_uuid
+			var res_targets: Array[String] = []
+			if not target_uuid.is_empty():
+				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
+				if is_instance_valid(target_instance) and target_instance.current_hp > 0:
+					res_targets.append(target_uuid)
+					var adj_allies = BattleHelpers.get_adjacent_allies(battle_manager._state, target_instance)
+					var living_adj: Array[GachaBallInstance] = []
+					for adj in adj_allies:
+						if is_instance_valid(adj) and adj.current_hp > 0:
+							living_adj.append(adj)
+					if not living_adj.is_empty():
+						var idx = RNGManager.combat_rng.randi_range(0, living_adj.size() - 1)
+						res_targets.append(living_adj[idx].ball_uuid)
+			return res_targets
 		C.TARGET_ATTACK_TARGET_AND_RANDOM_UNMARKED:
-			var target_uuid: String = context.get("target_uuid", "")
+			var target_uuid: String = context.target_uuid
 			var res_targets: Array[String] = []
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
@@ -78,18 +81,22 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			var enemy_container = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
 			if is_instance_valid(enemy_container):
 				var unmarked: Array[String] = []
+				var other_living: Array[String] = []
 				for uuid in enemy_container.get_all_uuids():
 					if uuid == target_uuid:
 						continue
 					var u = battle_manager.get_instance_by_uuid(uuid)
-					if is_instance_valid(u) and u.current_hp > 0 and u.get_status_effect_amount(&"bounty") == 0:
-						unmarked.append(uuid)
-				if not unmarked.is_empty():
-					var idx = RNGManager.combat_rng.randi_range(0, unmarked.size() - 1)
-					res_targets.append(unmarked[idx])
+					if is_instance_valid(u) and u.current_hp > 0:
+						other_living.append(uuid)
+						if u.get_status_effect_amount(&"bounty") == 0:
+							unmarked.append(uuid)
+				var pool: Array[String] = unmarked if not unmarked.is_empty() else other_living
+				if not pool.is_empty():
+					var idx = RNGManager.combat_rng.randi_range(0, pool.size() - 1)
+					res_targets.append(pool[idx])
 			return res_targets
 		C.TARGET_ATTACK_TARGET_AND_ADJACENT:
-			var target_uuid: String = context.get("target_uuid", "")
+			var target_uuid: String = context.target_uuid
 			var res_targets: Array[String] = []
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
@@ -101,14 +108,14 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 							res_targets.append(adj.ball_uuid)
 			return res_targets
 		C.TARGET_TRIGGERING_ENTITY:
-			var triggering_uuid: String = context.get("triggering_uuid", "")
+			var triggering_uuid: String = context.triggering_uuid
 			if not triggering_uuid.is_empty():
 				var triggering_instance = battle_manager.get_instance_by_uuid(triggering_uuid)
 				if is_instance_valid(triggering_instance) and triggering_instance.current_hp > 0:
 					return [triggering_uuid]
 			return []
 		C.TARGET_ATTACKER:
-			var attacker_uuid: String = context.get("attacker_uuid", "")
+			var attacker_uuid: String = context.attacker_uuid
 			if not attacker_uuid.is_empty():
 				var attacker_instance = battle_manager.get_instance_by_uuid(attacker_uuid)
 				if is_instance_valid(attacker_instance) and attacker_instance.current_hp > 0:
@@ -162,6 +169,10 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			var enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u):
 				return u.current_hp > 0 and u.get_status_effect_amount(&"bounty") == 0
 			)
+			if enemies.is_empty():
+				enemies = battle_manager.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).filter(func(u):
+					return u.current_hp > 0
+				)
 			if not enemies.is_empty():
 				var picked = RNGManager.combat_rng.pick_random(enemies)
 				return [picked.ball_uuid]
@@ -172,22 +183,22 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				return [hero.ball_uuid]
 			return []
 		C.TARGET_ALLY_BEHIND:
-			var allow_dying: bool = (context.get("trigger_type") == &"on_death" or context.has("dying_uuid"))
+			var allow_dying: bool = (context.trigger_type == C.TRIGGER_WHEN_KNOCKED_OUT or not context.knocked_out_uuid.is_empty())
 			var ally_behind = battle_manager._get_ally_behind(source_instance, allow_dying)
 			if is_instance_valid(ally_behind):
 				return [ally_behind.ball_uuid]
 			return []
 		C.TARGET_ALLY_SLOT_AHEAD:
-			# Return the victim if they are in the slot directly in front of source
+			# Return the damaged ally if they are in the slot directly in front of source
 			# This enforces "directly in front" = exactly source_index + 1 (for player)
 			# or source_index - 1 (for enemy), with NO empty slots in between
-			var victim_uuid = context.get("victim_uuid", "")
-			if victim_uuid.is_empty():
+			var damaged_unit_uuid = context.damaged_uuid
+			if damaged_unit_uuid.is_empty():
 				return []
 			if not is_instance_valid(source_instance):
 				return []
 			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
-			var victim_loc = battle_manager.get_location_for_uuid(victim_uuid)
+			var victim_loc = battle_manager.get_location_for_uuid(damaged_unit_uuid)
 			if not is_instance_valid(source_loc) or not is_instance_valid(victim_loc):
 				return []
 			# Must be in the same container (same lineup)
@@ -197,10 +208,10 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			# For enemy: ahead = lower index (slot index - 1)
 			if is_player_team:
 				if victim_loc.index == source_loc.index + 1:
-					return [victim_uuid]
+					return [damaged_unit_uuid]
 			else:
 				if victim_loc.index == source_loc.index - 1:
-					return [victim_uuid]
+					return [damaged_unit_uuid]
 			return []
 		C.TARGET_ADJACENT_ALLIES:
 			var adjacent = battle_manager._get_adjacent_allies(source_instance)
@@ -214,6 +225,27 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			for ally in allies:
 				uuids.append(ally.ball_uuid)
 			return uuids
+		C.TARGET_ALLY_DIRECTLY_IN_FRONT:
+			var source_loc: LocationIdentifier = battle_manager.get_location_for_uuid(source_uuid)
+			assert(is_instance_valid(source_loc), "TargetResolver: source unit must have a battle location")
+			var ally_lineup_tag: StringName = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+			var ally_lineup: DataContainer = battle_manager.get_container(ally_lineup_tag)
+			var front_index: int = source_loc.index + (1 if is_player_team else -1)
+			if not ally_lineup.is_valid_index(front_index):
+				return []
+			var front_uuid: String = ally_lineup.get_uuid(front_index)
+			if front_uuid.is_empty():
+				return []
+			var front_ally: GachaBallInstance = battle_manager.get_instance_by_uuid(front_uuid)
+			assert(is_instance_valid(front_ally), "TargetResolver: occupied front slot must contain a registered unit")
+			return [front_uuid] if front_ally.current_hp > 0 else []
+		C.TARGET_ALL_BOUNTIED_ENEMIES:
+			var enemy_lineup_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
+			var bountied_enemies: Array[String] = []
+			for enemy: GachaBallInstance in battle_manager.get_instances_in_container(enemy_lineup_tag):
+				if enemy.current_hp > 0 and enemy.get_status_effect_amount(&"bounty") > 0:
+					bountied_enemies.append(enemy.ball_uuid)
+			return bountied_enemies
 		C.TARGET_ALLIES_IN_FRONT:
 			# Units with higher slot index (closer to front for player, further for enemy)
 			if not is_instance_valid(source_instance):
@@ -271,7 +303,11 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 			return [highest.ball_uuid]
 		&"MIRROR_SLOT_ENEMY":
 			if not is_instance_valid(source_instance): return []
-			var source_loc = battle_manager.get_location_for_uuid(source_uuid)
+			var source_location_uuid: String = source_uuid
+			if source_instance.get_definition().category == &"ITEM":
+				assert(not source_instance.equipped_on_uuid.is_empty(), "TargetResolver: mirror-slot item source must be equipped")
+				source_location_uuid = source_instance.equipped_on_uuid
+			var source_loc = battle_manager.get_location_for_uuid(source_location_uuid)
 			if not is_instance_valid(source_loc): return []
 			
 			var enemy_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
@@ -323,10 +359,10 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 ## Check if a condition is met for an ability.
 ## @param condition_def: ConditionDefinition - The condition to check
 ## @param source_uuid: String - The UUID of the source instance
-## @param context: Dictionary - The context of the event
+## @param context: TriggerContext - The context of the event
 ## @param battle_manager: Node - Reference to BattleManager for lookups
 ## @return bool - True if condition is met
-static func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: Dictionary, battle_manager: Node) -> bool:
+static func check_condition(condition_def: ConditionDefinition, source_uuid: String, context: TriggerContext, battle_manager: Node) -> bool:
 	if not is_instance_valid(condition_def):
 		return true # No condition means always true
 	
@@ -345,7 +381,7 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 			var slot_ahead = battle_manager._get_slot_ahead(source_instance)
 			result = slot_ahead == null
 		C.COND_TARGET_HP_GREATER_THAN_SELF_HP:
-			var target_uuid: String = context.get("target_uuid", "")
+			var target_uuid: String = context.target_uuid
 			if not target_uuid.is_empty():
 				var target_instance = battle_manager.get_instance_by_uuid(target_uuid)
 				if is_instance_valid(target_instance):
@@ -356,14 +392,14 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 						if is_instance_valid(holder):
 							self_hp = holder.current_hp
 					result = target_instance.current_hp > self_hp
-		C.COND_DAMAGE_WAS_NON_LETHAL:
-			var damaged_unit_uuid = context.get("victim_uuid", context.get("source_uuid", ""))
+		C.COND_DAMAGE_DID_NOT_KNOCK_OUT:
+			var damaged_unit_uuid = context.damaged_uuid if not context.damaged_uuid.is_empty() else context.source_uuid
 			var damaged_unit = battle_manager.get_instance_by_uuid(damaged_unit_uuid) if not damaged_unit_uuid.is_empty() else source_instance
 			result = damaged_unit.current_hp > 0 if is_instance_valid(damaged_unit) else false
 		C.COND_DAMAGE_WAS_RECEIVED:
 			result = true
 		C.COND_IS_TURN_INITIATED_ATTACK:
-			result = context.get("is_turn_initiated", false)
+			result = context.is_turn_initiated
 		C.COND_COMPOSITE:
 			result = true
 			if "conditions" in condition_def:
@@ -372,24 +408,24 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 						result = false
 						break
 		C.COND_TRIGGER_CAUSE_MATCH:
-			var trigger_cause = context.get("trigger_cause", "")
+			var trigger_cause = context.trigger_cause
 			var allowed_causes = condition_def.parameters.get("allowed_causes", [])
 			if allowed_causes.is_empty():
 				result = true
 			else:
 				result = trigger_cause in allowed_causes
-		C.COND_DYING_UNIT_IS_DUST:
+		C.COND_KNOCKED_OUT_UNIT_IS_DUST:
 			# Prefer the pre-baked definition_id from context (unit may already be removed from registry)
-			var def_id_str: String = context.get("dying_definition_id", "")
+			var def_id_str: String = context.knocked_out_definition_id
 			if not def_id_str.is_empty():
 				result = def_id_str.to_lower().contains("dust")
 			else:
 				# Fallback: try UUID lookup
-				var dying_uuid: String = context.get("dying_uuid", "")
-				if not dying_uuid.is_empty():
-					var dying_inst = battle_manager.get_instance_by_uuid(dying_uuid)
-					if is_instance_valid(dying_inst):
-						result = String(dying_inst.definition_id).to_lower().contains("dust")
+				var ko_uuid: String = context.knocked_out_uuid
+				if not ko_uuid.is_empty():
+					var ko_inst = battle_manager.get_instance_by_uuid(ko_uuid)
+					if is_instance_valid(ko_inst):
+						result = String(ko_inst.definition_id).to_lower().contains("dust")
 		C.COND_MIN_TRAIT_COUNT:
 			var trait_id: String = String(condition_def.parameters.get("trait_id", ""))
 			var min_count: int = int(condition_def.parameters.get("min_count", 1))

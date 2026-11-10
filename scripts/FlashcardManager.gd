@@ -33,6 +33,11 @@ var tokens_earned: int = 0
 var current_question: Dictionary = {}
 var has_unlocked_midgame_card: bool = false
 var _cached_review_priority_cards: Array[Dictionary] = []
+var session_mastery_1_correct: int = 0
+var session_silver_gold_awarded: bool = false
+var session_prismatic_token_awarded: bool = false
+var achieved_3_streak: bool = false
+var encounter_silver_gold_total: int = 0
 
 ## TDD Section 9.3: The Weighted SRS Algorithm
 func _select_card_via_srs() -> StringName:
@@ -113,17 +118,25 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	
 	# Configure authoritative session parameters
 	session_duration = 7.0
-	if GameManager.is_in_battle and GameManager.has_trinket(&"trinket_time_sprint_charm"):
-		session_duration += 2.0
-		var animator = get_node_or_null("/root/BattleAnimator")
-		if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
-			animator.call_deferred("hop_trinket_by_definition_id", &"trinket_time_sprint_charm", false)
+	if GameManager.is_in_battle:
+		var bm = GameManager.get_battle_manager()
+		if is_instance_valid(bm):
+			if GameManager.has_trinket(&"trinket_time_sprint_charm"):
+				var animator = get_node_or_null("/root/BattleAnimator")
+				if is_instance_valid(animator):
+					animator.call_deferred("hop_trinket_by_definition_id", &"trinket_time_sprint_charm", false)
+			session_duration += bm.get_total_next_minigame_bonus_time()
+			bm.consume_next_minigame_bonus_time()
 			
 	session_timer = session_duration
 	correct_answers = 0
 	total_answers = 0
 	current_streak = 0
 	tokens_earned = 0
+	session_mastery_1_correct = 0
+	session_silver_gold_awarded = false
+	session_prismatic_token_awarded = false
+	achieved_3_streak = false
 	has_unlocked_midgame_card = false
 	is_session_active = true
 	
@@ -167,6 +180,11 @@ func reset_session_state() -> void:
 	total_answers = 0
 	current_streak = 0
 	tokens_earned = 0
+	session_mastery_1_correct = 0
+	session_silver_gold_awarded = false
+	session_prismatic_token_awarded = false
+	achieved_3_streak = false
+	encounter_silver_gold_total = 0
 	current_question = {}
 	has_unlocked_midgame_card = false
 	_cached_review_priority_cards.clear()
@@ -195,6 +213,7 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		if not is_session_active:
 			return {}
 
+	var active_hero_id: StringName = _get_run_hero_id()
 	var was_correct: bool = (question_id == selected_answer_id)
 	total_answers += 1
 	
@@ -207,14 +226,45 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 	submit_answer(question_id, was_correct)
 	
 	var tokens_to_give: int = 0
+	var gold_to_give: int = 0
 	var midgame_unlocked_card_id: StringName = &""
 	if was_correct:
 		correct_answers += 1
 		current_streak += 1
-		session_timer += 0.5
+		if current_streak >= 3:
+			achieved_3_streak = true
+		
+		if active_hero_id == &"hero_timekeeper":
+			session_timer += 1.0
+		else:
+			session_timer += 0.5
 		
 		var has_charm: bool = GameManager.has_trinket(&"trinket_beginners_charm")
-		tokens_to_give = 2 if (mastery_level <= FlashcardProgress.MASTERY_MIN and has_charm) else 1
+		var is_m1: bool = (mastery_level <= FlashcardProgress.MASTERY_MIN)
+		if is_m1:
+			session_mastery_1_correct += 1
+
+		tokens_to_give = 1
+		if is_m1 and has_charm:
+			tokens_to_give += 1
+
+		if GameManager.is_in_battle:
+			var bm = GameManager.get_battle_manager()
+			if is_instance_valid(bm):
+				var active_traits: Dictionary = bm.get_active_traits("PLAYER")
+				var novice_count: int = int(active_traits.get("NOVICE", 0))
+				if is_m1 and novice_count >= 4:
+					tokens_to_give += 1
+				if current_streak == 3:
+					if novice_count >= 3 and not session_silver_gold_awarded and encounter_silver_gold_total < 5:
+						session_silver_gold_awarded = true
+						encounter_silver_gold_total += 1
+						gold_to_give = 1
+						if is_instance_valid(_run_state_ref):
+							_run_state_ref.add_gold(1, true)
+					if novice_count >= 5 and not session_prismatic_token_awarded:
+						session_prismatic_token_awarded = true
+						tokens_to_give += 1
 		
 		# Mid-minigame card unlock on 3-question streak
 		if not has_unlocked_midgame_card and current_streak == 3:
@@ -232,12 +282,18 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 			_run_state_ref.add_tokens(tokens_to_give, true)
 		elif GameManager.is_in_battle:
 			var bm = GameManager.get_battle_manager()
-			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
+			if is_instance_valid(bm):
 				bm.add_gacha_tokens(tokens_to_give, true)
-			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
-				bm.add_gacha_token(tokens_to_give, true)
 	else:
 		current_streak = 0
+		if GameManager.is_in_battle:
+			var bm = GameManager.get_battle_manager()
+			if is_instance_valid(bm):
+				var active_traits: Dictionary = bm.get_active_traits("PLAYER")
+				if int(active_traits.get("NOVICE", 0)) >= 5:
+					session_timer += 0.5
+		if active_hero_id == &"hero_timekeeper":
+			session_timer = maxf(0.0, session_timer - 0.5)
 		
 	session_timer_updated.emit(session_timer, session_duration)
 	if not midgame_unlocked_card_id.is_empty():
@@ -246,15 +302,19 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		current_question = get_next_question()
 	session_question_changed.emit(current_question)
 	
-	return {
+	var answer_result: Dictionary = {
 		"was_correct": was_correct,
 		"tokens_to_give": tokens_to_give,
+		"gold_to_give": gold_to_give,
 		"current_streak": current_streak,
 		"correct_answers": correct_answers,
 		"total_answers": total_answers,
 		"next_question": current_question,
 		"midgame_unlocked_card_id": midgame_unlocked_card_id
 	}
+	if session_timer <= 0.0:
+		_on_minigame_complete(correct_answers, total_answers - correct_answers)
+	return answer_result
 
 func skip_minigame_question(question_id: StringName, think_time: float = 0.0) -> Dictionary:
 	"""Skips the current question, advancing timer and resetting streak"""
@@ -374,11 +434,12 @@ func submit_answer(question_id: StringName, was_correct: bool) -> void:
 		progress.record_answer(was_correct, _run_state_ref.day)
 		SignalBus.emit_signal("run_data_changed")
 
-func _is_starter_hero(rs: RunState) -> bool:
-	if not is_instance_valid(rs) or not is_instance_valid(rs.hero_instance):
-		return false
-	var def = rs.hero_instance.get_definition()
-	return is_instance_valid(def) and def.id == &"hero_starter"
+func _get_run_hero_id() -> StringName:
+	assert(_run_state_ref != null, "FlashcardManager: active session requires its RunState")
+	assert(_run_state_ref.hero_instance != null, "FlashcardManager: active RunState requires its Hero instance")
+	var hero_definition: GachaBallDefinition = _run_state_ref.hero_instance.get_definition()
+	assert(hero_definition != null, "FlashcardManager: active Hero requires its definition")
+	return hero_definition.id
 
 func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
@@ -389,26 +450,26 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	is_sprint_active = false
 	is_introducing_new_card = false
 	
-	# Starter hero minimum guarantee: guarantee at least 3 tokens
-	if is_instance_valid(_run_state_ref) and _is_starter_hero(_run_state_ref) and correct < 3:
-		var bonus = 3 - correct
-		if is_instance_valid(_run_state_ref):
-			_run_state_ref.add_tokens(bonus, true)
-		elif GameManager.is_in_battle:
-			var bm = GameManager.get_battle_manager()
-			if is_instance_valid(bm) and bm.has_method("add_gacha_tokens"):
-				bm.add_gacha_tokens(bonus, true)
-			elif is_instance_valid(bm) and bm.has_method("add_gacha_token"):
-				bm.add_gacha_token(bonus, true)
-		correct = 3
-		tokens_earned += bonus
+	# Novice minimum guarantee: ensure at least 3 tokens were earned this session (Novice Sigil trinket)
+	var has_novice_floor: bool = GameManager.has_trinket(&"trinket_trait_novice")
+	if has_novice_floor:
+		var guaranteed_tokens: int = maxi(3, tokens_earned)
+		var token_bonus: int = guaranteed_tokens - tokens_earned
+		if token_bonus > 0:
+			if is_instance_valid(_run_state_ref):
+				_run_state_ref.add_tokens(token_bonus, true)
+			elif GameManager.is_in_battle:
+				var bm = GameManager.get_battle_manager()
+				if is_instance_valid(bm):
+					bm.add_gacha_tokens(token_bonus, true)
+			tokens_earned = guaranteed_tokens
 	
 	var final_tokens = 0
 	if is_instance_valid(_run_state_ref):
 		final_tokens = _run_state_ref.current_room_tokens
 	elif GameManager.is_in_battle:
 		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("get_gacha_tokens"):
+		if is_instance_valid(bm):
 			final_tokens = bm.get_gacha_tokens()
 	SignalBus.emit_signal("gacha_tokens_changed", final_tokens)
 	
@@ -416,7 +477,9 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 		"correct_answers": correct,
 		"incorrect_answers": incorrect,
 		"total_answers": correct + incorrect,
-		"tokens_earned": tokens_earned
+		"tokens_earned": tokens_earned,
+		"mastery_1_correct": session_mastery_1_correct,
+		"achieved_3_streak": (achieved_3_streak or current_streak >= 3)
 	}
 	
 	# Finish any active flashcard action if queue was waiting

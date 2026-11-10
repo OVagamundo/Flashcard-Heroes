@@ -42,9 +42,9 @@ func setup_status_effect(value: int, type: String, spawn_position: Vector2) -> v
 	
 	var color = Color.WHITE
 	match type:
-		"burn": color = Color(1.0, 0.5, 0.0) # Orange
-		"spikes": color = Color(0.0, 1.0, 0.0) # Green
-		"armor": color = Color(0.0, 0.6, 1.0) # Blue
+		"burn": color = Color(1.0, 0.4, 0.0) # Orange
+		"spikes": color = Color(0.2, 0.85, 0.2) # Green
+		"armor": color = Color(0.65, 0.65, 0.65) # Gray
 		"static": color = Color(1.0, 0.85, 0.1) # Yellow for static
 	
 	label.add_theme_color_override("font_color", color)
@@ -53,7 +53,7 @@ func setup_status_effect(value: int, type: String, spawn_position: Vector2) -> v
 	# Per user request: Remove outlines from stat effects
 	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
 	label.add_theme_constant_override("outline_size", 0)
-	label.add_theme_color_override("font_outline_color", Color.BLACK if type != "armor" else Color.WHITE)
+	label.add_theme_color_override("font_outline_color", Color.BLACK)
 	
 	# Start tiny for the pop
 	scale = Vector2(0.1, 0.1)
@@ -71,9 +71,9 @@ func setup_stat(value: int, spawn_position: Vector2, color: Color = Color.WHITE)
 	scale = Vector2(0.1, 0.1)
 	modulate.a = 1.0
 
-## Helper for armor damage popups (Blue color) - matches armor application
+## Helper for armor damage popups (Gray color) - matches armor application
 func setup_armor(damage: int, spawn_position: Vector2) -> void:
-	setup_stat(damage, spawn_position, Color(0.0, 0.6, 1.0)) # Blue for armor hits
+	setup_stat(damage, spawn_position, Color(0.65, 0.65, 0.65)) # Gray for armor hits
 	# Armor hits are smaller (32px) as they are stat-related, not direct HP damage.
 
 func play() -> void:

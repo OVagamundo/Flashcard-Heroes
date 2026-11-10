@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="CombatEffectDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/CombatEffectDefinition.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"reinforce"
+display_name_key = "status_reinforce.name"
+description_key = "status_reinforce.desc"
+is_negative = false
+turn_phase = "START_OF_TURN"
+turn_effect = "NONE"
+turn_effect_multiplier = 0.0
+decay_mode = "DECREMENT"
+decay_amount = 1
+color = Color(0, 0.9, 1, 1)

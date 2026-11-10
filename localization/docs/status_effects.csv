@@ -1,6 +1,0 @@
-Status,Description
-Armor,Absorbs damage equal to the amount of stacks. Decays completely at the end of the turn.
-Bounty,"When this unit is defeated by any means, awards 1 Gold. Stays until this unit dies or the battle ends."
-Burn,Deals damage equal to the amount of stacks at the end of the turn. After dealing damage the value is reduced by half.
-Spikes,Deals damage back to the attacker equal to the amount of stacks. Loses 1 stack per activation.
-Static,"When this unit dies, it deals collateral damage equal to its Static stacks to living adjacent lineup allies, mitigated by Armor. Stacks decay by 1 at the end of each turn."

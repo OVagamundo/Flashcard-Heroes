@@ -8,5 +8,5 @@ script = ExtResource("1_script")
 id = &"ability_fighter_insignia_merge"
 description_key = "ability.fighter_insignia.desc"
 trigger = &"on_merge"
-priority = 50
+sub_phase = 80
 effects = Array[Resource]([ExtResource("2_effect")])

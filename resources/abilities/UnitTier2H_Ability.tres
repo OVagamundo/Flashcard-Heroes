@@ -13,8 +13,8 @@ target_type = &"SELF"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_t2_h_ability"
-trigger = &"on_pre_combat"
+trigger = &"pre_combat"
 effects = Array[Resource]([SubResource("EffectGrantStats")])
 description_key = "ability.unit_t2_h_l1.desc"
-priority = 0
+sub_phase = 200
 max_level = 1

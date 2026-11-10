@@ -15,6 +15,7 @@
 [ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
 [ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Knob.png" id="100_knob"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/MenuIcons.png" id="16_menu_icons"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_sandclock.png" id="17_sandclock"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
 atlas = ExtResource("8_gold_coin")
@@ -303,6 +304,29 @@ layout_mode = 2
 theme_type_variation = &"HUDLabel"
 
 text = "0"
+vertical_alignment = 1
+
+[node name="BonusTimerGroup" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 8
+mouse_filter = 2
+
+[node name="SandclockIcon" type="TextureRect" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup/BonusTimerGroup"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 64)
+layout_mode = 2
+mouse_filter = 2
+texture = ExtResource("17_sandclock")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="BonusTimerLabel" type="Label" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/LeftStats/TokenGroup/BonusTimerGroup"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_type_variation = &"HUDLabel"
+text = "+0s"
 vertical_alignment = 1
 
 [node name="CenterStats" type="CenterContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]

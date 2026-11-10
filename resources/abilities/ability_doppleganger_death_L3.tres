@@ -7,7 +7,7 @@
 script = ExtResource("2_effect")
 target_type = &"NONE"
 parameters = {
-"duplicate_def_id": &"unit_t3_i",
+"duplicate_def_id": &"EFWASpeFod",
 "duplicate_type": "UNIT",
 "duplicate_tier": 3
 }
@@ -18,9 +18,9 @@ parameters = {
 script = ExtResource("1_script")
 id = &"ability_doppleganger_death_l3"
 description_key = "ability.doppleganger_death_l3.desc"
-trigger = &"on_death"
-priority = 215
+trigger = &"when_knocked_out"
+sub_phase = 25
 effects = Array[Resource]([SubResource("EffectDuplicateToGacha_3")])
-execute_on_lethal = true
+execute_before_knockout = true
 required_level = 3
 max_level = 3

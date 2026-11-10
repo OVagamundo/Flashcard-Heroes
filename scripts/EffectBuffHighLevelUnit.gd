@@ -10,8 +10,8 @@ extends EffectDefinition
 ##   - target_tier: int (default 0) - Matching unit tier; bypasses the level filter when positive
 ##   - target_trait: String (default empty) - Matching unit trait; takes precedence over level and tier
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Get the target unit UUID from context
 	# Context key depends on trigger:
@@ -24,13 +24,13 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
 	else:
-		var ctx_uuid: String = context.get("drawn_uuid", "")
+		var ctx_uuid: String = context.drawn_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("summoned_uuid", "")
+			ctx_uuid = context.summoned_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("merged_uuid", "")
+			ctx_uuid = context.merged_uuid
 		if ctx_uuid.is_empty():
-			ctx_uuid = context.get("source_uuid", "")
+			ctx_uuid = context.source_uuid
 		if not ctx_uuid.is_empty():
 			targets_to_process.append(ctx_uuid)
 	
@@ -172,9 +172,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": context.get("ability_id", effect_ability_id),
-				"trigger_type": context.get("trigger_type", ""),
+				"ability_id": (context.ability_id if context.ability_id != &"" else effect_ability_id),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.both_stats_change(
 					_source_uuid, hp_amount, pwr_amount,
@@ -187,9 +188,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": context.get("ability_id", effect_ability_id),
-				"trigger_type": context.get("trigger_type", ""),
+				"ability_id": (context.ability_id if context.ability_id != &"" else effect_ability_id),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
 			}))
@@ -197,9 +199,10 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": context.get("ability_id", effect_ability_id),
-				"trigger_type": context.get("trigger_type", ""),
+				"ability_id": (context.ability_id if context.ability_id != &"" else effect_ability_id),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
 			}))

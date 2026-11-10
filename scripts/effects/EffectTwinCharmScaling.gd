@@ -4,14 +4,14 @@ extends EffectDefinition
 
 ## Grants allied units +1 PWR for each pair of that unit
 ## in the allied battle pool (lineup, bench, gacha trays, discard).
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
 		return EffectResult.empty()
 
-	var team: String = String(context.get("team", _get_team_for_instance(source, battle_manager)))
+	var team: String = context.team if not context.team.is_empty() else _get_team_for_instance(source, battle_manager)
 	var status_key := StringName("twin_charm_scaling_" + team)
 	var copy_counts: Dictionary = {}
 	var changed_units := 0
@@ -96,7 +96,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": visual_source_uuid,
 				"target_uuids": buff_groups[d]["targets"],
-				"ability_id": context.get("ability_id", &"twin_charm_scaling"),
+				"ability_id": (context.ability_id if context.ability_id != &"" else &"twin_charm_scaling"),
 				"ability_holder_uuid": source_uuid,
 				"visual_payload": CombatPayload.pwr_change(visual_source_uuid, d, buff_groups[d]["old_pwrs"], buff_groups[d]["new_pwrs"])
 			}))

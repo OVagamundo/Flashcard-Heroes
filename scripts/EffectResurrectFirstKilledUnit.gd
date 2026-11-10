@@ -6,10 +6,10 @@ extends EffectDefinition
 ## Only triggers once per team per turn.
 ## Uses context data instead of querying instances (Effect Decoupling Rule)
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	# 1. Determine team from context - the fainting ally's team is our team
 	# (Soul Echo triggers on_ally_death when a teammate dies)
-	var fainting_ally_team: String = context.get("fainting_ally_team", "")
+	var fainting_ally_team: String = context.ally_knocked_out_team
 	if fainting_ally_team.is_empty():
 		return EffectResult.empty()
 	
@@ -46,7 +46,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# We prefer the slot where the triggering ally died (fainting_ally_location)
 	# This matches Necromancer and other summoning items.
 	# Fallback to the original death location if necessary.
-	var fainting_ally_location: LocationIdentifier = context.get("fainting_ally_location")
+	var fainting_ally_location: LocationIdentifier = context.ally_knocked_out_location
 	var death_location: LocationIdentifier = first_killed_data.get("location_snapshot")
 	
 	var summon_location: LocationIdentifier = fainting_ally_location
@@ -61,7 +61,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	battle_manager._turn_metadata[resurrection_flag_key] = true
 
 	# 7. Return EffectResult with resurrection instructions
-	var source_uuid: String = context.get("fainting_ally_uuid", "")
+	var source_uuid: String = context.ally_knocked_out_uuid
 	if source_uuid.is_empty():
 		source_uuid = first_killed_data.get("uuid", "")
 		

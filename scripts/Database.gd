@@ -4,6 +4,27 @@ extends Node
 ## Loads all .tres files from the resource directories into dictionaries
 ## on game startup for fast, cached access.
 
+## Content Set Constants
+const SET_BASE: StringName = &"BASE"
+const SET_NOVICE: StringName = &"NOVICE"
+const SET_MERCENARY: StringName = &"MERCENARY"
+
+## Authoritative definitions belonging to Hero Content Packs
+const NOVICE_SET_IDS: Array[StringName] = [
+	&"?NovPla", &"?ANovFod", &"E?NovPla", &"F?NovApp", &"W?NovCos",
+	&"E??ANovPla", &"F??ANovFod", &"W??ANovCos", &"EF??NovApp", &"EW??NovPla", &"FW??NovAni",
+	&"item_study_pouch", &"item_review_ledger", &"item_answer_key", &"item_novice_archive", &"item_novice_emblem",
+	&"trinket_trait_novice", &"trinket_beginners_charm", &"trinket_study_hall_bell", &"trinket_novice_insignia"
+]
+
+const MERCENARY_SET_IDS: Array[StringName] = [
+	&"?MerSpe", &"?ASpeMerFodToy", &"E?TnkMerPlaToy", &"F?FigMerMecApp", &"W?SupMerAniCos",
+	&"E??ATnkSpeMerFodPlaToy", &"FW??FigSupMerAniMecAppCos", &"W??ASupSpeMerFodAniToyCos",
+	&"F??AFigSpeMerFodMecToyApp", &"EF??TnkFigMerMecPlaToyApp", &"EW??TnkSupMerAniPlaToyCos",
+	&"item_claim_ticket", &"item_interest_ledger", &"item_loaded_contract", &"item_golden_seal", &"item_mercenary_emblem",
+	&"trinket_trait_mercenary", &"trinket_recruiting_charm", &"trinket_wanted_poster", &"trinket_mercenary_insignia"
+]
+
 var units: Dictionary = {} # Key: StringName(id), Value: GachaBallDefinition
 var items: Dictionary = {} # Key: StringName(id), Value: GachaBallDefinition
 var trinkets: Dictionary = {} # Key: StringName(id), Value: TrinketDefinition
@@ -89,6 +110,10 @@ func _load_resources_from_path(path: String, dictionary: Dictionary) -> void:
 		var resource = load(resource_path)
 		if is_instance_valid(resource):
 			if "id" in resource:
+				if NOVICE_SET_IDS.has(resource.id):
+					resource.set_id = SET_NOVICE
+				elif MERCENARY_SET_IDS.has(resource.id):
+					resource.set_id = SET_MERCENARY
 				dictionary[resource.id] = resource
 			else:
 				pass
@@ -268,31 +293,123 @@ func get_cards_for_deck(deck_id: StringName) -> Array[StringName]:
 		return deck_definitions[deck_id].card_ids
 	return []
 
-## Returns all definitions valid for the reward/shop pool (Tier > 0, non-Hero, non-Boss, non-Token)
-func get_all_pool_definitions() -> Array[GachaBallDefinition]:
+## Maps a hero definition ID to their associated Hero Set.
+## Heroes without a specialized set map to SET_BASE.
+static func get_hero_set(hero_id: StringName) -> StringName:
+	match hero_id:
+		&"hero_starter":
+			return SET_NOVICE
+		&"hero_bounty_hunter", &"hero":
+			return SET_MERCENARY
+		_:
+			return SET_BASE
+
+## Returns the definitive content set ID for a resource definition.
+static func get_entity_set(entity: Resource) -> StringName:
+	if not is_instance_valid(entity):
+		return SET_BASE
+	if "id" in entity:
+		if NOVICE_SET_IDS.has(entity.id):
+			return SET_NOVICE
+		if MERCENARY_SET_IDS.has(entity.id):
+			return SET_MERCENARY
+	if "set_id" in entity and entity.set_id != &"" and entity.set_id != SET_BASE:
+		return entity.set_id
+	return SET_BASE
+
+## Returns all definitions valid for the reward/shop pool (Tier > 0, non-Hero, non-Boss, non-Token).
+## When active_set is provided (or resolved via GameManager.run_state), only SET_BASE and
+## matching active_set definitions are returned. Pass &"ALL" to bypass set filtering.
+func get_all_pool_definitions(active_set: StringName = &"") -> Array[GachaBallDefinition]:
+	var effective_set := active_set
+	if effective_set.is_empty():
+		if is_instance_valid(GameManager.run_state):
+			effective_set = GameManager.run_state.get_active_hero_set()
+		else:
+			effective_set = SET_BASE
+
 	var pool: Array[GachaBallDefinition] = []
 	
 	# Collect from units
 	for unit in units.values():
 		if _is_valid_for_pool(unit):
-			pool.append(unit)
+			var u_set = get_entity_set(unit)
+			if effective_set == &"ALL" or u_set == SET_BASE or u_set == effective_set:
+				pool.append(unit)
 			
 	# Collect from items
 	for item in items.values():
 		if _is_valid_for_pool(item):
-			pool.append(item)
+			var i_set = get_entity_set(item)
+			if effective_set == &"ALL" or i_set == SET_BASE or i_set == effective_set:
+				pool.append(item)
 			
 	pool.sort_custom(func(a: GachaBallDefinition, b: GachaBallDefinition) -> bool:
 		return String(a.id) < String(b.id)
 	)
 	return pool
 
-## Returns all trinket definitions eligible for rewards, sorted deterministically by id
-func get_eligible_trinkets_for_reward() -> Array[TrinketDefinition]:
+## Returns all eligible units for in-combat random summons filtered by tier, team, and active run set.
+## Enemy summons are restricted strictly to non-player-exclusive units belonging to SET_BASE.
+## Player summons are restricted to SET_BASE and the active hero set (active_set or GameManager.run_state.active_hero_set).
+func get_eligible_summon_units(tier: int, is_player: bool, active_set: StringName = &"") -> Array[GachaBallDefinition]:
+	var effective_set := active_set
+	if effective_set.is_empty():
+		if is_instance_valid(GameManager.run_state):
+			effective_set = GameManager.run_state.get_active_hero_set()
+		else:
+			effective_set = SET_BASE
+
+	var candidates: Array[GachaBallDefinition] = []
+	for unit_def: GachaBallDefinition in units.values():
+		if not is_instance_valid(unit_def):
+			continue
+		if unit_def.category != &"UNIT":
+			continue
+		if unit_def.tier != tier:
+			continue
+		if unit_def.is_hero:
+			continue
+		if unit_def.tags.has(&"BOSS") or unit_def.tags.has(&"TOKEN") or unit_def.tags.has(&"HIDDEN"):
+			continue
+		var unit_id_lower := String(unit_def.id).to_lower()
+		if unit_id_lower.contains("dust") or unit_id_lower.contains("elite"):
+			continue
+
+		var u_set: StringName = get_entity_set(unit_def)
+		if not is_player:
+			if unit_def.is_player_exclusive:
+				continue
+			if u_set != SET_BASE:
+				continue
+		else:
+			if effective_set != &"ALL" and u_set != SET_BASE and u_set != effective_set:
+				continue
+
+		candidates.append(unit_def)
+
+	candidates.sort_custom(func(a: GachaBallDefinition, b: GachaBallDefinition) -> bool:
+		return String(a.id) < String(b.id)
+	)
+	return candidates
+
+## Returns all trinket definitions eligible for rewards, sorted deterministically by id.
+## When active_set is provided (or resolved via GameManager.run_state), only SET_BASE and
+## matching active_set trinkets are returned. Pass &"ALL" to bypass set filtering.
+func get_eligible_trinkets_for_reward(active_set: StringName = &"") -> Array[TrinketDefinition]:
+	var effective_set := active_set
+	if effective_set.is_empty():
+		if is_instance_valid(GameManager.run_state):
+			effective_set = GameManager.run_state.get_active_hero_set()
+		else:
+			effective_set = SET_BASE
+
 	var eligible: Array[TrinketDefinition] = []
 	for t in trinkets.values():
 		if t is TrinketDefinition and not t.is_enemy_exclusive:
-			eligible.append(t)
+			var t_set = get_entity_set(t)
+			if effective_set == &"ALL" or t_set == SET_BASE or t_set == effective_set:
+				eligible.append(t)
 	eligible.sort_custom(func(a: TrinketDefinition, b: TrinketDefinition) -> bool:
 		return String(a.id) < String(b.id)
 	)

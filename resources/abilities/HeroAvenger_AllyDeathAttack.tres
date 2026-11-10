@@ -12,5 +12,5 @@ target_type = &"FRONTMOST_ENEMY"
 script = ExtResource("1_script")
 id = &"hero_avenger_ally_death_attack"
 description_key = "ability.hero_avenger_ally_death_attack.desc"
-trigger = &"on_ally_death"
+trigger = &"when_ally_knocked_out"
 effects = Array[Resource]([SubResource("BasicAttackEffect_1")])

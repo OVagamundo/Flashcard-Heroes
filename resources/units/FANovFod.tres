@@ -1,0 +1,25 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/FANovFod.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_fa_nov_fod.tres" id="4_ability"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"F??ANovFod"
+display_name_key = "F??ANovFod.name"
+description_key = "F??ANovFod.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_FIRE", &"?", &"?", &"SOUL_AIR", &"Novice", &"Food"])
+tier = 3
+level = 1
+category = &"UNIT"
+
+base_hp = 5
+base_pwr = 5
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_ability")])
+is_player_exclusive = true
+set_id = &"NOVICE"

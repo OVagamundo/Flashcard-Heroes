@@ -18,6 +18,6 @@ id = &"ability_waaa_sup_spe_mer_fod_ani_toy_cos_l3"
 description_key = "ability.eewa_sup_spe_mer_fod_ani_toy_cos.l3.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_Heal_3")])
-priority = 0
+sub_phase = 200
 required_level = 3
 max_level = 99

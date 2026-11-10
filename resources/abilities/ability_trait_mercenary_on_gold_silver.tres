@@ -30,5 +30,5 @@ description_key = "ability.trait_mercenary.silver.desc"
 trigger = &"on_gold_earned"
 conditions = Array[Resource]([SubResource("Cond_MercenarySilver")])
 effects = Array[Resource]([SubResource("Effect_MercenarySilver")])
-priority = 0
+sub_phase = 200
 max_level = 1

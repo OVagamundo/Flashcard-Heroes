@@ -11,9 +11,9 @@ parameters = { "action_type": "HEAL", "stat": "hp", "base_value": 6 }
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier2a_defensive_stance_l3"
-trigger = &"on_before_damage"
+trigger = &"before_taking_damage"
 effects = Array[Resource]([SubResource("EffectModifyStat_DefensiveStance_3")])
 description_key = "ability.unit_tier2a_defensive_stance_l3.desc"
-priority = 10
+sub_phase = 90
 required_level = 3
 max_level = 3

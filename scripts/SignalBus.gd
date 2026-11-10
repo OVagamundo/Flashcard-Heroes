@@ -264,6 +264,10 @@ signal draw_from_discard_requested
 ## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
 signal gacha_draw_animated(draw_result)
 
+## Emitted when the visual presentation of a gacha draw (flight, capsule pop, landing bounce) completes
+## @param draw_result: DrawResult - The result of the draw operation
+signal gacha_draw_animation_completed(draw_result)
+
 ## Emitted when gacha tokens change (canonical signal for both logic and UI presentation)
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
@@ -474,6 +478,9 @@ signal close_modal_requested
 ## Emitted when the top contextual window should be closed
 signal close_top_contextual_requested
 
+## Emitted when the glossary details lock is toggled on/off
+signal glossary_lock_changed(is_locked: bool)
+
 ## Emitted when background is clicked
 signal background_clicked
 
@@ -496,6 +503,10 @@ signal flashcard_progress_updated(card_id: StringName, new_progress: FlashcardPr
 
 ## Emitted when results are acknowledged
 signal results_acknowledged
+
+## Emitted when bonus time for the next minigame changes
+## @param new_bonus_time: float - The new banked bonus time in seconds
+signal minigame_bonus_time_changed(new_bonus_time: float)
 
 
 # -----------------------------------------------------------------------------

@@ -25,6 +25,6 @@ id = &"ability_ea_tnk_mer_pla_toy_l3"
 description_key = "ability.ee_tnk_mer_pla_toy.l3.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_Armor_3"), SubResource("Effect_Spikes_3")])
-priority = 0
+sub_phase = 200
 required_level = 3
 max_level = 99

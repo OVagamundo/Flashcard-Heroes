@@ -53,7 +53,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 			var proj = _launch_projectile(animator, source_uuid, target_uuid, hp_delta, "hp", "green")
 			if proj: hp_projectiles.append(proj)
 			
-	if has_hp_buff and has_pwr_buff:
+	if has_hp_buff and has_pwr_buff and not hp_projectiles.is_empty():
 		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(AnimationConstants.SECONDARY_STAT_BUFF_DELAY)).timeout
 			
 	if has_pwr_buff:

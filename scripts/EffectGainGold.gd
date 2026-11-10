@@ -5,25 +5,23 @@ extends EffectDefinition
 ## Effect that grants gold to the player when triggered.
 ## Primarily used for gold-on-kill abilities.
 
-func execute(source_uuid: String, targets: Array[String], _battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, targets: Array[String], _battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var amount: int = int(parameters.get("amount", 1))
-	var is_simulation: bool = context.get("is_simulation", false)
+	var is_simulation: bool = context.is_simulation
 	
 	# During simulation, apply gold and return EffectResult
 	if is_simulation:
 		# Resolve origin_uuid for visual animation trajectory:
-		# Priority: killed_uuid (e.g. Bounty on_kill) -> dying_uuid (e.g. on_death) -> source_holder_uuid (equipped item) -> targets[0] -> source_uuid
-		var origin_uuid: String = context.get("killed_uuid", "")
+		# Priority: knocked_out_uuid -> source_holder_uuid (equipped item) -> targets[0] -> source_uuid
+		var origin_uuid: String = context.knocked_out_uuid
 		if origin_uuid.is_empty():
-			origin_uuid = context.get("dying_uuid", "")
-		if origin_uuid.is_empty():
-			origin_uuid = context.get("source_holder_uuid", "")
+			origin_uuid = context.source_holder_uuid
 		if origin_uuid.is_empty() and not targets.is_empty():
 			origin_uuid = targets[0]
 		if origin_uuid.is_empty():
 			origin_uuid = source_uuid
 
-		if is_instance_valid(_battle_manager) and _battle_manager.has_method("earn_gold"):
+		if is_instance_valid(_battle_manager):
 			_battle_manager.earn_gold(amount, origin_uuid)
 			var result := EffectResult.new()
 			result.state_applied = true

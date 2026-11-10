@@ -7,15 +7,15 @@ extends EffectDefinition
 ## Parameters:
 ## - amount: int - Amount of Gold to spend (default 1)
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	if not is_simulation:
 		return EffectResult.empty()
 
 	var amount: int = int(parameters.get("amount", 1))
-	var origin_uuid = _source_uuid
-	if context.has("source_holder_uuid") and not str(context["source_holder_uuid"]).is_empty():
-		origin_uuid = str(context["source_holder_uuid"])
+	var origin_uuid: String = _source_uuid
+	if not context.source_holder_uuid.is_empty():
+		origin_uuid = context.source_holder_uuid
 	var spent = battle_manager.spend_gold(amount, origin_uuid)
 	if not spent:
 		return EffectResult.empty()

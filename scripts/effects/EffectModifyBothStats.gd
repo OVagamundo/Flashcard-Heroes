@@ -13,8 +13,8 @@ const C = preload("res://scripts/Constants.gd")
 ## stat changes go to the same resolved target(s), preventing the "split buff"
 ## problem where independent target resolution sends stats to different units.
 
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -35,7 +35,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 			if not src.equipped_on_uuid.is_empty():
 				visual_source_uuid = src.equipped_on_uuid
 	if source_name.is_empty():
-		source_name = String(context.get("ability_id", "effect"))
+		source_name = String((context.ability_id if context.ability_id != &"" else "effect"))
 
 	if is_simulation:
 		var result := EffectResult.new()
@@ -86,12 +86,12 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		)
 		payload.action_type = C.ACTION_BUFF
 
-		var ability_id: StringName = context.get("ability_id", &"modify_both_stats")
+		var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"modify_both_stats")
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": _source_uuid,
 			"target_uuids": batched_uuids,
 			"ability_id": ability_id,
-			"trigger_type": context.get("trigger_type", ""),
+			"trigger_type": context.trigger_type,
 			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": _source_uuid,
 			"visual_payload": payload

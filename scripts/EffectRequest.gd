@@ -2,6 +2,8 @@
 extends Resource
 class_name EffectRequest
 
+const C = preload("res://scripts/Constants.gd")
+
 ## The UUID of the GachaBallInstance whose ability is being processed.
 var source_uuid: String
 ## The ID of the AbilityDefinition being executed.
@@ -10,10 +12,10 @@ var ability_id: StringName
 var effect_definition: EffectDefinition
 ## The pre-calculated list of target UUIDs for the effect.
 var resolved_targets: Array[String]
-## The original context of the event that started this chain (e.g., `{"attacker_uuid": "...", "damage_taken": 5}`).
-var trigger_context: Dictionary
-## Execution priority copied from the AbilityDefinition. Higher = executes first.
-var priority: int = 0
+## The original context of the event that started this chain.
+var trigger_context: TriggerContext
+## Execution sub-phase copied from the AbilityDefinition. Lower = executes first.
+var sub_phase: C.SubPhase = C.SubPhase.STANDARD
 ## The category of the source instance (&"UNIT", &"ITEM", or &"TRINKET").
 var category: StringName = &""
 ## Whether the source instance belongs to the player team.
@@ -28,8 +30,8 @@ func _init(
 	p_ability_id: StringName = &"",
 	p_effect_definition: EffectDefinition = null,
 	p_resolved_targets: Array[String] = [],
-	p_trigger_context: Dictionary = {},
-	p_priority: int = 0,
+	p_trigger_context: TriggerContext = null,
+	p_sub_phase: C.SubPhase = C.SubPhase.STANDARD,
 	p_category: StringName = &"",
 	p_is_player: bool = false,
 	p_slot_index: int = -1,
@@ -39,8 +41,8 @@ func _init(
 	ability_id = p_ability_id
 	effect_definition = p_effect_definition
 	resolved_targets = p_resolved_targets
-	trigger_context = p_trigger_context
-	priority = p_priority
+	trigger_context = p_trigger_context if p_trigger_context != null else TriggerContext.new()
+	sub_phase = p_sub_phase
 	category = p_category
 	is_player = p_is_player
 	slot_index = p_slot_index

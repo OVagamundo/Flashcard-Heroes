@@ -10,7 +10,7 @@ parameters = {
 "base_value": 3,
 "stat": "hp"
 }
-target_type = &"RANDOM_ALLY"
+target_type = &"ALLY_DIRECTLY_IN_FRONT"
 
 [resource]
 script = ExtResource("1_ability")
@@ -18,6 +18,6 @@ id = &"ability_wa_sup_mer_ani_cos_l3"
 description_key = "ability.ew_sup_mer_ani_cos.l3.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_Heal_L3")])
-priority = 0
+sub_phase = 200
 required_level = 3
 max_level = 99

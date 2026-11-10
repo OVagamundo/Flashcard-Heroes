@@ -13,9 +13,9 @@ target_type = &"RANDOM_ALLY"
 [sub_resource type="Resource" id="Ability_Vengeance_1"]
 script = ExtResource("3_ability")
 id = &"ability_trinket_vengeance"
-trigger = &"on_ally_death"
+trigger = &"when_ally_knocked_out"
 description_key = "ability.vengeance.desc"
-priority = 210
+sub_phase = 30
 effects = Array[Resource]([SubResource("EffectModifyBothStats_Vengeance")])
 
 [resource]

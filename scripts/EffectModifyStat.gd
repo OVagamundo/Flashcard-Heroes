@@ -10,10 +10,10 @@ const C = preload("res://scripts/Constants.gd")
 ## - "BUFF": Stat enhancement (+HP or +PWR).
 ## - "DAMAGE": Direct combat damage (-HP).
 ## - "DEBUFF": Stat penalty (-HP or -PWR).
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
-	var source_category: StringName = context.get("source_category", &"")
-	var source_consumable_id: StringName = context.get("source_consumable_id", &"")
+func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
+	var source_category: StringName = context.source_category
+	var source_consumable_id: StringName = context.source_consumable_id
 	
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -114,7 +114,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					visual_source_uuid = src.equipped_on_uuid
 					
 		if source_name == "":
-			source_name = String(context.get("ability_id", "effect"))
+			source_name = String((context.ability_id if context.ability_id != &"" else "effect"))
 		
 		for target_uuid in valid_targets:
 			var tgt = battle_manager.get_instance_by_uuid(target_uuid)
@@ -146,8 +146,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 						"source_uuid": _source_uuid,
 						"target_uuids": [target_uuid],
-						"ability_id": context.get("ability_id", &"modify_stat"),
-						"trigger_type": context.get("trigger_type", ""),
+						"ability_id": (context.ability_id if context.ability_id != &"" else &"modify_stat"),
+						"trigger_type": context.trigger_type,
 						"action_type": tgt_action_type,
 						"visual_payload": conversion_payload
 					}))
@@ -171,7 +171,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 		if not all_target_uuids.is_empty():
 			var custom_fmt: String = parameters.get("log_format", "")
 			var aid: StringName = StringName(parameters.get("ability_id", "modify_stat"))
-			if aid == &"modify_stat": aid = context.get("ability_id", &"modify_stat")
+			if aid == &"modify_stat": aid = (context.ability_id if context.ability_id != &"" else &"modify_stat")
 			var targets_label: String = target_names[0] if target_names.size() == 1 else " and ".join(target_names)
 			
 			if action_type == C.ACTION_HEAL:
@@ -188,7 +188,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
+					"trigger_type": context.trigger_type,
 					"action_type": C.ACTION_HEAL,
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": heal_payload
@@ -214,7 +214,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
+					"trigger_type": context.trigger_type,
 					"action_type": C.ACTION_BUFF,
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": buff_payload
@@ -240,7 +240,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
+					"trigger_type": context.trigger_type,
 					"action_type": C.ACTION_DEBUFF,
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": debuff_payload
@@ -262,7 +262,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 					"source_uuid": _source_uuid,
 					"target_uuids": all_target_uuids,
 					"ability_id": aid,
-					"trigger_type": context.get("trigger_type", ""),
+					"trigger_type": context.trigger_type,
 					"ability_holder_uuid": _source_uuid,
 					"visual_payload": status_payload
 				}))

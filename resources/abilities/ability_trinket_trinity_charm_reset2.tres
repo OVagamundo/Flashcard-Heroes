@@ -7,8 +7,8 @@
 script = ExtResource("1_script")
 id = &"ability_trinket_trinity_charm_reset2"
 description_key = ""
-trigger = &"on_battle_start"
-priority = 50
+trigger = &"at_battle_start"
+sub_phase = 80
 effects = Array[Resource]([ExtResource("2_effect")])
 replaces_basic_attack = false
-execute_on_lethal = false
+execute_before_knockout = false

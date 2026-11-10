@@ -7,8 +7,8 @@ const C = preload("res://scripts/Constants.gd")
 ## Grants +HP and +PWR to the source unit equal to (Current PWR * Empty Slots in Lineup).
 ## Triggered on_pre_combat.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Only meaningful in simulation
 	if not is_simulation:
@@ -55,7 +55,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var new_pwr = battle_manager.apply_stat_delta(source_unit, "pwr", total_amount, source_uuid, C.ACTION_BUFF, true)
 	
 	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"grant_stats_per_empty")
+	var ability_id = (context.ability_id if context.ability_id != &"" else &"grant_stats_per_empty")
 	
 	# LOG Message
 	var log_text = "%s gains +%d HP/PWR (%d empty slots)" % [BattleHelpers.get_instance_display_name(source_unit), total_amount, empty_slots_count]
@@ -67,7 +67,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			"source_uuid": source_uuid,
 			"target_uuids": [source_uuid],
 			"ability_id": ability_id,
-			"trigger_type": context.get("trigger_type", ""),
+			"trigger_type": context.trigger_type,
 			"action_type": C.ACTION_BUFF,
 			"ability_holder_uuid": source_uuid,
 			"visual_payload": CombatPayload.both_stats_change(

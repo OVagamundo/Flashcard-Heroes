@@ -41,8 +41,9 @@ static func load_standard_animations() -> void:
 	var lethal_save_anim_script = load("res://scripts/animations/LethalSaveAnimation.gd")
 	register("lethal_save", lethal_save_anim_script.new())
 	
-	var status_effect_anim_script = load("res://scripts/animations/StatusEffectAnimation.gd")
-	register("status_effect", status_effect_anim_script.new())
+	var combat_effect_anim_script = load("res://scripts/animations/CombatEffectAnimation.gd")
+	register("combat_effect", combat_effect_anim_script.new())
+	register("status_effect", combat_effect_anim_script.new())
 	
 	var kamikaze_anim_script = load("res://scripts/animations/KamikazeAnimation.gd")
 	register("kamikaze", kamikaze_anim_script.new())

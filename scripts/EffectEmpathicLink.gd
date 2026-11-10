@@ -8,8 +8,8 @@ const C = preload("res://scripts/Constants.gd")
 ## Gives PWR to the unit behind it, then halves it for the next, and so on.
 ## Minimum PWR given is 1.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -17,7 +17,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var depth: int = parameters.get("depth", 1)
 	
 	# ROBUSTNESS: Use snapshotted source PWR from context if available (captured at moment of death)
-	var current_buff: float = float(context.get("source_pwr", 1))
+	var current_buff: float = float((context.source_pwr if context.source_pwr >= 0 else 1))
 	
 	var result := EffectResult.new() if is_simulation else null
 	var current_target_uuid: String = targets[0]
@@ -39,7 +39,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": source_uuid,
 				"target_uuids": [current_target.ball_uuid],
-				"ability_id": context.get("ability_id", &"empathic_link"),
+				"ability_id": (context.ability_id if context.ability_id != &"" else &"empathic_link"),
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": source_uuid,
 				"visual_payload": CombatPayload.pwr_buff(source_uuid, apply_buff, [old_pwr], [new_pwr])

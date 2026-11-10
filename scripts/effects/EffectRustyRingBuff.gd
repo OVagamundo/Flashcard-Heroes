@@ -5,12 +5,12 @@ extends EffectDefinition
 ## Effect that buffs all team units with +1 HP, +1 PWR if they have no equipment.
 ## Used by Rusty Ring trinket on draw, summon, or battle start.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	
 	# Resolve the trinket's team
-	var trinket_team: String = context.get("team", "")
+	var trinket_team: String = context.team
 	if trinket_team.is_empty():
 		var trinket_instance = battle_manager.get_instance(_source_uuid)
 		if is_instance_valid(trinket_instance):
@@ -110,14 +110,15 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		}))
 		
 		# Unified BUFF event (all projectiles launched simultaneously)
-		var ability_id = context.get("ability_id", &"ability_trinket_rusty_ring")
+		var ability_id = (context.ability_id if context.ability_id != &"" else &"ability_trinket_rusty_ring")
 		if hp_amount > 0 and pwr_amount > 0:
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.both_stats_change(
 					_source_uuid, hp_amount, pwr_amount,
@@ -131,8 +132,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.hp_change(_source_uuid, hp_amount, batched_old_hp, batched_new_hp, batched_max_hp)
 			}))
@@ -141,8 +143,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
 				"ability_id": ability_id,
-				"trigger_type": context.get("trigger_type", ""),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 				"ability_holder_uuid": _source_uuid,
 				"visual_payload": CombatPayload.pwr_change(_source_uuid, pwr_amount, batched_old_pwr, batched_new_pwr)
 			}))

@@ -7,16 +7,19 @@ const _InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var description_label: RichTextLabel = %DescriptionLabel
 
 var _effect_definition: Variant
+var _canonical_keyword: String = ""
+var _desc_key: String = ""
 
 func _ready() -> void:
 	super._ready()
-	for child in [description_label, name_label]:
-		if is_instance_valid(child):
-			child.custom_minimum_size = Vector2.ZERO
+	if is_instance_valid(name_label):
+		name_label.custom_minimum_size = Vector2.ZERO
+	if is_instance_valid(description_label):
+		description_label.custom_minimum_size = Vector2(236, 0)
 	enforce_display_only()
 
-func populate(context: Dictionary) -> void:
-	var effect_definitions: Variant = context.get("effect_definition")
+func populate(window_data: Dictionary) -> void:
+	var effect_definitions: Variant = window_data.get("effect_definition")
 	# Accept either a single definition or an array of definitions
 	var defs: Array = []
 	if effect_definitions is Array:
@@ -44,24 +47,54 @@ func populate(context: Dictionary) -> void:
 		description_label.text = tr("ui.no_effect_details")
 		return
 
-	# Status-effect definitions are passed as dictionaries with a localization key.
+	_desc_key = desc_key
+
+	# Effect definitions are passed as dictionaries with a localization key.
 	# Ability definitions intentionally keep the generic heading because abilities
 	# no longer have display names.
-	var status_definition: StatusEffectDefinition = null
+	var effect_def: CombatEffectDefinition = null
 	if first is Dictionary:
-		var status_name_key: String = first.get("name_key", "")
-		if not status_name_key.is_empty() and is_instance_valid(StatusEffectRegistry):
-			for candidate in StatusEffectRegistry.get_all_definitions():
-				if candidate.display_name_key == status_name_key:
-					status_definition = candidate
+		var effect_name_key: String = first.get("name_key", "")
+		if not effect_name_key.is_empty() and is_instance_valid(CombatEffectRegistry):
+			for candidate in CombatEffectRegistry.get_all_definitions():
+				if candidate.display_name_key == effect_name_key:
+					effect_def = candidate
 					break
 
-	if is_instance_valid(status_definition):
-		name_label.text = tr(status_definition.display_name_key)
-		name_label.add_theme_color_override("font_color", status_definition.color)
+	var font = Database.get_current_locale_font()
+	name_label.add_theme_font_override("font", font)
+	name_label.add_theme_font_size_override("font_size", 22)
+	description_label.add_theme_font_override("normal_font", font)
+	description_label.add_theme_font_override("bold_font", font)
+	description_label.add_theme_font_size_override("normal_font_size", 20)
+	description_label.add_theme_font_size_override("bold_font_size", 20)
+	description_label.add_theme_constant_override("line_separation", 3)
+	description_label.add_theme_constant_override("p_separation", 4)
+
+	var effect_color := Color("#0F172A") # High-contrast default
+	if is_instance_valid(effect_def):
+		name_label.text = tr(effect_def.display_name_key)
+		var kw_info = DescriptionParser.get_keyword_info(effect_def.id)
+		if not kw_info.is_empty():
+			effect_color = Color(kw_info.get("color", "#0F172A"))
+			_canonical_keyword = kw_info.get("meta", String(effect_def.id))
+		else:
+			effect_color = effect_def.color
+			_canonical_keyword = String(effect_def.id)
+	elif first is Dictionary and not first.get("name_key", "").is_empty():
+		name_label.text = tr(first.get("name_key"))
+		var term_key: String = first.get("name_key", "").replace("GLOSSARY_", "").replace("STATUS_", "")
+		var kw_info = DescriptionParser.get_keyword_info(term_key)
+		if not kw_info.is_empty():
+			effect_color = Color(kw_info.get("color", "#0F172A"))
+			_canonical_keyword = kw_info.get("meta", term_key)
+		elif first.has("color"):
+			effect_color = Color(first.get("color"))
 	else:
 		name_label.text = tr("ui.ability")
-		name_label.remove_theme_color_override("font_color")
+		effect_color = Color("#0F172A")
+		
+	name_label.add_theme_color_override("font_color", effect_color)
 	var final_text = tr(desc_key).strip_edges()
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")
@@ -80,9 +113,20 @@ func _reset_window_size() -> void:
 		if vbox:
 			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			
-		custom_minimum_size = Vector2(480, 0)
-		size = Vector2.ZERO # Force immediate recalculation of minimum size
+		custom_minimum_size = Vector2(260, 0)
+		size = Vector2(260, 0) # Force immediate recalculation of minimum size
 		reset_size()
+
+func get_own_keyword_canonical() -> String:
+	return _canonical_keyword
+
+func get_glossary_terms() -> Array[String]:
+	var terms: Array[String] = []
+	if not _desc_key.is_empty():
+		terms.append_array(DescriptionParser.find_keywords(tr(_desc_key)))
+	elif is_instance_valid(description_label) and not description_label.text.is_empty():
+		terms.append_array(DescriptionParser.find_keywords(description_label.text))
+	return terms
 
 func get_location() -> LocationIdentifier:
 	return null

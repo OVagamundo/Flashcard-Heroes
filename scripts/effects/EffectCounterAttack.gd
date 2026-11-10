@@ -2,26 +2,24 @@
 class_name EffectCounterAttack
 extends EffectDefinition
 
-## Counter-attack ability (FFigMecApp).
+## Counter-attack ability (FFigMec).
 ## Level 1: Ranged projectile to attacker with PWR damage.
 ## Level 2: + 1 burn projectile to random enemy (applying PWR as burn).
 ## Level 3: + 2 burn projectiles to random enemies.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var result := EffectResult.new()
 	var source_instance: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source_instance):
 		return result
 		
 	# Attacker UUID should be available in context (from on_hurt trigger)
-	var attacker_uuid: String = context.get("attacker_uuid", "")
-	if attacker_uuid.is_empty():
-		attacker_uuid = context.get("trigger_context", {}).get("attacker_uuid", "")
+	var attacker_uuid: String = context.attacker_uuid
 	if attacker_uuid.is_empty() and not targets.is_empty():
 		attacker_uuid = targets[0]
 		
 	# Zero-Instance-Query Compliant: Use context data for source stats if possible
-	var pwr: int = context.get("source_pwr", source_instance.current_pwr)
+	var pwr: int = context.source_pwr if context.source_pwr >= 0 else source_instance.current_pwr
 	
 	if attacker_uuid.is_empty() or pwr <= 0:
 		return result
@@ -83,7 +81,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var dmg_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {
 			"source_uuid": current_source_uuid,
 			"target_uuids": [current_target_uuid],
-			"is_simulation": context.get("is_simulation", false)
+			"is_simulation": context.is_simulation
 		})
 		var damage_payload := CombatPayload.damage(current_source_uuid, current_damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 		damage_payload.attack_type = "ranged"

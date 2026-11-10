@@ -13,11 +13,11 @@ extends EffectDefinition
 ##   - summoned_uuid: String - UUID of the newly summoned unit
 ##   - source_pwr: int - PWR of the source unit (populated by CombatSimulator)
 
-func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var result := EffectResult.new()
 	
 	# Get the summoned unit from context
-	var summoned_uuid: String = context.get("summoned_uuid", "")
+	var summoned_uuid: String = context.summoned_uuid
 	if summoned_uuid.is_empty():
 		return result
 	
@@ -25,7 +25,7 @@ func execute(_source_uuid: String, _resolved_targets: Array[String], _battle_man
 	var damage_ratio: float = parameters.get("damage_ratio", 0.5)
 	
 	# Calculate damage: source_pwr comes from context (populated by CombatSimulator)
-	var source_pwr: int = context.get("source_pwr", 0)
+	var source_pwr: int = maxi(0, context.source_pwr)
 	var damage_amount: int = int(floor(source_pwr * damage_ratio))
 	
 	if damage_amount <= 0:

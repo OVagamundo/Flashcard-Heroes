@@ -4,12 +4,12 @@ class_name EffectRecruitingCharm
 extends EffectDefinition
 
 ## Recruiting Charm: At turn start, if Gold >= 1 and a bench slot is open,
-## spends 1 Gold to hire a Level 1 Tier 1 Mercenary (?MerSpe) onto the player's bench.
+## spends 1 Gold to hire a Level 1 Tier 1 Mercenary (Coinling / ?MerSpe) onto the player's bench.
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	if not is_simulation:
 		return EffectResult.empty()
 
@@ -20,13 +20,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(bench):
 		return EffectResult.empty()
 
-	var has_empty_slot := false
-	for i in range(bench.get_size()):
-		if bench.get_uuid(i) == "":
-			has_empty_slot = true
-			break
-
-	if not has_empty_slot:
+	if bench.find_first_empty_slot() == -1:
 		return EffectResult.empty()
 
 	var spent = battle_manager.spend_gold(1, source_uuid)
@@ -38,7 +32,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	result.summon_team = "PLAYER"
 	result.summon_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-		"text": "Recruiting Charm hires 1 ?MerSpe to the bench for 1 Gold!"
+		"text": "Recruiting Charm hires 1 Coinling (?MerSpe) to the bench for 1 Gold!"
 	}))
 	result.state_applied = true
 	return result

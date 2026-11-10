@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"merge_ffigmecapp_wsupanicos_to_fwspeappfod"
-ingredient_a_id = &"FFigMecApp"
-ingredient_b_id = &"WSupAniCos"
-result_id = &"FWSpeAppFod"
+ingredient_a_id = &"FFigMec"
+ingredient_b_id = &"WSupAni"
+result_id = &"FWFigFod"
 is_self_merge = false
 merge_type = &"UNIT"

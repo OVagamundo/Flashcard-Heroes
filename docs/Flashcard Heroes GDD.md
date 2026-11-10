@@ -180,7 +180,7 @@ Battles are deterministic contests resolved in three distinct phases:
    Speed and accuracy determine the turn's Gacha Token budget.
 2. **Phase 2: Management (The Tactical Puzzle)**:
    - **Spending Tokens**: Draw units and items from Tier 1, 2, or 3 machines.
-   - **Formation & Order**: Units are deployed on the active lineup (up to 5 slots) and act **Front-to-Back**.
+   - **Formation & Order**: Units are deployed on the active lineup (up to 5 slots). Turns alternate rank-by-rank between Enemy and Player starting from the frontmost enemy slot, so positioning directly determines turn initiative.
    - **Counter-Play**: Inspect enemy lineup positions, upcoming attacks, and equipment to optimize counter-formations, merges, item assignments, and consumable usage.
 3. **Phase 3: Execution (Deterministic Combat)**:
    All attacks, abilities, status decays, and reactions resolve sequentially without player intervention. Success depends entirely on the player's preparation during the Management Phase.

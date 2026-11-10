@@ -8,5 +8,5 @@ extends EffectDefinition
 ## - L3 (4 Units): BasicAttackEffect - Half PWR cleave damage behind target
 ## - L4 (5 Units): BattleManager (trigger_on_kill) - +1 PWR and extra action on kill
 
-func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	return EffectResult.empty()

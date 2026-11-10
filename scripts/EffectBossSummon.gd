@@ -11,17 +11,13 @@ extends EffectDefinition
 ## Note: This effect queries container state during end_of_turn, which is a stable game state.
 ## Container queries are valid here because we're not in a transitional death state.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	# 1. Get current day from context or battle state
 	var current_day: int = 1
-	if context.has("current_day"):
+	if context.current_day > 0:
 		current_day = context.current_day
-	elif is_instance_valid(battle_manager) and battle_manager.has_method("get_current_day"):
-		current_day = battle_manager.get_current_day()
-	else:
-		# Fallback: try to get from encounter metadata or GameManager
-		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
-			current_day = GameManager.run_state.day
+	elif is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
+		current_day = GameManager.run_state.day
 	
 	# 2. Count empty enemy lineup slots
 	# Note: Container queries at end_of_turn are valid (stable game state)

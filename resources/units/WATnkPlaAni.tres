@@ -9,16 +9,15 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"WATnkPlaAni"
+id = &"WATnkAni"
 min_day = 10
 max_day = 99
-display_name_key = "WATnkPlaAni.name"
-description_key = "WATnkPlaAni.desc"
+display_name_key = "WATnkAni.name"
+description_key = "WATnkAni.desc"
 icon = ExtResource("2_icon")
-tags = Array[StringName]([&"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Plant", &"Animal"])
+tags = Array[StringName]([&"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Animal"])
 tier = 2
 level = 1
-cost = 2
 category = &"UNIT"
 
 base_hp = 2

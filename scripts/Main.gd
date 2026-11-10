@@ -25,6 +25,8 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
 @onready var tokens_label: Label = %TokensLabel
+@onready var bonus_timer_group: HBoxContainer = %BonusTimerGroup
+@onready var bonus_timer_label: Label = %BonusTimerLabel
 @onready var flashcard_progress_bar: HBoxContainer = %FlashcardProgressBar
 
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
@@ -44,8 +46,10 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 # Local Presentation State (Strict Simulation/Presentation Decoupling)
 var _visual_gold: int = 0
 var _visual_tokens: int = 0
+var _visual_bonus_timer: float = 0.0
 var _gold_animations_in_flight: int = 0
 var _token_animations_in_flight: int = 0
+var _bonus_timer_animations_in_flight: int = 0
 
 
 const PATH_CHOICE_SCENE = preload("res://scenes/PathChoice.tscn")
@@ -158,9 +162,13 @@ func _ready() -> void:
 	if is_instance_valid(tokens_label):
 		tokens_label.mouse_filter = Control.MOUSE_FILTER_STOP
 		tokens_label.gui_input.connect(_on_ui_overlay_gui_input)
+	if is_instance_valid(bonus_timer_label):
+		bonus_timer_label.mouse_filter = Control.MOUSE_FILTER_STOP
+		bonus_timer_label.gui_input.connect(_on_ui_overlay_gui_input)
 
 	SignalBus.gold_changed.connect(_on_gold_changed)
 	SignalBus.gacha_tokens_changed.connect(_on_gacha_tokens_changed)
+	SignalBus.minigame_bonus_time_changed.connect(_on_minigame_bonus_time_changed)
 	if is_instance_valid(ActionQueue):
 		ActionQueue.queue_idle.connect(_on_action_queue_idle)
 	SignalBus.shop_scene_requested.connect(_on_shop_scene_requested)
@@ -208,6 +216,7 @@ func _ready() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_update_day_label(GameManager.run_state.day)
 		_populate_flashcard_progress()
+	_update_bonus_timer_display()
 	
 	# Initial sync of machine counts based on model data
 	call_deferred("sync_visual_machine_counts_with_model")
@@ -262,17 +271,9 @@ func _on_ui_overlay_gui_input(event: InputEvent) -> void:
 func _on_machine_gui_input(event: InputEvent) -> void:
 	# Handle clicks on machine image area (outside the knob button)
 	if InputUtils.is_primary_pointer_press(event):
-		# Check if any windows are open
-		if WindowManager.is_any_inspection_window_open():
-			# Close all open windows - this is the "click outside window" behavior
-			if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
-				ActionQueue.request(CloseDiscardPileAction.new())
-			elif WindowManager.is_run_inventory_window_open() or WindowManager.is_battle_inventory_window_open():
-				var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
-				ActionQueue.request(CloseInventoryAction.new(kind))
-			else:
-				ActionQueue.request(CloseInspectionAction.new(true))
-			# Don't open inventory - the close action was the intent
+		var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
+		if WindowManager.is_run_inventory_window_open() or WindowManager.is_battle_inventory_window_open():
+			ActionQueue.request(CloseInventoryAction.new(kind))
 		else:
 			var bm = get_tree().get_first_node_in_group("battle_manager")
 			var is_anim = _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing())
@@ -281,8 +282,6 @@ func _on_machine_gui_input(event: InputEvent) -> void:
 				if InputUtils.is_touch_pointer_event(event):
 					accept_event()
 				return
-			# No windows open - open inventory
-			var kind := "BATTLE" if (is_instance_valid(GameManager) and GameManager.is_in_battle) else "RUN"
 			ActionQueue.request(OpenInventoryAction.new(kind))
 		get_viewport().set_input_as_handled()
 		if InputUtils.is_touch_pointer_event(event):
@@ -414,6 +413,7 @@ func _on_path_choice_scene_requested() -> void:
 	
 	if is_instance_valid(GameManager.run_state):
 		_update_day_label(GameManager.run_state.day)
+	_update_bonus_timer_display()
 
 func _on_reward_scene_requested(context: Dictionary) -> void:
 	clear_content_area()
@@ -770,15 +770,20 @@ func _on_battle_inventory_changed() -> void:
 
 	# Refresh player trinkets as they might have changed (e.g. in Test Mode)
 	_populate_player_trinkets()
+	_update_bonus_timer_display()
 
 func _on_battle_state_changed(is_in_battle: bool) -> void:
 	# The gacha machines are always visible in the permanent HUD.
 	# Only disable the knob buttons when not in battle (can't draw outside battle).
-	knob_button_1.disabled = not is_in_battle
-	knob_button_2.disabled = not is_in_battle
-	knob_button_3.disabled = not is_in_battle
+	if is_instance_valid(knob_button_1):
+		knob_button_1.disabled = not is_in_battle
+	if is_instance_valid(knob_button_2):
+		knob_button_2.disabled = not is_in_battle
+	if is_instance_valid(knob_button_3):
+		knob_button_3.disabled = not is_in_battle
 	if is_instance_valid(knob_button_discard):
 		knob_button_discard.disabled = not is_in_battle
+	_update_bonus_timer_display()
 	
 	# Speed controls: in battle all controls are shown; out of battle only the pause/menu button
 	if is_instance_valid(speed_1x_btn): speed_1x_btn.visible = is_in_battle
@@ -905,6 +910,68 @@ func end_token_animation() -> void:
 		var auth_tokens = GameManager.run_state.get_room_tokens()
 		assert(_visual_tokens == auth_tokens, "HUD visual tokens (%d) desynced from authoritative tokens (%d)!" % [_visual_tokens, auth_tokens])
 
+func get_visual_bonus_timer() -> float:
+	return _visual_bonus_timer
+
+func set_visual_bonus_timer(new_amount: float, animate_pop: bool = true) -> void:
+	var old_amount = _visual_bonus_timer
+	_visual_bonus_timer = new_amount
+	if not is_instance_valid(bonus_timer_group):
+		bonus_timer_group = get_node_or_null("%BonusTimerGroup")
+	if not is_instance_valid(bonus_timer_label):
+		bonus_timer_label = get_node_or_null("%BonusTimerLabel")
+	if is_instance_valid(bonus_timer_group):
+		bonus_timer_group.visible = (_visual_bonus_timer > 0.0)
+		bonus_timer_group.modulate.a = 1.0
+	if is_instance_valid(bonus_timer_label):
+		if is_equal_approx(_visual_bonus_timer, roundf(_visual_bonus_timer)):
+			bonus_timer_label.text = "+%ds" % int(roundf(_visual_bonus_timer))
+		else:
+			bonus_timer_label.text = "+%.1fs" % _visual_bonus_timer
+		if not is_equal_approx(old_amount, _visual_bonus_timer) and animate_pop:
+			_animate_bonus_timer_pop()
+
+func modify_visual_bonus_timer(delta: float, animate_pop: bool = true) -> void:
+	set_visual_bonus_timer(maxf(0.0, _visual_bonus_timer + delta), animate_pop)
+
+func begin_bonus_timer_animation() -> void:
+	_bonus_timer_animations_in_flight += 1
+	if not is_instance_valid(bonus_timer_group):
+		bonus_timer_group = get_node_or_null("%BonusTimerGroup")
+	if is_instance_valid(bonus_timer_group) and not bonus_timer_group.visible:
+		bonus_timer_group.visible = true
+		bonus_timer_group.modulate.a = 0.0
+
+func end_bonus_timer_animation() -> void:
+	_bonus_timer_animations_in_flight = maxi(0, _bonus_timer_animations_in_flight - 1)
+	if _bonus_timer_animations_in_flight == 0:
+		_update_bonus_timer_display()
+
+func _animate_bonus_timer_pop() -> void:
+	if not is_instance_valid(bonus_timer_label):
+		bonus_timer_label = get_node_or_null("%BonusTimerLabel")
+	if not is_instance_valid(bonus_timer_group):
+		bonus_timer_group = get_node_or_null("%BonusTimerGroup")
+	if not is_instance_valid(bonus_timer_label) or not is_instance_valid(bonus_timer_group):
+		return
+	
+	if bonus_timer_label.has_meta("_pop_tween"):
+		var existing_tween = bonus_timer_label.get_meta("_pop_tween")
+		if existing_tween is Tween and existing_tween.is_valid():
+			existing_tween.kill()
+	
+	bonus_timer_group.pivot_offset = bonus_timer_group.size / 2.0
+	var pop_tween = create_tween()
+	bonus_timer_label.set_meta("_pop_tween", pop_tween)
+	pop_tween.set_parallel(true)
+	
+	pop_tween.tween_property(bonus_timer_group, "scale", Vector2(1.4, 1.4), 0.1).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	pop_tween.tween_property(bonus_timer_group, "scale", Vector2(1.0, 1.0), 0.15).set_delay(0.1).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	
+	var flash_color = Color(1.0, 0.9, 0.3, 1.0)
+	pop_tween.tween_property(bonus_timer_label, "modulate", flash_color, 0.05)
+	pop_tween.tween_property(bonus_timer_label, "modulate", Color.WHITE, 0.2).set_delay(0.05)
+
 func _on_gold_changed(new_amount: int) -> void:
 	if _gold_animations_in_flight > 0 or (is_instance_valid(ActionQueue) and ActionQueue.is_busy()):
 		return
@@ -957,6 +1024,8 @@ func _on_action_queue_idle() -> void:
 		set_visual_gold(GameManager.run_state.gold, false)
 	if _token_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
 		set_visual_tokens(GameManager.run_state.get_room_tokens(), false)
+	if _bonus_timer_animations_in_flight == 0:
+		_update_bonus_timer_display()
 
 func set_token_display(new_amount: int, animate_pop: bool = true) -> void:
 	set_visual_tokens(new_amount, animate_pop)
@@ -1029,6 +1098,37 @@ func _on_run_data_changed() -> void:
 		_on_gold_changed(GameManager.run_state.gold)
 		_populate_player_trinkets()
 		_populate_flashcard_progress()
+		_update_bonus_timer_display()
+
+func _on_minigame_bonus_time_changed(new_bonus_time: float) -> void:
+	if _bonus_timer_animations_in_flight > 0 or ActionQueue.is_busy():
+		return
+	_update_bonus_timer_display(new_bonus_time)
+
+func _update_bonus_timer_display(override_bonus: float = -1.0) -> void:
+	if not is_instance_valid(bonus_timer_group):
+		bonus_timer_group = get_node_or_null("%BonusTimerGroup")
+	if not is_instance_valid(bonus_timer_label):
+		bonus_timer_label = get_node_or_null("%BonusTimerLabel")
+
+	var bonus_time: float = 0.0
+	if GameManager.is_in_battle:
+		if override_bonus >= 0.0:
+			bonus_time = override_bonus
+		else:
+			var bm = GameManager.get_battle_manager()
+			if is_instance_valid(bm):
+				bonus_time = bm.get_total_next_minigame_bonus_time()
+
+	_visual_bonus_timer = bonus_time
+	if is_instance_valid(bonus_timer_group):
+		bonus_timer_group.visible = (bonus_time > 0.0)
+		bonus_timer_group.modulate.a = 1.0
+	if is_instance_valid(bonus_timer_label):
+		if is_equal_approx(bonus_time, roundf(bonus_time)):
+			bonus_timer_label.text = "+%ds" % int(roundf(bonus_time))
+		else:
+			bonus_timer_label.text = "+%.1fs" % bonus_time
 
 func _populate_player_trinkets() -> void:
 	if not is_instance_valid(player_trinket_bar):

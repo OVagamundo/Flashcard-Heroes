@@ -7,5 +7,5 @@ script = ExtResource("1_script")
 id = &"ability_trinket_bargain_charm"
 description_key = "ability.bargain_charm.desc"
 trigger = &"gacha_draw_cost"
-priority = 50
+sub_phase = 80
 effects = Array[Resource]([])

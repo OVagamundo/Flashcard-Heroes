@@ -234,11 +234,18 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 			animator.apply_burn_stack(target_uuid, new_burn)
 			# NOTE: Floating burn numbers removed - burn stacks now display in the
 			# container label with pop animation (GachaBallView.animate_burn_change)
+		
+		# Apply Static if needed
+		if payload.apply_static:
+			var new_static = payload.targets_new_static[i] if i < payload.targets_new_static.size() else 0
+			animator.apply_status_stack(target_uuid, &"static", new_static)
 			
 		# Trigger Composable Effects (run in parallel)
 		var flash_color = Color.WHITE # White flash for hurt
 		if is_burn_damage or apply_burn:
 			flash_color = Color(1.0, 0.4, 0.0) # Orange for Burn (brighter than before)
+		elif payload.apply_static:
+			flash_color = Color(1.0, 0.85, 0.1) # Yellow for Static
 		
 		# Determine recoil direction based on team
 		# Player units recoil LEFT (away from enemies on their right)

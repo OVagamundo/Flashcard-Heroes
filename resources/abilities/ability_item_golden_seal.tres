@@ -14,5 +14,5 @@ id = &"ability_item_golden_seal"
 description_key = "ability.item_golden_seal.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_GoldenSeal")])
-priority = 0
+sub_phase = 200
 max_level = 1

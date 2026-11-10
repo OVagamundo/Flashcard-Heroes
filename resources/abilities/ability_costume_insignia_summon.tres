@@ -7,6 +7,6 @@
 script = ExtResource("1_script")
 id = &"ability_costume_insignia_summon"
 description_key = "ability.costume_insignia.desc"
-trigger = &"on_ally_summon"
-priority = 120
+trigger = &"when_ally_summoned"
+sub_phase = 50
 effects = Array[Resource]([ExtResource("2_effect")])

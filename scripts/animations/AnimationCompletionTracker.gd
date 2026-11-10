@@ -15,21 +15,21 @@ enum AnimationType {
 	SUMMON_FADE,
 	MELEE_LUNGE,
 	MELEE_RETURN,
-	LETHAL_SAVE,
+	PREVENT_KNOCKOUT,
 	MOVE # Composable movement effect
 }
 
 # Default timeout durations per animation type (seconds)
 const TIMEOUTS: Dictionary = {
-	AnimationType.FLASH: 0.5,
-	AnimationType.COLOR_FLASH: 0.5,
-	AnimationType.BUMP: 0.5,
-	AnimationType.DEATH_FADE: 0.8,
-	AnimationType.SUMMON_FADE: 0.6,
-	AnimationType.MELEE_LUNGE: 0.8,
-	AnimationType.MELEE_RETURN: 0.5,
-	AnimationType.LETHAL_SAVE: 0.8,
-	AnimationType.MOVE: 0.5 # Movement effects are quick
+	AnimationType.FLASH: 0.8,
+	AnimationType.COLOR_FLASH: 0.8,
+	AnimationType.BUMP: 0.8,
+	AnimationType.DEATH_FADE: 1.4,
+	AnimationType.SUMMON_FADE: 1.5,
+	AnimationType.MELEE_LUNGE: 1.0,
+	AnimationType.MELEE_RETURN: 0.6,
+	AnimationType.PREVENT_KNOCKOUT: 1.8,
+	AnimationType.MOVE: 0.6 # Movement effects are quick
 }
 
 # Pending completions: Key = uuid, Value = Array of AnimationType still awaiting
@@ -116,7 +116,7 @@ func _on_melee_return_finished(uuid: String) -> void:
 	_remove_pending(uuid, AnimationType.MELEE_RETURN)
 
 func _on_lethal_save_finished(uuid: String) -> void:
-	_remove_pending(uuid, AnimationType.LETHAL_SAVE)
+	_remove_pending(uuid, AnimationType.PREVENT_KNOCKOUT)
 
 func _on_move_finished(uuid: String) -> void:
 	_remove_pending(uuid, AnimationType.MOVE)

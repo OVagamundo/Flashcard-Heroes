@@ -2,34 +2,34 @@
 extends EffectDefinition
 
 ## On hurt by a negative status effect, removes all remaining stacks of that status effect.
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
-	var cause = context.get("trigger_cause", "")
-	if cause != "status_effect":
+	var cause = context.trigger_cause
+	if cause != C.CAUSE_STATUS_EFFECT and cause != &"status_effect":
 		return EffectResult.empty()
 		
-	var status_id = context.get("status_id", &"")
+	var status_id = context.status_id
 	if status_id == &"":
 		return EffectResult.empty()
 		
-	var def = StatusEffectRegistry.get_definition(status_id)
+	var def = CombatEffectRegistry.get_definition(status_id)
 	if not is_instance_valid(def) or not def.is_negative:
 		return EffectResult.empty()
 	
 	# Determine team
-	var team: String = String(context.get("team", ""))
+	var team: String = String(context.team)
 	if team.is_empty():
 		var source_inst_fallback = battle_manager.get_instance_by_uuid(source_uuid)
 		if is_instance_valid(source_inst_fallback):
 			team = "PLAYER" if source_inst_fallback.location_container_tag == &"PlayerTrinkets" else "ENEMY"
 			
-	var victim_team = context.get("victim_team", "")
+	var victim_team: String = context.damaged_team
 	if team != victim_team:
 		return EffectResult.empty()
 		
-	var victim_uuid = context.get("victim_uuid", "")
-	var victim_inst = battle_manager.get_instance_by_uuid(victim_uuid)
+	var damaged_unit_uuid: String = context.damaged_uuid
+	var victim_inst = battle_manager.get_instance_by_uuid(damaged_unit_uuid)
 	if not is_instance_valid(victim_inst) or victim_inst.current_hp <= 0:
 		return EffectResult.empty()
 		
@@ -45,7 +45,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_simulation:
 		return EffectResult.empty()
 	var result = EffectResult.new()
-	var source_name := String(context.get("ability_id", "Purifying Pendant"))
+	var source_name := String((context.ability_id if context.ability_id != &"" else "Purifying Pendant"))
 	var source_inst = battle_manager.get_instance_by_uuid(source_uuid)
 	if is_instance_valid(source_inst):
 		var display_name = BattleHelpers.get_instance_display_name(source_inst)
@@ -62,7 +62,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	result.add_event(CombatEvent.new(
 		CombatEvent.Type.STATUS_EFFECT,
 		{
-			"target_uuids": [victim_uuid],
+			"target_uuids": [damaged_unit_uuid],
 			"visual_payload": CombatPayload.status_change(source_uuid, -stacks, stat_name, [old_val], [new_val], def.color)
 		}
 	))

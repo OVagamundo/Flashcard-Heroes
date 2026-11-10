@@ -34,6 +34,18 @@ static func get_instance_display_name(inst: GachaBallInstance) -> String:
 # ALLY/ENEMY HELPERS
 # ============================================================================
 
+## Returns true if the trigger context or location belongs to the player team.
+static func is_player_team_context(context: TriggerContext, location: LocationIdentifier = null) -> bool:
+	if context != null:
+		if not context.knocked_out_team.is_empty():
+			return context.knocked_out_team == "PLAYER"
+		if not context.team.is_empty():
+			return context.team == "PLAYER"
+	if is_instance_valid(location):
+		const C = preload("res://scripts/Constants.gd")
+		return location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+	return false
+
 ## Get the ally behind a source unit (for pass-through abilities)
 ## @param state: BattleState - The battle state
 ## @param source_instance: GachaBallInstance - The unit looking behind
@@ -260,10 +272,10 @@ static func resolve_guardian_intercept(
 	# Trigger Guardian passive effects (e.g., gain Armor at Level 2/3 on top of existing armor)
 	var combat_sim = battle_manager._combat
 	var intercept_scope = combat_sim.begin_reaction_scope()
-	AbilityResolver.process_trigger(&"passive_intercept", {
-		"source_uuid": guardian.ball_uuid,
-		"is_simulation": true
-	})
+	var intercept_ctx := TriggerContext.new()
+	intercept_ctx.source_uuid = guardian.ball_uuid
+	intercept_ctx.is_simulation = true
+	AbilityResolver.process_trigger(C.TRIGGER_INTERCEPT_ATTACK, intercept_ctx)
 	var guardian_results = combat_sim.drain_reaction_scope(intercept_scope, battle_manager)
 	
 	# Event order: Armor gain resolves first (on top of existing armor), then the leap event

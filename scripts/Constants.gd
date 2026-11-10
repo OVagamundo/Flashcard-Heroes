@@ -43,6 +43,11 @@ const ACTION_DEBUFF = &"DEBUFF"
 const ACTION_HEAL = &"HEAL"
 const ACTION_BUFF = &"BUFF"
 
+# --- Buff Subgroups (Glossary Taxonomy) ---
+const BUFF_SUBGROUP_DISCRETE: StringName = &"DISCRETE"
+const BUFF_SUBGROUP_CONDITIONAL: StringName = &"CONDITIONAL"
+const BUFF_SUBGROUP_PERMANENT: StringName = &"PERMANENT"
+
 # --- Entity & Category Types ---
 const CATEGORY_UNIT = &"UNIT"
 const CATEGORY_ITEM = &"ITEM"
@@ -69,38 +74,54 @@ const GROUP_EQUIPPED_GRID = &"EquippedGrid"
 const GROUP_SELECTION_ONLY = &"SelectionOnly"
 const GROUP_INSPECTION_ONLY = &"InspectionOnly"
 
-# --- Ability System Triggers (Unified) ---
-# Attack-related triggers
-const TRIGGER_ON_ATTACK = &"on_attack" # Unit performs any attack (use conditions to filter CAUSE)
-const TRIGGER_ON_BEFORE_DAMAGE = &"on_before_damage" # Before receiving attack damage (Defensive Stance)
-const TRIGGER_ON_HURT = &"on_hurt" # After receiving attack damage
-const TRIGGER_ON_DAMAGE_DEALT = &"on_damage_dealt" # After dealing attack damage (Lifesteal)
-const TRIGGER_ON_PRE_COMBAT = &"on_pre_combat" # Before combat snapshot (Tier 2 Unit)
+# --- Canonical Constitutional Triggers (Action Constitution v1.0) ---
+const TRIGGER_WHEN_KNOCKED_OUT: StringName = &"when_knocked_out"
+const TRIGGER_WHEN_ALLY_KNOCKED_OUT: StringName = &"when_ally_knocked_out"
+const TRIGGER_WHEN_ANY_UNIT_KNOCKED_OUT: StringName = &"when_any_unit_knocked_out"
+const TRIGGER_BEFORE_BEING_KNOCKED_OUT: StringName = &"before_being_knocked_out"
+const TRIGGER_PREVENT_KNOCKOUT: StringName = &"prevent_knockout"
+const TRIGGER_ON_KNOCKOUT_BLOW: StringName = &"on_knockout_blow"
 
-# Death-related triggers
-const TRIGGER_ON_DEATH = &"on_death" # This unit dies
-const TRIGGER_ON_ALLY_DEATH = &"on_ally_death" # A teammate dies
-const TRIGGER_ON_KILL = &"on_kill" # This unit kills an enemy
-const TRIGGER_ON_UNIT_DEATH = &"on_unit_death" # Any unit in the battle dies
+const TRIGGER_WHEN_ATTACKING: StringName = &"when_attacking"
+const TRIGGER_BEFORE_TAKING_DAMAGE: StringName = &"before_taking_damage"
+const TRIGGER_WHEN_TAKING_DAMAGE: StringName = &"when_taking_damage"
+const TRIGGER_WHEN_TAKING_MELEE_DAMAGE: StringName = &"when_taking_melee_damage"
+const TRIGGER_WHEN_TAKING_RANGED_DAMAGE: StringName = &"when_taking_ranged_damage"
+const TRIGGER_WHEN_TAKING_STATUS_DAMAGE: StringName = &"when_taking_status_damage"
+const TRIGGER_ON_DAMAGE_DEALT: StringName = &"on_damage_dealt"
+const TRIGGER_WHEN_ALLY_TAKES_DAMAGE: StringName = &"when_ally_takes_damage"
+const TRIGGER_INTERCEPT_ATTACK: StringName = &"intercept_attack"
+const TRIGGER_BEFORE_TURN_ACTION: StringName = &"before_turn_action"
 
-# Turn-related triggers
-const TRIGGER_ON_TURN_START = &"on_turn_start" # Turn begins
-const TRIGGER_ON_TURN_END = &"on_turn_end" # Turn ends
-const TRIGGER_ON_BATTLE_START = &"on_battle_start" # Battle begins
+const TRIGGER_AT_BATTLE_START: StringName = &"at_battle_start"
+const TRIGGER_BEFORE_MINIGAME: StringName = &"before_minigame"
+const TRIGGER_AT_MINIGAME_END: StringName = &"at_minigame_end"
+const TRIGGER_PRE_COMBAT: StringName = &"pre_combat"
+const TRIGGER_AT_TURN_START: StringName = &"at_turn_start"
+const TRIGGER_AT_TURN_END: StringName = &"at_turn_end"
 
-# Special triggers
-const TRIGGER_PASSIVE_INTERCEPT = &"passive_intercept" # BattleManager-handled passive (Guardian)
-const TRIGGER_ON_ENEMY_SUMMON = &"on_enemy_summon" # When an enemy unit is summoned
-const TRIGGER_ON_ALLY_SUMMON = &"on_ally_summon" # When an ally unit is summoned
-const TRIGGER_ON_BOARD_ENTER = &"on_board_enter" # When this specific unit enters the board (drawn, summoned, merged, or battle start)
-const TRIGGER_ON_DRAW = &"on_draw" # Unit/Item drawn from gacha (management phase)
-const TRIGGER_ON_TOKEN_SPENT = &"on_token_spent" # When tokens are spent on a gacha draw (fires per token)
-const TRIGGER_ON_MERGE = &"on_merge" # Any merge completed on the battle board (lineup/bench, unit/item)
-const TRIGGER_ON_ALLY_HURT = &"on_ally_hurt" # Another ally on the same team receives damage (reactive trigger)
-const TRIGGER_ON_HEALED = &"on_healed" # This unit's HP increased by a Heal action
-const TRIGGER_ON_STAT_INCREASED = &"on_stat_increased" # This unit's HP or PWR increased by a Buff action
-const TRIGGER_ON_STAT_DECREASED = &"on_stat_decreased" # This unit's HP or PWR decreased by a Debuff action
-const TRIGGER_ON_GOLD_EARNED = &"on_gold_earned" # When gold is earned (fires per 1 gold)
+const TRIGGER_WHEN_ALLY_SUMMONED: StringName = &"when_ally_summoned"
+const TRIGGER_WHEN_ENEMY_SUMMONED: StringName = &"when_enemy_summoned"
+const TRIGGER_ON_ENTER_BOARD: StringName = &"on_enter_board"
+const TRIGGER_ON_BOARD_STATE_CHANGED: StringName = &"on_board_state_changed"
+
+const TRIGGER_ON_GACHA_DRAW: StringName = &"on_gacha_draw"
+const TRIGGER_ON_MERGE: StringName = &"on_merge"
+const TRIGGER_ON_TOKEN_SPENT: StringName = &"on_token_spent"
+const TRIGGER_ON_GACHA_TOKENS_CHANGED: StringName = &"on_gacha_tokens_changed"
+const TRIGGER_ON_GOLD_EARNED: StringName = &"on_gold_earned"
+const TRIGGER_ON_GOLD_SPENT: StringName = &"on_gold_spent"
+const TRIGGER_ON_BOUNTY_CLAIMED: StringName = &"on_bounty_claimed"
+
+const TRIGGER_WHEN_HEALED: StringName = &"when_healed"
+const TRIGGER_ON_STAT_INCREASED: StringName = &"on_stat_increased"
+const TRIGGER_ON_STAT_DECREASED: StringName = &"on_stat_decreased"
+
+# --- Canonical Causes & Conditions ---
+const CAUSE_PRE_KNOCKOUT_ATTACK: StringName = &"CAUSE_PRE_KNOCKOUT_ATTACK"
+const CAUSE_ABILITY_RETRIGGER: StringName = &"CAUSE_ABILITY_RETRIGGER"
+const COND_KNOCKED_OUT_UNIT_IS_DUST: StringName = &"KNOCKED_OUT_UNIT_IS_DUST"
+const COND_DAMAGE_DID_NOT_KNOCK_OUT: StringName = &"DAMAGE_DID_NOT_KNOCK_OUT"
 
 # --- Ability System Target Types ---
 const TARGET_SELF = &"SELF"
@@ -120,20 +141,21 @@ const TARGET_ADJACENT_ALLIES = &"ADJACENT_ALLIES"
 const TARGET_ALL_ALLIES = &"ALL_ALLIES"
 const TARGET_ALLIES_IN_FRONT = &"ALLIES_IN_FRONT"
 const TARGET_ALLIES_BEHIND = &"ALLIES_BEHIND"
+const TARGET_ALLY_DIRECTLY_IN_FRONT = &"ALLY_DIRECTLY_IN_FRONT"
+const TARGET_ALL_BOUNTIED_ENEMIES = &"ALL_BOUNTIED_ENEMIES"
 const TARGET_HIGHEST_HP_ENEMY = &"HIGHEST_HP_ENEMY"
 const TARGET_ATTACK_TARGET_AND_RANDOM_UNMARKED = &"ATTACK_TARGET_AND_RANDOM_UNMARKED"
+const TARGET_ATTACK_TARGET_AND_ONE_ADJACENT = &"ATTACK_TARGET_AND_ONE_ADJACENT"
 const TARGET_ATTACK_TARGET_AND_ADJACENT = &"ATTACK_TARGET_AND_ADJACENT"
 
 # --- Ability System Condition Types ---
 const COND_TEAM_SIZE_LESS_THAN_ENEMY = &"TEAM_SIZE_LESS_THAN_ENEMY"
 const COND_SLOT_AHEAD_IS_EMPTY = &"SLOT_AHEAD_IS_EMPTY"
 const COND_TARGET_HP_GREATER_THAN_SELF_HP = &"TARGET_HP_GREATER_THAN_SELF_HP"
-const COND_DAMAGE_WAS_NON_LETHAL = &"DAMAGE_WAS_NON_LETHAL"
 const COND_DAMAGE_WAS_RECEIVED = &"DAMAGE_WAS_RECEIVED"
 const COND_IS_TURN_INITIATED_ATTACK = &"IS_TURN_INITIATED_ATTACK"
 const COND_COMPOSITE = &"COMPOSITE"
 const COND_TRIGGER_CAUSE_MATCH = &"TRIGGER_CAUSE_MATCH"
-const COND_DYING_UNIT_IS_DUST = &"DYING_UNIT_IS_DUST"
 const COND_MIN_TRAIT_COUNT = &"MIN_TRAIT_COUNT"
 const COND_MIN_GOLD = &"MIN_GOLD"
 
@@ -144,15 +166,10 @@ const CAUSE_ABILITY = &"CAUSE_ABILITY" # An ability effect (e.g. Extra Attack, R
 const CAUSE_ATTACK = &"CAUSE_ATTACK" # Direct result of an attack (e.g. Combat Damage)
 const CAUSE_STATUS_EFFECT = &"CAUSE_STATUS" # Passive effect (e.g. Poison damage)
 const CAUSE_TRINKET = &"CAUSE_TRINKET" # Direct damage originating from a Trinket
-const CAUSE_KAMIKAZE = &"CAUSE_KAMIKAZE" # Sacrifice attack without active attacker (e.g. Death's Bargain)
 const CAUSE_COST = &"CAUSE_COST" # Self-inflicted cost (e.g. Sacrifice HP)
 const CAUSE_GAME_OVER = &"CAUSE_GAME_OVER" # Cleanup phase
 const CAUSE_SETUP = &"CAUSE_SETUP" # Battle initialization
 const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
-
-const PRIORITY_EXTRA_ACTION = -100
-const PRIORITY_TRAIT_START_EFFECTS = -10
-const PRIORITY_TRAIT_BURN = 100 # Trait burn application
 
 # --- UI Sizing ---
 const SLOT_SIZE_BASE: int = 96
@@ -171,42 +188,37 @@ const BENCH_CAP: int = 8
 const PLAYER_BENCH_CAP: int = 8
 const RUN_INVENTORY_CAP: int = 25
 
-# --- Ability System Priority Bands ---
-# Priority determines the resolution order of abilities triggering simultaneously.
-# Higher numbers resolve first.
-# 
-# [300] GUARDIAN_INTERCEPT: Must resolve before damage is dealt to the original target.
-# [210] TRINKET_SUMMON: E.g., Soul Echo resurrection. Resolves before on-death spawns.
-# [100] RESILIENT_AURA: Defensive reactions. Resolves before retaliation.
-#  [50] COUNTER_ATTACK: Retaliation logic. Resolves before standard effects.
-#  [10] MODIFIERS: Minor timing tweaks (e.g., Defensive Stance before Standard).
-#   [0] STANDARD: The default for 90% of abilities (damage, heal, buff).
-# [-50] BOSS_SUMMON: E.g., Necromancer skeleton. Resolves after standard deaths.
-#[-100] EXTRA_ACTION: E.g., granting an extra turn. Must be lowest priority.
-
-const PRIORITY_GUARDIAN_INTERCEPT = 300
-const PRIORITY_ITEM_TRANSFER = 220
-const PRIORITY_DEATH_DAMAGE = 215
-const PRIORITY_TRINKET_SUMMON = 210
-const PRIORITY_UNIT_SUMMON = 205
-const PRIORITY_ITEM_SUMMON = 200
-const PRIORITY_RESILIENT_AURA = 100
-const PRIORITY_ON_HURT_HEAL = 100
-const PRIORITY_ON_ATTACK_BUFF = 100
-const PRIORITY_AMBUSH_PREDATOR = 100
-const PRIORITY_SUMMON_BLESSING = 110 # Higher than Ambush Predator so ally buff applies first
-const PRIORITY_COUNTER_ATTACK = 50
-const PRIORITY_MODIFIERS = 10
-const PRIORITY_DEFENSIVE_STANCE = 10
-const PRIORITY_SHOCKWAVE = 10
-const PRIORITY_MIRROR_STRIKE = 10
-const PRIORITY_STANDARD = 0
-const PRIORITY_LIFESTEAL = 0
-const PRIORITY_TURN_START_HEAL = 0
-const PRIORITY_PASSIVE_HEAL = 0
-const PRIORITY_ALLY_DEATH_BUFF = 0
-const PRIORITY_BOSS_SUMMON = -50
-
+# --- Reaction Resolution Sub-Phases (Action Constitution Phase 3) ---
+# SubPhase determines the execution order of abilities triggering simultaneously.
+# Monotonically increasing: LOWER integer values resolve FIRST.
+enum SubPhase {
+	PRE_TURN_TRANSFORM = 5,
+	PRE_DAMAGE_INTERCEPT = 10,
+	KNOCKOUT_STAT_PASS = 12,
+	PREVENT_KNOCKOUT_CHECK = 15,
+	ITEM_TRANSFER = 20,
+	PRE_KNOCKOUT = 25,
+	KNOCKOUT_SUMMON_TRINKET = 30,
+	KNOCKOUT_SUMMON_UNIT = 35,
+	KNOCKOUT_SUMMON_ITEM = 40,
+	ON_SUMMON_INSIGNIA = 50,
+	ON_SUMMON_BLESSING = 55,
+	ON_ATTACK_BUFF = 60,
+	ON_DAMAGE_TAKEN = 61,
+	ON_SUMMON_AMBUSH = 62,
+	BOARD_STATE_SYNC = 64,
+	ON_MERGE_PRIMARY = 70,
+	RETALIATION = 75,
+	TRINKET_MODIFIER = 80,
+	PRE_DAMAGE_DEFENSE = 90,
+	ON_ATTACK_MODIFIER = 95,
+	PRE_COMBAT_PRIORITY = 98,
+	STANDARD = 200,
+	TRAIT_PHASE_EFFECT = 220,
+	DOUBLE_STRIKE_FOLLOWUP = 245,
+	END_OF_TURN_SUMMON = 250,
+	GRANT_EXTRA_ACTION = 300,
+}
 
 # --- Window Types (for WindowManager) ---
 const WINDOW_INVENTORY = &"Inventory"
@@ -222,11 +234,11 @@ const WINDOW_RESULTS = &"ResultsPopup"
 
 const TRAIT_SORT_ORDER: Array[String] = [
 	"FIRE", "EARTH", "WATER", "AIR",
-	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST", "MERCENARY",
+	"TANK", "FIGHTER", "SUPPORT", "SPECIALIST", "MERCENARY", "NOVICE",
 	"FOOD", "MECHA", "ANIMAL", "PLANT", "TOY", "APPLIANCE", "COSTUME"
 ]
 
-const CLASS_TRAITS: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary"]
+const CLASS_TRAITS: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary", &"Novice"]
 const VISUAL_TRAITS: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
 
 # --- Trait Definitions ---
@@ -409,6 +421,17 @@ const TRAIT_DEFINITIONS = {
 			{"min": 3, "desc_key": "trait.mercenary.3"},
 			{"min": 4, "desc_key": "trait.mercenary.4"},
 			{"min": 5, "desc_key": "trait.mercenary.5"}
+		]
+	},
+	"NOVICE": {
+		"display_name_key": "trait.novice.name",
+		"trinket_id": &"trinket_trait_novice",
+		"icon_path": "res://assets/PixelArt/sprites/trinkets/NoviceSigil.png",
+		"levels": [
+			{"min": 2, "desc_key": "trait.novice.2"},
+			{"min": 3, "desc_key": "trait.novice.3"},
+			{"min": 4, "desc_key": "trait.novice.4"},
+			{"min": 5, "desc_key": "trait.novice.5"}
 		]
 	}
 }

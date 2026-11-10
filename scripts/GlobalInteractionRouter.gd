@@ -163,6 +163,13 @@ func _process(_delta: float) -> void:
 		_drag_overlay_preview.global_position = get_last_pointer_position()
 
 func _input(event: InputEvent) -> void:
+	# TAB: Toggle glossary detail cards on/off (Always globally available)
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
+		if is_instance_valid(WindowManager):
+			WindowManager.toggle_glossary_lock()
+			get_viewport().set_input_as_handled()
+			return
+
 	if event is InputEventMouse or event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_last_pointer_pos = InputUtils.get_event_global_position(event)
 
@@ -175,12 +182,12 @@ func _input(event: InputEvent) -> void:
 			return
 		
 		# If ChoiceWindow is open:
-		# Any click inside ChoiceWindow is handled by ChoiceWindow (buttons/panel).
-		# Any click OUTSIDE ChoiceWindow must close ChoiceWindow and cancel the merge preview.
+		# Any click inside ChoiceWindow or its cluster (glossary cards, pill) is handled by the windows.
+		# Any click OUTSIDE the cluster must close ChoiceWindow and cancel the merge preview.
 		if is_choice_open:
-			if _window_manager.has_method("is_point_inside_choice_window") and _window_manager.is_point_inside_choice_window(pos):
+			if WindowManager.is_point_inside_any_inspection_window(pos):
 				return
-			# Click is outside ChoiceWindow: close inspection windows (including ChoiceWindow)
+			# Click is outside ChoiceWindow and its cluster: close inspection windows (including ChoiceWindow)
 			_is_inspection_locked = false
 			_locked_entity_view_id = -1
 			_execute_close_all_inspection_windows()
@@ -257,6 +264,7 @@ func _unhandled_input(event: InputEvent) -> void:
 				WindowManager.toggle_options_window()
 				get_viewport().set_input_as_handled()
 		return
+
 	# ESC: cancel drag, then modals, then contextual windows, then selection
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
 		# 1) Cancel active drag if any
@@ -406,7 +414,7 @@ func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	# TDD Rule: ANYWHERE outside window group should close entire group
 	# IMPORTANT: Do NOT apply this to UI_LINK interactions, which originate inside windows
 	if context.entity_type != &"UI_LINK":
-		if _window_manager and _window_manager.is_any_inspection_window_open():
+		if _window_manager and (_window_manager.is_any_inspection_window_open() or _window_manager.is_any_inventory_window_open()):
 			# First, prune children when clicking anywhere inside a window (except explicit WINDOW_BACKGROUND, handled below)
 			var src_view = _find_view_by_instance_id(context.source_view_instance_id)
 			if src_view and context.entity_type != &"WINDOW_BACKGROUND":
@@ -465,19 +473,17 @@ func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command
 		&"SELECTION_ONLY":
 			commands.append_array(_handle_selection_only(context))
 		&"INSPECTION_ONLY":
-			if is_vcr_playing() or _is_combat_phase:
-				if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-					commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
-				else:
-					commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-						"context": context,
-						"anchor_view_id": context.source_view_instance_id,
-						"lock": true
-					}))
+			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+				commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
 			else:
-				# Outside combat, inspection is activated via peek controller (hover / long press).
-				# Clicking an inspection-only entity outside combat does not open windows.
-				pass
+				var click_inside_window = _is_click_inside_inspection_group(context)
+				if not click_inside_window and not _is_close_suppressed_for_context(context):
+					commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+				commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+					"context": context,
+					"anchor_view_id": context.source_view_instance_id,
+					"lock": true
+				}))
 	
 	return commands
 
@@ -713,6 +719,8 @@ func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
 	var view: Control = _find_view_by_instance_id(context.source_view_instance_id)
 	if not view:
 		return false
+	if _window_manager.is_view_inside_inventory(view):
+		return true
 	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
 	return is_instance_valid(parent_window)
 
@@ -814,7 +822,7 @@ func _execute_command(command: Command) -> void:
 		CommandType.CLOSE_CHILD_WINDOWS:
 			_execute_close_child_windows(command.context.get("window_group_id", 0), command.context.get("parent_window_id", -1))
 		CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW:
-			if is_instance_valid(ActionQueue) and WindowManager.is_any_inspection_window_open():
+			if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 				ActionQueue.request(CloseInspectionAction.new(false))
 			elif _window_manager:
 				_window_manager.close_top_contextual_window()
@@ -913,12 +921,12 @@ func _execute_open_inspection_window(command_context: Dictionary) -> void:
 
 ## Execute close all inspection windows command
 func _execute_close_all_inspection_windows() -> void:
-	if WindowManager.is_any_inspection_window_open():
+	if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 		ActionQueue.request(CloseInspectionAction.new(true))
 
 ## Execute close child windows command
 func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
-	if is_instance_valid(ActionQueue) and WindowManager.is_any_inspection_window_open():
+	if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 		ActionQueue.request(CloseInspectionAction.new(false))
 	elif _window_manager:
 		_window_manager.close_child_windows(window_group_id, parent_window_id)
@@ -1015,10 +1023,6 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 	# Battle board containers
 	if container_name in [&"PlayerLineup", &"PlayerBench"]:
 		return &"BattleBoard"
-	
-	# Test mode parity: allow full BattleBoard interactions on enemy board containers.
-	if GameManager.is_test_mode and container_name in [&"EnemyLineup", &"EnemyBench"]:
-		return &"BattleBoard"
 
 	# Inventory containers (can interact with each other)
 	if container_name.begins_with("RunInventoryT") or container_name.begins_with("BattleInventoryT"):
@@ -1105,6 +1109,8 @@ func end_drag(_was_handled: bool) -> void:
 		_suppress_close_parent_window_id = 0
 		var until_ts := Time.get_ticks_msec() + 420
 		_suppress_close_until_msec = until_ts
+		if is_instance_valid(_peek_controller):
+			_peek_controller.suppress_post_drop(0.35)
 	# Centralize drag visual cleanup so views don't have to decide
 	# IMMEDIATE VISUAL CLEANUP: Do not defer this. 
 	_end_drag_visuals(_was_handled)

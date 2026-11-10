@@ -10,7 +10,7 @@ target_type = &"SELF"
 parameters = {
 "action_type": "BUFF",
 "base_value": 0,
-"scaling_context_key": "dying_tier",
+"scaling_context_key": "knocked_out_tier",
 "scaling_context_multiplier": 1.0,
 "stat": "hp"
 }
@@ -21,7 +21,7 @@ target_type = &"SELF"
 parameters = {
 "action_type": "BUFF",
 "base_value": 0,
-"scaling_context_key": "dying_tier",
+"scaling_context_key": "knocked_out_tier",
 "scaling_context_multiplier": 1.0,
 "stat": "pwr"
 }
@@ -30,8 +30,8 @@ parameters = {
 script = ExtResource("1_script")
 id = &"ability_dust_elite_growth"
 description_key = "ability.dust_growth.desc"
-trigger = &"on_unit_death"
+trigger = &"when_any_unit_knocked_out"
 condition = ExtResource("3_cond")
 effects = Array[Resource]([SubResource("EffectHP_Gain"), SubResource("EffectPWR_Gain")])
-priority = 0
-execute_on_lethal = false
+sub_phase = 200
+execute_before_knockout = false

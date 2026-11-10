@@ -7,9 +7,9 @@
 script = ExtResource("2_effect")
 parameters = {
 "gold_step": 10,
-"hp_per_gold_step": 0,
+"hp_per_gold_step": 3,
 "is_permanent": false,
-"pwr_per_gold_step": 3
+"pwr_per_gold_step": 0
 }
 target_type = &"SELF"
 
@@ -17,8 +17,8 @@ target_type = &"SELF"
 script = ExtResource("1_ability")
 id = &"ability_aa_spe_mer_fod_toy_l3"
 description_key = "ability.ea_spe_mer_fod_toy.l3.desc"
-trigger = &"on_pre_combat"
+trigger = &"pre_combat"
 effects = Array[Resource]([SubResource("Effect_AASpeMerFodToy_3")])
-priority = 0
+sub_phase = 200
 required_level = 3
 max_level = 99

@@ -50,6 +50,10 @@ func _ready() -> void:
 		return {"location": location}
 	)
 
+	if not instance_uuid.is_empty():
+		ui_anchor.set_meta("bound_uuid", instance_uuid)
+		ui_anchor.set_meta("location", location)
+
 	if _pending_texture:
 		icon_sprite.texture = _pending_texture
 		_adjust_icon_scale()
@@ -64,10 +68,19 @@ func _exit_tree() -> void:
 	if is_instance_valid(_inspection_trigger):
 		_inspection_trigger.cancel()
 
+func get_instance_uuid() -> String:
+	return instance_uuid
+
+func get_location() -> LocationIdentifier:
+	return location
+
 func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Texture2D, visual_layers: Array = []) -> void:
 	instance_uuid = uuid
 	entity_type = type
 	location = loc
+	if is_instance_valid(ui_anchor):
+		ui_anchor.set_meta("bound_uuid", uuid)
+		ui_anchor.set_meta("location", loc)
 	if tex:
 		if is_node_ready() and is_instance_valid(icon_sprite):
 			icon_sprite.texture = tex

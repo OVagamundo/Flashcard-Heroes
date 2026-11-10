@@ -16,7 +16,7 @@ extends Resource
 ## @param source_uuid: String - The UUID of the GachaBallInstance initiating the effect.
 ## @param targets: Array[String] - An array of target UUIDs.
 ## @param battle_manager: BattleManager - A reference to the current BattleManager.
-## @param context: Dictionary - The original context of the event that started this chain.
+## @param context: TriggerContext - The typed context of the event that started this chain.
 ## @return EffectResult - Structured result containing events and trigger data.
-func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	return EffectResult.empty()

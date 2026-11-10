@@ -47,7 +47,13 @@ func get_dynamic_weight_multiplier(state) -> float:
 @export var level: int = 1
 
 ## The cost to purchase this GachaBall in the shop or for encounter generation.
-@export var cost: int = 1
+## Dynamically derived from Tier and Level based on the universal 1/2/4 economic model.
+var cost: int:
+	get:
+		if tier <= 0:
+			return 0
+		var l: int = maxi(1, level)
+		return (1 << (tier - 1)) * (1 << (l - 1))
 
 ## The category of the GachaBall, must be "UNIT" or "ITEM".
 @export var category: StringName

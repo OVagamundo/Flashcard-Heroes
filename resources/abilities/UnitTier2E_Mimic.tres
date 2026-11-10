@@ -6,14 +6,14 @@
 [sub_resource type="Resource" id="Resource_custom_transform_1"]
 script = ExtResource("2_effect")
 target_type = &"NONE"
-parameters = { "level_delta": 0, "max_level": false }
+parameters = {}
 
 [resource]
 script = ExtResource("1_def")
 id = &"ability_unit_t3_mimic_l1"
 description_key = "ability.unit_t3_mimic_l1.desc"
-trigger = &"on_before_turn_action"
+trigger = &"before_turn_action"
 effects = Array[Resource]([SubResource("Resource_custom_transform_1")])
-priority = 500
-execute_on_lethal = false
+sub_phase = 5
+execute_before_knockout = false
 max_level = 1

@@ -387,11 +387,10 @@ func _on_unit_summon_fade(unit_uuid: String) -> void:
 	
 	fade_tween.set_parallel(false)
 	
-	# Phase 2: Stretch (wide/short) on landing impact - USE SPRITE not _icon_rect
+	# Phase 2: Landing bounce upon impact (grounded at unit's feet)
 	if is_instance_valid(sprite):
-		fade_tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-		# Phase 3: Return to normal scale with elastic bounce
-		fade_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+		fade_tween.tween_callback(func(): Audio.play_sfx("unit_hop"))
+		AC.append_landing_bounce(fade_tween, sprite, Vector2.ONE)
 	
 	fade_tween.finished.connect(_on_summon_fade_tween_finished)
 
@@ -894,10 +893,7 @@ func _on_unit_deform(unit_uuid: String, deform_type: StringName) -> void:
 			# We animate the sprite to prevent breaking container layouts when in HBox/VBox.
 			if is_instance_valid(sprite):
 				sprite.pivot_offset = Vector2(sprite.size.x / 2.0, sprite.size.y)
-				_deform_tween.tween_property(sprite, "scale", Vector2(1.2, 0.8), AC.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2(0.9, 1.15), AC.scaled(0.1)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2(1.05, 0.95), AC.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-				_deform_tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+				AC.append_landing_bounce(_deform_tween, sprite, Vector2.ONE)
 	
 	_deform_tween.finished.connect(func():
 		_reset_sprite_scale()

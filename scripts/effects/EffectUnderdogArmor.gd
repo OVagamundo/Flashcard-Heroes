@@ -3,9 +3,9 @@ extends EffectDefinition
 
 ## At pre-combat, if the trinket's team has fewer living lineup units than the enemy,
 ## grant all living allied lineup units 2 Armor per unit difference.
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = bool(context.get("is_simulation", false))
-	var team: String = String(context.get("team", ""))
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = bool(context.is_simulation)
+	var team: String = String(context.team)
 	if team.is_empty():
 		var source_inst_fallback: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 		if is_instance_valid(source_inst_fallback):
@@ -32,7 +32,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if targets.is_empty():
 		return EffectResult.empty()
 
-	var source_name := String(context.get("ability_id", "effect"))
+	var source_name := String((context.ability_id if context.ability_id != &"" else "effect"))
 	var source_inst: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if is_instance_valid(source_inst):
 		var display_name := BattleHelpers.get_instance_display_name(source_inst)
@@ -64,8 +64,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 		"source_uuid": source_uuid,
 		"target_uuids": valid_targets,
-		"ability_id": context.get("ability_id", &"ability_trinket_underdog_emblem"),
-		"trigger_type": context.get("trigger_type", ""),
+		"ability_id": (context.ability_id if context.ability_id != &"" else &"ability_trinket_underdog_emblem"),
+		"trigger_type": context.trigger_type,
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.status_change(source_uuid, amount, "armor_stacks", targets_old_val, targets_new_val)
 	}))

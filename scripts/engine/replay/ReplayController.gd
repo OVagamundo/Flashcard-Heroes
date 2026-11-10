@@ -261,7 +261,6 @@ func play_file(path: String) -> void:
 	_was_timer_running_before_viewer_pause = _previous_timer_running
 	_previous_tutorial_state = TutorialManager.get_state_snapshot() if is_instance_valid(TutorialManager) else {}
 	_previous_game_manager_state = {
-		"is_test_mode": GameManager.is_test_mode,
 		"test_starting_items": GameManager.test_starting_items.duplicate(),
 		"run_metadata": GameManager.run_metadata.duplicate(true),
 		"gacha_discounts_used": GameManager.gacha_discounts_used.duplicate(true),
@@ -720,7 +719,6 @@ func _cleanup_replay_state() -> void:
 	if is_instance_valid(TutorialManager) and not _previous_tutorial_state.is_empty():
 		TutorialManager.restore_state_snapshot(_previous_tutorial_state)
 	if not _previous_game_manager_state.is_empty():
-		GameManager.is_test_mode = bool(_previous_game_manager_state.get("is_test_mode", false))
 		GameManager.test_starting_items = _previous_game_manager_state.get("test_starting_items", []).duplicate()
 		GameManager.run_metadata = _previous_game_manager_state.get("run_metadata", {}).duplicate(true)
 		GameManager.gacha_discounts_used = _previous_game_manager_state.get("gacha_discounts_used", {}).duplicate(true)

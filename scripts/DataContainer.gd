@@ -1,5 +1,8 @@
 class_name DataContainer extends RefCounted
 
+## Tag identifying this container (e.g. PlayerLineup, PlayerBench, etc.)
+var container_tag: StringName = &""
+
 ## Abstract methods that must be implemented by concrete container classes
 
 ## Returns the UUID at the specified index

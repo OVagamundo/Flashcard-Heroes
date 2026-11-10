@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_condition")
 id = &"cond_damage_was_non_lethal"
-condition_type = &"DAMAGE_WAS_NON_LETHAL"
+condition_type = &"DAMAGE_DID_NOT_KNOCK_OUT"
 parameters = {}
 invert_result = false

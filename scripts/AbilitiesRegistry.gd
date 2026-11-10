@@ -36,19 +36,19 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier1a_passive_heal": {
-		"owner": "ETnkPlaToy",
+		"owner": "ETnkPla",
 		"trigger": "on_hurt",
-		"condition": "DAMAGE_WAS_NON_LETHAL",
+		"condition": "TRIGGER_AFTER_ATTACKED_SURVIVED",
 		"effect": "Heal self for PWR",
 		"notes": "Only heals if surviving the damage",
 	},
 	
 	"unit_tier1b_counter_on_hurt": {
-		"owner": "FFigMecApp",
+		"owner": "FFigMec",
 		"trigger": "on_hurt",
 		"condition": "DAMAGE_WAS_RECEIVED",
 		"effect": "Apply 1 Burn stack to the attacker",
-		"execute_on_lethal": true,
+		"execute_before_knockout": true,
 		"notes": "Counter-attacks even when taking lethal damage",
 	},
 	
@@ -69,14 +69,14 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier2c_ally_death_buff": {
-		"owner": "EWFigCosToy",
+		"owner": "EWFigCos",
 		"trigger": "on_ally_death",
 		"condition": null,
 		"effect": "Gain +2 HP and +2 PWR when an ally dies",
 	},
 	
 	"unit_tier3a_mirror_strike": {
-		"owner": "EFWAFigSpeAniMec",
+		"owner": "EFWAFigMec",
 		"trigger": "on_attack",
 		"condition": null,
 		"effect": "Also attack the enemy in the mirror position",
@@ -84,7 +84,7 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier3b_guardian_sacrifice": {
-		"owner": "EWWATnkMecApp",
+		"owner": "EWWATnkToy",
 		"trigger": "passive_intercept",
 		"condition": null,
 		"effect": "Intercept lethal damage meant for an ally",
@@ -99,15 +99,15 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"unit_tier3d_resilient_aura": {
-		"owner": "EEFWFigTnkPlaToy",
+		"owner": "EEFWSupPla",
 		"trigger": "on_hurt",
 		"condition": null,
 		"effect": "Grant +1 HP and +1 PWR to all allies when damaged",
-		"execute_on_lethal": true,
+		"execute_before_knockout": true,
 	},
 
 	"unit_tier3h_merge_growth": {
-		"owner": "EFFWSupMecApp",
+		"owner": "EFFWSpeApp",
 		"trigger": "on_merge",
 		"condition": null,
 		"effect": "Gain +2 HP and +2 PWR when any merge occurs on the battle board",
@@ -138,26 +138,27 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"item_tier1b_extra_attack": {
-		"owner": "Tiger's Spirit (T1B)",
-		"trigger": "on_attack",
-		"condition": "COMPOSITE: IS_TURN_INITIATED_ATTACK + TARGET_HP_GREATER_THAN_SELF_HP",
-		"effect": "Re-trigger all on_attack abilities, then perform a basic attack",
-		"notes": "NON-STACKING: Only executes once per turn. Shockwave/Mirror Strike trigger again!",
+		"owner": "Wakizashi (T1B)",
+		"trigger": "when_attacking",
+		"condition": "CAUSE_TURN + TARGET_HP_GREATER_THAN_SELF_HP",
+		"effect": "Perform an immediate Extra Attack (additional Melee Attack)",
+		"notes": "Only activates for a turn-action attack.",
 	},
 	
-	"item_tier2b_bloodlust": {
-		"owner": "Bloodlust Ring (T2B)",
-		"trigger": "on_kill",
+	"item_tier2b_scythe": {
+		"owner": "Scythe (T2B)",
+		"trigger": "on_knockout_blow",
 		"condition": null,
-		"effect": "Grant holder an extra turn action on kill (once per turn)",
+		"effect": "Grant holder an Extra Action immediately when they defeat an enemy (once per turn)",
 		"notes": "NON-STACKING: Only executes once per turn.",
 	},
 	
 	"item_tier2c_passive_heal": {
-		"owner": "Phoenix Feather (T2C)",
-		"trigger": "on_hurt",
-		"condition": "DAMAGE_WAS_NON_LETHAL",
-		"effect": "Heal holder for +2 HP and +1 PWR when damaged",
+		"owner": "Anvil (T2C)",
+		"trigger": "when_taking_damage",
+		"condition": "CAUSE_ATTACK",
+		"effect": "Heal holder for 1 HP and grant +1 PWR when hurt by an attack",
+		"execute_before_knockout": true,
 	},
 	
 	"item_tier3a_on_hurt_heal": {
@@ -167,12 +168,11 @@ const ABILITIES: Dictionary = {
 		"effect": "Heal 2 random allies for +2 HP when holder takes damage",
 	},
 	
-	"item_tier3b_on_attack_buff": {
-		"owner": "Power Amulet (T3B)",
-		"trigger": "on_attack",
-		"condition": null,
-		"effect": "Grant 2 random allies +2 PWR when holder attacks",
-		"notes": "Only triggers on turn action attack",
+	"item_tier3b_hardcandy": {
+		"owner": "HardCandy (T3B)",
+		"trigger": "on_damage_dealt",
+		"condition": "CAUSE_ATTACK",
+		"effect": "Grant holder Armor and Spikes equal to half of attack damage dealt",
 	},
 	
 	"item_tier3c_on_attack_lifesteal": {
@@ -184,12 +184,21 @@ const ABILITIES: Dictionary = {
 	},
 	
 	"item_tier3d_retaliate_random": {
-		"owner": "Retaliation Charm (T3D)",
-		"trigger": "on_hurt",
-		"condition": "COMPOSITE: DAMAGE_WAS_RECEIVED + TRIGGER_CAUSE=ATTACK",
-		"effect": "Attack a random enemy for holder's PWR when holder takes attack damage",
+		"owner": "Rubber Ball (T3D)",
+		"trigger": "when_taking_damage",
+		"condition": "CAUSE_ATTACK + DAMAGE_WAS_RECEIVED",
+		"effect": "Deal the received damage as a Ranged Attack to a random enemy",
+		"execute_before_knockout": true,
 	},
-	
+
+	"item_tier3g_slingshot": {
+		"owner": "Slingshot (T3G)",
+		"trigger": "when_attacking",
+		"condition": null,
+		"effect": "Convert Melee Attacks to Ranged Attacks aimed at the enemy in the mirror slot",
+		"replaces_basic_attack": true,
+	},
+
 	"ability_item_t2_c_summon": {
 		"owner": "Phoenix Egg (T2C02)",
 		"trigger": "on_death",
@@ -230,7 +239,7 @@ const ABILITIES: Dictionary = {
 	},
 
 	"ability_trinket_royal_insignia": {
-		"owner": "Novice Insignia (Trinket)",
+		"owner": "Apprentice Insignia (Trinket)",
 		"trigger": "on_draw / on_ally_summon / on_merge / on_battle_start",
 		"condition": "TARGET_LEVEL_1_NON_HERO",
 		"effect": "Grant +1 HP and +1 PWR when a level 1 unit enters the board (drawn, summoned, merged, or at battle start)",
@@ -456,22 +465,22 @@ const ABILITIES: Dictionary = {
 		"trigger": "on_death",
 		"condition": null,
 		"effect": "Spawn an additional Doppleganger into the Tier 3 Gacha Machine on death",
-		"execute_on_lethal": true,
+		"execute_before_knockout": true,
 	},
 	
-	"ability_echoing_orb_scale": {
-		"owner": "Echoing Orb (T2D)",
-		"trigger": "on_turn_start",
+	"ability_slime_cell_scale": {
+		"owner": "Slime Cell (T2D)",
+		"trigger": "on_board_state_changed",
 		"condition": null,
-		"effect": "Grant holder +2 PWR for every Echoing Orb in Battle (including copies in the Discard Pile)",
+		"effect": "Grant holder +1 PWR for each Slime Cell in battle",
 	},
 	
-	"ability_echoing_orb_death": {
-		"owner": "Echoing Orb (T2D)",
-		"trigger": "on_death",
+	"ability_slime_cell_death": {
+		"owner": "Slime Cell (T2D)",
+		"trigger": "when_knocked_out",
 		"condition": null,
-		"effect": "Spawn a duplicate Echoing Orb into the Tier 2 Gacha Machine when holder dies",
-		"execute_on_lethal": true,
+		"effect": "Spawn a Slime Cell into the Tier 2 Gacha Machine when holder is knocked out",
+		"execute_before_knockout": true,
 	},
 }
 
@@ -717,6 +726,34 @@ static func describe(ability_id: StringName) -> String:
 		"trigger": "on_battle_start",
 		"condition": "TARGET_TRAIT_SPECIALIST",
 		"effect": "Grant +1 HP and +1 PWR to Specialist units when they enter the board",
+	},
+
+	"ability_novice_insignia_draw": {
+		"owner": "Novice Insignia (Trinket)",
+		"trigger": "on_draw",
+		"condition": "TARGET_TRAIT_NOVICE",
+		"effect": "Grant +1 HP and +1 PWR to Novice units when they enter the board",
+	},
+
+	"ability_novice_insignia_summon": {
+		"owner": "Novice Insignia (Trinket)",
+		"trigger": "on_ally_summon",
+		"condition": "TARGET_TRAIT_NOVICE",
+		"effect": "Grant +1 HP and +1 PWR to Novice units when they enter the board",
+	},
+
+	"ability_novice_insignia_merge": {
+		"owner": "Novice Insignia (Trinket)",
+		"trigger": "on_merge",
+		"condition": "TARGET_TRAIT_NOVICE",
+		"effect": "Grant +1 HP and +1 PWR to Novice units when they enter the board",
+	},
+
+	"ability_novice_insignia_battle_start": {
+		"owner": "Novice Insignia (Trinket)",
+		"trigger": "on_battle_start",
+		"condition": "TARGET_TRAIT_NOVICE",
+		"effect": "Grant +1 HP and +1 PWR to Novice units when they enter the board",
 	},
 
 	"ability_food_insignia_draw": {

@@ -7,7 +7,7 @@
 script = ExtResource("1_script")
 id = &"ability_trinket_twin_charm_scale"
 description_key = "ability.twin_charm_scale.desc"
-trigger = &"on_board_changed"
-priority = 100
+trigger = &"on_board_state_changed"
+sub_phase = 64
 effects = Array[Resource]([ExtResource("2_effect")])
-execute_on_lethal = false
+execute_before_knockout = false

@@ -11,16 +11,15 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"EWAASpePlaApp"
-display_name_key = "EWAASpePlaApp.name"
-description_key = "EWAASpePlaApp.desc"
+id = &"EWAASpeApp"
+display_name_key = "EWAASpeApp.name"
+description_key = "EWAASpeApp.desc"
 icon = ExtResource("2_icon")
-tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Specialist", &"Plant", &"Appliance"])
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Specialist", &"Appliance"])
 is_hero = false
 is_player_exclusive = true
 tier = 3
 level = 1
-cost = 4
 category = &"UNIT"
 
 base_hp = 5

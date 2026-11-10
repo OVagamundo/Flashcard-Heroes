@@ -25,6 +25,12 @@ var _window_scenes: Dictionary = {
 
 var _modal_stack: Array[Control] = []
 var _active_inspection_group: Array[Control] = []
+var _modal_child_windows: Dictionary = {}
+var is_glossary_locked: bool = false
+const _GlossaryTogglePillScene = preload("res://scenes/GlossaryTogglePill.tscn")
+var _glossary_pill: Control = null
+const INSPECTION_WINDOW_WIDTH: float = 360.0
+const GLOSSARY_WINDOW_WIDTH: float = 260.0
 
 var _tracked_windows: Dictionary = {}
 var _modal_layer: CanvasLayer = null
@@ -368,12 +374,15 @@ func open_inspection_window(loc: LocationIdentifier, source_view: Control) -> vo
 	_open_contextual_window(context)
 
 # Public API for GIR (Rule W3 - Window Pruning).
-func close_children_of(parent_window: Control) -> void:
+func close_children_of(parent_window: Control, include_glossary: bool = true) -> void:
 	var parent_index = _active_inspection_group.find(parent_window)
 	if parent_index == -1: return
 	for i in range(_active_inspection_group.size() - 1, parent_index, -1):
 		var child_window = _active_inspection_group[i]
 		if is_instance_valid(child_window):
+			if not include_glossary and child_window is EffectInspectionWindow:
+				continue
+			_active_inspection_group.remove_at(i)
 			stop_tracking_window(child_window.get_instance_id())
 			_queue_free_with_optional_inventory_animation(child_window)
 
@@ -395,16 +404,17 @@ func close_all_inspection_windows(keep_inventory: bool = false) -> void:
 	if not _active_inspection_group.is_empty():
 		Audio.play_sfx("ui_window_close")
 	
-	# Iterate backwards because stop_tracking_window removes elements from the array
+	# Iterate backwards and remove from active group
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
 		var window = _active_inspection_group[i]
 		if is_instance_valid(window):
-			if keep_inventory and (window == _persistent_inventory_window or window == _persistent_battle_inventory_window or window == _persistent_discard_pile_window):
+			if keep_inventory and _is_persistent_inventory_window(window):
 				continue
+			_active_inspection_group.remove_at(i)
 			stop_tracking_window(window.get_instance_id())
 			_queue_free_with_optional_inventory_animation(window)
 
-	# no-op if already empty
+	_close_glossary_pill()
 
 # Public API: explicitly close the run or battle inventory window drawer
 func close_inventory_window(is_battle: bool = false) -> void:
@@ -425,9 +435,25 @@ func close_discard_pile_window() -> void:
 # Public query function for the GIR.
 func is_any_inspection_window_open() -> bool:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
-		if not is_instance_valid(_active_inspection_group[i]):
+		var w = _active_inspection_group[i]
+		if not is_instance_valid(w):
 			_active_inspection_group.remove_at(i)
-	return not _active_inspection_group.is_empty()
+			continue
+		if not _is_persistent_inventory_window(w) and w != _glossary_pill:
+			return true
+	return false
+
+## Public API: checks if the current mouse cursor is over any active inspection window or glossary pill.
+func is_mouse_over_inspection_cluster() -> bool:
+	var mouse_pos = get_viewport().get_mouse_position()
+	if is_instance_valid(_glossary_pill) and _glossary_pill.is_inside_tree() and _glossary_pill.visible:
+		if _get_screen_rect(_glossary_pill).has_point(mouse_pos):
+			return true
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w.is_inside_tree() and w.visible and not _is_persistent_inventory_window(w):
+			if _get_screen_rect(w).has_point(mouse_pos):
+				return true
+	return false
 
 func get_top_contextual_window() -> Control:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
@@ -531,10 +557,13 @@ func _index_in_active_group(node: Node) -> int:
 
 # Checks if a given global screen point is inside any active inspection window.
 func is_point_inside_any_inspection_window(pos: Vector2) -> bool:
+	if is_instance_valid(_glossary_pill) and _glossary_pill.is_inside_tree() and _glossary_pill.visible:
+		if _get_screen_rect(_glossary_pill).has_point(pos):
+			return true
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
 		var w = _active_inspection_group[i]
 		if is_instance_valid(w) and w.is_visible_in_tree():
-			if w.get_global_rect().has_point(pos):
+			if _get_screen_rect(w).has_point(pos):
 				return true
 	return false
 
@@ -548,7 +577,7 @@ func handle_inspection_background_click(clicked_window: Control) -> void:
 	# Use index lookup to avoid typed array validation issues on non-Control nodes
 	var idx := _index_in_active_group(clicked_window)
 	if idx != -1:
-		close_children_of(clicked_window)
+		close_children_of(clicked_window, not is_glossary_locked)
 
 
 # Suppression-aware close request for inspection windows.
@@ -562,6 +591,11 @@ func request_close_inspection_window(window: Control, _cause: StringName = &"") 
 	var suppressed_now: bool = GlobalInteractionRouter.is_close_suppressed_now()
 	if suppressed_for_id or suppressed_now:
 		return
+	if (window is InspectionWindow and (window as InspectionWindow).parent_inspection_window_id == -1) or window is ChoiceWindow:
+		_close_glossary_pill()
+	var idx := _active_inspection_group.find(window)
+	if idx != -1:
+		_active_inspection_group.remove_at(idx)
 	stop_tracking_window(window_id)
 	_queue_free_with_optional_inventory_animation(window)
 
@@ -651,7 +685,7 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	if is_instance_valid(parent_window):
 		close_children_of(parent_window)
 	else:
-		close_all_inspection_windows()
+		close_all_inspection_windows(true)
 
 	if not _window_scenes.has(window_type):
 		return
@@ -661,7 +695,8 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	# ENFORCE WIDTH IMMEDIATELY: Set the desired width before adding to tree or populating.
 	# This ensures all height calculations (fit_content) are based on the final width from frame 1.
 	if window_instance is InspectionWindow:
-		window_instance.custom_minimum_size = Vector2(480, 0)
+		var target_w = GLOSSARY_WINDOW_WIDTH if window_type == &"EffectInspection" else INSPECTION_WINDOW_WIDTH
+		window_instance.custom_minimum_size = Vector2(target_w, 0)
 		window_instance.enforce_display_only()
 		
 	window_instance.process_mode = Node.PROCESS_MODE_ALWAYS
@@ -687,6 +722,10 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	_active_inspection_group.push_back(window_instance)
 	_update_tree_pause_state()
 	
+	if window_instance is InspectionWindow:
+		var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
+		(window_instance as InspectionWindow).parent_inspection_window_id = parent_id
+
 	# AUDIO HOOK: Window open sound is now handled in _animate_window_open
 	# Audio.play_sfx("ui_window_open")
 
@@ -723,7 +762,8 @@ func _deferred_position(window: Control, anchor: Control, parent_window: Control
 	if not is_instance_valid(window): return
 
 	if window is InspectionWindow or window is ChoiceWindow:
-		window.size = Vector2(480, 0)
+		var target_w = GLOSSARY_WINDOW_WIDTH if window is EffectInspectionWindow else INSPECTION_WINDOW_WIDTH
+		window.size = Vector2(target_w, 0)
 		window.reset_size()
 
 	# Safety check for anchor and parent which might have been freed during the await
@@ -751,7 +791,8 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 	if not is_instance_valid(window): return
 	
 	if window is InspectionWindow or window is ChoiceWindow:
-		window.size = Vector2(480, 0)
+		var target_w = GLOSSARY_WINDOW_WIDTH if window is EffectInspectionWindow else INSPECTION_WINDOW_WIDTH
+		window.size = Vector2(target_w, 0)
 		window.reset_size()
 	
 	var safe_anchor: Control = anchor if is_instance_valid(anchor) else null
@@ -765,27 +806,184 @@ func _finalize_position(window: Control, anchor: Control, parent_window: Control
 	_set_window_screen_position(window, position)
 	_animate_window_open(window)
 	
-	if safe_parent == null and window is InspectionWindow and window.has_method("get_child_window_specs"):
+	if safe_parent == null and (window is InspectionWindow or window is ChoiceWindow):
 		call_deferred("_setup_and_layout_child_windows", window, safe_anchor)
+		call_deferred("_update_glossary_pill_for_root", window)
 
-func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> void:
+func toggle_glossary_lock() -> void:
+	set_glossary_locked(not is_glossary_locked)
+
+func set_glossary_locked(val: bool) -> void:
+	if is_glossary_locked == val:
+		return
+	is_glossary_locked = val
+	Audio.play_sfx("ui_click")
+	SignalBus.emit_signal("glossary_lock_changed", is_glossary_locked)
+	_refresh_glossary_windows_state()
+
+func _collect_recursive_glossary_specs(root_window: Control) -> Array[Dictionary]:
+	var initial_terms: Array[String] = []
+	if root_window is InspectionWindow:
+		initial_terms = (root_window as InspectionWindow).get_glossary_terms()
+	elif root_window is ChoiceWindow:
+		initial_terms = (root_window as ChoiceWindow).get_glossary_terms()
+	
+	# Also collect terms from any currently active child windows attached to this root (like equipped items)
+	var root_id = root_window.get_instance_id()
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w is InspectionWindow and not (w is EffectInspectionWindow):
+			var insp_w: InspectionWindow = w as InspectionWindow
+			if insp_w.parent_inspection_window_id == root_id:
+				initial_terms.append_array(insp_w.get_glossary_terms())
+	
+	var seen_terms: Dictionary = {}
+	if root_window is EffectInspectionWindow:
+		var own_meta: String = (root_window as EffectInspectionWindow).get_own_keyword_canonical()
+		if not own_meta.is_empty():
+			seen_terms[own_meta] = true
+
+	var specs: Array[Dictionary] = []
+	var queue: Array[String] = initial_terms.duplicate()
+	
+	while not queue.is_empty():
+		var raw_key: String = queue.pop_front()
+		var info: Dictionary = DescriptionParser.get_keyword_info(raw_key)
+		if info.is_empty():
+			continue
+		var canonical: String = info.get("meta", raw_key)
+		if seen_terms.has(canonical):
+			continue
+		seen_terms[canonical] = true
+		
+		specs.append({
+			"window_type": &"EffectInspection",
+			"populate_context": {
+				"effect_definition": {
+					"name_key": info.name_key,
+					"description_key": info.desc_key,
+					"color": info.color
+				},
+				"is_inside_unit_inspection": true,
+				"target_parent_window_id": root_id
+			}
+		})
+		
+		# Recursive BFS: scan this keyword's description for nested glossary terms
+		var desc_key: String = info.get("desc_key", "")
+		if not desc_key.is_empty():
+			var translated_desc: String = tr(desc_key)
+			var nested_terms: Array[String] = DescriptionParser.find_keywords(translated_desc)
+			for nested_key in nested_terms:
+				var nested_info: Dictionary = DescriptionParser.get_keyword_info(nested_key)
+				var nested_canonical: String = nested_info.get("meta", nested_key) if not nested_info.is_empty() else nested_key
+				if not seen_terms.has(nested_canonical):
+					queue.append(nested_key)
+				
+	return specs
+
+func _refresh_glossary_windows_state() -> void:
+	if not is_glossary_locked:
+		# Close all EffectInspection child windows in active contextual group
+		var has_removed := false
+		var root_w: Control = null
+		var root_anc: Control = null
+		for i in range(_active_inspection_group.size() - 1, -1, -1):
+			var w = _active_inspection_group[i]
+			if is_instance_valid(w):
+				if w is EffectInspectionWindow and (w as InspectionWindow).parent_inspection_window_id != -1:
+					_active_inspection_group.remove_at(i)
+					stop_tracking_window(w.get_instance_id())
+					w.queue_free()
+					has_removed = true
+				elif (w is InspectionWindow and (w as InspectionWindow).parent_inspection_window_id == -1) or w is ChoiceWindow:
+					root_w = w
+					root_anc = get_anchor_for_window(w)
+		
+		# Reposition root window without glossary clearance
+		if is_instance_valid(root_w) and is_instance_valid(root_anc):
+			var pos_hint := get_pos_hint_for_window(root_w)
+			var pos := _calculate_contextual_window_position(root_anc, null, root_w, pos_hint)
+			_set_window_screen_position(root_w, pos)
+			_update_glossary_pill_position(root_w)
+
+		# If any non-glossary child windows remain (e.g. equipped items), re-layout them
+		if has_removed and is_instance_valid(root_w):
+			var remaining_children: Array[Control] = []
+			for w in _active_inspection_group:
+				if is_instance_valid(w) and w != root_w and w is InspectionWindow:
+					remaining_children.append(w)
+			if not remaining_children.is_empty():
+				var s_rect = _get_screen_rect(root_anc) if is_instance_valid(root_anc) else Rect2()
+				_layout_child_windows(s_rect, root_w, remaining_children)
+
+		# Also clear modal child windows
+		for m_id in _modal_child_windows:
+			var list: Array = _modal_child_windows[m_id]
+			for w in list:
+				if is_instance_valid(w):
+					stop_tracking_window(w.get_instance_id())
+					w.queue_free()
+		_modal_child_windows.clear()
+	else:
+		# Find the root inspection window in contextual group if open
+		var root_w: Control = null
+		var root_anc: Control = null
+		for w in _active_inspection_group:
+			if is_instance_valid(w):
+				if (w is InspectionWindow and (w as InspectionWindow).parent_inspection_window_id == -1) or w is ChoiceWindow:
+					root_w = w
+					root_anc = get_anchor_for_window(w)
+					break
+		
+		if is_instance_valid(root_w):
+			if is_instance_valid(root_anc):
+				var pos_hint := get_pos_hint_for_window(root_w)
+				var pos := _calculate_contextual_window_position(root_anc, null, root_w, pos_hint)
+				_set_window_screen_position(root_w, pos)
+				_update_glossary_pill_position(root_w)
+			_spawn_and_layout_glossary_only(root_w, root_anc)
+			
+		# Also check if modal preview is open
+		var active_modal = _modal_stack.back() if not _modal_stack.is_empty() else null
+		if is_instance_valid(active_modal):
+			var insp_container = active_modal.get_node_or_null("%InspectionContainer")
+			if insp_container:
+				for ch in insp_container.get_children():
+					if ch is InspectionWindow:
+						setup_child_windows_for_modal(active_modal, ch)
+						break
+
+func _spawn_and_layout_glossary_only(root_window: Control, anchor: Control) -> void:
 	if not is_instance_valid(root_window) or not root_window.is_inside_tree():
 		return
-	if not root_window.has_method("get_child_window_specs"):
+	
+	# CLEANUP FIRST: remove any old/duplicate EffectInspection windows before spawning
+	for i in range(_active_inspection_group.size() - 1, -1, -1):
+		var w = _active_inspection_group[i]
+		if is_instance_valid(w) and w is EffectInspectionWindow and w != root_window:
+			_active_inspection_group.remove_at(i)
+			stop_tracking_window(w.get_instance_id())
+			w.queue_free()
+			_active_inspection_group.remove_at(i)
+			stop_tracking_window(w.get_instance_id())
+			w.queue_free()
+
+	if not is_glossary_locked:
+		return
+
+	var glossary_specs = _collect_recursive_glossary_specs(root_window)
+	if glossary_specs.is_empty():
 		return
 	
-	var specs: Array[Dictionary] = root_window.get_child_window_specs()
-	if specs.is_empty():
-		return
-	
-	var child_windows: Array[Control] = []
-	for spec in specs:
+	var new_glossary_windows: Array[Control] = []
+	for spec in glossary_specs:
 		var w_type: StringName = spec.get("window_type", &"")
 		if not _window_scenes.has(w_type):
 			continue
 		var child_instance = _window_scenes[w_type].instantiate()
 		if child_instance is InspectionWindow:
-			child_instance.custom_minimum_size = Vector2(480, 0)
+			child_instance.custom_minimum_size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+			(child_instance as InspectionWindow).parent_inspection_window_id = root_window.get_instance_id()
 			child_instance.enforce_display_only()
 		child_instance.process_mode = Node.PROCESS_MODE_ALWAYS
 		_get_modal_layer().add_child(child_instance)
@@ -797,11 +995,164 @@ func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> v
 		_register_window(child_instance, false)
 		_active_inspection_group.push_back(child_instance)
 		
-		if child_instance.has_method("populate"):
-			child_instance.populate(spec.get("populate_context", {}))
-		
+		var child_insp := child_instance as InspectionWindow
+		assert(child_insp != null, "Child window must be an InspectionWindow: %s" % w_type)
+		child_insp.populate(spec.get("populate_context", {}))
+		child_insp.enforce_display_only()
+			
+		new_glossary_windows.append(child_instance)
+	
+	if new_glossary_windows.is_empty():
+		return
+	
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	if not is_glossary_locked or not is_instance_valid(root_window) or not root_window.is_inside_tree():
+		for child in new_glossary_windows:
+			if is_instance_valid(child):
+				var idx = _active_inspection_group.find(child)
+				if idx != -1:
+					_active_inspection_group.remove_at(idx)
+				stop_tracking_window(child.get_instance_id())
+				child.queue_free()
+		return
+	
+	for child in new_glossary_windows:
+		if is_instance_valid(child) and child is InspectionWindow:
+			child.size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+			child.reset_size()
+	
+	# Gather all child windows of root (both items and glossary) for unified layout
+	var all_children: Array[Control] = []
+	for w in _active_inspection_group:
+		if is_instance_valid(w) and w != root_window and w is InspectionWindow:
+			all_children.append(w)
+	
+	var source_rect = _get_screen_rect(anchor) if is_instance_valid(anchor) else Rect2()
+	_layout_child_windows(source_rect, root_window, all_children)
+	
+	for child in new_glossary_windows:
+		if is_instance_valid(child):
+			_animate_window_open(child)
+
+func setup_child_windows_for_modal(modal: Control, preview_win: InspectionWindow) -> void:
+	if not is_instance_valid(modal) or not modal.is_inside_tree():
+		return
+	if not is_instance_valid(preview_win) or not preview_win.is_inside_tree():
+		return
+	
+	close_modal_child_windows(modal)
+	if not is_glossary_locked:
+		return
+	
+	var specs = _collect_recursive_glossary_specs(preview_win)
+	if specs.is_empty():
+		return
+	
+	var modal_id = modal.get_instance_id()
+	var child_windows: Array[Control] = []
+	for spec in specs:
+		var w_type: StringName = spec.get("window_type", &"")
+		if not _window_scenes.has(w_type):
+			continue
+		var child_instance = _window_scenes[w_type].instantiate()
 		if child_instance is InspectionWindow:
+			child_instance.custom_minimum_size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+			(child_instance as InspectionWindow).parent_inspection_window_id = preview_win.get_instance_id()
 			child_instance.enforce_display_only()
+		child_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		_get_modal_layer().add_child(child_instance)
+		child_instance.modulate.a = 0.0
+		child_instance.show()
+		_set_window_screen_position(child_instance, Vector2(-2000, -2000))
+		child_instance.z_index = 200
+		child_instance.set_meta("window_type", w_type)
+		_register_window(child_instance, false)
+		
+		var child_insp := child_instance as InspectionWindow
+		assert(child_insp != null, "Child window must be an InspectionWindow: %s" % w_type)
+		child_insp.populate(spec.get("populate_context", {}))
+		child_insp.enforce_display_only()
+			
+		child_windows.append(child_instance)
+	
+	_modal_child_windows[modal_id] = child_windows
+	
+	await get_tree().process_frame
+	await get_tree().process_frame
+	
+	if not is_instance_valid(modal) or not modal.is_inside_tree():
+		close_modal_child_windows(modal)
+		return
+	
+	for child in child_windows:
+		if is_instance_valid(child) and child is InspectionWindow:
+			child.size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+			child.reset_size()
+	
+	_layout_child_windows(Rect2(), modal, child_windows)
+	
+	for child in child_windows:
+		if is_instance_valid(child):
+			_animate_window_open(child)
+
+func close_modal_child_windows(modal: Control) -> void:
+	if not is_instance_valid(modal):
+		return
+	var modal_id = modal.get_instance_id()
+	if _modal_child_windows.has(modal_id):
+		var list: Array = _modal_child_windows[modal_id]
+		for w in list:
+			if is_instance_valid(w):
+				stop_tracking_window(w.get_instance_id())
+				w.queue_free()
+		_modal_child_windows.erase(modal_id)
+
+func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> void:
+	if not is_instance_valid(root_window) or not root_window.is_inside_tree():
+		return
+	if not (root_window is InspectionWindow or root_window is ChoiceWindow):
+		return
+	
+	var specs: Array[Dictionary] = []
+	if root_window is InspectionWindow:
+		specs = (root_window as InspectionWindow).get_child_window_specs()
+	elif root_window is ChoiceWindow:
+		specs = (root_window as ChoiceWindow).get_child_window_specs()
+	
+	if is_glossary_locked:
+		var glossary_specs = _collect_recursive_glossary_specs(root_window)
+		specs.append_array(glossary_specs)
+	
+	if specs.is_empty():
+		return
+	
+	var child_windows: Array[Control] = []
+	for spec in specs:
+		var w_type: StringName = spec.get("window_type", &"")
+		if not _window_scenes.has(w_type):
+			continue
+		var child_instance = _window_scenes[w_type].instantiate()
+		if child_instance is InspectionWindow:
+			var target_w = GLOSSARY_WINDOW_WIDTH if w_type == &"EffectInspection" else INSPECTION_WINDOW_WIDTH
+			child_instance.custom_minimum_size = Vector2(target_w, 0)
+			(child_instance as InspectionWindow).parent_inspection_window_id = root_window.get_instance_id()
+			child_instance.enforce_display_only()
+		child_instance.process_mode = Node.PROCESS_MODE_ALWAYS
+		_get_modal_layer().add_child(child_instance)
+		child_instance.modulate.a = 0.0
+		child_instance.show()
+		_set_window_screen_position(child_instance, Vector2(-2000, -2000))
+		child_instance.z_index = 100
+		child_instance.set_meta("window_type", w_type)
+		_register_window(child_instance, false)
+		_active_inspection_group.push_back(child_instance)
+		
+		var child_insp := child_instance as InspectionWindow
+		assert(child_insp != null, "Child window must be an InspectionWindow: %s" % w_type)
+		child_insp.populate(spec.get("populate_context", {}))
+		child_insp.enforce_display_only()
 			
 		child_windows.append(child_instance)
 	
@@ -818,92 +1169,280 @@ func _setup_and_layout_child_windows(root_window: Control, anchor: Control) -> v
 			if is_instance_valid(child):
 				child.queue_free()
 		return
+
+	# If glossary was toggled off during awaits, clean up any glossary windows
+	if not is_glossary_locked:
+		for i in range(child_windows.size() - 1, -1, -1):
+			var ch = child_windows[i]
+			if is_instance_valid(ch) and ch is EffectInspectionWindow:
+				child_windows.remove_at(i)
+				var a_idx = _active_inspection_group.find(ch)
+				if a_idx != -1:
+					_active_inspection_group.remove_at(a_idx)
+				stop_tracking_window(ch.get_instance_id())
+				ch.queue_free()
 	
 	for child in child_windows:
 		if is_instance_valid(child) and child is InspectionWindow:
-			child.size = Vector2(480, 0)
+			var target_w = GLOSSARY_WINDOW_WIDTH if child is EffectInspectionWindow else INSPECTION_WINDOW_WIDTH
+			child.size = Vector2(target_w, 0)
 			child.reset_size()
 	
 	var source_rect = _get_screen_rect(anchor) if is_instance_valid(anchor) else Rect2()
-	var root_rect = _get_screen_rect(root_window)
-	
-	_layout_child_windows(source_rect, root_rect, child_windows)
+	_layout_child_windows(source_rect, root_window, child_windows)
 	
 	for child in child_windows:
 		if is_instance_valid(child):
 			_animate_window_open(child)
 
-func _layout_child_windows(source_rect: Rect2, root_rect: Rect2, children: Array[Control]) -> void:
-	if children.is_empty():
+func _layout_child_windows(source_rect: Rect2, root_window: Control, children: Array[Control]) -> void:
+	if children.is_empty() or not is_instance_valid(root_window):
 		return
+	var root_rect = _get_screen_rect(root_window)
 	var viewport_rect := get_viewport().get_visible_rect()
-	var margin: float = INSPECTION_WINDOW_MARGIN
+	var margin: float = 8.0 # Edge-to-edge gap between windows
+	var screen_margin: float = 12.0 # Keep off screen borders
 	
-	# Primary side: away from the source
-	var root_center_x = root_rect.get_center().x
-	var source_center_x = source_rect.get_center().x if not source_rect.size.is_zero_approx() else viewport_rect.get_center().x
-	var place_right: bool = root_center_x >= source_center_x
-	
-	var cur_col_x: float
-	if place_right:
-		cur_col_x = root_rect.end.x + margin
-	else:
-		var first_sz = _get_window_size(children[0])
-		cur_col_x = root_rect.position.x - first_sz.x - margin
-	
-	var cur_y: float = root_rect.position.y
-	var col_width: float = 0.0
-	
+	# 1. Separate children into Secondary (equipped items, traits) and Tertiary (glossary effect cards)
+	var secondary_windows: Array[Control] = []
+	var glossary_windows: Array[Control] = []
 	for child in children:
-		if not is_instance_valid(child):
-			continue
-		var child_sz := _get_window_size(child)
-		col_width = maxf(col_width, child_sz.x)
-		
-		# Check vertical fit in current column
-		if cur_y + child_sz.y > viewport_rect.end.y - margin and cur_y > root_rect.position.y:
-			# Advance to next column
-			if place_right:
-				cur_col_x += col_width + margin
-				col_width = child_sz.x
-				if cur_col_x + child_sz.x > viewport_rect.end.x - margin:
-					cur_col_x = (source_rect.position.x - child_sz.x - margin) if not source_rect.size.is_zero_approx() else margin
+		if is_instance_valid(child) and child.is_inside_tree():
+			if child is EffectInspectionWindow:
+				glossary_windows.append(child)
 			else:
-				cur_col_x -= (child_sz.x + margin)
-				col_width = child_sz.x
-				if cur_col_x < viewport_rect.position.x + margin:
-					cur_col_x = (source_rect.end.x + margin) if not source_rect.size.is_zero_approx() else margin
-			cur_y = root_rect.position.y
+				secondary_windows.append(child)
+
+	# 2. Layout Secondary Windows (Equipped Items) - dock directly beside root_rect to form compound_rect
+	var compound_rect: Rect2 = root_rect
+	var place_sec_right: bool = true
+	if source_rect.size != Vector2.ZERO:
+		# If root is placed to the right of anchor, secondary docks on the right of root away from anchor
+		place_sec_right = root_rect.position.x >= source_rect.get_center().x
+	else:
+		place_sec_right = (viewport_rect.end.x - root_rect.end.x) >= (root_rect.position.x - viewport_rect.position.x)
 		
-		var pos := Vector2(cur_col_x, cur_y)
-		pos.x = clampf(pos.x, viewport_rect.position.x + margin, viewport_rect.end.x - child_sz.x - margin)
-		pos.y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+	var sec_x: float = (root_rect.end.x + margin) if place_sec_right else (root_rect.position.x - INSPECTION_WINDOW_WIDTH - margin)
+	# Check boundary fit; if not fitting, check opposite side as long as it doesn't overlap source_rect
+	if place_sec_right and sec_x + INSPECTION_WINDOW_WIDTH > viewport_rect.end.x - screen_margin:
+		var alt_x = root_rect.position.x - INSPECTION_WINDOW_WIDTH - margin
+		if source_rect.size == Vector2.ZERO or alt_x >= source_rect.end.x:
+			place_sec_right = false
+			sec_x = alt_x
+	elif not place_sec_right and sec_x < viewport_rect.position.x + screen_margin:
+		var alt_x = root_rect.end.x + margin
+		if source_rect.size == Vector2.ZERO or alt_x + INSPECTION_WINDOW_WIDTH <= source_rect.position.x:
+			place_sec_right = true
+			sec_x = alt_x
+
+	for sec in secondary_windows:
+		var sz = _get_window_size(sec)
+		var pos = Vector2(sec_x, root_rect.position.y)
+		pos.y = clampf(pos.y, viewport_rect.position.y + screen_margin, viewport_rect.end.y - sz.y - screen_margin)
+		pos.x = clampf(pos.x, viewport_rect.position.x + screen_margin, viewport_rect.end.x - sz.x - screen_margin)
+		_set_window_screen_position(sec, pos)
+		compound_rect = compound_rect.merge(Rect2(pos, sz))
+		if place_sec_right:
+			sec_x += sz.x + margin
+		else:
+			sec_x -= (sz.x + margin)
+
+	if glossary_windows.is_empty():
+		return
+
+	# 3. Layout Tertiary Glossary Cards in a Dedicated Unidirectional Outward Tray
+	var space_tray_right: float = viewport_rect.end.x - compound_rect.end.x - screen_margin
+	var space_tray_left: float = compound_rect.position.x - viewport_rect.position.x - screen_margin
+	
+	# SACRED ANCHOR INVARIANT: Tray must NEVER overlap source_rect!
+	var tray_on_right: bool = true
+	if source_rect.size != Vector2.ZERO:
+		if source_rect.position.x >= compound_rect.end.x - 20.0:
+			# Anchor is to the right of compound -> tray MUST go to the left!
+			tray_on_right = false
+		elif source_rect.end.x <= compound_rect.position.x + 20.0:
+			# Anchor is to the left of compound -> tray MUST go to the right!
+			tray_on_right = true
+		else:
+			tray_on_right = space_tray_right >= space_tray_left
+	else:
+		tray_on_right = space_tray_right >= space_tray_left
+
+	# Measure glossary windows
+	var card_sizes: Array[Vector2] = []
+	for gw in glossary_windows:
+		gw.custom_minimum_size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+		gw.size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+		gw.reset_size()
+		card_sizes.append(_get_window_size(gw))
+
+	# Pack glossary cards into columns
+	var available_height: float = viewport_rect.size.y - (2.0 * screen_margin)
+	var card_gap: float = 4.0
+	var col_gap: float = 6.0
+	var col_width: float = GLOSSARY_WINDOW_WIDTH
+
+	var columns: Array[Array] = []
+	var cur_col: Array = []
+	var cur_col_h: float = 0.0
+
+	for i in range(glossary_windows.size()):
+		var h = card_sizes[i].y
+		if not cur_col.is_empty() and (cur_col_h + card_gap + h > available_height):
+			columns.append(cur_col)
+			cur_col = []
+			cur_col_h = 0.0
 		
-		var candidate_rect := Rect2(pos, child_sz)
+		cur_col.append(i)
+		cur_col_h += (card_gap if cur_col_h > 0.0 else 0.0) + h
+
+	if not cur_col.is_empty():
+		columns.append(cur_col)
+
+	# Position columns strictly outward in the tray direction
+	var cur_col_x: float = (compound_rect.end.x + margin) if tray_on_right else compound_rect.position.x - margin
+	
+	for col in columns:
+		var max_col_w: float = col_width
+		for idx in col:
+			max_col_w = maxf(max_col_w, card_sizes[idx].x)
+
+		var col_x: float = cur_col_x if tray_on_right else (cur_col_x - max_col_w)
+
+		# Calculate total height of this column to center/align vertically
+		var total_col_h: float = 0.0
+		for idx in col:
+			total_col_h += card_sizes[idx].y + card_gap
+		total_col_h -= card_gap
+
+		# Align column top with compound_rect.position.y, but ensure it fits on screen
+		var cur_y: float = compound_rect.position.y
+		if cur_y + total_col_h > viewport_rect.end.y - screen_margin:
+			cur_y = maxf(screen_margin, viewport_rect.end.y - screen_margin - total_col_h)
+
+		for idx in col:
+			var card: Control = glossary_windows[idx]
+			var sz: Vector2 = card_sizes[idx]
+			_set_window_screen_position(card, Vector2(col_x, cur_y))
+			cur_y += sz.y + card_gap
+
+		if tray_on_right:
+			cur_col_x += max_col_w + col_gap
+		else:
+			cur_col_x -= (max_col_w + col_gap)
+
+	# 4. Outer Screen Clamp: ensure glossary cards never go off-screen, preserving root alignment
+	var min_allowed_x: float = viewport_rect.position.x + screen_margin
+	var max_allowed_x: float = viewport_rect.end.x - screen_margin
+	for gw in glossary_windows:
+		if is_instance_valid(gw) and gw.is_inside_tree():
+			var gw_sz = _get_window_size(gw)
+			gw.position.x = clampf(gw.position.x, min_allowed_x, max_allowed_x - gw_sz.x)
+
+func _is_persistent_inventory_window(window: Control) -> bool:
+	return is_instance_valid(window) and (window == _persistent_inventory_window or window == _persistent_battle_inventory_window or window == _persistent_discard_pile_window)
+
+## Public API: checks whether a given node is structurally contained inside any persistent inventory/discard window.
+func is_view_inside_inventory(node: Node) -> bool:
+	if not is_instance_valid(node):
+		return false
+	var current: Node = node
+	while is_instance_valid(current) and current != get_tree().root:
+		if current is Control and _is_persistent_inventory_window(current as Control):
+			return true
+		current = current.get_parent()
+	return false
+
+func get_anchor_for_window(window: Control) -> Control:
+	if not is_instance_valid(window):
+		return null
+	var tracking_info: Dictionary = _tracked_windows.get(window.get_instance_id(), {})
+	var anchor = tracking_info.get("anchor", null)
+	return anchor if is_instance_valid(anchor) else null
+
+func get_pos_hint_for_window(window: Control) -> String:
+	if not is_instance_valid(window):
+		return ""
+	var tracking_info: Dictionary = _tracked_windows.get(window.get_instance_id(), {})
+	return tracking_info.get("pos_hint", "")
+
+func _update_glossary_pill_for_root(root_window: Control) -> void:
+	if not is_instance_valid(root_window) or not root_window.is_inside_tree():
+		_close_glossary_pill()
+		return
+	if not (root_window is InspectionWindow or root_window is ChoiceWindow):
+		_close_glossary_pill()
+		return
+	if root_window is InspectionWindow and (root_window as InspectionWindow).parent_inspection_window_id != -1:
+		_close_glossary_pill()
+		return
+	
+	var glossary_specs = _collect_recursive_glossary_specs(root_window)
+	if glossary_specs.is_empty():
+		_close_glossary_pill()
+		return
 		
-		# Must never overlap source_rect
-		if not source_rect.size.is_zero_approx() and candidate_rect.intersects(source_rect):
-			if source_rect.get_center().y <= viewport_rect.get_center().y:
-				pos.y = source_rect.end.y + margin
-			else:
-				pos.y = source_rect.position.y - child_sz.y - margin
-			pos.y = clampf(pos.y, viewport_rect.position.y + margin, viewport_rect.end.y - child_sz.y - margin)
+	if not is_instance_valid(_glossary_pill):
+		_glossary_pill = _GlossaryTogglePillScene.instantiate()
+		_glossary_pill.process_mode = Node.PROCESS_MODE_ALWAYS
+		_get_modal_layer().add_child(_glossary_pill)
+		_glossary_pill.z_index = 101
+		_register_window(_glossary_pill, false)
+	else:
+		_glossary_pill.z_index = 101
 		
-		_set_window_screen_position(child, pos)
-		cur_y += child_sz.y + margin
+	_glossary_pill.show()
+	_update_glossary_pill_position(root_window)
+
+func _update_glossary_pill_position(root_window: Control) -> void:
+	if not is_instance_valid(_glossary_pill) or not is_instance_valid(root_window):
+		return
+	
+	_glossary_pill.reset_size()
+	var pill_sz = GlossaryTogglePill.FIXED_SIZE
+	var root_rect = _get_screen_rect(root_window)
+	var viewport_rect = get_viewport().get_visible_rect()
+	var margin: float = 8.0
+	
+	# Align flush with bottom-right edge of root_window
+	var x: float = root_rect.end.x - pill_sz.x
+	var y: float = root_rect.end.y + 2.0
+	
+	# If not enough room below root_rect, place directly above root_rect
+	if y + pill_sz.y > viewport_rect.end.y - margin:
+		y = root_rect.position.y - pill_sz.y - 2.0
+		
+	x = clampf(x, viewport_rect.position.x + margin, viewport_rect.end.x - pill_sz.x - margin)
+	y = clampf(y, viewport_rect.position.y + margin, viewport_rect.end.y - pill_sz.y - margin)
+	
+	_set_window_screen_position(_glossary_pill, Vector2(x, y))
+
+func _close_glossary_pill() -> void:
+	if is_instance_valid(_glossary_pill):
+		stop_tracking_window(_glossary_pill.get_instance_id())
+		_glossary_pill.queue_free()
+		_glossary_pill = null
+
+func close_glossary_pill() -> void:
+	_close_glossary_pill()
 
 func _find_ancestor_inspection_window(node: Node) -> Control:
 	if not is_instance_valid(node): return null
 	# First, treat the node itself as a candidate parent window
 	var self_idx := _index_in_active_group(node)
 	if self_idx != -1:
-		return node as Control
+		var w = _active_inspection_group[self_idx]
+		if not _is_persistent_inventory_window(w):
+			return w
+		return null
 	# Then walk ancestors
 	var current := node.get_parent()
 	while is_instance_valid(current) and current != get_tree().root:
 		var idx := _index_in_active_group(current)
 		if idx != -1:
-			return current as Control
+			var w = _active_inspection_group[idx]
+			if not _is_persistent_inventory_window(w):
+				return w
 		current = current.get_parent()
 	return null
 
@@ -1008,25 +1547,45 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 		# Fallback 1: Try UUID lookup first if source view provides it.
 		# This is CRITICAL during combat animations because units might have died
 		# in the simulation and moved to Discard (Player) or been erased (Enemy).
-		if is_instance_valid(source_view) and source_view.has_method("get_instance_uuid"):
-			var uuid = source_view.get_instance_uuid()
-			if not uuid.is_empty():
-				instance = GameManager.get_instance_by_uuid(uuid)
+		var target_uuid: String = ""
+		if is_instance_valid(source_view):
+			var gb_view := source_view as GachaBallView
+			if gb_view:
+				target_uuid = gb_view.get_instance_uuid()
+			elif source_view.has_meta("bound_uuid"):
+				target_uuid = str(source_view.get_meta("bound_uuid"))
+			elif is_instance_valid(source_view.get_parent()):
+				var pgb := source_view.get_parent() as PhysicsGachaBall
+				if pgb:
+					target_uuid = pgb.instance_uuid
+		
+		if not target_uuid.is_empty():
+			instance = GameManager.get_instance_by_uuid(target_uuid)
 				
 		# Fallback 2: Normal location lookup
 		if not is_instance_valid(instance):
 			instance = GameManager.get_instance_from_location(loc)
 			
+		# Fallback 3: Explicit instance from source view metadata or parent (e.g. Loadout preview)
+		if not is_instance_valid(instance):
+			if source_view.has_meta("gachaball_instance"):
+				instance = source_view.get_meta("gachaball_instance")
+			elif is_instance_valid(source_view.get_parent()) and source_view.get_parent().has_meta("gachaball_instance"):
+				instance = source_view.get_parent().get_meta("gachaball_instance")
+			elif is_instance_valid(loc) and loc.has_meta("gachaball_instance"):
+				instance = loc.get_meta("gachaball_instance")
+			
 		if not is_instance_valid(instance): return {}
 		var def = instance.get_definition()
+		var is_preview_mode: bool = source_view.get_meta("is_preview", false) or (is_instance_valid(loc) and loc.get_meta("is_preview", false)) or not is_instance_valid(GameManager.run_state)
 		if def.category == &"UNIT":
 			window_type = &"UnitInspection"
-			context = {"source_view": source_view, "instance": instance, "location": loc}
+			context = {"source_view": source_view, "instance": instance, "location": loc, "is_preview": is_preview_mode}
 			if loc.container == &"EnemyLineup":
 				context["is_enemy_context"] = true
-		elif def.category == &"ITEM":
+		elif def.category in [&"ITEM", &"TRINKET", &"CONSUMABLE"]:
 			window_type = &"ItemInspection"
-			context = {"source_view": source_view, "instance": instance, "location": loc}
+			context = {"source_view": source_view, "instance": instance, "location": loc, "is_preview": is_preview_mode}
 			# Equipped items: prefer positioning relative to the parent UnitInspectionWindow,
 			# not the tiny equipped slot view. Provide a hint so positioning prefers the parent window rect.
 			if loc.container == C.CONTAINER_EQUIPPED_ITEM:
@@ -1036,12 +1595,6 @@ func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Di
 					context["is_inside_unit_inspection"] = true
 					context["target_parent_window_id"] = unit_parent.get_instance_id()
 				payload["positioning_hint"] = "use_parent_window"
-		elif def.category == &"TRINKET":
-			window_type = &"ItemInspection" # Reuse ItemInspection for trinkets
-			context = {"source_view": source_view, "instance": instance, "location": loc}
-		elif def.category == &"CONSUMABLE":
-			window_type = &"ItemInspection" # Reuse ItemInspection for consumables
-			context = {"source_view": source_view, "instance": instance, "location": loc}
 		else: return {}
 	elif source_view.has_meta("effect_definition"):
 		var effect_def: Variant = source_view.get_meta("effect_definition")
@@ -1071,7 +1624,7 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	var freed_callable := Callable(self , "_on_inspection_anchor_freed").bind(window_id, anchor_id, loc, geom_callable)
 	if not anchor.is_connected("tree_exited", freed_callable):
 		anchor.tree_exited.connect(freed_callable, CONNECT_DEFERRED)
-	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable}
+	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable, "pos_hint": pos_hint}
 
 func stop_tracking_window(window_id: int) -> void:
 	# Emit signal that window is closing/stopping tracking
@@ -1101,7 +1654,6 @@ func _on_inspection_anchor_moved(window_id: int, anchor_id: int, pos_hint: Strin
 		_set_window_screen_position(window_instance, pos)
 		
 		var source_rect = _get_screen_rect(anchor)
-		var root_rect = _get_screen_rect(window_instance)
 		var children: Array[Control] = []
 		var parent_idx = _active_inspection_group.find(window_instance)
 		if parent_idx != -1:
@@ -1110,7 +1662,8 @@ func _on_inspection_anchor_moved(window_id: int, anchor_id: int, pos_hint: Strin
 				if is_instance_valid(ch):
 					children.append(ch)
 		if not children.is_empty():
-			_layout_child_windows(source_rect, root_rect, children)
+			_layout_child_windows(source_rect, window_instance, children)
+		_update_glossary_pill_position(window_instance)
 
 
 func _on_inspection_anchor_freed(window_id: int, old_anchor_id: int, _loc: LocationIdentifier, geom_callable: Callable) -> void:
@@ -1135,12 +1688,19 @@ func _register_window(window_instance: Control, is_modal: bool) -> void:
 func _on_window_freed(window_id: int, was_modal: bool) -> void:
 	if not was_modal:
 		stop_tracking_window(window_id)
+	if _modal_child_windows.has(window_id):
+		var list: Array = _modal_child_windows[window_id]
+		for w in list:
+			if is_instance_valid(w):
+				stop_tracking_window(w.get_instance_id())
+				w.queue_free()
+		_modal_child_windows.erase(window_id)
 	var stack = _modal_stack if was_modal else _active_inspection_group
 	for i in range(stack.size() - 1, -1, -1):
 		var window = stack[i]
 		if not is_instance_valid(window) or window.get_instance_id() == window_id:
 			stack.remove_at(i)
-	if was_modal and is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+	if was_modal and ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if act is AcknowledgeFlashcardIntroAction or act is SelectFlashcardIntroCardAction \
 			or act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction \
@@ -1158,10 +1718,12 @@ func _close_top_modal() -> void:
 func close_choice_window() -> void:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
 		var w = _active_inspection_group[i]
-		if is_instance_valid(w) and (w is ChoiceWindow or (w.has_meta("window_type") and w.get_meta("window_type") == &"ChoiceWindow")):
+		if is_instance_valid(w) and w is ChoiceWindow:
+			close_children_of(w)
 			stop_tracking_window(w.get_instance_id())
 			_active_inspection_group.remove_at(i)
 			_queue_free_with_optional_inventory_animation(w)
+	_close_glossary_pill()
 
 func close_top_contextual_window() -> void:
 	if not _active_inspection_group.is_empty():
@@ -1190,16 +1752,47 @@ func _calculate_window_position(source_view: Control, new_window: Control) -> Ve
 	var src = _get_screen_rect(source_view)
 	var win_sz = _get_window_size(new_window)
 	var viewport_rect = get_viewport().get_visible_rect()
-	var vp_center = viewport_rect.get_center()
+	var margin: float = INSPECTION_WINDOW_MARGIN
+	var screen_margin: float = 12.0
 	
-	# Horizontal: place on the side opposite to the source half
-	var place_right: bool = src.get_center().x <= vp_center.x
-	var x: float = (src.end.x + INSPECTION_WINDOW_MARGIN) if place_right else (src.position.x - win_sz.x - INSPECTION_WINDOW_MARGIN)
+	# Clearance checking: account for glossary tray width if glossary is locked
+	var required_width: float = win_sz.x
+	if is_glossary_locked and (new_window is InspectionWindow or new_window is ChoiceWindow):
+		var specs: Array[Dictionary] = _collect_recursive_glossary_specs(new_window)
+		if not specs.is_empty():
+			required_width += 8.0 + GLOSSARY_WINDOW_WIDTH
+		
+	var space_right: float = viewport_rect.end.x - src.end.x - margin - screen_margin
+	var space_left: float = src.position.x - viewport_rect.position.x - margin - screen_margin
 	
+	var place_right: bool = true
+	if space_right >= required_width and space_left >= required_width:
+		place_right = space_right >= space_left
+	elif space_right >= required_width:
+		place_right = true
+	elif space_left >= required_width:
+		place_right = false
+	else:
+		place_right = space_right >= space_left
+		
+	var x: float = (src.end.x + margin) if place_right else (src.position.x - win_sz.x - margin)
+	var max_x = (viewport_rect.end.x - required_width - screen_margin) if (place_right and is_glossary_locked) else (viewport_rect.end.x - win_sz.x - screen_margin)
+	var min_x = (viewport_rect.position.x + screen_margin + (required_width - win_sz.x)) if (not place_right and is_glossary_locked) else (viewport_rect.position.x + screen_margin)
+	x = clampf(x, min_x, max_x)
+	
+	# SACRED ANCHOR INVARIANT: Window must NEVER overlap src horizontally
+	if place_right and x < src.end.x:
+		if space_left >= win_sz.x:
+			x = src.position.x - win_sz.x - margin
+	elif not place_right and x + win_sz.x > src.position.x:
+		if space_right >= win_sz.x:
+			x = src.end.x + margin
+			
 	# Vertical: align the window's base (bottom) with the source center
 	var y: float = src.get_center().y - win_sz.y
+	y = clampf(y, viewport_rect.position.y + screen_margin, viewport_rect.end.y - win_sz.y - screen_margin)
 	
-	return _clamp_window_to_viewport(Vector2(x, y), win_sz)
+	return Vector2(x, y)
 
 # Position child relative to its anchor, but decide side/top based on the parent window's quadrant.
 func _calculate_child_window_position_from_anchor(parent_window: Control, anchor: Control, child_window: Control) -> Vector2:
@@ -1334,12 +1927,19 @@ func _find_canvas_layer(node: Node) -> CanvasLayer:
 func _get_window_size(window: Control) -> Vector2:
 	# For inspection windows, combined_minimum_size is much more reliable than 'size'
 	# during the first few frames of population/layout.
-	if window is InspectionWindow or window is ChoiceWindow:
-		window.size = Vector2(480, 0)
+	if window is EffectInspectionWindow:
+		window.custom_minimum_size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+		window.size = Vector2(GLOSSARY_WINDOW_WIDTH, 0)
+		window.reset_size()
+		var min_sz := window.get_combined_minimum_size()
+		return Vector2(GLOSSARY_WINDOW_WIDTH, maxf(min_sz.y, window.size.y))
+	elif window is InspectionWindow or window is ChoiceWindow:
+		window.custom_minimum_size = Vector2(INSPECTION_WINDOW_WIDTH, 0)
+		window.size = Vector2(INSPECTION_WINDOW_WIDTH, 0)
 		window.reset_size()
 		var min_sz := window.get_combined_minimum_size()
 		if min_sz != Vector2.ZERO:
-			return Vector2(maxf(min_sz.x, 480.0), min_sz.y)
+			return Vector2(maxf(min_sz.x, INSPECTION_WINDOW_WIDTH), min_sz.y)
 			
 	var sz := window.size
 	if sz == Vector2.ZERO:

@@ -17,5 +17,5 @@ id = &"ability_item_mercenary_emblem"
 description_key = "ability.item_mercenary_emblem.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_MercenaryEmblem")])
-priority = 0
+sub_phase = 200
 max_level = 1

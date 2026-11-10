@@ -7,6 +7,7 @@ extends Control
 
 const HeroSelectButtonScene = preload("res://scenes/HeroSelectButton.tscn")
 const DeckSelectButtonScene = preload("res://scenes/DeckSelectButton.tscn")
+const SlotViewScene = preload("res://scenes/SlotView.tscn")
 
 # UI References - Carousels
 @onready var hero_title: Label = %HeroTitle
@@ -16,21 +17,31 @@ const DeckSelectButtonScene = preload("res://scenes/DeckSelectButton.tscn")
 
 # UI References - Hero Info Panel
 @onready var hero_info_panel: PanelContainer = %HeroInfoPanel
+@onready var hero_scroll_container: ScrollContainer = %HeroScrollContainer
 @onready var hero_sprite: TextureRect = %HeroSprite
 @onready var hero_name: Label = %HeroName
 @onready var hero_stats: Label = %HeroStats
 @onready var hero_description: RichTextLabel = %HeroDescription
 @onready var hero_abilities: RichTextLabel = %HeroAbilities
+@onready var starting_set_separator: HSeparator = %StartingSetSeparator
+@onready var starting_set_container: VBoxContainer = %StartingSetContainer
 
 # UI References - Deck Info Panel
 @onready var deck_info_panel: PanelContainer = %DeckInfoPanel
+@onready var deck_scroll_container: ScrollContainer = %DeckScrollContainer
 @onready var deck_name: Label = %DeckName
 @onready var deck_stats: Label = %DeckStats
 @onready var deck_description: RichTextLabel = %DeckDescription
 
-# UI References - Buttons
+# UI References - Buttons & Controls
 @onready var start_button: Button = %StartRunButton
-@onready var test_button: Button = %TestModeButton
+@onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
+
+# UI References - Dev Starting Items
+@onready var _test_starters_option: OptionButton = %TestStartersOption
+@onready var _btn_add_starter: Button = %AddStarterButton
+@onready var _btn_clear_starters: Button = %ClearStartersButton
+@onready var _test_starters_label: Label = %TestStartersLabel
 
 # Data
 var _hero_defs: Array[GachaBallDefinition] = []
@@ -45,8 +56,7 @@ var deck_order_option: OptionButton # Deck order selection
 var deck_size_option: OptionButton # Deck size selection
 
 var _test_starters: Array[StringName] = []
-var _test_starters_label: Label
-var _test_starters_option: OptionButton
+var _active_inspected_card: Control = null
 
 
 func _ready() -> void:
@@ -63,6 +73,7 @@ func _ready() -> void:
 	var order_container = HBoxContainer.new()
 	order_container.alignment = BoxContainer.ALIGNMENT_CENTER
 	order_container.add_theme_constant_override("separation", 10)
+	order_container.custom_minimum_size = Vector2(0, 38)
 	
 	var order_label = Label.new()
 	order_label.text = tr("ui.deck_order") if tr("ui.deck_order") != "ui.deck_order" else "Deck Order:"
@@ -91,32 +102,37 @@ func _ready() -> void:
 	
 	deck_carousel.get_parent().add_child(order_container)
 	
-	# Create Test Starters UI
-	var test_starters_container = VBoxContainer.new()
-	test_starters_container.name = "TestStartersContainer"
+	# Add matching spacer under Hero Carousel so DeckSelection and HeroSelection match in height
+	var hero_spacer = Control.new()
+	hero_spacer.custom_minimum_size = Vector2(0, 38)
+	hero_carousel.get_parent().add_child(hero_spacer)
+	order_container.resized.connect(func():
+		hero_spacer.custom_minimum_size.y = order_container.size.y
+	)
 	
-	var ts_label = Label.new()
-	ts_label.text = "Add Test Items/Trinkets (Optional):"
-	ts_label.add_theme_color_override("font_color", Color(0.7, 0.7, 0.7))
-	test_starters_container.add_child(ts_label)
+	# Clickable hero sprite in HeaderBox to inspect hero unit
+	hero_sprite.mouse_filter = Control.MOUSE_FILTER_STOP
+	hero_sprite.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
+	hero_sprite.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+			if _selected_hero_def:
+				_inspect_definition(hero_sprite, _selected_hero_def.id, false)
+	)
 	
-	var ts_controls = HBoxContainer.new()
-	test_starters_container.add_child(ts_controls)
+	# Keep _active_inspected_card in sync when inspection windows close
+	WindowManager.window_closed.connect(func(_w):
+		if not WindowManager.is_any_inspection_window_open():
+			_active_inspected_card = null
+	)
 	
-	_test_starters_option = OptionButton.new()
-	_test_starters_option.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_test_starters_option.fit_to_longest_item = false
-	_test_starters_option.clip_text = true
-	_test_starters_option.custom_minimum_size = Vector2(100, 32)
+	# Setup Test Starters UI (in bottom-left DevToolsContainer)
 	var popup: PopupMenu = _test_starters_option.get_popup()
 	popup.max_size = Vector2i(450, 400)
-	ts_controls.add_child(_test_starters_option)
-	
 	_test_starters_option.add_item("--- Select Item ---", 0)
 	_test_starters_option.set_item_metadata(0, "")
 	
 	var t_idx = 1
-	var all_pool = Database.get_all_pool_definitions()
+	var all_pool = Database.get_all_pool_definitions(&"ALL")
 	for def in all_pool:
 		var loc_name = tr(def.display_name_key)
 		var display_text = loc_name if loc_name == String(def.id) else "%s (%s)" % [loc_name, def.id]
@@ -130,9 +146,7 @@ func _ready() -> void:
 		_test_starters_option.set_item_metadata(t_idx, t.id)
 		t_idx += 1
 		
-	var btn_add = Button.new()
-	btn_add.text = "Add"
-	btn_add.pressed.connect(func():
+	_btn_add_starter.pressed.connect(func():
 		var sel_idx = _test_starters_option.selected
 		if sel_idx > 0:
 			var item_id = _test_starters_option.get_item_metadata(sel_idx)
@@ -140,38 +154,128 @@ func _ready() -> void:
 				_test_starters.append(StringName(item_id))
 				_update_test_starters_label()
 	)
-	ts_controls.add_child(btn_add)
-	
-	var btn_clear = Button.new()
-	btn_clear.text = "Clear"
-	btn_clear.pressed.connect(func():
+	_btn_clear_starters.pressed.connect(func():
 		_test_starters.clear()
 		_update_test_starters_label()
 	)
-	ts_controls.add_child(btn_clear)
-	
-	_test_starters_label = Label.new()
-	_test_starters_label.text = "Selected: None"
-	_test_starters_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	_test_starters_label.add_theme_color_override("font_color", Color(0.8, 0.8, 0.2))
-	test_starters_container.add_child(_test_starters_label)
-	
-	# Add the container to HeroColumn
-	hero_info_panel.get_parent().add_child(test_starters_container)
 	
 	start_button.pressed.connect(_on_start_run_pressed)
-	test_button.pressed.connect(_on_test_mode_pressed)
+	
+	tutorial_checkbox.button_pressed = TutorialManager.tutorials_enabled
+	tutorial_checkbox.toggled.connect(func(enabled: bool):
+		TutorialManager.tutorials_enabled = enabled
+		TutorialManager.save_settings()
+	)
 	
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
+	
+	# Draggable scroll containers (no scrollbars, drag up/down & keyboard Up/Down)
+	_setup_draggable_scroll(hero_scroll_container)
+	_setup_draggable_scroll(deck_scroll_container)
+
+
+func _input(event: InputEvent) -> void:
+	# Debug Header: Reset tutorials with Shift+T
+	if event is InputEventKey and event.pressed and event.keycode == KEY_T and event.shift_pressed:
+		TutorialManager.reset_all_tutorials()
+		tutorial_checkbox.button_pressed = true
+
+
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
+		_close_preview_windows()
+	
+	if event is InputEventKey and event.pressed:
+		if event.keycode == KEY_UP:
+			_scroll_active_panel(-45)
+			get_viewport().set_input_as_handled()
+		elif event.keycode == KEY_DOWN:
+			_scroll_active_panel(45)
+			get_viewport().set_input_as_handled()
+
+
+func _setup_draggable_scroll(scroll: ScrollContainer) -> void:
+	if not is_instance_valid(scroll):
+		return
+	scroll.vertical_scroll_mode = ScrollContainer.SCROLL_MODE_SHOW_NEVER
+	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+	var v_bar = scroll.get_v_scroll_bar()
+	if is_instance_valid(v_bar):
+		v_bar.modulate.a = 0.0
+		v_bar.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		v_bar.custom_minimum_size = Vector2.ZERO
+	
+	# Ensure nested text labels pass mouse events through so dragging works across the box
+	for child in scroll.find_children("*", "RichTextLabel", true, false):
+		if child is RichTextLabel:
+			child.mouse_filter = Control.MOUSE_FILTER_PASS
+	
+	var drag_state := {"active": false, "start_y": 0.0, "start_scroll": 0}
+	
+	scroll.gui_input.connect(func(event: InputEvent):
+		if event is InputEventMouseButton:
+			if event.button_index == MOUSE_BUTTON_LEFT:
+				if event.pressed:
+					drag_state["active"] = true
+					drag_state["start_y"] = event.global_position.y
+					drag_state["start_scroll"] = scroll.scroll_vertical
+				else:
+					drag_state["active"] = false
+			elif event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
+				scroll.scroll_vertical = max(0, scroll.scroll_vertical - 40)
+			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN and event.pressed:
+				scroll.scroll_vertical = min(_get_max_scroll(scroll), scroll.scroll_vertical + 40)
+		elif event is InputEventMouseMotion:
+			if drag_state.get("active", false):
+				var dy: float = event.global_position.y - drag_state["start_y"]
+				scroll.scroll_vertical = clamp(int(drag_state["start_scroll"] - dy), 0, _get_max_scroll(scroll))
+		elif event is InputEventScreenTouch:
+			if event.pressed:
+				drag_state["active"] = true
+				drag_state["start_y"] = event.position.y
+				drag_state["start_scroll"] = scroll.scroll_vertical
+			else:
+				drag_state["active"] = false
+		elif event is InputEventScreenDrag:
+			if drag_state.get("active", false):
+				var dy: float = event.position.y - drag_state["start_y"]
+				scroll.scroll_vertical = clamp(int(drag_state["start_scroll"] - dy), 0, _get_max_scroll(scroll))
+	)
+
+
+func _scroll_active_panel(delta: int) -> void:
+	var target_scroll: ScrollContainer = hero_scroll_container
+	var mouse_pos = get_global_mouse_position()
+	if is_instance_valid(deck_info_panel) and deck_info_panel.get_global_rect().has_point(mouse_pos):
+		target_scroll = deck_scroll_container
+	
+	if is_instance_valid(target_scroll):
+		var max_s = _get_max_scroll(target_scroll)
+		target_scroll.scroll_vertical = clamp(target_scroll.scroll_vertical + delta, 0, max_s)
+
+
+func _get_max_scroll(scroll: ScrollContainer) -> int:
+	if not is_instance_valid(scroll):
+		return 0
+	var v_bar = scroll.get_v_scroll_bar()
+	if not is_instance_valid(v_bar):
+		return 0
+	return int(max(0, v_bar.max_value - v_bar.page))
+
+
+func _close_preview_windows() -> void:
+	if WindowManager.is_any_inspection_window_open():
+		WindowManager.close_all_inspection_windows(true)
+	_active_inspected_card = null
 
 
 func _update_localized_text() -> void:
 	hero_title.text = tr("ui.choose_your_hero")
 	deck_title.text = tr("ui.choose_your_deck")
 	start_button.text = tr("ui.play")
-	test_button.text = tr("ui.test_mode")
+	tutorial_checkbox.text = tr("ui.show_tutorials")
 	
 	# Preserve current selections
 	var hero_id_backup = _selected_hero_def.id if _selected_hero_def else StringName("")
@@ -283,9 +387,9 @@ func _update_deck_carousel() -> void:
 func _add_deck_carousel_item(index: int, is_selected: bool) -> void:
 	var button = DeckSelectButtonScene.instantiate()
 	if is_selected:
-		button.custom_minimum_size = Vector2(160, 80)
+		button.custom_minimum_size = Vector2(170, 128)
 	else:
-		button.custom_minimum_size = Vector2(110, 60)
+		button.custom_minimum_size = Vector2(120, 80)
 	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	deck_carousel.add_child(button)
 	button.populate(_deck_meta[index])
@@ -358,7 +462,7 @@ func _create_arrow_button(symbol: String) -> Button:
 	var btn = Button.new()
 	btn.text = symbol
 	btn.flat = true
-	btn.custom_minimum_size = Vector2(36, 36)
+	btn.custom_minimum_size = Vector2(36, 128)
 	btn.add_theme_font_size_override("font_size", 24)
 	btn.add_theme_color_override("font_color", Color(1, 0.9, 0.6, 0.8))
 	btn.add_theme_color_override("font_hover_color", Color(1, 0.95, 0.7, 1.0))
@@ -371,12 +475,14 @@ func _create_arrow_button(symbol: String) -> Button:
 
 
 func _on_deck_prev() -> void:
+	_close_preview_windows()
 	Audio.play_sfx("ui_click")
 	_selected_deck_index = wrapi(_selected_deck_index - 1, 0, _deck_meta.size())
 	_update_deck_carousel()
 
 
 func _on_deck_next() -> void:
+	_close_preview_windows()
 	Audio.play_sfx("ui_click")
 	_selected_deck_index = wrapi(_selected_deck_index + 1, 0, _deck_meta.size())
 	_update_deck_carousel()
@@ -384,17 +490,20 @@ func _on_deck_next() -> void:
 
 func _navigate_deck_to(index: int) -> void:
 	if index != _selected_deck_index:
+		_close_preview_windows()
 		_selected_deck_index = index
 		_update_deck_carousel()
 
 
 func _on_hero_prev() -> void:
+	_close_preview_windows()
 	Audio.play_sfx("ui_click")
 	_selected_hero_index = wrapi(_selected_hero_index - 1, 0, _hero_defs.size())
 	_update_hero_carousel()
 
 
 func _on_hero_next() -> void:
+	_close_preview_windows()
 	Audio.play_sfx("ui_click")
 	_selected_hero_index = wrapi(_selected_hero_index + 1, 0, _hero_defs.size())
 	_update_hero_carousel()
@@ -402,6 +511,7 @@ func _on_hero_next() -> void:
 
 func _navigate_hero_to(index: int) -> void:
 	if index != _selected_hero_index:
+		_close_preview_windows()
 		_selected_hero_index = index
 		_update_hero_carousel()
 
@@ -448,6 +558,10 @@ func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	else:
 		hero_abilities.text = ""
 		hero_abilities.visible = false
+	
+	_update_hero_starting_set(hero_def)
+	if is_instance_valid(hero_scroll_container):
+		hero_scroll_container.scroll_vertical = 0
 
 
 func _update_deck_info_panel(deck_meta: Dictionary) -> void:
@@ -467,6 +581,8 @@ func _update_deck_info_panel(deck_meta: Dictionary) -> void:
 	if desc_text == desc_key: # No translation, use stored description
 		desc_text = deck_meta.get("description", "")
 	deck_description.text = desc_text
+	if is_instance_valid(deck_scroll_container):
+		deck_scroll_container.scroll_vertical = 0
 
 
 func _select_hero_by_id(hero_id: StringName) -> void:
@@ -490,54 +606,294 @@ func _on_start_run_pressed() -> void:
 		Audio.play_sfx("ui_error")
 		return
 	
+	_close_preview_windows()
+
 	var hero_id = _selected_hero_def.id
 	var deck_id = _selected_deck_meta.get("deck_id", "")
 	
+	assert(deck_order_option != null, "deck_order_option not initialized")
+	assert(deck_size_option != null, "deck_size_option not initialized")
+
 	var order_str = "REGULAR"
-	if is_instance_valid(deck_order_option):
-		if deck_order_option.selected == 1:
-			order_str = "INVERTED"
-		elif deck_order_option.selected == 2:
-			order_str = "RANDOM"
+	if deck_order_option.selected == 1:
+		order_str = "INVERTED"
+	elif deck_order_option.selected == 2:
+		order_str = "RANDOM"
 	
 	var size_str = "FULL"
-	if is_instance_valid(deck_size_option):
-		if deck_size_option.selected == 1:
-			size_str = "HALF"
+	if deck_size_option.selected == 1:
+		size_str = "HALF"
 	
 	# Pass test starters
 	GameManager.test_starting_items = _test_starters.duplicate()
 	
-	# Ensure test mode is off for normal runs
-	GameManager.is_test_mode = false
+	if TutorialManager.tutorials_enabled:
+		TutorialManager.reset_all_tutorials()
+	
 	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)
 
 
-func _on_test_mode_pressed() -> void:
-	if _selected_hero_def == null or _selected_deck_meta.is_empty():
-		Audio.play_sfx("ui_error")
+# --- Hero Starting Set & Inspectable Views ---
+
+
+func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
+	for child in starting_set_container.get_children():
+		child.queue_free()
+	
+	if hero_def == null:
+		starting_set_separator.visible = false
+		starting_set_container.visible = false
 		return
 	
-	var hero_id = _selected_hero_def.id
-	var deck_id = _selected_deck_meta.get("deck_id", "")
+	var starter_ids: Array[StringName] = RunState.get_starters_for_hero(hero_def.id)
+	if starter_ids.is_empty():
+		starting_set_separator.visible = false
+		starting_set_container.visible = false
+		return
 	
-	var order_str = "REGULAR"
-	if is_instance_valid(deck_order_option):
-		if deck_order_option.selected == 1:
-			order_str = "INVERTED"
-		elif deck_order_option.selected == 2:
-			order_str = "RANDOM"
+	starting_set_separator.visible = true
+	starting_set_container.visible = true
 	
-	var size_str = "FULL"
-	if is_instance_valid(deck_size_option):
-		if deck_size_option.selected == 1:
-			size_str = "HALF"
+	var trait_trinket_id: StringName = &""
+	var unit_ids: Array[StringName] = []
+	var unit_counts: Dictionary = {}
+	var item_ids: Array[StringName] = []
+	var item_counts: Dictionary = {}
 	
-	# Pass test starters
-	GameManager.test_starting_items = _test_starters.duplicate()
+	for id in starter_ids:
+		var def: Resource = Database.get_definition(id)
+		if not def:
+			continue
+		if def is TrinketDefinition:
+			trait_trinket_id = id
+		elif def is GachaBallDefinition:
+			var gb := def as GachaBallDefinition
+			if gb.category == &"UNIT":
+				if not unit_counts.has(id):
+					unit_ids.append(id)
+					unit_counts[id] = 1
+				else:
+					unit_counts[id] += 1
+			elif gb.category == &"ITEM":
+				if not item_counts.has(id):
+					item_ids.append(id)
+					item_counts[id] = 1
+				else:
+					item_counts[id] += 1
 	
-	# Set test mode flag
-	GameManager.is_test_mode = true
+	# Section Header & Hint
+	var header_vbox := VBoxContainer.new()
+	header_vbox.add_theme_constant_override("separation", 2)
 	
-	# Trigger normal run start
-	SignalBus.emit_signal("start_run_requested", hero_id, deck_id, order_str, size_str)
+	var title_lbl := Label.new()
+	title_lbl.text = tr("ui.starting_set") if tr("ui.starting_set") != "ui.starting_set" else "Starting Set & Loadout"
+	title_lbl.add_theme_font_size_override("font_size", 18)
+	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5, 1.0))
+	title_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
+	title_lbl.add_theme_constant_override("outline_size", 2)
+	header_vbox.add_child(title_lbl)
+	
+	var hint_lbl := Label.new()
+	hint_lbl.text = tr("ui.inspect_set_hint") if tr("ui.inspect_set_hint") != "ui.inspect_set_hint" else "Click or hover any view to inspect abilities, stats, and recipes."
+	hint_lbl.add_theme_font_size_override("font_size", 12)
+	hint_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.8, 0.8))
+	header_vbox.add_child(hint_lbl)
+	
+	starting_set_container.add_child(header_vbox)
+	
+	# Trait Trinket
+	if trait_trinket_id != &"":
+		var trinket_lbl := Label.new()
+		trinket_lbl.text = tr("ui.starting_trait_trinket") if tr("ui.starting_trait_trinket") != "ui.starting_trait_trinket" else "Starting Trait Trinket:"
+		trinket_lbl.add_theme_font_size_override("font_size", 14)
+		trinket_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.45, 1.0))
+		starting_set_container.add_child(trinket_lbl)
+		
+		var t_hbox := HBoxContainer.new()
+		t_hbox.add_theme_constant_override("separation", 14)
+		starting_set_container.add_child(t_hbox)
+		
+		_create_starter_slot_entry(trait_trinket_id, 1, true, 0, t_hbox, false)
+		
+		var t_def: Resource = Database.get_definition(trait_trinket_id)
+		var desc_vbox := VBoxContainer.new()
+		desc_vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		desc_vbox.alignment = BoxContainer.ALIGNMENT_CENTER
+		desc_vbox.add_theme_constant_override("separation", 4)
+		
+		var t_name := Label.new()
+		var t_name_key: String = t_def.name_key if "name_key" in t_def else (t_def.display_name_key if "display_name_key" in t_def else String(trait_trinket_id))
+		t_name.text = tr(t_name_key)
+		t_name.add_theme_font_size_override("font_size", 15)
+		t_name.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5, 1.0))
+		desc_vbox.add_child(t_name)
+		
+		var t_desc := Label.new()
+		t_desc.text = tr(t_def.description_key) if "description_key" in t_def else ""
+		t_desc.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		t_desc.add_theme_font_size_override("font_size", 13)
+		t_desc.add_theme_color_override("font_color", Color(0.8, 0.8, 0.8, 0.9))
+		desc_vbox.add_child(t_desc)
+		
+		t_hbox.add_child(desc_vbox)
+	
+	# Starting Units
+	if not unit_ids.is_empty():
+		var units_lbl := Label.new()
+		units_lbl.text = tr("ui.starting_units") if tr("ui.starting_units") != "ui.starting_units" else "Starting Units:"
+		units_lbl.add_theme_font_size_override("font_size", 14)
+		units_lbl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 1.0))
+		starting_set_container.add_child(units_lbl)
+		
+		var units_flow := HFlowContainer.new()
+		units_flow.add_theme_constant_override("h_separation", 12)
+		units_flow.add_theme_constant_override("v_separation", 10)
+		starting_set_container.add_child(units_flow)
+		
+		var slot_idx := 0
+		for uid in unit_ids:
+			_create_starter_slot_entry(uid, unit_counts[uid], false, slot_idx, units_flow, true)
+			slot_idx += 1
+	
+	# Starting Items
+	if not item_ids.is_empty():
+		var items_lbl := Label.new()
+		items_lbl.text = tr("ui.starting_items") if tr("ui.starting_items") != "ui.starting_items" else "Starting Items:"
+		items_lbl.add_theme_font_size_override("font_size", 14)
+		items_lbl.add_theme_color_override("font_color", Color(0.65, 0.95, 0.8, 1.0))
+		starting_set_container.add_child(items_lbl)
+		
+		var items_flow := HFlowContainer.new()
+		items_flow.add_theme_constant_override("h_separation", 12)
+		items_flow.add_theme_constant_override("v_separation", 10)
+		starting_set_container.add_child(items_flow)
+		
+		var slot_idx := 0
+		for iid in item_ids:
+			_create_starter_slot_entry(iid, item_counts[iid], false, slot_idx, items_flow, true)
+			slot_idx += 1
+
+
+func _create_starter_slot_entry(def_id: StringName, count: int, is_trinket: bool, slot_idx: int, parent_container: Node, show_name_label: bool = true) -> Control:
+	var def: Resource = Database.get_definition(def_id)
+	assert(def != null, "Definition not found for starter id: %s" % str(def_id))
+	
+	var inst := GachaBallInstance.new()
+	if is_trinket or def is TrinketDefinition:
+		inst.initialize_from_trinket(def)
+	else:
+		inst.initialize(def as GachaBallDefinition)
+	
+	var slot_view: SlotView = SlotViewScene.instantiate()
+	slot_view.set_size_scale(1.0)
+	# Hide slot pedestal texture frame ("the thin line for the slots can also not be used since it's making things too busy")
+	slot_view.show_background = false
+	
+	# Unit stats reach y = 109, so give unit slots 116px height to completely enclose the stats and keep names cleanly below
+	var is_unit: bool = (def is GachaBallDefinition and (def as GachaBallDefinition).category == &"UNIT")
+	var slot_h: int = 116 if is_unit else C.SLOT_SIZE_BASE
+	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, slot_h)
+	
+	var container_name: StringName = &"PlayerTrinkets" if (is_trinket or def is TrinketDefinition) else &"RunInventoryT1"
+	var loc := LocationIdentifier.new(container_name, slot_idx)
+	loc.set_meta("gachaball_instance", inst)
+	loc.set_meta("is_preview", true)
+	slot_view.populate(loc)
+	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+	
+	var entry_vbox := VBoxContainer.new()
+	entry_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
+	entry_vbox.add_theme_constant_override("separation", 6)
+	entry_vbox.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, 0)
+	
+	# Add entry to parent before populating content so node tree and @onready variables are initialized
+	parent_container.add_child(entry_vbox)
+	entry_vbox.add_child(slot_view)
+	
+	var visual_data := VisualDataAdapter.create_visual_data(inst)
+	var gb: GachaBallView = slot_view.set_content(visual_data, true, false)
+	assert(gb != null, "Failed to instantiate GachaBallView for %s" % str(def_id))
+	
+	# Capsule overlay is omitted: raw unit sprite or item icon on slot pedestal
+	gb.show_capsule_overlay = false
+	var overlay = gb.get_node_or_null("GachaBallOverlay")
+	if is_instance_valid(overlay):
+		overlay.queue_free()
+	
+	# Disable unit animations for inspection-only previews
+	var anim_ctrl: UnitAnimationController = gb.get_node_or_null("AnimationController") as UnitAnimationController
+	if anim_ctrl != null:
+		anim_ctrl.set_active(false)
+		anim_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
+	
+	gb.set_meta("gachaball_instance", inst)
+	gb.set_meta("is_preview", true)
+	slot_view.set_meta("gachaball_instance", inst)
+	slot_view.set_meta("is_preview", true)
+	
+	# Count badge for multiple copies
+	if count > 1:
+		var badge := Label.new()
+		badge.text = "%dx" % count
+		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.add_theme_font_size_override("font_size", 14)
+		badge.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3, 1.0))
+		badge.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+		badge.add_theme_constant_override("outline_size", 3)
+		badge.z_index = 15
+		badge.anchors_preset = Control.PRESET_TOP_RIGHT
+		badge.anchor_left = 1.0
+		badge.anchor_right = 1.0
+		badge.offset_left = -32
+		badge.offset_top = 4
+		badge.offset_right = -6
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		badge.set_meta("slot_persistent_child", true)
+		slot_view.add_child(badge)
+	
+	if show_name_label:
+		var name_label := Label.new()
+		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var name_key: String = def.name_key if "name_key" in def else (def.display_name_key if "display_name_key" in def else String(def_id))
+		name_label.text = tr(name_key)
+		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+		name_label.add_theme_font_size_override("font_size", 12)
+		name_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1.0))
+		name_label.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, 0)
+		entry_vbox.add_child(name_label)
+	
+	return entry_vbox
+
+
+func _inspect_definition(anchor: Control, def_id: StringName, is_trinket: bool = false) -> void:
+	Audio.play_sfx("ui_click")
+	if _active_inspected_card == anchor and WindowManager.is_any_inspection_window_open():
+		WindowManager.close_all_inspection_windows(true)
+		_active_inspected_card = null
+		return
+	
+	var def: Resource = Database.get_definition(def_id)
+	assert(def != null, "Definition not found: %s" % str(def_id))
+	
+	var inst := GachaBallInstance.new()
+	var window_type: StringName
+	if is_trinket or def is TrinketDefinition:
+		inst.initialize_from_trinket(def)
+		window_type = &"ItemInspection"
+	else:
+		inst.initialize(def as GachaBallDefinition)
+		window_type = &"UnitInspection" if (def as GachaBallDefinition).category == &"UNIT" else &"ItemInspection"
+	
+	_active_inspected_card = anchor
+	var context: Dictionary = {
+		"window_type": window_type,
+		"anchor_view": anchor,
+		"populate_context": {
+			"source_view": anchor,
+			"instance": inst,
+			"is_preview": true
+		}
+	}
+	WindowManager._open_contextual_window(context)
+

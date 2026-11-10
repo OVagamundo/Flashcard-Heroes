@@ -50,6 +50,10 @@ Each run follows a structured progression loop:
 ## 2.1 Loadout Selection Scene
 Before starting a run, the player configures their starting setup:
 * **Hero & Deck Carousels**: Selection carousels allow choosing a starting Hero and Flashcard Deck using a 3-item layout (previous item, currently selected item scaled up, next item) with navigation arrows.
+* **Hero-to-Set Binding**: Choosing a Hero determines the player's active content set for the run:
+  * **Dan (`hero_starter`)**: Binds the **Novice Set** (Flashcard mastery scaling, study time banking, and token generation engines).
+  * **Shiken (`hero_bounty_hunter`)**: Binds the **Mercenary Set** (Gold-focused scaling, Bounty marking, and wallet-scaled combat abilities).
+  * **Neutral Heroes (`hero_avenger`, `hero_bastion`, `hero_pyro`, `hero_timekeeper`)**: Bind strictly to the **Universal Neutral Base Set** with no specialized Hero Set content.
 * **Simultaneous Detail Panels**: Selecting a carousel item updates dedicated information panels for the Hero (base HP/Power, abilities, traits, flavor text) and the Deck (card counts and descriptions).
 * **Deck Ordering**:
   * `Regular`: Reviews cards in their standard catalog order.
@@ -101,6 +105,16 @@ The game operates on a dual-economy system that separates long-term collection c
 * **Swarming (Tier 1 Focus)**: Tier 1 units are cheap to draw in battle (costing only 1 Token) but have modest base stats. Merging duplicate Tier 1 units permanently upgrades their level, which doubles their Gold valuation in shops while their Token draw cost remains strictly 1 Token. This yields exceptional deployment efficiency.
 * **Slot Power (Tier 2 & Tier 3 Focus)**: Higher-tier units cost more Tokens to draw (2 or 3 Tokens) but provide concentrated slot efficiency, higher base stat packages, and multiplicative abilities.
 * **Exhaustion Risk**: Because defeated units and replaced items are committed permanently to the Discard Pile for the remainder of a battle, an ultra-lean deck can run out of GachaBalls during prolonged encounters, resulting in defeat. Players must balance deck predictability (small decks) against raw endurance (larger decks).
+
+## 3.4 Run Pool Composition & Hero Set Scoping Law
+* **Single Active Set Rule**: In any given run, exactly **one** Hero Set is active alongside the 25 Universal Neutral Base Units, universal items, and base trinkets.
+* **Pool Quarantine**: Content (units, items, and trinkets) belonging to unselected Hero Sets is strictly quarantined for the duration of the run. Unselected set content will **never** appear in:
+  * Shop stock or shop rerolls.
+  * Standard post-battle reward capsules.
+  * Elite and Boss trinket reward choices.
+  * In-combat random summons (abilities, items, or trinkets).
+  * Shrine transformation results.
+* **Neutral Hero Runs**: Runs started with heroes without a dedicated lineage (such as Han, Kon, Hiko, or Deko) draw strictly from the Universal Base Set; neither Novice nor Mercenary content is accessible.
 
 ---
 
@@ -291,8 +305,14 @@ Combat resolves automatically once the player clicks **"Battle!"**:
 * There are no critical hits, random dodges, or percentage-based damage rolls.
 
 ## 8.2 Action Order & Initiative
-* **Player Initiative**: The player team initiates attacks before the enemy team.
-* **Directional Order**: Units act strictly from front (Slot 0) to back (Slot 4).
+* **Alternating Rank-by-Rank Initiative**: Units take turns acting rank-by-rank, alternating slot-by-slot between the enemy and player teams, starting from the frontmost enemy slot:
+  - **Rank 0 (Frontmost)**: Enemy Slot 0 → Player Slot 4
+  - **Rank 1**: Enemy Slot 1 → Player Slot 3
+  - **Rank 2**: Enemy Slot 2 → Player Slot 2
+  - **Rank 3**: Enemy Slot 3 → Player Slot 1
+  - **Rank 4 (Backmost)**: Enemy Slot 4 → Player Slot 0
+* **Initiative by Positioning**: Positioning directly dictates turn order. Frontmost slots have the highest initiative, and backmost slots have the lowest. If a slot is empty or a unit is knocked out before its turn, it is skipped. Thus, a team with frontloaded units will act before a team with backloaded units.
+* **Mid-Turn Summons**: A unit summoned mid-turn only acts in the current turn if its slot rank has not yet acted in the alternating sequence.
 * **Targeting**: Units attack the enemy in the mirrored slot; if that slot is empty, they target the frontmost active enemy.
 * **0 Power Units**: Units with 0 Power still perform their attack animation to ensure consistent visual pacing, but deal 0 damage.
 
@@ -314,8 +334,14 @@ When multiple abilities trigger simultaneously, they resolve in an orderly hiera
 ## 8.4 Summon Priority & Board Space Reservation
 When multiple summons occur simultaneously on unit death:
 1. **Trinket Resurrections (Priority 210)** claim the original dying unit's slot first.
-2. **Unit Summons (Priority 205)** search for alternative free slots in the lineup (searching Back-to-Front).
+2. **Unit Summons (Priority 205)** search for alternative free slots in the lineup in highest-rank order (frontmost to backmost: Player Slot 4 down to 0, Enemy Slot 0 up to 4).
 3. **Item Summons (Priority 200)** claim remaining lineup slots; if the lineup is full, summons route to the Discard Pile (for players). If no slots or discard space remain, the summon is cancelled.
+
+### In-Combat Random Summon Scoping Law
+Whenever an ability, item (e.g., *Boots of Nine Lives*), or trinket executes a random in-combat summon:
+* **Enemy Team Summons**: Must **never** summon player-exclusive units (`is_player_exclusive = true`) and must **never** summon Hero Set units (`set_id != SET_BASE`). Enemy summons draw strictly and exclusively from the universal, non-player-exclusive Base Unit pool.
+* **Player Team Summons**: Summons draw strictly from the universal Base Unit pool plus the player's active run Hero Set (`active_hero_set`). Content belonging to unselected Hero Sets is quarantined and will never be summoned.
+* **Fail-Fast Invariants**: The battle execution system enforces fail-fast assertions in `EffectHandlers.handle_summon_unit` and `EffectHandlers.handle_summon_units` preventing any enemy team summon of player-exclusive or non-base units, and preventing any player team summon from unselected hero sets.
 
 ## 8.5 Unit Transformation Rules (Mimic & Mirror Image)
 * **Trigger Timing**: Evaluates immediately before Mimic takes its attack action when its turn arrives in initiative order.
@@ -346,9 +372,15 @@ Units do not have a maximum health cap; they possess base starting stats and liv
 | Action Category | Affected Stats | Reaction Trigger Fired | Interaction with Armor & Spikes | Gameplay Rule & Usage |
 | :--- | :--- | :--- | :--- | :--- |
 | **Healing (`HEAL`)** | Health (HP) | When Healed | None | Restorative recovery (potions, lifesteal). Strictly triggers "When Healed" reactions. **Never** counts as a stat buff and never triggers "When a Stat Increases". |
-| **Stat Buffs (`BUFF`)** | Health, Power | When a Stat Increases | None | Stat empowerment, level scaling, and death bonuses. Strictly triggers "When a Stat Increases". **Never** counts as healing and never triggers "When Healed". |
+| **Stat Buffs (`BUFF`)** | Health, Power | When a Stat Increases | None | Stat empowerment, level scaling, and death bonuses. Strictly triggers "When a Stat Increases". **Never** counts as healing and never triggers "When Healed". Subdivided into **Discrete Buffs**, **Conditional Buffs**, and **Permanent Buffs**. |
 | **Attack Damage (`DAMAGE`)** | Health (HP) | When Hurt by an Attack, On Damage Dealt | Mitigated by Armor; Melee triggers Spikes | Direct combat strikes. Mitigated by Armor. Melee attacks trigger counter-damage from Spikes. Triggers "When Hurt by an Attack" on victim and "On Damage Dealt" on attacker. |
 | **Stat Debuffs (`DEBUFF`)** | Health, Power | When a Stat Decreases | Bypasses Armor & Spikes | Direct stat penalties. Reduces Health or Power directly, bypasses Armor, ignores Spikes, and never triggers "When Hurt by an Attack". |
+
+### Buff Subgroups & Architecture (`Constants.BUFF_SUBGROUP_*`)
+Buffs are routed through typed subgroups to enforce clear behavioral boundaries across all triggers and abilities:
+* **Discrete Buff (`BUFF_SUBGROUP_DISCRETE`)**: One-time, stackable (`is_stackable = true`) numeric stat increases triggered during battle (e.g. Dan hero harvest on ally death, in-combat kill buffs, combat reaction buffs). Strictly eligible for **Buff Echo**.
+* **Conditional Buff (`BUFF_SUBGROUP_CONDITIONAL`)**: Continuous, state-bound modifiers active strictly while an underlying condition holds (`is_stackable = false`). Encompasses item equipment stats (*"While Equipped"*), state-dependent trinket bonuses (*Rusty Ring*, *Golden Seal*), and level-gated insignia buffs (*Apprentice/Veteran Insignia*). Automatically revoked/reapplied upon state transitions. Strictly **ineligible** for **Buff Echo**.
+* **Permanent Buff (`BUFF_SUBGROUP_PERMANENT`)**: Base upgrades written directly into a unit's core definition for the entire run (e.g. Dojo training, Shrines). Strictly **ineligible** for **Buff Echo**.
 
 ### Damage Origins & Defensive Rules
 * **Melee Attacks**: Mitigated by Armor; triggers Spikes counter-damage; triggers counter-attacks; triggers hurt reactions; triggers "On Damage Dealt".
@@ -358,9 +390,13 @@ Units do not have a maximum health cap; they possess base starting stats and liv
 * **Burn & Static Damage**: Completely bypasses Armor; does not trigger Spikes; does not trigger attack-reactive abilities.
 
 ## 8.10 Buff Echo Behavior (Shadow Cloner)
-* Activates whenever an adjacent ally's stat increases in combat ("When a Stat Increases").
-* Copies temporary in-combat stat buffs only; permanent base upgrades (such as Dojo training) are never copied.
-* When repeating Health bonuses, Buff Echo delivers them strictly as a Health Buff (never as Healing), preventing unintended healing feedback loops.
+* **Trigger Invariant**: Activates strictly when an adjacent ally's stat increases in combat ("When a Stat Increases").
+* **Subgroup Filtering**: Strictly replicates **`BUFF_SUBGROUP_DISCRETE`** buffs where `is_stackable == true`.
+* **Exclusion of Conditional & Permanent Buffs**:
+  * **Conditional Buffs (`BUFF_SUBGROUP_CONDITIONAL`)**—such as item equipment stat attachments, *Rusty Ring* unequipped buffs, *Golden Seal* gold scaling, and *Insignia* tier/level buffs—are strictly **ignored** and never echoed.
+  * **Permanent Upgrades (`BUFF_SUBGROUP_PERMANENT`)**—such as Dojo training, Shrines, and permanent cultivation gains—are strictly **ignored** and never echoed.
+* **Healing Loop Prevention**: When repeating Health bonuses, Buff Echo delivers them strictly as a Health Buff with `buff_subgroup = BUFF_SUBGROUP_DISCRETE` (never as Healing), preventing unintended healing feedback loops.
+* **Echo Recursion Prevention**: Copied buffs stamp `is_echo = true` and `EffectRepeatAdjacentBuff` ignores any incoming buff marked `is_echo = true`, preventing infinite reflection loops.
 
 ---
 
@@ -392,8 +428,8 @@ Activated when the team holds the required count of units possessing that trait 
 
 ## 9.3 Key Trinket Rules
 * **Pre-Combat Timing**: All 15 Trait Trinkets activate strictly during the opening Pre-Combat phase when the Battle button is pressed, not during the management phase. Available to both player and enemy teams.
-* **Insignia Trinkets (*Novice Insignia* & *Veteran Insignia*)**:
-  * *Novice Insignia* grants +1 HP and +1 Power to any Level 1 unit entering the board.
+* **Insignia Trinkets (*Apprentice Insignia* & *Veteran Insignia*)**:
+  * *Apprentice Insignia* grants +1 HP and +1 Power to any Level 1 unit entering the board.
   * *Veteran Insignia* grants +1 HP and +1 Power to any Level 2 unit entering the board or leveling up.
   * Expiration debuffs (`-1 HP`, `-1 PWR`) visibly pop when an existing unit advances to a higher level that no longer qualifies for that insignia.
 * **Conditional Equipment Trinkets (*Rusty Ring*)**:
@@ -409,6 +445,7 @@ Activated when the team holds the required count of units possessing that trait 
 ## 10.1 Encounter Scaling & Scheduling
 * **Daily Budget Formula**: Base enemy budget scales linearly by Day:
   `Budget = 3 + (Day - 1)`
+* **Enemy Encounter Set Exclusion Law**: Enemy teams (regular encounters, elite encounters, boss supports, and boss summons) are generated **exclusively from the Universal Neutral Base Set** (alongside designated boss/elite entities). Set units, items, and trinkets (such as Novice and Mercenary packs) are strictly excluded from enemy generation.
 * **Elites & Bosses**: Mini-boss and Boss units are free; support units consume 85% of the daily budget. Boss reinforcements consume 33% of the daily budget.
 * **Path Choice Priorities**:
   * **Regular Battles**: Dominant appearance priority (~96%–98% of 3-path choices).
@@ -418,14 +455,15 @@ Activated when the team holds the required count of units possessing that trait 
 ## 10.2 Standard Nodes
 * **Regular Battles**: Standard budget-based combat encounters.
 * **Shop Node**:
-  * Offers 3 random GachaBalls from the unlocked pool.
+  * Offers 3 random GachaBalls from the active run pool (Universal Neutral Base Set + Active Hero Set).
   * Undiscovered merge recipes for the current run highlight in Violet.
   * **Reroll Cost**: Starts at **1 Gold**, increases by **+1 Gold** per reroll in that visit, and resets to 1 Gold on the next visit.
 * **Shrine Node**:
   * **Remove**: Permanently purges a GachaBall from the run deck (starts at 5 Gold, increases by +1 Gold per removal across the run).
-  * **Transform**: Replaces a GachaBall with a random alternative of the same tier for a flat fee of **5 Gold**.
+  * **Transform**: Replaces a GachaBall with a random alternative of the same tier and category from the active run pool for a flat fee of **5 Gold**.
 * **Post-Battle Rewards**:
-  * Displays 5 reward capsules.
+  * Displays 5 reward capsules. Standard capsules are drawn from the active run pool (`Universal Base + Active Hero Set`).
+  * Elite and Boss battles award 3 trinket choices drawn strictly from eligible run trinkets (`Universal Base + Active Hero Set`).
   * **Collect**: Adds the capsule to the Run Inventory for free.
   * **Sell**: Sells the capsule for Gold (standard items sell for tier value; Elite rewards sell for a flat **10 Gold**).
   * **Auto-Collection**: Leaving the scene with uncollected items automatically collects all remaining prizes.

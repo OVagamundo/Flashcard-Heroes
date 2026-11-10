@@ -249,7 +249,7 @@ func stop_recording(reason: String = "stopped") -> void:
 
 func _on_run_ending(reason: String) -> void:
 	if _recording and not _suppressed:
-		if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+		if ActionQueue.is_busy():
 			_pending_stop_reason = reason
 		else:
 			stop_recording(reason)
@@ -257,7 +257,7 @@ func _on_run_ending(reason: String) -> void:
 func _on_action_started(action: GameAction) -> void:
 	if not _recording or _suppressed or not is_instance_valid(action):
 		return
-	if is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode():
+	if ActionQueue.is_replay_mode():
 		return
 	var payload := action.to_dict()
 	# Record the settled state at the decision boundary. Playback checks this
@@ -272,7 +272,7 @@ func _on_action_started(action: GameAction) -> void:
 func _on_action_completed(action: GameAction) -> void:
 	if not _recording or _suppressed or not is_instance_valid(action):
 		return
-	if is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode():
+	if ActionQueue.is_replay_mode():
 		return
 	var instance_id := action.get_instance_id()
 	if not _action_sequence_by_instance.has(instance_id):

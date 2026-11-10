@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectNailPreBattle.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_ReviewLedger"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_item_review_ledger"
+description_key = "item.review_ledger.desc"
+trigger = &"pre_combat"
+effects = Array[Resource]([SubResource("Effect_ReviewLedger")])
+sub_phase = 98
+max_level = 3

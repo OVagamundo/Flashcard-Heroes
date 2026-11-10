@@ -42,14 +42,13 @@ func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void
 	for tgt_uuid in resolved_targets:
 		var tgt = battle_manager.get_instance_by_uuid(tgt_uuid)
 		if is_instance_valid(tgt) and tgt.current_hp > 0:
-			var before_ctx := {
-				"source_uuid": tgt_uuid,
-				"defender_uuid": tgt_uuid,
-				"attacker_uuid": request.source_uuid,
-				"target_initial_hp": tgt.current_hp,
-				"is_simulation": true
-			}
-			AbilityResolver.process_trigger(&"on_before_damage", before_ctx)
+			var before_ctx := TriggerContext.new()
+			before_ctx.source_uuid = tgt_uuid
+			before_ctx.defender_uuid = tgt_uuid
+			before_ctx.attacker_uuid = request.source_uuid
+			before_ctx.target_initial_hp = tgt.current_hp
+			before_ctx.is_simulation = true
+			AbilityResolver.process_trigger(C.TRIGGER_BEFORE_TAKING_DAMAGE, before_ctx)
 	
 	# Drain on_before_damage reactions before damage is applied
 	var before_damage_evts = combat_sim.drain_reaction_scope(before_damage_scope, battle_manager)

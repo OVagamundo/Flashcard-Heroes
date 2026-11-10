@@ -686,6 +686,7 @@ func _present_choice_result(selected_answer_id: StringName, question_id: StringN
 	_input_locked = true
 	var was_correct: bool = selected_answer_id == question_id
 	var tokens_to_give: int = int(committed_result.get("tokens_to_give", 0))
+	var gold_to_give: int = int(committed_result.get("gold_to_give", 0))
 	var midgame_unlocked_card_id: StringName = &""
 	var res: Dictionary = committed_result.duplicate(true)
 	
@@ -722,7 +723,7 @@ func _present_choice_result(selected_answer_id: StringName, question_id: StringN
 		_update_timer_display()
 		_update_aura_vfx()
 			
-		_flash_button_correct(selected_answer_id, tokens_to_give)
+		_flash_button_correct(selected_answer_id, tokens_to_give, gold_to_give)
 		if not midgame_unlocked_card_id.is_empty():
 			_flash_timer_bar_bonus(Color.WHITE)
 			_show_timer_buff_popup("+1.0s")
@@ -1028,8 +1029,8 @@ func _update_aura_vfx() -> void:
 	if is_instance_valid(_aura_vfx):
 		_aura_vfx.set_intensity(_current_streak, _get_streak_color())
 
-func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) -> void:
-	"""Flash the correct answer button green (or streak color) and optionally spawn token pop VFX"""
+func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1, gold_count: int = 0) -> void:
+	"""Flash the correct answer button green (or streak color) and optionally spawn token and gold pop VFX"""
 	var btn_color = _get_streak_color()
 	
 	for i in range(choices_grid.get_child_count()):
@@ -1051,6 +1052,8 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1) 
 			
 			if token_count > 0:
 				CurrencyAnimator.animate_token_gain(token_count, spawn_pos, Callable(), _current_streak)
+			if gold_count > 0:
+				CurrencyAnimator.animate_gold_gain(gold_count, spawn_pos)
 			break
 
 func _on_skip_pressed() -> void:

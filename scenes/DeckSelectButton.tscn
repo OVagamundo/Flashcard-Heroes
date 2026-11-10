@@ -27,7 +27,7 @@ corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
 [node name="DeckSelectButton" type="PanelContainer"]
-custom_minimum_size = Vector2(140, 80)
+custom_minimum_size = Vector2(120, 80)
 theme_override_styles/panel = SubResource("StyleBoxFlat_panel")
 script = ExtResource("1_script")
 

@@ -10,15 +10,14 @@
 
 [resource]
 script = ExtResource("1_unit")
-id = &"FWWASupAniToy"
-display_name_key = "FWWASupAniToy.name"
-description_key = "FWWASupAniToy.desc"
+id = &"FWWATnkFod"
+display_name_key = "FWWATnkFod.name"
+description_key = "FWWATnkFod.desc"
 icon = ExtResource("3_icon")
-tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Support", &"Animal", &"Toy"])
+tags = Array[StringName]([&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Food"])
 is_hero = false
 tier = 3
 level = 1
-cost = 4
 category = &"UNIT"
 
 base_hp = 4

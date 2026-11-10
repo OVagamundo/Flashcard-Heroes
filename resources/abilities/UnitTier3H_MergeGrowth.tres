@@ -19,5 +19,5 @@ id = &"unit_tier3h_merge_growth_l1"
 description_key = "ability.unit_tier3h_merge_growth_l1.desc"
 trigger = &"on_merge"
 effects = Array[Resource]([SubResource("EffectModifyStat_GainHP_1"), SubResource("EffectModifyStat_GainPWR_1")])
-priority = 0
+sub_phase = 200
 max_level = 1

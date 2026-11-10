@@ -9,5 +9,5 @@ id = &"ability_consumable_steal"
 description_key = "ability.potion_plunder.desc"
 trigger = &""
 effects = Array[Resource]([ExtResource("2_effect")])
-priority = 0
-execute_on_lethal = false
+sub_phase = 200
+execute_before_knockout = false

@@ -20,5 +20,5 @@ script = ExtResource("1_script")
 id = &"ability_boss_2_token_drain"
 description_key = "ability.boss_2_token_drain.desc"
 trigger = &"on_token_spent"
-priority = 0
+sub_phase = 200
 effects = Array[Resource]([SubResource("EffectModifyStat")])

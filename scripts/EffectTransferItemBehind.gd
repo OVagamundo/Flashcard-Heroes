@@ -6,8 +6,8 @@ extends EffectDefinition
 ## Transfers the equipped item of the dying unit to the ally behind it.
 ## Used by the Standard Bearer's Standard's Legacy ability.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -21,7 +21,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if not is_instance_valid(source):
 		return EffectResult.empty()
 	
-	var equipped_items: Array = context.get("equipped_items", [])
+	var equipped_items: Array = context.equipped_items
 	if equipped_items.is_empty():
 		return EffectResult.empty()
 		
@@ -42,8 +42,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		# Find units behind
 		var units_behind: Array[GachaBallInstance] = []
 		
-		var current_location: LocationIdentifier = context.get("dying_location")
-		var is_player_team: bool = context.get("dying_team", "PLAYER") == "PLAYER"
+		var current_location: LocationIdentifier = context.knocked_out_location
+		var is_player_team: bool = (context.knocked_out_team if not context.knocked_out_team.is_empty() else "PLAYER") == "PLAYER"
 		
 		var current_container_tag = current_location.container
 		var current_index = current_location.index

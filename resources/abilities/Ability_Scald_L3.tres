@@ -7,9 +7,9 @@
 script = ExtResource("1_script")
 id = &"ability_scald_l3"
 description_key = "ability.scald_l3.desc"
-trigger = &"on_healed"
+trigger = &"when_healed"
 effects = Array[Resource]([ExtResource("2_effect")])
-priority = 0
-execute_on_lethal = false
+sub_phase = 200
+execute_before_knockout = false
 required_level = 3
 max_level = 3

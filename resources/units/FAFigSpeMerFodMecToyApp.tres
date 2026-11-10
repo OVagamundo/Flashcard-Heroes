@@ -16,7 +16,6 @@ icon = ExtResource("2_icon")
 tags = Array[StringName]([&"SOUL_FIRE", &"?", &"?", &"SOUL_AIR", &"Fighter", &"Specialist", &"Mercenary", &"Food", &"Mecha", &"Toy", &"Appliance"])
 tier = 3
 level = 1
-cost = 6
 category = &"UNIT"
 
 base_hp = 5
@@ -24,3 +23,5 @@ base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
 ability_definitions = Array[Resource]([ExtResource("3_basic_attack"), ExtResource("4_l1"), ExtResource("5_l2"), ExtResource("6_l3")])
+is_player_exclusive = true
+set_id = &"MERCENARY"

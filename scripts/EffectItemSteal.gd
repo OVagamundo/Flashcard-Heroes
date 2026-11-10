@@ -7,7 +7,7 @@ const C = preload("res://scripts/Constants.gd")
 
 ## Execute the item-stripping effect (Potion of Plunder).
 ## Removes a random equipped item from the target unit and sends it directly to the Battle Discard Pile.
-func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	if targets.is_empty():
 		return EffectResult.empty()
 	var target_uuid = targets[0]

@@ -5,16 +5,16 @@ extends EffectDefinition
 ## Effect for Trinity Charm: Tracks drawn tiers in a turn/encounter. 
 ## If all 3 tiers are drawn, grants 1 token. Resets on turn end or battle start.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var trinket: GachaBallInstance = battle_manager.get_instance_by_uuid(_source_uuid)
 	if not is_instance_valid(trinket):
 		return EffectResult.empty()
 
-	var trigger: StringName = context.get("trigger_type", &"")
-	var is_simulation: bool = context.get("is_simulation", false)
+	var trigger: StringName = context.trigger_type
+	var is_simulation: bool = context.is_simulation
 
-	if trigger == &"on_draw":
-		var tier: int = context.get("tier", 0)
+	if trigger == C.TRIGGER_ON_GACHA_DRAW:
+		var tier: int = context.tier
 		if tier >= 1 and tier <= 3:
 			# Track the tier being drawn
 			var key = StringName("trinity_t%d_drawn" % tier)
@@ -51,7 +51,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 						non_sim_result.state_applied = true
 						return non_sim_result
 
-	elif trigger == &"on_turn_end" or trigger == &"on_battle_start":
+	elif trigger == C.TRIGGER_AT_TURN_END or trigger == C.TRIGGER_AT_BATTLE_START:
 		# Reset all tracking
 		trinket.status_effects.erase(&"trinity_t1_drawn")
 		trinket.status_effects.erase(&"trinity_t2_drawn")

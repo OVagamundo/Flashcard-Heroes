@@ -7,7 +7,7 @@
 [sub_resource type="Resource" id="ConditionDefinition_NonLethal_1"]
 script = ExtResource("3_condition")
 id = &"cond_damage_was_non_lethal"
-condition_type = &"DAMAGE_WAS_NON_LETHAL"
+condition_type = &"DAMAGE_DID_NOT_KNOCK_OUT"
 parameters = {}
 invert_result = false
 
@@ -19,7 +19,7 @@ target_type = &"HOLDER"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier1a_passive_heal_l2"
-trigger = &"on_hurt"
+trigger = &"when_taking_damage"
 condition = SubResource("ConditionDefinition_NonLethal_1")
 effects = Array[Resource]([SubResource("EffectModifyStat_PassiveHeal_1")])
 description_key = "ability.unit_tier1a_passive_heal_l2.desc"

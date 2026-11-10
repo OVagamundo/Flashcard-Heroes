@@ -4,7 +4,6 @@ extends Control
 @onready var start_run_button: Button = %StartRunButton
 @onready var options_button: Button = %OptionsButton
 @onready var exit_button: Button = %ExitButton
-@onready var tutorial_checkbox: CheckBox = %TutorialCheckbox
 @onready var continue_button: Button = %ContinueButton
 @onready var replays_button: Button = %ReplaysButton
 @onready var background: TextureRect = $Background
@@ -14,10 +13,7 @@ const REPLAY_BROWSER_SCENE := preload("res://scenes/ui/ReplayBrowser.tscn")
 func _input(event: InputEvent) -> void:
 	# Debug Header: Reset tutorials with Shift+T
 	if event is InputEventKey and event.pressed and event.keycode == KEY_T and event.shift_pressed:
-		if TutorialManager:
-			TutorialManager.reset_all_tutorials()
-			if tutorial_checkbox:
-				tutorial_checkbox.button_pressed = true # Auto-enable
+		TutorialManager.reset_all_tutorials()
 
 func _ready() -> void:
 	# AUDIO HOOK: Title BGM
@@ -38,28 +34,16 @@ func _ready() -> void:
 	else:
 		continue_button.visible = false
 	
-	# The Title screen should now transition to the Loadout scene, not start a run directly.
+	# The Title screen transitions to the Loadout scene
 	start_run_button.pressed.connect(func():
-		# Reset tutorials for the new run flow so loadout_intro shows
-		if TutorialManager and TutorialManager.tutorials_enabled:
-			TutorialManager.reset_all_tutorials()
 		SignalBus.emit_signal("loadout_scene_requested")
 	)
 	options_button.pressed.connect(_on_options_pressed)
-	if is_instance_valid(replays_button):
-		replays_button.pressed.connect(_on_replays_pressed)
+	replays_button.pressed.connect(_on_replays_pressed)
 	
-	if exit_button:
-		exit_button.pressed.connect(func():
-			get_tree().quit()
-		)
-	
-	if tutorial_checkbox:
-		tutorial_checkbox.button_pressed = TutorialManager.tutorials_enabled
-		tutorial_checkbox.toggled.connect(func(enabled: bool):
-			TutorialManager.tutorials_enabled = enabled
-			TutorialManager.save_settings()
-		)
+	exit_button.pressed.connect(func():
+		get_tree().quit()
+	)
 	
 	# Connect to locale changes to update button text
 	SignalBus.locale_changed.connect(_update_localized_text)
@@ -68,14 +52,10 @@ func _ready() -> void:
 func _update_localized_text() -> void:
 	start_run_button.text = tr("ui.play")
 	options_button.text = tr("ui.options")
-	if exit_button:
-		exit_button.text = tr("ui.exit_game")
+	exit_button.text = tr("ui.exit_game")
 	if continue_button:
 		continue_button.text = tr("ui.continue")
-	if replays_button:
-		replays_button.text = "Replays"
-	if tutorial_checkbox:
-		tutorial_checkbox.text = tr("ui.show_tutorials")
+	replays_button.text = "Replays"
 
 func _on_options_pressed() -> void:
 	# Open the options window via WindowManager

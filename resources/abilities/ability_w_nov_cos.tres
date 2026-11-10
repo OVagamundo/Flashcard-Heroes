@@ -1,0 +1,18 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectTidecloakHealOnHurt.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_WNovCos"]
+script = ExtResource("2_effect")
+parameters = {}
+target_type = &"SELF"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_w_nov_cos"
+description_key = "W?NovCos.desc"
+trigger = &"when_taking_damage"
+effects = Array[Resource]([SubResource("Effect_WNovCos")])
+sub_phase = 50
+max_level = 3

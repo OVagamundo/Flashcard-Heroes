@@ -35,6 +35,25 @@ var _turn_metadata: Dictionary = {}
 ## Turn-scoped death registry: {uuid: {team, died_in_phase, def_id}}
 var _dead_this_turn: Dictionary = {}
 
+## Monotonic counter and per-UUID sequence index tracking the exact chronological order
+## in which units transition to <= 0 HP during a turn.
+var _lethal_sequence_counter: int = 0
+var _lethal_sequence_by_uuid: Dictionary = {}
+
+## Re-entrancy guard ensuring a single casualty's knockout cascade resolves atomically
+## before outer knockout loops pick the next casualty.
+var is_resolving_knockouts: bool = false
+
+## Units whose knockout completion is deferred until pending counter-attacks resolve
+var deferred_knockouts: Array[String] = []
+
+## Deferred WHEN_ALLY_KNOCKED_OUT contexts waiting for counter-attacking units
+var deferred_ally_knockouts_player: Array[TriggerContext] = []
+var deferred_ally_knockouts_enemy: Array[TriggerContext] = []
+
+## Enemy instance UUIDs deferred from final erasure until combat event playback finishes
+var deferred_enemy_erasures: Array[String] = []
+
 ## Gacha tokens available for spending (synchronized with RunState if present)
 var _gacha_tokens: int = 0:
 	get:
@@ -90,6 +109,7 @@ func get_container(container_name: StringName) -> DataContainer:
 			else:
 				return null
 
+	new_container.container_tag = container_name
 	_containers[container_name] = new_container
 	return new_container
 
@@ -281,6 +301,27 @@ func replace_unit_preserving_items(old_unit: GachaBallInstance, new_unit: GachaB
 func clear_turn_data() -> void:
 	_turn_metadata.clear()
 	_dead_this_turn.clear()
+	_lethal_sequence_counter = 0
+	_lethal_sequence_by_uuid.clear()
+	is_resolving_knockouts = false
+	deferred_knockouts.clear()
+	deferred_ally_knockouts_player.clear()
+	deferred_ally_knockouts_enemy.clear()
+	deferred_enemy_erasures.clear()
+
+func record_lethal_transition(uuid: String) -> int:
+	if uuid.is_empty():
+		return 999999
+	if not _lethal_sequence_by_uuid.has(uuid):
+		_lethal_sequence_counter += 1
+		_lethal_sequence_by_uuid[uuid] = _lethal_sequence_counter
+	return int(_lethal_sequence_by_uuid[uuid])
+
+func clear_lethal_transition(uuid: String) -> void:
+	_lethal_sequence_by_uuid.erase(uuid)
+
+func get_lethal_sequence(uuid: String) -> int:
+	return int(_lethal_sequence_by_uuid.get(uuid, 999999))
 
 func get_turn_metadata() -> Dictionary:
 	return _turn_metadata
@@ -367,6 +408,13 @@ func clear() -> void:
 	enemy_trinkets.clear()
 	_turn_metadata.clear()
 	_dead_this_turn.clear()
+	_lethal_sequence_counter = 0
+	_lethal_sequence_by_uuid.clear()
+	is_resolving_knockouts = false
+	deferred_knockouts.clear()
+	deferred_ally_knockouts_player.clear()
+	deferred_ally_knockouts_enemy.clear()
+	deferred_enemy_erasures.clear()
 	_gacha_tokens = 0
 	player_slot_effects = [&"", &"", &"", &"", &""]
 	enemy_slot_effects = [&"", &"", &"", &"", &""]

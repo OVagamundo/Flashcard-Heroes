@@ -12,20 +12,20 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	await animator.get_tree().process_frame
 	
 	# 1. Launch Projectiles (Parallel)
-	# For heals, we might want to wait for projectile impact before flashing
+	# For heals to allies, wait for projectile impact before flashing. Self-heals animate locally.
 	var projectiles = []
 	for target_uuid in targets:
-		var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), "hp", "green")
-		if proj: projectiles.append(proj)
+		if target_uuid != source_uuid:
+			var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), "hp", "green")
+			if proj: projectiles.append(proj)
 	
-	# Wait for projectiles to land (Juicy feel: heal happens on impact)
-	# If no projectiles (missing snapshots), wait a simulated duration
-	if projectiles.is_empty():
-		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
-	else:
+	# Wait for projectiles to land (heal happens on impact for ally heals)
+	if not projectiles.is_empty():
 		for proj in projectiles:
 			if is_instance_valid(proj):
 				await proj.wait_for_impact()
+	elif targets.any(func(t: String): return t != source_uuid):
+		await AnimationConstants.create_pausable_timer(animator.get_tree(), AnimationConstants.scaled(0.5)).timeout
 			
 	# 2. Apply Heal (Flash + Label Update)
 	for i in range(targets.size()):

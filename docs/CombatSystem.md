@@ -48,7 +48,7 @@ graph TD
 | EffectHandlers | Helper functions for raw stat/summon execution (invoked by commands) |
 | InventoryOperations | **Exclusive** handler for ALL inventory mutations (move, swap, equip, remove, discard) |
 | BattleState | Instance storage, container management |
-| DeathProcessor | Death cleanup logic (delegates inventory moves to InventoryOperations) |
+| KnockoutProcessor | Knockout and death cleanup logic (delegates inventory moves to InventoryOperations) |
 | TurnAbilities | Turn start/end triggers |
 | TargetResolver | Target resolution |
 | BattleHelpers | Utility functions |
@@ -436,29 +436,41 @@ This ensures that a resurrection trinket (210) always takes precedence over a se
 ### Summoning Rules & Board Geometry
 To ensure consistent behavior, all summoning effects (Trinkets, Items, Units, Reinforcements) follow a unified set of rules.
 
-#### 1. Board Geometry
-The battlefield is mirrored, meeting in the center.
-- **Player Team (Left Side):**
-  - **Slot 0:** Backmost (Left). Acts LAST.
-  - **Slot 4:** Frontmost (Right). Acts FIRST.
-  - **Action Order:** 4 → 3 → 2 → 1 → 0. (Front-to-Back)
+#### 1. Board Geometry & Alternating Initiative
+The battlefield is mirrored, meeting in the center. Units take turns acting rank-by-rank, alternating slot-by-slot between the enemy and player teams, starting from the frontmost enemy slot:
 - **Enemy Team (Right Side):**
-  - **Slot 0:** Frontmost (Left). Acts FIRST.
-  - **Slot 4:** Backmost (Right). Acts LAST.
-  - **Action Order:** 0 → 1 → 2 → 3 → 4. (Front-to-Back)
+  - **Slot 0:** Frontmost (Left, facing center). Rank 0.
+  - **Slot 4:** Backmost (Right). Rank 4.
+  - **Action Order within Team:** 0 → 1 → 2 → 3 → 4. (Front-to-Back)
+- **Player Team (Left Side):**
+  - **Slot 4:** Frontmost (Right, facing center). Rank 0.
+  - **Slot 0:** Backmost (Left). Rank 4.
+  - **Action Order within Team:** 4 → 3 → 2 → 1 → 0. (Front-to-Back)
+
+**Alternating Turn Sequence:**
+1. Enemy Slot 0 (Rank 0)
+2. Player Slot 4 (Rank 0)
+3. Enemy Slot 1 (Rank 1)
+4. Player Slot 3 (Rank 1)
+5. Enemy Slot 2 (Rank 2)
+6. Player Slot 2 (Rank 2)
+7. Enemy Slot 3 (Rank 3)
+8. Player Slot 1 (Rank 3)
+9. Enemy Slot 4 (Rank 4)
+10. Player Slot 0 (Rank 4)
+
+*(Empty slots are naturally skipped, so frontloaded formations act before backloaded units. Mid-turn summons only act in the current round if their slot rank has not yet acted).*
 
 > [!NOTE]
-> "First Available Slot" always refers to the **Backmost** empty slot (safest position).
-> - **Player Search:** 0 → 4 (Back → Front)
-> - **Enemy Search:** 4 → 0 (Back → Front)
+> "First Available Slot" for summons refers to the **Highest-Rank** (lowest rank number = frontmost) empty slot.
+> - **Player Search:** 4 → 0 (Front → Back)
+> - **Enemy Search:** 0 → 4 (Front → Back)
 
 #### 2. Slot Priority Logic
 When a unit is summoned, the system determines its target slot in this strict order:
 1.  **Holder's Slot:** If the summon source is replacing a unit (e.g., resurrection, on-death summon), it **must** take that unit's slot.
     *   **Collision Check:** If the slot is occupied by a *different* LIVING unit, it is considered blocked. (Dead units or the summoner itself do not block).
-2.  **Backmost Available Slot:** If the primary slot is blocked (or if there is no specific holder, like Boss Reinforcements), search for the first empty slot starting from the **Back** of the formation.
-    *   Player: Search Index 0 → 4.
-    *   Enemy: Search Index 4 → 0.
+2.  **Highest-Rank Available Slot:** If the primary slot is blocked (or if there is no specific holder, like Boss Reinforcements), search for the first empty slot in highest-rank order (Player: 4 → 0, Enemy: 0 → 4).
 3.  **Discard Pile:** (Player Only) If lineup is full, summon to the Discard Pile.
 4.  **Cancel:** If all options fail, the summon is cancelled.
 
@@ -498,6 +510,12 @@ Reserved for specific "Minion Summons" that bypass the standard battlefield econ
 - **Soul Echo Exception**: The ONLY exception is the `Soul Echo` trinket (`trinket_soul_echo`), which CAN resurrect a Dust unit or Dust elite if it is the very first unit to die on that team during the turn and the team has `Soul Echo` equipped.
 - **Boss Reinforcement Restrictions**: Bosses cannot summon any Dust units or Dust elites through their generic reinforcement calls (`EffectBossSummon`).
 - **Dust Elite Summoning Scope**: Dust elites themselves can ONLY summon standard Dust units; they can NEVER summon other Dust elites.
+
+#### 8. In-Combat Random Summon Scoping (Team & Hero Set Scoping Law)
+- **Centralized Source of Truth**: All in-combat random summon effects query `Database.get_eligible_summon_units(tier, is_player, active_set)`.
+- **Enemy Team Summons**: Restricted strictly to non-player-exclusive units belonging to `SET_BASE`. Under no circumstances can enemy random summons produce player-exclusive units (`is_player_exclusive = true`) or units from Hero Sets (`NOVICE`, `MERCENARY`, etc.).
+- **Player Team Summons**: Restricted strictly to `SET_BASE` and the active Hero Set chosen for the run (`active_hero_set`). Unselected Hero Sets are quarantined.
+- **Invariant Enforcement**: `EffectHandlers.handle_summon_unit` and `EffectHandlers.handle_summon_units` assert fail-fast invariants preventing illegal cross-set or player-exclusive unit summons.
 
 ### Mid-Turn Summon Actions
 Summoned units may act in the *same turn* they are summoned, but ONLY if valid within the turn order.

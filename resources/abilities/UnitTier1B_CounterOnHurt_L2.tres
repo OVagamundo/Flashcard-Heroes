@@ -23,11 +23,11 @@ parameters = { "extra_bounces": 1 }
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_tier1b_counter_on_hurt_l2"
-trigger = &"on_hurt"
+trigger = &"when_taking_damage"
 condition = SubResource("ConditionDefinition_DamageReceived_1")
 effects = Array[Resource]([SubResource("EffectCounterAttack_1")])
 description_key = "ability.unit_tier1b_counter_on_hurt_l2.desc"
-execute_on_lethal = true
+execute_before_knockout = true
 required_level = 2
 
 max_level = 2

@@ -62,19 +62,19 @@ class CascadeRequest extends RefCounted:
 		damage_type = p_damage_type
 		items = p_items
 
-class KamikazeRequest extends RefCounted:
+class PreKnockoutAttackRequest extends RefCounted:
 	var source_uuid: String
 	var target_uuid: String
 	var damage: int
 	var damage_type: int
-	var dying_max_hp: int
+	var knocked_out_max_hp: int
 	
-	func _init(p_source_uuid: String, p_target_uuid: String, p_damage: int, p_damage_type: int, p_dying_max_hp: int):
+	func _init(p_source_uuid: String, p_target_uuid: String, p_damage: int, p_damage_type: int, p_knocked_out_max_hp: int):
 		source_uuid = p_source_uuid
 		target_uuid = p_target_uuid
 		damage = p_damage
 		damage_type = p_damage_type
-		dying_max_hp = p_dying_max_hp
+		knocked_out_max_hp = p_knocked_out_max_hp
 
 # ============================================================================
 # STATE FLAGS
@@ -108,8 +108,8 @@ var summon_container_tag: StringName = &""
 ## Cascade damage request for AOE effects like Shockwave.
 var cascade_request: CascadeRequest = null
 
-## Kamikaze attack request for Death's Bargain on-death effect.
-var kamikaze_request: KamikazeRequest = null
+## Pre-knockout attack request for Death's Bargain on-death effect.
+var pre_knockout_attack_request: PreKnockoutAttackRequest = null
 
 ## Transform request for Mimic effect.
 ## Format: {self_uuid: String, target_unit_id: StringName}

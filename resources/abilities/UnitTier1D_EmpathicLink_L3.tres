@@ -11,9 +11,9 @@ target_type = &"ALLY_BEHIND"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_t1_d_empathic_link_l3"
-trigger = &"on_death"
+trigger = &"when_knocked_out"
 effects = Array[Resource]([SubResource("EffectBuffAllyBehindPWR_3")])
 description_key = "ability.unit_t1_d_empathic_link_l3.desc"
-priority = 300
-execute_on_lethal = true
+sub_phase = 12
+execute_before_knockout = true
 required_level = 3

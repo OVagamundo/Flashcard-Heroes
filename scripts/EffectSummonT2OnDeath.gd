@@ -1,21 +1,22 @@
 @tool
+class_name EffectSummonT2OnDeath
 extends EffectDefinition
 const C = preload("res://scripts/Constants.gd")
 
 ## Summon a random T2 unit when the holder dies
 ## Uses context data instead of querying instances (Effect Decoupling Rule)
 
-func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node, context: TriggerContext) -> EffectResult:
 	# The source is a unit triggering on_death
 	# Context contains data about the dying unit
-	# Semantic keys: dying_uuid, dying_location
+	# Semantic fields: knocked_out_uuid, knocked_out_location
 	# 1. Get holder location from context (this is where we summon)
-	var holder_location = context.get("dying_location")
+	var holder_location: LocationIdentifier = context.knocked_out_location
 	if not is_instance_valid(holder_location):
 		return EffectResult.empty()
 	
 	# Get holder info from context (using new semantic key)
-	var holder_uuid = context.get("dying_uuid", "")
+	var holder_uuid: String = context.knocked_out_uuid
 	
 	# Validate this is the correct source (the dying unit must have this ability)
 	if source_uuid != holder_uuid:
@@ -26,17 +27,11 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 	# EffectHandlers will handle collision resolution (checking if slot occupied by non-holder)
 	# and find an alternative slot if needed using the Unified Summon Slot Finder.
 
-	# 3. Pick a random Tier 2 Unit
-	var tier_2_units = []
-	for unit_def in Database.units.values():
-		var unit_id = String(unit_def.id).to_lower()
-		if unit_def.tier == 2 and unit_def.category == &"UNIT" and not unit_def.is_hero and not "dust" in unit_id and not "elite" in unit_id:
-			tier_2_units.append(unit_def)
-	
-	if tier_2_units.is_empty():
-		return EffectResult.empty()
-	
-	var random_def = RNGManager.combat_rng.pick_random(tier_2_units)
+	# 3. Pick a random Tier 2 Unit using centralized summon scoping
+	var is_player: bool = BattleHelpers.is_player_team_context(context, holder_location)
+	var tier_2_units: Array[GachaBallDefinition] = Database.get_eligible_summon_units(2, is_player)
+	assert(not tier_2_units.is_empty(), "EffectSummonT2OnDeath: no eligible Tier 2 units for is_player=%s" % is_player)
+	var random_def: GachaBallDefinition = RNGManager.combat_rng.pick_random(tier_2_units)
 	
 	var result := EffectResult.new()
 	result.summon_request = {

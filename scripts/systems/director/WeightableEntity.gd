@@ -5,6 +5,7 @@ extends Resource
 @export var id: StringName = &""
 @export var base_weight: int = 100
 @export var tags: Array[StringName] = []
+@export var set_id: StringName = &"BASE"
 
 # To be overridden by child classes if they have hard constraints
 func meets_prerequisites(_run_state) -> bool:

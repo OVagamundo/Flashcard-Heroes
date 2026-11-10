@@ -35,9 +35,17 @@ func populate(context: Dictionary) -> void:
 		return
 
 	var def = C.TRAIT_DEFINITIONS[_trait_id]
+	var font = Database.get_current_locale_font()
 	title_label.text = tr(def.display_name_key)
-	title_label.add_theme_font_override("font", Database.get_current_locale_font())
-	title_label.add_theme_font_size_override("font_size", 32)
+	title_label.add_theme_font_override("font", font)
+	title_label.add_theme_font_size_override("font_size", 26)
+	
+	description_label.add_theme_font_override("normal_font", font)
+	description_label.add_theme_font_override("bold_font", font)
+	description_label.add_theme_font_size_override("normal_font_size", 22)
+	description_label.add_theme_font_size_override("bold_font_size", 22)
+	description_label.add_theme_constant_override("line_separation", 3)
+	description_label.add_theme_constant_override("p_separation", 6)
 	
 	# Set icon (reusing internal preload logic or passing texture)
 	if is_instance_valid(_source_view) and _source_view.get("icon_texture"):
@@ -59,7 +67,7 @@ func populate(context: Dictionary) -> void:
 		var is_active = current_count >= min_req
 		
 		# Formatting
-		var color_tag = "[color=#FFFF00]" if is_active else "[color=#888888]" # Yellow if active, Grey if inactive
+		var color_tag = "[color=#B45309]" if is_active else "[color=#64748B]" # Amber if active, Slate if inactive
 		var end_tag = "[/color]"
 		var prefix = "★ " if is_active else "○ " # Star for active, circle for inactive
 		
@@ -89,28 +97,14 @@ func _reset_window_size() -> void:
 		size = Vector2.ZERO # Force immediate recalculation of minimum size
 		reset_size()
 
-func get_child_window_specs() -> Array[Dictionary]:
-	var specs: Array[Dictionary] = []
+func get_glossary_terms() -> Array[String]:
+	var terms: Array[String] = []
 	var text_to_search: String = ""
 	if is_instance_valid(description_label):
 		text_to_search += description_label.text + " "
 	
-	var keywords = DescriptionParser.find_keywords(text_to_search)
-	var seen_effects: Dictionary = {}
-	for kw in keywords:
-		if not seen_effects.has(kw):
-			seen_effects[kw] = true
-			var name_key = "STATUS_" + kw.to_upper()
-			var desc_key = "STATUS_" + kw.to_upper() + "_DESC"
-			specs.append({
-				"window_type": &"EffectInspection",
-				"populate_context": {
-					"effect_definition": {
-						"name_key": name_key,
-						"description_key": desc_key
-					},
-					"is_inside_unit_inspection": true,
-					"target_parent_window_id": get_instance_id()
-				}
-			})
-	return specs
+	terms.append_array(DescriptionParser.find_keywords(text_to_search))
+	return terms
+
+func get_child_window_specs() -> Array[Dictionary]:
+	return []

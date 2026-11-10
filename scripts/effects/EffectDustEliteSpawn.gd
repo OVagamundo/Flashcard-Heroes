@@ -2,7 +2,7 @@
 @tool
 extends EffectDefinition
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	var result := EffectResult.new()
 	
 	# 1. Select the dust unit FIRST to know its tier

@@ -18,5 +18,5 @@ id = &"ability_item_interest_ledger"
 description_key = "ability.item_interest_ledger.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_InterestLedger")])
-priority = 0
+sub_phase = 200
 max_level = 1

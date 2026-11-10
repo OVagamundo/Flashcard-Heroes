@@ -25,8 +25,8 @@ extends RefCounted
 ## @param context: Must contain "source_pwr" (and optionally "source_hp")
 ## @param script_name: For warning messages (e.g., "BasicAttackEffect")
 ## @return: Final calculated value (integer, always >= 0)
-static func calculate(param: Variant, context: Dictionary, script_name: String = "StatScaling") -> int:
-	var source_pwr: int = context.get("source_pwr", 0)
+static func calculate(param: Variant, context: TriggerContext, script_name: String = "StatScaling") -> int:
+	var source_pwr: int = maxi(0, context.source_pwr)
 	
 	# No parameter: use source PWR directly
 	if param == null:
@@ -51,10 +51,10 @@ static func calculate(param: Variant, context: Dictionary, script_name: String =
 ## Calculate stat-scaled value using the formula:
 ##   final = base_value + (source_pwr * pwr_multiplier) + (source_hp * hp_multiplier)
 ## Also supports "use_source_pwr: true" shorthand.
-static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, script_name: String) -> int:
+static func _calculate_scaled(param_dict: Dictionary, context: TriggerContext, script_name: String) -> int:
 	# Shorthand: use_source_pwr returns source PWR directly
 	if param_dict.get("use_source_pwr", false):
-		var pwr: int = context.get("source_pwr", 0)
+		var pwr: int = maxi(0, context.source_pwr)
 		if pwr == 0:
 			push_warning("[%s] source_pwr missing from context for use_source_pwr=true" % script_name)
 		return pwr
@@ -63,8 +63,8 @@ static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, scrip
 	var pwr_multiplier: float = param_dict.get("pwr_multiplier", 0.0)
 	var hp_multiplier: float = param_dict.get("hp_multiplier", 0.0)
 	
-	var source_pwr: int = context.get("source_pwr", 0)
-	var source_hp: int = context.get("source_hp", 0)
+	var source_pwr: int = maxi(0, context.source_pwr)
+	var source_hp: int = maxi(0, context.source_hp)
 	
 	var final_value: float = base_value
 	final_value += source_pwr * pwr_multiplier
@@ -73,22 +73,19 @@ static func _calculate_scaled(param_dict: Dictionary, context: Dictionary, scrip
 	# Complex: Dynamic multiplier from context (e.g., "tokens_spent", "gold_tens")
 	var multiplier_key: String = param_dict.get("context_multiplier_key", "")
 	if not multiplier_key.is_empty():
-		var context_val = context.get(multiplier_key, null)
-		if context_val == null:
-			if multiplier_key == "gold_tens":
-				context_val = int(GameManager.run_state.gold / 10) if is_instance_valid(GameManager.run_state) else 0
-			else:
-				context_val = 1
-		if context_val is int or context_val is float:
-			final_value *= float(context_val)
+		var mult_val: int = 1
+		if context.has_scaling_value(multiplier_key):
+			mult_val = context.get_scaling_value(multiplier_key)
+		elif multiplier_key == "gold_tens":
+			mult_val = int(GameManager.run_state.gold / 10) if is_instance_valid(GameManager.run_state) else 0
+		final_value *= float(mult_val)
 	
 	# Complex: Scaling by any context key (e.g., "damage_dealt" for lifesteal)
 	var scaling_key: String = param_dict.get("scaling_context_key", "")
 	var scaling_multiplier: float = param_dict.get("scaling_context_multiplier", 1.0)
 	if not scaling_key.is_empty():
-		var context_val = context.get(scaling_key, 0)
-		if context_val is int or context_val is float:
-			final_value += float(context_val) * scaling_multiplier
+		var scale_val: int = context.get_scaling_value(scaling_key) if context.has_scaling_value(scaling_key) else 0
+		final_value += float(scale_val) * scaling_multiplier
 			
 	# Optional: Clamping
 	var min_val: int = param_dict.get("min_value", -999999)

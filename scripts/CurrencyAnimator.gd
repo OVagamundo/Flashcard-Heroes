@@ -39,6 +39,29 @@ static func get_hud_token_center() -> Vector2:
 	var target = token_icon if is_instance_valid(token_icon) else token_group
 	return target.get_global_rect().get_center()
 
+static func get_hud_bonus_timer_center() -> Vector2:
+	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
+	if not is_instance_valid(main_node):
+		return Vector2.ZERO
+	var bonus_group = main_node.get_node_or_null("%BonusTimerGroup")
+	if not is_instance_valid(bonus_group):
+		return Vector2.ZERO
+	if not bonus_group.visible:
+		bonus_group.visible = true
+		bonus_group.modulate.a = 0.0
+	var bonus_label = bonus_group.get_node_or_null("%BonusTimerLabel")
+	var target = bonus_label if is_instance_valid(bonus_label) else bonus_group
+	var center = target.get_global_rect().get_center()
+	if center == Vector2.ZERO or center.x <= 0:
+		var tokens_label = main_node.get_node_or_null("%TokensLabel")
+		if is_instance_valid(tokens_label):
+			var rect = tokens_label.get_global_rect()
+			return Vector2(rect.end.x + 40, rect.get_center().y)
+		var token_center = get_hud_token_center()
+		if token_center != Vector2.ZERO:
+			return token_center + Vector2(60, 0)
+	return center
+
 # ==============================================================================
 # GOLD ANIMATIONS
 # ==============================================================================
@@ -232,7 +255,8 @@ static func animate_token_gain(
 		var token_vfx = TokenPopVFXScene.instantiate()
 		last_vfx = token_vfx
 		vfx_layer.add_child(token_vfx)
-		token_vfx.global_position = start_pos
+		var spread_offset_x = (float(i) - float(tokens_to_spawn - 1) * 0.5) * 28.0 if tokens_to_spawn > 1 else 0.0
+		token_vfx.global_position = start_pos + Vector2(spread_offset_x, 0.0)
 		
 		token_vfx.animation_finished.connect(func():
 			tokens_landed += 1
@@ -265,3 +289,44 @@ static func animate_token_gain(
 	var active_main_end = GameManager.get_main_node() if is_instance_valid(GameManager) else null
 	if is_instance_valid(active_main_end):
 		active_main_end.end_token_animation()
+
+# ==============================================================================
+# BONUS TIMER ANIMATIONS
+# ==============================================================================
+
+## Animate receiving bonus minigame timer seconds flying into the HUD timer counter.
+## Only increments and pops the HUD timer counter as the projectile lands and is absorbed.
+static func animate_bonus_timer_gain(
+	amount: float,
+	start_pos: Vector2,
+	on_complete: Callable = Callable()
+) -> void:
+	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
+	var target_pos = get_hud_bonus_timer_center()
+
+	assert(is_instance_valid(main_node), "animate_bonus_timer_gain: active_main_node is null")
+	assert(target_pos != Vector2.ZERO, "animate_bonus_timer_gain: HUD bonus timer center is ZERO")
+
+	main_node.begin_bonus_timer_animation()
+
+	var projectile = VFXFactory.spawn_projectile_on_layer(int(roundf(amount)), "timer", start_pos, target_pos, false)
+	assert(is_instance_valid(projectile), "animate_bonus_timer_gain: projectile failed to spawn")
+
+	var duration = AnimationConstants.scaled(0.6)
+
+	projectile.impact.connect(func():
+		Audio.play_sfx("coin_land")
+		var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+		if is_instance_valid(active_main):
+			active_main.modify_visual_bonus_timer(amount, true)
+	)
+
+	projectile.launch(duration)
+	await projectile.impact
+
+	if on_complete.is_valid():
+		on_complete.call()
+
+	var active_main_end = GameManager.get_main_node() if is_instance_valid(GameManager) else null
+	if is_instance_valid(active_main_end):
+		active_main_end.end_bonus_timer_animation()

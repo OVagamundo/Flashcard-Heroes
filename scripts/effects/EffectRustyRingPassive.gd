@@ -8,12 +8,12 @@ extends EffectDefinition
 ## - Restores buff (+1 HP, +1 PWR) if unit unequips all items.
 ## - Normalizes stacks and stats from 2 to 1 if two buffed units merge.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation := bool(context.get("is_simulation", false))
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation := bool(context.is_simulation)
 	var all_instances: Dictionary = battle_manager.get_all_instances()
 	
 	# Resolve the trinket's team
-	var trinket_team: String = context.get("team", "")
+	var trinket_team: String = context.team
 	if trinket_team.is_empty():
 		var trinket_instance = battle_manager.get_instance(source_uuid)
 		if is_instance_valid(trinket_instance):
@@ -81,7 +81,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 					"source_uuid": visual_source,
 					"target_uuids": [uuid],
-					"ability_id": context.get("ability_id", &"rusty_ring_passive"),
+					"ability_id": (context.ability_id if context.ability_id != &"" else &"rusty_ring_passive"),
+					"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
 					"ability_holder_uuid": source_uuid,
 					"visual_payload": multi_payload
 				}))

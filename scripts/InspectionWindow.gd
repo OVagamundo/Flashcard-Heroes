@@ -1,6 +1,9 @@
 class_name InspectionWindow
 extends PanelContainer
 
+## ID of the parent inspection window, or -1 if this is a root inspection window.
+var parent_inspection_window_id: int = -1
+
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	enforce_display_only()
@@ -9,9 +12,15 @@ func enforce_display_only() -> void:
 	mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_apply_mouse_filter_recursive(self)
 
+func populate(_context: Dictionary) -> void:
+	pass
+
 func _apply_mouse_filter_recursive(node: Node) -> void:
 	if node is Control:
-		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		if node.get_meta("interactive", false):
+			node.mouse_filter = Control.MOUSE_FILTER_STOP
+		else:
+			node.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in node.get_children():
 		_apply_mouse_filter_recursive(child)
 
@@ -22,6 +31,9 @@ func _notification(what) -> void:
 			WindowManager.stop_tracking_window(self.get_instance_id())
 
 func get_child_window_specs() -> Array[Dictionary]:
+	return []
+
+func get_glossary_terms() -> Array[String]:
 	return []
 
 func _position_child_window(parent_window: Control) -> void:

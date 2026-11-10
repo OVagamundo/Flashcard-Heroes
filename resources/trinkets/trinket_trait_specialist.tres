@@ -12,6 +12,6 @@ name_key = "trinket.trait_specialist.name"
 description_key = "trinket.trait_specialist.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
-is_player_exclusive = false
+is_player_exclusive = true
 linked_trait_id = &"SPECIALIST"
 ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_turn_start_ability")])

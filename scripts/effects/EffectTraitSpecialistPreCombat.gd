@@ -13,8 +13,8 @@ extends EffectDefinition
 const C = preload("res://scripts/Constants.gd")
 const EffectHandlers = preload("res://scripts/battle/EffectHandlers.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	if not is_simulation:
 		return EffectResult.empty()
 
@@ -22,7 +22,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(trinket):
 		return EffectResult.empty()
 
-	var team: String = context.get("team", "")
+	var team: String = context.team
 	if team.is_empty():
 		var container_tag = trinket.location_container_tag
 		if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
@@ -37,7 +37,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 
 	var result := EffectResult.new()
-	var ability_id: StringName = context.get("ability_id", &"ability_trait_specialist")
+	var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"ability_trait_specialist")
 
 	# L1 (2 Units): If player tokens == 0, grants 1 Token
 	if is_player and specialist_units >= 2:

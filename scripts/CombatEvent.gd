@@ -6,7 +6,7 @@ extends Resource
 enum Type {
 	DAMAGE,
 	HEAL,
-	DEATH,
+	KNOCKOUT,
 	DAMAGE_BURN, # End of turn burn damage
 	SUMMON, # Payload must contain snapshot of new unit
 	BUFF, # Payload: { "stat": "hp" or "pwr", "amount": int } - Core stats only
@@ -17,9 +17,9 @@ enum Type {
 	APPLY_BURN,
 	VFX_POPUP, # Visual only: { "target_uuid": str, "text": str, "color": Color }
 	LOG_MESSAGE, # Legacy support for text logs
-	LETHAL_SAVE, # Aegis Charm: unit saved from lethal damage, floats up gold then lands
+	PREVENT_KNOCKOUT, # Aegis Charm: unit saved from lethal damage, floats up gold then lands
 	GUARDIAN_INTERCEPT, # Guardian: leaps to ally's position to intercept lethal damage
-	KAMIKAZE_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
+	PRE_KNOCKOUT_ATTACK, # Death's Bargain: dying unit lunges to target, attacks, dies at target
 	TRANSFORM, # Mimic: hop and vanish
 	GOLD_GAIN, # Payload: { "amount": int }
 	ITEM_TRANSFER, # Standard Bearer: item transfer on death
@@ -29,11 +29,14 @@ enum Type {
 	ITEM_DISCARD, # Replaced/discarded item arcs to Discard Pile button
 	ITEM_EQUIP, # Equipped item appears on unit view
 	MERGE, # Merge action on battle board
-	GOLD_SPEND # Payload: { "amount": int }
+	GOLD_SPEND, # Payload: { "amount": int }
+	TOKEN_SPEND, # Payload: { "amount": int }
+	TIMER_BONUS # Payload: { "amount": int/float, "origin_uuid": str, "target_bonus_time": float }
 }
 
 var type: Type
 var action_type: StringName = &""
+var buff_subgroup: StringName = &""
 var source_uuid: String = "" # Logic UUID or "SYSTEM" or "TRINKET_ID"
 var target_uuids: Array[String] = []
 
@@ -45,7 +48,7 @@ var event_id: int = 0
 var cause_event_id: int = -1
 
 # Ability/Trigger Context - enables descriptive logging
-var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_bloodlust"
+var ability_id: StringName = &"" # e.g., "basic_attack", "item_tier2b_scythe"
 var trigger_type: StringName = &"" # e.g., "on_kill", "on_hurt", "on_turn_start", ""
 var ability_holder_uuid: String = "" # UUID of unit/item that owns the ability
 
@@ -115,6 +118,7 @@ func _init(p_type: Type = Type.DAMAGE, p_context: Dictionary = {}) -> void:
 	self.trigger_type = StringName(p_context.get("trigger_type", ""))
 	self.ability_holder_uuid = String(p_context.get("ability_holder_uuid", ""))
 	self.action_type = StringName(p_context.get("action_type", ""))
+	self.buff_subgroup = StringName(p_context.get("buff_subgroup", ""))
 		
 	# Visual Payload (The new standard)
 	var supplied_payload = p_context.get("visual_payload", null)
@@ -182,8 +186,18 @@ func deep_clone() -> CombatEvent:
 func can_merge_with(next_ev: CombatEvent) -> bool:
 	if next_ev == null:
 		return false
-	if not (type in [Type.BUFF, Type.DEBUFF, Type.HEAL, Type.STATUS_EFFECT] and next_ev.type in [Type.BUFF, Type.DEBUFF, Type.HEAL, Type.STATUS_EFFECT]):
+	# Only events of the exact same CombatEvent.Type can merge
+	if type != next_ev.type:
 		return false
+	if not (type in [Type.BUFF, Type.DEBUFF, Type.HEAL, Type.STATUS_EFFECT]):
+		return false
+	
+	# For STATUS_EFFECT, only merge if the status effect stat is identical (e.g. armor with armor, never armor with spikes)
+	if type == Type.STATUS_EFFECT:
+		var stat_self: String = visual_payload.stat if visual_payload != null else stat
+		var stat_next: String = next_ev.visual_payload.stat if next_ev.visual_payload != null else next_ev.stat
+		if stat_self != stat_next or stat_self.is_empty():
+			return false
 	
 	# Match Rule: Events must originate from the SAME source_uuid. If both are passive (empty source_uuid), ability_id must match.
 	var is_same_source: bool = (next_ev.source_uuid == source_uuid and not source_uuid.is_empty())

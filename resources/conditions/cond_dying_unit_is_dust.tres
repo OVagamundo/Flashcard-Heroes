@@ -5,6 +5,6 @@
 [resource]
 script = ExtResource("1_script")
 id = &"cond_dying_unit_is_dust"
-condition_type = &"DYING_UNIT_IS_DUST"
+condition_type = &"KNOCKED_OUT_UNIT_IS_DUST"
 parameters = {}
 invert_result = false

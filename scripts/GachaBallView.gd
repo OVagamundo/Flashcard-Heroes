@@ -124,6 +124,17 @@ var _slot_base_z_index: int = 0
 var _inspection_trigger: InspectionTrigger = null
 var _touch_press_active: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
+var _is_landing_bounce_active: bool = false
+var _landing_bounce_until_msec: int = 0
+
+func is_landing_bounce_active() -> bool:
+	return _is_landing_bounce_active and Time.get_ticks_msec() < _landing_bounce_until_msec
+
+func _on_unit_deform_finished(uuid: String) -> void:
+	if uuid == _bound_uuid:
+		_is_landing_bounce_active = false
+		if _is_hovered and not GlobalInteractionRouter.is_drag_active():
+			_animate_hover_to(1.0, 0.16)
 
 
 func _ready() -> void:
@@ -154,6 +165,8 @@ func _ready() -> void:
 		if bus.has_signal("selection_changed"):
 			bus.connect("selection_changed", _on_selection_changed)
 		bus.connect("inventory_action_completed", _on_inventory_action_completed)
+		if not bus.unit_deform_finished.is_connected(_on_unit_deform_finished):
+			bus.unit_deform_finished.connect(_on_unit_deform_finished)
 		
 		# unit_visual_stat_update is still handled here for puppet mode updates 
 		if bus.has_signal("unit_visual_stat_update"):
@@ -280,6 +293,8 @@ func _exit_tree() -> void:
 			bus.disconnect("view_deselected", _on_view_deselected)
 		if bus.is_connected("selection_changed", _on_selection_changed):
 			bus.disconnect("selection_changed", _on_selection_changed)
+		if bus.unit_deform_finished.is_connected(_on_unit_deform_finished):
+			bus.unit_deform_finished.disconnect(_on_unit_deform_finished)
 	# NOTE: Animation signals are handled by UnitAnimationController child node
 
 	# Disconnect hover signals
@@ -767,6 +782,9 @@ func _set_hover_state(active: bool, play_sound: bool = false) -> void:
 	_is_hovered = active
 	_update_hover_draw_priority()
 
+	if is_landing_bounce_active():
+		return
+
 	if active and play_sound:
 		Audio.play_sfx("ui_hover", RNGManager.cosmetic_rng.randf_range(1.05, 1.12))
 
@@ -924,12 +942,16 @@ func _set_preview_tree_mouse_ignore(node: Node) -> void:
 		_set_preview_tree_mouse_ignore(child)
 
 func _animate_hover_to(target: float, duration: float) -> void:
+	if _interaction_mode == &"INSPECTION_ONLY":
+		return
 	if is_instance_valid(_hover_tween):
 		_hover_tween.kill()
 	_hover_tween = create_tween()
 	_hover_tween.tween_method(_set_hover_amount, _hover_amount, target, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func _animate_press_to(target: float, duration: float) -> void:
+	if _interaction_mode == &"INSPECTION_ONLY":
+		return
 	if is_instance_valid(_press_tween):
 		_press_tween.kill()
 	_press_tween = create_tween()
@@ -952,6 +974,12 @@ func _update_hover_animation(delta: float) -> void:
 	_apply_hover_visuals(mode)
 
 func _apply_hover_visuals(mode: int) -> void:
+	if is_landing_bounce_active():
+		scale = Vector2.ONE
+		rotation = 0.0
+		_apply_inventory_brightness(mode)
+		return
+
 	if mode == HoverFxMode.INVENTORY_SPHERE:
 		pivot_offset = size / 2.0
 	else:
@@ -1227,7 +1255,7 @@ func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
 		tween.tween_callback(func(): armor_container.visible = false)
 
 ## Update dynamic status icons for any status effect tracked in _visual_status_effects.
-## Creates icons on-the-fly using StatusEffectRegistry if they don't exist.
+## Creates icons on-the-fly using CombatEffectRegistry if they don't exist.
 func _update_dynamic_status_icons(animate: bool = true) -> void:
 	# Get the bottom stats container to add icons to (below the unit)
 	var stats_container = get_node_or_null("StatsOverlay/BottomStatsContainer")
@@ -1278,11 +1306,11 @@ func _update_dynamic_status_icons(animate: bool = true) -> void:
 					else:
 						label.text = str(stacks)
 
-## Create a dynamic status icon for a status effect
+## Create a dynamic status icon for a combat effect
 func _create_status_icon(status_id: StringName, parent: Node, animate: bool = true) -> void:
 	# Get definition from registry
-	var status_def = StatusEffectRegistry.get_definition(status_id)
-	if not is_instance_valid(status_def):
+	var effect_def = CombatEffectRegistry.get_definition(status_id)
+	if not is_instance_valid(effect_def):
 		return
 	
 	# Unified Scaling Math
@@ -1307,7 +1335,7 @@ func _create_status_icon(status_id: StringName, parent: Node, animate: bool = tr
 	status_icon_rect.custom_minimum_size = Vector2(container_size, container_size)
 	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	status_icon_rect.texture = status_def.icon
+	status_icon_rect.texture = effect_def.icon
 	
 	# Create label for stack count
 	var label = Label.new()
@@ -1458,20 +1486,20 @@ func _on_armor_container_clicked(event: InputEvent) -> void:
 		_open_status_effect_tooltip(&"armor", armor_container)
 		get_viewport().set_input_as_handled()
 
-## Open a tooltip window for a status effect
+## Open a tooltip window for a combat effect
 func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void:
 	if is_instance_valid(ActionQueue):
 		var action := InspectEntityAction.new(_location, false, &"EffectInspection", status_id)
 		ActionQueue.request(action)
 		return
-	var status_def = StatusEffectRegistry.get_definition(status_id)
-	if not is_instance_valid(status_def):
+	var effect_def = CombatEffectRegistry.get_definition(status_id)
+	if not is_instance_valid(effect_def):
 		return
 	
 	# Create a context dictionary matching EffectInspectionWindow expectations
 	var effect_context = {
-		"name_key": status_def.display_name_key,
-		"description_key": status_def.description_key
+		"name_key": effect_def.display_name_key,
+		"description_key": effect_def.description_key
 	}
 	
 	var populate_ctx = {
@@ -1772,7 +1800,8 @@ func _gui_input(event: InputEvent) -> void:
 
 	if event is InputEventScreenTouch:
 		if event.pressed:
-			_animate_press_to(1.0, 0.05)
+			if _interaction_mode != &"INSPECTION_ONLY":
+				_animate_press_to(1.0, 0.05)
 			get_viewport().set_input_as_handled()
 			accept_event()
 			_pressed_pending_click = true
@@ -1782,7 +1811,8 @@ func _gui_input(event: InputEvent) -> void:
 			if is_instance_valid(_inspection_trigger):
 				_inspection_trigger.on_pointer_pressed(event.position)
 		else:
-			_animate_press_to(0.0, 0.14)
+			if _interaction_mode != &"INSPECTION_ONLY":
+				_animate_press_to(0.0, 0.14)
 			_touch_press_active = false
 			var peek_handled = false
 			if is_instance_valid(_inspection_trigger):
@@ -1801,16 +1831,18 @@ func _gui_input(event: InputEvent) -> void:
 		if InputUtils.should_ignore_mouse_pointer_event(event):
 			return
 		if event.is_pressed():
-			_animate_press_to(1.0, 0.05)
-			if not _is_hovered:
-				_set_hover_state(true, false)
+			if _interaction_mode != &"INSPECTION_ONLY":
+				_animate_press_to(1.0, 0.05)
+				if not _is_hovered:
+					_set_hover_state(true, false)
 			# Defer single-click to release; may become a drag
 			get_viewport().set_input_as_handled()
 			_pressed_pending_click = true
 			if is_instance_valid(_inspection_trigger):
 				_inspection_trigger.on_pointer_pressed(event.position)
 		else:
-			_animate_press_to(0.0, 0.14)
+			if _interaction_mode != &"INSPECTION_ONLY":
+				_animate_press_to(0.0, 0.14)
 			var peek_handled = false
 			if is_instance_valid(_inspection_trigger):
 				peek_handled = _inspection_trigger.on_pointer_released()
@@ -1819,7 +1851,7 @@ func _gui_input(event: InputEvent) -> void:
 				var pointer_pos: Vector2 = InputUtils.get_event_global_position(event)
 				var sc_ctx = _create_interaction_context(&"SINGLE_CLICK", pointer_pos)
 				SignalBus.emit_signal("interaction_context_received", sc_ctx)
-			if not get_global_rect().has_point(get_global_mouse_position()):
+			if _interaction_mode != &"INSPECTION_ONLY" and not get_global_rect().has_point(get_global_mouse_position()):
 				_set_hover_state(false, false)
 			# Reset flags regardless
 			_pressed_pending_click = false
@@ -2173,8 +2205,9 @@ func play_trinket_activation_bounce() -> void:
 	
 	if not visible:
 		visible = true
-	if is_instance_valid(get_parent()):
-		get_parent().visible = true
+	var parent_canvas: CanvasItem = get_parent() as CanvasItem
+	if is_instance_valid(parent_canvas):
+		parent_canvas.visible = true
 	
 	# Trinkets live inside HBoxContainer layouts — position-based animations
 	# (unit_move HOP) get immediately overridden by the container.
@@ -2197,8 +2230,9 @@ func play_snap_back_from(origin_pos: Vector2) -> void:
 	
 	visible = true
 	modulate.a = 1.0
-	if is_instance_valid(get_parent()):
-		get_parent().visible = true
+	var parent_canvas: CanvasItem = get_parent() as CanvasItem
+	if is_instance_valid(parent_canvas):
+		parent_canvas.visible = true
 		
 	var target_global_pos = global_position + (size / 2.0)
 	if origin_pos.is_zero_approx() or origin_pos.distance_to(target_global_pos) < 6.0:
@@ -2223,8 +2257,17 @@ func play_landing_bounce() -> void:
 	# Force visibility
 	if not visible:
 		visible = true
-	if is_instance_valid(get_parent()):
-		get_parent().visible = true
+	var parent_canvas: CanvasItem = get_parent() as CanvasItem
+	if is_instance_valid(parent_canvas):
+		parent_canvas.visible = true
+	
+	_is_landing_bounce_active = true
+	_landing_bounce_until_msec = Time.get_ticks_msec() + int(AnimationConstants.scaled(0.40) * 1000.0)
+
+	# Reset hover transform so bounce starts at neutral scale
+	if _hover_amount > 0.001:
+		_hover_amount = 0.0
+		scale = Vector2.ONE
 	
 	# For battle units with AnimationController, delegate to composable system
 	# This uses proper tween management (kill existing, restore state) built into controller
@@ -2234,18 +2277,25 @@ func play_landing_bounce() -> void:
 		return
 	
 	# For non-battle units (inventory window, shop, reward), use simple inline tween
-	# These don't have AnimationController and pivot is center-based
-	if icon_rect.size == Vector2.ZERO:
-		return # Layout not ready
+	var target_sprite: Control = icon_rect
+	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	if is_instance_valid(unit_sprite):
+		target_sprite = unit_sprite
+		target_sprite.pivot_offset = Vector2(target_sprite.size.x / 2.0, target_sprite.size.y)
+	else:
+		if icon_rect.size == Vector2.ZERO:
+			_is_landing_bounce_active = false
+			return # Layout not ready
+		icon_rect.pivot_offset = icon_rect.size / 2.0
 	
-	icon_rect.pivot_offset = icon_rect.size / 2.0
-	var original_scale := icon_rect.scale
-	
+	var original_scale := target_sprite.scale
 	var tween := create_tween()
-	tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	tween.tween_property(icon_rect, "scale", original_scale, AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	AnimationConstants.append_landing_bounce(tween, target_sprite, original_scale)
+	tween.finished.connect(func():
+		_is_landing_bounce_active = false
+		if _is_hovered and not GlobalInteractionRouter.is_drag_active():
+			_animate_hover_to(1.0, 0.16)
+	)
 # ------------------------------------------------------------------
 # Layout Helpers
 

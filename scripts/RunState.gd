@@ -16,15 +16,29 @@ extends Resource
 @export var total_gold_earned: int = 0
 @export var total_tokens_earned: int = 0
 @export var current_room_tokens: int = 0
+@export var next_battle_minigame_bonus_time: float = 0.0
 @export var elapsed_simulation_time: float = 0.0
 @export var shrine_remove_cost: int = 5
 @export var elite_reward_reroll_cost: int = 5
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
+@export var active_hero_set: StringName = Database.SET_BASE
 @export var last_elite_id: StringName = &""
 @export var run_id: String = ""
 @export var run_seed: int = 0
+
+## Authoritative getter for the run's active Hero Set.
+## If active_hero_set is unset or SET_BASE, infers the set from hero_instance.
+func get_active_hero_set() -> StringName:
+	if active_hero_set != &"" and active_hero_set != Database.SET_BASE:
+		return active_hero_set
+	if is_instance_valid(hero_instance):
+		var inferred: StringName = Database.get_hero_set(hero_instance.definition_id)
+		if inferred != Database.SET_BASE:
+			active_hero_set = inferred
+			return inferred
+	return Database.SET_BASE
 
 # Room state data (Data layer decoupled from UI scenes)
 var available_path_nodes: Array[PathNodeDefinition] = []
@@ -247,7 +261,7 @@ func unlock_recipe_for_result(result_definition_id: StringName) -> void:
 				SignalBus.emit_signal("run_data_changed")
 
 func unlock_all_recipes_for_testing() -> void:
-	"""Test mode utility: unlock all recipes so spawned content can be merged."""
+	"""Test utility: unlock all recipes so spawned content can be merged."""
 	var has_changes: bool = false
 	for recipe_key in Database.recipes:
 		var recipe: MergeRecipe = Database.recipes[recipe_key]
@@ -280,18 +294,20 @@ func get_container(container_name: StringName) -> DataContainer:
 	if _containers.has(container_name):
 		return _containers[container_name]
 	
+	var new_container: DataContainer = null
 	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP:
-		_containers[container_name] = FixedArrayContainer.new(C.LINEUP_CAP)
-		return _containers[container_name]
+		new_container = FixedArrayContainer.new(C.LINEUP_CAP)
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-		_containers[container_name] = FixedArrayContainer.new(C.BENCH_CAP)
-		return _containers[container_name]
+		new_container = FixedArrayContainer.new(C.BENCH_CAP)
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
-		_containers[container_name] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
-		return _containers[container_name]
+		new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 	elif String(container_name).begins_with("RunInventoryT"):
-		_containers[container_name] = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
-		return _containers[container_name]
+		new_container = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
+	
+	if is_instance_valid(new_container):
+		new_container.container_tag = container_name
+		_containers[container_name] = new_container
+		return new_container
 	
 	return null
 
@@ -1153,6 +1169,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	start_new_run()
 	self.deck_def_id = deck_id
 	self.is_half_deck = (deck_size == "HALF")
+	self.active_hero_set = Database.get_hero_set(hero_def_id)
 	
 	# Create hero instance from the selected hero definition
 	var hero_def = Database.get_definition(hero_def_id)
@@ -1162,30 +1179,46 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		# Register hero via atomic API in the first lineup slot
 		add_instance(self.hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
 		
-		# Bounty Hunter hero trait assignment: 1 Elemental soul + 1 Class or Visual trait
-		if hero_def_id == &"hero_bounty_hunter" or hero_def_id == &"hero":
-			var elemental_souls: Array[StringName] = [&"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR"]
-			var class_visual_traits: Array[StringName] = [
-				&"Tank", &"Fighter", &"Support", &"Specialist",
-				&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"
-			]
-			var rolled_element: StringName = elemental_souls[RNGManager.map_rng.randi() % elemental_souls.size()]
-			var rolled_class_visual: StringName = class_visual_traits[RNGManager.map_rng.randi() % class_visual_traits.size()]
-			
-			var hero_tags_comp := TagComponent.new()
-			hero_tags_comp.id = &"bounty_hunter_run_traits"
-			hero_tags_comp.category = &"TAG"
-			hero_tags_comp.source_type = &"RUN_STATE"
-			hero_tags_comp.is_persistent = true
-			hero_tags_comp.tags_to_add = [rolled_element, rolled_class_visual]
-			self.hero_instance.components.append(hero_tags_comp)
-			
-			_adapt_hero_pack(hero_def_id, rolled_element)
+		var elemental_souls: Array[StringName] = [&"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR"]
+		var thematic_traits: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
+		var class_traits: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary"]
+		var chosen_element: StringName = elemental_souls[RNGManager.map_rng.randi() % elemental_souls.size()]
+		var bonus_tags: Array[StringName] = []
+		var archetype_tag: StringName = &""
 		
-	# Test-mode: Timekeeper starts with 1000 gold
-	if hero_def_id == &"hero_timekeeper":
-		gold = 1000
-		SignalBus.emit_signal("gold_changed", gold)
+		match hero_def_id:
+			&"hero_avenger":
+				archetype_tag = &"Fighter"
+				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+			&"hero_bastion":
+				archetype_tag = &"Tank"
+				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+			&"hero_bounty_hunter", &"hero":
+				archetype_tag = &"Mercenary"
+				var bounty_trait_pool: Array[StringName] = class_traits + thematic_traits
+				bonus_tags = [chosen_element, chosen_element, chosen_element, bounty_trait_pool[RNGManager.map_rng.randi() % bounty_trait_pool.size()]]
+				_adapt_hero_pack(hero_def_id, chosen_element)
+			&"hero_pyro":
+				archetype_tag = &"Fire Ritual"
+				chosen_element = &"SOUL_FIRE"
+				bonus_tags = [chosen_element, chosen_element, chosen_element, class_traits[RNGManager.map_rng.randi() % class_traits.size()], thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+			&"hero_starter":
+				archetype_tag = &"Novice"
+				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+				_adapt_hero_pack(hero_def_id, chosen_element)
+			&"hero_timekeeper":
+				archetype_tag = &"Support"
+				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+		assert(not archetype_tag.is_empty(), "RunState.initialize_run: no hero constitution defined for '%s'" % hero_def_id)
+		
+		var hero_tags_comp := TagComponent.new()
+		hero_tags_comp.id = &"hero_run_traits"
+		hero_tags_comp.category = &"TAG"
+		hero_tags_comp.source_type = &"RUN_STATE"
+		hero_tags_comp.is_persistent = true
+		hero_tags_comp.tags_to_add = [archetype_tag]
+		hero_tags_comp.tags_to_add.append_array(bonus_tags)
+		self.hero_instance.components.append(hero_tags_comp)
 	
 	# Initialize flashcard progress for the selected deck
 	var deck_card_ids = Database.get_cards_for_deck(deck_id)
@@ -1231,10 +1264,14 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	# Create fresh empty inventory containers for tiers 1-3
 	for t in [1, 2, 3]:
 		var container_name: StringName = &"RunInventoryT%d" % t
-		_containers[container_name] = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
+		var inv_c := FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
+		inv_c.container_tag = container_name
+		_containers[container_name] = inv_c
 
 	# Create player trinket container
-	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
+	var trinket_c := FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
+	trinket_c.container_tag = RUN_CONTAINER_TAGS.PLAYER_TRINKETS
+	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = trinket_c
 
 
 
@@ -1242,7 +1279,7 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	# No starter trinkets are given - the player earns them by progressing.
 
 	# --- Add starter units/items to inventory ---
-	var starters: Array[StringName] = _get_starters_for_hero(hero_def_id)
+	var starters: Array[StringName] = get_starters_for_hero(hero_def_id)
 	if GameManager.test_starting_items.size() > 0:
 		starters.append_array(GameManager.test_starting_items)
 
@@ -1268,32 +1305,52 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		
 		# Unlock recipes for this acquired gachaball
 		unlock_recipe_for_result(def.id)
-	
-	# Test mode can spawn arbitrary units/items; unlock all recipes for parity testing.
-	if GameManager.is_test_mode:
-		unlock_all_recipes_for_testing()
 
-func _get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+static func get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+	if hero_id == &"hero_starter":
+		return [
+			&"?NovPla", &"?NovPla", &"?NovPla",
+			&"ETnkPla", &"ETnkPla",
+			&"FFigMec", &"FFigMec",
+			&"WSupAni", &"WSupAni",
+			&"ASpeFod", &"ASpeFod",
+			&"item_study_pouch", &"item_study_pouch",
+			&"item_t1_a", &"item_t1_a",
+			&"item_t1_b", &"item_t1_b",
+			&"trinket_trait_novice"
+		]
 	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
 		return [
 			&"?MerSpe", &"?MerSpe", &"?MerSpe",
-			&"ETnkPlaToy", &"ETnkPlaToy",
-			&"FFigMecApp", &"FFigMecApp",
-			&"WSupAniCos", &"WSupAniCos",
-			&"ASpeFodToy", &"ASpeFodToy",
+			&"ETnkPla", &"ETnkPla",
+			&"FFigMec", &"FFigMec",
+			&"WSupAni", &"WSupAni",
+			&"ASpeFod", &"ASpeFod",
 			&"item_claim_ticket", &"item_claim_ticket",
 			&"item_t1_a", &"item_t1_a",
 			&"item_t1_b", &"item_t1_b",
 			&"trinket_trait_mercenary"
 		]
-	return [
-		&"ETnkPlaToy", &"ETnkPlaToy", &"ETnkPlaToy",
-		&"FFigMecApp", &"FFigMecApp", &"FFigMecApp",
-		&"WSupAniCos", &"WSupAniCos", &"WSupAniCos",
-		&"ASpeFodToy", &"ASpeFodToy", &"ASpeFodToy",
+	var starters: Array[StringName] = [
+		&"ETnkPla", &"ETnkPla", &"ETnkPla",
+		&"FFigMec", &"FFigMec", &"FFigMec",
+		&"WSupAni", &"WSupAni", &"WSupAni",
+		&"ASpeFod", &"ASpeFod", &"ASpeFod",
 		&"item_t1_a", &"item_t1_a",
 		&"item_t1_b", &"item_t1_b"
 	]
+	match hero_id:
+		&"hero_avenger":
+			starters.append(&"trinket_trait_specialist")
+		&"hero_bastion":
+			starters.append(&"trinket_trait_tank")
+		&"hero_pyro":
+			starters.append(&"trinket_trait_fire")
+		&"hero_starter":
+			starters.append(&"trinket_beginners_charm")
+		&"hero_timekeeper":
+			starters.append(&"trinket_trait_support")
+	return starters
 
 func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
@@ -1316,6 +1373,27 @@ func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 			for tag in bounty_hunter_unit_tags[unit_id]:
 				updated_tags.append(tag)
 			def.tags = updated_tags
+	elif hero_id == &"hero_starter":
+		var novice_unit_tags: Dictionary = {
+			&"?NovPla": [rolled_element, &"Novice", &"Plant"],
+			&"?ANovFod": [rolled_element, &"SOUL_AIR", &"Novice", &"Food"],
+			&"E?NovPla": [&"SOUL_EARTH", rolled_element, &"Novice", &"Plant"],
+			&"F?NovApp": [&"SOUL_FIRE", rolled_element, &"Novice", &"Appliance"],
+			&"W?NovCos": [&"SOUL_WATER", rolled_element, &"Novice", &"Costume"],
+			&"E??ANovPla": [&"SOUL_EARTH", rolled_element, rolled_element, &"SOUL_AIR", &"Novice", &"Plant"],
+			&"F??ANovFod": [&"SOUL_FIRE", rolled_element, rolled_element, &"SOUL_AIR", &"Novice", &"Food"],
+			&"W??ANovCos": [&"SOUL_WATER", rolled_element, rolled_element, &"SOUL_AIR", &"Novice", &"Costume"],
+			&"EF??NovApp": [&"SOUL_EARTH", &"SOUL_FIRE", rolled_element, rolled_element, &"Novice", &"Appliance"],
+			&"EW??NovPla": [&"SOUL_EARTH", &"SOUL_WATER", rolled_element, rolled_element, &"Novice", &"Plant"],
+			&"FW??NovAni": [&"SOUL_FIRE", &"SOUL_WATER", rolled_element, rolled_element, &"Novice", &"Animal"]
+		}
+		for unit_id in novice_unit_tags:
+			if Database.units.has(unit_id):
+				var def: GachaBallDefinition = Database.units[unit_id]
+				var updated_tags: Array[StringName] = []
+				for tag in novice_unit_tags[unit_id]:
+					updated_tags.append(tag)
+				def.tags = updated_tags
 
 func has_locked_cards() -> bool:
 	if deck_def_id == &"":
@@ -1377,6 +1455,7 @@ func to_save_dict() -> Dictionary:
 		"total_gold_earned": total_gold_earned,
 		"total_tokens_earned": total_tokens_earned,
 		"current_room_tokens": current_room_tokens,
+		"next_battle_minigame_bonus_time": next_battle_minigame_bonus_time,
 		"elapsed_simulation_time": elapsed_simulation_time,
 		"shrine_remove_cost": shrine_remove_cost,
 		"elite_reward_reroll_cost": elite_reward_reroll_cost,
@@ -1386,6 +1465,7 @@ func to_save_dict() -> Dictionary:
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
 		"last_elite_id": String(last_elite_id),
+		"active_hero_set": String(get_active_hero_set()),
 		"encounter_last_offered_day": _serialize_encounter_last_offered_day(),
 		"elite_encounter_history": _serialize_elite_encounter_history(),
 		"available_path_nodes": _serialize_available_path_nodes(),
@@ -1438,6 +1518,7 @@ func from_save_dict(data: Dictionary) -> void:
 	total_gold_earned = data.get("total_gold_earned", 0)
 	total_tokens_earned = data.get("total_tokens_earned", 0)
 	current_room_tokens = data.get("current_room_tokens", 0)
+	next_battle_minigame_bonus_time = float(data.get("next_battle_minigame_bonus_time", 0.0))
 	elapsed_simulation_time = data.get("elapsed_simulation_time", 0.0)
 	shrine_remove_cost = data.get("shrine_remove_cost", data.get("black_market_remove_cost", 5))
 	elite_reward_reroll_cost = data.get("elite_reward_reroll_cost", 5)
@@ -1447,6 +1528,7 @@ func from_save_dict(data: Dictionary) -> void:
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
 	last_elite_id = StringName(data.get("last_elite_id", ""))
+	active_hero_set = StringName(data.get("active_hero_set", Database.SET_BASE))
 	
 	_deserialize_encounter_last_offered_day(data.get("encounter_last_offered_day", {}))
 	_deserialize_elite_encounter_history(data.get("elite_encounter_history", {}))
@@ -1476,6 +1558,7 @@ func from_save_dict(data: Dictionary) -> void:
 		else:
 			container = FixedArrayContainer.new(max(5, uuids.size()))
 		# Populate container with saved UUIDs
+		container.container_tag = cname
 		for i in range(uuids.size()):
 			if i < container.get_size():
 				container.set_uuid(i, uuids[i])
@@ -1519,6 +1602,12 @@ func from_save_dict(data: Dictionary) -> void:
 	
 	# Restore unlocked recipes
 	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
+
+	# Reconcile active_hero_set with hero_instance (healing legacy or corrupted saves)
+	if is_instance_valid(hero_instance):
+		var expected_set: StringName = Database.get_hero_set(hero_instance.definition_id)
+		if expected_set != Database.SET_BASE:
+			active_hero_set = expected_set
 
 func _serialize_available_path_nodes() -> Array:
 	var result: Array = []

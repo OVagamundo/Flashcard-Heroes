@@ -3,9 +3,9 @@
 extends EffectDefinition
 
 ## Grants the holder an extra action in the current turn.
-## Used by the Bloodlust Edge item to allow the unit to act again after a kill (max 1 per turn).
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+## Used by the Scythe to grant one additional action per turn after a knockout.
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -23,8 +23,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	
 	if is_simulation:
 		# Check per-turn limit: max 1 extra attack per turn per item and per holder
-		var item_key := "bloodlust_extra_action_" + source_uuid if not source_uuid.is_empty() else ""
-		var holder_key := "bloodlust_holder_action_" + holder_uuid
+		var item_key := "extra_action_item_" + source_uuid if not source_uuid.is_empty() else ""
+		var holder_key := "extra_action_holder_" + holder_uuid
 		if (not item_key.is_empty() and battle_manager._turn_metadata.get(item_key, false)) or battle_manager._turn_metadata.get(holder_key, false):
 			return EffectResult.empty()
 
@@ -41,7 +41,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		# Return EffectResult with LOG_MESSAGE event
 		var result := EffectResult.new()
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "%s triggers Bloodlust!" % unit_name
+			"text": "%s triggers Scythe!" % unit_name
 		}))
 		result.state_applied = true # Extra action already granted
 		return result

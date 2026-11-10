@@ -8,8 +8,8 @@
 script = ExtResource("1_script")
 id = &"unit_mud_coating"
 description_key = "ability.mud_coating_l1.desc"
-trigger = &"on_healed"
+trigger = &"when_healed"
 effects = Array[Resource]([ExtResource("2_effect"), ExtResource("3_effect")])
-priority = 0
-execute_on_lethal = false
+sub_phase = 200
+execute_before_knockout = false
 max_level = 1

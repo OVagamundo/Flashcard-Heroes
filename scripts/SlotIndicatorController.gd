@@ -236,8 +236,6 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, is_consumable: bool
 			# Units can move to PlayerLineup, PlayerBench
 			containers.append(&"PlayerLineup")
 			containers.append(&"PlayerBench")
-			if GameManager.is_test_mode:
-				containers.append(&"EnemyLineup")
 		elif is_item or is_consumable:
 			# Items and consumables can move to PlayerBench
 			containers.append(&"PlayerBench")
@@ -247,9 +245,6 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, is_consumable: bool
 func _get_consumable_targets(data_owner: Object) -> Array:
 	var targets: Array = []
 	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
-	
-	if GameManager.is_test_mode:
-		allowed_containers.append(&"EnemyLineup")
 	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)
@@ -346,10 +341,6 @@ func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationI
 	
 	# Items can be equipped onto units in PlayerLineup or PlayerBench
 	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
-	
-	# In test mode, also allow equipping on enemy units
-	if GameManager.is_test_mode:
-		allowed_containers.append(&"EnemyLineup")
 	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)

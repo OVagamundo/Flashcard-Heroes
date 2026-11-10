@@ -13,9 +13,9 @@ target_type = &"NONE"
 [sub_resource type="Resource" id="Ability_Aegis_1"]
 script = ExtResource("3_ability")
 id = &"ability_trinket_aegis"
-trigger = &"on_hurt"
+trigger = &"when_taking_damage"
 description_key = "ability.aegis.desc"
-priority = 250
+sub_phase = 15
 effects = Array[Resource]([SubResource("Effect_Aegis_1")])
 
 [resource]

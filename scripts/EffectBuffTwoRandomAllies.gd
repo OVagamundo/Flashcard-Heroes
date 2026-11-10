@@ -8,8 +8,8 @@ const C = preload("res://scripts/Constants.gd")
 ## The animation source is the item holder (equipped_on_uuid), not the item itself.
 ## Used by Power Amulet (T3 Item B) on_attack trigger.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Get the buff amount and stat from parameters
 	var buff_amount: int = int(parameters.get("base_value", 2))
@@ -18,7 +18,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	# Zero-Instance-Query Compliant: Get holder UUID from context
 	# For items, BattleManager pre-populates source_holder_uuid
-	var holder_uuid: String = context.get("source_holder_uuid", "")
+	var holder_uuid: String = context.source_holder_uuid
 	if holder_uuid.is_empty():
 		push_warning("[EffectBuffTwoRandomAllies] source_holder_uuid missing from context")
 		return EffectResult.empty()
@@ -89,8 +89,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 				"source_uuid": _source_uuid,
 				"target_uuids": batched_target_uuids,
-				"ability_id": context.get("ability_id", &"buff_two_random"),
-				"trigger_type": context.get("trigger_type", ""),
+				"ability_id": (context.ability_id if context.ability_id != &"" else &"buff_two_random"),
+				"trigger_type": context.trigger_type,
 				"action_type": C.ACTION_BUFF,
 				"ability_holder_uuid": holder_uuid,
 				"visual_payload": visual_payload

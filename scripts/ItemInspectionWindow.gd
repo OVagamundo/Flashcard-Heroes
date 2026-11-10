@@ -75,22 +75,33 @@ func _update_description_and_stats(item_def: Resource) -> void:
 	
 	name_label.text = tr(name_key)
 	name_label.add_theme_font_override("font", Database.get_current_locale_font())
-	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_font_size_override("font_size", 26)
 	
-	var title_color = Color(0, 0.4, 0.8, 1) # Default blue
+	var title_color := Color("#0F172A") # High-contrast charcoal default
 	if item_def is GachaBallDefinition:
 		match item_def.tier:
-			1: title_color = Color.YELLOW
-			2: title_color = Color.MAGENTA
-			3: title_color = Color.CYAN
+			1: title_color = Color("#854D0E") # Deep Bronze / Amber
+			2: title_color = Color("#701A75") # Deep Crimson Violet / Purple
+			3: title_color = Color("#1E3A8A") # Deep Royal Navy / Azure
 	name_label.add_theme_color_override("font_color", title_color)
 
 	var trait_id := _get_linked_trait_id(item_def)
 	var full_text := ""
 	
 	if not trait_id.is_empty():
-		full_text = _build_trait_trinket_description(trait_id)
+		var trait_ladder := _build_trait_trinket_description(trait_id)
 		description_label.set_meta("effect_definition", null)
+		
+		var base_desc := ""
+		if "description_key" in item_def and not item_def.description_key.is_empty():
+			var raw_desc: String = tr(item_def.description_key)
+			if not (raw_desc.contains("trait effects activate at") or raw_desc.contains("efeitos do traço")):
+				base_desc = raw_desc
+		
+		if not base_desc.is_empty():
+			full_text = base_desc + "\n\n" + trait_ladder
+		else:
+			full_text = trait_ladder
 		
 		# Trigger tutorial for traits (deferred to allow window to position itself)
 		_trigger_trait_tutorial()
@@ -125,20 +136,20 @@ func _update_description_and_stats(item_def: Resource) -> void:
 			if is_instance_valid(_instance):
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
-				if ability.id == &"ability_echoing_orb_scale":
+				if ability.id == &"ability_slime_cell_scale":
 					var current_bonus = 0
 					var all_db = _get_all_instances_db()
 					if not _instance.equipped_on_uuid.is_empty():
 						var holder = all_db.get(_instance.equipped_on_uuid)
 						if is_instance_valid(holder):
-							current_bonus = holder.get_status_effect_amount(StringName("echoing_orb_scaling_" + _instance.ball_uuid))
+							current_bonus = holder.get_status_effect_amount(StringName("slime_cell_scaling_" + _instance.ball_uuid))
 					if current_bonus == 0:
 						var count = 0
 						for uuid in all_db:
 							var inst = all_db[uuid]
 							if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
 								count += 1
-						current_bonus = maxi(1, count) * 2
+						current_bonus = maxi(1, count)
 					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 					ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			
@@ -169,55 +180,22 @@ func _update_description_and_stats(item_def: Resource) -> void:
 	regex.compile("\\n\\s*\\n+")
 	final_text = regex.sub(final_text, "\n", true)
 	
-	if _is_trinket(item_def):
-		description_label.text = final_text
-		description_label.custom_minimum_size = Vector2.ZERO
-		if is_instance_valid(bottom_description_label):
-			bottom_description_label.text = ""
-			bottom_description_label.visible = false
-			bottom_description_label.custom_minimum_size = Vector2.ZERO
-	else:
-		description_label.custom_minimum_size = Vector2.ZERO
-		var font = Database.get_current_locale_font()
-		var font_size = 32
-		var plain_text = DescriptionParser.strip_bbcode(final_text)
-		
-		description_label.add_theme_font_override("normal_font", font)
-		description_label.add_theme_font_override("bold_font", font)
-		if is_instance_valid(bottom_description_label):
-			bottom_description_label.add_theme_font_override("normal_font", font)
-			bottom_description_label.add_theme_font_override("bold_font", font)
-
-		var p = TextParagraph.new()
-		p.width = 256.0
-		p.set_line_spacing(-4)
-		p.add_string(plain_text, font, font_size)
-		
-		var max_view_h = 212.0
-		var cutoff_line := -1
-		var cum_h := 0.0
-		for i in range(p.get_line_count()):
-			var line_h = p.get_line_size(i).y - 4
-			if cum_h + line_h <= max_view_h:
-				cum_h += line_h
-				cutoff_line = i
-			else:
-				break
-		
-		if cutoff_line >= 0 and cutoff_line < p.get_line_count() - 1:
-			var split_char_idx = p.get_line_range(cutoff_line + 1).x
-			var parts = DescriptionParser.split_bbcode(final_text, split_char_idx)
-			description_label.text = parts[0]
-			if is_instance_valid(bottom_description_label):
-				bottom_description_label.text = parts[1]
-				bottom_description_label.visible = true
-				bottom_description_label.set_meta("effect_definition", item_def)
-		else:
-			description_label.text = final_text
-			if is_instance_valid(bottom_description_label):
-				bottom_description_label.text = ""
-				bottom_description_label.visible = false
-				bottom_description_label.custom_minimum_size = Vector2.ZERO
+	var font = Database.get_current_locale_font()
+	description_label.custom_minimum_size = Vector2.ZERO
+	description_label.add_theme_font_override("normal_font", font)
+	description_label.add_theme_font_override("bold_font", font)
+	description_label.add_theme_font_size_override("normal_font_size", 22)
+	description_label.add_theme_font_size_override("bold_font_size", 22)
+	description_label.add_theme_constant_override("line_separation", 3)
+	description_label.add_theme_constant_override("p_separation", 6)
+	description_label.text = final_text
+	description_label.visible = not final_text.is_empty()
+	description_label.set_meta("effect_definition", item_def if not _is_trinket(item_def) else null)
+	
+	if is_instance_valid(bottom_description_label):
+		bottom_description_label.text = ""
+		bottom_description_label.visible = false
+		bottom_description_label.custom_minimum_size = Vector2.ZERO
 	
 	_update_recipe_display(item_def)
 
@@ -289,8 +267,8 @@ func _reset_window_size() -> void:
 		if vbox:
 			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			
-		custom_minimum_size = Vector2(0 if _is_preview else 480, 0)
-		size = Vector2(0 if _is_preview else 480, 0) # Force immediate recalculation of minimum size
+		custom_minimum_size = Vector2(0 if _is_preview else 360, 0)
+		size = Vector2(0 if _is_preview else 360, 0) # Force immediate recalculation of minimum size
 		reset_size()
 		enforce_display_only()
 
@@ -393,7 +371,7 @@ func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 				counts[upper] = counts.get(upper, 0) + 1
 
 
-## Populate the ViewContainer to show the resulting item's view at 2x scale.
+## Populate the ViewContainer to show the resulting item's view at 2x scale (battle board size) during merge preview.
 func _update_item_view() -> void:
 	if not is_instance_valid(view_container):
 		return
@@ -402,7 +380,7 @@ func _update_item_view() -> void:
 		view_container.remove_child(child)
 		child.queue_free()
 	
-	if not is_instance_valid(_instance):
+	if not _is_preview or not is_instance_valid(_instance):
 		view_container.visible = false
 		view_container.custom_minimum_size = Vector2.ZERO
 		return
@@ -421,34 +399,37 @@ func _update_item_view() -> void:
 	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"EquippedItem"
 	slot_view.set_slot_color(slot_color)
 	
-	# Disconnect interactive / indicator signals for inspection view
 	if SignalBus.show_slot_indicators.is_connected(slot_view._on_show_slot_indicators):
 		SignalBus.show_slot_indicators.disconnect(slot_view._on_show_slot_indicators)
 	if SignalBus.hide_slot_indicators.is_connected(slot_view._on_hide_slot_indicators):
 		SignalBus.hide_slot_indicators.disconnect(slot_view._on_hide_slot_indicators)
 	if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
 		SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
-	
+		
 	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 	
 	view_container.add_child(slot_view)
+	slot_view.z_as_relative = true
+	slot_view.z_index = 1
 	view_container.visible = true
-	view_container.custom_minimum_size = Vector2(192, 212)
-
+	view_container.custom_minimum_size = Vector2(0, C.SLOT_SIZE_2X)
+	
 	var all_instances_db = _get_all_instances_db()
 	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
-	slot_view.set_content(visual_data, false, false)
-	
-	for child in slot_view.get_children():
-		if child is GachaBallView:
-			child.show_capsule_overlay = false
-			child.set_is_interactive(false)
-			var overlay = child.get_node_or_null("GachaBallOverlay")
-			if is_instance_valid(overlay):
-				overlay.queue_free()
-			var trait_count = child.get_node_or_null("%TraitCountLabel")
-			if is_instance_valid(trait_count):
-				trait_count.visible = false
+	var gb = slot_view.set_content(visual_data, false, false)
+	if is_instance_valid(gb):
+		gb.z_as_relative = true
+		gb.z_index = 1
+		gb._base_z_index = 1
+		gb._slot_base_z_index = 1
+		gb.show_capsule_overlay = false
+		gb.set_is_interactive(false)
+		var overlay = gb.get_node_or_null("GachaBallOverlay")
+		if is_instance_valid(overlay):
+			overlay.queue_free()
+		var trait_count = gb.get_node_or_null("%TraitCountLabel")
+		if is_instance_valid(trait_count):
+			trait_count.visible = false
 
 func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(recipe_container):
@@ -457,6 +438,11 @@ func _update_recipe_display(item_def: Resource) -> void:
 	for child in recipe_container.get_children():
 		recipe_container.remove_child(child)
 		child.queue_free()
+	
+	if _is_preview:
+		recipe_container.visible = false
+		recipe_container.custom_minimum_size = Vector2.ZERO
+		return
 	
 	if not item_def is GachaBallDefinition:
 		recipe_container.visible = false
@@ -477,6 +463,9 @@ func _update_recipe_display(item_def: Resource) -> void:
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
 		recipe_container.visible = false
 		return
+	
+	recipe_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+	recipe_container.custom_minimum_size = Vector2(0, 96)
 	
 	var _make_icon = func(def: Resource) -> TextureRect:
 		var tex = TextureRect.new()
@@ -509,33 +498,19 @@ func _update_recipe_display(item_def: Resource) -> void:
 	recipe_container.add_child(_make_icon.call(def_b))
 	recipe_container.visible = true
 
-func get_child_window_specs() -> Array[Dictionary]:
-	var specs: Array[Dictionary] = []
+func get_glossary_terms() -> Array[String]:
+	var terms: Array[String] = []
 	var text_to_search: String = ""
 	if is_instance_valid(description_label):
 		text_to_search += description_label.text + " "
 	if is_instance_valid(bottom_description_label) and bottom_description_label.visible:
 		text_to_search += bottom_description_label.text + " "
 	
-	var keywords = DescriptionParser.find_keywords(text_to_search)
-	var seen_effects: Dictionary = {}
-	for kw in keywords:
-		if not seen_effects.has(kw):
-			seen_effects[kw] = true
-			var name_key = "STATUS_" + kw.to_upper()
-			var desc_key = "STATUS_" + kw.to_upper() + "_DESC"
-			specs.append({
-				"window_type": &"EffectInspection",
-				"populate_context": {
-					"effect_definition": {
-						"name_key": name_key,
-						"description_key": desc_key
-					},
-					"is_inside_unit_inspection": true,
-					"target_parent_window_id": get_instance_id()
-				}
-			})
-	return specs
+	terms.append_array(DescriptionParser.find_keywords(text_to_search))
+	return terms
+
+func get_child_window_specs() -> Array[Dictionary]:
+	return []
 
 func get_location() -> LocationIdentifier:
 	return _location

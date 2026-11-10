@@ -14,11 +14,11 @@ const C = preload("res://scripts/Constants.gd")
 ## Context expected:
 ##   - summoned_uuid: String - UUID of the newly summoned unit
 
-func execute(source_uuid: String, _resolved_targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _resolved_targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var result := EffectResult.new()
 	
 	# Get the summoned unit from context
-	var summoned_uuid: String = context.get("summoned_uuid", "")
+	var summoned_uuid: String = context.summoned_uuid
 	if summoned_uuid.is_empty():
 		return result
 	
@@ -61,8 +61,8 @@ func execute(source_uuid: String, _resolved_targets: Array[String], battle_manag
 	result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 		"source_uuid": source_uuid,
 		"target_uuids": [summoned_uuid],
-		"ability_id": context.get("ability_id", &"summon_blessing"),
-		"trigger_type": context.get("trigger_type", ""),
+		"ability_id": (context.ability_id if context.ability_id != &"" else &"summon_blessing"),
+		"trigger_type": context.trigger_type,
 		"action_type": C.ACTION_BUFF,
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.hp_buff(source_uuid, hp_amount, [old_hp], [new_hp], [max_hp])

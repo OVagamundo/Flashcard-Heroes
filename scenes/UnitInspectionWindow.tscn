@@ -25,9 +25,8 @@ theme_override_constants/separation = 2
 [node name="NameLabel" type="Label" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(0, 0.4, 0.8, 1)
-theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.06, 0.09, 0.16, 1)
+theme_override_font_sizes/font_size = 26
 text = "Unit Name"
 horizontal_alignment = 1
 
@@ -38,21 +37,15 @@ alignment = 1
 theme_override_constants/h_separation = 6
 theme_override_constants/v_separation = 4
 
-[node name="BodyContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_constants/separation = 8
-alignment = 0
-
-[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer/BodyContainer"]
+[node name="AttackRow" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-size_flags_vertical = 0
+mouse_filter = 2
 theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/normal_font_size = 32
-theme_override_font_sizes/bold_font_size = 32
-theme_override_constants/line_separation = -4
+theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/bold_font_size = 20
+theme_override_constants/line_separation = 3
 theme_override_constants/p_separation = 0
 bbcode_enabled = true
 text = ""
@@ -60,11 +53,28 @@ fit_content = true
 autowrap_mode = 3
 meta_underlined = false
 
-[node name="ViewContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer/BodyContainer"]
+[node name="DescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(192, 212)
 layout_mode = 2
-size_flags_horizontal = 8
+size_flags_horizontal = 3
+size_flags_vertical = 0
+theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
+theme_override_font_sizes/normal_font_size = 22
+theme_override_font_sizes/bold_font_size = 22
+theme_override_constants/line_separation = 3
+theme_override_constants/p_separation = 6
+bbcode_enabled = true
+text = ""
+fit_content = true
+autowrap_mode = 3
+meta_underlined = false
+
+[node name="ViewContainer" type="CenterContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 0)
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 0
 
 [node name="BottomDescriptionLabel" type="RichTextLabel" parent="MarginContainer/VBoxContainer"]
@@ -73,9 +83,9 @@ visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/default_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_font_sizes/normal_font_size = 32
-theme_override_font_sizes/bold_font_size = 32
-theme_override_constants/line_separation = -4
+theme_override_font_sizes/normal_font_size = 22
+theme_override_font_sizes/bold_font_size = 22
+theme_override_constants/line_separation = 3
 theme_override_constants/p_separation = 0
 bbcode_enabled = true
 text = ""
@@ -88,20 +98,26 @@ unique_name_in_owner = true
 visible = false
 layout_mode = 2
 
-[node name="ItemGridLabel" type="Label" parent="MarginContainer/VBoxContainer"]
+[node name="EquippedContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="EquippedSeparator" type="HSeparator" parent="MarginContainer/VBoxContainer/EquippedContainer"]
+layout_mode = 2
+
+[node name="EquippedHeaderLabel" type="Label" parent="MarginContainer/VBoxContainer/EquippedContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
-theme_override_colors/font_color = Color(0.1, 0.1, 0.1, 1)
-theme_override_colors/font_outline_color = Color(1, 1, 1, 0.5)
-theme_override_constants/outline_size = 0
-
+theme_override_colors/font_color = Color(0.3, 0.35, 0.45, 1)
+theme_override_font_sizes/font_size = 20
 text = "Equipped Items:"
 
-[node name="ItemGrid" type="GridContainer" parent="MarginContainer/VBoxContainer"]
+[node name="EquippedItemsList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/EquippedContainer"]
 unique_name_in_owner = true
 layout_mode = 2
-columns = 5
+theme_override_constants/separation = 4
 
 [node name="TraitIconsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true

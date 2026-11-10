@@ -34,6 +34,7 @@ var equipped_item_uuids: Array[String] = []
 # --- Dynamic State Properties ---
 var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "HONEY_ARMOR"
 var status_effects: Dictionary = {} # Key: StringName (effect_id), Value: int (stack_count)
+var charged_empowered_attack: Dictionary = {} # Prepared Empowered Attack data (consumed on next attack)
 
 # --- Component Composition ---
 var components: Array[GachaBallComponent] = []
@@ -465,9 +466,12 @@ func get_gold_value() -> int:
 	var def = get_definition()
 	if not is_instance_valid(def):
 		return 1
-	# Delegate to GameManager's central economy formula with custom level scaling
-	var base_cost = GameManager.get_item_cost(def)
-	var multiplier: int = int(pow(2, self.level - 1))
+	var base_cost: int = 1
+	if "tier" in def and def.tier > 0:
+		base_cost = 1 << (def.tier - 1)
+	elif "cost" in def:
+		base_cost = int(def.cost)
+	var multiplier: int = 1 << (maxi(1, self.level) - 1)
 	return base_cost * multiplier
 
 func get_stat_breakdown(all_instances_db: Dictionary = {}) -> Dictionary:
@@ -571,7 +575,7 @@ func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 	var old_pwr := current_pwr
 	
 	if amount < 0:
-		var max_drop = max(0, current_pwr - 1)
+		var max_drop = max(0, current_pwr)
 		var actual_drop = min(abs(amount), max_drop)
 		var debt_added = abs(amount) - actual_drop
 		_pwr_debt += debt_added
@@ -710,7 +714,8 @@ func _add_ability_entry(entries: Array[Dictionary], seen: Dictionary, ability: A
 		"source_instance_uuid": source_uuid,
 		"source_type": source_type,
 		"holder_uuid": holder_uuid,
-		"priority": priority_value if priority_value != 0 else ability.priority,
+		"component_priority": priority_value,
+		"sub_phase": ability.sub_phase,
 		"component_id": component_id,
 	})
 

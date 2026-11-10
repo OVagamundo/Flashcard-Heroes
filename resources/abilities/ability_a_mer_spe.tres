@@ -17,5 +17,5 @@ id = &"ability_a_mer_spe"
 description_key = "ability.e_mer_spe.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_MerSpe")])
-priority = 0
+sub_phase = 200
 max_level = 99

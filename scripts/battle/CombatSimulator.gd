@@ -44,6 +44,7 @@ var _current_acting_unit: GachaBallInstance = null
 ## Persists even if the acting unit dies and moves to discard
 var _current_turn_slot_index: int = -1
 var _current_turn_is_player: bool = false
+var _current_turn_step: int = -1
 
 # ============================================================================
 # ACTOR QUEUE MANAGEMENT
@@ -75,25 +76,61 @@ func has_pending_actors() -> bool:
 func actor_queue_size() -> int:
 	return _actor_queue.size()
 
+## Returns the absolute step in the alternating combat sequence for a given slot and team.
+## Alternates rank by rank starting with the enemy:
+##   Enemy Slot 0 (Rank 0) -> 0
+##   Player Slot 4 (Rank 0) -> 1
+##   Enemy Slot 1 (Rank 1) -> 2
+##   Player Slot 3 (Rank 1) -> 3
+##   Enemy Slot 2 (Rank 2) -> 4
+##   Player Slot 2 (Rank 2) -> 5
+##   Enemy Slot 3 (Rank 3) -> 6
+##   Player Slot 1 (Rank 3) -> 7
+##   Enemy Slot 4 (Rank 4) -> 8
+##   Player Slot 0 (Rank 4) -> 9
+static func get_unit_action_step(slot_index: int, is_player: bool, max_slots: int = C.LINEUP_CAP) -> int:
+	var rank: int = (max_slots - 1 - slot_index) if is_player else slot_index
+	return (rank * 2) + (1 if is_player else 0)
+
 ## Populate the actor queue from battle state at start of combat.
-## Players act right-to-left, enemies act left-to-right.
+## Alternates rank by rank starting with the enemy:
+##   Rank 0: Enemy Slot 0 -> Player Slot 4
+##   Rank 1: Enemy Slot 1 -> Player Slot 3
+##   Rank 2: Enemy Slot 2 -> Player Slot 2
+##   Rank 3: Enemy Slot 3 -> Player Slot 1
+##   Rank 4: Enemy Slot 4 -> Player Slot 0
+## Empty slots are naturally skipped so frontloaded formations act before backloaded units.
 func populate_actor_queue(state: BattleState) -> void:
 	_actor_queue.clear()
 	state.clear_turn_data() # Reset turn-scoped tracking
 	_current_turn_slot_index = -1 # Reset turn slot tracker
+	_current_turn_is_player = false
+	_current_turn_step = -1
 	
-	var player_lineup := state.get_instances_in_container(&"PlayerLineup")
-	var enemy_lineup := state.get_instances_in_container(&"EnemyLineup")
+	var player_container = state.get_container(&"PlayerLineup")
+	var enemy_container = state.get_container(&"EnemyLineup")
 	
-	# With FIFO (pop_front), first in = first out
-	# Add players in reverse order (right-to-left execution)
-	player_lineup.reverse()
-	_actor_queue.append_array(player_lineup)
-	# Add enemies in normal order (left-to-right execution)
-	_actor_queue.append_array(enemy_lineup)
+	for rank in range(C.LINEUP_CAP):
+		# 1. Enemy slot for this rank (0 -> 4)
+		var enemy_slot: int = rank
+		if is_instance_valid(enemy_container):
+			var enemy_uuid: String = enemy_container.get_uuid(enemy_slot)
+			if not enemy_uuid.is_empty():
+				var enemy_inst: GachaBallInstance = state.get_instance(enemy_uuid)
+				if is_instance_valid(enemy_inst) and enemy_inst.current_hp > 0:
+					_actor_queue.append(enemy_inst)
+		
+		# 2. Player slot for this rank (4 -> 0)
+		var player_slot: int = (C.LINEUP_CAP - 1) - rank
+		if is_instance_valid(player_container):
+			var player_uuid: String = player_container.get_uuid(player_slot)
+			if not player_uuid.is_empty():
+				var player_inst: GachaBallInstance = state.get_instance(player_uuid)
+				if is_instance_valid(player_inst) and player_inst.current_hp > 0:
+					_actor_queue.append(player_inst)
 
 ## Grant a unit an extra action by inserting them at the front of the actor queue.
-## Called by EffectGrantExtraAction when a unit equipped with Bloodlust Edge gets a kill.
+## Called by EffectGrantExtraAction when a unit equipped with Scythe gets a knockout.
 func grant_extra_action_to(unit: GachaBallInstance) -> void:
 	if not is_instance_valid(unit):
 		return
@@ -102,88 +139,58 @@ func grant_extra_action_to(unit: GachaBallInstance) -> void:
 	_actor_queue.push_front(unit)
 	
 	# Prevent stacking: If the unit is already at the very front (from a previous trigger in the same chain),
-	# don't add it again. This handles multiple Bloodlust items or multi-kill scenarios
+	# don't add it again. This handles multiple Scythes or multi-kill scenarios
 	# granting excessive turns.
 	if _actor_queue.size() > 1 and _actor_queue[0] == unit and _actor_queue[1] == unit:
 		_actor_queue.pop_front()
 
 ## Insert a newly summoned unit into the actor queue.
+## A summoned unit acts in the current combat turn ONLY if its slot rank has not yet acted
+## in the alternating sequence. If eligible, it is inserted into the queue at its proper sequence step.
 ## @param new_unit: The summoned unit
 ## @param is_player: Whether the unit is on the player team
 ## @param is_player_unit_callback: Callable to check if a queued unit is on player team
 func insert_summoned_unit(new_unit: GachaBallInstance, is_player: bool, is_player_unit_callback: Callable) -> void:
-	if not is_instance_valid(new_unit):
+	if not is_instance_valid(new_unit) or new_unit.current_hp <= 0:
 		return
 	
-	var slot_idx := new_unit.location_slot_index
+	var container_tag: StringName = new_unit.location_container_tag
+	if container_tag != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+		return
+		
+	var slot_idx: int = new_unit.location_slot_index
+	if slot_idx < 0 or slot_idx >= C.LINEUP_CAP:
+		return
+		
+	if _actor_queue.has(new_unit):
+		return
+		
+	var new_step: int = get_unit_action_step(slot_idx, is_player)
 	
-	# CRITICAL CHECK: Prevent re-insertion if the slot has already acted or is currently acting
-	# Uses persisted turn data because _current_acting_unit might be dead/moved to discard
-	if _current_turn_slot_index != -1: # Actively processing a turn
-		# Only block if we are inserting into the SAME team that is currently acting
-		if _current_turn_is_player == is_player:
-			if is_player:
-				# Player acts 4 -> 0 (Descending)
-				# If new_slot >= current_slot, it means we are replacing the current actor
-				# or inserting into a slot that already finished acting.
-				if slot_idx >= _current_turn_slot_index:
-					return
-			else:
-				# Enemy acts 0 -> 4 (Ascending)
-				# If new_slot <= current_slot, it means we are replacing the current actor
-				# or inserting into a slot that already finished acting.
-				if slot_idx <= _current_turn_slot_index:
-					return
-	
-	# Find alive same-team units still in queue to determine insertion position
-	var found_alive_same_team := false
+	# Only act this round if this slot's step in the alternating sequence has not yet occurred
+	if _current_turn_step != -1 and new_step <= _current_turn_step:
+		return
+		
+	var inserted := false
 	for i in range(_actor_queue.size()):
-		var queued_unit = _actor_queue[i]
-		# Skip dead units - their container tags are unreliable
-		if queued_unit.current_hp <= 0:
+		var queued_unit: GachaBallInstance = _actor_queue[i]
+		if not is_instance_valid(queued_unit):
 			continue
-		if is_player_unit_callback.call(queued_unit) == is_player:
-			found_alive_same_team = true
-			# Same team - check if our slot should act before this one
-			if is_player:
-				# Players: higher slots act first (4,3,2,1,0)
-				if slot_idx > queued_unit.location_slot_index:
-					_actor_queue.insert(i, new_unit)
-					return
-			else:
-				# Enemies: lower slots act first (0,1,2,3,4)
-				if slot_idx < queued_unit.location_slot_index:
-					_actor_queue.insert(i, new_unit)
-					return
-	
-	# If we found alive same-team units but didn't insert, add at end of same-team section
-	if found_alive_same_team:
-		for i in range(_actor_queue.size()):
-			var queued_unit = _actor_queue[i]
-			if queued_unit.current_hp <= 0:
-				continue
-			if is_player_unit_callback.call(queued_unit) != is_player:
-				# Found where other team starts, insert before
-				_actor_queue.insert(i, new_unit)
-				return
-		# All remaining alive units are same team, append at end
-		_actor_queue.append(new_unit)
-		return
-	
-	# No alive same-team units in queue - check if there are DEAD same-team units
-	var found_dead_same_team := false
-	for queued_unit in _actor_queue:
-		if queued_unit.current_hp <= 0:
-			found_dead_same_team = true
+		var queued_is_player: bool = is_player_unit_callback.call(queued_unit)
+		var queued_step: int = get_unit_action_step(queued_unit.location_slot_index, queued_is_player)
+		
+		# If a queued unit has step <= _current_turn_step, it was pushed to the front for an extra action (e.g. Scythe).
+		# Extra actions take immediate priority, so do not insert before them.
+		if _current_turn_step != -1 and queued_step <= _current_turn_step:
+			continue
+			
+		if new_step < queued_step:
+			_actor_queue.insert(i, new_unit)
+			inserted = true
 			break
-	
-	if found_dead_same_team:
-		# Team hasn't finished - dead units are still waiting for their turn
+			
+	if not inserted:
 		_actor_queue.append(new_unit)
-		return
-	
-	# No same-team units (alive OR dead) in queue - team has FINISHED acting
-	# The slot already had its turn, so the summon should NOT act this turn
 
 # ============================================================================
 # REACTION QUEUE MANAGEMENT
@@ -204,7 +211,7 @@ func has_pending_reactions() -> bool:
 func enqueue_reaction(request: EffectRequest) -> void:
 	_crr.enqueue(request)
 
-func sort_reactions_by_priority() -> void:
+func sort_reactions_by_sub_phase() -> void:
 	_crr.sort_pending()
 
 func _compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
@@ -272,9 +279,14 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		# Robust Turn Tracking: Snapshot slot/team BEFORE execution (in case unit dies/moves)
 		_current_turn_slot_index = current_actor.location_slot_index
 		_current_turn_is_player = battle_manager._is_player_unit(current_actor)
+		if _current_turn_slot_index >= 0:
+			var step: int = get_unit_action_step(_current_turn_slot_index, _current_turn_is_player)
+			_current_turn_step = maxi(_current_turn_step, step)
 		
 		# 1. Fire on_before_turn_action trigger (e.g. for Mimic transformation)
-		AbilityResolver.process_trigger(&"on_before_turn_action", {"actor_uuid": current_actor.ball_uuid})
+		var before_turn_ctx := TriggerContext.new()
+		before_turn_ctx.actor_uuid = current_actor.ball_uuid
+		AbilityResolver.process_trigger(C.TRIGGER_BEFORE_TURN_ACTION, before_turn_ctx)
 		CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
 		
 		# 2. In case the unit was replaced (e.g. by Mimic), update current_actor
@@ -361,8 +373,8 @@ func build_commands(
 	if effect_result.cascade_request != null:
 		commands.append(CascadeCommand.new(request, combat_sim, bm, effect_result.cascade_request))
 	
-	if effect_result.kamikaze_request != null:
-		commands.append(KamikazeCommand.new(request, combat_sim, bm, effect_result.kamikaze_request))
+	if effect_result.pre_knockout_attack_request != null:
+		commands.append(PreKnockoutAttackCommand.new(request, combat_sim, bm, effect_result.pre_knockout_attack_request))
 	
 	if not effect_result.summon_request.is_empty():
 		commands.append(SummonCommand.new(request, combat_sim, bm, effect_result.summon_request))
@@ -402,13 +414,13 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		var src_def = source.get_definition()
 		if is_instance_valid(src_def) and src_def.category == &"UNIT" and source.current_hp <= 0:
 			# Allow if this is the dying unit's own on_death trigger
-			var dying_uuid: String = request.trigger_context.get("dying_uuid", "")
-			var is_own_death_trigger: bool = (dying_uuid == request.source_uuid)
+			var ko_uuid: String = request.trigger_context.knocked_out_uuid
+			var is_own_death_trigger: bool = (ko_uuid == request.source_uuid)
 			
-			# Check if ability has execute_on_lethal flag via AbilitiesRegistry or source instance
+			# Check if ability has execute_before_knockout flag via AbilitiesRegistry or source instance
 			var is_reactive_ability: bool = false
 			var ability_def = bm._get_ability_definition(request.ability_id, source)
-			if is_instance_valid(ability_def) and ability_def.execute_on_lethal:
+			if is_instance_valid(ability_def) and ability_def.execute_before_knockout:
 				is_reactive_ability = true
 			
 			if not is_own_death_trigger and not is_reactive_ability:
@@ -423,11 +435,16 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	# Filter out dead targets to prevent ghost attacks
 	# NOTE: Must check location_container_tag because reset_battle_stats_silent() restores HP before discard
 	var valid_targets: Array[String] = []
-	var allow_dying_target: bool = (request.trigger_context.get("trigger_type") == &"on_death" and is_instance_valid(request.effect_definition) and request.effect_definition.get("target_type") == &"ALLY_BEHIND")
+	var is_knockout_trigger: bool = (
+		request.trigger_context.trigger_type == C.TRIGGER_WHEN_KNOCKED_OUT
+		or request.trigger_context.trigger_type == C.TRIGGER_BEFORE_BEING_KNOCKED_OUT
+	)
+	var allow_dying_target: bool = is_knockout_trigger and is_instance_valid(request.effect_definition) and request.effect_definition.get("target_type") == &"ALLY_BEHIND"
 	for target_uuid in exec_targets:
 		var target_inst = bm.get_instance_by_uuid(target_uuid)
 		if is_instance_valid(target_inst):
-			var is_target_alive_or_chaining: bool = (target_inst.current_hp > 0 or (allow_dying_target and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and target_inst.location_container_tag != &""))
+			var is_dying_subject: bool = is_knockout_trigger and (target_uuid == request.trigger_context.knocked_out_uuid or target_uuid == request.source_uuid)
+			var is_target_alive_or_chaining: bool = (target_inst.current_hp > 0 or is_dying_subject or (allow_dying_target and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and target_inst.location_container_tag != &""))
 			if is_target_alive_or_chaining:
 				# Also verify the target is still in an active battle container (not discard/removed)
 				var loc_tag: StringName = target_inst.location_container_tag
@@ -477,39 +494,51 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	# Execute without emitting UI; capture results for events
 	var _damage := 0
 	if is_instance_valid(request.effect_definition):
-		var sim_ctx = request.trigger_context.duplicate(true)
-		sim_ctx["is_simulation"] = true
-		sim_ctx["ability_id"] = request.ability_id
+		var sim_ctx: TriggerContext = request.trigger_context.duplicate_context()
+		sim_ctx.is_simulation = true
+		sim_ctx.ability_id = request.ability_id
 		
 		# Zero-Instance-Query Compliance: Pre-populate source data
 		# This allows effects to use context data instead of querying instances
 		# Data is snapshotted at the EXACT moment before execute(), reflecting current simulation state
 		if is_instance_valid(source):
 			var source_def = source.get_definition()
-			var stat_provider = source # Default: use source's own stats
 			
 			if is_instance_valid(source_def):
-				if not sim_ctx.has("source_category") or sim_ctx["source_category"] == &"":
-					sim_ctx["source_category"] = source_def.category
+				if sim_ctx.source_category == &"":
+					sim_ctx.source_category = source_def.category
 				
 				# For items, use the HOLDER's stats (not the item's stats which are 0)
 				# Also include holder UUID so effects can identify the attacker
 				if source_def.category == &"ITEM" and not source.equipped_on_uuid.is_empty():
-					sim_ctx["source_holder_uuid"] = source.equipped_on_uuid
+					sim_ctx.source_holder_uuid = source.equipped_on_uuid
 		# Context enrichment
 		var stat_provider = bm.get_instance_by_uuid(request.source_uuid)
 		if is_instance_valid(stat_provider):
-			if not sim_ctx.has("source_category") or sim_ctx["source_category"] == &"":
-				sim_ctx["source_category"] = stat_provider.get_definition().category if is_instance_valid(stat_provider.get_definition()) else &""
-			sim_ctx["source_holder_uuid"] = stat_provider.equipped_on_uuid if sim_ctx["source_category"] == &"ITEM" else ""
-			if stat_provider.current_hp <= 0 and request.trigger_context.has("source_pwr"):
-				sim_ctx["source_pwr"] = request.trigger_context["source_pwr"]
-			else:
-				sim_ctx["source_pwr"] = stat_provider.current_pwr
-			sim_ctx["source_hp"] = stat_provider.current_hp
+			if sim_ctx.source_category == &"":
+				sim_ctx.source_category = stat_provider.get_definition().category if is_instance_valid(stat_provider.get_definition()) else &""
+			sim_ctx.source_holder_uuid = stat_provider.equipped_on_uuid if sim_ctx.source_category == &"ITEM" else ""
+			if sim_ctx.source_category == &"ITEM" and not stat_provider.equipped_on_uuid.is_empty():
+				var item_holder: GachaBallInstance = bm.get_instance_by_uuid(stat_provider.equipped_on_uuid)
+				assert(item_holder != null, "CombatSimulator: equipped item holder is not registered")
+				sim_ctx.source_pwr = item_holder.current_pwr
+				sim_ctx.source_hp = item_holder.current_hp
+			elif sim_ctx.source_category == &"ITEM" and not request.trigger_context.knocked_out_uuid.is_empty():
+				sim_ctx.source_holder_uuid = request.trigger_context.knocked_out_uuid
+				if request.trigger_context.source_pwr >= 0:
+					sim_ctx.source_pwr = request.trigger_context.source_pwr
+					sim_ctx.source_hp = request.trigger_context.source_hp
+			elif stat_provider.current_hp <= 0 and request.trigger_context.source_pwr >= 0:
+				sim_ctx.source_pwr = request.trigger_context.source_pwr
+				sim_ctx.source_hp = request.trigger_context.source_hp
+			elif sim_ctx.source_category != &"ITEM":
+				sim_ctx.source_pwr = stat_provider.current_pwr
+				sim_ctx.source_hp = stat_provider.current_hp
 		
 		var _effect_script_path = request.effect_definition.get_script().resource_path if request.effect_definition.get_script() else "no_script"
-		var res = request.effect_definition.execute(request.source_uuid, exec_targets, bm, sim_ctx)
+		var res: EffectResult = request.effect_definition.execute(request.source_uuid, exec_targets, bm, sim_ctx)
+		if sim_ctx.double_strike_executed:
+			request.trigger_context.double_strike_executed = true
 		
 		var before_attack_inline_evts = collect_and_clear_inline_events()
 		CombatCommand.append_unified_events(out_events, before_attack_inline_evts)
@@ -555,6 +584,29 @@ func drain_reaction_scope(scope_id: int, bm) -> Array[CombatEvent]:
 			
 	return captured_events
 
+## Drain and resolve only reactions in scope_id matching predicate, leaving scope_id open.
+func drain_reaction_scope_matching(scope_id: int, predicate: Callable, bm) -> Array[CombatEvent]:
+	var requests = _crr.drain_scope_matching(scope_id, predicate)
+	if requests.is_empty():
+		return []
+
+	var captured_events: Array[CombatEvent] = []
+	for request in requests:
+		var inline_start_index := captured_events.size()
+		var nested_scope = _crr.begin_scope()
+		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
+		_tag_trinket_events(captured_events, request, bm, inline_start_index)
+
+		var nested_events = drain_reaction_scope(nested_scope, bm)
+		if not nested_events.is_empty():
+			CombatCommand.append_unified_events(captured_events, nested_events)
+
+	return captured_events
+
+## Adopt existing pending reactions matching predicate into an active scope.
+func adopt_into_reaction_scope(scope_id: int, predicate: Callable) -> void:
+	_crr.adopt_into_scope(scope_id, predicate)
+
 ## Drain all Interception reactions (Priority >= 300) using CRR.
 ## Returns generated CombatEvents.
 func drain_interceptions(bm) -> Array[CombatEvent]:
@@ -575,7 +627,7 @@ func drain_interceptions(bm) -> Array[CombatEvent]:
 			
 	return captured_events
 
-## Drain ONLY execute_on_lethal reactions using CRR.
+## Drain ONLY execute_before_knockout reactions using CRR.
 ## Returns the generated CombatEvents directly.
 func drain_lethal_counters(bm) -> Array[CombatEvent]:
 	var lethal_requests = _crr.drain_lethal_counters(bm)
@@ -645,7 +697,7 @@ func drain_and_capture_reactions_inline(start_index: int, bm) -> Array[CombatEve
 			
 	return captured_events
 
-## Drain ONLY execute_on_lethal reactions (legacy wrapper).
+## Drain ONLY execute_before_knockout reactions (legacy wrapper).
 func drain_lethal_reactions(start_index: int, bm) -> void:
 	var evts = drain_lethal_counters(bm)
 	_inline_events.append_array(evts)
@@ -666,10 +718,11 @@ func collect_and_clear_inline_events() -> Array[CombatEvent]:
 ## @param summon_result: The SummonResult from EffectHandlers
 ## @param out_events: Array to append generated events to
 ## @param bm: BattleManager reference
-func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonResult, out_events: Array[CombatEvent], bm) -> void:
+func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonResult, out_events: Array[CombatEvent], bm, summon_scope: int = -1) -> void:
 	var is_combat_phase: bool = bm.get_current_phase_name() == &"COMBAT"
+	var outer_scope: int = summon_scope if summon_scope != -1 else begin_reaction_scope()
 	
-	# For each new instance, trigger summon reactions
+	# For each new instance, trigger summon reactions in a dedicated sub-scope
 	for i in range(summon_result.new_instances.size()):
 		var new_inst: GachaBallInstance = summon_result.new_instances[i]
 		
@@ -693,29 +746,31 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 			summoned_location.container = summon_result.container_updates[i].container_tag
 			summoned_location.index = summon_result.container_updates[i].slot
 		
+		var unit_summon_scope: int = begin_reaction_scope()
+		
 		# Trigger on_ally_summon in ALL phases (for abilities like Summon Blessing, Royal/Veteran Insignia)
 		TurnAbilities.trigger_on_ally_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 
-		# Trigger on_board_changed for passive scaling abilities (like Twin Charm) mid-combat
-		AbilityResolver.process_trigger(&"on_board_changed", {"is_simulation": true})
+		# Trigger on_board_state_changed for passive scaling abilities (like Twin Charm) mid-combat
+		var board_ctx := TriggerContext.new()
+		board_ctx.is_simulation = true
+		AbilityResolver.process_trigger(C.TRIGGER_ON_BOARD_STATE_CHANGED, board_ctx)
 
 		# Trigger on_enemy_summon ONLY during combat phase (for abilities like Ambush Predator)
 		if is_combat_phase:
 			TurnAbilities.trigger_on_enemy_summon(new_inst.ball_uuid, summoned_team, summoned_location)
 		
-		# Drain reactions immediately so summon abilities execute before the summoned unit acts
-		while not _pending_reactions.is_empty():
-			_pending_reactions.sort_custom(_compare_reactions)
-			var reaction = _pending_reactions.pop_front()
-			
-			var reaction_events: Array[CombatEvent] = []
-			resolve_effect_request(reaction, reaction_events, {}, bm)
-			_tag_trinket_events(reaction_events, reaction, bm)
-			
-			# Collect inline events
-			var inline_evts = collect_and_clear_inline_events()
-			CombatCommand.append_unified_events(out_events, inline_evts)
-			CombatCommand.append_unified_events(out_events, reaction_events)
+		# Drain strictly the reactions from this summoned unit's scope
+		var unit_reaction_events: Array[CombatEvent] = drain_reaction_scope(unit_summon_scope, bm)
+		var inline_evts = collect_and_clear_inline_events()
+		CombatCommand.append_unified_events(out_events, inline_evts)
+		CombatCommand.append_unified_events(out_events, unit_reaction_events)
+
+	# Drain any remaining reactions captured in outer_scope (e.g. ON_ENTER_BOARD from _apply_summon_result)
+	var outer_reaction_events: Array[CombatEvent] = drain_reaction_scope(outer_scope, bm)
+	var outer_inline_evts = collect_and_clear_inline_events()
+	CombatCommand.append_unified_events(out_events, outer_inline_evts)
+	CombatCommand.append_unified_events(out_events, outer_reaction_events)
 
 func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm, start_index: int = 0) -> void:
 	if request.source_uuid.is_empty():

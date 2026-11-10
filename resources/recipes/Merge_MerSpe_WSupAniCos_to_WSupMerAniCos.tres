@@ -6,7 +6,7 @@
 script = ExtResource("1_script")
 id = &"merge_merspe_wsupanicos_to_wsupmeranicos"
 ingredient_a_id = &"?MerSpe"
-ingredient_b_id = &"WSupAniCos"
+ingredient_b_id = &"WSupAni"
 result_id = &"W?SupMerAniCos"
 is_self_merge = false
 merge_type = &"UNIT"

@@ -5,9 +5,9 @@ extends EffectDefinition
 ## Effect: Returns tokens equivalent to the first dying unit's tier (1 for T1, 2 for T2, 3 for T3).
 ## Only triggers for the first unit to die that round/turn.
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	# Only player team can use or benefit from token refunds
-	var trinket_team: String = context.get("team", "PLAYER")
+	var trinket_team: String = (context.team if not context.team.is_empty() else "PLAYER")
 	if trinket_team != "PLAYER":
 		return EffectResult.empty()
 
@@ -16,16 +16,16 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		return EffectResult.empty()
 
 	# Verify dying unit team is PLAYER
-	var dying_team: String = context.get("fainting_ally_team", context.get("dying_team", ""))
+	var dying_team: String = context.ally_knocked_out_team if not context.ally_knocked_out_team.is_empty() else context.knocked_out_team
 	if dying_team != "" and dying_team != "PLAYER":
 		return EffectResult.empty()
 
-	# Get the dying unit's UUID from the trigger context (fainting_ally_uuid for on_ally_death, dying_uuid fallback)
-	var dying_uuid: String = context.get("fainting_ally_uuid", context.get("dying_uuid", ""))
-	if dying_uuid.is_empty():
+	# Get the knocked out unit's UUID from the trigger context (ally_knocked_out_uuid for on_ally_death, knocked_out_uuid fallback)
+	var ko_uuid: String = context.ally_knocked_out_uuid if not context.ally_knocked_out_uuid.is_empty() else context.knocked_out_uuid
+	if ko_uuid.is_empty():
 		return EffectResult.empty()
 
-	var unit: GachaBallInstance = battle_manager.get_instance_by_uuid(dying_uuid)
+	var unit: GachaBallInstance = battle_manager.get_instance_by_uuid(ko_uuid)
 	if not is_instance_valid(unit):
 		return EffectResult.empty()
 
@@ -40,7 +40,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	# Mark the effect as completed for this turn
 	battle_manager._turn_metadata["death_token_refund_done"] = true
 
-	var is_simulation: bool = context.get("is_simulation", false)
+	var is_simulation: bool = context.is_simulation
 
 	if is_simulation:
 		# Update simulated gacha tokens
@@ -53,12 +53,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		}))
 
 		result.add_event(CombatEvent.new(CombatEvent.Type.TOKEN_GAIN, {
-			"source_uuid": dying_uuid,
-			"target_uuids": [dying_uuid],
+			"source_uuid": ko_uuid,
+			"target_uuids": [ko_uuid],
 			"ability_holder_uuid": _source_uuid,
 			"ability_id": "ability_trinket_token_return_charm",
 			"amount": tier,
-			"visual_payload": _make_token_payload(tier, dying_uuid, target_tokens)
+			"visual_payload": _make_token_payload(tier, ko_uuid, target_tokens)
 		}))
 
 		result.state_applied = true

@@ -15,7 +15,7 @@ const C = preload("res://scripts/Constants.gd")
 ##   2. PRIMARY_MUTATION: Primary attack, stat change, or trigger effect
 ##   3. REACTION_COLLECT: Gathers on_hurt, on_damage_dealt, on_stat_increased
 ##   4. LETHAL_COUNTER: Retaliation reactions execute WHILE unit death is deferred
-##   5. MORTALITY: Finalizes deaths, creates DEATH events, on_death/on_ally_death
+##   5. KNOCKOUT: Finalizes knockouts, creates KNOCKOUT events, on_death/on_ally_death
 ##   6. CASCADE: Drains remaining reactions in strict 3-Layer priority order
 
 enum Phase {
@@ -24,7 +24,7 @@ enum Phase {
 	PRIMARY_MUTATION,
 	REACTION_COLLECT,
 	LETHAL_COUNTER,
-	MORTALITY,
+	KNOCKOUT,
 	CASCADE
 }
 
@@ -95,6 +95,44 @@ func drain_scope(scope_id: int) -> Array[EffectRequest]:
 	matched.sort_custom(compare_reactions)
 	return matched
 
+## Extract and remove only reactions within the specified scope that match predicate.
+## The scope remains open in _active_scopes for subsequent draining.
+func drain_scope_matching(scope_id: int, predicate: Callable) -> Array[EffectRequest]:
+	assert(_active_scopes.has(scope_id), "CRR: Invalid or already drained scope_id: %d" % scope_id)
+	var scope_info: Dictionary = _active_scopes[scope_id]
+	var initial_items: Dictionary = scope_info.get("initial_items", {})
+	var explicit_requests: Array = scope_info.get("explicit_requests", [])
+
+	var explicit_set := {}
+	for req in explicit_requests:
+		explicit_set[req] = true
+
+	var remaining: Array[EffectRequest] = []
+	var matched: Array[EffectRequest] = []
+	for req in _pending_reactions:
+		var in_scope: bool = explicit_set.has(req) or not initial_items.has(req)
+		if in_scope and predicate.call(req):
+			matched.append(req)
+		else:
+			remaining.append(req)
+	_pending_reactions = remaining
+
+	matched.sort_custom(compare_reactions)
+	return matched
+
+## Adopt existing pending reactions matching predicate into an active scope
+## so they will be drained when that scope is drained.
+func adopt_into_scope(scope_id: int, predicate: Callable) -> void:
+	assert(_active_scopes.has(scope_id), "CRR: Invalid scope_id for adopt_into_scope: %d" % scope_id)
+	var scope_info: Dictionary = _active_scopes[scope_id]
+	var initial_items: Dictionary = scope_info["initial_items"]
+	var explicit_requests: Array = scope_info["explicit_requests"]
+	for req in _pending_reactions:
+		if predicate.call(req):
+			initial_items.erase(req)
+			if not explicit_requests.has(req):
+				explicit_requests.append(req)
+
 ## Drain all remaining reactions in strict 3-Layer priority order.
 func drain_all() -> Array[EffectRequest]:
 	_current_phase = Phase.CASCADE
@@ -137,13 +175,13 @@ func sort_pending() -> void:
 	_pending_reactions.sort_custom(compare_reactions)
 
 ## Deterministic 3-Layer Priority Comparator
-## Layer 1: Integer Execution Priority (Descending: 300+ down to <0)
+## Layer 1: SubPhase Execution Order (Ascending: 5 up to 300)
 ## Layer 2: Category Rank (UNIT -> ITEM -> TRINKET)
 ## Layer 3: Visual Direction (The Mirror Rule: Player 4->0, Enemy 0->4)
 static func compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
-	# Layer 1: Execution Priority (Descending integer priority)
-	if a.priority != b.priority:
-		return a.priority > b.priority
+	# Layer 1: SubPhase Execution Order (Ascending enum value)
+	if a.sub_phase != b.sub_phase:
+		return a.sub_phase < b.sub_phase
 
 	# Layer 2: Category Tie-Breaker (UNIT -> ITEM -> TRINKET)
 	var rank_a := get_category_rank(a.category)
@@ -152,8 +190,8 @@ static func compare_reactions(a: EffectRequest, b: EffectRequest) -> bool:
 		return rank_a < rank_b
 
 	# Layer 3: Visual Direction / Pre-Combat & Mirror Rules
-	var is_pre_combat_a: bool = a.trigger_context.get("trigger_type") == C.TRIGGER_ON_PRE_COMBAT
-	var is_pre_combat_b: bool = b.trigger_context.get("trigger_type") == C.TRIGGER_ON_PRE_COMBAT
+	var is_pre_combat_a: bool = a.trigger_context.get("trigger_type") == C.TRIGGER_PRE_COMBAT
+	var is_pre_combat_b: bool = b.trigger_context.get("trigger_type") == C.TRIGGER_PRE_COMBAT
 	if is_pre_combat_a and is_pre_combat_b:
 		# Team Order: Player team first, then Enemy team
 		if a.is_player != b.is_player:
@@ -225,12 +263,12 @@ func drain_matching(predicate: Callable) -> Array[EffectRequest]:
 func drain_interceptions() -> Array[EffectRequest]:
 	_current_phase = Phase.INTERCEPTION
 	return drain_matching(func(req: EffectRequest) -> bool:
-		return req.priority >= C.PRIORITY_GUARDIAN_INTERCEPT
+		return req.sub_phase <= C.SubPhase.PRE_DAMAGE_INTERCEPT
 	)
 
-## Drain all Lethal Counter reactions.
-## A lethal counter is a reaction from a unit that received lethal damage (HP <= 0)
-## whose ability definition has execute_on_lethal == true.
+## Drain all Knockout Counter reactions.
+## A knockout counter is a reaction from a unit that received knockout damage (HP <= 0)
+## whose ability definition has execute_before_knockout == true.
 func drain_lethal_counters(bm: Node) -> Array[EffectRequest]:
 	_current_phase = Phase.LETHAL_COUNTER
 	return drain_matching(func(req: EffectRequest) -> bool:
@@ -244,10 +282,13 @@ func drain_lethal_counters(bm: Node) -> Array[EffectRequest]:
 			return false
 		if source.current_hp > 0:
 			return false
-		# Check if ability has execute_on_lethal flag
+		# Check if ability has execute_before_knockout flag
 		var ability_def = bm._get_ability_definition(req.ability_id, source)
-		return is_instance_valid(ability_def) and ability_def.execute_on_lethal
+		return is_instance_valid(ability_def) and ability_def.execute_before_knockout
 	)
+
+func extract_before_knockout_reactions(bm: Node) -> Array[EffectRequest]:
+	return drain_lethal_counters(bm)
 
 ## Pop the highest priority reaction from the queue.
 func pop_front() -> EffectRequest:

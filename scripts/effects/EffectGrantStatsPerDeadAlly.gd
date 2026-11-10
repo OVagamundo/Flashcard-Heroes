@@ -4,8 +4,8 @@ extends EffectDefinition
 ## Grants +PWR and +HP to the source unit for each ally that died this combat.
 ## User requested for Storm Herald: "+1 HP and +1 PWR per dead ally".
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	if not is_simulation:
 		return EffectResult.empty()
 	var source_unit = battle_manager.get_instance_by_uuid(source_uuid)
@@ -44,7 +44,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var new_pwr = battle_manager.apply_permanent_stat_delta(source_unit, "pwr", amount, source_uuid)
 	
 	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"storm_herald_scaling")
+	var ability_id = (context.ability_id if context.ability_id != &"" else &"storm_herald_scaling")
 	
 	var log_text = "%s's power rises with the fallen (+%d HP/+%d PWR)" % [BattleHelpers.get_instance_display_name(source_unit), amount, amount]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))

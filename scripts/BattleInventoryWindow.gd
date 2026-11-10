@@ -140,7 +140,7 @@ func _gui_input(event: InputEvent) -> void:
 		var context = InteractionContext.new()
 		context.source_view_instance_id = get_instance_id()
 		context.event_type = &"SINGLE_CLICK"
-		context.entity_type = &"GLOBAL_BACKGROUND"
+		context.entity_type = &"WINDOW_BACKGROUND"
 		context.interaction_mode = &"FULLY_INTERACTIVE"
 		context.window_group_id = 1
 		

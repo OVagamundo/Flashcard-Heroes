@@ -181,6 +181,17 @@ func _update_page_display() -> void:
 	var regex = RegEx.new()
 	regex.compile("\\n\\s*\\n+")
 	collapsed_text = regex.sub(collapsed_text, "\n", true)
+	
+	var font = Database.get_current_locale_font()
+	text_label.add_theme_font_override("normal_font", font)
+	text_label.add_theme_font_override("bold_font", font)
+	text_label.add_theme_font_size_override("normal_font_size", 22)
+	text_label.add_theme_font_size_override("bold_font_size", 22)
+	text_label.add_theme_constant_override("line_separation", 3)
+	text_label.add_theme_constant_override("p_separation", 6)
+	title_label.add_theme_font_override("font", font)
+	title_label.add_theme_font_size_override("font_size", 26)
+	
 	text_label.text = collapsed_text
 	
 	# Handle per-page anchors if anchor_path is provided

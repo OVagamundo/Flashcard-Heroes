@@ -273,15 +273,19 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 	var available_items: Array = []
 	var available_trinkets: Array = []
 	
-	for d in Database.units.values():
+	for unit_value in Database.units.values():
+		var d: GachaBallDefinition = unit_value
 		# Skip heroes and bosses
 		if d.id == &"hero" or d.id == &"enemy_hero":
 			continue
 		if d.is_hero:
 			continue
-		if d.get("is_player_exclusive") == true:
+		if d.is_player_exclusive:
 			continue
 		if String(d.id).begins_with("boss_"):
+			continue
+		# Exclude Hero Set units (Mercenary, Novice, etc.) from enemy encounters
+		if Database.get_entity_set(d) != Database.SET_BASE:
 			continue
 		
 		# Skip units with special tags (Hidden, Token, Boss)
@@ -291,15 +295,25 @@ func _create_resource_pools(include_trinkets: bool) -> Dictionary:
 			
 		available_units.append(d)
 	
-	for d in Database.items.values():
-		# Filter out consumables
+	for item_value in Database.items.values():
+		var d: GachaBallDefinition = item_value
+		# Filter out consumables and player-exclusive items (GCD §6)
 		if d.category == &"CONSUMABLE":
+			continue
+		if d.is_player_exclusive:
+			continue
+		# Exclude Hero Set items from enemy encounters
+		if Database.get_entity_set(d) != Database.SET_BASE:
 			continue
 		available_items.append(d)
 	
 	if include_trinkets:
-		for trinket in Database.trinkets.values():
+		for trinket_value in Database.trinkets.values():
+			var trinket: TrinketDefinition = trinket_value
 			if trinket.is_player_exclusive:
+				continue
+			# Exclude Hero Set trinkets from enemy encounters
+			if Database.get_entity_set(trinket) != Database.SET_BASE:
 				continue
 			available_trinkets.append(trinket)
 	

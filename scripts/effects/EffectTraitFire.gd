@@ -9,5 +9,5 @@ extends EffectDefinition
 ## - L4 (20 Souls): BasicAttackEffect - Bonus damage equal to target's Burn stacks
 ## - L5 (32 Souls): BattleManager - Burn dispersion to adjacent enemies on kill
 
-func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	return EffectResult.empty()

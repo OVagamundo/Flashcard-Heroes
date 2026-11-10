@@ -36,6 +36,13 @@ func _ready() -> void:
 	# Set initial size
 	window_container.size = _expanded_size
 	
+	var font = Database.get_current_locale_font()
+	log_text.add_theme_font_override("normal_font", font)
+	log_text.add_theme_font_override("bold_font", font)
+	log_text.add_theme_font_size_override("normal_font_size", 18)
+	log_text.add_theme_font_size_override("bold_font_size", 18)
+	log_text.add_theme_constant_override("line_separation", 2)
+	
 	# Initial log message
 	log_text.clear()
 	log_text.append_text("[color=gray]Press B to toggle battle log visibility[/color]\n")

@@ -18,5 +18,5 @@ id = &"ability_item_loaded_contract"
 description_key = "ability.item_loaded_contract.desc"
 trigger = &"on_gold_earned"
 effects = Array[Resource]([SubResource("Effect_LoadedContract")])
-priority = 0
+sub_phase = 200
 max_level = 1

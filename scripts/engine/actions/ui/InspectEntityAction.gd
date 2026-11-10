@@ -80,11 +80,11 @@ func execute() -> void:
 		return
 
 	if not effect_id.is_empty():
-		var status_def = StatusEffectRegistry.get_definition(effect_id)
-		if is_instance_valid(status_def):
+		var effect_def = CombatEffectRegistry.get_definition(effect_id)
+		if is_instance_valid(effect_def):
 			var effect_context = {
-				"name_key": status_def.display_name_key,
-				"description_key": status_def.description_key
+				"name_key": effect_def.display_name_key,
+				"description_key": effect_def.description_key
 			}
 			var populate_ctx = {
 				"effect_definition": [effect_context],

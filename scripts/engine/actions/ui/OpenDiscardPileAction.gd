@@ -6,10 +6,10 @@ func _init() -> void:
 	super._init(&"OpenDiscardPileAction")
 
 func validate() -> bool:
-	return is_instance_valid(WindowManager) and is_instance_valid(GameManager) and GameManager.is_in_battle
+	return is_instance_valid(WindowManager)
 
 func execute() -> void:
-	if is_instance_valid(WindowManager) and WindowManager.has_method("open_discard_pile_window"):
+	if is_instance_valid(WindowManager):
 		WindowManager.open_discard_pile_window()
 
 func yields_for_visuals() -> bool:

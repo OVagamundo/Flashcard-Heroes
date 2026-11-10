@@ -9,20 +9,19 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"EWWATnkMecApp"
-display_name_key = "EWWATnkMecApp.name"
-description_key = "EWWATnkMecApp.desc"
+id = &"EWWATnkToy"
+display_name_key = "EWWATnkToy.name"
+description_key = "EWWATnkToy.desc"
 icon = ExtResource("2_icon")
 tier = 3
 level = 1
-cost = 4
 category = &"UNIT"
 
 base_hp = 5
 base_pwr = 5
 bonus_hp = 0
 bonus_pwr = 0
-tags = Array[StringName]([&"intercept_lethal", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Mecha", &"Appliance"])
+tags = Array[StringName]([&"intercept_lethal", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_WATER", &"SOUL_AIR", &"Tank", &"Toy"])
 ability_definitions = Array[Resource]([
 	ExtResource("3_ability"),
 	ExtResource("100_ability"),

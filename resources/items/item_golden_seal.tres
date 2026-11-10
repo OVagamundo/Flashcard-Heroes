@@ -3,6 +3,9 @@
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/items/GoldenSeal.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/ability_item_golden_seal.tres" id="3_ability"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_item_golden_seal_spent.tres" id="4_spent"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_item_golden_seal_board.tres" id="5_board"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_item_golden_seal_pre_combat.tres" id="6_pre_combat"]
 
 [resource]
 script = ExtResource("1_script")
@@ -11,11 +14,12 @@ display_name_key = "item.golden_seal.name"
 description_key = "item.golden_seal.desc"
 icon = ExtResource("2_icon")
 tier = 3
-cost = 3
 category = &"ITEM"
 item_slot_count = 0
 base_hp = 0
 base_pwr = 0
 bonus_hp = 2
 bonus_pwr = 2
-ability_definitions = Array[Resource]([ExtResource("3_ability")])
+ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_spent"), ExtResource("5_board"), ExtResource("6_pre_combat")])
+is_player_exclusive = true
+set_id = &"MERCENARY"

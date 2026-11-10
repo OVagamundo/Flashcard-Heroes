@@ -9,5 +9,5 @@ extends EffectDefinition
 ## - L4 (5 Units): on_hurt - Heals ally behind by 4 HP and grants +2 PWR
 ## - L4 Death Pass: on_death - Passes full current PWR to ally behind
 
-func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(_source_uuid: String, _targets: Array[String], _battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	return EffectResult.empty()

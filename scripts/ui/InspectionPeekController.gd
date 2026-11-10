@@ -9,10 +9,16 @@ var _armed_source_id: int = -1
 var _armed_request: Dictionary = {}
 var _is_armed_by_press: bool = false
 var _timer: Timer = null
+var _dismiss_timer: Timer = null
 
 # Click suppression: after a selection click occurs on an inspectable element,
 # hover peek is suppressed for that element until the cursor exits the element.
 var _click_suppressed_source_id: int = -1
+var _post_drop_suppress_until_msec: int = 0
+
+func suppress_post_drop(duration_sec: float = 0.35) -> void:
+	_post_drop_suppress_until_msec = Time.get_ticks_msec() + int(duration_sec * 1000.0)
+	_cancel_internal()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -22,6 +28,14 @@ func _ready() -> void:
 	_timer.process_mode = Node.PROCESS_MODE_ALWAYS
 	_timer.timeout.connect(_on_timer_timeout)
 	add_child(_timer)
+	
+	_dismiss_timer = Timer.new()
+	_dismiss_timer.name = "PeekDismissTimer"
+	_dismiss_timer.one_shot = true
+	_dismiss_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+	_dismiss_timer.timeout.connect(_on_dismiss_timer_timeout)
+	add_child(_dismiss_timer)
+
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
 
@@ -45,6 +59,8 @@ func hover_enter(view: Control, request: Dictionary) -> void:
 		return
 	
 	if _state == State.OPEN and _armed_source_id == view_id:
+		if is_instance_valid(_dismiss_timer):
+			_dismiss_timer.stop()
 		return
 	if _state == State.ARMED and _armed_source_id == view_id and not _is_armed_by_press:
 		return
@@ -55,7 +71,12 @@ func hover_enter(view: Control, request: Dictionary) -> void:
 	_armed_source_view = view
 	_armed_source_id = view_id
 	_armed_request = request
-	_timer.start(InputUtils.HOVER_PEEK_DELAY_SEC)
+
+	var delay: float = InputUtils.HOVER_PEEK_DELAY_SEC
+	var remaining_suppress_ms: int = _post_drop_suppress_until_msec - Time.get_ticks_msec()
+	if remaining_suppress_ms > 0:
+		delay += float(remaining_suppress_ms) / 1000.0
+	_timer.start(delay)
 
 func hover_exit(view: Control) -> void:
 	if not is_instance_valid(view):
@@ -72,7 +93,11 @@ func hover_exit(view: Control) -> void:
 			_cancel_internal()
 	elif _state == State.OPEN:
 		if not _is_armed_by_press:
-			close_peek()
+			# Give player a short grace period to move mouse into inspection window or toggle pill
+			if is_instance_valid(_dismiss_timer):
+				_dismiss_timer.start(0.25)
+			else:
+				close_peek()
 
 func press_start(view: Control, request: Dictionary) -> void:
 	if not _can_peek():
@@ -116,6 +141,8 @@ func cancel(view: Control = null) -> void:
 	_cancel_internal()
 
 func _cancel_internal() -> void:
+	if is_instance_valid(_dismiss_timer):
+		_dismiss_timer.stop()
 	if _state == State.ARMED:
 		_timer.stop()
 		_state = State.IDLE
@@ -127,6 +154,8 @@ func _cancel_internal() -> void:
 		close_peek()
 
 func close_peek() -> void:
+	if is_instance_valid(_dismiss_timer):
+		_dismiss_timer.stop()
 	if _state == State.OPEN:
 		if is_instance_valid(WindowManager):
 			WindowManager.close_all_inspection_windows(true)
@@ -138,6 +167,25 @@ func close_peek() -> void:
 
 func is_peek_open() -> bool:
 	return _state == State.OPEN
+
+func _on_dismiss_timer_timeout() -> void:
+	if _state != State.OPEN or _is_armed_by_press:
+		return
+	if _is_mouse_over_peek_cluster():
+		# Cursor is over source view, inspection window, or toggle pill: keep open and re-check
+		_dismiss_timer.start(0.15)
+	else:
+		close_peek()
+
+func _is_mouse_over_peek_cluster() -> bool:
+	if is_instance_valid(_armed_source_view) and _armed_source_view.is_inside_tree():
+		var mouse_pos = _armed_source_view.get_viewport().get_mouse_position()
+		var src_rect = _armed_source_view.get_global_rect()
+		if src_rect.has_point(mouse_pos):
+			return true
+	if is_instance_valid(WindowManager) and WindowManager.is_mouse_over_inspection_cluster():
+		return true
+	return false
 
 func _on_timer_timeout() -> void:
 	if _state != State.ARMED:
@@ -185,14 +233,6 @@ func _is_blocked_by_inventory_boundary(view: Control) -> bool:
 		return false
 	if not WindowManager.is_any_inventory_window_open():
 		return false
-	# If an inventory window is open, only allow views inside it
-	var ancestor = WindowManager.find_ancestor_window_for_view(view)
-	if not is_instance_valid(ancestor):
-		return true
-	if ancestor.has_meta("window_type"):
-		var t = ancestor.get_meta("window_type")
-		if t == &"Inventory" or t == &"DiscardPile":
-			return false
-	if "InventoryWindow" in ancestor.name or "DiscardPileWindow" in ancestor.name:
-		return false
-	return true
+	# If an inventory window is open, views inside it are allowed to peek.
+	# Views outside (e.g. background game board) are blocked.
+	return not WindowManager.is_view_inside_inventory(view)

@@ -8,11 +8,13 @@ const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
 @onready var trait_tags_container: HFlowContainer = %TraitTagsContainer
+@onready var attack_row: RichTextLabel = %AttackRow
 @onready var view_container: CenterContainer = %ViewContainer
 @onready var description_label: RichTextLabel = %DescriptionLabel
 @onready var bottom_description_label: RichTextLabel = %BottomDescriptionLabel
-@onready var item_grid: GridContainer = %ItemGrid
-@onready var item_grid_label: Label = %ItemGridLabel
+@onready var equipped_container: VBoxContainer = %EquippedContainer
+@onready var equipped_header_label: Label = %EquippedHeaderLabel
+@onready var equipped_items_list: VBoxContainer = %EquippedItemsList
 @onready var trait_icons_container: HBoxContainer = %TraitIconsContainer
 @onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var separator: HSeparator = %HSeparator
@@ -28,12 +30,13 @@ const TRAIT_COLORS: Dictionary = {
 	"SUPPORT": Color(0.12, 0.65, 0.48, 1.0),    # Emerald Mint
 	"SPECIALIST": Color(0.58, 0.22, 0.78, 1.0), # Royal Violet
 	"MERCENARY": Color(0.85, 0.65, 0.15, 1.0),  # Mercenary Amber/Gold
-	"FOOD": Color(0.90, 0.52, 0.08, 1.0),       # Warm Tangerine
+	"NOVICE": Color(0.38, 0.44, 0.52, 1.0),     # Slate Steel Grey
+	"FOOD": Color(0.85, 0.42, 0.05, 1.0),       # Warm Tangerine
 	"MECHA": Color(0.24, 0.28, 0.33, 1.0),      # Dark Gunmetal
 	"ANIMAL": Color(0.48, 0.56, 0.18, 1.0),     # Wild Olive
 	"PLANT": Color(0.18, 0.58, 0.18, 1.0),      # Leaf Green
 	"TOY": Color(0.85, 0.18, 0.55, 1.0),        # Hot Pink
-	"APPLIANCE": Color(0.82, 0.65, 0.08, 1.0),  # Electric Gold
+	"APPLIANCE": Color(0.78, 0.55, 0.06, 1.0),  # Electric Amber Gold
 	"COSTUME": Color(0.34, 0.14, 0.52, 1.0)     # Velvet Indigo
 }
 
@@ -54,7 +57,7 @@ func _ready() -> void:
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
 	
 	# Zero out internal minimums so they don't force a height from old .tscn values
-	for child in [%DescriptionLabel, %BottomDescriptionLabel, %NameLabel, %TraitTagsContainer, %ItemGrid, %TraitIconsContainer, %RecipeContainer, %HSeparator]:
+	for child in [%DescriptionLabel, %BottomDescriptionLabel, %NameLabel, %TraitTagsContainer, %EquippedContainer, %TraitIconsContainer, %RecipeContainer, %HSeparator, %AttackRow]:
 		if is_instance_valid(child):
 			child.custom_minimum_size = Vector2.ZERO
 	
@@ -64,6 +67,9 @@ func _ready() -> void:
 	if is_instance_valid(bottom_description_label):
 		bottom_description_label.add_theme_font_override("normal_font", Database.get_current_locale_font())
 		bottom_description_label.add_theme_font_override("bold_font", Database.get_current_locale_font())
+	if is_instance_valid(attack_row):
+		attack_row.add_theme_font_override("normal_font", Database.get_current_locale_font())
+		attack_row.add_theme_font_override("bold_font", Database.get_current_locale_font())
 	
 	enforce_display_only()
 
@@ -109,19 +115,19 @@ func populate(context: Dictionary) -> void:
 
 	name_label.text = tr(unit_definition.display_name_key)
 	name_label.add_theme_font_override("font", Database.get_current_locale_font())
-	name_label.add_theme_font_size_override("font_size", 32)
+	name_label.add_theme_font_size_override("font_size", 26)
 	
-	var title_color = Color(0, 0.4, 0.8, 1) # Default blue
+	var title_color: Color = Color("#0F172A") # High-contrast charcoal default
 	match unit_definition.tier:
-		1: title_color = Color.YELLOW
-		2: title_color = Color.MAGENTA
-		3: title_color = Color.CYAN
+		1: title_color = Color("#854D0E") # Deep Bronze / Amber
+		2: title_color = Color("#701A75") # Deep Crimson Violet / Purple
+		3: title_color = Color("#1E3A8A") # Deep Royal Navy / Azure
 	name_label.add_theme_color_override("font_color", title_color)
-	# Description content is built in _update_description()
+	_update_attack_row()
 	_update_description()
 
 	# --- Core UI Population Logic ---
-	_rebuild_item_grid()
+	_update_equipped_items_display()
 	_update_trait_display()
 	_update_unit_view()
 	_update_recipe_display()
@@ -149,7 +155,7 @@ func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
 	if is_instance_valid(self):
 		# Zero out hidden containers completely to ensure they contribute NO height
-		for container in [item_grid, recipe_container, trait_icons_container, trait_tags_container, separator, bottom_description_label]:
+		for container in [view_container, equipped_container, recipe_container, trait_icons_container, trait_tags_container, separator, bottom_description_label, attack_row]:
 			if is_instance_valid(container) and not container.visible:
 				container.custom_minimum_size = Vector2.ZERO
 		
@@ -162,27 +168,183 @@ func _reset_window_size() -> void:
 		if vbox:
 			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 			
-		custom_minimum_size = Vector2(0 if _is_preview else 480, 0)
-		size = Vector2(0 if _is_preview else 480, 0) # Force immediate recalculation of minimum size
+		custom_minimum_size = Vector2(0 if _is_preview else 360, 0)
+		size = Vector2(0 if _is_preview else 360, 0) # Force immediate recalculation of minimum size
 		reset_size()
-		# Let WindowManager know we have settled so it can refine the position if needed
-		# (Note: Standard contextual window positioning happens in WindowManager)
 
+func _update_equipped_items_display() -> void:
+	if not is_instance_valid(equipped_container):
+		return
+		
+	for child in equipped_items_list.get_children():
+		child.queue_free()
+		
+	if not is_instance_valid(_instance):
+		equipped_container.visible = false
+		equipped_container.custom_minimum_size = Vector2.ZERO
+		return
+		
+	var unit_definition = _instance.get_definition()
+	if not is_instance_valid(unit_definition):
+		equipped_container.visible = false
+		equipped_container.custom_minimum_size = Vector2.ZERO
+		return
+		
+	var all_instances_db := _get_all_instances_db()
+	var equipped_count := 0
+	var font = Database.get_current_locale_font()
+	
+	for i in range(unit_definition.item_slot_count):
+		var item_uuid = _instance.get_equipped_item_uuid(i)
+		if item_uuid.is_empty() or not all_instances_db.has(item_uuid):
+			continue
+			
+		var item_inst = all_instances_db[item_uuid]
+		if not is_instance_valid(item_inst):
+			continue
+			
+		var item_def = item_inst.get_definition()
+		if not is_instance_valid(item_def):
+			continue
+			
+		equipped_count += 1
+		
+		# Build item title (name + stats)
+		var item_name = tr(item_def.display_name_key) if "display_name_key" in item_def and not item_def.display_name_key.is_empty() else tr(item_def.id)
+		var stat_parts: Array[String] = []
+		if "bonus_pwr" in item_def and item_def.bonus_pwr > 0:
+			stat_parts.append("+%d PWR" % item_def.bonus_pwr)
+		if "bonus_hp" in item_def and item_def.bonus_hp > 0:
+			stat_parts.append("+%d HP" % item_def.bonus_hp)
+		var stat_suffix = (" (%s)" % ", ".join(stat_parts)) if not stat_parts.is_empty() else ""
+		
+		var title_label = RichTextLabel.new()
+		title_label.bbcode_enabled = true
+		title_label.fit_content = true
+		title_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+		title_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		title_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		title_label.add_theme_font_override("normal_font", font)
+		title_label.add_theme_font_override("bold_font", font)
+		title_label.add_theme_font_size_override("normal_font_size", 20)
+		title_label.add_theme_font_size_override("bold_font_size", 20)
+		title_label.text = "[color=#92400E][b]%s[/b][/color][color=#15803D]%s[/color]" % [item_name, stat_suffix]
+		equipped_items_list.add_child(title_label)
+		
+		# Build item abilities description
+		var abilities_lines: Array[String] = []
+		for entry in item_inst.get_active_ability_entries(all_instances_db):
+			var ability: AbilityDefinition = entry.get("ability_def")
+			if not is_instance_valid(ability):
+				continue
+			var ab_desc := tr(ability.description_key) if "description_key" in ability else ""
+			if "description_key" in ability and ab_desc == ability.description_key and ability.description_key.begins_with("ability."):
+				ab_desc = ""
+			if not ab_desc.is_empty():
+				ab_desc = ab_desc.replace("(PWR)", str(item_inst.current_pwr) + " (PWR)")
+				ab_desc = ab_desc.replace("(HP)", str(item_inst.current_hp) + " (HP)")
+				abilities_lines.append(ab_desc)
+				
+		var desc_text = "\n".join(abilities_lines).strip_edges()
+		if desc_text.is_empty() and "description_key" in item_def:
+			desc_text = tr(item_def.description_key)
+			
+		if not desc_text.is_empty():
+			var parsed_desc = DescriptionParser.parse(desc_text)
+			var desc_label = RichTextLabel.new()
+			desc_label.bbcode_enabled = true
+			desc_label.fit_content = true
+			desc_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+			desc_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+			desc_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			desc_label.add_theme_font_override("normal_font", font)
+			desc_label.add_theme_font_override("bold_font", font)
+			desc_label.add_theme_font_size_override("normal_font_size", 18)
+			desc_label.add_theme_font_size_override("bold_font_size", 18)
+			desc_label.add_theme_constant_override("line_separation", 2)
+			desc_label.add_theme_color_override("default_color", Color(0.15, 0.15, 0.15, 1.0))
+			desc_label.text = parsed_desc
+			equipped_items_list.add_child(desc_label)
 
-
-func _rebuild_item_grid() -> void:
-	# Units with equipped items don't show the items in their inspection window,
-	# as the item's own inspection window is opened at the same time alongside.
-	if is_instance_valid(item_grid_label):
-		item_grid_label.visible = false
-		item_grid_label.custom_minimum_size = Vector2.ZERO
-	if is_instance_valid(item_grid):
-		for child in item_grid.get_children():
-			child.queue_free()
-		item_grid.visible = false
-		item_grid.custom_minimum_size = Vector2.ZERO
+	equipped_container.visible = equipped_count > 0
+	if not equipped_container.visible:
+		equipped_container.custom_minimum_size = Vector2.ZERO
+	if is_instance_valid(equipped_header_label):
+		equipped_header_label.text = tr("ui.equipped_items") if equipped_count > 1 else tr("ui.equipped_item")
 
 	
+func _update_attack_row() -> void:
+	if not is_instance_valid(attack_row) or not is_instance_valid(_instance):
+		if is_instance_valid(attack_row):
+			attack_row.visible = false
+		return
+	
+	var font = Database.get_current_locale_font()
+	attack_row.add_theme_font_override("normal_font", font)
+	attack_row.add_theme_font_override("bold_font", font)
+	attack_row.add_theme_font_size_override("normal_font_size", 20)
+	attack_row.add_theme_font_size_override("bold_font_size", 20)
+	attack_row.add_theme_constant_override("line_separation", 3)
+	
+	var unit_definition = _instance.get_definition()
+	if not is_instance_valid(unit_definition):
+		attack_row.visible = false
+		return
+	
+	# Check if there is an attack override
+	var override_ability: AbilityDefinition = null
+	var all_instances_db := _get_all_instances_db()
+	for entry in _instance.get_active_ability_entries(all_instances_db):
+		var ability_def: AbilityDefinition = entry.get("ability_def")
+		if is_instance_valid(ability_def) and ability_def.replaces_basic_attack:
+			override_ability = ability_def
+			break
+	
+	if is_instance_valid(override_ability):
+		var attack_prefix = tr("ui.attack_override")
+		var desc = tr(override_ability.description_key)
+		var kws = DescriptionParser.find_keywords(desc)
+		var tags: Array[String] = []
+		if desc.to_lower().contains("melee") or desc.to_lower().contains("corpo a corpo") or desc.to_lower().contains("shockwave") or desc.to_lower().contains("onda de choque"):
+			tags.append("MELEE")
+		elif desc.to_lower().contains("ranged") or desc.to_lower().contains("distância") or desc.to_lower().contains("distancia"):
+			tags.append("RANGED")
+		for kw in kws:
+			if not tags.has(kw) and kw != "MELEE" and kw != "RANGED":
+				tags.append(kw)
+		if tags.is_empty():
+			tags.append("MELEE")
+		
+		var formatted_tags: Array[String] = []
+		for t in tags:
+			var info = DescriptionParser.get_keyword_info(t)
+			var display_text = tr(info.get("name_key", t))
+			var col = info.get("color", "#FFA726")
+			formatted_tags.append("[b][color=%s]%s[/color][/b]" % [col, display_text])
+		
+		attack_row.text = "[b]%s[/b] %s" % [attack_prefix, " ".join(formatted_tags)]
+		attack_row.visible = true
+	else:
+		var is_ranged := false
+		if "ability_definitions" in unit_definition and unit_definition.ability_definitions != null:
+			for ab in unit_definition.ability_definitions:
+				if is_instance_valid(ab) and (ab.id == &"basic_attack_ranged_mirror" or String(ab.id).contains("ranged")):
+					is_ranged = true
+					break
+		
+		var attack_prefix = tr("ui.attack")
+		if is_ranged:
+			var info = DescriptionParser.get_keyword_info("RANGED")
+			var display_text = tr(info.get("name_key", "RANGED"))
+			var target_hint = tr("ui.target_mirror")
+			attack_row.text = "[b]%s[/b] [b][color=%s]%s[/color][/b] [color=#666666]%s[/color]" % [attack_prefix, info.color, display_text, target_hint]
+		else:
+			var info = DescriptionParser.get_keyword_info("MELEE")
+			var display_text = tr(info.get("name_key", "MELEE"))
+			var target_hint = tr("ui.target_frontmost")
+			attack_row.text = "[b]%s[/b] [b][color=%s]%s[/color][/b] [color=#666666]%s[/color]" % [attack_prefix, info.color, display_text, target_hint]
+		attack_row.visible = true
+
 func _update_description() -> void:
 	if not is_instance_valid(_instance):
 		return
@@ -191,6 +353,7 @@ func _update_description() -> void:
 	if not is_instance_valid(unit_definition):
 		return
 	
+	var current_lvl: int = _instance.level if is_instance_valid(_instance) else 1
 
 	# Build abilities section: list all abilities with name and localized description
 	var abilities_lines: Array[String] = []
@@ -214,19 +377,21 @@ func _update_description() -> void:
 		var ability_desc = tr(ability_def.description_key)
 		if ability_desc == ability_def.description_key and ability_def.description_key.begins_with("ability."):
 			ability_desc = ""
+		if not ability_desc.is_empty():
+			ability_desc = DescriptionParser.resolve_level_scaling(ability_desc, current_lvl)
 		if is_instance_valid(_instance):
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
-			if ability_def.id == &"ability_echoing_orb_scale":
+			if ability_def.id == &"ability_slime_cell_scale":
 				var source_uuid = entry.get("source_uuid", "")
-				var current_bonus = _instance.get_status_effect_amount(StringName("echoing_orb_scaling_" + source_uuid))
+				var current_bonus = _instance.get_status_effect_amount(StringName("slime_cell_scaling_" + source_uuid))
 				if current_bonus == 0:
 					var count = 0
 					for uuid in all_instances_db:
 						var inst = all_instances_db[uuid]
 						if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
 							count += 1
-					current_bonus = maxi(1, count) * 2
+					current_bonus = maxi(1, count)
 				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 				ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			elif ability_def.id == &"ability_doppleganger_scale":
@@ -241,8 +406,10 @@ func _update_description() -> void:
 	
 	var full_text := ""
 	var unit_desc := tr(unit_definition.description_key) if "description_key" in unit_definition else ""
-	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key and abilities_block.is_empty():
-		full_text = unit_desc
+	if not unit_desc.is_empty() and unit_desc != unit_definition.description_key:
+		unit_desc = DescriptionParser.resolve_level_scaling(unit_desc, current_lvl)
+		if abilities_block.is_empty():
+			full_text = unit_desc
 	
 	if not abilities_block.is_empty():
 		if not full_text.is_empty():
@@ -258,49 +425,21 @@ func _update_description() -> void:
 	final_text = regex.sub(final_text, "\n", true)
 	
 	var font = Database.get_current_locale_font()
-	var font_size = 32
-	var plain_text = DescriptionParser.strip_bbcode(final_text)
-	
 	description_label.add_theme_font_override("normal_font", font)
 	description_label.add_theme_font_override("bold_font", font)
-	if is_instance_valid(bottom_description_label):
-		bottom_description_label.add_theme_font_override("normal_font", font)
-		bottom_description_label.add_theme_font_override("bold_font", font)
-
-	var p = TextParagraph.new()
-	p.width = 256.0
-	p.set_line_spacing(-4)
-	p.add_string(plain_text, font, font_size)
-	
-	var max_view_h = 212.0
-	var cutoff_line := -1
-	var cum_h := 0.0
-	for i in range(p.get_line_count()):
-		var line_h = p.get_line_size(i).y - 4
-		if cum_h + line_h <= max_view_h:
-			cum_h += line_h
-			cutoff_line = i
-		else:
-			break
-	
-	if cutoff_line >= 0 and cutoff_line < p.get_line_count() - 1:
-		var split_char_idx = p.get_line_range(cutoff_line + 1).x
-		var parts = DescriptionParser.split_bbcode(final_text, split_char_idx)
-		description_label.text = parts[0]
-		if is_instance_valid(bottom_description_label):
-			bottom_description_label.text = parts[1]
-			bottom_description_label.visible = true
-			bottom_description_label.set_meta("definition", unit_definition)
-			bottom_description_label.set_meta("effect_definition", unit_definition)
-	else:
-		description_label.text = final_text
-		if is_instance_valid(bottom_description_label):
-			bottom_description_label.text = ""
-			bottom_description_label.visible = false
-			bottom_description_label.custom_minimum_size = Vector2.ZERO
-			
+	description_label.add_theme_font_size_override("normal_font_size", 22)
+	description_label.add_theme_font_size_override("bold_font_size", 22)
+	description_label.add_theme_constant_override("line_separation", 3)
+	description_label.add_theme_constant_override("p_separation", 6)
+	description_label.text = final_text
+	description_label.visible = not final_text.is_empty()
 	description_label.set_meta("definition", unit_definition)
 	description_label.set_meta("effect_definition", unit_definition)
+	
+	if is_instance_valid(bottom_description_label):
+		bottom_description_label.text = ""
+		bottom_description_label.visible = false
+		bottom_description_label.custom_minimum_size = Vector2.ZERO
 ## Granular stat change handler - updates description when any stat changes
 func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
 	if _is_preview:
@@ -329,7 +468,7 @@ func _on_inventory_changed() -> void:
 	_instance = current_instance # Ensure we have the latest data
 	_update_description()
 	_update_unit_view()
-	_rebuild_item_grid()
+	_update_equipped_items_display()
 	_update_trait_display()
 	_update_recipe_display()
 	_reset_window_size()
@@ -352,7 +491,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
 	_update_description()
-	_rebuild_item_grid()
+	_update_equipped_items_display()
 	_update_trait_display()
 	_update_recipe_display()
 	_reset_window_size()
@@ -370,85 +509,86 @@ func _get_all_instances_db() -> Dictionary:
 		result[_instance.ball_uuid] = _instance
 	return result
 
-func get_child_window_specs() -> Array[Dictionary]:
-	var specs: Array[Dictionary] = []
+func get_glossary_terms() -> Array[String]:
+	var terms: Array[String] = []
 	if not is_instance_valid(_instance):
-		return specs
+		return terms
 	
-	var seen_effects: Dictionary = {}
-	
-	# 1. Keywords from description / abilities
 	var text_to_search: String = ""
 	if is_instance_valid(description_label):
 		text_to_search += description_label.text + " "
 	if is_instance_valid(bottom_description_label) and bottom_description_label.visible:
 		text_to_search += bottom_description_label.text + " "
+	if is_instance_valid(attack_row) and attack_row.visible:
+		text_to_search += attack_row.text + " "
 	
-	var keywords = DescriptionParser.find_keywords(text_to_search)
-	for kw in keywords:
-		if not seen_effects.has(kw):
-			seen_effects[kw] = true
-			var name_key = "STATUS_" + kw.to_upper()
-			var desc_key = "STATUS_" + kw.to_upper() + "_DESC"
-			specs.append({
-				"window_type": &"EffectInspection",
-				"populate_context": {
-					"effect_definition": {
-						"name_key": name_key,
-						"description_key": desc_key
-					},
-					"is_inside_unit_inspection": true,
-					"target_parent_window_id": get_instance_id()
-				}
-			})
+	terms.append_array(DescriptionParser.find_keywords(text_to_search))
 	
-	# 2. Active status effects on the unit (burn, armor, spikes, static)
-	for status_key in DescriptionParser.KEYWORDS:
-		var effect_id = StringName(status_key.to_lower())
-		if _instance.get_status_effect_amount(effect_id) > 0 and not seen_effects.has(status_key):
-			seen_effects[status_key] = true
-			var name_key = "STATUS_" + status_key
-			var desc_key = "STATUS_" + status_key + "_DESC"
-			specs.append({
-				"window_type": &"EffectInspection",
-				"populate_context": {
-					"effect_definition": {
-						"name_key": name_key,
-						"description_key": desc_key
-					},
-					"is_inside_unit_inspection": true,
-					"target_parent_window_id": get_instance_id()
-				}
-			})
-	
-	# 3. Equipped items
+	# Ensure basic attack or attack override keywords are always present
 	var unit_definition = _instance.get_definition()
 	if is_instance_valid(unit_definition):
+		var override_ability: AbilityDefinition = null
+		var all_instances_db := _get_all_instances_db()
+		for entry in _instance.get_active_ability_entries(all_instances_db):
+			var ability_def: AbilityDefinition = entry.get("ability_def")
+			if is_instance_valid(ability_def) and ability_def.replaces_basic_attack:
+				override_ability = ability_def
+				break
+		
+		if is_instance_valid(override_ability):
+			var desc = tr(override_ability.description_key)
+			for kw in DescriptionParser.find_keywords(desc):
+				if not terms.has(kw):
+					terms.append(kw)
+			if desc.to_lower().contains("ranged") or desc.to_lower().contains("distância") or desc.to_lower().contains("distancia"):
+				if not terms.has("RANGED"):
+					terms.append("RANGED")
+			else:
+				if not terms.has("MELEE"):
+					terms.append("MELEE")
+		else:
+			var is_ranged := false
+			if "ability_definitions" in unit_definition and unit_definition.ability_definitions != null:
+				for ab in unit_definition.ability_definitions:
+					if is_instance_valid(ab) and (ab.id == &"basic_attack_ranged_mirror" or String(ab.id).contains("ranged")):
+						is_ranged = true
+						break
+			var atk_term = "RANGED" if is_ranged else "MELEE"
+			if not terms.has(atk_term):
+				terms.append(atk_term)
+	
+	# Active combat effects on the unit
+	for status_key in DescriptionParser.KEYWORDS:
+		var effect_id = StringName(status_key.to_lower())
+		if _instance.get_status_effect_amount(effect_id) > 0:
+			if not terms.has(status_key):
+				terms.append(status_key)
+	
+	# Also collect terms from equipped items
+	if is_instance_valid(unit_definition):
 		var all_instances_db = _get_all_instances_db()
-		var seen_items: Dictionary = {}
 		for i in range(unit_definition.item_slot_count):
 			var item_uuid = _instance.get_equipped_item_uuid(i)
 			if not item_uuid.is_empty() and all_instances_db.has(item_uuid):
-				if seen_items.has(item_uuid):
-					continue
-				seen_items[item_uuid] = true
-				var item_instance = all_instances_db[item_uuid]
-				var item_loc = LocationIdentifier.new()
-				item_loc.container = C.CONTAINER_EQUIPPED_ITEM
-				item_loc.index = i
-				item_loc.unit_uuid = _instance.ball_uuid
-				specs.append({
-					"window_type": &"ItemInspection",
-					"populate_context": {
-						"source_view": self,
-						"instance": item_instance,
-						"location": item_loc,
-						"is_inside_unit_inspection": true,
-						"target_parent_window_id": get_instance_id()
-					}
-				})
-				
-	return specs
+				var item_inst = all_instances_db[item_uuid]
+				if is_instance_valid(item_inst):
+					var it_def = item_inst.get_definition()
+					if is_instance_valid(it_def) and "description_key" in it_def:
+						for kw in DescriptionParser.find_keywords(tr(it_def.description_key)):
+							if not terms.has(kw):
+								terms.append(kw)
+					for entry in item_inst.get_active_ability_entries(all_instances_db):
+						var ab = entry.get("ability_def")
+						if is_instance_valid(ab) and "description_key" in ab:
+							var ab_desc = tr(ab.description_key)
+							for kw in DescriptionParser.find_keywords(ab_desc):
+								if not terms.has(kw):
+									terms.append(kw)
+	
+	return terms
+
+func get_child_window_specs() -> Array[Dictionary]:
+	return []
 
 func get_location() -> LocationIdentifier:
 	return _location
@@ -468,7 +608,7 @@ func _calculate_unit_trait_counts() -> Dictionary:
 	
 	return counts
 
-## Populate the ViewContainer to show the resulting unit's view at 2x scale.
+## Populate the ViewContainer to show the resulting unit's view at 2x scale (battle board size) during merge preview.
 func _update_unit_view() -> void:
 	if not is_instance_valid(view_container):
 		return
@@ -477,8 +617,9 @@ func _update_unit_view() -> void:
 		view_container.remove_child(child)
 		child.queue_free()
 	
-	if not is_instance_valid(_instance):
+	if not _is_preview or not is_instance_valid(_instance):
 		view_container.visible = false
+		view_container.custom_minimum_size = Vector2.ZERO
 		return
 	
 	var slot_view: SlotView = _SlotView.instantiate()
@@ -500,22 +641,27 @@ func _update_unit_view() -> void:
 	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
 	
 	view_container.add_child(slot_view)
+	slot_view.z_as_relative = true
+	slot_view.z_index = 1
 	view_container.visible = true
+	view_container.custom_minimum_size = Vector2(0, C.SLOT_SIZE_2X)
 
 	var all_instances_db = _get_all_instances_db()
 	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
-	slot_view.set_content(visual_data, false, false)
-	
-	for child in slot_view.get_children():
-		if child is GachaBallView:
-			child.show_capsule_overlay = false
-			child.set_is_interactive(false)
-			var overlay = child.get_node_or_null("GachaBallOverlay")
-			if is_instance_valid(overlay):
-				overlay.queue_free()
-			var trait_count = child.get_node_or_null("%TraitCountLabel")
-			if is_instance_valid(trait_count):
-				trait_count.visible = false
+	var gb = slot_view.set_content(visual_data, false, false)
+	if is_instance_valid(gb):
+		gb.z_as_relative = true
+		gb.z_index = 1
+		gb._base_z_index = 1
+		gb._slot_base_z_index = 1
+		gb.show_capsule_overlay = false
+		gb.set_is_interactive(false)
+		var overlay = gb.get_node_or_null("GachaBallOverlay")
+		if is_instance_valid(overlay):
+			overlay.queue_free()
+		var trait_count = gb.get_node_or_null("%TraitCountLabel")
+		if is_instance_valid(trait_count):
+			trait_count.visible = false
 
 ## Populate the RecipeContainer to show the merge ingredients for this unit.
 func _update_recipe_display() -> void:
@@ -526,11 +672,17 @@ func _update_recipe_display() -> void:
 		recipe_container.remove_child(child)
 		child.queue_free()
 	
+	if _is_preview:
+		recipe_container.visible = false
+		recipe_container.custom_minimum_size = Vector2.ZERO
+		return
+	
 	var unit_def = _instance.get_definition() if is_instance_valid(_instance) else null
 	if not is_instance_valid(unit_def):
 		recipe_container.visible = false
 		return
 	
+	# Normal inspection: show crafting recipe if unit has one
 	var recipe: MergeRecipe = null
 	if not _explicit_recipe_id.is_empty():
 		recipe = Database.recipes.get(_explicit_recipe_id)
@@ -546,6 +698,9 @@ func _update_recipe_display() -> void:
 	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
 		recipe_container.visible = false
 		return
+	
+	recipe_container.alignment = BoxContainer.ALIGNMENT_BEGIN
+	recipe_container.custom_minimum_size = Vector2(0, 96)
 	
 	# Build: [Icon A] [+] [Icon B]
 	var _make_icon = func(def: Resource) -> TextureRect:
@@ -649,10 +804,10 @@ func _create_trait_tag(trait_id: String, text: String) -> void:
 	label.text = text
 	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	label.add_theme_font_override("font", Database.get_current_locale_font())
-	label.add_theme_font_size_override("font_size", 20)
+	label.add_theme_font_size_override("font_size", 18)
 	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.75))
-	label.add_theme_constant_override("outline_size", 3)
+	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
+	label.add_theme_constant_override("outline_size", 2)
 	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 

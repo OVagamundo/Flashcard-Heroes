@@ -53,6 +53,10 @@ func _on_panel_gui_input(event: InputEvent) -> void:
 		get_viewport().set_input_as_handled()
 
 func _exit_tree() -> void:
+	if is_instance_valid(WindowManager):
+		WindowManager.close_children_of(self)
+		WindowManager.close_glossary_pill()
+		WindowManager.close_modal_child_windows(self)
 	# Release interaction lock
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.emit_signal("interaction_lock_requested", false)
@@ -123,7 +127,7 @@ func populate(context: Dictionary) -> void:
 				var src_inst = GameManager.get_instance_from_location(_source_location)
 				var tgt_inst = GameManager.get_instance_from_location(_target_location)
 				if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
-					preview_instance = MergeManager.get_preview_merge_instance(src_inst, tgt_inst, _source_location, _target_location, all_instances)
+					preview_instance = MergeManager.get_preview_merge_instance(src_inst, tgt_inst, _source_location, _target_location, all_instances, _recipe_id)
 
 		var preview_loaded := false
 		if is_instance_valid(preview_instance):
@@ -154,7 +158,7 @@ func populate(context: Dictionary) -> void:
 					title_label.visible = false
 				if is_instance_valid(result_image):
 					result_image.visible = false
-				custom_minimum_size = Vector2(480, 0)
+				custom_minimum_size = Vector2(360, 0)
 				preview_loaded = true
 				call_deferred("_deferred_shrink")
 
@@ -201,8 +205,8 @@ func _deferred_shrink() -> void:
 		for child in inspection_container.get_children():
 			if child is Control:
 				child.custom_minimum_size = Vector2.ZERO
-	custom_minimum_size = Vector2(480, 0)
-	size = Vector2(480, 0)
+	custom_minimum_size = Vector2(360, 0)
+	size = Vector2(360, 0)
 	reset_size()
 
 func _on_merge_pressed() -> void:
@@ -224,3 +228,22 @@ func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 			ActionQueue.request(action)
 	else:
 		push_error("[ChoiceWindow] ActionQueue unavailable for choice.")
+
+func get_embedded_inspection_window() -> InspectionWindow:
+	if is_instance_valid(inspection_container):
+		for child in inspection_container.get_children():
+			if child is InspectionWindow:
+				return child
+	return null
+
+func get_glossary_terms() -> Array[String]:
+	var insp = get_embedded_inspection_window()
+	if is_instance_valid(insp):
+		return insp.get_glossary_terms()
+	return []
+
+func get_child_window_specs() -> Array[Dictionary]:
+	var insp = get_embedded_inspection_window()
+	if is_instance_valid(insp):
+		return insp.get_child_window_specs()
+	return []

@@ -8,8 +8,8 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	if not is_simulation:
 		return EffectResult.empty()
 
@@ -27,7 +27,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 
 	# Determine team
-	var team: String = context.get("team", "")
+	var team: String = context.team
 	if team.is_empty():
 		var container_tag = trinket.location_container_tag
 		if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
@@ -66,7 +66,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 
 	var result := EffectResult.new()
-	var ability_id: StringName = context.get("ability_id", &"ability_trait_buff")
+	var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"ability_trait_buff")
 	var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
 	var trait_display = tr(trait_def.get("display_name_key", trait_name))
 
@@ -79,7 +79,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		"target_uuids": target_uuids,
 		"ability_id": ability_id,
 		"action_type": C.ACTION_BUFF,
-		"trigger_type": context.get("trigger_type", &"on_pre_combat"),
+		"trigger_type": (context.trigger_type if context.trigger_type != &"" else C.TRIGGER_PRE_COMBAT),
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.pwr_buff(source_uuid, buff_amount, old_pwrs, new_pwrs)
 	}))

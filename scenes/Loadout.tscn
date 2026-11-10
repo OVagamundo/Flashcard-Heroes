@@ -128,9 +128,17 @@ horizontal_alignment = 1
 [node name="HSeparator" type="HSeparator" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
 layout_mode = 2
 
-[node name="DeckDescription" type="RichTextLabel" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
+[node name="DeckScrollContainer" type="ScrollContainer" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent"]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="DeckDescription" type="RichTextLabel" parent="MainContent/DeckColumn/DeckInfoPanel/DeckInfoContent/DeckScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
 bbcode_enabled = true
@@ -173,67 +181,65 @@ layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_hero_panel")
 
-[node name="HeroInfoContent" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel"]
+[node name="HeroScrollContainer" type="ScrollContainer" parent="MainContent/HeroColumn/HeroInfoPanel"]
+unique_name_in_owner = true
 layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+vertical_scroll_mode = 3
+
+[node name="HeroScrollContent" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
 
-[node name="HeaderBox" type="HBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
+[node name="HeroHeaderBox" type="HBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent"]
 layout_mode = 2
-theme_override_constants/separation = 20
+theme_override_constants/separation = 18
 
-[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(80, 80)
+custom_minimum_size = Vector2(144, 144)
 layout_mode = 2
 size_flags_horizontal = 4
+size_flags_vertical = 0
 texture_filter = 3
 expand_mode = 1
 stretch_mode = 5
 
-[node name="NameStatsBox" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox"]
+[node name="HeroHeaderDetails" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox"]
 layout_mode = 2
 size_flags_horizontal = 3
-alignment = 1
+theme_override_constants/separation = 6
 
-[node name="HeroName" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
+[node name="HeroName" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox/HeroHeaderDetails"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.9, 0.5, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 22
 text = "Select a Hero"
 
-[node name="HeroStats" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/HeaderBox/NameStatsBox"]
+[node name="HeroStats" type="Label" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox/HeroHeaderDetails"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.9, 0.9, 0.9, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 2
+theme_override_font_sizes/font_size = 15
 
-[node name="HSeparator" type="HSeparator" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
-layout_mode = 2
-
-[node name="ScrollContainer" type="ScrollContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent"]
-layout_mode = 2
-size_flags_vertical = 3
-horizontal_scroll_mode = 0
-
-[node name="VBoxContainer" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer"]
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/separation = 10
-
-[node name="HeroDescription" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
+[node name="HeroDescription" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox/HeroHeaderDetails"]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+size_flags_horizontal = 3
 theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
 bbcode_enabled = true
 text = "Choose a hero to see their details."
 fit_content = true
 scroll_active = false
 
-[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroInfoContent/ScrollContainer/VBoxContainer"]
+[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -242,33 +248,107 @@ bbcode_enabled = true
 fit_content = true
 scroll_active = false
 
+[node name="StartingSetSeparator" type="HSeparator" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent"]
+unique_name_in_owner = true
+layout_mode = 2
 
-[node name="BottomBar" type="HBoxContainer" parent="."]
+[node name="StartingSetContainer" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="DevToolsContainer" type="VBoxContainer" parent="."]
 layout_mode = 1
-anchors_preset = 12
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 60.0
+offset_top = -80.0
+offset_right = 520.0
+offset_bottom = -15.0
+grow_vertical = 0
+alignment = 2
+theme_override_constants/separation = 4
+
+[node name="DevToolsTitle" type="Label" parent="DevToolsContainer"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 0.65, 0.7, 0.8)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 14
+text = "Dev: Starting Items/Trinkets (Optional)"
+
+[node name="DevToolsRow" type="HBoxContainer" parent="DevToolsContainer"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="TestStartersOption" type="OptionButton" parent="DevToolsContainer/DevToolsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(240, 32)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.2, 0.2, 0.25, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 14
+fit_to_longest_item = false
+
+[node name="AddStarterButton" type="Button" parent="DevToolsContainer/DevToolsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.25, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 14
+text = "Add"
+
+[node name="ClearStartersButton" type="Button" parent="DevToolsContainer/DevToolsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(64, 32)
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.2, 0.25, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 14
+text = "Clear"
+
+[node name="TestStartersLabel" type="Label" parent="DevToolsContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 0.7, 0.4, 0.85)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 13
+text = "Selected: None"
+autowrap_mode = 2
+
+[node name="PlayerControlsContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -80.0
-grow_horizontal = 2
+offset_left = -600.0
+offset_top = -75.0
+offset_right = -60.0
+offset_bottom = -15.0
+grow_horizontal = 0
 grow_vertical = 0
-alignment = 1
-theme_override_constants/separation = 30
+alignment = 2
+theme_override_constants/separation = 20
 
-[node name="StartRunButton" type="Button" parent="BottomBar"]
+[node name="TutorialCheckbox" type="CheckBox" parent="PlayerControlsContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.75, 0.8, 0.85, 1)
+theme_override_constants/outline_size = 0
+theme_override_font_sizes/font_size = 18
+button_pressed = true
+text = "Show Tutorials & Tooltips"
+
+[node name="StartRunButton" type="Button" parent="PlayerControlsContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(180, 52)
+layout_mode = 2
+size_flags_vertical = 4
 theme_override_colors/font_color = Color(0.15, 0.17, 0.22, 1)
 theme_override_constants/outline_size = 0
-
 text = "Play"
-
-[node name="TestModeButton" type="Button" parent="BottomBar"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(150, 50)
-layout_mode = 2
-theme_override_colors/font_color = Color(0.4, 0.42, 0.47, 1)
-theme_override_constants/outline_size = 0
-
-text = "Test Mode"

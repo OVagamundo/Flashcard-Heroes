@@ -7,13 +7,13 @@ extends EffectDefinition
 ## - Removes self.
 ## - Summons base copy of target enemy in self slot.
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
 		return EffectResult.empty()
 		
 	# Only trigger if the acting unit is this unit
-	var actor_uuid = _context.get("actor_uuid", "")
+	var actor_uuid = _context.actor_uuid
 	if not actor_uuid.is_empty() and actor_uuid != source_uuid:
 		return EffectResult.empty()
 		
@@ -57,16 +57,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# 2. RETURN TRANSFORM REQUEST (Simulation Only)
 	# We do NOT mutate state here. We request the transformation.
 	
-	# Calculate Level
-	var level_delta = parameters.get("level_delta", 0)
-	var max_level = parameters.get("max_level", false)
-	var target_level = target_unit.level
-	if max_level:
-		target_level = 3
-	else:
-		target_level += level_delta
-	
-	target_level = clamp(target_level, 1, 3)
+	# Copy the source's exact level, regardless of the mirror unit's level.
+	var target_level: int = source.level
 
 	var result := EffectResult.new()
 	

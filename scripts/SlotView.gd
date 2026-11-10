@@ -6,6 +6,7 @@ const AnimationConstants = preload("res://scripts/animations/AnimationConstants.
 const SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slot.png")
 const BATTLE_SLOT_TEXTURE = preload("res://assets/Realistic/ui/textures/slotBattle.png")
 const BATTLE_SPRING_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattlePlatformSlot.png")
+const BATTLE_BENCH_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleBenchPlatformSlot.png")
 const BATTLE_BURN_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleBurnPlatformSlot.png")
 const BATTLE_STATIC_PLATFORM_SLOT_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleStaticPlatformSlot.png")
 const BATTLE_SLOT_SELECTION_TEXTURE = preload("res://assets/PixelArt/ui/textures/BattleSlotSelection.png")
@@ -77,6 +78,8 @@ func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
 func _ready() -> void:
+	# Ensure pixel-art scaling uses nearest-neighbor filtering so low-resolution pixel art does not look blurry
+	texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	# Reset node modulation to ensure transparency isn't coming from scene state
 	self.modulate = Color.WHITE
 	self.self_modulate = Color.WHITE
@@ -93,6 +96,9 @@ func _ready() -> void:
 	else:
 		_background_style.texture = null
 		add_theme_stylebox_override("panel", StyleBoxEmpty.new())
+	
+	if _container_name != &"":
+		_update_slot_appearance()
 	
 	# Connect to granular stat change signal for targeted updates
 	SignalBus.unit_stat_changed.connect(_on_unit_stat_changed)
@@ -126,6 +132,7 @@ func _update_slot_appearance(animate_transition: bool = false) -> void:
 	
 	var is_trinket_slot = (_container_name == &"EnemyTrinkets" or _container_name == &"PlayerTrinkets")
 	var is_battle_slot = (_container_name == &"PlayerLineup" or _container_name == &"EnemyLineup" or _container_name == &"PlayerBench" or _container_name == &"EnemyBench")
+	var is_bench_slot = (_container_name == &"PlayerBench" or _container_name == &"EnemyBench")
 	
 	if is_trinket_slot:
 		if has_content():
@@ -170,7 +177,15 @@ func _update_slot_appearance(animate_transition: bool = false) -> void:
 		_background_style.modulate_color = Color.WHITE
 		add_theme_stylebox_override("panel", _background_style)
 	else:
-		if is_battle_slot:
+		if is_bench_slot:
+			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_BENCH_PLATFORM_SLOT_TEXTURE)
+			_background_style.expand_margin_top = 0.0
+			_background_style.expand_margin_bottom = 0.0
+			_background_style.expand_margin_left = 0.0
+			_background_style.expand_margin_right = 0.0
+			_background_style.modulate_color = Color.WHITE
+			add_theme_stylebox_override("panel", _background_style)
+		elif is_battle_slot:
 			_background_style.texture = ArtStyleManager.get_themed_texture(BATTLE_SPRING_PLATFORM_SLOT_TEXTURE)
 			_background_style.expand_margin_top = 0.0
 			_background_style.expand_margin_bottom = 0.0
@@ -290,6 +305,7 @@ func _notification(_what) -> void:
 ## Create the indicator overlay (called in _ready)
 func _create_indicator() -> void:
 	_indicator = TextureRect.new()
+	_indicator.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_indicator.texture = ArtStyleManager.get_themed_texture(INDICATOR_TEXTURE)
 	_indicator.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_indicator.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -306,6 +322,7 @@ func _create_indicator() -> void:
 
 func _create_slot_effect_overlay() -> void:
 	_slot_effect_overlay = TextureRect.new()
+	_slot_effect_overlay.texture_filter = CanvasItem.TEXTURE_FILTER_NEAREST
 	_slot_effect_overlay.texture = ArtStyleManager.get_themed_texture(DEATH_SLOT_OVERLAY_TEXTURE)
 	_slot_effect_overlay.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	_slot_effect_overlay.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED

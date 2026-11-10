@@ -10,14 +10,13 @@
 
 [resource]
 script = ExtResource("1_script")
-id = &"ASpeFodToy"
-display_name_key = "ASpeFodToy.name"
-description_key = "ASpeFodToy.desc"
+id = &"ASpeFod"
+display_name_key = "ASpeFod.name"
+description_key = "ASpeFod.desc"
 icon = ExtResource("2_icon")
-tags = Array[StringName]([&"SOUL_AIR", &"Specialist", &"Food", &"Toy"])
+tags = Array[StringName]([&"SOUL_AIR", &"Specialist", &"Food"])
 tier = 1
 level = 1
-cost = 1
 category = &"UNIT"
 
 base_hp = 1

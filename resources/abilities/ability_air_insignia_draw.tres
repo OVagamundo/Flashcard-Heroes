@@ -7,6 +7,6 @@
 script = ExtResource("1_script")
 id = &"ability_air_insignia_draw"
 description_key = "ability.air_insignia.desc"
-trigger = &"on_draw"
-priority = 50
+trigger = &"on_gacha_draw"
+sub_phase = 80
 effects = Array[Resource]([ExtResource("2_effect")])

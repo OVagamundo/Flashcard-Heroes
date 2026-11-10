@@ -427,11 +427,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 								view = child
 								break
 						if is_instance_valid(view):
-							# In test mode, allow full interaction with enemy units
-							if battle_manager.is_test_mode:
-								view.set_interaction_context(&"FULLY_INTERACTIVE", def.category, 0)
-							else:
-								view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
+							view.set_interaction_context(&"INSPECTION_ONLY", def.category, 0)
 
 			slot.set_meta("location_identifier", loc)
 		else:
@@ -445,11 +441,7 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 					slot.set_slot_effect(slot_effect)
 				# EnemyLineup must be inspection-only: configure SlotView accordingly
 				if container_name == &"EnemyLineup":
-					# In test mode, allow full interaction with enemy slots
-					if battle_manager.is_test_mode:
-						slot.set_interaction_context(&"FULLY_INTERACTIVE", 0)
-					else:
-						slot.set_interaction_context(&"INSPECTION_ONLY", 0)
+					slot.set_interaction_context(&"INSPECTION_ONLY", 0)
 				continue
 
 			# Otherwise replace placeholder PanelContainer with a proper SlotView prefab.
@@ -1003,15 +995,10 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	if draw_result and draw_result.drawn_uuid:
 		_pending_animated_uuids.erase(draw_result.drawn_uuid)
 	
-	_redraw_board()
-	
-	# Trigger bounce animation on the landed unit/item
-	if draw_result == null:
+	if draw_result == null or draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile":
+		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
-	if draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile":
-		return
-
 	# Trigger bounce/bump for discard pile
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		Audio.play_sfx("coin_land")
@@ -1020,12 +1007,40 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 			discard_pile_button.pivot_offset = discard_pile_button.size / 2.0
 			bump_tween.tween_property(discard_pile_button, "scale", Vector2(1.15, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			bump_tween.tween_property(discard_pile_button, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+			await bump_tween.finished
+		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
-	# Wait one frame for the redraw to complete (queue_free doesn't happen immediately)
-	await get_tree().process_frame
+	# Find the target slot
+	var target_ui_container: HBoxContainer = null
+	if str(draw_result.dest_container) == "PlayerBench":
+		target_ui_container = player_bench
+	elif str(draw_result.dest_container) == "PlayerLineup":
+		target_ui_container = player_lineup
 	
-	# Wait a second frame to ensure layout containers (HBoxContainer) have fully updated child positions
+	if not target_ui_container or draw_result.dest_slot < 0 or draw_result.dest_slot >= target_ui_container.get_child_count():
+		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
+		return
+	
+	var slot_node = target_ui_container.get_child(draw_result.dest_slot)
+	var instance: GachaBallInstance = battle_manager.get_instance(draw_result.drawn_uuid)
+	var ball_view: GachaBallView = null
+	
+	if slot_node is SlotView and is_instance_valid(instance):
+		var slot_view := slot_node as SlotView
+		var visual_data = VisualDataAdapter.create_visual_data(instance, battle_manager.get_all_instances())
+		var loc := LocationIdentifier.new(draw_result.dest_container, draw_result.dest_slot)
+		slot_view.populate(loc)
+		slot_view.set_meta("location_identifier", loc)
+		ball_view = slot_view.set_content(visual_data, true, false)
+		if is_instance_valid(ball_view):
+			ball_view.set_meta("location_identifier", loc)
+	
+	if not is_instance_valid(ball_view):
+		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
+		return
+	
+	# Wait one frame for UI layout and children positioning
 	await get_tree().process_frame
 	
 	# Queue first draw tutorial if not already completed - shown once the draw action concludes
@@ -1035,49 +1050,13 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 		else:
 			call_deferred("_show_first_draw_tutorial")
 	
-	# Find the target slot
-	var target_ui_container: HBoxContainer = null
-	if draw_result.dest_container == "PlayerBench":
-		target_ui_container = player_bench
+	# Trigger the canonical landing bounce animation on the landed unit/item
+	ball_view.play_landing_bounce()
 	
-	if not target_ui_container:
-		return
-	if draw_result.dest_slot < 0 or draw_result.dest_slot >= target_ui_container.get_child_count():
-		return
+	# Await full bounce completion (0.34s canonical bounce scaled by speed_factor)
+	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
 	
-	var slot = target_ui_container.get_child(draw_result.dest_slot)
-	
-	# Find the GachaBallView inside the slot
-	var ball_view: GachaBallView = null
-	for child in slot.get_children():
-		if child is GachaBallView:
-			ball_view = child
-			break
-	
-	if not is_instance_valid(ball_view):
-		return
-	
-	# Access the icon_rect directly from the GachaBallView (it's a public property)
-	var icon_rect = ball_view.icon_rect
-	if not is_instance_valid(icon_rect):
-		return
-	
-	# Rubber ball bounce animation - squish on landing, then stretch up, settle
-	var bounce_tween = create_tween()
-	
-	# Store pivot for centered scaling
-	icon_rect.pivot_offset = icon_rect.size / 2.0
-	
-	# Phase 1: Squish on impact (compress vertically, stretch horizontally)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.2, 0.8), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Phase 2: Stretch upward (bounce up)
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(0.9, 1.15), AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	# Phase 3: Small squish
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.05, 0.95), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN_OUT)
-	# Phase 4: Settle to normal
-	bounce_tween.tween_property(icon_rect, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	
-	# Visual animation completes here. Logic and triggers are handled asynchronously by BattleManager.
+	SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 
 func _on_action_completed(action: GameAction) -> void:
 	if action is DrawGachaAction and _waiting_for_first_draw_tutorial:

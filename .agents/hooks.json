@@ -1,0 +1,39 @@
+{
+  "gdscript-clean-code-gate": {
+    "PreToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|write_to_file|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/pre_write_guard.py",
+            "timeout": 5
+          }
+        ]
+      }
+    ]
+  },
+  "auto-sync-localization": {
+    "PostToolUse": [
+      {
+        "matcher": "edit_file|write_file|replace_file_content|write_to_file|multi_replace_file_content",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 ./scripts/post_write_sync.py",
+            "timeout": 15
+          }
+        ]
+      }
+    ]
+  },
+  "headless-regression-gate": {
+    "Stop": [
+      {
+        "type": "command",
+        "command": "python3 ./scripts/stop_verify_gate.py",
+        "timeout": 25
+      }
+    ]
+  }
+}

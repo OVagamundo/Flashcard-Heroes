@@ -4,111 +4,53 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-## Effect: Prevent lethal damage once per turn by setting HP to 1.
-## Triggers on on_hurt, checks if damage was lethal (HP <= 0) and heals to 1 HP.
-## Uses turn metadata to ensure once-per-turn limit per team.
-## 
-## DOCUMENTATION COMPLIANT: Uses context keys only (ZERO-INSTANCE-QUERY RULE)
-## Required context keys: victim_uuid, victim_team, victim_current_hp, victim_category, team
+## Prevent lethal damage once per turn by setting HP directly to 1.
+## This is a state save, not a heal, and does not trigger heal abilities.
+func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
+	var damaged_unit_uuid: String = context.damaged_uuid
+	var victim_team: String = context.damaged_team
+	var victim_current_hp: int = context.damaged_current_hp if context.damaged_current_hp != -1 else 1
+	var victim_category: StringName = context.damaged_category
+	var trinket_team: String = context.team
 
-func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
-	
-	# 1. Get data from context (ZERO-INSTANCE-QUERY compliant)
-	var victim_uuid: String = context.get("victim_uuid", "")
-	var victim_team: String = context.get("victim_team", "")
-	var victim_current_hp: int = context.get("victim_current_hp", 1)
-	var victim_category: StringName = context.get("victim_category", &"")
-	var trinket_team: String = context.get("team", "") # AbilityResolver provides this for trinkets
-	
-	pass
-	
-	# Validate required context keys
-	if victim_uuid.is_empty():
-		pass
+	if damaged_unit_uuid.is_empty() or victim_team.is_empty() or trinket_team.is_empty():
 		return EffectResult.empty()
-	
-	if victim_team.is_empty():
-		pass
+	if victim_team != trinket_team or victim_category != &"UNIT" or victim_current_hp > 0:
 		return EffectResult.empty()
-	
-	if trinket_team.is_empty():
-		pass
-		return EffectResult.empty()
-	
-	# 2. Check victim is on same team as trinket
-	if victim_team != trinket_team:
-		pass
-		return EffectResult.empty()
-	
-	# 2.5 Only combat units can be saved.  The trigger provides this snapshot
-	# so the effect stays independent of battle-instance lookups.
-	if victim_category != &"UNIT":
-		pass
-		return EffectResult.empty()
-		
-	# 3. Check if damage was lethal (HP <= 0)
-	if victim_current_hp > 0:
-		pass
-		return EffectResult.empty()
-	
-	# 4. Check once-per-turn flag
-	var aegis_flag_key := "aegis_prevented_" + trinket_team
+
+	var aegis_flag_key: String = "aegis_prevented_" + trinket_team
 	if battle_manager._turn_metadata.get(aegis_flag_key, false):
-		pass
 		return EffectResult.empty()
-	
-	# 5. Calculate heal amount to bring HP to 1
-	# current_hp is negative or 0, so we need to heal by (1 - current_hp)
+
+	var victim: GachaBallInstance = battle_manager.get_instance_by_uuid(damaged_unit_uuid)
+	assert(victim != null, "EffectPreventLethal: damaged unit %s must exist while resolving its lethal save" % damaged_unit_uuid)
 	var heal_amount: int = 1 - victim_current_hp
-	
-	# Set the flag to prevent duplicate triggers within same turn
 	battle_manager._turn_metadata[aegis_flag_key] = true
-	
-	pass
-	
-	if is_simulation:
-		# NEW: Return EffectResult with LETHAL_SAVE event
-		var result := EffectResult.new()
-		
-		# Get victim instance to apply heal and for display name
-		var victim = battle_manager.get_instance_by_uuid(victim_uuid)
-		if not is_instance_valid(victim):
-			return EffectResult.empty()
-		
-		# Apply heal to model
-		battle_manager.apply_stat_delta(victim, "hp", heal_amount, _source_uuid, C.ACTION_HEAL, true)
-		
-		# Get display name
-		var victim_name: String = BattleHelpers.get_instance_display_name(victim)
-		
-		# Log message
-		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "Aegis Charm saves %s from lethal damage!" % victim_name
-		}))
-		
-		# LETHAL_SAVE event
-		result.add_event(CombatEvent.new(CombatEvent.Type.LETHAL_SAVE, {
-			"source_uuid": _source_uuid,
-			"target_uuids": [victim_uuid],
-			"ability_id": context.get("ability_id", &"aegis_charm"),
-			"action_type": C.ACTION_HEAL,
-			"visual_payload": _make_lethal_save_payload(victim_uuid, heal_amount)
-		}))
-		
-		result.state_applied = true
-		return result
-	else:
-		# Non-simulation: apply heal directly
-		var victim = battle_manager.get_instance_by_uuid(victim_uuid)
-		if is_instance_valid(victim):
-			battle_manager.apply_stat_delta(victim, "hp", heal_amount, _source_uuid, C.ACTION_HEAL, true)
+	victim.set_current_hp_silent(1)
+	battle_manager._state.clear_lethal_transition(victim.ball_uuid)
+
+	if not is_simulation:
 		var non_sim_result := EffectResult.new()
 		non_sim_result.state_applied = true
 		return non_sim_result
 
-func _make_lethal_save_payload(saved_uuid: String, heal_amount: int) -> CombatPayload:
-	var payload := CombatPayload.new()
-	payload.saved_uuid = saved_uuid
-	payload.heal_amount = heal_amount
-	return payload
+	var result := EffectResult.new()
+	var victim_name: String = BattleHelpers.get_instance_display_name(victim)
+	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
+		"text": "Aegis Charm saves %s from lethal damage!" % victim_name
+	}))
+
+	var save_payload := CombatPayload.new()
+	save_payload.saved_uuid = damaged_unit_uuid
+	save_payload.heal_amount = heal_amount
+	result.add_event(CombatEvent.new(CombatEvent.Type.PREVENT_KNOCKOUT, {
+		"source_uuid": _source_uuid,
+		"target_uuids": [damaged_unit_uuid],
+		"ability_id": context.ability_id if context.ability_id != &"" else &"aegis_charm",
+		"action_type": C.TRIGGER_PREVENT_KNOCKOUT,
+		"visual_payload": save_payload
+	}))
+
+	result.state_applied = true
+	return result

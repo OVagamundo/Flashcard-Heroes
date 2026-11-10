@@ -5,8 +5,8 @@
 [resource]
 script = ExtResource("1_script")
 id = &"merge_easpefodtoy_watnkplaani_to_ewaaspeplaapp"
-ingredient_a_id = &"EASpeFodToy"
-ingredient_b_id = &"WATnkPlaAni"
-result_id = &"EWAASpePlaApp"
+ingredient_a_id = &"EASupToy"
+ingredient_b_id = &"WATnkAni"
+result_id = &"EWAASpeApp"
 is_self_merge = false
 merge_type = &"UNIT"

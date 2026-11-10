@@ -8,13 +8,13 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
 		return EffectResult.new()
 
-	var trigger = context.get("trigger_type", "")
-	var drawn_uuid = context.get("drawn_uuid", "")
+	var trigger = context.trigger_type
+	var drawn_uuid = context.drawn_uuid
 	
 	# The on_board_enter trigger handles filtering the target, so we don't need a guard clause here.
 	var gold = 0

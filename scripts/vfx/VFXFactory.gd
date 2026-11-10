@@ -201,13 +201,19 @@ func launch_projectile_between(animator: Node, source_uuid: String, target_uuid:
 	var end_pos = Vector2(tgt_snap.position.x + tgt_snap.size.x / 2, tgt_snap.position.y)
 	
 	# Detect self-cast (no source or source == target)
-	var is_self_cast = (not is_source_valid) or (source_uuid == target_uuid)
-	var launch_pos = end_pos if is_self_cast else start_pos
+	var is_self_cast: bool = (not is_source_valid) or (source_uuid == target_uuid)
+	var launch_pos: Vector2
+	if is_self_cast:
+		var target_center: Vector2 = tgt_snap.get("center", Vector2(tgt_snap.position.x + tgt_snap.size.x / 2.0, tgt_snap.position.y + tgt_snap.size.y / 2.0))
+		launch_pos = target_center
+		end_pos = target_center
+	else:
+		launch_pos = start_pos
 	
 	# Spawn and launch projectile with uniform duration
 	var projectile = spawn_projectile_on_layer(amount, stat, launch_pos, end_pos, is_self_cast, is_attack_projectile)
 	if projectile:
-		var duration = custom_duration if custom_duration > 0.0 else AnimationConstants.scaled(0.6)
+		var duration = custom_duration if custom_duration > 0.0 else AnimationConstants.scaled(0.5 if is_self_cast else 0.6)
 		projectile.launch(duration)
 	return projectile
 

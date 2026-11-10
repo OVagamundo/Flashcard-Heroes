@@ -32,8 +32,8 @@ func execute(animator: Node, targets: Array[String], _payload: CombatPayload) ->
 					tween.tween_property(view, "modulate", Color.WHITE, AC.scaled(AC.SUMMON_FADE_DURATION * speed_factor)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 					tween.set_parallel(false)
 					
-					tween.tween_property(sprite, "scale", AC.STRETCH_SCALE, AC.scaled(AC.DEFORM_DURATION * speed_factor)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-					tween.tween_property(sprite, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2 * speed_factor)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+					tween.tween_callback(func(): Audio.play_sfx("unit_hop"))
+					AC.append_landing_bounce(tween, sprite, Vector2.ONE)
 				else:
 					var original_position = view.position
 					var start_position = Vector2(original_position.x, original_position.y - AC.SUMMON_DROP_HEIGHT)
@@ -45,8 +45,8 @@ func execute(animator: Node, targets: Array[String], _payload: CombatPayload) ->
 					tween.tween_property(view, "modulate", Color.WHITE, AC.scaled(AC.SUMMON_FADE_DURATION * speed_factor)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 					tween.set_parallel(false)
 					
-					tween.tween_property(view, "scale", Vector2(1.2, 0.8), AC.scaled(AC.DEFORM_DURATION * speed_factor)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-					tween.tween_property(view, "scale", Vector2.ONE, AC.scaled(AC.DEFORM_DURATION * 2 * speed_factor)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+					tween.tween_callback(func(): Audio.play_sfx("unit_hop"))
+					AC.append_landing_bounce(tween, view, Vector2.ONE)
 				
 				await tween.finished
 		else:

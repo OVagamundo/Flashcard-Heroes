@@ -9,21 +9,21 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: Dictionary) -> EffectResult:
-	var is_simulation: bool = _context.get("is_simulation", false)
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = _context.is_simulation
 	
 	# --- NON-STACKING CHECK ---
 	# If Double Strike already executed this turn, skip
-	if _context.get("double_strike_executed", false):
+	if _context.double_strike_executed:
 		# Skipping - already executed this turn (non-stacking)
 		return EffectResult.empty()
-	_context["double_strike_executed"] = true
+	_context.double_strike_executed = true
 	
 	# Determine attacker (for items, use the holder)
 	var attacker_uuid: String = source_uuid
-	var source_category = _context.get("source_category", &"")
+	var source_category = _context.source_category
 	if source_category == &"ITEM":
-		var holder_uuid = _context.get("source_holder_uuid", "")
+		var holder_uuid = _context.source_holder_uuid
 		if not holder_uuid.is_empty():
 			attacker_uuid = holder_uuid
 	
@@ -32,13 +32,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 	
 	# --- FIND FRESH TARGET ---
-	var basic_attack_def = battle_manager.get_basic_attack_for(attacker) if battle_manager.has_method("get_basic_attack_for") else Database.get_ability_definition(&"basic_attack")
+	var basic_attack_def = battle_manager.get_basic_attack_for(attacker)
 	var default_target_type = C.TARGET_FRONTMOST_ENEMY
 	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
 		var effect = basic_attack_def.effects[0]
 		if is_instance_valid(effect) and effect.target_type != &"":
 			default_target_type = effect.target_type
-	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, default_target_type, {"trigger_type": &"on_attack"}, battle_manager)
+	var target_ctx := TriggerContext.new()
+	target_ctx.trigger_type = C.TRIGGER_WHEN_ATTACKING
+	var target_uuids = TargetResolver.resolve_target(attacker.ball_uuid, default_target_type, target_ctx, battle_manager)
 	if target_uuids.is_empty():
 		return EffectResult.empty()
 	var target = battle_manager.get_instance_by_uuid(target_uuids[0])
@@ -55,32 +57,31 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	# --- BUILD CONTEXT FOR FRESH TURN ACTION ---
 	# Use CAUSE_ABILITY_RETRIGGER to prevent Tiger's Spirit from self-triggering
 	# (Tiger's Spirit requires CAUSE_TURN)
-	var double_strike_context: Dictionary = {
-		"attacker_uuid": attacker.ball_uuid,
-		"target_uuid": target.ball_uuid,
-		"target_initial_hp": target.current_hp,
-		"trigger_cause": &"CAUSE_ABILITY_RETRIGGER", # Prevents Tiger's Spirit self-trigger
-		"cause_id": &"double_strike",
-		"double_strike_executed": true # Prevent nested double strikes
-	}
+	var double_strike_context := TriggerContext.new()
+	double_strike_context.attacker_uuid = attacker.ball_uuid
+	double_strike_context.target_uuid = target.ball_uuid
+	double_strike_context.target_initial_hp = target.current_hp
+	double_strike_context.trigger_cause = &"CAUSE_ABILITY_RETRIGGER" # Prevents Tiger's Spirit self-trigger
+	double_strike_context.cause_id = &"double_strike"
+	double_strike_context.double_strike_executed = true # Prevent nested double strikes
 	
 	# --- FIRE on_attack FOR OTHER ABILITIES ---
 	# This will trigger Shockwave, Mirror Strike, Power Amulet, etc.
 	# Tiger's Spirit won't self-trigger because its condition requires CAUSE_TURN
-	AbilityResolver.process_trigger(&"on_attack", double_strike_context)
+	AbilityResolver.process_trigger(C.TRIGGER_WHEN_ATTACKING, double_strike_context)
 	
 	# Check if an ability replaced the basic attack
-	if double_strike_context.get("attack_replaced", false):
+	if double_strike_context.attack_replaced:
 		return EffectResult.empty()
 	
 	# Mark that on_attack was already triggered
-	double_strike_context["on_attack_already_triggered"] = true
+	double_strike_context.on_attack_already_triggered = true
 	
 	# --- QUEUE FRESH BASIC ATTACK ---
 	if is_instance_valid(basic_attack_def) and not basic_attack_def.effects.is_empty():
 		var basic_attack_request = EffectRequest.new(
 			attacker.ball_uuid, &"double_strike_attack", basic_attack_def.effects[0],
-			[target.ball_uuid], double_strike_context, -50 # Execute after main attack chain
+			[target.ball_uuid], double_strike_context, C.SubPhase.DOUBLE_STRIKE_FOLLOWUP
 		)
 		battle_manager.enqueue_effect_request(basic_attack_request)
 	

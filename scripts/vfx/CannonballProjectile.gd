@@ -70,9 +70,7 @@ func wait_for_impact() -> void:
 
 func _recalculate_physics() -> void:
 	# Physics Setup: We want to reach end_pos in _duration seconds with a parabolic arc.
-	var arc_height = 150.0
-	if _is_self_cast:
-		arc_height = 200.0
+	var arc_height: float = 65.0 if _is_self_cast else 150.0
 		
 	# Calculate peak Y (remember Y is down, so peak is lower value)
 	var min_y = min(_start_pos.y, _end_pos.y)

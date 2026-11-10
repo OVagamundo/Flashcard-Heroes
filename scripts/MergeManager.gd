@@ -576,7 +576,7 @@ func _check_and_apply_level_up_insignia(instance_a: GachaBallInstance, instance_
 	var trinket_name := ""
 	if parent_level == 1:
 		trinket_id = &"trinket_royal_insignia"
-		trinket_name = "Novice Insignia"
+		trinket_name = "Apprentice Insignia"
 	elif parent_level == 2:
 		trinket_id = &"trinket_veteran_insignia"
 		trinket_name = "Veteran Insignia"

@@ -1,0 +1,48 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectApplyStatus.gd" id="2_effect"]
+[ext_resource type="Script" path="res://scripts/conditions/ContextCauseCondition.gd" id="3_condition"]
+
+[sub_resource type="Resource" id="Condition_AttackDamage"]
+script = ExtResource("3_condition")
+id = &"cond_attack_damage_dealt"
+condition_type = &"TRIGGER_CAUSE_MATCH"
+parameters = {
+"allowed_causes": Array[StringName]([&"CAUSE_ATTACK"])
+}
+allowed_causes = Array[StringName]([&"CAUSE_ATTACK"])
+invert_result = false
+
+[sub_resource type="Resource" id="Effect_ArmorHalfDamage"]
+script = ExtResource("2_effect")
+parameters = {
+"amount": {
+"base_value": 0,
+"scaling_context_key": "damage_dealt",
+"scaling_context_multiplier": 0.5
+},
+"status_id": "armor"
+}
+target_type = &"HOLDER"
+
+[sub_resource type="Resource" id="Effect_SpikesHalfDamage"]
+script = ExtResource("2_effect")
+parameters = {
+"amount": {
+"base_value": 0,
+"scaling_context_key": "damage_dealt",
+"scaling_context_multiplier": 0.5
+},
+"status_id": "spikes"
+}
+target_type = &"HOLDER"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"item_tier3b_hardcandy"
+description_key = "ability.item_t3b_on_attack_buff.desc"
+trigger = &"on_damage_dealt"
+condition = SubResource("Condition_AttackDamage")
+sub_phase = 60
+effects = Array[Resource]([SubResource("Effect_ArmorHalfDamage"), SubResource("Effect_SpikesHalfDamage")])

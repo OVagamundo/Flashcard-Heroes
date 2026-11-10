@@ -12,6 +12,7 @@ const C = preload("res://scripts/Constants.gd")
 
 # Semantic action classification
 var action_type: StringName = &""
+var buff_subgroup: StringName = &""
 
 # Shared stat / damage fields.
 var source_uuid: String = ""
@@ -21,6 +22,7 @@ var skip_bump: bool = false
 var bump_direction: Vector2 = Vector2.ZERO
 var apply_burn: bool = false
 var is_burn_damage: bool = false
+var apply_static: bool = false
 var attack_type: String = "melee"
 var main_target_uuid: String = ""
 var original_target_uuid: String = ""
@@ -34,6 +36,8 @@ var targets_old_pwr: Array[int] = []
 var targets_new_pwr: Array[int] = []
 var targets_old_burn: Array[int] = []
 var targets_new_burn: Array[int] = []
+var targets_old_static: Array[int] = []
+var targets_new_static: Array[int] = []
 var targets_old_armor: Array[int] = []
 var targets_new_armor: Array[int] = []
 var armor_consumed: Array[int] = []
@@ -79,6 +83,7 @@ var guardian_uuid: String = ""
 var origin_uuid: String = ""
 var target_gold_amount: int = -1
 var target_token_amount: int = -1
+var target_bonus_time: float = -1.0
 var container_tag: StringName = &""
 var slot_index: int = -1
 var is_player: bool = false
@@ -308,6 +313,7 @@ func deep_clone() -> CombatPayload:
 	copy.bump_direction = bump_direction
 	copy.apply_burn = apply_burn
 	copy.is_burn_damage = is_burn_damage
+	copy.apply_static = apply_static
 	copy.attack_type = attack_type
 	copy.main_target_uuid = main_target_uuid
 	copy.original_target_uuid = original_target_uuid
@@ -320,6 +326,8 @@ func deep_clone() -> CombatPayload:
 	copy.targets_new_pwr = targets_new_pwr.duplicate()
 	copy.targets_old_burn = targets_old_burn.duplicate()
 	copy.targets_new_burn = targets_new_burn.duplicate()
+	copy.targets_old_static = targets_old_static.duplicate()
+	copy.targets_new_static = targets_new_static.duplicate()
 	copy.targets_old_armor = targets_old_armor.duplicate()
 	copy.targets_new_armor = targets_new_armor.duplicate()
 	copy.armor_consumed = armor_consumed.duplicate()
@@ -363,6 +371,7 @@ func deep_clone() -> CombatPayload:
 	copy.origin_uuid = origin_uuid
 	copy.target_gold_amount = target_gold_amount
 	copy.target_token_amount = target_token_amount
+	copy.target_bonus_time = target_bonus_time
 	copy.container_tag = container_tag
 	copy.slot_index = slot_index
 	copy.is_player = is_player

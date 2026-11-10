@@ -11,5 +11,5 @@ name_key = "trinket.twin_charm.name"
 description_key = "trinket.twin_charm.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
-is_player_exclusive = false
+is_player_exclusive = true
 ability_definitions = Array[Resource]([ExtResource("3_ability")])

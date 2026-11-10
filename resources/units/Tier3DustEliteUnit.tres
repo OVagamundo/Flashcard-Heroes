@@ -15,7 +15,6 @@ icon = ExtResource("2_icon")
 tags = Array[StringName]([&"BOSS", &"HIDDEN"])
 is_hero = false
 tier = 3
-cost = 5
 category = &"UNIT"
 
 base_hp = 5

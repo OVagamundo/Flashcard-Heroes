@@ -17,9 +17,9 @@ target_type = &"ALLY_SLOT_AHEAD"
 [resource]
 script = ExtResource("1_ability")
 id = &"unit_t1_c_ally_shield_l2"
-trigger = &"on_ally_hurt"
+trigger = &"when_ally_takes_damage"
 effects = Array[Resource]([SubResource("EffectAllyShield")])
 description_key = "ability.unit_t1_c_ally_shield_l2.desc"
-priority = 100
+sub_phase = 61
 required_level = 2
 max_level = 2

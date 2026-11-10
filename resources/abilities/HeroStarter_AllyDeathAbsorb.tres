@@ -12,5 +12,5 @@ target_type = &"SELF"
 script = ExtResource("1_script")
 id = &"hero_starter_ally_death_absorb"
 description_key = "ability.hero_starter_ally_death_absorb.desc"
-trigger = &"on_ally_death"
+trigger = &"when_ally_knocked_out"
 effects = Array[Resource]([SubResource("EffectGainDeadAllyPwrAsHP_1")])

@@ -1,30 +1,21 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
-[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script_ability"]
-[ext_resource type="Script" path="res://scripts/EffectSetPWRToGold.gd" id="2_effect_script"]
-[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="3_script"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitF.png" id="4_icon"]
-[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="5_basic_attack"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP.tres" id="6_ability_gold"]
-
-
-
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L3.tres" id="100_ability"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L1.tres" id="101_ability"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L2.tres" id="102_ability"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_Spawn_L2.tres" id="103_ability"]
-[ext_resource type="Resource" path="res://resources/abilities/Ability_Tier2F_Merchant_GoldHP_L3.tres" id="104_ability"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitF.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_ea_spe_fod_toy_summon_l1.tres" id="4_summon_l1"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_ea_spe_fod_toy_summon_l2.tres" id="5_summon_l2"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_ea_spe_fod_toy_summon_l3.tres" id="6_summon_l3"]
 
 [resource]
-script = ExtResource("3_script")
-id = &"EASpeFodToy"
-display_name_key = "EASpeFodToy.name"
-description_key = "EASpeFodToy.desc"
-icon = ExtResource("4_icon")
-tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_AIR", &"Specialist", &"Food", &"Toy"])
+script = ExtResource("1_script")
+id = &"EASupToy"
+display_name_key = "EASupToy.name"
+description_key = "EASupToy.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_AIR", &"Support", &"Toy"])
 tier = 2
 level = 1
-cost = 2
 category = &"UNIT"
 
 base_hp = 3
@@ -32,11 +23,8 @@ base_pwr = 2
 bonus_hp = 0
 bonus_pwr = 0
 ability_definitions = Array[Resource]([
-	ExtResource("5_basic_attack"),
-	ExtResource("6_ability_gold"),
-	ExtResource("102_ability"),
-	ExtResource("104_ability"),
-	ExtResource("101_ability"),
-	ExtResource("103_ability"),
-	ExtResource("100_ability")
+	ExtResource("3_basic_attack"),
+	ExtResource("4_summon_l1"),
+	ExtResource("5_summon_l2"),
+	ExtResource("6_summon_l3")
 ])

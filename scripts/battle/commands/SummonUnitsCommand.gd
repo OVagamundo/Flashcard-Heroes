@@ -21,10 +21,11 @@ func _init(p_request: EffectRequest, p_combat_sim: CombatSimulator, p_bm: Node, 
 
 func execute(out_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
 	var summon_result := EffectHandlers.handle_summon_units(request, summon_units_request, battle_manager)
+	var summon_scope: int = combat_sim.begin_reaction_scope()
 	battle_manager._apply_summon_result(summon_result)
 	CombatCommand.append_unified_events(out_events, summon_result.events)
 	
 	# Trigger on_enemy_summon or on_ally_summon for each new unit
-	combat_sim._trigger_summon_reactions_for_result(summon_result, out_events, battle_manager)
+	combat_sim._trigger_summon_reactions_for_result(summon_result, out_events, battle_manager, summon_scope)
 	
 	battle_manager._check_for_deaths_with_counter_delay(true, out_events, death_tracking)

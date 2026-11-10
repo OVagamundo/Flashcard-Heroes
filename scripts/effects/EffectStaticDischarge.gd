@@ -4,8 +4,8 @@ extends EffectDefinition
 ## Deals 1 damage to a unit due to Static discharge.
 ## Triggered when a unit with Static suffers a stat change.
 
-func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
-	var is_simulation: bool = context.get("is_simulation", false)
+func execute(source_uuid: String, targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
+	var is_simulation: bool = context.is_simulation
 	
 	# Only execute logic in simulation
 	if not is_simulation:
@@ -37,7 +37,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		new_armor = hp_res.get("new_armor", old_armor)
 	
 	var result := EffectResult.new()
-	var ability_id = context.get("ability_id", &"static_discharge")
+	var ability_id = (context.ability_id if context.ability_id != &"" else &"static_discharge")
 	
 	# Event 1: LOG_MESSAGE (Text log)
 	var target_name = BattleHelpers.get_instance_display_name(target_unit)
@@ -49,7 +49,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		"source_uuid": source_uuid,
 		"target_uuids": [target_uuid],
 		"ability_id": ability_id,
-		"trigger_type": context.get("trigger_type", ""),
+		"trigger_type": context.trigger_type,
 		"ability_holder_uuid": source_uuid,
 		"visual_payload": CombatPayload.damage(source_uuid, 1, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
 	}))

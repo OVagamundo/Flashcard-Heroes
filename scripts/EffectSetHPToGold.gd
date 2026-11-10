@@ -8,7 +8,7 @@ extends EffectDefinition
 
 const C = preload("res://scripts/Constants.gd")
 
-func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: Dictionary) -> EffectResult:
+func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var source = battle_manager.get_instance_by_uuid(source_uuid)
 	if not is_instance_valid(source):
 		return EffectResult.new()
@@ -48,7 +48,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var event = CombatEvent.new(CombatEvent.Type.BUFF if delta > 0 else CombatEvent.Type.DEBUFF, {
 		"source_uuid": source_uuid,
 		"target_uuids": [source_uuid],
-		"ability_id": context.get("ability_id", ""),
+		"ability_id": (context.ability_id if context.ability_id != &"" else ""),
 		"action_type": action_type,
 		"visual_payload": payload
 	})
