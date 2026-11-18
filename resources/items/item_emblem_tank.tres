@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=3 format=3]
+
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/trinkets/Trait_Tank_Insignia.png" id="1_tex"]
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="2_scr"]
+
+[resource]
+script = ExtResource("2_scr")
+id = &"item_emblem_tank"
+display_name_key = "item.emblem_tank.name"
+description_key = "item.emblem_tank.desc"
+icon = ExtResource("1_tex")
+tags = Array[StringName]([&"ITEM", &"Tank"])
+is_hero = false
+tier = 3
+category = &"ITEM"
+item_slot_count = 0
+base_hp = 0
+base_pwr = 0
+bonus_hp = 2
+bonus_pwr = 0
+ability_definitions = Array[Resource]([])

@@ -113,7 +113,7 @@ The item lineage merges the unique Tier 1 item with the neutral Tier 1 base item
 | `item_interest_ledger` | **Piggy Bank** *(Interest Ledger)* | Tier 2: Gold Coin + `item_t1_a` (Candy) | +2 HP | Whenever 1 Gold is earned, heal holder for 1 HP. |
 | `item_loaded_contract` | **Coin Laundry** *(Loaded Contract)* | Tier 2: Gold Coin + `item_t1_b` (Wakizashi) | +2 PWR | Whenever 1 Gold is earned, holder gains +1 PWR. |
 | `item_golden_seal` | **Golden Seal** | Tier 3: Piggy Bank + Coin Laundry | +2 HP / +2 PWR | Dynamically grants +1 HP and +1 PWR for every full 10 Gold currently held. Recalculates immediately whenever Gold changes. |
-| `item_mercenary_emblem` | **Mercenary Emblem** | Tier 3 Standalone | - | Contributes +1 Mercenary trait counter. Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR. Works from lineup or bench. |
+| `item_mercenary_emblem` | **Mercenary Emblem** | Tier 3 Standalone | - | Contributes +1 Mercenary trait counter. Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR. Works from lineup or shelf. |
 
 ---
 
@@ -122,7 +122,7 @@ The item lineage merges the unique Tier 1 item with the neutral Tier 1 base item
 | ID | Trinket | Trigger | Effect Description |
 |---|---|:---:|---|
 | `trinket_trait_mercenary` | **Mercenary Sigil** | Trait Thresholds | Enables and tracks the Mercenary Trait thresholds (2 / 3 / 4 / 5). |
-| `trinket_recruiting_charm` | **Recruiting Charm** | Turn Start | At turn start, if holding at least 1 Gold and a bench slot is open, spend 1 Gold to summon one Level 1 `?MerSpe` to the bench. |
+| `trinket_recruiting_charm` | **Recruiting Charm** | Turn Start | At turn start, if holding at least 1 Gold and a shelf slot is open, spend 1 Gold to summon one Level 1 `?MerSpe` to the shelf. |
 | `trinket_wanted_poster` | **Wanted Poster** | Turn Start | At turn start, apply 1 stack of Bounty to a random enemy unit. |
 
 ---

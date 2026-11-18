@@ -13,7 +13,7 @@ The Novice Set is tailored for the starting Hero, **Dan**, designed specifically
 Key pillars:
 1. **Time-as-Power:** Extra study time is an economic multiplier. Seconds granted on correct answers or on unit death convert directly into answering more cards, earning more tokens, and strengthening the lineup.
 2. **Organic Learning Incentives:** Combat power flows from good study habits: reviewing Mastery Level 1 (Very Hard / Red) cards, maintaining 3-streaks, and knowing when to Skip rather than guess blindly.
-3. **Forgiving Safety Net:** The starter **Novice Sigil** trinket guarantees a baseline of at least 3 Tokens from every study minigame, inside and outside battle.
+3. **Forgiving Safety Net:** The starter **Novice Crest** trinket guarantees a baseline of at least 3 Tokens from every study challenge, inside and outside battle.
 4. **Token Tension at Tier 3:** High-tier Novice units gain scaling combat benefits from holding tokens into battle, creating tactical decisions during Management: spend tokens on gacha draws or hold them for battle boosts.
 
 ---
@@ -43,7 +43,7 @@ Every Hero Content Pack adheres to the following structural and balance standard
 | **Base Stats** | 10 HP / 2 PWR |
 | **Loadout** | Fixed **Novice** trait, plus 3 Elemental Souls of one randomly chosen element (all 3 of same element: Fire, Earth, Water, or Air: `?`), and one random Thematic trait. The dynamic element `?` is inherited by Dan's entire 11-unit lineage for that run. |
 | **Innate Combat Passive** | **Soul Harvest:** When an allied unit is knocked out, Dan gains HP equal to that ally's PWR (`resources/abilities/HeroStarter_AllyDeathAbsorb.tres`). |
-| **Starter Trinket** | **Novice Sigil** (equipped at run start). |
+| **Starter Trinket** | **Novice Crest** (equipped at run start). |
 
 ---
 
@@ -53,10 +53,10 @@ The Novice trait scales based on the number of Novice-tagged units in the active
 
 | Level | Threshold | Effect |
 |---|:---:|---|
-| **Bronze** | 2 Novices | Add **+1.0 second** to the starting time of each battle minigame. |
-| **Silver** | 3 Novices | In addition to Bronze, achieving a **3-correct-answer streak grants 1 bonus Gold** (once per minigame session, maximum 5 Gold per encounter). |
+| **Bronze** | 2 Novices | Add **+1.0 second** to the starting time of each battle challenge. |
+| **Silver** | 3 Novices | In addition to Bronze, achieving a **3-correct-answer streak grants 1 bonus Gold** (once per challenge session, maximum 5 Gold per encounter). |
 | **Gold** | 4 Novices | In addition to Silver, a correct answer to a card at **Mastery Level 1 (Very Hard)** grants **1 bonus Token**. |
-| **Prismatic** | 5 Novices | In addition to all previous levels: Each incorrect submitted answer adds **+0.5s** to the remaining time (panic buffer; does not apply to Skips). Achieving a **3-correct-answer streak grants +1 bonus Token** (once per minigame session). |
+| **Prismatic** | 5 Novices | In addition to all previous levels: Each incorrect submitted answer adds **+0.5s** to the remaining time (panic buffer; does not apply to Skips). Achieving a **3-correct-answer streak grants +1 bonus Token** (once per challenge session). |
 
 ### Mechanics & Event Resolution Rules
 * **Correct-Answer vs. Generic Tokens:** Buffs requiring correct answers trigger strictly on answer submission events. Token guarantees, death refunds, or trinket payouts do not trigger answer-based buffs.
@@ -76,7 +76,7 @@ Following the single-class architectural law:
 
 | ID / Name | Tags | Stats | Attack | Ability (Levels 1 / 2 / 3) |
 |---|---|:---:|:---:|---|
-| `?NovPla` | `?`, Novice, Plant | 1 HP / 1 PWR | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame. This effect stacks. |
+| `?NovPla` | `?`, Novice, Plant | 1 HP / 1 PWR | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge. This effect stacks. |
 
 *Note: Like all units, merging duplicates increases level and adds +1 HP and +1 PWR per level (Level 1: 1 HP / 1 PWR, Level 2: 2 HP / 2 PWR, Level 3: 3 HP / 3 PWR).*
 
@@ -106,7 +106,7 @@ Following the single-class architectural law:
 | `W??ANovCos` | `?ANovFod` + `W?NovCos` | WATER, 2x `?`, AIR, Novice, Costume | 5 HP / 5 PWR | Melee | When hurt by an attack, spend 1 Token to heal self for 1 / 2 / 3 HP for each Current Token held before the spend. (Can activate multiple times if tokens available). |
 | `EF??NovApp` | `E?NovPla` + `F?NovApp` | EARTH, FIRE, 2x `?`, Novice, Appliance | 5 HP / 5 PWR | Ranged | When attacking, spend 1 Token to Charge an Empowered Attack that applies 1 / 2 / 3 Burn to the target per Current Token held before the spend. |
 | `EW??NovPla` | `E?NovPla` + `W?NovCos` | EARTH, WATER, 2x `?`, Novice, Plant | 5 HP / 5 PWR | Ranged | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage per Current Token held before the spend. |
-| `FW??NovAni` | `F?NovApp` + `W?NovCos` | FIRE, WATER, 2x `?`, Novice, Animal | 5 HP / 5 PWR | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
+| `FW??NovAni` | `F?NovApp` + `W?NovCos` | FIRE, WATER, 2x `?`, Novice, Animal | 5 HP / 5 PWR | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
 
 ---
 
@@ -120,7 +120,7 @@ The item lineage merges the unique Tier 1 item with the neutral Tier 1 base item
 | `item_review_ledger` | **Nail** | Tier 2: Token + `item_t1_a` (Candy) | +2 HP | Pre-Battle, while equipped in the active lineup, holder gains 1 / 2 / 3 Spikes for each Current Token held. |
 | `item_answer_key` | **Burnout** | Tier 2: Token + `item_t1_b` (Wakizashi) | +2 PWR | When attacking, while equipped in the active lineup, apply 1 / 2 / 3 Burn to the target for each Current Token held. |
 | `item_novice_archive` | **Novice's Archive** | Tier 3: Nail + Burnout | +2 HP / +2 PWR | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage for each Current Token held before the spend. |
-| `item_novice_emblem` | **Novice Emblem** | Tier 3 Standalone | - | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle minigame. |
+| `item_novice_emblem` | **Novice Emblem** | Tier 3 Standalone | - | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle challenge. |
 
 ---
 
@@ -128,9 +128,9 @@ The item lineage merges the unique Tier 1 item with the neutral Tier 1 base item
 
 | ID | Trinket | Trigger | Effect Description |
 |---|---|:---:|---|
-| `trinket_trait_novice` | **Novice Sigil** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding minigame session (inside and outside battle). |
-| `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or bench if full). Battle-only summon. |
-| `trinket_beginners_charm` | **Beginner's Charm** | Minigame | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
+| `trinket_trait_novice` | **Novice Crest** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding challenge session (inside and outside battle). |
+| `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or shelf if full). Battle-only summon. |
+| `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
 
 ---
 

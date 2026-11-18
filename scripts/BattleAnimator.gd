@@ -2,6 +2,7 @@
 extends Node
 
 signal turn_animation_finished
+signal _sequence_animation_finished(sequence_id: int)
 
 const C = preload("res://scripts/Constants.gd")
 const ANIM_TIMEOUT_DURATION = 1.1
@@ -16,6 +17,9 @@ var _pending_guardian_return: String = "" # UUID of Guardian needing to return a
 var _tracker: AnimationCompletionTracker # Animation completion tracking
 
 var _is_playing_sequence: bool = false
+var _sequence_queue: Array[Dictionary] = []
+var _next_sequence_id: int = 0
+var _is_draining_sequence_queue: bool = false
 
 func is_playing_sequence() -> bool:
 	return _is_playing_sequence
@@ -48,31 +52,56 @@ func _ready() -> void:
 		SignalBus.connect("trait_threshold_reached", _on_trait_threshold_reached)
 
 func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]) -> void:
+	_next_sequence_id += 1
+	var sequence_id: int = _next_sequence_id
+	_sequence_queue.append({
+		"sequence_id": sequence_id,
+		"start_snapshot": start_snapshot.duplicate(true),
+		"events": turn_log.duplicate()
+	})
 	_is_playing_sequence = true
-	_start_snapshot = start_snapshot.duplicate(true)
+	if not _is_draining_sequence_queue:
+		_is_draining_sequence_queue = true
+		call_deferred("_drain_sequence_queue")
+
+	while true:
+		var completed_sequence_id: int = await _sequence_animation_finished
+		if completed_sequence_id == sequence_id:
+			return
+
+func _drain_sequence_queue() -> void:
+	while not _sequence_queue.is_empty():
+		var sequence: Dictionary = _sequence_queue.pop_front()
+		var sequence_id: int = sequence["sequence_id"]
+		var start_snapshot: Dictionary = sequence["start_snapshot"]
+		var turn_log: Array[CombatEvent] = sequence["events"]
+		_start_snapshot = start_snapshot
 	
-	var battle_view = get_tree().get_first_node_in_group("battle_view")
-	if is_instance_valid(battle_view) and battle_view.has_method("init_visual_discard_count"):
-		if start_snapshot.has("__discard_count__"):
-			battle_view.init_visual_discard_count(start_snapshot["__discard_count__"])
+		var battle_view = get_tree().get_first_node_in_group("battle_view")
+		if is_instance_valid(battle_view) and battle_view.has_method("init_visual_discard_count"):
+			if start_snapshot.has("__discard_count__"):
+				battle_view.init_visual_discard_count(start_snapshot["__discard_count__"])
 			
-	# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
-	# Extract HP snapshot for backward compatibility
-	var hp_only_snapshot: Dictionary = {}
-	for uuid in start_snapshot:
-		var data = start_snapshot[uuid]
-		if data is Dictionary and data.has("hp"):
-			hp_only_snapshot[uuid] = data["hp"]
+		# VCR Pattern: start_snapshot contains full board state, turn_log is the event sequence
+		# Extract HP snapshot for backward compatibility
+		var hp_only_snapshot: Dictionary = {}
+		for uuid in start_snapshot:
+			var data = start_snapshot[uuid]
+			if data is Dictionary and data.has("hp"):
+				hp_only_snapshot[uuid] = data["hp"]
 	
-	# Visual gacha tokens are now handled by BattleManager.
+		# Visual gacha tokens are now handled by BattleManager.
 	
-	_register_all_puppets(start_snapshot)
+		_register_all_puppets(start_snapshot)
 	
-	await play_turn(turn_log)
-	_visual_registry.clear()
-	_position_snapshot.clear()
-	_start_snapshot.clear()
+		await play_turn(turn_log)
+		_visual_registry.clear()
+		_position_snapshot.clear()
+		_start_snapshot.clear()
+		_sequence_animation_finished.emit(sequence_id)
+
 	_is_playing_sequence = false
+	_is_draining_sequence_queue = false
 	emit_signal("turn_animation_finished")
 
 func _register_all_puppets(start_snapshot: Dictionary) -> void:
@@ -95,6 +124,11 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 			if snapshot_data is Dictionary and snapshot_data.has("container_tag") and snapshot_data.has("slot_index"):
 				var container_tag = snapshot_data.get("container_tag") # StringName VALUE
 				var index = snapshot_data.get("slot_index") # int VALUE
+				if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER:
+					var banner_view: EnemyBannerView = battle_view.enemy_banner_view
+					assert(banner_view.get_instance_uuid() == uuid, "Banner view does not match the combat snapshot")
+					register_dynamic_position(uuid, banner_view)
+					continue
 				
 				# Map container tag to battle view lineup nodes via scene tree
 				var lineup_container: HBoxContainer = null
@@ -102,8 +136,8 @@ func _register_all_puppets(start_snapshot: Dictionary) -> void:
 					lineup_container = battle_view.player_lineup
 				elif container_tag == &"EnemyLineup":
 					lineup_container = battle_view.enemy_lineup
-				elif container_tag == &"PlayerBench":
-					lineup_container = battle_view.player_bench
+				elif container_tag == &"PlayerShelf":
+					lineup_container = battle_view.player_shelf
 				elif container_tag == &"EnemyTrinkets":
 					lineup_container = battle_view.enemy_trinket_bar
 				elif container_tag == &"PlayerTrinkets":
@@ -208,8 +242,8 @@ func _get_slot_view(container_tag: StringName, slot_index: int) -> PanelContaine
 			lineup_container = battle_view.player_lineup
 		&"EnemyLineup":
 			lineup_container = battle_view.enemy_lineup
-		&"PlayerBench":
-			lineup_container = battle_view.player_bench
+		&"PlayerShelf":
+			lineup_container = battle_view.player_shelf
 		_:
 			return null
 	
@@ -237,6 +271,24 @@ func return_pending_guardian() -> void:
 			await guardian_view.animate_leap_return()
 
 
+static func _has_currency_event(events: Array[CombatEvent], types: Array[CombatEvent.Type]) -> bool:
+	for e in events:
+		if not is_instance_valid(e):
+			continue
+		if types.has(e.type):
+			return true
+		if is_instance_valid(e.visual_payload):
+			var p: CombatPayload = e.visual_payload
+			if not p.windup_events.is_empty() and _has_currency_event(p.windup_events, types):
+				return true
+			if not p.pre_impact_events.is_empty() and _has_currency_event(p.pre_impact_events, types):
+				return true
+			if not p.contact_events.is_empty() and _has_currency_event(p.contact_events, types):
+				return true
+			if not p.impact_events.is_empty() and _has_currency_event(p.impact_events, types):
+				return true
+	return false
+
 func _animate_events(events: Array[CombatEvent]) -> void:
 	# Outer brackets: prevent the per-animation desync assertion from firing
 	# prematurely when multiple GOLD_GAIN / TOKEN_GAIN events exist in the same
@@ -248,9 +300,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	# currency event in the turn has been animated, so the assertion fires only
 	# once — after visual and authoritative are guaranteed to match.
 	var _currency_main = GameManager._active_main_node if is_instance_valid(GameManager) else null
-	var _has_gold_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.GOLD_GAIN or e.type == CombatEvent.Type.GOLD_SPEND)
-	var _has_token_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.TOKEN_GAIN or e.type == CombatEvent.Type.TOKEN_SPEND)
-	var _has_timer_events := events.any(func(e: CombatEvent): return e.type == CombatEvent.Type.TIMER_BONUS)
+	var _has_gold_events := _has_currency_event(events, [CombatEvent.Type.GOLD_GAIN, CombatEvent.Type.GOLD_SPEND])
+	var _has_token_events := _has_currency_event(events, [CombatEvent.Type.TOKEN_GAIN, CombatEvent.Type.TOKEN_SPEND])
+	var _has_timer_events := _has_currency_event(events, [CombatEvent.Type.TIMER_BONUS])
 
 	if _has_gold_events and is_instance_valid(_currency_main):
 		_currency_main.begin_gold_animation()
@@ -279,10 +331,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				pass
 
 			CombatEvent.Type.DRAW:
-				var payload = event.visual_payload
+				var payload: CombatPayload = event.visual_payload
 				var draw_result = payload.draw_result
 				if draw_result:
-					SignalBus.emit_signal("gacha_draw_animated", draw_result)
+					SignalBus.emit_signal("gacha_draw_animated", draw_result, payload.new_unit_snapshot if payload != null else {})
 					
 					var completed := false
 					var on_draw_finished = func(res):
@@ -303,8 +355,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						if battle_view != null:
 							var container_tag: StringName = draw_result.dest_container
 							var lineup_container: HBoxContainer = null
-							if container_tag == &"PlayerBench":
-								lineup_container = battle_view.player_bench
+							if container_tag == &"PlayerShelf":
+								lineup_container = battle_view.player_shelf
 							elif container_tag == &"PlayerLineup":
 								lineup_container = battle_view.player_lineup
 							
@@ -313,6 +365,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 								for child in slot_view.get_children():
 									if child is GachaBallView and not child.is_queued_for_deletion():
 										_visual_registry[draw_result.drawn_uuid] = child
+										if payload != null and not payload.new_unit_snapshot.is_empty():
+											child.set_visual_state(payload.new_unit_snapshot)
 										var rect: Rect2 = child.get_global_rect()
 										_position_snapshot[draw_result.drawn_uuid] = {
 											"position": rect.position,
@@ -431,10 +485,12 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 						anim_capsule.populate(null, new_snapshot)
 						
 						var initial_scale := 0.3
-						var final_scale_val := 1.5
+						var final_scale_val := 1.0
 						anim_capsule.scale = Vector2(initial_scale, initial_scale)
 						
-						var center_offset = Vector2(48, 48)
+						var center_offset: Vector2 = anim_capsule.get_capsule_rect().get_center()
+						anim_capsule.pivot_offset = center_offset
+						anim_capsule.global_position = start_center - center_offset
 						var arc_height := 500.0
 						var duration := AnimationConstants.scaled(0.7)
 						
@@ -448,7 +504,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 							var current_scale = lerp(initial_scale, final_scale_val, scale_t)
 							anim_capsule.scale = Vector2(current_scale, current_scale)
 							var pos = Vector2(curr_x, curr_y)
-							anim_capsule.global_position = pos - (center_offset * current_scale)
+							anim_capsule.global_position = pos - center_offset
 						, 0.0, 1.0, duration)
 						
 						await tween.finished
@@ -488,8 +544,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 
 				if not is_inventory_summon and container_tag != &"DiscardPile" and container_tag != "DiscardPile" and is_instance_valid(battle_view):
 					var lineup_container: HBoxContainer = null
-					if container_tag == &"PlayerLineup" or container_tag == &"PlayerBench":
-						lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_bench
+					if container_tag == &"PlayerLineup" or container_tag == &"PlayerShelf":
+						lineup_container = battle_view.player_lineup if container_tag == &"PlayerLineup" else battle_view.player_shelf
 					elif container_tag == &"EnemyLineup":
 						lineup_container = battle_view.enemy_lineup
 					
@@ -668,10 +724,10 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 	if _has_timer_events and is_instance_valid(_currency_main):
 		_currency_main.end_bonus_timer_animation()
 
-func apply_hp_delta(target_uuid: String, amount: int, new_hp: int) -> void:
+func apply_hp_delta(target_uuid: String, amount: int, new_hp: int, trigger_reactions: bool = true) -> void:
 	var view = _visual_registry.get(target_uuid)
 	if is_instance_valid(view) and view.has_method("animate_stat_change"):
-		view.animate_stat_change(new_hp, amount, "hp")
+		view.animate_stat_change(new_hp, amount, "hp", trigger_reactions)
 
 func apply_pwr_delta(target_uuid: String, amount: int, new_pwr: int) -> void:
 	var view = _visual_registry.get(target_uuid)
@@ -830,7 +886,7 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 			var event_source_uuid := event.visual_payload.source_uuid
 			if not event_source_uuid.is_empty() and event_source_uuid != act_visual_uuid:
 				var existing_view = _visual_registry.get(event_source_uuid)
-				var is_existing_unit = is_instance_valid(existing_view) and not existing_view.is_in_group("trinket_view")
+				var is_existing_unit: bool = existing_view is GachaBallView and not existing_view.is_in_group("trinket_view")
 				if not is_existing_unit:
 					var snap = get_snapshot_position(act_visual_uuid)
 					if not snap.is_empty():
@@ -842,6 +898,12 @@ func _play_trinket_activations_for_event(event: CombatEvent) -> void:
 		# No await timer here to allow concurrent playback
 
 func play_trinket_activation(visual_uuid: String, trinket_definition_id: StringName = &"", is_enemy_trinket: bool = false) -> void:
+	if is_enemy_trinket:
+		var banner_view: EnemyBannerView = get_tree().get_first_node_in_group("enemy_banner_view") as EnemyBannerView
+		if banner_view != null and banner_view.visible and (banner_view.get_instance_uuid() == visual_uuid or banner_view.get_definition_id() == trinket_definition_id):
+			register_dynamic_position(banner_view.get_instance_uuid(), banner_view)
+			banner_view.play_activation()
+			return
 	var view = _find_trinket_view(visual_uuid, trinket_definition_id, is_enemy_trinket)
 	if is_instance_valid(view):
 		# Register the trinket view in the position snapshot so subsequent
@@ -931,6 +993,11 @@ func wait_for_animation_completion(animation_type: String, expected_uuid: String
 			anim_type = AnimationCompletionTracker.AnimationType.FLASH # Default fallback
 	
 	await _tracker.await_completion(expected_uuid, anim_type)
+
+func wait_for_animation_channels(expected_uuid: String, animation_types: Array[AnimationCompletionTracker.AnimationType]) -> void:
+	assert(not expected_uuid.is_empty(), "BattleAnimator.wait_for_animation_channels requires a unit UUID")
+	assert(_visual_registry.has(expected_uuid), "BattleAnimator.wait_for_animation_channels requires a registered unit view: %s" % expected_uuid)
+	await _tracker.await_completions(expected_uuid, animation_types)
 
 # =============================================================================
 # SPEED CONTROL
@@ -1125,7 +1192,7 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 	if is_instance_valid(source_view) and source_view.has_method("set_visual_equipped_item_icon"):
 		source_view.set_visual_equipped_item_icon(null)
 		
-	# Calculate target scale to fit exactly 96x96 pixels in battle (matching the standard bench size)
+	# Calculate target scale to fit exactly 96x96 pixels in battle (matching the standard shelf size)
 	var target_size := 96.0
 	var tex_size := item_texture.get_size()
 	var scale_factor := target_size / maxf(maxf(tex_size.x, tex_size.y), 1.0)
@@ -1170,7 +1237,7 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 		if pwr_diff != 0 and target_view.has_method("animate_stat_change"):
 			target_view.animate_stat_change(new_pwr, pwr_diff, "pwr")
 
-	# If this transfer replaces an existing equipped item, animate the old item to the discard pile on impact
+	# If this transfer replaces an existing equipped item, animate the old item to the Discard on impact
 	if not payload.replaced_item_uuid.is_empty():
 		var discard_start_pos := Vector2.ZERO
 		if is_instance_valid(target_view) and target_view.is_inside_tree():
@@ -1247,7 +1314,7 @@ func _animate_item_discard(source_uuid: String, payload: CombatPayload) -> void:
 	}
 	await _animate_gachaball_to_discard(start_pos, capsule_snapshot)
 
-## Universal helper to animate any GachaBall capsule (unit or item) into the Discard Pile.
+## Universal helper to animate any GachaBall capsule (unit or item) into the Discard.
 ## Plays parabolic Bezier arc, coin_land SFX, discard button scale bump, and updates counter on landing.
 func _animate_gachaball_to_discard(start_pos: Vector2, capsule_snapshot: Dictionary) -> void:
 	var battle_view = get_tree().get_first_node_in_group("battle_view")
@@ -1270,10 +1337,12 @@ func _animate_gachaball_to_discard(start_pos: Vector2, capsule_snapshot: Diction
 	anim_capsule.populate(null, capsule_snapshot)
 
 	var initial_scale := 0.3
-	var final_scale_val := 1.5
+	var final_scale_val := 1.0
 	anim_capsule.scale = Vector2(initial_scale, initial_scale)
 
-	var center_offset = Vector2(48.0, 48.0)
+	var center_offset: Vector2 = anim_capsule.get_capsule_rect().get_center()
+	anim_capsule.pivot_offset = center_offset
+	anim_capsule.global_position = start_pos - center_offset
 	var arc_height := 500.0
 	var duration := AnimationConstants.scaled(0.7)
 
@@ -1287,7 +1356,7 @@ func _animate_gachaball_to_discard(start_pos: Vector2, capsule_snapshot: Diction
 		var current_scale = lerp(initial_scale, final_scale_val, scale_t)
 		anim_capsule.scale = Vector2(current_scale, current_scale)
 		var pos = Vector2(curr_x, curr_y)
-		anim_capsule.global_position = pos - (center_offset * current_scale)
+		anim_capsule.global_position = pos - center_offset
 	, 0.0, 1.0, duration)
 
 	await tween.finished
@@ -1298,21 +1367,21 @@ func _animate_gachaball_to_discard(start_pos: Vector2, capsule_snapshot: Diction
 	if is_instance_valid(battle_view) and battle_view.has_method("animate_discard_pile_arrival"):
 		battle_view.animate_discard_pile_arrival(1)
 
-## Universal helper to animate a player unit's GachaBall capsule and any held items to the Discard Pile.
+## Universal helper to animate a player unit's GachaBall capsule and any held items to the Discard.
 ## Used after standard combat death fade, and after special deaths like kamikaze.
 func animate_player_death_departure(dead_uuid: String, death_pos: Vector2, payload: CombatPayload) -> void:
 	var is_player = false
 	if payload is CombatPayload:
-		is_player = payload.is_player or (payload.container_tag == &"PlayerLineup" or payload.container_tag == &"PlayerBench")
+		is_player = payload.is_player or (payload.container_tag == &"PlayerLineup" or payload.container_tag == &"PlayerShelf")
 	if not is_player and _start_snapshot.has(dead_uuid):
 		var snap_data = _start_snapshot.get(dead_uuid, {})
-		if snap_data is Dictionary and (snap_data.get("container_tag") == &"PlayerLineup" or snap_data.get("container_tag") == &"PlayerBench"):
+		if snap_data is Dictionary and (snap_data.get("container_tag") == &"PlayerLineup" or snap_data.get("container_tag") == &"PlayerShelf"):
 			is_player = true
 			
 	if not is_player or death_pos == Vector2.ZERO:
 		return
 
-	# 1. Animate unit capsule to discard pile
+	# 1. Animate unit capsule to the Discard
 	var unit_snap: Dictionary = {}
 	if payload is CombatPayload and not payload.unit_snapshot.is_empty():
 		unit_snap = payload.unit_snapshot.duplicate(true)
@@ -1328,7 +1397,7 @@ func animate_player_death_departure(dead_uuid: String, death_pos: Vector2, paylo
 	if not unit_snap.is_empty():
 		await _animate_gachaball_to_discard(death_pos, unit_snap)
 		
-	# 2. Animate equipped items to discard pile sequentially
+	# 2. Animate equipped items to the Discard sequentially
 	var equipped_items: Array = []
 	if payload is CombatPayload and not payload.equipped_items.is_empty():
 		equipped_items = payload.equipped_items

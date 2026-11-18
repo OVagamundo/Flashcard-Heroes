@@ -26,7 +26,7 @@ enum Type {
 	SLOT_EFFECT_CHANGE, # Visual only: { "container_tag": StringName, "slot_index": int, "from_effect": StringName, "to_effect": StringName }
 	TOKEN_GAIN,
 	DRAW, # New for Async Draw Chains
-	ITEM_DISCARD, # Replaced/discarded item arcs to Discard Pile button
+	ITEM_DISCARD, # Replaced/discarded item arcs to Discard button
 	ITEM_EQUIP, # Equipped item appears on unit view
 	MERGE, # Merge action on battle board
 	GOLD_SPEND, # Payload: { "amount": int }
@@ -75,6 +75,14 @@ var pre_impact_events: Array[CombatEvent]:
 		if visual_payload == null:
 			visual_payload = CombatPayload.new()
 		visual_payload.pre_impact_events = val
+
+var contact_events: Array[CombatEvent]:
+	get:
+		return visual_payload.contact_events if is_instance_valid(visual_payload) else []
+	set(val):
+		if visual_payload == null:
+			visual_payload = CombatPayload.new()
+		visual_payload.contact_events = val
 
 var impact_events: Array[CombatEvent]:
 	get:

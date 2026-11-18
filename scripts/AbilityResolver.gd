@@ -19,13 +19,13 @@ const C = preload("res://scripts/Constants.gd")
 func _get_instance_team(instance: GachaBallInstance, battle_manager: Node) -> String:
 	assert(is_instance_valid(instance), "AbilityResolver: instance must be valid")
 	var container = instance.location_container_tag
-	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 		return "PLAYER"
-	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 		return "ENEMY"
 	elif container == C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 		return "PLAYER"
-	elif container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
+	elif container in [C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER]:
 		return "ENEMY"
 	elif not instance.equipped_on_uuid.is_empty() and battle_manager != null and battle_manager.has_method("get_instance_by_uuid"):
 		var parent_unit = battle_manager.get_instance_by_uuid(instance.equipped_on_uuid)
@@ -64,7 +64,8 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# Only the intercepting guardian responds
 			return unit_uuid == context.source_uuid
 		
-		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
+		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_ATTACK_IMPACT, \
+		C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
 			# Only the attacker responds
 			return unit_uuid == context.attacker_uuid
 		
@@ -96,7 +97,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit.current_hp > 0 and _is_on_battle_board(unit) and unit_team != "" and unit_team == summoned_team and unit_uuid != summoned_uuid
 
 		C.TRIGGER_ON_MERGE:
-			# Only living units already on battle board (lineup/bench) can respond.
+			# Only living units already on battle board (lineup/shelf) can respond.
 			if unit.current_hp <= 0 or not _is_on_battle_board(unit):
 				return false
 
@@ -107,12 +108,15 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 
 			var unit_container: StringName = unit.location_container_tag
 			var unit_team_on_board: String = ""
-			if unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			if unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 				unit_team_on_board = "PLAYER"
-			elif unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+			elif unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or unit_container == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 				unit_team_on_board = "ENEMY"
 			return unit_team_on_board == merged_team
 		
+		C.TRIGGER_WHEN_DUST_MINIONS_MERGE:
+			return unit.current_hp > 0 and _is_on_battle_board(unit)
+
 		C.TRIGGER_ON_GACHA_DRAW:
 			# Enemy units respond to player draws (draws benefit enemies)
 			# AND the drawn unit itself responds (for initialization effects like Merchant)
@@ -151,7 +155,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
 		C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
-			# Living units respond if in active lineup (AMer does not trigger while benched)
+			# Living units respond if in active lineup (AMer does not trigger while shelved)
 			var container: StringName = unit.location_container_tag
 			return unit.current_hp > 0 and (
 				container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
@@ -186,16 +190,16 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 	# Default: respond (for any new triggers)
 	return true
 
-## Determine if a unit is on the battle board (lineup or bench)
+## Determine if a unit is on the battle board (lineup or shelf)
 func _is_on_battle_board(unit: GachaBallInstance) -> bool:
 	if not is_instance_valid(unit):
 		return false
 	var container: StringName = unit.location_container_tag
 	return (
 		container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-		or container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF
 	)
 
 ## Unified filter: Should this equipped item respond to this trigger?
@@ -204,7 +208,7 @@ func _is_on_battle_board(unit: GachaBallInstance) -> bool:
 ## @param context: Trigger context with semantic keys
 ## @return true if this item should process abilities for this trigger
 func _should_item_respond(trigger: StringName, item: GachaBallInstance, context: TriggerContext) -> bool:
-	# Items can always respond to on_board_state_changed to update their passive stats, even on the bench
+	# Items can always respond to on_board_state_changed to update their passive stats, even on the shelf
 	if trigger == C.TRIGGER_ON_BOARD_STATE_CHANGED:
 		return true
 
@@ -219,7 +223,8 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var target_uuid = context.knocked_out_uuid if not context.knocked_out_uuid.is_empty() else context.damaged_uuid
 			return holder_uuid == target_uuid
 		
-		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
+		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_ATTACK_IMPACT, \
+		C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
 			return holder_uuid == context.attacker_uuid
 		
 		C.TRIGGER_BEFORE_TAKING_DAMAGE:
@@ -439,21 +444,16 @@ func process_trigger(trigger: StringName, context: TriggerContext = null) -> voi
 ## @param source_uuid: String - The UUID of the source instance
 ## @param battle_manager: Node - The current battle manager
 func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_manager: Node, context: TriggerContext) -> void:
-	var source = null
-	# Check if source is dead and ability doesn't allow lethal execution
-	# ONLY for UNITS - items and trinkets don't have HP
-	if not source_uuid.is_empty():
-		source = battle_manager.get_instance_by_uuid(source_uuid)
-		if is_instance_valid(source):
-			var source_def = source.get_definition()
-			# Only check HP for UNIT category - items/trinkets don't have meaningful HP
-			if is_instance_valid(source_def) and source_def.category == &"UNIT":
-				if source.current_hp <= 0:
-					# Allow if this is the dying unit's own knockout trigger
-					var ko_uuid: String = context.knocked_out_uuid
-					var is_own_death_trigger: bool = (not ko_uuid.is_empty() and ko_uuid == source_uuid)
-					if not is_own_death_trigger and not ability.execute_before_knockout:
-						return
+	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
+	assert(source != null, "AbilityResolver: ability source must be registered: %s" % source_uuid)
+	if not _is_ability_source_active(ability, source, battle_manager):
+		return
+	# Only units have HP; their own knockout and lethal reactions remain eligible.
+	var definition: Resource = source.get_definition()
+	if definition.category == C.CATEGORY_UNIT and source.current_hp <= 0:
+		var is_own_death_trigger: bool = context.knocked_out_uuid == source_uuid
+		if not is_own_death_trigger and not ability.execute_before_knockout:
+			return
 	
 	# Check condition if present
 	if is_instance_valid(ability.condition):
@@ -526,3 +526,36 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 	# This ensures we fallback to basic attack if the special ability fails to find a target (e.g. empty mirror slot)
 	if ability_activated and ability.replaces_basic_attack and context.trigger_type == C.TRIGGER_WHEN_ATTACKING:
 		context.attack_replaced = true
+
+## Apply location eligibility per ability, so passive stat updates do not enable
+## the same unit's combat abilities or the holder's other equipment triggers.
+func _is_ability_source_active(ability: AbilityDefinition, source: GachaBallInstance, battle_manager: Node) -> bool:
+	var definition: Resource = source.get_definition()
+	if definition is TrinketDefinition or definition.category == C.CATEGORY_CONSUMABLE:
+		return true
+	var holder: GachaBallInstance = source
+	if definition.category == C.CATEGORY_ITEM:
+		if source.equipped_on_uuid.is_empty():
+			return ability.activation_scope == AbilityDefinition.ActivationScope.ANY_LOCATION
+		holder = battle_manager.get_instance_by_uuid(source.equipped_on_uuid)
+		assert(holder != null, "AbilityResolver: equipped item holder must be registered")
+
+	var container: StringName = holder.location_container_tag
+	# Sealed Shelf residents are inert except for the explicit Shelf growth ability.
+	if container in [C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF] and ability.activation_scope != AbilityDefinition.ActivationScope.PLAYER_SHELF:
+		return false
+	if ability.activation_scope == AbilityDefinition.ActivationScope.ANY_LOCATION:
+		return true
+	var player_shelf_slot_is_unlocked: bool = true
+	if container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+		var typed_battle_manager: BattleManager = battle_manager as BattleManager
+		player_shelf_slot_is_unlocked = typed_battle_manager._state.is_player_shelf_slot_unlocked(holder.location_slot_index)
+	match ability.activation_scope:
+		AbilityDefinition.ActivationScope.LINEUP:
+			return container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
+		AbilityDefinition.ActivationScope.BATTLE_BOARD:
+			return container in [C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP]
+		AbilityDefinition.ActivationScope.PLAYER_SHELF:
+			return holder.current_hp > 0 and container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and player_shelf_slot_is_unlocked
+	assert(false, "AbilityResolver: unsupported activation scope")
+	return false

@@ -23,8 +23,15 @@ extends Resource
 @export var merge_encounter_cost: int = 5
 @export var get_tokens_cost: int = 5
 @export var hero_instance: GachaBallInstance
+@export var hero_element: StringName = &""
+var dynamic_tag_overrides: Dictionary = {} # Key: StringName (unit_def_id), Value: Array[StringName]
 @export var active_hero_set: StringName = Database.SET_BASE
+@export var last_regular_banner_id: StringName = &""
+@export var regular_banner_history: Dictionary = {}
 @export var last_elite_id: StringName = &""
+@export var elite_encounter_history: Dictionary = {}
+@export var last_boss_id: StringName = &""
+@export var boss_encounter_history: Dictionary = {}
 @export var run_id: String = ""
 @export var run_seed: int = 0
 
@@ -95,7 +102,7 @@ func reset_room_tokens() -> void:
 
 # Flashcard learning progress - key = card_id (StringName), value = FlashcardProgress
 @export var flashcard_progress: Dictionary = {} # key = StringName, value = FlashcardProgress
-@export var active_deck_ids: Array[StringName] = [] # Cards available in the mini-game
+@export var active_deck_ids: Array[StringName] = [] # Cards available in the Challenge
 @export var ordered_deck_pool: Array[StringName] = [] # The pool of cards ordered by user setting
 @export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
 @export var is_half_deck: bool = false # Tracks if the run uses a quick/half deck
@@ -107,7 +114,7 @@ var _containers: Dictionary[StringName, DataContainer] = {}
 static var RUN_CONTAINER_TAGS: Dictionary = {
 	HERO = &"Hero",
 	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
+	PLAYER_SHELF = &"PlayerShelf",
 	PLAYER_TRINKETS = &"PlayerTrinkets"
 }
 
@@ -147,6 +154,14 @@ func get_tier_progress() -> float:
 	
 	return clampf(float(unlocked_in_tier) / float(cards_in_tier), 0.0, 1.0)
 
+## Records a regular banner encounter in the history
+func record_regular_banner(banner_id: StringName) -> void:
+	if not regular_banner_history.has(banner_id):
+		regular_banner_history[banner_id] = 0
+	regular_banner_history[banner_id] += 1
+	last_regular_banner_id = banner_id
+	SignalBus.emit_signal("run_data_changed")
+
 ## Records an elite encounter in the history
 func record_elite_encounter(elite_id: StringName) -> void:
 	if not elite_encounter_history.has(elite_id):
@@ -154,6 +169,14 @@ func record_elite_encounter(elite_id: StringName) -> void:
 	elite_encounter_history[elite_id] += 1
 	last_elite_id = elite_id
 	# Emit signal to ensure UI/Save is updated
+	SignalBus.emit_signal("run_data_changed")
+
+## Records a boss encounter in the history
+func record_boss_encounter(boss_id: StringName) -> void:
+	if not boss_encounter_history.has(boss_id):
+		boss_encounter_history[boss_id] = 0
+	boss_encounter_history[boss_id] += 1
+	last_boss_id = boss_id
 	SignalBus.emit_signal("run_data_changed")
 
 func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
@@ -297,8 +320,8 @@ func get_container(container_name: StringName) -> DataContainer:
 	var new_container: DataContainer = null
 	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP:
 		new_container = FixedArrayContainer.new(C.LINEUP_CAP)
-	elif container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-		new_container = FixedArrayContainer.new(C.BENCH_CAP)
+	elif container_name == RUN_CONTAINER_TAGS.PLAYER_SHELF:
+		new_container = FixedArrayContainer.new(C.SHELF_CAP)
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 		new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 	elif String(container_name).begins_with("RunInventoryT"):
@@ -516,7 +539,7 @@ func remove_instance(uuid: String) -> bool:
 				if is_instance_valid(it):
 					items_to_rehome.append(it)
 			# Capacity precheck to guarantee atomicity
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
 			if not is_instance_valid(inv):
 				return false
 			var inv_uuids := inv.get_all_uuids()
@@ -541,7 +564,7 @@ func remove_instance(uuid: String) -> bool:
 				if empty == -1:
 					return false
 				inv.set_uuid(empty, it2.ball_uuid)
-				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
 				it2.location_slot_index = empty
 		var container := get_container(loc.container)
 		if not is_instance_valid(container):
@@ -798,20 +821,20 @@ func register_and_equip_item(item: GachaBallInstance, unit_uuid: String, slot_in
 
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	var existing_item: GachaBallInstance = get_instance_by_uuid(existing_uuid) if not existing_uuid.is_empty() else null
-	var bench_container: DataContainer = null
-	var bench_empty_slot: int = -1
+	var shelf_container: DataContainer = null
+	var shelf_empty_slot: int = -1
 	if is_instance_valid(existing_item):
-		bench_container = get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
-		if not is_instance_valid(bench_container):
+		shelf_container = get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
+		if not is_instance_valid(shelf_container):
 			return false
-		bench_empty_slot = bench_container.find_first_empty_slot()
-		if bench_empty_slot == -1:
+		shelf_empty_slot = shelf_container.find_first_empty_slot()
+		if shelf_empty_slot == -1:
 			return false
 
 	if is_instance_valid(existing_item):
-		bench_container.set_uuid(bench_empty_slot, existing_item.ball_uuid)
-		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
-		existing_item.location_slot_index = bench_empty_slot
+		shelf_container.set_uuid(shelf_empty_slot, existing_item.ball_uuid)
+		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
+		existing_item.location_slot_index = shelf_empty_slot
 		existing_item.equipped_on_uuid = ""
 		existing_item.equipped_slot_index = -1
 
@@ -879,18 +902,18 @@ func replace_units_for_merge(
 					extra_items.append(eq_inst)
 
 	if not extra_items.is_empty():
-		var bench := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
-		if not is_instance_valid(bench):
+		var shelf := get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
+		if not is_instance_valid(shelf):
 			return false
 		var free_count := 0
-		for u in bench.get_all_uuids():
+		for u in shelf.get_all_uuids():
 			if String(u).is_empty():
 				free_count += 1
-		if src_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+		if src_loc.container == RUN_CONTAINER_TAGS.PLAYER_SHELF:
 			free_count += 1
-		if tgt_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+		if tgt_loc.container == RUN_CONTAINER_TAGS.PLAYER_SHELF:
 			free_count += 1
-		if dest_container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+		if dest_container_name == RUN_CONTAINER_TAGS.PLAYER_SHELF:
 			free_count -= 1
 		if free_count < extra_items.size():
 			return false
@@ -943,14 +966,14 @@ func replace_units_for_merge(
 	new_instance.equipped_slot_index = -1
 	run_instances[new_instance.ball_uuid] = new_instance
 
-	# Rehome any extra items to PlayerBench
+	# Rehome any extra items to PlayerShelf
 	if not extra_items.is_empty():
-		var bench2 := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+		var shelf2 := get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
 		for ex_it in extra_items:
-			var b_slot := bench2.find_first_empty_slot()
-			assert(b_slot != -1, "RunState.replace_units_for_merge: bench overflow on extra item")
-			bench2.set_uuid(b_slot, ex_it.ball_uuid)
-			ex_it.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+			var b_slot := shelf2.find_first_empty_slot()
+			assert(b_slot != -1, "RunState.replace_units_for_merge: shelf overflow on extra item")
+			shelf2.set_uuid(b_slot, ex_it.ball_uuid)
+			ex_it.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
 			ex_it.location_slot_index = b_slot
 			ex_it.equipped_on_uuid = ""
 			ex_it.equipped_slot_index = -1
@@ -1021,19 +1044,19 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, sile
 			return false
 		src_slot = item_loc.index
 
-	# Pre-validate bench capacity if replacing an existing item
+	# Pre-validate shelf capacity if replacing an existing item
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	var existing_item: GachaBallInstance = null
-	var bench_container: DataContainer = null
+	var shelf_container: DataContainer = null
 	if not existing_uuid.is_empty() and existing_uuid != item.ball_uuid:
 		existing_item = get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
-			bench_container = get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
-			if not is_instance_valid(bench_container):
+			shelf_container = get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
+			if not is_instance_valid(shelf_container):
 				return false
-			# If item is coming from PlayerBench, freeing src_slot guarantees at least 1 empty bench slot
-			var item_frees_bench_slot: bool = (item_loc.container == RUN_CONTAINER_TAGS.PLAYER_BENCH)
-			if not item_frees_bench_slot and bench_container.find_first_empty_slot() == -1:
+			# If item is coming from PlayerShelf, freeing src_slot guarantees at least 1 empty shelf slot
+			var item_frees_shelf_slot: bool = (item_loc.container == RUN_CONTAINER_TAGS.PLAYER_SHELF)
+			if not item_frees_shelf_slot and shelf_container.find_first_empty_slot() == -1:
 				return false
 
 	# All preconditions verified — execute transition atomically
@@ -1044,10 +1067,10 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1, sile
 		src_container.set_uuid(src_slot, "")
 
 	if is_instance_valid(existing_item):
-		var empty := bench_container.find_first_empty_slot()
-		assert(empty != -1, "RunState.equip_item: expected empty bench slot after precondition check")
-		bench_container.set_uuid(empty, existing_item.ball_uuid)
-		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+		var empty := shelf_container.find_first_empty_slot()
+		assert(empty != -1, "RunState.equip_item: expected empty shelf slot after precondition check")
+		shelf_container.set_uuid(empty, existing_item.ball_uuid)
+		existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
 		existing_item.location_slot_index = empty
 		existing_item.equipped_on_uuid = ""
 		existing_item.equipped_slot_index = -1
@@ -1160,16 +1183,20 @@ func start_new_run() -> void:
 	unlocked_recipes.clear() # All recipes start locked
 	encounter_last_offered_day.clear()
 	available_path_nodes.clear()
-
-## Track which elite bosses have been encountered this run (ID -> count)
-## Used for weighted encounter generation (pity system)
-@export var elite_encounter_history: Dictionary = {}
+	regular_banner_history.clear()
+	last_regular_banner_id = &""
+	elite_encounter_history.clear()
+	last_elite_id = &""
+	boss_encounter_history.clear()
+	last_boss_id = &""
 
 func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
 	start_new_run()
 	self.deck_def_id = deck_id
 	self.is_half_deck = (deck_size == "HALF")
 	self.active_hero_set = Database.get_hero_set(hero_def_id)
+	if active_hero_set == Database.SET_MERCENARY or active_hero_set == Database.SET_NOVICE:
+		gold = 30
 	
 	# Create hero instance from the selected hero definition
 	var hero_def = Database.get_definition(hero_def_id)
@@ -1196,7 +1223,8 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 			&"hero_bounty_hunter", &"hero":
 				archetype_tag = &"Mercenary"
 				var bounty_trait_pool: Array[StringName] = class_traits + thematic_traits
-				bonus_tags = [chosen_element, chosen_element, chosen_element, bounty_trait_pool[RNGManager.map_rng.randi() % bounty_trait_pool.size()]]
+				var shiken_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(bounty_trait_pool, archetype_tag, elemental_souls)
+				bonus_tags = [chosen_element, chosen_element, chosen_element, shiken_bonus_trait]
 				_adapt_hero_pack(hero_def_id, chosen_element)
 			&"hero_pyro":
 				archetype_tag = &"Fire Ritual"
@@ -1204,12 +1232,14 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 				bonus_tags = [chosen_element, chosen_element, chosen_element, class_traits[RNGManager.map_rng.randi() % class_traits.size()], thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
 			&"hero_starter":
 				archetype_tag = &"Novice"
-				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
+				var dan_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(thematic_traits, archetype_tag, elemental_souls)
+				bonus_tags = [chosen_element, chosen_element, chosen_element, dan_bonus_trait]
 				_adapt_hero_pack(hero_def_id, chosen_element)
 			&"hero_timekeeper":
 				archetype_tag = &"Support"
 				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
 		assert(not archetype_tag.is_empty(), "RunState.initialize_run: no hero constitution defined for '%s'" % hero_def_id)
+		self.hero_element = chosen_element
 		
 		var hero_tags_comp := TagComponent.new()
 		hero_tags_comp.id = &"hero_run_traits"
@@ -1306,6 +1336,19 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		# Unlock recipes for this acquired gachaball
 		unlock_recipe_for_result(def.id)
 
+func _choose_distinct_hero_bonus_trait(candidate_traits: Array[StringName], fixed_trait: StringName, elemental_souls: Array[StringName]) -> StringName:
+	var eligible_traits: Array[StringName] = []
+	for candidate_trait in candidate_traits:
+		if candidate_trait == fixed_trait or elemental_souls.has(candidate_trait):
+			continue
+		if not eligible_traits.has(candidate_trait):
+			eligible_traits.append(candidate_trait)
+	assert(not eligible_traits.is_empty(), "RunState._choose_distinct_hero_bonus_trait: no eligible bonus traits")
+	var chosen_trait: StringName = eligible_traits[RNGManager.map_rng.randi() % eligible_traits.size()]
+	assert(chosen_trait != fixed_trait, "Hero bonus trait must differ from the fixed trait")
+	assert(not elemental_souls.has(chosen_trait), "Hero bonus trait must differ from all elemental souls")
+	return chosen_trait
+
 static func get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	if hero_id == &"hero_starter":
 		return [
@@ -1353,6 +1396,8 @@ static func get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 	return starters
 
 func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
+	if rolled_element == &"":
+		return
 	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
 		var bounty_hunter_unit_tags: Dictionary = {
 			&"?MerSpe": [rolled_element, &"Mercenary", &"Specialist"],
@@ -1368,11 +1413,10 @@ func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 			&"EW??TnkSupMerAniPlaToyCos": [&"SOUL_EARTH", &"SOUL_WATER", rolled_element, rolled_element, &"Tank", &"Support", &"Mercenary", &"Animal", &"Plant", &"Toy", &"Costume"]
 		}
 		for unit_id in bounty_hunter_unit_tags:
-			var def: GachaBallDefinition = Database.units[unit_id]
 			var updated_tags: Array[StringName] = []
 			for tag in bounty_hunter_unit_tags[unit_id]:
 				updated_tags.append(tag)
-			def.tags = updated_tags
+			dynamic_tag_overrides[unit_id] = updated_tags
 	elif hero_id == &"hero_starter":
 		var novice_unit_tags: Dictionary = {
 			&"?NovPla": [rolled_element, &"Novice", &"Plant"],
@@ -1388,12 +1432,17 @@ func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 			&"FW??NovAni": [&"SOUL_FIRE", &"SOUL_WATER", rolled_element, rolled_element, &"Novice", &"Animal"]
 		}
 		for unit_id in novice_unit_tags:
-			if Database.units.has(unit_id):
-				var def: GachaBallDefinition = Database.units[unit_id]
-				var updated_tags: Array[StringName] = []
-				for tag in novice_unit_tags[unit_id]:
-					updated_tags.append(tag)
-				def.tags = updated_tags
+			var updated_tags: Array[StringName] = []
+			for tag in novice_unit_tags[unit_id]:
+				updated_tags.append(tag)
+			dynamic_tag_overrides[unit_id] = updated_tags
+
+func get_effective_unit_tags(unit_def_id: StringName, default_tags: Array[StringName] = []) -> Array[StringName]:
+	if dynamic_tag_overrides.has(unit_def_id):
+		var overrides: Array[StringName] = []
+		overrides.append_array(dynamic_tag_overrides[unit_def_id])
+		return overrides
+	return default_tags.duplicate()
 
 func has_locked_cards() -> bool:
 	if deck_def_id == &"":
@@ -1464,10 +1513,15 @@ func to_save_dict() -> Dictionary:
 		"deck_def_id": String(deck_def_id),
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
+		"last_regular_banner_id": String(last_regular_banner_id),
+		"regular_banner_history": _serialize_stringname_int_dict(regular_banner_history),
 		"last_elite_id": String(last_elite_id),
-		"active_hero_set": String(get_active_hero_set()),
-		"encounter_last_offered_day": _serialize_encounter_last_offered_day(),
 		"elite_encounter_history": _serialize_elite_encounter_history(),
+		"last_boss_id": String(last_boss_id),
+		"boss_encounter_history": _serialize_stringname_int_dict(boss_encounter_history),
+		"active_hero_set": String(get_active_hero_set()),
+		"hero_element": String(hero_element),
+		"encounter_last_offered_day": _serialize_encounter_last_offered_day(),
 		"available_path_nodes": _serialize_available_path_nodes(),
 		"rng_state": RNGManager.serialize() if is_instance_valid(RNGManager) else {},
 		"uuid_state": UUIDUtils.serialize_state() if is_instance_valid(UUIDUtils) else {},
@@ -1527,11 +1581,15 @@ func from_save_dict(data: Dictionary) -> void:
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
+	last_regular_banner_id = StringName(data.get("last_regular_banner_id", ""))
+	_deserialize_stringname_int_dict(regular_banner_history, data.get("regular_banner_history", {}))
 	last_elite_id = StringName(data.get("last_elite_id", ""))
+	_deserialize_elite_encounter_history(data.get("elite_encounter_history", {}))
+	last_boss_id = StringName(data.get("last_boss_id", ""))
+	_deserialize_stringname_int_dict(boss_encounter_history, data.get("boss_encounter_history", {}))
 	active_hero_set = StringName(data.get("active_hero_set", Database.SET_BASE))
 	
 	_deserialize_encounter_last_offered_day(data.get("encounter_last_offered_day", {}))
-	_deserialize_elite_encounter_history(data.get("elite_encounter_history", {}))
 	_deserialize_available_path_nodes(data.get("available_path_nodes", []))
 	
 	if data.has("rng_state") and is_instance_valid(RNGManager):
@@ -1541,7 +1599,11 @@ func from_save_dict(data: Dictionary) -> void:
 	
 	# Clear and restore containers
 	_containers.clear()
-	var cont_data: Dictionary = data.get("containers", {})
+	var cont_data: Dictionary = data.get("containers", {}).duplicate(true)
+	if cont_data.has("PlayerBench"):
+		assert(not cont_data.has(String(RUN_CONTAINER_TAGS.PLAYER_SHELF)), "RunState.from_save_dict: save contains both legacy PlayerBench and PlayerShelf containers")
+		cont_data[String(RUN_CONTAINER_TAGS.PLAYER_SHELF)] = cont_data["PlayerBench"]
+		cont_data.erase("PlayerBench")
 	for cname_str in cont_data.keys():
 		var cname := StringName(cname_str)
 		var uuids: Array = cont_data[cname_str]
@@ -1551,8 +1613,8 @@ func from_save_dict(data: Dictionary) -> void:
 			container = FixedArrayContainer.new(C.RUN_INVENTORY_CAP)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP:
 			container = FixedArrayContainer.new(C.LINEUP_CAP)
-		elif cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
-			container = FixedArrayContainer.new(C.BENCH_CAP)
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_SHELF:
+			container = FixedArrayContainer.new(C.SHELF_CAP)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 			container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		else:
@@ -1570,7 +1632,7 @@ func from_save_dict(data: Dictionary) -> void:
 	var inst_data: Dictionary = data.get("instances", {})
 	var restored_uuids := {}
 	
-	for cname in [RUN_CONTAINER_TAGS.PLAYER_LINEUP, RUN_CONTAINER_TAGS.PLAYER_BENCH, &"RunInventoryT1", &"RunInventoryT2", &"RunInventoryT3", RUN_CONTAINER_TAGS.PLAYER_TRINKETS]:
+	for cname in [RUN_CONTAINER_TAGS.PLAYER_LINEUP, RUN_CONTAINER_TAGS.PLAYER_SHELF, &"RunInventoryT1", &"RunInventoryT2", &"RunInventoryT3", RUN_CONTAINER_TAGS.PLAYER_TRINKETS]:
 		var uuids: Array = cont_data.get(String(cname), [])
 		for uuid in uuids:
 			if not uuid.is_empty() and inst_data.has(uuid) and not restored_uuids.has(uuid):
@@ -1604,10 +1666,19 @@ func from_save_dict(data: Dictionary) -> void:
 	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
 
 	# Reconcile active_hero_set with hero_instance (healing legacy or corrupted saves)
+	hero_element = StringName(data.get("hero_element", ""))
 	if is_instance_valid(hero_instance):
 		var expected_set: StringName = Database.get_hero_set(hero_instance.definition_id)
 		if expected_set != Database.SET_BASE:
 			active_hero_set = expected_set
+		if hero_element.is_empty():
+			var souls: Dictionary = hero_instance.get_trait_soul_counts()
+			for s in ["FIRE", "EARTH", "WATER", "AIR"]:
+				if souls.get(s, 0) > 0:
+					hero_element = StringName("SOUL_" + s)
+					break
+		if not hero_element.is_empty():
+			_adapt_hero_pack(hero_instance.definition_id, hero_element)
 
 func _serialize_available_path_nodes() -> Array:
 	var result: Array = []
@@ -1643,6 +1714,17 @@ func _deserialize_elite_encounter_history(data: Dictionary) -> void:
 	elite_encounter_history.clear()
 	for key_str in data.keys():
 		elite_encounter_history[StringName(key_str)] = int(data[key_str])
+
+func _serialize_stringname_int_dict(dict: Dictionary) -> Dictionary:
+	var result: Dictionary = {}
+	for key in dict.keys():
+		result[String(key)] = int(dict[key])
+	return result
+
+func _deserialize_stringname_int_dict(target: Dictionary, data: Dictionary) -> void:
+	target.clear()
+	for key_str in data.keys():
+		target[StringName(key_str)] = int(data[key_str])
 
 func _serialize_flashcard_progress() -> Dictionary:
 	var result: Dictionary = {}

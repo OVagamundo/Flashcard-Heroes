@@ -3,7 +3,7 @@
 class_name EffectTraitMercenaryPreCombat
 extends EffectDefinition
 
-## Pre-Combat Mercenary trait effect granted by Mercenary Trait Trinket (Mercenary Sigil).
+## Pre-Combat Mercenary trait effect granted by the Mercenary Trait Crest.
 ## Triggered on_pre_combat.
 ## Thresholds (Units):
 ##   Gold (4 Units): Each Mercenary unit gains +1 Armor for every full 10 Gold held.

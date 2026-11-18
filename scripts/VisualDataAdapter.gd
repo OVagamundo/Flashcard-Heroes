@@ -62,11 +62,13 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		has_locked_recipe = GameManager.run_state.has_locked_recipe_for_result(instance.definition_id)
 
 	var data = {
+		"capsule_sealed": instance.location_container_tag in [&"PlayerShelf", &"EnemyShelf"] or String(instance.location_container_tag).begins_with("BattleInventoryT"),
 		"uuid": instance.ball_uuid,
 		"definition_id": instance.definition_id,
 		"category": def.category,
 		"tier": tier,
 		"icon": def.icon,
+		"battlefield_banner_texture": (def as TrinketDefinition).battlefield_banner_texture if def is TrinketDefinition else null,
 		"display_name_key": display_name_key,
 		"description_key": description_key,
 		"has_locked_recipe": has_locked_recipe,

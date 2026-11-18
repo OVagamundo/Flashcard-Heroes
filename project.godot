@@ -17,15 +17,15 @@ compatibility/default_parent_skeleton_in_mesh_instance_3d=true
 config/name="Flashcard Heroes"
 run/main_scene="res://scenes/Title.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
-config/icon="res://assets/Realistic/ui/textures/GameIcon.png"
+config/icon="res://assets/PixelArt/ui/textures/GameIcon.png"
 
 [autoload]
 
-ArtStyleManager="*res://scripts/ArtStyleManager.gd"
 SignalBus="*res://scripts/SignalBus.gd"
 C="*res://scripts/Constants.gd"
 UUIDUtils="*res://scripts/UUIDUtils.gd"
 Database="*res://scripts/Database.gd"
+DemoContent="*res://scripts/DemoContent.gd"
 RNGManager="*res://scripts/systems/RNGManager.gd"
 ActionQueue="*res://scripts/engine/ActionQueue.gd"
 GameManager="*res://scripts/GameManager.gd"
@@ -58,7 +58,7 @@ file_logging/max_log_files=1
 
 window/size/viewport_width=1920
 window/size/viewport_height=1080
-window/size/mode=2
+window/size/mode=3
 window/stretch/mode="canvas_items"
 
 [export]

@@ -238,7 +238,9 @@ static func resolve_target(source_uuid: String, target_type: StringName, context
 				return []
 			var front_ally: GachaBallInstance = battle_manager.get_instance_by_uuid(front_uuid)
 			assert(is_instance_valid(front_ally), "TargetResolver: occupied front slot must contain a registered unit")
-			return [front_uuid] if front_ally.current_hp > 0 else []
+			if front_ally.current_hp > 0:
+				return [front_uuid]
+			return []
 		C.TARGET_ALL_BOUNTIED_ENEMIES:
 			var enemy_lineup_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if is_player_team else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 			var bountied_enemies: Array[String] = []

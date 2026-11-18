@@ -290,6 +290,7 @@ func _on_action_completed(action: GameAction) -> void:
 		stop_recording(_pending_stop_reason)
 
 func _write_new_header(header: Dictionary) -> bool:
+	assert(not FileAccess.file_exists(_replay_path), "[GameplayRecorder] Refusing to overwrite an existing replay: %s" % _replay_path)
 	var file := FileAccess.open(_replay_path, FileAccess.WRITE)
 	if file == null:
 		push_error("[GameplayRecorder] Could not create replay: %s" % error_string(FileAccess.get_open_error()))
@@ -376,4 +377,12 @@ func _replay_path_for(run_id: String) -> String:
 			safe_id += character
 		else:
 			safe_id += "_"
-	return REPLAY_DIR.path_join("run_%s.mcr" % safe_id)
+	var base_path := REPLAY_DIR.path_join("run_%s.mcr" % safe_id)
+	if not FileAccess.file_exists(base_path):
+		return base_path
+	var collision_index := 2
+	var candidate_path := REPLAY_DIR.path_join("run_%s_%d.mcr" % [safe_id, collision_index])
+	while FileAccess.file_exists(candidate_path):
+		collision_index += 1
+		candidate_path = REPLAY_DIR.path_join("run_%s_%d.mcr" % [safe_id, collision_index])
+	return candidate_path

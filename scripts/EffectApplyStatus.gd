@@ -41,7 +41,9 @@ func execute(_source_uuid: String, targets: Array[String], _battle_manager: Node
 		
 	# 2. VISUALS: Create single consolidated combat event for all targets
 	if not all_target_uuids.is_empty():
-		var status_payload := CombatPayload.status_change(_source_uuid, amount, stat_name, all_old_vals, all_new_vals)
+		# Equipped items use their holder's view; the simulator snapshots this UUID in the context.
+		var visual_source_uuid: String = _context.source_holder_uuid if not _context.source_holder_uuid.is_empty() else _source_uuid
+		var status_payload := CombatPayload.status_change(visual_source_uuid, amount, stat_name, all_old_vals, all_new_vals)
 		status_payload.new_val = all_new_vals[0] if not all_new_vals.is_empty() else 0
 		result.add_event(CombatEvent.new(
 			CombatEvent.Type.STATUS_EFFECT,

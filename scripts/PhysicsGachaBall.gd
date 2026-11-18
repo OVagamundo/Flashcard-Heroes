@@ -144,7 +144,7 @@ func _adjust_capsule_scale() -> void:
 	var tex_size = capsule_sprite.texture.get_size()
 	if tex_size.x == 0 or tex_size.y == 0:
 		return
-	var target_size = 96.0 # Base size for capsule (SLOT_SIZE_BASE)
+	var target_size: float = C.GACHA_CAPSULE_DIAMETER
 	capsule_sprite.scale = Vector2(target_size / tex_size.x, target_size / tex_size.y)
 	_orig_capsule_scale = capsule_sprite.scale
 

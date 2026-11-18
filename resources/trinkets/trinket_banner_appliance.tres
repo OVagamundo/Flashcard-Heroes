@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TrinketDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/TrinketDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/trinkets/trinket_banner_appliance.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_banner_reinforce_trait.tres" id="3_ability"]
+
+
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/banners/banner_appliance.png" id="banner_texture"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"trinket_banner_appliance"
+name_key = "trinket.banner_appliance.name"
+description_key = "trinket.banner_appliance.desc"
+icon = ExtResource("2_icon")
+category = &"TRINKET"
+is_banner = true
+battlefield_banner_texture = ExtResource("banner_texture")
+is_enemy_exclusive = true
+is_player_exclusive = false
+ability_definitions = Array[Resource]([ExtResource("3_ability")])

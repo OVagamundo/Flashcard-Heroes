@@ -1,0 +1,15 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Script" path="res://scripts/BasicAttackEffect.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="BasicAttackEffect_burnie"]
+script = ExtResource("2_effect")
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_burnie_attack"
+description_key = "ability.burnie_attack.desc"
+trigger = &"basic_attack"
+replaces_basic_attack = true
+effects = Array[Resource]([SubResource("BasicAttackEffect_burnie")])

@@ -99,7 +99,7 @@ Use this complete GCD ID inventory to ensure no Trinket row is skipped: `trinket
 - **Rusty Ring:** conditional +1 HP/+1 PWR while unequipped, removed when an Item is equipped.
 - **Aegis Charm:** once-per-turn lethal save at 1 HP; verify team scope and the limit.
 - **Purifying Pendant:** remove all remaining stacks of a Negative Effect when its damage harms an ally.
-- **Recruiting Charm:** spend 1 Gold at turn start to hire a Level 1 `?MerSpe` only when a bench slot is open.
+- **Recruiting Charm:** spend 1 Gold at turn start to hire a Level 1 `?MerSpe` only when a shelf slot is open.
 - **Trait Sigils:** verify the threshold set and the effect text for every level; distinguish Sigils (threshold unlocks) from entry-stat Insignias and equippable Emblems.
 - **Player-only systems:** mark every definition that depends on the player Gold/Token economies, Flashcard Minigames, Gacha Machines, recruitment, player merges, player discard-pile operations, or the player's Battle Pool as excluded from enemy selection. This includes all Mercenary Units and the Mercenary Sigil, the Specialist Sigil, Trinity Charm, Twin Charm, Plunder, and Slime Cell; do not infer eligibility from names alone.
 

@@ -41,7 +41,7 @@ File: `scripts/battle/TestModeHelpers.gd`
    - Creates instance from definition.
    - Places via `bm_add_instance` into `PlayerLineup` or `EnemyLineup`.
 2. `register_test_item(...)`
-   - Spawns item via `bm_add_instance` into `PlayerBench` (same as draw destination).
+   - Spawns item via `bm_add_instance` into `PlayerShelf` (same as draw destination).
    - If enemy target is selected, tries to equip to first enemy with free item slot via `bm_equip_item`.
 3. `register_test_trinket(...)`
    - Places via `bm_add_instance` into trinket container.
@@ -51,7 +51,7 @@ File: `scripts/battle/TestModeHelpers.gd`
 
 ## Interaction Behavior in Test Mode
 1. `GlobalInteractionRouter`
-   - In test mode, `EnemyLineup`/`EnemyBench` functional group is `BattleBoard`.
+   - In test mode, `EnemyLineup`/`EnemyShelf` functional group is `BattleBoard`.
 2. `SlotIndicatorController`
    - In test mode, unit drop targets include `EnemyLineup`.
 3. `InventoryManager`
@@ -66,7 +66,7 @@ File: `scripts/battle/TestModeHelpers.gd`
 ## Verification Checklist
 1. Start run with `Test Mode`.
 2. Spawn two units that have a valid recipe, merge them on board, confirm merge resolves.
-3. Spawn item with player target, confirm it appears in `PlayerBench`.
+3. Spawn item with player target, confirm it appears in `PlayerShelf`.
 4. Spawn item with enemy target, confirm equip attempt uses normal equip pipeline.
 5. Spawn trinkets for both teams and confirm visuals + effects.
 6. Confirm no direct-state helper code path bypasses `bm_*` atomic APIs.

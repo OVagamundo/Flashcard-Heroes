@@ -3,7 +3,7 @@
     "display_name": "Top 100 Kanji",
     "display_name_pt": "Top 100 Kanji",
     "description": "The 100 most common Japanese Kanji characters",
-    "description_pt": "Os 100 caracteres Kanji japoneses mais comuns",
+    "description_pt": "O [b]kanji[/b] é o sistema de escrita logográfico da língua japonesa, composto por milhares de caracteres adaptados dos ideogramas chineses em que cada símbolo representa uma ideia, conceito ou palavra inteira. Diferente dos silabários fonéticos, eles carregam significado próprio e são usados para formar a raiz da maioria dos substantivos, verbos e adjetivos, possuindo geralmente múltiplas leituras que variam conforme o contexto e a combinação com outros caracteres. Este deck possui os 100 kanjis mais frequentes da língua japonesa.",
     "cards": [
         {
             "id": "KANJI_001",

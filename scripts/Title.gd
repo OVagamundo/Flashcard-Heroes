@@ -19,20 +19,23 @@ func _ready() -> void:
 	# AUDIO HOOK: Title BGM
 	Audio.play_music(SoundRegistry.BGM_TITLE)
 	
-	if background and background.texture:
-		var original_bg: Texture2D = background.texture
-		background.texture = ArtStyleManager.get_themed_texture(original_bg)
-		ArtStyleManager.style_changed.connect(func():
-			if background and is_instance_valid(original_bg):
-				background.texture = ArtStyleManager.get_themed_texture(original_bg)
-		)
-	
 	# Continue button - only visible if save exists
 	if SaveManager.has_save():
-		continue_button.visible = true
-		continue_button.pressed.connect(_on_continue_pressed)
+		if DemoContent.is_demo_mode():
+			var saved_state: RunState = SaveManager.load_run()
+			continue_button.visible = (
+				saved_state != null
+				and saved_state.hero_instance != null
+				and DemoContent.is_hero_unlocked(saved_state.hero_instance.definition_id)
+				and DemoContent.is_deck_unlocked(saved_state.deck_def_id)
+			)
+		else:
+			continue_button.visible = true
+		if continue_button.visible:
+			continue_button.pressed.connect(_on_continue_pressed)
 	else:
 		continue_button.visible = false
+	replays_button.visible = not DemoContent.is_demo_mode()
 	
 	# The Title screen transitions to the Loadout scene
 	start_run_button.pressed.connect(func():

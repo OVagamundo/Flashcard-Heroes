@@ -77,7 +77,7 @@ All gameplay keywords injected into RichTextLabels by `DescriptionParser` must u
 
 ### 3.3 Trigger Phrases & Constitutional Conditions
 
-All constitutional trigger phrases (e.g. `At Battle Start`, `When Attacking`, `At Minigame End`, `When Knocked Out`) are highlighted inline by `DescriptionParser`:
+All constitutional trigger phrases (e.g. `At Battle Start`, `When Attacking`, `At Challenge End`, `When Knocked Out`) are highlighted inline by `DescriptionParser`:
 - **Trigger Highlight Hex:** `#9A3412` (Deep Warm Ochre / Mahogany)
 - **Formatting:** `[color=#9A3412][b]Trigger Phrase[/b][/color]`
 - **Contrast Ratio:** > 5.6:1 against `#E8E8E8`.
@@ -119,5 +119,5 @@ Trait pills are compact metadata badges rendered via `PanelContainer` with round
 
 1. **No Raw BBCode in Source Strings:** Localization files (`localization/game.csv`) must contain clean, semantic text without hardcoded `[color=...]` tags.
 2. **Single Source of Truth (`DescriptionParser`):** All keyword highlighting, trigger phrase coloring, and glossary term detection are performed dynamically at runtime by `DescriptionParser`.
-3. **Punctuation Hygiene:** Punctuation (commas, periods, colons) must immediately follow closing words or tags without leading whitespace (e.g. `At Minigame End,` never `At Minigame End ,`).
+3. **Punctuation Hygiene:** Punctuation (commas, periods, colons) must immediately follow closing words or tags without leading whitespace (e.g. `At Challenge End,` never `At Challenge End ,`).
 4. **Current-Level Evaluation:** Ability numbers with slash progression (e.g. `1 / 2 / 3`) are evaluated to the inspected unit's exact current level via `DescriptionParser.resolve_level_scaling()`.

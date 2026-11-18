@@ -3,7 +3,7 @@
     "display_name": "Hiragana",
     "display_name_pt": "Hiragana",
     "description": "Learn Japanese hiragana characters",
-    "description_pt": "Aprenda os caracteres japoneses hiragana",
+    "description_pt": "O [b]hiragana[/b] [b]é o principal silabário fonético da língua japonesa, composto por 46 caracteres básicos de traços suaves, curvos e arredondados[/b]. Desenvolvido a partir da simplificação cursiva de ideogramas chineses ([i]kanjis[/i]), ele é a base da alfabetização no Japão, sendo utilizado para escrever palavras nativas que não possuem kanji, indicar partículas e terminações gramaticais (como conjugações verbais) e auxiliar na leitura de caracteres mais complexos através do [i]furigana[/i].",
     "cards": [
         {"id": "HIRA_001", "question": "あ", "answer": "a", "explanation": "Vowel 'a' as in 'father'. Looks like someone saying 'Ahhh' with arms out.", "explanation_pt": "Vogal 'a' como em 'pai'. Parece alguém dizendo 'Ahhh' de braços abertos."},
         {"id": "HIRA_002", "question": "い", "answer": "i", "explanation": "Vowel 'i' as in 'see'. Two lines like chopsticks - 'ee'ting!", "explanation_pt": "Vogal 'i' como em 'vi'. Duas linhas como hashis."},

@@ -177,7 +177,7 @@ static func create_knockout_event_if_needed(
 	
 	death_tracking[unit_uuid] = true
 	var payload := CombatPayload.container_payload(container_tag)
-	payload.is_player = is_player or (container_tag == &"PlayerLineup" or container_tag == &"PlayerBench")
+	payload.is_player = is_player or (container_tag == &"PlayerLineup" or container_tag == &"PlayerShelf")
 	payload.unit_snapshot = unit_snapshot
 	payload.equipped_items = equipped_items
 	return CombatEvent.new(CombatEvent.Type.KNOCKOUT, {
@@ -314,9 +314,9 @@ static func process_completed_counter_knockouts(out_events, death_tracking, bm: 
 			
 			_process_food_death_pass(bm, unit, death_location, team, out_events)
 			_process_static_collateral_damage(bm, unit, death_location, team, out_events)
-			_process_toy_death_detonation(bm, unit, team, out_events)
+			_process_toy_death_detonation(bm, unit, team, out_events, death_location)
 			_process_mecha_ally_death(bm, unit, team, out_events)
-			_process_bounty_death(bm, unit)
+			_process_bounty_death(bm, unit, out_events, death_location)
 			
 			# CRITICAL FIX: Actually clean up the unit from the game state
 			bm._perform_unit_death_cleanup(unit)
@@ -566,7 +566,7 @@ static func _resolve_single_casualty_knockout(
 	# STAGE 2: Departure (KNOCKOUT Event) & Environmental Detonations
 	# -------------------------------------------------------------------------
 	# Re-snapshot equipped items so items already transferred/discarded in Stage 1 (Passing Trick)
-	# are not duplicate-animated to the Discard Pile on unit departure.
+	# are not duplicate-animated to the Discard on unit departure.
 	var remaining_equipped_items: Array[Dictionary] = snapshot_equipped_items(unit, bm._battle_instances)
 	var death_event: CombatEvent = create_knockout_event_if_needed(
 		unit.ball_uuid,
@@ -579,9 +579,9 @@ static func _resolve_single_casualty_knockout(
 
 	var trait_events: Array[CombatEvent] = []
 	_process_static_collateral_damage(bm, unit, death_location, team, trait_events)
-	_process_toy_death_detonation(bm, unit, team, trait_events)
+	_process_toy_death_detonation(bm, unit, team, trait_events, death_location)
 	_process_mecha_ally_death(bm, unit, team, trait_events)
-	_process_bounty_death(bm, unit)
+	_process_bounty_death(bm, unit, trait_events, death_location)
 	var stage2_inline: Array[CombatEvent] = bm.collect_inline_events()
 	trait_events.append_array(stage2_inline)
 
@@ -639,7 +639,7 @@ static func _resolve_single_casualty_knockout(
 # CONSOLIDATED REGISTERED KNOCKOUT PROCESSING
 # ============================================================================
 
-## Consolidated handler for registered knockouts (used by End-of-Turn Death Slots & Status/Burn KOs).
+## Consolidated handler for registered knockouts caused by status effects such as Burn.
 static func process_registered_knockout(
 	unit: GachaBallInstance,
 	phase: StringName,
@@ -663,9 +663,9 @@ static func process_registered_knockout(
 	var death_location = bm.get_location_for_uuid(unit.ball_uuid)
 	_process_food_death_pass(bm, unit, death_location, knockout_team, all_events)
 	_process_static_collateral_damage(bm, unit, death_location, knockout_team, all_events)
-	_process_toy_death_detonation(bm, unit, knockout_team, all_events)
+	_process_toy_death_detonation(bm, unit, knockout_team, all_events, death_location)
 	_process_mecha_ally_death(bm, unit, knockout_team, all_events)
-	_process_bounty_death(bm, unit)
+	_process_bounty_death(bm, unit, all_events, death_location)
 
 	var ko_tier: int = 0
 	var unit_def = unit.get_definition()
@@ -751,12 +751,17 @@ static func _emit_immediate_knockout(bm: Node, unit: GachaBallInstance, death_lo
 	ally_death_ctx.ally_knocked_out_pwr = unit.current_pwr
 	AbilityResolver.process_trigger(C.TRIGGER_WHEN_ALLY_KNOCKED_OUT, ally_death_ctx)
 
-static func _process_bounty_death(bm: Node, unit: GachaBallInstance) -> void:
+static func _process_bounty_death(bm: Node, unit: GachaBallInstance, out_events: Array[CombatEvent], death_location: LocationIdentifier) -> void:
+	assert(death_location != null, "Bounty: knockout location is required")
+	if not bm._is_lineup_container(death_location.container):
+		return
 	var bounty_stacks: int = unit.get_status_effect_amount(&"bounty")
 	if bounty_stacks <= 0:
 		return
 	unit.clear_status_effect(&"bounty")
 	bm.earn_gold(bounty_stacks, unit.ball_uuid)
+	var bounty_inline: Array[CombatEvent] = bm.collect_inline_events()
+	out_events.append_array(bounty_inline)
 
 	var bounty_ctx := TriggerContext.new()
 	bounty_ctx.unit_uuid = unit.ball_uuid
@@ -768,15 +773,15 @@ static func _process_bounty_death(bm: Node, unit: GachaBallInstance) -> void:
 static func _process_static_collateral_damage(bm: Node, unit: GachaBallInstance, death_location, team: String, out_events) -> void:
 	if not is_instance_valid(unit):
 		return
+	assert(death_location != null, "Static collateral: knockout location is required")
+	if death_location.container != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and death_location.container != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+		return
 	var static_stacks = unit.get_status_effect_amount(&"static")
 	if static_stacks <= 0:
 		return
 	
 	unit.clear_status_effect(&"static")
 	
-	if not is_instance_valid(death_location):
-		return
-		
 	var death_slot: int = death_location.index
 	var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 	var lineup = bm.get_instances_in_container(lineup_tag)
@@ -821,8 +826,11 @@ static func _process_static_collateral_damage(bm: Node, unit: GachaBallInstance,
 					"visual_payload": payload
 				}))
 
-static func _process_food_death_pass(bm: Node, unit: GachaBallInstance, death_location, team: String, out_events) -> void:
+static func _process_food_death_pass(bm: Node, unit: GachaBallInstance, death_location: LocationIdentifier, team: String, out_events) -> void:
 	if not is_instance_valid(unit):
+		return
+	assert(death_location != null, "Food death pass: knockout location is required")
+	if not bm._is_lineup_container(death_location.container):
 		return
 	var traits = bm.get_active_traits(team)
 	if traits.get("FOOD", 0) < 5 or not bm.has_trait(unit, "FOOD"):
@@ -851,8 +859,11 @@ static func _process_food_death_pass(bm: Node, unit: GachaBallInstance, death_lo
 				"visual_payload": CombatPayload.pwr_change(unit.ball_uuid, pwr_to_pass, [old_p], [new_p])
 			}))
 
-static func _process_toy_death_detonation(bm: Node, unit: GachaBallInstance, team: String, out_events) -> void:
+static func _process_toy_death_detonation(bm: Node, unit: GachaBallInstance, team: String, out_events, death_location: LocationIdentifier) -> void:
 	if not is_instance_valid(unit):
+		return
+	assert(death_location != null, "Toy detonation: knockout location is required")
+	if not bm._is_lineup_container(death_location.container):
 		return
 	var traits = bm.get_active_traits(team)
 	if traits.get("TOY", 0) < 5 or not bm.has_trait(unit, "TOY"):

@@ -12,12 +12,12 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	await animator.get_tree().process_frame
 	
 	# 1. Launch Projectiles (Parallel)
-	# For heals to allies, wait for projectile impact before flashing. Self-heals animate locally.
-	var projectiles = []
+	# VFXFactory handles self-casts by sending the projectile over the target itself.
+	var projectiles: Array[Node] = []
 	for target_uuid in targets:
-		if target_uuid != source_uuid:
-			var proj = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), "hp", "green")
-			if proj: projectiles.append(proj)
+		var proj: Node = _launch_projectile(animator, source_uuid, target_uuid, abs(amount), "hp", "green")
+		if proj != null:
+			projectiles.append(proj)
 	
 	# Wait for projectiles to land (heal happens on impact for ally heals)
 	if not projectiles.is_empty():
@@ -37,20 +37,22 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		
 		var new_hp = targets_new_hp[i] if i < targets_new_hp.size() else 0
 		
-		animator.apply_hp_delta(target_uuid, amount, new_hp)
+		# HealAnimation owns the sprite feedback for healing. Suppress the duplicate
+		# reactions normally started by animate_stat_change, then wait for every
+		# composable channel below before advancing to the next combat event.
+		animator.apply_hp_delta(target_uuid, amount, new_hp, false)
 		
 		# Composable Effects: Color flash, hop deform, hop movement
-		if SignalBus.has_signal("unit_color_flash"):
-			SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
-		
-		if SignalBus.has_signal("unit_deform"):
-			SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
-		
-		if SignalBus.has_signal("unit_move"):
-			SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
-		
-		# Wait for movement completion
-		await animator.wait_for_animation_completion("move", target_uuid)
+		SignalBus.emit_signal("unit_color_flash", target_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.emit_signal("unit_deform", target_uuid, &"HOP_DEFORM")
+		SignalBus.emit_signal("unit_move", target_uuid, &"HOP", Vector2.ZERO)
+
+		var animation_types: Array[AnimationCompletionTracker.AnimationType] = [
+			AnimationCompletionTracker.AnimationType.COLOR_FLASH,
+			AnimationCompletionTracker.AnimationType.DEFORM,
+			AnimationCompletionTracker.AnimationType.MOVE
+		]
+		await animator.wait_for_animation_channels(target_uuid, animation_types)
 
 func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String, amount: int, _stat: String, _color_hint: String) -> Node:
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, "hp")

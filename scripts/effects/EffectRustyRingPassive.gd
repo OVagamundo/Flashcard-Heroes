@@ -34,6 +34,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		var inst: GachaBallInstance = all_instances[uuid]
 		if not is_instance_valid(inst) or inst.current_hp <= 0 or battle_manager.is_dead_this_turn(uuid):
 			continue
+		if inst.location_container_tag not in [&"PlayerLineup", &"EnemyLineup"]:
+			continue
 		
 		# Only process UNIT category on the same team
 		var definition = inst.get_definition()
@@ -104,7 +106,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 # Helper to determine team from container tag
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"

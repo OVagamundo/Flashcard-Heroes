@@ -160,7 +160,10 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	var parent_b_souls = instance_b.get_trait_soul_counts(all_instances_db)
 	var result_base_souls = {"FIRE": 0, "EARTH": 0, "WATER": 0, "AIR": 0}
 	if "tags" in result_definition:
-		for tag in result_definition.tags:
+		var effective_result_tags: Array[StringName] = result_definition.tags
+		if is_instance_valid(GameManager.run_state) and GameManager.run_state.dynamic_tag_overrides.has(result_definition.id):
+			effective_result_tags = GameManager.run_state.get_effective_unit_tags(result_definition.id, result_definition.tags)
+		for tag in effective_result_tags:
 			if tag == &"SOUL_FIRE": result_base_souls["FIRE"] += 1
 			elif tag == &"SOUL_EARTH": result_base_souls["EARTH"] += 1
 			elif tag == &"SOUL_WATER": result_base_souls["WATER"] += 1
@@ -223,6 +226,10 @@ func get_preview_merge_instance(source_instance: GachaBallInstance, target_insta
 	return preview_instance
 
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
+	if GameManager.is_in_battle:
+		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+		if not battle_manager._state.is_lineup_location(target_loc):
+			return null
 	# --- CONTEXT-AWARE VALIDATION ---
 	var src_group: StringName = GlobalInteractionRouter.get_context_group(source_loc.container)
 	var tgt_group: StringName = GlobalInteractionRouter.get_context_group(target_loc.container)

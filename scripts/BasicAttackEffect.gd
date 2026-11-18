@@ -107,7 +107,8 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	var should_apply_burn = burn_amount > 0
 	
 	# Fire L4 (20 Souls): Fire units deal bonus attack damage equal to target's current Burn stacks
-	if fire_level >= 20 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIRE"):
+	# Combustion Strike: Burnie also adds target's current Burn stacks to damage without consuming Burn
+	if (fire_level >= 20 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIRE")) or (is_instance_valid(source_instance) and source_instance.definition_id == &"elite_burnie"):
 		var burn_count = target_instance.get_status_effect_amount(&"burn")
 		if burn_count > 0:
 			damage += burn_count
@@ -173,6 +174,25 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		final_target_uuid = final_target.ball_uuid
 		CombatCommand.append_unified_events(pre_impact_events, intercept_res.events)
 
+	# Attack-impact abilities resolve when the attack reaches its final target. Keep
+	# their events separate so presentation can play them at contact, not wind-up.
+	var contact_scope: int = battle_manager.begin_reaction_scope()
+	var attack_impact_context: TriggerContext = TriggerContext.new()
+	attack_impact_context.source_uuid = attacker_uuid
+	attack_impact_context.attacker_uuid = attacker_uuid
+	attack_impact_context.defender_uuid = final_target_uuid
+	attack_impact_context.target_uuid = final_target_uuid
+	attack_impact_context.target_initial_hp = final_target.current_hp
+	attack_impact_context.trigger_cause = C.CAUSE_ATTACK
+	attack_impact_context.cause_id = ability_id
+	attack_impact_context.is_simulation = is_simulation
+	AbilityResolver.process_trigger(C.TRIGGER_ON_ATTACK_IMPACT, attack_impact_context)
+	var contact_events: Array[CombatEvent] = []
+	if is_simulation:
+		contact_events = battle_manager.drain_reaction_scope(contact_scope)
+	else:
+		battle_manager.drain_reaction_scope(contact_scope)
+
 	# IMPACT PHASE (Damage Application)
 	var old_hp = final_target.current_hp
 	var old_armor = final_target.get_status_effect_amount(&"armor")
@@ -210,6 +230,23 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 			"target_uuids": [source_instance.ball_uuid],
 			"visual_payload": spikes_payload
 		}))
+
+	# Pyre Strike (Post-Impact Slot Ignition for Burnie)
+	if is_instance_valid(source_instance) and source_instance.definition_id == &"elite_burnie" and is_instance_valid(final_target):
+		var target_loc = battle_manager.get_location_for_uuid(final_target.ball_uuid)
+		if is_instance_valid(target_loc):
+			var slot_array: Array[StringName] = []
+			if target_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
+				slot_array = battle_manager._state.player_slot_effects
+			elif target_loc.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+				slot_array = battle_manager._state.enemy_slot_effects
+			if not slot_array.is_empty() and target_loc.index >= 0 and target_loc.index < slot_array.size():
+				if slot_array[target_loc.index] != &"burn":
+					var prev_eff = slot_array[target_loc.index]
+					slot_array[target_loc.index] = &"burn"
+					impact_events.append(CombatEvent.new(CombatEvent.Type.SLOT_EFFECT_CHANGE, {
+						"visual_payload": CombatPayload.slot_effect_change(target_loc.container, target_loc.index, prev_eff, &"burn")
+					}))
 
 	# Static Application & Splash (Air L1, L2, L3, L5, Mecha L2 & Appliance L1)
 	var old_static: int = 0
@@ -336,6 +373,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	visual_payload.static_reflection_data_list = static_reflection_list
 	visual_payload.windup_events = windup_events
 	visual_payload.pre_impact_events = pre_impact_events
+	visual_payload.contact_events = contact_events
 	visual_payload.impact_events = impact_events
 	
 	var damage_event = CombatEvent.new(CombatEvent.Type.DAMAGE, {

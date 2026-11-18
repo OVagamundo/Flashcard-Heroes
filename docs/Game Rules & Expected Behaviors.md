@@ -22,7 +22,7 @@ A run is lost immediately if the **Hero's health (HP) reaches zero**.
 * **Permadeath**: Upon victory or defeat, the run's save checkpoint is permanently cleared, and the run ends immediately.
 * **Hero Unit Rules**:
   * The Hero participates directly on the active battle board alongside standard units and behaves as an active combatant (subject to damage, healing, buffs, and attacking).
-  * **Lineup Restriction**: The Hero is permanently bound to the active team lineup and **cannot** be moved to the bench or inventory.
+  * **Lineup Restriction**: The Hero is permanently bound to the active team lineup and **cannot** be moved to the shelf or inventory.
   * **Item Slot**: Like all other units, the Hero possesses strictly **one item slot**.
 
 ---
@@ -74,8 +74,8 @@ Before starting a run, the player configures their starting setup:
 * Gacha Tokens (reset to 0 at the start of every encounter).
 * Temporary in-combat stat modifications and status effects (Armor, Burn, Spikes, Static).
 * Battle Inventory (the active draw pools inside the tier machines).
-* Battle Discard Pile (all defeated units and replaced items).
-* Battle lineup and bench formation.
+* Battle Discard (all defeated units and replaced items).
+* Lineup and shelf formation.
 
 ---
 
@@ -94,7 +94,7 @@ The game operates on a dual-economy system that separates long-term collection c
 
 ## 3.2 Tokens (Battle & Encounter Economy)
 * **Purpose**: Spent during encounters (such as the Management Phase of battles, reward rooms, rest sites, and unit training) to draw from machines or roll for upgrades.
-* **Acquisition**: Earned on a per-encounter basis primarily by answering questions correctly during the Flashcard minigame (and through select trinkets).
+* **Acquisition**: Earned on a per-encounter basis primarily by answering questions correctly during the Flashcard challenge (and through select trinkets).
 * **Reset**: Tokens exist strictly within the active encounter. In battles, unspent tokens carry over between turns within the same battle. Between different encounters, tokens **never** carry over; any new encounter starts with tokens reset to zero.
 * **Tier Draw Costs (Tokens)**:
   * **Tier 1 Machine**: 1 Token
@@ -104,7 +104,7 @@ The game operates on a dual-economy system that separates long-term collection c
 ## 3.3 The Strategic Duality: Swarming vs. Slot Power
 * **Swarming (Tier 1 Focus)**: Tier 1 units are cheap to draw in battle (costing only 1 Token) but have modest base stats. Merging duplicate Tier 1 units permanently upgrades their level, which doubles their Gold valuation in shops while their Token draw cost remains strictly 1 Token. This yields exceptional deployment efficiency.
 * **Slot Power (Tier 2 & Tier 3 Focus)**: Higher-tier units cost more Tokens to draw (2 or 3 Tokens) but provide concentrated slot efficiency, higher base stat packages, and multiplicative abilities.
-* **Exhaustion Risk**: Because defeated units and replaced items are committed permanently to the Discard Pile for the remainder of a battle, an ultra-lean deck can run out of GachaBalls during prolonged encounters, resulting in defeat. Players must balance deck predictability (small decks) against raw endurance (larger decks).
+* **Exhaustion Risk**: Because defeated units and replaced items are committed permanently to the Discard for the remainder of a battle, an ultra-lean deck can run out of GachaBalls during prolonged encounters, resulting in defeat. Players must balance deck predictability (small decks) against raw endurance (larger decks).
 
 ## 3.4 Run Pool Composition & Hero Set Scoping Law
 * **Single Active Set Rule**: In any given run, exactly **one** Hero Set is active alongside the 25 Universal Neutral Base Units, universal items, and base trinkets.
@@ -122,8 +122,8 @@ The game operates on a dual-economy system that separates long-term collection c
 
 The Spaced Repetition System (SRS) powers tactical resource generation:
 
-## 4.1 In-Battle Minigame Mechanics
-* **Timed Session**: A fast-paced timed minigame at the start of each combat turn.
+## 4.1 In-Battle Challenge Mechanics
+* **Timed Session**: A fast-paced timed challenge at the start of each combat turn.
 * **Correct Answer**: Awards 1 Token, increases card mastery by 1, grants a +0.5s timer extension, increments the consecutive correct answer streak, and escalates audio pitch and edge flame VFX.
 * **Incorrect Answer**: Awards no tokens, decreases card mastery by 1, resets the streak to 0, and smoothly resets audio pitch.
 * **Skip**: Awards no tokens, decreases card mastery by 1, grants a +0.5s timer extension, but **preserves** the active streak and audio pitch without penalty.
@@ -134,7 +134,7 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
     3. *Random Factor (Low)*: Slight randomization to prevent rigid predictability.
   * The same card **never** appears twice in succession.
 * **Review Popup Window (New Card Introduction)**:
-  * Triggers at the start of a minigame session when a new card is introduced into the active deck.
+  * Triggers at the start of a challenge session when a new card is introduced into the active deck.
   * Features the newly unlocked card in the main view (question, answer, audio pronunciation, and grammatical explanation).
   * Displays a bottom row of up to 6 clickable priority cards strictly representing the lowest-mastery cards currently unlocked in the deck.
 
@@ -144,18 +144,18 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
 
 ## 4.3 Streak & Juice Escalation
 * **SFX Pitch**: The correct-answer sound effect pitch increases by +0.05 per streak level, capping at 1.5x pitch at streak 10+.
-* **BGM Pitch & Tempo**: The active minigame background music pitch dynamically scales upwards by +0.02 per streak level, capping at 1.2x tempo at streak 10+. Incorrect answers smoothly reset pitch to baseline 1.0x.
-* **Visual Edge Fire Aura**: A dynamic fire aura frames the borders of the minigame window, scaling its flame intensity, speed, and particle brightness with the player's streak.
+* **BGM Pitch & Tempo**: The active challenge background music pitch dynamically scales upwards by +0.02 per streak level, capping at 1.2x tempo at streak 10+. Incorrect answers smoothly reset pitch to baseline 1.0x.
+* **Visual Edge Fire Aura**: A dynamic fire aura frames the borders of the challenge window, scaling its flame intensity, speed, and particle brightness with the player's streak.
 
-## 4.4 Mid-Minigame Flashcard Unlock (3-Streak Progression)
-Answering 3 questions correctly in a row triggers an immediate mid-minigame card unlock:
+## 4.4 Mid-Challenge Flashcard Unlock (3-Streak Progression)
+Answering 3 questions correctly in a row triggers an immediate mid-challenge card unlock:
 * **Trigger Condition**: Requires consecutive correct answers without misses. (Skips preserve the streak but do not increment it).
 * **Pool Requirement**: Requires locked cards remaining in the run's deck pool. If all cards are already unlocked, reaching a 3-streak triggers no unlock or timer bonus.
 * **Unlocking**: The next locked card from the deck pool is unlocked and immediately queued as the very next question displayed.
 * **+1.0s Timer Extension**: Awards an immediate +1.0s bonus time extension directly to the countdown timer (in addition to the standard +0.5s for a correct answer, yielding +1.5s total time gained on the triggering question).
 * **Celebration Feedback**: Celebrated with multi-point fireworks, golden window flash, bright white timer bar flash with a floating `+1.0s` popup, and an animated announcement banner.
-* **Single Occurrence**: Can only trigger once per minigame session.
-* **Progression Accounting**: The mid-minigame unlocked card is recorded as presented. At the start of subsequent minigames, the next locked card is introduced in the review popup—never repeating cards already unlocked mid-minigame.
+* **Single Occurrence**: Can only trigger once per challenge session.
+* **Progression Accounting**: The mid-challenge unlocked card is recorded as presented. At the start of subsequent challenges, the next locked card is introduced in the review popup—never repeating cards already unlocked mid-challenge.
 
 ---
 
@@ -164,15 +164,15 @@ Answering 3 questions correctly in a row triggers an immediate mid-minigame card
 Battles resolve in distinct phases:
 
 ```
-[Turn Start] ──► [Flashcard Minigame] ──► [Management Phase] ──► [Combat Execution] ──► [End of Turn]
+[Turn Start] ──► [Flashcard Challenge] ──► [Management Phase] ──► [Combat Execution] ──► [End of Turn]
                                                  │
-                                         ("Battle!" Click)
+                                         ("Ready!" Click)
 ```
 
 1. **Turn Start Phase**: Any turn-start abilities or battlefield slot effects evaluate.
-2. **Flashcard Minigame**: The player answers questions to generate their Gacha Token budget for the turn.
+2. **Flashcard Challenge**: The player answers questions to generate their Gacha Token budget for the turn.
 3. **Management Phase**: The player spends tokens, draws units/items, repositions their team, merges units, equips items, uses consumables, and inspects the enemy lineup.
-4. **Pre-Combat Phase**: Triggered when the player clicks "Battle!". All 15 Trait Trinkets (Elemental, Class, Visual) activate and deliver their combat-start effects.
+4. **Pre-Combat Phase**: Triggered when the player clicks "Ready!". All 15 Trait Trinkets (Elemental, Class, Visual) activate and deliver their combat-start effects.
 5. **Combat Execution Phase**: Units take turns acting strictly front-to-back. Attacks, abilities, reactions, and deaths resolve automatically and deterministically.
 6. **End-of-Turn Phase**: Status effects decay, end-of-turn abilities resolve, and pending deaths/summons clear. If enemies remain, a new turn begins.
 7. **Battle Result**: Defeating all enemies opens Victory results leading to post-battle rewards. The Hero reaching 0 HP triggers Defeat results and ends the run.
@@ -195,38 +195,49 @@ When an entity is dropped onto another entity, intent resolves in strict priorit
 3. **Use**: If a consumable item is dropped onto a valid unit, executes its effect immediately.
 4. **Swap / Move**: If neither merge nor equip applies, checks placement legality to perform a Swap (if the target slot is occupied) or a Move (if empty).
 
-## 6.3 Gacha Draw & Bench Overflow
-* Drawn GachaBalls land in the first empty slot of the Player Bench.
-* **Overflow**: If the Player Bench is completely full when a draw occurs, the drawn ball is sent directly to the **Battle Discard Pile**.
+## 6.3 Gacha Draw & Shelf Overflow
+* Each battle begins with only the three leftmost Player Shelf slots unlocked.
+* The next locked slot can be unlocked for 1 Token. Unlocks proceed from left to right, up to the eight-slot maximum; each unlock lasts for the current encounter only and resets at the next battle.
+* Only visible platform pixels are darkened; transparent areas remain transparent. The next slot shows a centered plus and a white outline on hover, along with the 1 Token description.
+* Purchasing sends a Token from the HUD to the slot. The slot remains visually locked and interaction stays blocked until the Token arrives, then it brightens with a quick pop.
+* Drawn GachaBalls and Shelf summons remain sealed in capsules in the first empty unlocked Shelf slot. Capsules open only on deployment, equipment, merging, or consumable use in a Lineup.
+* Sealed capsules can be rearranged or swapped on the Shelf. They cannot be merged together there, equipped there, or used on Shelf residents.
+* A sealed capsule can merge directly into an eligible Lineup unit or equipped item. Equipment and consumables can be applied directly to eligible Lineup units; consumables retain enemy Lineup targeting.
+* An opened unit or item cannot return to the Shelf or swap places with a Shelf capsule. Discard recycling returns it to a machine, after which drawing it produces a sealed Shelf capsule again.
+* Insignia, self-entry and other entry buffs apply when the unit enters a Lineup, including direct summons, merge/transformation results, and deployment after recycling. Rearranging within the Lineup does not repeat entry buffs.
+* Draw tracking, draw rewards, enemy draw reactions and Token-spending reactions still resolve when the draw/spend occurs.
+* Shelf copies still count toward battle-pool calculations, but only Wind-up-kun updates its HP/PWR while on the Shelf. Other passive stat calculations resume on deployment.
+* **Overflow**: If all unlocked Shelf slots are occupied when a draw occurs, the drawn ball is sent directly to the **Battle Discard**.
+* Units or items already occupying a locked slot remain there but cannot be accessed until that slot is unlocked again in the current encounter.
 
 ## 6.4 Dynamic Token Scaling (Templar / Token Power)
 Units with token-scaling abilities scale dynamically with active resources:
 * Both friendly and enemy Templars scale strictly with the **player's current Gacha Tokens**.
-* All living Templars on the board (lineup and bench, player and enemy) respond in real time whenever tokens change. Stockpiling tokens makes enemy Templars stronger, creating a direct tactical trade-off.
+* Living Templars in a Lineup respond in real time whenever tokens change. Sealed Shelf residents do not update their PWR until deployed. Stockpiling tokens makes enemy Templars stronger, creating a direct tactical trade-off.
 * Permanent training stat upgrades on individual Templar instances are preserved and form the baseline onto which dynamic token scaling adds.
-* When drawn, the unit lands displaying its base stats, then immediately triggers its token power ability to apply its dynamic power bonus based on remaining tokens.
+* When drawn, the unit remains sealed with its existing stats. On entering the Lineup, its token power ability calculates the bonus from the current Token balance.
 
 ## 6.5 Formation & Placement Constraints
 * **Active Lineup**: Consists of up to 5 fixed slots. Units resolve attacks strictly from front (Slot 0) to back (Slot 4).
-* **Player Bench**: Staging area used for holding units, staging items, and performing merges.
+* **Player Shelf**: Staging area for sealed capsules; only capsule rearrangement and deployment to Lineup targets are allowed.
 * **Items on Lineup**: Items cannot be placed directly into lineup slots; they can only be equipped onto units.
 * **Tier Container Integrity**: Tier 1, 2, and 3 containers cannot hold entities of mismatched tiers.
 
 ## 6.6 Equipping Items
-* **Bench Origin Only**: Items can **only** be equipped from the Player Bench onto a unit on the Lineup or Bench. Items cannot be equipped directly from inventory drawers (which are read-only) and cannot be equipped outside battle.
-* **No Manual Unequipping**: An equipped item cannot be dragged back to the bench or moved to another unit. Aside from specific item-stripping consumables (such as *Potion of Plunder*), equipment cannot be unequipped without being replaced.
-* **Bench Item Passives**: Items equipped on bench units provide their passive stat bonuses immediately, but their reactive combat abilities do not activate until the unit enters the active Lineup.
+* **Shelf Origin Only**: Sealed items can be equipped directly from the Player Shelf onto a Lineup unit, opening their capsule. Shelf residents cannot receive equipment. Inventory drawers remain read-only, and equipment cannot be applied outside battle.
+* **No Manual Unequipping**: An equipped item cannot be dragged back to the shelf or moved to another unit. Aside from specific item-stripping consumables (such as *Potion of Plunder*), equipment cannot be unequipped without being replaced.
+* **Sealed Item Passives**: Items and their holders do not update HP/PWR or activate abilities on the Shelf. Equipment becomes active on a Lineup holder.
 * **Single Item Capacity & Item Replacement**:
   * Every unit holds at most **one item**.
   * Equipping an item onto a unit that already has an item executes an **Item Replacement**.
-  * **Discard Destination**: The displaced item is removed and sent directly to the **Battle Discard Pile**. It does **not** return to the bench.
-  * **Discard Animation**: The replaced item animates along a parabolic arc into the Discard Pile button with audio impact and button bump.
+  * **Discard Destination**: The displaced item is removed and sent directly to the **Battle Discard**. It does **not** return to the shelf.
+  * **Discard Animation**: The replaced item animates along a parabolic arc into the Discard button with audio impact and button bump.
   * **Net Stat Delta Evaluation**: The system evaluates the net difference between the old and new item. A net stat gain displays buff visual feedback, while a net stat loss displays floating debuff text (`-X` in red for HP, black for Power).
 
 ## 6.7 Consumable Items
-* **Usage**: Consumables can only be dragged and used from the Player Bench. They can target both friendly and enemy units.
-* **Consumption**: Consumables execute their effects immediately without occupying an item slot and disappear from the battle pool without entering the Discard Pile.
-* **Item-Stripping Consumables (*Potion of Plunder*)**: Strips an equipped item from the target and sends it directly to the player's matching tier Gacha Machine drawer, making it available to be drawn in subsequent turns.
+* **Usage**: Consumables can only be dragged and used from the Player Shelf. They can target both friendly and enemy units.
+* **Consumption**: Consumables execute their effects immediately without occupying an item slot and disappear from the battle pool without entering the Discard.
+* **Item-Stripping Consumables (*Potion of Plunder*)**: Strips an equipped item from a Lineup target and sends it directly to the player's matching tier Gacha Machine drawer. This is an explicit exception to Discard-first recycling: the item is sealed in the machine, and its next draw returns it sealed to the Shelf.
 * **Stackable Regular Buffs**: Consumable stat modifications (healing potions, stat potions, scrolls, elixirs) are stackable buffs that become direct enhancements of the recipient unit.
 * **Consolidation on Merge**: In all merges (both Evolutionary Level-ups and Recipe Tier-ups), all consumable buffs from both parent units are fully conserved and added together additively into the resulting unit's stats and merge surplus.
 
@@ -244,7 +255,7 @@ Merging combines two units to create a stronger unit:
 * **Elemental Souls Inheritance**:
   * Elemental souls are strictly cumulative. All souls from both parents add together directly onto the resulting unit (Result Souls = Parent A Souls + Parent B Souls). No souls are ever lost during a merge.
 * **Item Transfer Priority**:
-  * During any merge, only one equipped item carries over (the target unit's item takes priority; if empty, the source unit's item is kept). The secondary non-transferred item is discarded directly to the Battle Discard Pile.
+  * During any merge, only one equipped item carries over (the target unit's item takes priority; if empty, the source unit's item is kept). The secondary non-transferred item is discarded directly to the Battle Discard.
   * The retained item's passive stats are pre-baked into the merged unit's starting stats silently, without redundant self-buff animations.
 * **Contextual Merge Outlines**: Selecting or dragging an entity highlights valid targets:
   * Level-up targets highlight in Cyan.
@@ -253,21 +264,21 @@ Merging combines two units to create a stronger unit:
   * Undiscovered recipe candidates in shops and rewards highlight in Violet.
 
 ## 6.9 Physics Drawers & Overflow (Battle Only)
-* During battle, the Battle Inventory drawers (Tier 1, 2, 3) and the side Discard Pile drawer are **Read-Only Visualizations**. Players cannot drag, equip, or move balls directly from these physics containers.
+* During battle, the Battle Inventory drawers (Tier 1, 2, 3) and the side Discard drawer are **Read-Only Visualizations**. Players cannot drag, equip, or move balls directly from these physics containers.
 * **Spawning**: Balls spawn sequentially at the top-center at 0.15s intervals to prevent overlapping impulse explosions.
-* **Lid Overflow Penalty**: If a drawer becomes physically overfilled and a ball maintains continuous contact with the top lid sensor for 5.0 seconds, it is penalized and moved to the **Battle Discard Pile**.
-* **Permanent Discard**: Defeated units and discarded items remain in the Discard Pile permanently for the remainder of the battle. There is no automatic reshuffle.
+* **Lid Overflow Penalty**: If a drawer becomes physically overfilled and a ball maintains continuous contact with the top lid sensor for 5.0 seconds, it is penalized and moved to the **Battle Discard**.
+* **Permanent Discard**: Defeated units and discarded items remain in the Discard permanently for the remainder of the battle. There is no automatic reshuffle.
 
 ## 6.10 Battle Pool Scoping & Dynamic Scaling Passives
-Passives that scale based on duplicate copies (*Twin Charm*, *Doppleganger*, *Echoing Orb*) evaluate against the total count of matching entities across the entire team's **Battle Pool** (Lineup, Bench, Gacha Drawers, and Discard Pile):
-* Drawing a unit, moving a unit between bench and lineup, or a unit dying does not change the total copies in the battle pool.
+Passives that scale based on duplicate copies (*Twin Charm*, *Doppleganger*, *Echoing Orb*) evaluate against the total count of matching entities across the entire team's **Battle Pool** (Lineup, Shelf, Gacha Drawers, and Discard):
+* Drawing a unit, moving a unit between shelf and lineup, or a unit dying does not change the total copies in the battle pool.
 * Merging two duplicate units into a higher-level unit reduces total copies of that unit definition by 1. A Level 2 or Level 3 unit counts strictly as 1 copy.
-* Stat bonuses granted by scaling passives are only active on units currently deployed on the board (lineup and bench); units inside gacha machine drawers hold 0 bonus until drawn onto the board.
+* Stat bonuses granted by scaling passives are active only on units deployed in a Lineup. Shelf, machine and discarded copies still contribute to copy counts without updating the sealed unit's HP/PWR.
 
-## 6.11 Universal Discard Pile & Gacha Machine Arrival Rules
-* **Identical Arc Animation**: All player units and items entering the Battle Discard Pile travel along a 500px parabolic capsule arc directly into the Discard Pile button, accompanied by sound and button scale bump.
-* **Player Unit Death**: When a player unit reaches 0 HP, its board puppet view plays its death fade animation, followed by its GachaBall capsule flying along the arc into the Discard Pile button. Equipped items follow sequentially along the exact same arc.
-* **Enemy Units Do NOT Discard**: When an enemy unit dies, it dissolves and is removed; no capsule arc spawns and the Discard Pile counter is untouched.
+## 6.11 Universal Discard & Gacha Machine Arrival Rules
+* **Identical Arc Animation**: All player units and items entering the Battle Discard travel along a 500px parabolic capsule arc directly into the Discard button, accompanied by sound and button scale bump.
+* **Player Unit Death**: When a player unit reaches 0 HP, its board puppet view plays its death fade animation, followed by its GachaBall capsule flying along the arc into the Discard button. Equipped items follow sequentially along the exact same arc.
+* **Enemy Units Do NOT Discard**: When an enemy unit dies, it dissolves and is removed; no capsule arc spawns and the Discard counter is untouched.
 * **Gacha Machine Arrivals**: Units and items entering Gacha Machine drawers (such as *Echoing Orb* death duplication or *Potion of Plunder* item stripping) animate along a parabolic arc directly into the matching tier machine, updating the machine's counter badge upon impact.
 
 ---
@@ -296,7 +307,7 @@ The presentation system enforces a strict Visual Clarity Contract: the player mu
 
 # 8. Combat Resolution & Simulation Rules
 
-Combat resolves automatically once the player clicks **"Battle!"**:
+Combat resolves automatically once the player clicks **"Ready!"**:
 
 ## 8.1 Absolute Determinism
 * Damage dealt equals the attacker's Power minus the defender's Armor (minimum 0 damage):
@@ -335,7 +346,7 @@ When multiple abilities trigger simultaneously, they resolve in an orderly hiera
 When multiple summons occur simultaneously on unit death:
 1. **Trinket Resurrections (Priority 210)** claim the original dying unit's slot first.
 2. **Unit Summons (Priority 205)** search for alternative free slots in the lineup in highest-rank order (frontmost to backmost: Player Slot 4 down to 0, Enemy Slot 0 up to 4).
-3. **Item Summons (Priority 200)** claim remaining lineup slots; if the lineup is full, summons route to the Discard Pile (for players). If no slots or discard space remain, the summon is cancelled.
+3. **Item Summons (Priority 200)** claim remaining lineup slots; if the lineup is full, summons route to the Discard (for players). If no slots or discard space remain, the summon is cancelled.
 
 ### In-Combat Random Summon Scoping Law
 Whenever an ability, item (e.g., *Boots of Nine Lives*), or trinket executes a random in-combat summon:
@@ -353,7 +364,7 @@ Whenever an ability, item (e.g., *Boots of Nine Lives*), or trinket executes a r
 Events resolve in strict causal order:
 `Attack Damage -> When Hurt Reactions (Heal / Buff) -> Death -> On-Death Reactions (Summon / Stat Transfer)`
 
-When a unit reaches 0 HP, pending hurt reactions resolve first. Once all pending effects clear, the unit is marked defeated, on-death abilities trigger, and the unit is removed to the Discard Pile.
+When a unit reaches 0 HP, pending hurt reactions resolve first. Once all pending effects clear, the unit is marked defeated, on-death abilities trigger, and the unit is removed to the Discard.
 
 ## 8.7 Battlefield Slots
 Special slots placed on the battlefield grid apply persistent effects:
@@ -500,7 +511,7 @@ Randomly selects from resource sites:
 
 ## 11.2 Playback Controls & Speed Scaling
 * **Supported Presets**: Combat playback provides `1x`, `2x`, and `4x` speed options, alongside a `Pause` (`⏸`) toggle.
-* **In-Battle Exclusivity**: Speed acceleration (2x, 4x) applies strictly inside battle encounters. Non-combat scenes, shops, rest sites, minigames, and map navigation always operate at normal 1.0x baseline speed.
+* **In-Battle Exclusivity**: Speed acceleration (2x, 4x) applies strictly inside battle encounters. Non-combat scenes, shops, rest sites, challenges, and map navigation always operate at normal 1.0x baseline speed.
 * **Speed Persistence**: The selected combat speed setting persists across all battles for the entire run.
 * **Multi-Stat Buff Projectile Staggering**: When an ability or trinket grants multiple stats (e.g. +1 HP and +1 Power) to the same target unit, the HP projectile launches first, followed by the Power projectile after a 0.15s delay (scaled by combat speed), ensuring numbers do not visually collide.
 
@@ -544,14 +555,14 @@ The player can select one of the currently available path nodes to transition to
 * **Unit Training Ground**: Open inventory; select a unit and training stat (HP or Power); pay gold to start study; spend tokens to roll stat buffs; close popup; leave.
 * **Shrine**: Open inventory; select a GachaBall; remove or transform it for the displayed gold fee; leave.
 
-## 12.6 Flashcard Minigame Prompts
+## 12.6 Flashcard Challenge Prompts
 * Review newly introduced cards and select priority review cards when prompted.
 * Submit an answer choice for the displayed question.
 * Skip the displayed question.
 
 ## 12.7 Battle Phases
 * **Turn-Start Flashcard**: Answer or skip questions until timer expiry or completion.
-* **Management Phase**: Draw from tiered Gacha Machines using tokens; reposition units between lineup and bench; equip, replace, or use items; merge units; inspect board states, drawers, and discard piles; toggle pause or change speed; click "Battle!" to end management.
+* **Management Phase**: Draw sealed capsules onto the Shelf using Tokens; rearrange Shelf capsules; deploy them to the Lineup; rearrange deployed units within the Lineup; equip, replace, use items, or merge onto eligible Lineup targets; inspect board states, drawers, and the Discard; toggle pause or change speed; click "Ready!" to end management.
 * **Combat & Resolution Phases**: Combat resolves automatically. The player can pause playback, inspect entities on screen, or change playback speed. Board editing and draws are locked.
 * **Battle Results**: Acknowledge Victory (transitions to Rewards) or Defeat (returns to Title Screen).
 

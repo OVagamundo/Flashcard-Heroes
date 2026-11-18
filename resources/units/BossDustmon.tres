@@ -1,0 +1,30 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/boss_dustmon.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dustmon_spore_injection.tres" id="4_spore"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dustmon_minions_merge.tres" id="5_merge"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_dustmon_twin_resonance.tres" id="6_resonance"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_dustmon"
+display_name_key = "boss_dustmon.name"
+description_key = "boss_dustmon.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 3
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("4_spore"),
+	ExtResource("5_merge"),
+	ExtResource("6_resonance")
+])

@@ -1,4 +1,4 @@
-# Implementation Plan: Novice Lineage & Minigame Mechanics Refactor
+# Implementation Plan: Novice Lineage & Challenge Mechanics Refactor
 
 **Status:** Canonical Implementation Plan  
 **Target Scope:** Novice Hero Set (Dan), 5 Units, 3 Items, Silver Trait Gold Pop VFX, Gold Trait Multi-Token Verification, Sandclock Bonus Timer UI  
@@ -11,13 +11,13 @@
 ## 1. Problem Statement & Design Objectives
 
 1. **Elimination of `at_minigame_end` Triggers:**  
-   Abilities triggering `at_minigame_end` required units or items to be fielded before the turn 1 minigame. Deploying units from the bench, summoning, or merging mid-battle permanently locked them out of their abilities. All 8 affected abilities are refactored to standard combat triggers (`pre_combat`, `when_attacking`, `when_hurt`).
+   Abilities triggering `at_minigame_end` required units or items to be fielded before the turn 1 challenge. Deploying units from the shelf, summoning, or merging mid-battle permanently locked them out of their abilities. All 8 affected abilities are refactored to standard combat triggers (`pre_combat`, `when_attacking`, `when_hurt`).
 2. **Elimination of Invisible Answer-Tracking:**  
-   Abilities scaling with correct minigame answers, streak counts, or Mastery Level 1 cards lacked any visible in-combat UI tracking. Power scaling is now redirected to **Current Tokens Held / Spent**, which are permanently displayed in the top HUD.
+   Abilities scaling with correct challenge answers, streak counts, or Mastery Level 1 cards lacked any visible in-combat UI tracking. Power scaling is now redirected to **Current Tokens Held / Spent**, which are permanently displayed in the top HUD.
 3. **Multi-Currency VFX Feedback (Silver & Gold Trait):**  
    Novice Silver (3-streak) will pop a Gold coin simultaneously from the answered button alongside the Token, flying toward the Gold counter. Novice Gold (Mastery 1) and Beginner's Charm multi-token generation will be verified and enhanced with fan-out trajectory separation so multiple tokens are distinctly visible.
 4. **Sandclock Bonus Timer Indicator:**  
-   Extra starting time banked for future minigames (from `?NovPla` and `W??ANovCos` death or `item_novice_emblem` kill) will be visually communicated to the player via a sandclock icon and bonus label next to the Tokens counter on the HUD, visible only when bonus time exists.
+   Extra starting time banked for future challenges (from `?NovPla` and `W??ANovCos` death or `item_novice_emblem` kill) will be visually communicated to the player via a sandclock icon and bonus label next to the Tokens counter on the HUD, visible only when bonus time exists.
 
 ---
 
@@ -44,14 +44,14 @@ All abilities feature strict `1 / 2 / 3` per-level scaling.
 
 | Unit | Name | Tags & Role | Trigger | Standardized Ability Specification |
 |---|---|---|:---:|---|
-| `?NovPla` | **Novisprout** | `?`, Novice, Plant<br>(T1 Ranged) | `when_knocked_out` | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame. This effect stacks. |
+| `?NovPla` | **Novisprout** | `?`, Novice, Plant<br>(T1 Ranged) | `when_knocked_out` | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge. This effect stacks. |
 | `?ANovFod` | **Gustpuff** | `?`, AIR, Novice, Food<br>(T2 Ranged) | `pre_combat` | Pre-Battle, Charge an Empowered Attack that inflicts 1 / 2 / 3 Static on the target for each Current Token held. |
 | `E?NovPla` | **Rootguard** | EARTH, `?`, Novice, Plant<br>(T2 Melee) | `pre_combat` | Pre-Battle, gain 1 / 2 / 3 Armor for each Current Token held, and 1 Spike for every 2 Current Tokens held. |
 | `F?NovApp` | **Ignikettle** | FIRE, `?`, Novice, Appliance<br>(T2 Melee) | `pre_combat` | Pre-Battle, Charge an Empowered Attack that applies 1 / 2 / 3 Burn to the target for each Current Token held. |
 | `W?NovCos` | **Tidecloak** | WATER, `?`, Novice, Costume<br>(T2 Melee) | `when_hurt` | When hurt by an attack, heal self for 1 / 2 / 3 HP for each Current Token held. |
 | `E??ANovPla` | **Galebloom** | EARTH, 2x `?`, AIR, Novice, Plant<br>(T3 Melee) | `at_turn_start` | At Turn Start, spend 1 Token to gain 1 / 2 / 3 Spikes for every 2 Current Tokens held before the spend. |
 | `F??ANovFod` | **Zephyrcrisp** | FIRE, 2x `?`, AIR, Novice, Food<br>(T3 Melee) | `when_attacking` | When attacking, spend 1 Token to inflict 1 / 2 / 3 Static on the target per Current Token held before the spend. |
-| `W??ANovCos` | **Stormshroud** | WATER, 2x `?`, AIR, Novice, Costume<br>(T3 Melee) | `when_knocked_out` | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
+| `W??ANovCos` | **Stormshroud** | WATER, 2x `?`, AIR, Novice, Costume<br>(T3 Melee) | `when_knocked_out` | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
 | `EF??NovApp` | **Magmarange** | EARTH, FIRE, 2x `?`, Novice, Appliance<br>(T3 Ranged) | `pre_combat` | Pre-Battle, spend 1 Token to Charge an Empowered Attack that applies 1 / 2 / 3 Burn to the target per Current Token held before the spend. |
 | `EW??NovPla` | **Mirethicket** | EARTH, WATER, 2x `?`, Novice, Plant<br>(T3 Ranged) | `when_attacking` | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage per Current Token held before the spend. |
 | `FW??NovAni` | **Steampaw** | FIRE, WATER, 2x `?`, Novice, Animal<br>(T3 Ranged) | `when_attacking` | When attacking, spend 1 Token to apply 1 / 2 / 3 Burn to the target per Current Token held before the spend. |
@@ -66,11 +66,11 @@ All abilities feature strict `1 / 2 / 3` per-level scaling.
 | `item_review_ledger` | **Nail** | Tier 2 (`item_study_pouch` + `item_t1_a`)<br>+2 HP | `pre_combat` | Pre-Battle, while equipped in the active lineup, holder gains 1 / 2 / 3 Spikes for each Current Token held. |
 | `item_answer_key` | **Burnout** | Tier 2 (`item_study_pouch` + `item_t1_b`)<br>+2 PWR | `when_attacking` | When attacking, while equipped in the active lineup, apply 1 / 2 / 3 Burn to the target for each Current Token held. |
 | `item_novice_archive` | **Novice's Archive** | Tier 3 (Nail + Burnout)<br>+2 HP / +2 PWR | `when_attacking` | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage for each Current Token held before the spend. |
-| `item_novice_emblem` | **Novice Emblem** | Tier 3 (Standalone) | `when_enemy_knocked_out` | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle minigame. |
+| `item_novice_emblem` | **Novice Emblem** | Tier 3 (Standalone) | `when_enemy_knocked_out` | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle challenge. |
 
 ---
 
-## 5. Minigame VFX & Audio Enhancements
+## 5. Challenge VFX & Audio Enhancements
 
 ### 5.1 Novice Trait Silver: Simultaneous Gold Coin Pop
 * **Mechanism:** When `current_streak == 3` and player fields >= 3 Novices in battle:
@@ -101,7 +101,7 @@ All abilities feature strict `1 / 2 / 3` per-level scaling.
 * When bonus time > 0:
   * `BonusTimerGroup.visible = true`
   * `BonusTimerLabel.text = "+%ds" % int(round(bonus_time))`
-* When bonus time is 0 (or consumed at minigame start by `consume_next_minigame_bonus_time()`):
+* When bonus time is 0 (or consumed at challenge start by `consume_next_minigame_bonus_time()`):
   * `BonusTimerGroup.visible = false`
 
 ---
@@ -111,7 +111,7 @@ All abilities feature strict `1 / 2 / 3` per-level scaling.
 ```mermaid
 flowchart TD
     A["Phase 1: Effect Scripts & Ability Resources"] --> B["Phase 2: Localization Strings (game.csv)"]
-    B --> C["Phase 3: Minigame Gold & Multi-Token VFX"]
+    B --> C["Phase 3: Challenge Gold & Multi-Token VFX"]
     C --> D["Phase 4: Sandclock HUD Widget"]
     D --> E["Phase 5: Headless Verification & Testing"]
 ```
@@ -148,7 +148,7 @@ flowchart TD
   * `item.novice_archive.desc`
 * Compile `.po` / `.mo` translation catalogs.
 
-### Phase 3: Minigame Gold & Multi-Token VFX
+### Phase 3: Challenge Gold & Multi-Token VFX
 * Update `FlashcardManager.gd` to include `gold_to_give: 1` in answer submission output when Silver Novice triggers.
 * Update `FlashcardMinigame.gd` to trigger `CurrencyAnimator.animate_gold_gain()` alongside `animate_token_gain()`.
 * Add fan-out trajectory offset to `CurrencyAnimator.animate_token_gain()` for multi-token events.
@@ -161,4 +161,4 @@ flowchart TD
 ### Phase 5: Verification
 * Run compilation checks via Godot CLI / headless verification test suite.
 * Verify abilities activate during combat (`pre_combat`, `when_attacking`, `when_hurt`) rather than `at_minigame_end`.
-* Verify unit/item abilities function correctly when deployed mid-battle or summoned from the bench.
+* Verify unit/item abilities function correctly when deployed mid-battle or summoned from the shelf.

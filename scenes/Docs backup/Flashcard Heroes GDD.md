@@ -68,18 +68,18 @@ During the management phase of a battle, the player has access to three Gacha Ma
 Battle Inventory: At the start of each battle, a temporary copy of the entire Run Inventory is created. This is the Battle Inventory, and it serves as the drawable pool for the Gacha Machines for that battle only.
 Drawing: The player spends Gacha Tokens to draw a random GachaBall from the machine of the corresponding tier. The cost scales with the tier (Tier 1 costs 1 token, Tier 2 costs 2, etc.).
 Inspection: The player can inspect a Gacha Machine to view the current contents of its corresponding section of the Battle Inventory. This shows a summary of the types of GachaBalls and their counts (e.g., "Warrior x2, Archer x1").
-Discard Pile: A single Battle Discard Pile exists for the current battle. Defeated units, their salvaged items, and GachaBalls drawn when the bench/inventory is full are sent here.
+Discard Pile: A single Battle Discard Pile exists for the current battle. Defeated units, their salvaged items, and GachaBalls drawn when the shelf/inventory is full are sent here.
 Reshuffling: If a tier's section of the Battle Inventory becomes empty, all GachaBalls of that same tier currently in the Discard Pile are moved back into the Battle Inventory, making them available to be drawn again. When a GachaBall is reshuffled, its stats (HP and Power) are fully restored to their base values, ensuring it is drawn in a fresh state.
 End of Battle Cleanup: All temporary instances created for the battle are destroyed at its conclusion. The Run Inventory remains untouched.
 7. Battle System
 7.1. Battle Phases & Turn Structure
 Each turn in a battle proceeds through distinct phases:
 Start of Turn Phase: The Flashcard Mini-Game occurs. Start-of-turn abilities resolve.
-Management Phase: The player uses Gacha Tokens, deploys units from their bench to the lineup, equips items, performs merges, and arranges their formation. This phase ends when the player clicks "End Turn."
+Management Phase: The player uses Gacha Tokens, deploys units from their shelf to the lineup, equips items, performs merges, and arranges their formation. This phase ends when the player clicks "End Turn."
 Combat Phase: All actions resolve automatically without player input.
 End of Turn Phase: End-of-turn abilities resolve. If no victory/defeat condition is met, the next turn begins.
 7.2. Combat & Positional Logic
-Board Structure: The player has 6 slots for their active lineup and 3 for their reserve bench. The Item Inventory also has 3 slots. If the bench or item inventory is full when a GachaBall is acquired, it is sent to the Discard Pile.
+Board Structure: The player has 6 slots for their active lineup and 3 for their reserve shelf. The Item Inventory also has 3 slots. If the shelf or item inventory is full when a GachaBall is acquired, it is sent to the Discard Pile.
 Action Order: Units act one by one, from back-to-front.
 Player Team (Left Side): The action order is from right to left (slot 6 acts before slot 5).
 Enemy Team (Right Side): The action order is also from their back to their front, which visually is right to left.
@@ -87,7 +87,7 @@ Default Attack: A unit's basic attack deals physical damage equal to its current
 7.3. Item Interactions
 [UPDATED] This section has been updated to reflect the new, more complex item interaction rules.
 
-Equipping: Items are dragged from the player's Item Inventory onto a Unit on the bench or lineup. If the unit has an available item slot, the item will be equipped.
+Equipping: Items are dragged from the player's Item Inventory onto a Unit on the shelf or lineup. If the unit has an available item slot, the item will be equipped.
 
 Intra-Unit Management: Once an item is equipped on a unit, it can be freely managed on that same unit. The player can:
 - Move: Drag an item to an empty slot on the same unit.
@@ -109,7 +109,7 @@ Permanent Merge (Out-of-Battle): Performed in the Run Inventory window. Permanen
 Merge Choice: If a player attempts an action that could be either a Merge or a Swap, a ChoiceWindow will appear, allowing the player to confirm their intent.
 9. Core Entities & Systems
 9.1. Hero Unit
-The player's central character. Its health is the run's health. It participates in every battle. The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the bench or any inventory.
+The player's central character. Its health is the run's health. It participates in every battle. The Hero unit is restricted and may only be placed in the main PlayerLineup; it cannot be moved to the shelf or any inventory.
 9.2. Trinkets
 Special non-GachaBall items that provide powerful, run-wide passive bonuses. Players can have up to 5 active Trinkets. They are typically awarded for defeating Mini-Bosses.
 9.3. Node Types & Logic
@@ -178,7 +178,7 @@ ContentArea: The large central portion of the screen that changes to show the ba
 **Drag-and-Drop Intent:** The game automatically determines the player's intent when dropping one entity onto another. The logic is resolved in the following priority:
 1. **Merge:** If a valid MergeRecipe exists for the two entities, a Choice Window appears (Merge/Swap). This applies to units on the board, items in inventory, and items equipped on the same unit.
 2. **Equip:** If an Item from the ItemInventory is dropped on a Unit with an empty slot, it will Equip.
-3. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the bench).
+3. **Move/Swap:** If none of the above conditions are met, the game will attempt to Swap the positions of the two entities. This is only valid if both entities can legally occupy the other's starting position (e.g., a Hero cannot be swapped into the shelf).
 
 **Inspection Window System:**
 The system for inspecting units, items, and their effects follows a strict set of hierarchical rules to ensure clarity and prevent UI clutter. These rules apply globally.

@@ -289,8 +289,9 @@ func _run_suite_1_database() -> void:
 
 	for t_id in Database.trinkets.keys():
 		var tr_def: TrinketDefinition = Database.trinkets[t_id]
-		_assert_ok(tr_def.cost == 10, "Trinket %s cost %d must be 10" % [t_id, tr_def.cost])
-		_assert_ok(GameManager.get_item_cost(tr_def) == 10, "GameManager cost for trinket %s must be 10" % t_id)
+		var expected_cost: int = 0 if tr_def.is_banner else TrinketDefinition.DEFAULT_TRINKET_COST
+		_assert_ok(tr_def.cost == expected_cost, "Trinket %s cost %d must be %d" % [t_id, tr_def.cost, expected_cost])
+		_assert_ok(GameManager.get_item_cost(tr_def) == expected_cost, "GameManager cost for trinket %s must be %d" % [t_id, expected_cost])
 
 	# Invariant: Basic attack definitions are manual turn actions, not event-driven abilities
 	var basic_atk: AbilityDefinition = Database.abilities.get(&"basic_attack", null)
@@ -357,43 +358,43 @@ func _run_suite_2_atomic_state() -> void:
 	_assert_ok(rs.equip_item(it1.ball_uuid, hero.ball_uuid, 0), "Equip it1 on hero")
 	_assert_ok(rs.equip_item(it1.ball_uuid, hero.ball_uuid, 0), "Self-equip no-op on hero")
 
-	# Move it2 to PlayerBench:0, swap equipped it1 <-> bench it2 in BOTH directions
-	_assert_ok(rs.move_instance(it2.get_location(), LocationIdentifier.new(&"PlayerBench", 0)), "Move it2 to PlayerBench:0")
+	# Move it2 to PlayerShelf:0, swap equipped it1 <-> shelf it2 in BOTH directions
+	_assert_ok(rs.move_instance(it2.get_location(), LocationIdentifier.new(&"PlayerShelf", 0)), "Move it2 to PlayerShelf:0")
 	var hero_eq_loc := _make_equipped_loc(hero.ball_uuid, 0)
-	var bench0_loc := LocationIdentifier.new(&"PlayerBench", 0)
-	_assert_ok(rs.swap_instances(bench0_loc, hero_eq_loc), "Swap bench -> equipped in RunState")
-	_assert_ok(hero.equipped_item_uuids[0] == it2.ball_uuid and rs.get_container(&"PlayerBench").get_uuid(0) == it1.ball_uuid, "Swap 1 verified")
-	_assert_ok(rs.swap_instances(hero_eq_loc, bench0_loc), "Swap equipped -> bench in RunState")
-	_assert_ok(hero.equipped_item_uuids[0] == it1.ball_uuid and rs.get_container(&"PlayerBench").get_uuid(0) == it2.ball_uuid, "Swap 2 verified")
+	var shelf0_loc := LocationIdentifier.new(&"PlayerShelf", 0)
+	_assert_ok(rs.swap_instances(shelf0_loc, hero_eq_loc), "Swap shelf -> equipped in RunState")
+	_assert_ok(hero.equipped_item_uuids[0] == it2.ball_uuid and rs.get_container(&"PlayerShelf").get_uuid(0) == it1.ball_uuid, "Swap 1 verified")
+	_assert_ok(rs.swap_instances(hero_eq_loc, shelf0_loc), "Swap equipped -> shelf in RunState")
+	_assert_ok(hero.equipped_item_uuids[0] == it1.ball_uuid and rs.get_container(&"PlayerShelf").get_uuid(0) == it2.ball_uuid, "Swap 2 verified")
 
-	var bench1_loc := LocationIdentifier.new(&"PlayerBench", 1)
-	_assert_ok(rs.move_instance(hero_eq_loc, bench1_loc), "Unequip hero item to PlayerBench:1 via move_instance")
-	_assert_ok(hero.equipped_item_uuids[0].is_empty() and rs.get_container(&"PlayerBench").get_uuid(1) == it1.ball_uuid, "Hero item unequipped cleanly")
+	var shelf1_loc := LocationIdentifier.new(&"PlayerShelf", 1)
+	_assert_ok(rs.move_instance(hero_eq_loc, shelf1_loc), "Unequip hero item to PlayerShelf:1 via move_instance")
+	_assert_ok(hero.equipped_item_uuids[0].is_empty() and rs.get_container(&"PlayerShelf").get_uuid(1) == it1.ball_uuid, "Hero item unequipped cleanly")
 	_assert_ok(rs.equip_item(it1.ball_uuid, hero.ball_uuid, 0), "Re-equip it1 on hero")
 	_assert_ok(rs.equip_item(it2.ball_uuid, u1.ball_uuid, 0), "Equip it2 on u1")
 
-	# Fill PlayerBench slots
-	for slot_i in range(C.BENCH_CAP):
-		if rs.get_container(&"PlayerBench").get_uuid(slot_i).is_empty():
+	# Fill PlayerShelf slots
+	for slot_i in range(C.SHELF_CAP):
+		if rs.get_container(&"PlayerShelf").get_uuid(slot_i).is_empty():
 			var dummy := GachaBallInstance.new()
 			dummy.initialize(Database.get_definition(&"FFigMec"))
-			_assert_ok(rs.add_instance(dummy, &"PlayerBench", slot_i), "Fill RunState bench slot %d" % slot_i)
+			_assert_ok(rs.add_instance(dummy, &"PlayerShelf", slot_i), "Fill RunState shelf slot %d" % slot_i)
 
 	var extra_inv_item := GachaBallInstance.new()
 	extra_inv_item.initialize(Database.get_definition(&"item_t1_a"))
 	_assert_ok(rs.add_instance(extra_inv_item, &"RunInventoryT1", -1), "Add extra_inv_item to RunInventoryT1")
 	var rejected_full_replace := rs.equip_item(extra_inv_item.ball_uuid, u1.ball_uuid, 0)
-	_assert_ok(not rejected_full_replace, "RunState.equip_item from non-bench must cleanly reject when bench full")
-	_assert_ok(rs._validate_state_consistency(), "RunState consistent after rejected full-bench equip")
+	_assert_ok(not rejected_full_replace, "RunState.equip_item from non-shelf must cleanly reject when shelf full")
+	_assert_ok(rs._validate_state_consistency(), "RunState consistent after rejected full-shelf equip")
 	_assert_ok(u1.equipped_item_uuids[0] == it2.ball_uuid, "u1 still holds it2 after rejected replace")
 
-	# Free bench slot 0 and equip
-	var bench_item := GachaBallInstance.new()
-	bench_item.initialize(Database.get_definition(&"item_claim_ticket"))
-	rs.remove_instance(rs.get_container(&"PlayerBench").get_uuid(0))
-	_assert_ok(rs.add_instance(bench_item, &"PlayerBench", 0), "Place bench_item at PlayerBench:0")
-	_assert_ok(rs.equip_item(bench_item.ball_uuid, u1.ball_uuid, 0), "Equip from full PlayerBench onto equipped u1 must succeed")
-	_assert_ok(u1.equipped_item_uuids[0] == bench_item.ball_uuid and it2.location_container_tag == &"PlayerBench", "Swapped old item into freed bench slot")
+	# Free shelf slot 0 and equip
+	var shelf_item := GachaBallInstance.new()
+	shelf_item.initialize(Database.get_definition(&"item_claim_ticket"))
+	rs.remove_instance(rs.get_container(&"PlayerShelf").get_uuid(0))
+	_assert_ok(rs.add_instance(shelf_item, &"PlayerShelf", 0), "Place shelf_item at PlayerShelf:0")
+	_assert_ok(rs.equip_item(shelf_item.ball_uuid, u1.ball_uuid, 0), "Equip from full PlayerShelf onto equipped u1 must succeed")
+	_assert_ok(u1.equipped_item_uuids[0] == shelf_item.ball_uuid and it2.location_container_tag == &"PlayerShelf", "Swapped old item into freed shelf slot")
 
 	# Part 2: Battle Setup & Entrance
 	var bm = BattleManagerScript.new()
@@ -611,7 +612,7 @@ func _run_suite_4_save_load() -> void:
 	avenger_rs.initialize_run(&"hero_avenger", &"deck_nihongo_starter")
 	_assert_ok(avenger_rs.active_hero_set == Database.SET_BASE, "hero_avenger sets active_hero_set to BASE")
 
-	for cname in [&"PlayerLineup", &"PlayerBench", &"PlayerTrinkets"]:
+	for cname in [&"PlayerLineup", &"PlayerShelf", &"PlayerTrinkets"]:
 		var orig_uuids = rs.get_container(cname).get_all_uuids()
 		var rest_uuids = restored_rs.get_container(cname).get_all_uuids()
 		_assert_ok(orig_uuids == rest_uuids, "Container %s UUID parity mismatch" % String(cname))
@@ -821,7 +822,7 @@ func _test_registered_knockout_consolidation() -> void:
 	var all_events: Array[CombatEvent] = []
 	var knockout_tracking: Dictionary = {}
 
-	# Run consolidated knockout processing (as used by death slots and burn KOs)
+	# Run consolidated knockout processing for status-effect KOs such as Burn.
 	KnockoutProcessor.process_registered_knockout(unit, &"END_OF_TURN", "PLAYER", all_events, knockout_tracking, bm)
 
 	_assert_ok(KnockoutProcessor.is_knocked_out_this_turn(bm._state, expected_uuid), "is_knocked_out_this_turn is true")
@@ -953,6 +954,8 @@ func _test_multi_casualty_shockwave_soul_echo_causality() -> void:
 	await get_tree().process_frame
 
 func _run_suite_6_phase2_content() -> void:
+	_test_status_effect_visual_sources()
+
 	var status_phases: Dictionary = {
 		&"burn": "END_OF_TURN",
 		&"armor": "START_OF_TURN",
@@ -991,14 +994,14 @@ func _run_suite_6_phase2_content() -> void:
 	var other_traits: Array[String] = ["tank", "fighter", "support", "specialist", "mercenary", "food", "mecha", "animal", "plant", "toy", "appliance", "costume"]
 	TranslationServer.set_locale("en")
 	for trait_name in elemental_traits + other_traits:
-		var sigil_id := StringName("trinket_trait_" + trait_name)
-		var sigil: TrinketDefinition = Database.trinkets[sigil_id]
+		var crest_id := StringName("trinket_trait_" + trait_name)
+		var crest: TrinketDefinition = Database.trinkets[crest_id]
 		var expected_linked_trait := StringName(trait_name.to_upper())
-		var sigil_description: String = TranslationServer.translate(sigil.description_key)
+		var crest_description: String = TranslationServer.translate(crest.description_key)
 		var thresholds := "3, 6, 12, 20, and 32" if trait_name in elemental_traits else "2, 3, 4, and 5"
-		_assert_ok(sigil.linked_trait_id == expected_linked_trait, "%s links to its trait" % sigil_id)
-		_assert_ok(not sigil.ability_definitions.is_empty(), "%s has trait abilities" % sigil_id)
-		_assert_ok(sigil_description.contains(thresholds), "%s documents thresholds %s" % [sigil_id, thresholds])
+		_assert_ok(crest.linked_trait_id == expected_linked_trait, "%s links to its trait" % crest_id)
+		_assert_ok(not crest.ability_definitions.is_empty(), "%s has trait abilities" % crest_id)
+		_assert_ok(crest_description.contains(thresholds), "%s documents thresholds %s" % [crest_id, thresholds])
 
 	var trait_insignia_traits: Array[String] = ["tank", "fighter", "support", "specialist", "mercenary", "food", "mecha", "animal", "plant", "toy", "appliance", "costume", "fire", "earth", "water", "air"]
 	for trait_name in trait_insignia_traits:
@@ -1020,8 +1023,8 @@ func _run_suite_6_phase2_content() -> void:
 	for trinket_value in enemy_pools["trinkets"]:
 		var trinket: TrinketDefinition = trinket_value
 		_assert_ok(not trinket.is_player_exclusive, "Player-only trinket %s is excluded from enemy pools" % trinket.id)
-	_assert_ok(Database.trinkets[&"trinket_trait_specialist"].is_player_exclusive, "Specialist Sigil is player-only")
-	_assert_ok(Database.trinkets[&"trinket_trait_mercenary"].is_player_exclusive, "Mercenary Sigil is player-only")
+	_assert_ok(Database.trinkets[&"trinket_trait_specialist"].is_player_exclusive, "Specialist Crest is player-only because enemies have no tokens, Gold, draws, or shelf")
+	_assert_ok(Database.trinkets[&"trinket_trait_mercenary"].is_player_exclusive, "Mercenary Crest is player-only")
 
 	var polished_plate: TrinketDefinition = Database.trinkets[&"trinket_polished_plate"]
 	var plate_ability: AbilityDefinition = polished_plate.ability_definitions[0]
@@ -1035,7 +1038,7 @@ func _run_suite_6_phase2_content() -> void:
 	var ring_triggers: Array[StringName] = []
 	for ability: AbilityDefinition in rusty_ring.ability_definitions:
 		ring_triggers.append(ability.trigger)
-	for expected_trigger in [&"on_gacha_draw", &"when_ally_summoned", &"at_battle_start", &"on_board_state_changed", &"on_merge"]:
+	for expected_trigger in [&"on_enter_board", &"when_ally_summoned", &"at_battle_start", &"on_board_state_changed", &"on_merge"]:
 		_assert_ok(ring_triggers.has(expected_trigger), "Rusty Ring listens for %s" % expected_trigger)
 
 	var aegis: TrinketDefinition = Database.trinkets[&"trinket_aegis"]
@@ -1393,6 +1396,51 @@ func _run_suite_6_phase2_content() -> void:
 	nuton_bm.queue_free()
 	GameManager.unregister_battle_manager()
 
+func _test_status_effect_visual_sources() -> void:
+	var status_bm: BattleManager = BattleManagerScript.new()
+	var candy_definition: GachaBallDefinition = Database.get_definition(&"item_t3_b")
+	var candy_ability: AbilityDefinition = candy_definition.ability_definitions[0]
+	for container_tag: StringName in [&"PlayerLineup", &"EnemyLineup"]:
+		status_bm._state = BattleState.new()
+		status_bm._combat = CombatSimulator.new()
+		var holder := GachaBallInstance.new()
+		holder.initialize(Database.get_definition(&"FFigMec"))
+		assert(status_bm._state.bm_add_instance(holder, container_tag, 0))
+		var candy := GachaBallInstance.new()
+		candy.initialize(candy_definition)
+		assert(InventoryOperations.register_and_equip_item(status_bm._state, candy, holder.ball_uuid).success)
+		var snapshot: Dictionary = status_bm.get_board_snapshot()
+		_assert_ok(not snapshot.has(candy.ball_uuid), "Equipped HardCandy has no independent battle view")
+		var context := TriggerContext.new()
+		context.trigger_type = candy_ability.trigger
+		context.damage_dealt = 7
+		var events: Array[CombatEvent] = []
+		for effect: EffectDefinition in candy_ability.effects:
+			var request := EffectRequest.new(candy.ball_uuid, candy_ability.id, effect, [holder.ball_uuid], context)
+			status_bm._combat.resolve_effect_request(request, events, {}, status_bm)
+		_assert_ok(events.size() == 2, "HardCandy emits separate Armor and Spikes events for %s" % container_tag)
+		for event: CombatEvent in events:
+			_assert_ok(event.type == CombatEvent.Type.STATUS_EFFECT, "HardCandy emits status events")
+			_assert_ok(event.source_uuid == candy.ball_uuid, "HardCandy retains its logical item source")
+			_assert_ok(event.visual_payload.source_uuid == holder.ball_uuid, "HardCandy projectiles originate from its holder")
+			_assert_ok(snapshot.has(event.visual_payload.source_uuid), "HardCandy projectile source is in the presentation snapshot")
+			_assert_ok(event.visual_payload.amount == 3 and event.visual_payload.targets_new_val == [3], "HardCandy preserves half-damage stack amounts")
+		_assert_ok(holder.get_status_effect_amount(&"armor") == 3 and holder.get_status_effect_amount(&"spikes") == 3, "HardCandy still grants both statuses")
+
+		# Unit, trinket, and unsourced status effects keep their own visual origin.
+		var status_effect: EffectDefinition = preload("res://scripts/EffectApplyStatus.gd").new()
+		status_effect.parameters = {"status_id": "burn", "amount": 1}
+		var trinket := GachaBallInstance.new()
+		trinket.initialize_from_trinket(Database.trinkets[&"trinket_polished_plate"])
+		assert(status_bm._state.bm_add_instance(trinket, &"PlayerTrinkets", 0))
+		for source_uuid: String in [holder.ball_uuid, trinket.ball_uuid, ""]:
+			var source_events: Array[CombatEvent] = []
+			var request := EffectRequest.new(source_uuid, &"apply_status", status_effect, [holder.ball_uuid], TriggerContext.new())
+			status_bm._combat.resolve_effect_request(request, source_events, {}, status_bm)
+			_assert_ok(source_events.size() == 1, "Status source case emits one event")
+			_assert_ok(source_events[0].visual_payload.source_uuid == source_uuid, "Non-item status source remains unchanged")
+	status_bm.free()
+
 # ==============================================================================
 # SUITE 7 IMPLEMENTATION: Novice Set Integration & Mechanics
 # ==============================================================================
@@ -1423,25 +1471,25 @@ func _run_suite_7_novice_set() -> void:
 		_assert_ok(emblem_def.tags.has(&"Novice"), "Novice Emblem item must have trait tag Novice")
 
 	# 3. Novice trinkets in Database
-	var sigil: TrinketDefinition = Database.trinkets.get(&"trinket_trait_novice")
-	_assert_ok(sigil != null, "trinket_trait_novice must exist in Database")
-	if sigil != null:
-		_assert_ok(sigil.linked_trait_id == &"NOVICE", "trinket_trait_novice must have linked_trait_id NOVICE")
+	var crest: TrinketDefinition = Database.trinkets.get(&"trinket_trait_novice")
+	_assert_ok(crest != null, "trinket_trait_novice must exist in Database")
+	if crest != null:
+		_assert_ok(crest.linked_trait_id == &"NOVICE", "trinket_trait_novice must have linked_trait_id NOVICE")
 		for loc in ["en", "pt_BR"]:
 			TranslationServer.set_locale(loc)
-			var sigil_name: String = TranslationServer.translate(sigil.name_key)
-			var sigil_desc: String = TranslationServer.translate(sigil.description_key)
-			_assert_ok(not sigil_name.is_empty() and sigil_name != sigil.name_key, "[%s] trinket_trait_novice name must be translated" % loc)
-			_assert_ok(not sigil_desc.is_empty() and sigil_desc != sigil.description_key, "[%s] trinket_trait_novice desc must be translated" % loc)
+			var crest_name: String = TranslationServer.translate(crest.name_key)
+			var crest_desc: String = TranslationServer.translate(crest.description_key)
+			_assert_ok(not crest_name.is_empty() and crest_name != crest.name_key, "[%s] trinket_trait_novice name must be translated" % loc)
+			_assert_ok(not crest_desc.is_empty() and crest_desc != crest.description_key, "[%s] trinket_trait_novice desc must be translated" % loc)
 			
 			var inst := GachaBallInstance.new()
-			inst.initialize_from_trinket(sigil)
+			inst.initialize_from_trinket(crest)
 			var window = preload("res://scenes/ItemInspectionWindow.tscn").instantiate()
 			get_tree().root.add_child(window)
 			window.populate({"instance": inst, "is_preview": true})
 			var window_text: String = window.description_label.text
 			_assert_ok(not window_text.contains("trait.novice"), "[%s] ItemInspectionWindow contains raw key trait.novice: %s" % [loc, window_text])
-			_assert_ok(window_text.contains(sigil_desc), "[%s] ItemInspectionWindow must contain base passive: %s" % [loc, sigil_desc])
+			_assert_ok(window_text.contains(crest_desc), "[%s] ItemInspectionWindow must contain base passive: %s" % [loc, crest_desc])
 			window.queue_free()
 
 			var trait_window = preload("res://scenes/TraitInspectionWindow.tscn").instantiate()
@@ -1515,17 +1563,17 @@ func _run_suite_7_novice_set() -> void:
 	# Verify Dan starter instances in RunState
 	var dan_starter_novpla_found: bool = false
 	var dan_study_pouch_found: bool = false
-	var dan_novice_sigil_found: bool = false
+	var dan_novice_crest_found: bool = false
 	for inst in dan_run.get_all_instances().values():
 		if inst.definition_id == &"?NovPla":
 			dan_starter_novpla_found = true
 		elif inst.definition_id == &"item_study_pouch":
 			dan_study_pouch_found = true
 		elif inst.definition_id == &"trinket_trait_novice":
-			dan_novice_sigil_found = true
+			dan_novice_crest_found = true
 	_assert_ok(dan_starter_novpla_found, "Dan starter instances must contain ?NovPla")
 	_assert_ok(dan_study_pouch_found, "Dan starter instances must contain item_study_pouch")
-	_assert_ok(dan_novice_sigil_found, "Dan starter instances must contain trinket_trait_novice")
+	_assert_ok(dan_novice_crest_found, "Dan starter instances must contain trinket_trait_novice")
 
 	# 6. Battle mechanics (Tokens, Minigame Bonus Time, Effects)
 	var old_rs = GameManager.run_state
@@ -1823,7 +1871,7 @@ func _run_suite_7_novice_set() -> void:
 
 	GameManager.run_state = old_rs
 
-	# Novice Sigil 3-Token Floor verification (Trinket-bound, works on any hero)
+	# Novice Crest 3-Token Floor verification (Trinket-bound, works on any hero)
 	var fm_test_rs := RunState.new()
 	fm_test_rs.initialize_run(&"hero_avenger", &"")
 	GameManager.run_state = fm_test_rs
@@ -1831,17 +1879,17 @@ func _run_suite_7_novice_set() -> void:
 	FlashcardManager.is_session_active = true
 	FlashcardManager.tokens_earned = 1
 	FlashcardManager._on_minigame_complete(1, 0)
-	_assert_ok(FlashcardManager.tokens_earned == 1, "Without Novice Sigil, tokens earned remain 1 (no floor)")
+	_assert_ok(FlashcardManager.tokens_earned == 1, "Without Novice Crest, tokens earned remain 1 (no floor)")
 
-	# Equip Novice Sigil
-	var sigil_def: TrinketDefinition = Database.trinkets.get(&"trinket_trait_novice")
-	var sigil_inst := GachaBallInstance.new()
-	sigil_inst.initialize_from_trinket(sigil_def)
-	fm_test_rs.add_instance(sigil_inst, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+	# Equip Novice Crest
+	var crest_def: TrinketDefinition = Database.trinkets.get(&"trinket_trait_novice")
+	var crest_inst := GachaBallInstance.new()
+	crest_inst.initialize_from_trinket(crest_def)
+	fm_test_rs.add_instance(crest_inst, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 	FlashcardManager.is_session_active = true
 	FlashcardManager.tokens_earned = 1
 	FlashcardManager._on_minigame_complete(1, 0)
-	_assert_ok(FlashcardManager.tokens_earned == 3, "With Novice Sigil, tokens earned are floored to 3 (even on non-Dan hero)")
+	_assert_ok(FlashcardManager.tokens_earned == 3, "With Novice Crest, tokens earned are floored to 3 (even on non-Dan hero)")
 
 	# Dan's Soul Harvest: 100% dead ally PWR absorption
 	var harvest_effect := EffectGainDeadAllyPwrAsHPScript.new()
@@ -1923,7 +1971,7 @@ func _run_suite_7_novice_set() -> void:
 	proj.free()
 
 	# Novice Trait Bronze verification (+1.0s to minigame when 2+ Novices active)
-	harvest_bm._state.bm_add_instance(sigil_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+	harvest_bm._state.bm_add_instance(crest_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
 	var second_novice := GachaBallInstance.new()
 	second_novice.initialize(test_ally_def)
 	harvest_bm._state.bm_add_instance(second_novice, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 3)
@@ -1978,6 +2026,48 @@ func _run_suite_7_novice_set() -> void:
 	main_scene.free()
 	harvest_bm.queue_free()
 	GameManager.unregister_battle_manager()
+
+	# ----------------------------------------------------
+	# Dynamic Hero Pack Tags & Elemental Crest Regression Tests
+	# ----------------------------------------------------
+	var dynamic_rs := RunState.new()
+	dynamic_rs.initialize_run(&"hero_starter", &"hiragana")
+	GameManager.run_state = dynamic_rs
+
+	var rolled_elem: StringName = dynamic_rs.hero_element
+	_assert_ok(not rolled_elem.is_empty(), "RunState.hero_element must be non-empty upon run initialization")
+	var nov_def: GachaBallDefinition = Database.units[&"?NovPla"]
+	_assert_ok(nov_def.tags.has(&"?"), "Database.units['?NovPla'].tags must remain unmutated on disk/flyweight ([?])")
+	_assert_ok(not nov_def.tags.has(rolled_elem), "Database.units['?NovPla'].tags must NOT be directly mutated")
+
+	var nov_inst := GachaBallInstance.new()
+	nov_inst.initialize(nov_def)
+	var active_nov_tags := nov_inst.get_active_tags(dynamic_rs.get_all_instances())
+	_assert_ok(active_nov_tags.has(rolled_elem), "Novice instance must inherit dynamic hero element (%s) via RunState" % rolled_elem)
+
+	# Save/Load roundtrip verification
+	var save_dict := dynamic_rs.to_save_dict()
+	var restored_rs := RunState.new()
+	restored_rs.from_save_dict(save_dict)
+	GameManager.run_state = restored_rs
+	_assert_ok(restored_rs.hero_element == rolled_elem, "Restored RunState must preserve hero_element across save/load")
+	_assert_ok(restored_rs.dynamic_tag_overrides.has(&"?NovPla"), "Restored RunState must re-adapt dynamic_tag_overrides")
+
+	var restored_nov_inst := GachaBallInstance.new()
+	restored_nov_inst.initialize(nov_def)
+	var restored_tags := restored_nov_inst.get_active_tags(restored_rs.get_all_instances())
+	_assert_ok(restored_tags.has(rolled_elem), "Novice instance under restored RunState must retain hero element (%s)" % rolled_elem)
+
+	# Trait Crest Trinket Count Test (Hero's 3 souls counted outside & inside battle)
+	var hero_souls_dict := restored_rs.hero_instance.get_trait_soul_counts(restored_rs.get_all_instances())
+	var elem_key := String(rolled_elem).trim_prefix("SOUL_")
+	_assert_ok(hero_souls_dict.get(elem_key, 0) == 3, "Hero must have 3 elemental souls of %s" % elem_key)
+
+	var gb_view := preload("res://scenes/GachaBallView.tscn").instantiate()
+	add_child(gb_view)
+	var run_count: int = gb_view._get_run_trait_count_for_view(elem_key)
+	_assert_ok(run_count >= 3, "_get_run_trait_count_for_view must count hero's 3 souls (got %d)" % run_count)
+	gb_view.queue_free()
 
 	GameManager.run_state = old_rs
 
@@ -2114,26 +2204,27 @@ func _run_suite_8_alternating_initiative() -> void:
 	_assert_ok(sim.actor_queue_size() == prev_q_size + 1, "Summon in future slot (step 5 > 2) is queued")
 	_assert_ok(sim.get_actor_queue().has(summon_p2), "Summoned unit is present in actor queue")
 
-	# 6. Bench summon slot search (Left to Right: 0 -> Size - 1)
-	var bench_state := BattleState.new()
-	var p_bench := bench_state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-	var e_bench := bench_state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+	# 6. Shelf summon slot search (Left to Right: 0 -> Size - 1)
+	var shelf_state := BattleState.new()
+	shelf_state.player_shelf_slots_unlocked = C.SHELF_CAP
+	var p_shelf := shelf_state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
+	var e_shelf := shelf_state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF)
 
-	# Empty bench: Player and Enemy both find Slot 0 (leftmost)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_bench, true) == 0, "Empty player bench finds Slot 0 (leftmost)")
-	_assert_ok(EffectHandlers.find_best_summon_slot(e_bench, false) == 0, "Empty enemy bench finds Slot 0 (leftmost)")
+	# Empty shelf: Player and Enemy both find Slot 0 (leftmost)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 0, "Empty player shelf finds Slot 0 (leftmost)")
+	_assert_ok(EffectHandlers.find_best_summon_slot(e_shelf, false) == 0, "Empty enemy shelf finds Slot 0 (leftmost)")
 
 	# If Slot 0 is taken, Player finds Slot 1
 	var b0 := GachaBallInstance.new()
 	b0.initialize(def)
-	bench_state.bm_add_instance(b0, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, 0)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_bench, true) == 1, "Player bench finds Slot 1 when Slot 0 is taken")
+	shelf_state.bm_add_instance(b0, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, 0)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 1, "Player shelf finds Slot 1 when Slot 0 is taken")
 
 	# If Slots 0 and 2 are taken, Player finds Slot 1 (first available from left to right)
 	var b2 := GachaBallInstance.new()
 	b2.initialize(def)
-	bench_state.bm_add_instance(b2, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, 2)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_bench, true) == 1, "Player bench finds Slot 1 when Slots 0 and 2 are taken")
+	shelf_state.bm_add_instance(b2, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, 2)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 1, "Player shelf finds Slot 1 when Slots 0 and 2 are taken")
 
 	# If Slots 0 through 6 are taken, Player finds Slot 7 (rightmost)
 	for i in range(1, 7):
@@ -2141,16 +2232,16 @@ func _run_suite_8_alternating_initiative() -> void:
 			continue
 		var bi := GachaBallInstance.new()
 		bi.initialize(def)
-		bench_state.bm_add_instance(bi, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, i)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_bench, true) == 7, "Player bench finds Slot 7 when Slots 0-6 are taken")
+		shelf_state.bm_add_instance(bi, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, i)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 7, "Player shelf finds Slot 7 when Slots 0-6 are taken")
 
 	# If all 8 slots are taken, returns -1
 	var b7 := GachaBallInstance.new()
 	b7.initialize(def)
-	bench_state.bm_add_instance(b7, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, 7)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_bench, true) == -1, "Full player bench returns -1")
+	shelf_state.bm_add_instance(b7, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, 7)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == -1, "Full player shelf returns -1")
 
-	# 7. End-to-end Recruiting Charm bench summon (left to right placement)
+	# 7. End-to-end Recruiting Charm shelf summon (left to right placement)
 	var recruit_bm = BattleManagerScript.new()
 	add_child(recruit_bm)
 	recruit_bm.add_to_group("battle_manager")
@@ -2167,18 +2258,18 @@ func _run_suite_8_alternating_initiative() -> void:
 	recruit_ctx.is_simulation = true
 	recruit_ctx.trigger_type = C.TRIGGER_AT_TURN_START
 
-	# First summon: Bench is empty, so Coinling must be placed in Slot 0 (leftmost)
+	# First summon: Shelf is empty, so Coinling must be placed in Slot 0 (leftmost)
 	var res1 := recruiting_effect.execute("trinket_uuid", [], recruit_bm, recruit_ctx)
-	_assert_ok(res1.state_applied and not res1.summon_units_request.is_empty(), "Recruiting Charm executes with gold and open bench")
-	_assert_ok(res1.summon_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, "Recruiting Charm targets PlayerBench")
+	_assert_ok(res1.state_applied and not res1.summon_units_request.is_empty(), "Recruiting Charm executes with gold and open shelf")
+	_assert_ok(res1.summon_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, "Recruiting Charm targets PlayerShelf")
 	
 	var cmd1 := SummonUnitsCommand.new(EffectRequest.new("trinket_uuid", &"ability_trinket_recruiting_charm", recruiting_effect, [], recruit_ctx), sim, recruit_bm, res1)
 	var out_evts1: Array[CombatEvent] = []
 	var death_track1: Dictionary = {}
 	cmd1.execute(out_evts1, death_track1)
 
-	var placed_uuid1: String = recruit_bm.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH).get_uuid(0)
-	_assert_ok(not placed_uuid1.is_empty(), "First Coinling placed in bench Slot 0 (leftmost)")
+	var placed_uuid1: String = recruit_bm.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF).get_uuid(0)
+	_assert_ok(not placed_uuid1.is_empty(), "First Coinling placed in shelf Slot 0 (leftmost)")
 	var placed_unit1: GachaBallInstance = recruit_bm.get_instance_by_uuid(placed_uuid1)
 	_assert_ok(placed_unit1 != null and placed_unit1.definition_id == &"?MerSpe", "Placed unit in Slot 0 is Coinling (?MerSpe)")
 
@@ -2189,11 +2280,22 @@ func _run_suite_8_alternating_initiative() -> void:
 	var death_track2: Dictionary = {}
 	cmd2.execute(out_evts2, death_track2)
 
-	var placed_uuid2: String = recruit_bm.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH).get_uuid(1)
-	_assert_ok(not placed_uuid2.is_empty(), "Second Coinling placed in bench Slot 1 (left to right)")
+	var placed_uuid2: String = recruit_bm.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF).get_uuid(1)
+	_assert_ok(not placed_uuid2.is_empty(), "Second Coinling placed in shelf Slot 1 (left to right)")
 	var placed_unit2: GachaBallInstance = recruit_bm.get_instance_by_uuid(placed_uuid2)
 	_assert_ok(placed_unit2 != null and placed_unit2.definition_id == &"?MerSpe", "Placed unit in Slot 1 is Coinling (?MerSpe)")
 	_assert_ok(recruit_rs.gold == 3, "2 Gold spent for 2 hires (5 - 2 = 3)")
+
+	# 5. Fire Banner Free Fire Crest Check
+	var fire_drafter := FireBannerDrafter.new()
+	var fire_enc_low: EncounterDefinition = fire_drafter.draft_lineup(3)
+	_assert_ok(fire_enc_low.banner_trinket_id == &"trinket_banner_fire_phalanx", "Low budget banner ID is trinket_banner_fire_phalanx")
+	_assert_ok(fire_enc_low.enemy_trinket_ids.has(&"trinket_trait_fire"), "Fire Banner gives Fire Crest for free at low budget (3G)")
+	_assert_ok(fire_enc_low.enemy_placements.size() >= 2, "Lineup has core units drafted without 5G deduction")
+
+	var fire_enc_high: EncounterDefinition = fire_drafter.draft_lineup(15)
+	_assert_ok(fire_enc_high.banner_trinket_id == &"trinket_banner_fire_phalanx", "High budget banner ID is trinket_banner_fire_phalanx")
+	_assert_ok(fire_enc_high.enemy_trinket_ids.has(&"trinket_trait_fire"), "Fire Banner gives Fire Crest for free at high budget (15G)")
 
 	GameManager.run_state = old_rs_rec
 	recruit_bm.queue_free()

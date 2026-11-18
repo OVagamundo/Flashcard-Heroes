@@ -49,32 +49,8 @@ func _ready() -> void:
 	_load_resources_from_path("res://resources/abilities/", abilities)
 	_load_resources_from_path("res://resources/abilities/consumables/", abilities)
 	
-	_apply_global_textures()
-	ArtStyleManager.style_changed.connect(_apply_global_textures)
-
-	
 	# Load flashcard definitions from JSON
 	_load_flashcard_definitions()
-
-func _apply_global_textures() -> void:
-	for dict in [units, items, trinkets, recipes, abilities]:
-		for def in dict.values():
-			if not is_instance_valid(def): continue
-			
-			for prop in def.get_property_list():
-				if prop.type == TYPE_OBJECT:
-					var val = def.get(prop.name)
-					if val is Texture2D:
-						# Ensure we store the original texture before modifying it
-						var meta_key = "original_" + prop.name
-						if not def.has_meta(meta_key):
-							def.set_meta(meta_key, val)
-							
-						var original = def.get_meta(meta_key)
-						if original:
-							var new_tex = ArtStyleManager.get_themed_texture(original)
-							if new_tex != val:
-								def.set(prop.name, new_tex)
 
 # -----------------------------
 # Public API
@@ -156,7 +132,7 @@ func _load_translations() -> void:
 			push_error("CRITICAL: Failed to load translation file '%s'" % translation_path)
 	
 	# Set default locale and apply its font
-	set_locale("en")
+	set_locale("pt_BR")
 
 ## Returns the dedicated font for a given locale (or its base language code)
 func get_font_for_locale(locale: String) -> Font:
@@ -371,9 +347,6 @@ func get_eligible_summon_units(tier: int, is_player: bool, active_set: StringNam
 		if unit_def.is_hero:
 			continue
 		if unit_def.tags.has(&"BOSS") or unit_def.tags.has(&"TOKEN") or unit_def.tags.has(&"HIDDEN"):
-			continue
-		var unit_id_lower := String(unit_def.id).to_lower()
-		if unit_id_lower.contains("dust") or unit_id_lower.contains("elite"):
 			continue
 
 		var u_set: StringName = get_entity_set(unit_def)

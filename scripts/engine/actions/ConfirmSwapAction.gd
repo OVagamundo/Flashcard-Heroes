@@ -13,7 +13,11 @@ func _init(p_source_loc: LocationIdentifier = null, p_target_loc: LocationIdenti
 func validate() -> bool:
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return false
-	return true
+	var source_instance: GachaBallInstance = GameManager.get_instance_from_location(source_loc)
+	var target_instance: GachaBallInstance = GameManager.get_instance_from_location(target_loc)
+	if source_instance == null or target_instance == null:
+		return false
+	return InventoryManager.is_valid_placement(source_instance, target_loc) and InventoryManager.is_valid_placement(target_instance, source_loc)
 
 func execute() -> void:
 	InventoryManager._on_choice_made(&"SWAP", source_loc, target_loc, &"")

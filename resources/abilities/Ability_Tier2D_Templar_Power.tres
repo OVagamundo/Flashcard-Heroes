@@ -15,6 +15,7 @@ script = ExtResource("1_script")
 id = &"ability_unit_t2_d_power"
 description_key = "ability.unit_t2_d_power_l1.desc"
 trigger = &"on_gacha_tokens_changed"
+activation_scope = 1
 effects = Array[Resource]([SubResource("Resource_effect")])
 sub_phase = 64
 replaces_basic_attack = false

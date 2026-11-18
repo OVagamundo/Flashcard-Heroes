@@ -5,8 +5,12 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 const C = preload("res://scripts/Constants.gd")
+const LEVEL_1_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_1_stars.png")
+const LEVEL_2_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_2_stars.png")
+const LEVEL_3_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_3_stars.png")
 
 @onready var name_label: Label = %NameLabel
+@onready var level_stars_icon: TextureRect = %LevelStarsIcon
 @onready var trait_tags_container: HFlowContainer = %TraitTagsContainer
 @onready var attack_row: RichTextLabel = %AttackRow
 @onready var view_container: CenterContainer = %ViewContainer
@@ -116,6 +120,7 @@ func populate(context: Dictionary) -> void:
 	name_label.text = tr(unit_definition.display_name_key)
 	name_label.add_theme_font_override("font", Database.get_current_locale_font())
 	name_label.add_theme_font_size_override("font_size", 26)
+	_update_level_star_display()
 	
 	var title_color: Color = Color("#0F172A") # High-contrast charcoal default
 	match unit_definition.tier:
@@ -150,6 +155,17 @@ func _deferred_shrink() -> void:
 	if not is_instance_valid(self):
 		return
 	_reset_window_size()
+
+func _update_level_star_display() -> void:
+	assert(_instance.level >= 1 and _instance.level <= 3, "UnitInspectionWindow: unit level must be between 1 and 3")
+	match _instance.level:
+		1:
+			level_stars_icon.texture = LEVEL_1_STARS_TEXTURE
+		2:
+			level_stars_icon.texture = LEVEL_2_STARS_TEXTURE
+		3:
+			level_stars_icon.texture = LEVEL_3_STARS_TEXTURE
+	level_stars_icon.visible = true
 
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
@@ -233,6 +249,7 @@ func _update_equipped_items_display() -> void:
 		
 		# Build item abilities description
 		var abilities_lines: Array[String] = []
+		var seen_ability_descriptions: Dictionary[String, bool] = {}
 		for entry in item_inst.get_active_ability_entries(all_instances_db):
 			var ability: AbilityDefinition = entry.get("ability_def")
 			if not is_instance_valid(ability):
@@ -243,7 +260,10 @@ func _update_equipped_items_display() -> void:
 			if not ab_desc.is_empty():
 				ab_desc = ab_desc.replace("(PWR)", str(item_inst.current_pwr) + " (PWR)")
 				ab_desc = ab_desc.replace("(HP)", str(item_inst.current_hp) + " (HP)")
-				abilities_lines.append(ab_desc)
+				var description_signature: String = ab_desc.strip_edges()
+				if not seen_ability_descriptions.has(description_signature):
+					seen_ability_descriptions[description_signature] = true
+					abilities_lines.append(ab_desc)
 				
 		var desc_text = "\n".join(abilities_lines).strip_edges()
 		if desc_text.is_empty() and "description_key" in item_def:
@@ -450,6 +470,7 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 		var current_instance: GachaBallInstance = all_instances.get(_inspected_unit_uuid)
 		if is_instance_valid(current_instance):
 			_instance = current_instance
+			_update_level_star_display()
 			_update_description()
 			_update_unit_view()
 			_reset_window_size()
@@ -466,6 +487,7 @@ func _on_inventory_changed() -> void:
 	
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
+	_update_level_star_display()
 	_update_description()
 	_update_unit_view()
 	_update_equipped_items_display()
@@ -490,6 +512,7 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	
 	# The unit still exists, so we just need to refresh the item grid.
 	_instance = current_instance # Ensure we have the latest data
+	_update_level_star_display()
 	_update_description()
 	_update_equipped_items_display()
 	_update_trait_display()
@@ -627,7 +650,7 @@ func _update_unit_view() -> void:
 	slot_view.set_size_scale(2.0)
 	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
 	
-	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"PlayerBench"
+	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"PlayerShelf"
 	slot_view.set_slot_color(slot_color)
 	
 	# Disconnect interactive / indicator signals for inspection view

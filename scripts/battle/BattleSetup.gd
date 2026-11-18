@@ -50,7 +50,7 @@ static func get_ordered_run_state_instances() -> Array[GachaBallInstance]:
 		
 	var containers_to_check: Array[StringName] = [
 		RunState.RUN_CONTAINER_TAGS.PLAYER_LINEUP,
-		RunState.RUN_CONTAINER_TAGS.PLAYER_BENCH,
+		RunState.RUN_CONTAINER_TAGS.PLAYER_SHELF,
 		&"RunInventoryT1",
 		&"RunInventoryT2",
 		&"RunInventoryT3",
@@ -175,14 +175,14 @@ static func setup_from_run_state(state: BattleState) -> void:
 				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
 					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 					target_index = perm_loc.index
-				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
-					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+				RS.RUN_CONTAINER_TAGS.PLAYER_SHELF:
+					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 					target_index = perm_loc.index
 				_:
 					assert(false, "BattleSetup: unhandled container %s for %s" % [perm_loc.container, perm_inst.ball_uuid])
 					continue
 
-		var added: bool = state.bm_add_instance(battle_copy, target_container_name, target_index)
+		var added: bool = state.bm_add_instance(battle_copy, target_container_name, target_index, true)
 		assert(added, "BattleSetup: failed to place %s into %s:%d" % [battle_copy.ball_uuid, String(target_container_name), target_index])
 		for eq_uuid in battle_copy.equipped_item_uuids:
 			if not eq_uuid.is_empty() and battle_copies.has(eq_uuid):
@@ -203,19 +203,15 @@ static func stage_enemy_lineup(state: RefCounted, encounter_def: Resource) -> vo
 		if not is_instance_valid(unit_def):
 			continue
 			
-		var pos = placement.get("position", 0)
-		var scale: float = 1.0
-		if encounter_def.has_meta("elite_stat_scale") and pos == 4:
-			var id_str = String(unit_id)
-			if not id_str.contains("unit_dust_elite"):
-				scale = float(encounter_def.get_meta("elite_stat_scale"))
-		
+		var pos: int = int(placement.get("position", 0))
 		var equipment = placement.get("equipment", placement.get("items", []))
 		state.staged_enemy_placements.append({
 			"id": unit_id,
 			"position": pos,
-			"equipment": equipment,
-			"elite_stat_scale": scale
+			"level": int(placement.get("level", 1)),
+			"bonus_hp": int(placement.get("bonus_hp", 0)),
+			"bonus_pwr": int(placement.get("bonus_pwr", 0)),
+			"equipment": equipment
 		})
 
 static func setup_enemy_lineup(state: BattleState, encounter_def: Resource) -> void:
@@ -232,19 +228,18 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: Resource) -> v
 		if not is_instance_valid(unit_def):
 			continue
 
-		var enemy_inst = GachaBallInstance.new()
+		var enemy_inst := GachaBallInstance.new()
 		enemy_inst.initialize(unit_def)
 
+		var unit_level: int = int(placement.get("level", 1))
+		if unit_level > 1:
+			enemy_inst.set_unit_level(unit_level)
+		var b_hp: int = int(placement.get("bonus_hp", 0))
+		var b_pwr: int = int(placement.get("bonus_pwr", 0))
+		if b_hp != 0 or b_pwr != 0:
+			enemy_inst.apply_encounter_stat_bonus(b_hp, b_pwr)
+
 		var pos: int = int(placement.get("position", 0))
-		if encounter_def.has_meta("elite_stat_scale") and pos == 4:
-			var id_str = String(unit_id)
-
-			# Dust Elites use their own internal growth and should not be externally scaled
-			if not id_str.contains("unit_dust_elite"):
-				var scale: float = encounter_def.get_meta("elite_stat_scale")
-				enemy_inst.current_hp = maxi(1, int(floor(enemy_inst.current_hp * scale)))
-				enemy_inst.current_pwr = maxi(1, int(floor(enemy_inst.current_pwr * scale)))
-
 		var added: bool = state.bm_add_instance(enemy_inst, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
 		assert(added, "BattleSetup: failed to place enemy %s at EnemyLineup:%d" % [enemy_inst.ball_uuid, pos])
 
@@ -262,80 +257,35 @@ static func setup_enemy_lineup(state: BattleState, encounter_def: Resource) -> v
 				push_warning("BattleSetup: failed to equip static item %s on %s" % [item_id, enemy_inst.ball_uuid])
 
 static func setup_enemy_trinkets(state: BattleState, encounter_def: Resource) -> void:
-	if not is_instance_valid(encounter_def):
-		return
-	var et_container = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
-	if not is_instance_valid(et_container):
-		return
-	var slot_index := 0
-	var trinket_ids: Array = []
-	var encounter_trinket_ids = encounter_def.get("enemy_trinket_ids")
-	if encounter_trinket_ids is Array:
-		trinket_ids.assign(encounter_trinket_ids)
-	_append_missing_enemy_trait_trinkets(encounter_def, trinket_ids, et_container.get_size())
-	for trinket_id in trinket_ids:
-		if slot_index >= et_container.get_size():
-			break
-		var trinket_def = Database.get_definition(trinket_id)
-		if not is_instance_valid(trinket_def) or trinket_def.get("is_player_exclusive") == true:
+	var encounter: EncounterDefinition = encounter_def as EncounterDefinition
+	assert(encounter != null, "BattleSetup requires an EncounterDefinition")
+	var et_container: DataContainer = state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS)
+	var banner_id: StringName = encounter.banner_trinket_id
+	var trinket_definitions: Array[TrinketDefinition] = []
+	for trinket_id: StringName in encounter.enemy_trinket_ids:
+		var trinket_def: TrinketDefinition = Database.get_definition(trinket_id) as TrinketDefinition
+		assert(trinket_def != null and not trinket_def.is_player_exclusive, "Invalid enemy trinket: %s" % trinket_id)
+		# Normalize legacy saved encounters at the setup boundary.
+		if trinket_def.is_banner:
+			assert(banner_id.is_empty() or banner_id == trinket_id, "Encounter contains conflicting banners")
+			banner_id = trinket_id
 			continue
-		var trinket_inst := GachaBallInstance.new()
-		trinket_inst.initialize_from_trinket(trinket_def)
+		trinket_definitions.append(trinket_def)
+	# Register the commander first to preserve the existing ability ordering.
+	if not banner_id.is_empty():
+		var banner_def: TrinketDefinition = Database.get_definition(banner_id) as TrinketDefinition
+		assert(banner_def != null and banner_def.is_banner and banner_def.is_enemy_exclusive, "Invalid encounter banner: %s" % banner_id)
+		var banner: GachaBallInstance = GachaBallInstance.new()
+		banner.initialize_from_trinket(banner_def)
+		var added: bool = state.bm_add_instance(banner, C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER, 0)
+		assert(added, "BattleSetup: failed to place encounter banner %s" % banner_id)
+	assert(trinket_definitions.size() <= et_container.get_size(), "Encounter exceeds enemy trinket capacity")
+	for slot_index: int in range(trinket_definitions.size()):
+		var trinket_inst: GachaBallInstance = GachaBallInstance.new()
+		trinket_inst.initialize_from_trinket(trinket_definitions[slot_index])
 		var added: bool = state.bm_add_instance(trinket_inst, C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, slot_index)
 		assert(added, "BattleSetup: failed to place enemy trinket %s at slot %d" % [trinket_inst.ball_uuid, slot_index])
 		state.enemy_trinkets.append(trinket_inst)
-		slot_index += 1
-
-static func _append_missing_enemy_trait_trinkets(encounter_def: Resource, trinket_ids: Array, max_slots: int) -> void:
-	var trait_counts: Dictionary = {}
-	for t in C.TRAIT_SORT_ORDER:
-		trait_counts[t] = 0
-
-	var placements = encounter_def.get("enemy_placements")
-	if not placements is Array:
-		return
-
-	for placement in placements:
-		var unit_def = Database.get_definition(placement.get("id", placement.get("unit_id", "")))
-		_accumulate_trait_souls(trait_counts, unit_def)
-		var equipment = placement.get("equipment", placement.get("items", []))
-		for item_data in equipment:
-			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
-			var item_def = Database.get_definition(item_id)
-			_accumulate_trait_souls(trait_counts, item_def)
-
-	for trait_name in C.TRAIT_SORT_ORDER:
-		if trinket_ids.size() >= max_slots:
-			break
-		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
-		var levels: Array = trait_def.get("levels", [])
-		if levels.is_empty():
-			continue
-		var min_required := int(levels[0].get("min", 999))
-		if int(trait_counts.get(trait_name, 0)) < min_required:
-			continue
-		var trinket_id: StringName = trait_def.get("trinket_id", &"")
-		if trinket_id == &"" or trinket_ids.has(trinket_id):
-			continue
-		trinket_ids.append(trinket_id)
-
-static func _accumulate_trait_souls(counts: Dictionary, definition: Resource) -> void:
-	if not is_instance_valid(definition) or not ("tags" in definition):
-		return
-	for tag in definition.tags:
-		match tag:
-			&"SOUL_FIRE":
-				counts["FIRE"] = counts.get("FIRE", 0) + 1
-			&"SOUL_EARTH":
-				counts["EARTH"] = counts.get("EARTH", 0) + 1
-			&"SOUL_WATER":
-				counts["WATER"] = counts.get("WATER", 0) + 1
-			&"SOUL_AIR":
-				counts["AIR"] = counts.get("AIR", 0) + 1
-			_:
-				var upper = String(tag).to_upper()
-				if counts.has(upper):
-					counts[upper] = counts.get(upper, 0) + 1
 
 
 static func setup_player_trinkets(state: BattleState) -> void:

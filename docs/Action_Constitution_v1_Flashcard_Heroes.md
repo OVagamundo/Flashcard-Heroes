@@ -51,13 +51,13 @@ This table provides a 1-to-1 dictionary showing how every existing trigger in [`
 | `&"passive_intercept"` | `TRIGGER_ON_INTERCEPT_ATTACK` | **`[Intercept Attack]`** | *"Intercepts attacks targeting allies..."* | `Guardian` |
 | `&"on_battle_start"` / `pre_combat`| `TRIGGER_AT_BATTLE_START` | **`[At Battle Start]`** | *"At the start of battle..."* | `Insignia Battle Start`, Toy trait |
 | `&"on_turn_start"` | `TRIGGER_AT_START_OF_TURN` | **`[At Start of Turn]`** | *"At the start of this unit's turn..."* | `Koi's Blessing`, `Polished Plate` |
-| `&"on_turn_end"` | `TRIGGER_AT_END_OF_TURN` | **`[At End of Turn]`** | *"At the end of the turn..."* | Burn status damage, `Boss 3 Summon` |
+| `&"on_turn_end"` | `TRIGGER_AT_END_OF_TURN` | **`[At End of Turn]`** | *"At the end of the turn..."* | Burn status damage, `Banner Reinforce Summon` |
 | `&"on_ally_summon"` | `TRIGGER_WHEN_ALLY_SUMMONED` | **`[When Ally Summoned]`** | *"When an ally is summoned..."* | `Mecha`, `Fire`, `Water Insignias` |
 | `&"on_enemy_summon"` | `TRIGGER_WHEN_ENEMY_SUMMONED` | **`[When Enemy Summoned]`** | *"When an enemy is summoned..."* | Anti-summon abilities |
 | `&"on_board_enter"` | `TRIGGER_ON_BOARD_ENTER` (Engine) | **`[When Entering Board]`** | *(Internal engine mounting event)* | `Merchant` initial PWR snapshot |
 | `&"on_draw"` | `TRIGGER_WHEN_DRAWN` | **`[When Drawn]`** | *"When drawn from the gacha..."* | `Support Insignia`, `Merchant` |
 | `&"on_merge"` | `TRIGGER_WHEN_MERGED` | **`[When Merged]`** | *"When merged..."* | `Merge Growth`, `Royal Insignia` |
-| `&"on_token_spent"` | `TRIGGER_WHEN_SPENDING_TOKENS` | **`[When Spending Tokens]`** | *"When spending a token..."* | `Boss 2 Token Drain` |
+| `&"on_token_spent"` | `TRIGGER_WHEN_SPENDING_TOKENS` | **`[When Spending Tokens]`** | *"When spending a token..."* | `Boss Token Drain` |
 | `&"on_gold_earned"` | `TRIGGER_WHEN_GAINING_GOLD` | **`[When Gaining Gold]`** | *"When gaining Gold..."* | `Merchant` dynamic scaling |
 | `&"on_bounty_rewarded"` | `TRIGGER_WHEN_CLAIMING_BOUNTY` | **`[When Claiming Bounty]`** | *"When claiming a bounty..."* | `Bounty Hunter` Gold reward |
 | `&"on_healed"` | `TRIGGER_WHEN_HEALED` | **`[When Healed]`** | *"When healed..."* | Unit HP restoration |

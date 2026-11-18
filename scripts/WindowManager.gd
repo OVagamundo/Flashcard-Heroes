@@ -24,9 +24,11 @@ var _window_scenes: Dictionary = {
 }
 
 var _modal_stack: Array[Control] = []
+var _active_tutorial_overlay: TutorialPopup = null
+var _pending_tutorial_overlays: Array[Dictionary] = []
 var _active_inspection_group: Array[Control] = []
 var _modal_child_windows: Dictionary = {}
-var is_glossary_locked: bool = false
+var is_glossary_locked: bool = true
 const _GlossaryTogglePillScene = preload("res://scenes/GlossaryTogglePill.tscn")
 var _glossary_pill: Control = null
 const INSPECTION_WINDOW_WIDTH: float = 360.0
@@ -180,22 +182,85 @@ func open_tutorial_overlay(context: Dictionary = {}) -> Control:
 	if not _window_scenes.has(&"TutorialPopup"):
 		push_error("[WindowManager] TutorialPopup not found in _window_scenes")
 		return null
-	
+
+	var tutorial_id: StringName = context.get("tutorial_id", &"")
+	if _active_tutorial_overlay != null:
+		if _active_tutorial_overlay.get_tutorial_id() == tutorial_id:
+			return _active_tutorial_overlay
+		for queued_context: Dictionary in _pending_tutorial_overlays:
+			if StringName(queued_context.get("tutorial_id", &"")) == tutorial_id:
+				return _active_tutorial_overlay
+		_pending_tutorial_overlays.append(context.duplicate())
+		return _active_tutorial_overlay
+
+	return _create_tutorial_overlay(context)
+
+
+func get_tutorial_popup(tutorial_id: StringName) -> TutorialPopup:
+	if _active_tutorial_overlay != null and _active_tutorial_overlay.get_tutorial_id() == tutorial_id:
+		return _active_tutorial_overlay
+	return null
+
+func is_tutorial_overlay_open() -> bool:
+	return _active_tutorial_overlay != null
+
+
+func is_game_paused_by_tutorial() -> bool:
+	return _active_tutorial_overlay != null and _active_tutorial_overlay.is_pausing_game()
+
+
+func advance_tutorial_page(tutorial_id: StringName, target_page: int) -> void:
+	if ActionQueue.is_headless_mode():
+		return
+	var popup := get_tutorial_popup(tutorial_id)
+	assert(popup != null, "No active tutorial popup for page advance: %s" % tutorial_id)
+	popup.set_page(target_page)
+
+
+func close_tutorial_overlay(tutorial_id: StringName) -> void:
+	if ActionQueue.is_headless_mode():
+		return
+	var popup := get_tutorial_popup(tutorial_id)
+	assert(popup != null, "No active tutorial popup to dismiss: %s" % tutorial_id)
+	popup._close_popup()
+
+
+func _create_tutorial_overlay(context: Dictionary) -> TutorialPopup:
 	# Do NOT close existing windows - tutorials overlay on top
-	var window_instance = _window_scenes[&"TutorialPopup"].instantiate()
+	var window_instance := _window_scenes[&"TutorialPopup"].instantiate() as TutorialPopup
 	window_instance.set_meta("window_type", &"TutorialPopup")
+	_active_tutorial_overlay = window_instance
+	window_instance.tree_exited.connect(_on_tutorial_overlay_exited.bind(window_instance.get_instance_id()), CONNECT_ONE_SHOT)
 	_get_modal_layer().add_child(window_instance)
 	window_instance.z_index = 100 # Ensure tutorial renders above all
 	# Add to modal stack so it can be properly cleaned up
 	_modal_stack.push_back(window_instance)
 	_register_window(window_instance, true)
 	
-	if window_instance.has_method("populate"):
-		window_instance.populate(context)
+	window_instance.populate(context)
 	
 	_animate_modal_open_deferred(window_instance)
 	
 	return window_instance
+
+
+func _on_tutorial_overlay_exited(window_id: int) -> void:
+	assert(_active_tutorial_overlay.get_instance_id() == window_id, "Active tutorial overlay changed before it exited")
+	_active_tutorial_overlay = null
+	_update_tree_pause_state()
+	call_deferred("_open_next_tutorial_overlay")
+
+
+func _open_next_tutorial_overlay() -> void:
+	if _active_tutorial_overlay != null:
+		return
+	while not _pending_tutorial_overlays.is_empty():
+		var context: Dictionary = _pending_tutorial_overlays.pop_front()
+		var tutorial_id: StringName = context.get("tutorial_id", &"")
+		if not TutorialManager.tutorials_enabled or TutorialManager.is_completed(tutorial_id):
+			continue
+		_create_tutorial_overlay(context)
+		return
 
 # Public entry point for the Inventory Window.
 # Routes to the dedicated BattleInventoryWindow during battle, or the
@@ -259,7 +324,7 @@ func open_child_contextual_window(window_type: StringName, anchor_view: Control,
 	}
 	return _open_contextual_window(context)
 
-# Public entry point for the Discard Pile Window.
+# Public entry point for the Discard Window.
 func open_discard_pile_window() -> void:
 	var win = _persistent_discard_pile_window
 	if not is_instance_valid(win):
@@ -278,7 +343,7 @@ func open_discard_pile_window() -> void:
 			_animate_discard_pile_close(win)
 			return
 
-	# We are about to open the discard pile, so close all other contexts gently
+	# We are about to open the Discard, so close all other contexts gently
 	for iter_win in _active_inspection_group:
 		if is_instance_valid(iter_win) and iter_win != win:
 			stop_tracking_window(iter_win.get_instance_id())
@@ -355,6 +420,19 @@ func open_trait_inspection_window(trait_id: String, source_view: Control) -> voi
 	# Use standard positioning logic (will use _track_inspection_anchor because parent_window is null)
 	_open_contextual_window(context)
 
+func open_description_inspection_window(title_key: String, description_key: String, source_view: Control) -> void:
+	var context: Dictionary = {
+		"window_type": &"EffectInspection",
+		"populate_context": {
+			"effect_definition": [{
+				"name_key": title_key,
+				"description_key": description_key
+			}]
+		},
+		"anchor_view": source_view
+	}
+	_open_contextual_window(context)
+
 # Public entry point for all inspection windows (Unit, Item, Effect).
 func open_inspection_window(loc: LocationIdentifier, source_view: Control) -> void:
 	if not is_instance_valid(source_view): return
@@ -424,7 +502,7 @@ func close_inventory_window(is_battle: bool = false) -> void:
 		stop_tracking_window(win.get_instance_id())
 		_queue_free_with_optional_inventory_animation(win)
 
-# Public API: explicitly close the discard pile drawer
+# Public API: explicitly close the Discard drawer
 func close_discard_pile_window() -> void:
 	var win: Control = _persistent_discard_pile_window
 	if is_instance_valid(win):
@@ -488,7 +566,7 @@ func is_point_inside_choice_window(pos: Vector2) -> bool:
 func is_modal_open() -> bool:
 	return not _modal_stack.is_empty()
 
-# Public API: check if ANY base inventory window (Battle, Run, or Discard Pile) is currently open
+# Public API: check if ANY base inventory window (Battle, Run, or Discard) is currently open
 func is_any_inventory_window_open() -> bool:
 	for i in range(_active_inspection_group.size() - 1, -1, -1):
 		var win = _active_inspection_group[i]
@@ -1536,7 +1614,7 @@ func _get_discard_pile_populate_context() -> Dictionary:
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		if is_instance_valid(bm): inventory_data = bm.get_discard_pile_inventory()
-	return {"inventory": inventory_data, "is_battle_context": GameManager.is_in_battle, "title": "Discard Pile", "is_interactive": false}
+	return {"inventory": inventory_data, "is_battle_context": GameManager.is_in_battle, "title": tr("ui.discard_pile"), "is_interactive": false}
 
 func _derive_window_payload(loc: LocationIdentifier, source_view: Control) -> Dictionary:
 	var payload: Dictionary = {}
@@ -1743,6 +1821,7 @@ func close_all_windows() -> void:
 	_close_all_windows()
 
 func _close_all_windows() -> void:
+	_pending_tutorial_overlays.clear()
 	close_all_inspection_windows(false)
 	while not _modal_stack.is_empty():
 		_close_top_modal()
@@ -2009,7 +2088,7 @@ func _update_tree_pause_state() -> void:
 	if not GameManager.is_in_battle:
 		has_tooltip = false
 		
-	get_tree().paused = has_tooltip
+	get_tree().paused = has_tooltip or is_game_paused_by_tutorial()
 
 func _get_modal_layer() -> CanvasLayer:
 	if not is_instance_valid(_modal_layer):
@@ -2066,7 +2145,7 @@ const _WM_META_OPENING: StringName = &"wm_opening"
 const _WM_META_CLOSING: StringName = &"wm_closing"
 const _WM_META_ANIM_TWEEN: StringName = &"wm_anim_tween"
 
-# Discard pile slides horizontally from the right
+# Discard slides horizontally from the right
 const DISCARD_PILE_HIDDEN_X: float = 1920.0
 const DISCARD_PILE_OPEN_X: float = 640.0
 
@@ -2261,11 +2340,11 @@ func _animate_inventory_window_open(window: Control) -> void:
 	
 	Audio.play_sfx("ui_window_open")
 
-	# The inner PanelContainer sits at Y = 320..860 natively (flush above the 200px machine bases at Y = 860).
-	var base_top: float = 320.0
-	var base_bottom: float = 860.0
+	# The inner PanelContainer sits at Y = 340..880 natively (flush above the 200px machine bases at Y = 880).
+	var base_top: float = 340.0
+	var base_bottom: float = 880.0
 	
-	# Start panel just below the Y = 860 clip line (inside the machine bases)
+	# Start panel just below the Y = 880 clip line (inside the machine bases)
 	var start_delta: float = 540.0
 	_apply_vertical_offset_delta(start_delta, anim_target, base_top, base_bottom)
 	
@@ -2322,15 +2401,15 @@ func _animate_inventory_window_close(window: Control) -> bool:
 	
 	_kill_inventory_motion_tween(window)
 	
-	var base_top: float = 320.0
-	var base_bottom: float = 860.0
+	var base_top: float = 340.0
+	var base_bottom: float = 880.0
 	var final_delta: float = 540.0
 	
 	var tween: Tween = window.create_tween()
 	window.set_meta(_WM_META_ANIM_TWEEN, tween)
 	tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
 	
-	# Slide the panel container back down behind the machine bases (Y = 860)
+	# Slide the panel container back down behind the machine bases (Y = 880)
 	tween.tween_method(
 		Callable(self , "_apply_vertical_offset_delta").bind(anim_target, base_top, base_bottom),
 		0.0,
@@ -2470,3 +2549,6 @@ func _animate_window_open(window: Control) -> void:
 	# Subtle overshoot (1.0 -> 1.04 -> 1.0)
 	tween.tween_property(window, "scale", Vector2(1.04, 1.04), 0.1).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 	tween.tween_property(window, "scale", Vector2.ONE, 0.15).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
+	if root_window is TutorialPopup:
+		var tutorial_popup := root_window as TutorialPopup
+		tween.finished.connect(tutorial_popup.set_interaction_enabled.bind(true))

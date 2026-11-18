@@ -67,3 +67,29 @@ CrashReport-*
 /android/
 Flashcard-Heroes-Godot-4.4.1/
 Godot_v4.6.1-stable_win64.exe
+
+# Local audio assets. Restore them at their original paths before importing in Godot.
+*.[mM][pP]3
+*.[oO][gG][gG]
+*.[oO][gG][aA]
+*.[wW][aA][vV]
+*.[wW][aA][vV][eE]
+*.[fF][lL][aA][cC]
+*.[mM]4[aA]
+*.[aA][aA][cC]
+*.[aA][iI][fF]
+*.[aA][iI][fF][fF]
+*.[oO][pP][uU][sS]
+*.[wW][mM][aA]
+*.[mM][iI][dD]
+*.[mM][iI][dD][iI]
+*.[aA][mM][rR]
+*.[aA][uU]
+*.[mM][kK][aA]
+*.[aA][cC]3
+*.[cC][aA][fF]
+*.[wW][eE][bB][aA]
+
+# Local tools and generation intermediates
+/scratch/
+/generated_images/

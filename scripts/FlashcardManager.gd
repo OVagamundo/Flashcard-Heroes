@@ -1,7 +1,7 @@
 # res://scripts/FlashcardManager.gd
 extends Node
 
-## Singleton responsible for the mini-game's lifecycle.
+## Singleton responsible for the Challenge lifecycle.
 ## Implements the TDD V7.0 specification for flashcard system.
 ## TDD Section 9.2: FlashcardManager.gd
 
@@ -34,10 +34,7 @@ var current_question: Dictionary = {}
 var has_unlocked_midgame_card: bool = false
 var _cached_review_priority_cards: Array[Dictionary] = []
 var session_mastery_1_correct: int = 0
-var session_silver_gold_awarded: bool = false
-var session_prismatic_token_awarded: bool = false
 var achieved_3_streak: bool = false
-var encounter_silver_gold_total: int = 0
 
 ## TDD Section 9.3: The Weighted SRS Algorithm
 func _select_card_via_srs() -> StringName:
@@ -134,8 +131,6 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 	current_streak = 0
 	tokens_earned = 0
 	session_mastery_1_correct = 0
-	session_silver_gold_awarded = false
-	session_prismatic_token_awarded = false
 	achieved_3_streak = false
 	has_unlocked_midgame_card = false
 	is_session_active = true
@@ -181,10 +176,7 @@ func reset_session_state() -> void:
 	current_streak = 0
 	tokens_earned = 0
 	session_mastery_1_correct = 0
-	session_silver_gold_awarded = false
-	session_prismatic_token_awarded = false
 	achieved_3_streak = false
-	encounter_silver_gold_total = 0
 	current_question = {}
 	has_unlocked_midgame_card = false
 	_cached_review_priority_cards.clear()
@@ -248,24 +240,6 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 		if is_m1 and has_charm:
 			tokens_to_give += 1
 
-		if GameManager.is_in_battle:
-			var bm = GameManager.get_battle_manager()
-			if is_instance_valid(bm):
-				var active_traits: Dictionary = bm.get_active_traits("PLAYER")
-				var novice_count: int = int(active_traits.get("NOVICE", 0))
-				if is_m1 and novice_count >= 4:
-					tokens_to_give += 1
-				if current_streak == 3:
-					if novice_count >= 3 and not session_silver_gold_awarded and encounter_silver_gold_total < 5:
-						session_silver_gold_awarded = true
-						encounter_silver_gold_total += 1
-						gold_to_give = 1
-						if is_instance_valid(_run_state_ref):
-							_run_state_ref.add_gold(1, true)
-					if novice_count >= 5 and not session_prismatic_token_awarded:
-						session_prismatic_token_awarded = true
-						tokens_to_give += 1
-		
 		# Mid-minigame card unlock on 3-question streak
 		if not has_unlocked_midgame_card and current_streak == 3:
 			if is_instance_valid(_run_state_ref) and _run_state_ref.has_locked_cards():
@@ -286,12 +260,6 @@ func submit_minigame_answer(question_id: StringName, selected_answer_id: StringN
 				bm.add_gacha_tokens(tokens_to_give, true)
 	else:
 		current_streak = 0
-		if GameManager.is_in_battle:
-			var bm = GameManager.get_battle_manager()
-			if is_instance_valid(bm):
-				var active_traits: Dictionary = bm.get_active_traits("PLAYER")
-				if int(active_traits.get("NOVICE", 0)) >= 5:
-					session_timer += 0.5
 		if active_hero_id == &"hero_timekeeper":
 			session_timer = maxf(0.0, session_timer - 0.5)
 		
@@ -450,7 +418,7 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	is_sprint_active = false
 	is_introducing_new_card = false
 	
-	# Novice minimum guarantee: ensure at least 3 tokens were earned this session (Novice Sigil trinket)
+	# Novice minimum guarantee: ensure at least 3 tokens were earned this session (Novice Crest trinket)
 	var has_novice_floor: bool = GameManager.has_trinket(&"trinket_trait_novice")
 	if has_novice_floor:
 		var guaranteed_tokens: int = maxi(3, tokens_earned)
@@ -583,7 +551,7 @@ func get_review_priority_cards(run_state: RunState, max_count: int = 6) -> Array
 			selected_cards.append_array(tier_cards.slice(0, needed))
 			break
 	
-	# Final shuffle so the presentation order does not match the mini game question order
+	# Final shuffle so the presentation order does not match the Challenge question order
 	if is_instance_valid(RNGManager) and is_instance_valid(RNGManager.map_rng):
 		RNGManager.map_rng.shuffle(selected_cards)
 	else:

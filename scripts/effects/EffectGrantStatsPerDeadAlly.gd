@@ -16,12 +16,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	
 	# Get dead allies count from BattleState (accumulated over combat)
 	# Assuming state has 'dead_allies_history' or similar. 
-	# If not, we check total deaths registered this turn as a fallback or check the discard pile.
+	# If not, we check total deaths registered this turn as a fallback or check the Discard.
 	var dead_allies_count: int = 0
 	
-	# Logic: Count units of the same team that are in the Discard Pile and were from this combat.
+	# Logic: Count units of the same team that are in the Discard and were from this combat.
 	# Or, if BattleManager tracks this, use that.
-	# For simplicity, we count units of same team in Discard Pile.
+	# For simplicity, we count units of same team in the Discard.
 	var discard_pile = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_pile):
 		for uuid in discard_pile.get_all_uuids():

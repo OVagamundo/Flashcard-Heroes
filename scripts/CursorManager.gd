@@ -1,7 +1,7 @@
 extends Node
 
-const BASE_CURSOR = preload("res://assets/Realistic/ui/textures/BaseCursor.png")
-const CLICKED_CURSOR = preload("res://assets/Realistic/ui/textures/ClickedCursor.png")
+const BASE_CURSOR = preload("res://assets/PixelArt/ui/textures/BaseCursor.png")
+const CLICKED_CURSOR = preload("res://assets/PixelArt/ui/textures/ClickedCursor.png")
 
 var _cursor_sprite: Sprite2D
 var _canvas_layer: CanvasLayer
@@ -34,7 +34,7 @@ func _ready() -> void:
 	
 	# Create the Sprite2D for the high-performance software cursor
 	_cursor_sprite = Sprite2D.new()
-	_cursor_sprite.texture = ArtStyleManager.get_themed_texture(BASE_CURSOR)
+	_cursor_sprite.texture = BASE_CURSOR
 	_cursor_sprite.centered = false
 	_canvas_layer.add_child(_cursor_sprite)
 	
@@ -44,8 +44,6 @@ func _ready() -> void:
 	_waiting_control.draw.connect(_on_waiting_draw)
 	_waiting_control.visible = false
 	
-	# Connect to style changes so the cursor updates instantly without waiting for a click
-	ArtStyleManager.style_changed.connect(_update_cursor_visuals)
 
 func _input(event: InputEvent) -> void:
 	# CRITICAL PERFORMANCE RULE:
@@ -66,7 +64,7 @@ func _input(event: InputEvent) -> void:
 
 func _update_cursor_visuals() -> void:
 	var target_tex = CLICKED_CURSOR if _is_pressed else BASE_CURSOR
-	_cursor_sprite.texture = ArtStyleManager.get_themed_texture(target_tex)
+	_cursor_sprite.texture = target_tex
 
 func set_waiting_indicator(active: bool) -> void:
 	if _is_waiting_for_animations == active:

@@ -2,7 +2,7 @@
 class_name GachaMachineDiscard
 extends Control
 
-## Discard pile machine base that replaces DiscardPileButton in the UI.
+## Discard machine base that replaces DiscardPileButton in the UI.
 ## Positioned alongside the 3 gacha machines at the bottom of the screen.
 
 signal pressed

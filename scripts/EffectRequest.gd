@@ -20,7 +20,7 @@ var sub_phase: C.SubPhase = C.SubPhase.STANDARD
 var category: StringName = &""
 ## Whether the source instance belongs to the player team.
 var is_player: bool = false
-## The slot index on the board (or bench/trinket container) of the source or holder unit.
+## The slot index on the board (or shelf/trinket container) of the source or holder unit.
 var slot_index: int = -1
 ## Sub-index (such as equipped item slot index on a unit) for deterministic tie-breaking.
 var sub_index: int = 0

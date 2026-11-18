@@ -17,8 +17,8 @@ This document maps *Flashcard Heroes*' gameplay semantics across **design specif
 > [!IMPORTANT]
 > **Master Content Authority, Linguistic Standard & Description Rules:**
 > - English is the official single source of truth for all game code, engine constants, design specifications, documentation, and data files. Translations exist only for localized player UI.
-> - `docs/GameContentDocument.md` is the primary design authority for abilities, effects (such as the planned `Reinforce` effect), Sigils/Insignias, and trait ladders. It will be updated with canonical terminology once the final glossary is approved.
-> - All previous uses of "combat" are standardized to **Battle** (*Battle Board*, *Battle Lineup*, *Battle Turn*, *Battle Pool*).
+> - `docs/GameContentDocument.md` is the primary design authority for abilities, effects (such as the planned `Reinforce` effect), Crests/Insignias, and trait ladders. It will be updated with canonical terminology once the final glossary is approved.
+> - All previous uses of "combat" are standardized to **Battle** (*Battle Board*, *Lineup*, *Battle Turn*, *Battle Pool*).
 > - All card, item, and ability descriptions must prioritize **clarity and brevity**. Descriptions must use canonical terms with `#ffd166` bold inline styling for trigger phrases under the **Zero-Tooltip UI Standard**. **No flavor text is allowed in game descriptions.**
 
 Five game-specific pillars govern all semantic definitions:
@@ -76,17 +76,17 @@ Dynamic/conditional stat bonuses currently use four separate storage mechanisms:
 
 ### 2.3 Confirmed Design Rulings vs. Stale Text & Dead Code
 
-- **Static vs. Armor Ruling:** **Static damage is mitigated by Armor point-for-point** (matches `BattleManager.apply_damage()` L2227 and `KnockoutProcessor.gd`). Lines 251 & 261 in `GameContentDocument.md` stating Armor is *"Bypassed by Burn and Static"* are stale and will be corrected to reflect that only Burn (and Instant Knockouts) bypass Armor.
+- **Static vs. Armor Ruling:** **Static damage is mitigated by Armor point-for-point** (matches `BattleManager.apply_damage()` L2227 and `KnockoutProcessor.gd`). Burn damage bypasses Armor.
 - **Spikes Formula & Decay Ruling:** **Spikes deals damage equal to its active stacks and loses 1 stack per activation** (matches `BattleManager.gd` L2269–2285 and `docs/status_effects.csv` L5). Lines 252 & 262 in `GameContentDocument.md` stating Spikes deals *"PWR damage... does not decay"* will be aligned to the implemented stack-damage and decay rule.
-- **Bounty Clearing Ruling:** **Bounty clears to 0 at the start of the next turn** (`START_OF_TURN` `CLEAR`, matching `bounty.tres` and `GameContentDocument.md` L264). `STATUS_BOUNTY_DESC` in `localization/game.csv` (L286) and `docs/status_effects.csv` (L3) have stale text (*"Stays until this unit dies..."*) that will be updated during the terminology pass.
-- **Discard Pile Gacha Machine Architecture:** The Discard Pile operates as a 4th Gacha Machine (`scripts/GachaMachineDiscard.gd` and `scripts/battle/InventoryOperations.gd` L121–160). Players draw from it using Tokens, which transfers a random GachaBall from the Discard Pile to its matching Tier Machine (`BattleInventoryT{tier}`) so it can be drawn into play.
+- **Bounty Clearing Ruling:** **Bounty clears to 0 at the start of the next turn** (`START_OF_TURN` `CLEAR`, matching `bounty.tres` and `GameContentDocument.md` L264). Its localized description now says the marked unit is knocked out.
+- **Discard Gacha Machine Architecture:** The Discard operates as a 4th Gacha Machine (`scripts/GachaMachineDiscard.gd` and `scripts/battle/InventoryOperations.gd` L121–160). Players draw from it using Tokens, which transfers a random GachaBall from the Discard to its matching Tier Machine (`BattleInventoryT{tier}`) so it can be drawn into play.
 - **Removal of "Sacrifice" Myth:** There is no "Sacrifice" mechanic or player ability in the game. The term appeared in earlier AI documentation derived from external card game research (`Monster_Train_2_Effect_Building_Blocks_Reference.md`). The only unit file with the word (`UnitTier3B_GuardianSacrifice.tres`) is actually **Intercept** (`EWWATnkMecApp` leaps to take lethal damage targeting an ally). All references to "Sacrifice" are eliminated.
 - **Dead / Unlisted Code Artifacts:**
   - `scripts/effects/EffectStaticDischarge.gd`: Unreferenced by all `.tres` files; assigns nonexistent `battle_manager._is_applying_static_damage = true` (crash on run).
   - `Constants.CAUSE_COST` (`Constants.gd`, L154): Zero references.
   - `&"CAUSE_ABILITY_RETRIGGER"` (`EffectRetriggerTurnAttack.gd`, L64): Live StringName missing from `Constants.gd`.
   - `CombatEvent.Type.DAMAGE_BURN` (L13) & `CombatEvent.Type.APPLY_BURN` (L17): Unused legacy enums.
-  - Stale docstrings in `EffectItemSteal.gd` (L9: says Discard Pile, actually moves to `BattleInventoryT{tier}`) and `EffectTransferItemBehind.gd` (L6: says transfers item, actually spawns `1..pass_count` copies).
+  - Stale docstrings in `EffectItemSteal.gd` (L9: says Discard, actually moves to `BattleInventoryT{tier}`) and `EffectTransferItemBehind.gd` (L6: says transfers item, actually spawns `1..pass_count` copies).
 
 ### 2.4 Intentional Action Constitution Parity Locks (Do Not Regress)
 
@@ -97,8 +97,8 @@ Per `docs/action_constitution_execution_roadmap.md` (L26–30):
 ### 2.5 Zero-Tooltip (`DescriptionParser.gd`) & `localization/game.csv` Desyncs
 
 - **Missing Effect Keywords:** `BOUNTY` and planned `REINFORCE` are absent from `DescriptionParser.KEYWORDS` (L4–9).
-- **Broken PT-BR `BURN` Keyword on `Scald`:** `ability.scald_l1..l3.desc` (`game.csv`, L430–432) uses `"Queimadura"`, failing to match `KEYWORDS["BURN"]` (`["BURN", "CHAMAS", "CHAMA"]`).
-- **Unhighlighted Trigger Phrases in `game.csv`:** `"When an ally is defeated"` (`L49–52, 81, 89, 625`), `"When hurt BY AN ATTACK"` (`L18–20, 29, 47, 106–107, 617`), `"On attack"` (`L112–113`), `"When this unit is healed"` (`L430–432, 635`), and PT-BR `"Quando curado"` (`L427–429`).
+- **Resolved PT-BR `BURN` Keyword on `Scald`:** Player-facing ability descriptions now consistently use **Chamas**, matching the registered `BURN` keyword family (`["BURN", "CHAMAS", "CHAMA"]`).
+- **Mortality terminology:** Ability descriptions use **Knocked Out / Nocauteado/a** for units and reserve **Defeat / Derrota** for losing the battle or run. The enemy knockout counter uses **Nocauteados**.
 
 ---
 
@@ -118,13 +118,12 @@ Per `docs/action_constitution_execution_roadmap.md` (L26–30):
 | **Lifesteal** | `TRIGGER_ON_DAMAGE_DEALT` $\to$ `ACTION_HEAL` | Post-hit `Heal` scaled off unmitigated damage dealt (`Lifesteal Ring`). |
 | **Prevent Knockout** | `EffectPreventLethal` (`PREVENT_KNOCKOUT`) | **Approved Ruling:** Pure state-floor rescue (`current_hp = 1`) once per turn per team. Must **not** use `ACTION_HEAL`, create `battle_heal` merge components, or fire `TRIGGER_WHEN_HEALED` / `Plant L4`. |
 | **Knockout (KO)** | `KnockoutProcessor.process_knockouts()` | Authoritative removal of a lineup unit at `current_hp <= 0` (`CombatEvent.Type.KNOCKED_OUT`). Fires `on_knockout_blow` $\to$ `when_knocked_out` $\to$ `when_ally_knocked_out`. |
-| **Instant Knockout** | `_process_death_slots_end_of_turn()` | Direct state elimination (`unit.current_hp = 0`, `BattleManager.gd` L3471) on Turn 10+ **Death Slots**. Bypasses Damage, Armor, and Prevent Knockout. |
 
 ---
 
 ### 3.2 Domain B — Numeric Stat Mutation & Persistence Layers
 
-**Approved 2-Channel Mortality Law:** Only **Damage** and **Instant Knockout** (`Death Slot`) can reduce a unit to `<= 0 HP`. All battle `ACTION_DEBUFF` HP losses (`Costume` steal, `Golden Seal` spend adjustment) must clamp at **`1 HP`** (`PWR` at **`0 PWR`**), and stat steals only grant the clamped delta actually lost.
+**Approved Mortality Law:** **Damage** can reduce a unit to `<= 0 HP`, resulting in a **Knockout**. All battle `ACTION_DEBUFF` HP losses (`Costume` steal, `Golden Seal` spend adjustment) must clamp at **`1 HP`** (`PWR` at **`0 PWR`**), and stat steals only grant the clamped delta actually lost.
 
 | Layer / Concept | Engine Representation | Survives Battle End? | Inherited on Level Up / Merge? | Inherited on Transform? |
 | :--- | :--- | :---: | :---: | :---: |
@@ -177,20 +176,19 @@ Per `docs/action_constitution_execution_roadmap.md` (L26–30):
 
 - **`slot_burn` (`Burn Slot`, `3 Gold`):** Applies `1 Burn` at turn start; occupant's Burn stacks do not decay at Turn End.
 - **`slot_lightning` (`Lightning Slot`, `2 Gold`):** Applies `1 Static` at turn start.
-- **`death` (`Death Slot`, Turn `>= 10` Sudden Death):** Advances inward at turn end, executing an **Instant Knockout** (`0 HP`) on any occupant.
 
 ---
 
 ### 3.6 Domain F — Containers, Entity Lifecycle, Traits, & Dual Economy
 
-- **Containers:** Run-scope (`PlayerLineup`, `PlayerBench`, `RunInventoryT1..T3`, `PlayerTrinkets`) vs. Battle-scope clones (`BattleInventoryT1..T3`, `DiscardPile`, `EnemyLineup`, `EnemyTrinkets`, `EnemyGraveyard`).
-- **Gacha & Discard Operations:** `DrawGachaAction` (`1/2/3` Tokens, discounted by `Bargain Charm` / Specialist L2), `DrawDiscardAction` (draws from Discard Pile Gacha Machine into matching `BattleInventoryT{tier}`), `MoveInventoryAction` / `ConfirmSwapAction`, `ConfirmMergeAction` / `MergeEncounterAction` (**On Level Up** vs. **On Merge** under **On Merge Action**), `Summon`, `Resurrect` (`Soul Echo` fresh Level 1 base copy), `Duplicate to Gacha` (`Doppleganger`, `Echoing Orb`), `Replace Item` (sends previous item to Discard Pile), `Plunder Item` (`Potion of Plunder` $\to$ `BattleInventoryT{tier}`).
-- **Traits & Souls:** Requires matching **Sigil** (`trinket_trait_*`, except Hero-innate traits like `Aprendice` `Scholars`).
+- **Containers:** Run-scope (`PlayerLineup`, `PlayerShelf`, `RunInventoryT1..T3`, `PlayerTrinkets`) vs. Battle-scope clones (`BattleInventoryT1..T3`, `DiscardPile`, `EnemyLineup`, `EnemyTrinkets`, `EnemyGraveyard`).
+- **Gacha & Discard Operations:** `DrawGachaAction` (`1/2/3` Tokens, discounted by `Bargain Charm` / Specialist L2), `DrawDiscardAction` (draws from Discard Gacha Machine into matching `BattleInventoryT{tier}`), `MoveInventoryAction` / `ConfirmSwapAction`, `ConfirmMergeAction` / `MergeEncounterAction` (**On Level Up** vs. **On Merge** under **On Merge Action**), `Summon`, `Resurrect` (`Soul Echo` fresh Level 1 base copy), `Duplicate to Gacha` (`Doppleganger`, `Echoing Orb`), `Replace Item` (sends previous item to Discard), `Plunder Item` (`Potion of Plunder` $\to$ `BattleInventoryT{tier}`).
+- **Traits & Souls:** Requires matching **Crest** (`trinket_trait_*`, except Hero-innate traits like `Aprendice` `Scholars`).
   - **Elemental Traits (`Fire`, `Earth`, `Water`, `Air`):** Scale on total **Elemental Souls** on active Lineup (`3 / 6 / 12 / 20 / 32` Souls), including **Random Souls (`?`)**.
   - **Class Traits (`Tank`, `Fighter`, `Support`, `Specialist`, `Mercenary`, `Scholars`):** Scale on count of **living Lineup Units** (`2 / 3 / 4 / 5` Units).
   - **Thematic Traits (`Food`, `Mecha`, `Animal`, `Plant`, `Toy`, `Appliance`, `Costume`):** Scale on count of **living Lineup Units** (`2 / 3 / 4 / 5` Units).
   - Snapshot-locked at combat start (`_lock_traits()`).
-- **Dual Economy & Minigame:** Persistent **Gold** (`earn_gold` / `spend_gold`) vs. Encounter **Tokens** (**Current Tokens**, **Session Tokens**, **Guaranteed Tokens**, **Saved Tokens**), driven by Flashcard SRS sessions (**Mastery Level 1–5**, **Correct Answer**, **Incorrect Answer**, **Skip**, **Streak**, **Starting Time**, **Remaining Time**, and non-battle **"Get Tokens" Events**).
+- **Dual Economy & Challenge:** Persistent **Gold** (`earn_gold` / `spend_gold`) vs. Encounter **Tokens** (**Current Tokens**, **Session Tokens**, **Guaranteed Tokens**, **Saved Tokens**), driven by Flashcard SRS sessions (**Mastery Level 1–5**, **Correct Answer**, **Incorrect Answer**, **Skip**, **Streak**, **Starting Time**, **Remaining Time**, and non-battle **"Get Tokens" Events**).
 
 ---
 
@@ -198,7 +196,7 @@ Per `docs/action_constitution_execution_roadmap.md` (L26–30):
 
 ### 4.1 Dispatched Battle & Management Triggers (`Constants.gd`)
 
-- **Phase / Turn Framing:** `TRIGGER_PRE_COMBAT` (`&"pre_combat"`), `TRIGGER_AT_BATTLE_START` (`&"at_battle_start"`), `TRIGGER_AT_TURN_START` (`&"at_turn_start"`, SubPhase `100`), `TRIGGER_AT_TURN_END` (`&"at_turn_end"`, SubPhase `300`). *(Planned Minigame hooks: `before_minigame`, `on_correct_answer`, `at_minigame_end`).*
+- **Phase / Turn Framing:** `TRIGGER_PRE_COMBAT` (`&"pre_combat"`), `TRIGGER_AT_BATTLE_START` (`&"at_battle_start"`), `TRIGGER_AT_TURN_START` (`&"at_turn_start"`, SubPhase `100`), `TRIGGER_AT_TURN_END` (`&"at_turn_end"`, SubPhase `300`). *(Planned Challenge hooks: `before_minigame`, `on_correct_answer`, `at_minigame_end`).*
 - **Attack & Damage:**
   - `TRIGGER_WHEN_ATTACKING` (SubPhase `60` / `95`)
   - `TRIGGER_INTERCEPT_ATTACK` (SubPhase `10`)

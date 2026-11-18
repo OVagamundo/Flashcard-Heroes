@@ -43,7 +43,7 @@ static func is_player_team_context(context: TriggerContext, location: LocationId
 			return context.team == "PLAYER"
 	if is_instance_valid(location):
 		const C = preload("res://scripts/Constants.gd")
-		return location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		return location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 	return false
 
 ## Get the ally behind a source unit (for pass-through abilities)
@@ -302,8 +302,8 @@ static func get_combat_board_snapshot(battle_instances: Dictionary) -> Dictionar
 			continue
 		
 		var container: StringName = location.container
-		# Only include units in lineups and bench - these have GachaBallView instances
-		if container != &"PlayerLineup" and container != &"EnemyLineup" and container != &"PlayerBench":
+		# Only include units in lineups and shelf - these have GachaBallView instances
+		if container != &"PlayerLineup" and container != &"EnemyLineup" and container != &"PlayerShelf":
 			continue
 		
 		var def = inst.get_definition()

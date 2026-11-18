@@ -35,6 +35,9 @@ var _turn_metadata: Dictionary = {}
 ## Turn-scoped death registry: {uuid: {team, died_in_phase, def_id}}
 var _dead_this_turn: Dictionary = {}
 
+## Player Shelf capacity purchased for this battle. Resets when the next BattleState is created.
+var player_shelf_slots_unlocked: int = C.INITIAL_SHELF_SLOTS
+
 ## Monotonic counter and per-UUID sequence index tracking the exact chronological order
 ## in which units transition to <= 0 HP during a turn.
 var _lethal_sequence_counter: int = 0
@@ -95,12 +98,14 @@ func get_container(container_name: StringName) -> DataContainer:
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(C.LINEUP_CAP)
-		BATTLE_CONTAINER_TAGS.PLAYER_BENCH, BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
-			new_container = FixedArrayContainer.new(C.BENCH_CAP)
+		BATTLE_CONTAINER_TAGS.PLAYER_SHELF, BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
+			new_container = FixedArrayContainer.new(C.SHELF_CAP)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD:
 			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 			new_container = FixedArrayContainer.new(C.ENEMY_TRINKET_CAP)
+		BATTLE_CONTAINER_TAGS.ENEMY_BANNER:
+			new_container = FixedArrayContainer.new(1)
 		BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS:
 			new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		_:
@@ -112,6 +117,26 @@ func get_container(container_name: StringName) -> DataContainer:
 	new_container.container_tag = container_name
 	_containers[container_name] = new_container
 	return new_container
+
+func find_first_empty_player_shelf_slot() -> int:
+	var shelf: DataContainer = get_container(BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
+	assert(is_instance_valid(shelf), "find_first_empty_player_shelf_slot: PlayerShelf container is required")
+	var slot_limit: int = mini(player_shelf_slots_unlocked, shelf.get_size())
+	for slot_index in range(slot_limit):
+		if shelf.get_uuid(slot_index).is_empty():
+			return slot_index
+	return -1
+
+func is_player_shelf_slot_unlocked(slot_index: int) -> bool:
+	return slot_index >= 0 and slot_index < player_shelf_slots_unlocked
+
+## Equipped item slots inherit the placement of their holder.
+func is_lineup_location(location: LocationIdentifier) -> bool:
+	if location.container == C.CONTAINER_EQUIPPED_ITEM:
+		var holder: GachaBallInstance = get_instance(location.unit_uuid)
+		assert(holder != null, "is_lineup_location: equipped slot holder is missing")
+		return holder.location_container_tag in [BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP]
+	return location.container in [BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP]
 
 func get_instance(uuid: String) -> GachaBallInstance:
 	return _battle_instances.get(uuid)
@@ -199,6 +224,10 @@ func transfer_instance_to_container(instance: GachaBallInstance, dest_container_
 
 	var loc := instance.get_location()
 	assert(is_instance_valid(loc), "transfer_instance_to_container: instance %s has invalid location" % instance.ball_uuid)
+	# Only sealed storage can feed the Shelf. Deployment is one way until recycling.
+	if dest_container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+		if loc.container != BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not String(loc.container).begins_with("BattleInventoryT"):
+			return -1
 
 	# No-op if already at exact destination container and slot
 	if loc.container == dest_container_name and dest_index >= 0 and loc.index == dest_index:
@@ -207,11 +236,13 @@ func transfer_instance_to_container(instance: GachaBallInstance, dest_container_
 	# Validate destination slot BEFORE mutating source
 	var slot := dest_index
 	if slot < 0:
-		slot = dest_container.find_first_empty_slot()
+		slot = find_first_empty_player_shelf_slot() if dest_container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF else dest_container.find_first_empty_slot()
 		if slot == -1:
 			return -1
 	else:
 		if slot >= dest_container.get_size():
+			return -1
+		if dest_container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF and slot >= player_shelf_slots_unlocked:
 			return -1
 		var existing := dest_container.get_uuid(slot)
 		if not existing.is_empty():
@@ -445,7 +476,7 @@ func is_player_unit(instance: GachaBallInstance) -> bool:
 
 ## Check if a container tag is a player container
 func is_in_player_container_tag(tag: StringName) -> bool:
-	return tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+	return tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or tag == BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 
 # ============================================================================
 # ATOMIC MUTATION API (Pure Data - No Signals)
@@ -453,19 +484,21 @@ func is_in_player_container_tag(tag: StringName) -> bool:
 
 ## Add a new instance to a container. Returns true on success.
 ## NOTE: Does NOT emit signals - caller is responsible for that.
-func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1) -> bool:
+func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1, allow_locked_shelf_slot: bool = false) -> bool:
 	assert(is_instance_valid(instance), "bm_add_instance: instance is null")
 	assert(not container_name.is_empty() and container_name != C.CONTAINER_EQUIPPED_ITEM, "bm_add_instance: invalid container_name '%s' for %s" % [String(container_name), instance.ball_uuid])
 	var container = get_container(container_name)
 	assert(is_instance_valid(container), "bm_add_instance: unknown battle container '%s'" % String(container_name))
 	var slot := index
 	if slot < 0:
-		slot = container.find_first_empty_slot()
+		slot = find_first_empty_player_shelf_slot() if container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF else container.find_first_empty_slot()
 		if slot == -1:
 			return false
 	else:
 		if slot >= container.get_size():
 			push_error("bm_add_instance rejected: slot %d out of bounds in %s (capacity=%d)" % [slot, container_name, container.get_size()])
+			return false
+		if container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF and slot >= player_shelf_slots_unlocked and not allow_locked_shelf_slot:
 			return false
 		var existing := container.get_uuid(slot)
 		if not existing.is_empty():
@@ -499,7 +532,6 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 	else:
 		if instance.equipped_item_uuids.size() > 0:
 			if is_player_owned(instance):
-				var bench := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
 				for i in range(instance.equipped_item_uuids.size()):
 					var it_uuid := instance.equipped_item_uuids[i]
 					if it_uuid.is_empty():
@@ -508,10 +540,8 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 					if not is_instance_valid(it):
 						instance.equipped_item_uuids[i] = ""
 						continue
-					var dest_tag := BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-					if not is_instance_valid(bench) or bench.find_first_empty_slot() == -1:
-						dest_tag = BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-					var moved_slot := transfer_instance_to_container(it, dest_tag, -1, true)
+					# Opened equipment cannot return to sealed Shelf storage when its holder leaves.
+					var moved_slot := transfer_instance_to_container(it, BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, -1, true)
 					assert(moved_slot != -1, "bm_remove_instance: failed to rehome item %s from %s" % [it.ball_uuid, instance.ball_uuid])
 					result.unit_changed_uuid = instance.ball_uuid
 			else:

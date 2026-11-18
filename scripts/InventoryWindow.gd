@@ -43,7 +43,7 @@ func _notification(what: int) -> void:
 			process_mode = PROCESS_MODE_INHERIT if visible else PROCESS_MODE_DISABLED
 
 func _configure_scroll_navigation() -> void:
-	# Keep overflow bounded by inventory/tier panels and clip at machine base top (Y = 860).
+	# Keep overflow bounded by inventory/tier panels and clip at machine base top (Y = 880).
 	clip_contents = true
 	panel_container.clip_contents = true
 	tier_1_panel.clip_contents = true
@@ -280,7 +280,7 @@ func _populate_grids() -> void:
 
 	# --- Step 1: Correctly identify all equipped items ---
 	var equipped_item_uuids: Dictionary = {}
-	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerShelf"]
 	for container_name in unit_container_names:
 		var unit_container = data_owner.get_container(container_name)
 		if is_instance_valid(unit_container):

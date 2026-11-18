@@ -6,9 +6,9 @@ extends EffectDefinition
 ## Triggered on_pre_combat.
 ## Thresholds (Units):
 ##   L1 (2 Units): If player tokens == 0, grants 1 Token (projectile from Specialist trinket to HUD).
-##   L4 (5 Units): Summons temporary combat copy of lowest tier/level unit to bench
+##   L4 (5 Units): Summons temporary combat copy of lowest tier/level unit to shelf
 ##                 (tie-breaker: lowest tier first, lowest level second, RNGManager.combat_rng).
-##                 Overflows to discard pile if bench is full.
+##                 Overflows to Discard if Shelf is full.
 
 const C = preload("res://scripts/Constants.gd")
 const EffectHandlers = preload("res://scripts/battle/EffectHandlers.gd")
@@ -94,15 +94,17 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			var chosen_unit: GachaBallInstance = RNGManager.combat_rng.pick_random(candidate_pool)
 
 			if is_instance_valid(chosen_unit):
-				# Find destination slot: Bench first, discard pile if bench full
-				var bench_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
-				var bench = battle_manager._state.get_container(bench_tag)
-				var empty_slot = bench.find_first_empty_slot() if is_instance_valid(bench) else -1
+				# Find destination slot: Shelf first, Discard if Shelf is full
+				var shelf_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF
+				var shelf = battle_manager._state.get_container(shelf_tag)
+				var empty_slot = -1
+				if is_instance_valid(shelf):
+					empty_slot = battle_manager._state.find_first_empty_player_shelf_slot() if is_player else shelf.find_first_empty_slot()
 				var dest_container: StringName
 				var dest_slot: int
 
-				if empty_slot != -1 and empty_slot < C.BENCH_CAP:
-					dest_container = bench_tag
+				if empty_slot != -1:
+					dest_container = shelf_tag
 					dest_slot = empty_slot
 				else:
 					dest_container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE

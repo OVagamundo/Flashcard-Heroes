@@ -67,6 +67,16 @@ graph TD
     *   **Trigger Separation:** `apply_stat_delta()` centrally dispatches `TRIGGER_ON_HEALED` strictly for `ACTION_HEAL`, `TRIGGER_ON_STAT_INCREASED` strictly for `ACTION_BUFF`, and `TRIGGER_ON_STAT_DECREASED` strictly for `ACTION_DEBUFF`.
 
 
+### Shelf Activation Rules
+
+Unit and equipped-item abilities activate only while their unit or holder is in a Lineup. `AbilityDefinition.activation_scope` declares the exceptions per ability: `BATTLE_BOARD` for board-wide checks and `PLAYER_SHELF` for Wind-up-kun's turn-start growth. `ANY_LOCATION` lifecycle hooks do not make a sealed Shelf holder active, and none of these scopes enables the source's other abilities.
+
+Shelf statuses retain their stacks without activating or decaying. Burn, Armor, Spikes, Static, Bounty and Reinforce resume their normal processing upon deployment to a Lineup, without catching up skipped turns. Consumable and equipment stat changes do not update sealed Shelf units.
+
+Trinkets remain active listeners with their existing event scopes and can still track events involving Shelf copies. Any HP/PWR changes they grant apply to Lineup units only; Rusty Ring and Twin Charm do not update sealed Shelf units. Shelf-to-Shelf drops rearrange capsules and never merge them; a sealed Shelf capsule may be merged into an eligible Lineup unit or equipped item. Shelf summons remain sealed, and entry effects resolve when they enter a Lineup.
+
+BubbleGunger counts every other allied copy in the entire battle pool, including Lineup, Shelf, Gacha Machines and Discard. Only deployed BubbleGungers recalculate their PWR. Coinling, other Mercenaries, and Mercenary Emblem do not gain triggered growth from Gold earned while shelved.
+
 ### Gold Coin VFX & Layering
 Currency animations follow strict directionality and layering rules:
 - **Gain (Combat)**: Gold flies from the **killed unit** (source) to the HUD icon. Logic uses `killed_uuid` in the combat event context to identify the origin.
@@ -223,7 +233,7 @@ During the presentation phase:
 ### The Inspection Window Exception
 The **ONLY** exception to this rule is the **Inspection Window**, which actively queries simulation data to display real-time status (like current HP, applied statuses, and dynamic components).
 Because the simulation finishes before the visual VCR playback:
-1. **UUID Lookup Fallback:** Units moving between containers (e.g., moving to the Discard pile during combat) might not be found via their pre-combat `LocationIdentifier`. The `WindowManager` explicitly falls back to `get_instance_by_uuid()` to locate them mid-flight.
+1. **UUID Lookup Fallback:** Units moving between containers (e.g., moving to the Discard during combat) might not be found via their pre-combat `LocationIdentifier`. The `WindowManager` explicitly falls back to `get_instance_by_uuid()` to locate them mid-flight.
 2. **Deferred Memory Erasure:** Enemies that die during the simulation are normally erased from memory. However, to ensure they can still be inspected while their death animation plays, `BattleManager` defers `_flush_deferred_enemy_erasures()` until the turn animation has completely finished.
 
 ---
@@ -270,10 +280,10 @@ During the `COMBAT` phase, `CombatSimulator` generates a linear `TurnLog` array 
 During the `MANAGEMENT` phase, committing interactions (such as **Gacha Draws**, **Merging Units**, **Equipping Items**, or **Consumables**) resolve their logical state instantly and emit `CombatEvent` sequences:
 - All management-phase event sequences are funneled into `BattleManager.enqueue_management_animation(snapshot, events)`.
 - `BattleManager` processes them via a sequential FIFO queue (`_management_animation_queue`).
-- **Player Unit Death Discard Flow (`DEATH`)**: When a player unit dies in combat, its board view fades out via `death_fade`. Immediately upon fade completion, the unit's GachaBall capsule animates from the death position along a 500px parabolic arc (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.5`) into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps (`1.0 -> 1.15 -> 1.0`), and the Discard Pile counter increments (+1). If the unit held equipped items, each item's GachaBall capsule follows along the exact same arc **strictly sequentially**, with each capsule landing triggering `coin_land` SFX, button bump, and counter increment (+1). **Enemy units do NOT go to the discard pile**; they dissolve upon death without departure arcs or counter changes.
-- **Item Discard Flow (`ITEM_DISCARD`)**: When an item is replaced (manual equip, Standard Bearer death equip, or merge overflow), an `ITEM_DISCARD` event executes sequentially first. It launches the replaced item along a 500px parabolic arc using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.5`) directly into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps, and the Discard Pile counter increments (+1). Subsequent stat change floats resolve only after the discard lands.
+- **Player Unit Death Discard Flow (`DEATH`)**: When a player unit dies in combat, its board view fades out via `death_fade`. Immediately upon fade completion, the unit's GachaBall capsule animates from the death position along a 500px parabolic arc (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.0`) into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps (`1.0 -> 1.15 -> 1.0`), and the Discard counter increments (+1). If the unit held equipped items, each item's GachaBall capsule follows along the exact same arc **strictly sequentially**, with each capsule landing triggering `coin_land` SFX, button bump, and counter increment (+1). **Enemy units do NOT go to the discard**; they dissolve upon death without departure arcs or counter changes.
+- **Item Discard Flow (`ITEM_DISCARD`)**: When an item is replaced (manual equip, Standard Bearer death equip, or merge overflow), an `ITEM_DISCARD` event executes sequentially first. It launches the replaced item along a 500px parabolic arc using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling `0.3 -> 1.0`) directly into `discard_pile_button`. At the exact moment of landing, `coin_land` SFX plays, `discard_pile_button` bumps, and the Discard counter increments (+1). Subsequent stat change floats resolve only after the discard lands.
 - **Gacha Machine Departure Flow (`SUMMON` with Inventory Target)**: When an item or unit is sent to the Gacha Machine (e.g. Echoing Orb death duplicate, or *Potion of Plunder* item stripping), a `SUMMON` event targeting `BattleInventoryT{tier}` is emitted. The animator launches the capsule from the source unit's position/slot into `%GachaMachine{tier}`, clears the source unit's equipped visual, plays `coin_land` SFX, and triggers `animate_machine_inventory_change(tier, 1)` to bounce the machine and update its count badge at the exact moment of landing.
-- **Real-Time Counter Synchronization**: Counter labels (both the Discard Pile button counter and Gacha Machine tier badges) are strictly decoupled from live end-of-turn container counts during playback. They initialize from the turn-start snapshot and update exclusively at the arrival moment of each individual capsule.
+- **Real-Time Counter Synchronization**: Counter labels (both the Discard button counter and Gacha Machine tier badges) are strictly decoupled from live end-of-turn container counts during playback. They initialize from the turn-start snapshot and update exclusively at the arrival moment of each individual capsule.
 
 ### The 3-Layer Reaction Sorting Hierarchy
 When multiple reaction triggers fire simultaneously during simulation, `CombatSimulator.gd` sorts reaction requests using a strict 3-layer hierarchy before emitting combat events:
@@ -350,7 +360,7 @@ When a unit dies, `reset_battle_stats_silent()` restores their HP to full **befo
 
 **Valid Battle Containers:**
 - `PLAYER_LINEUP`, `ENEMY_LINEUP`
-- `PLAYER_BENCH`, `ENEMY_BENCH`
+- `PLAYER_SHELF`, `ENEMY_SHELF`
 
 **Invalid Containers (target rejected):**
 - `BATTLE_DISCARD_PILE`
@@ -471,7 +481,7 @@ When a unit is summoned, the system determines its target slot in this strict or
 1.  **Holder's Slot:** If the summon source is replacing a unit (e.g., resurrection, on-death summon), it **must** take that unit's slot.
     *   **Collision Check:** If the slot is occupied by a *different* LIVING unit, it is considered blocked. (Dead units or the summoner itself do not block).
 2.  **Highest-Rank Available Slot:** If the primary slot is blocked (or if there is no specific holder, like Boss Reinforcements), search for the first empty slot in highest-rank order (Player: 4 → 0, Enemy: 0 → 4).
-3.  **Discard Pile:** (Player Only) If lineup is full, summon to the Discard Pile.
+3.  **Discard:** (Player Only) If lineup is full, summon to the Discard.
 4.  **Cancel:** If all options fail, the summon is cancelled.
 
 #### 4. Summon Location Context
@@ -497,7 +507,7 @@ Summoned units may act in the *same turn* they are summoned, but ONLY if valid w
 #### 5. Field-Only Trigger Rule (Ambush/Blessing)
 To ensure that reactive abilities (like **Ambush Predator** or **Summon Blessing**) behave logically, their triggers are filtered by location.
 - **Rule**: `on_enemy_summon` and `on_ally_summon` triggers ONLY fire if the unit is summoned to a **Lineup** (battlefield) container.
-- **Purpose**: This prevents units in the bench or discard pile from being "ambushed" or "blessed" before they have actually entered the field of play.
+- **Purpose**: This prevents units in the shelf or discard from being "ambushed" or "blessed" before they have actually entered the field of play.
 - **Implementation**: Handled globally in `battle/TurnAbilities.gd`.
 
 #### 6. Inventory-Targeted Summons (Dust Elite)
@@ -794,10 +804,10 @@ func apply_damage(unit: GachaBallInstance, amount: int) -> void:
 ---
 
 ## 6. Real-Time Physics Penalties
-Separate from the turn-based simulation, the **Inventory Drawer** and **Discard Pile** operate on a real-time physics clock.
+Separate from the turn-based simulation, the **Inventory Drawer** and **Discard** operate on a real-time physics clock.
 
 - **Overflow Penalty**: If a ball maintains continuous contact with the **Spring Lid** for 5 seconds, it emits a penalty signal.
-- **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard Pile**. See [InventoryManager.md](InventoryManager.md) for details.
+- **Data Mutation**: This signal triggers an **immediate** atomic move of the instance to the **Battle Discard**. See [InventoryManager.md](InventoryManager.md) for details.
 - **Interaction Boundaries**: To prevent accidental window closure, hover inspections originating outside the active inventory window are blocked while the drawer is open (Rule S8).
 
 

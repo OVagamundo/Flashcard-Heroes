@@ -3,7 +3,7 @@ extends PanelContainer
 
 @onready var toggle_button: Button = %ToggleButton
 
-const FIXED_SIZE = Vector2(144, 30)
+const FIXED_SIZE = Vector2(176, 30)
 
 func _ready() -> void:
 	custom_minimum_size = FIXED_SIZE
@@ -32,11 +32,17 @@ func _update_label(is_locked: bool) -> void:
 	var font = Database.get_current_locale_font()
 	toggle_button.add_theme_font_override("font", font)
 	toggle_button.add_theme_font_size_override("font_size", 18)
+	toggle_button.text = tr("ui.details")
 	if is_locked:
-		toggle_button.text = tr("ui.details_on")
-		toggle_button.add_theme_color_override("font_color", Color("#B45309"))
+		_set_font_color(Color("#FCD34D"))
 	else:
-		toggle_button.text = tr("ui.details")
-		toggle_button.remove_theme_color_override("font_color")
+		_set_font_color(Color("#F8FAFC"))
 	custom_minimum_size = FIXED_SIZE
 	size = FIXED_SIZE
+
+func _set_font_color(color: Color) -> void:
+	toggle_button.add_theme_color_override("font_color", color)
+	toggle_button.add_theme_color_override("font_hover_color", color)
+	toggle_button.add_theme_color_override("font_pressed_color", color)
+	toggle_button.add_theme_color_override("font_hover_pressed_color", color)
+	toggle_button.add_theme_color_override("font_focus_color", color)

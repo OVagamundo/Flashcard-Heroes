@@ -85,7 +85,7 @@ func _is_on_battle_board(instance: GachaBallInstance) -> bool:
 	var container: StringName = instance.location_container_tag
 	return (
 		container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-		or container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+		or container == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF
 	)

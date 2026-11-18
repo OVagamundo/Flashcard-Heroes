@@ -36,7 +36,7 @@ On Victory or Defeat:
 
 The Hero participates in every battle and behaves as a normal unit, except:
 
-* The Hero cannot be placed on the bench.
+* The Hero cannot be placed on the shelf.
 * If the Hero dies, the run ends immediately.
 
 ---
@@ -154,31 +154,31 @@ During Management Phase, the player may:
 
 1. **Draw**
    * Spend Tokens on Tier 1 / 2 / 3 machines.
-   * Drawn items go to `PlayerBench`.
+   * Drawn items go to `PlayerShelf`.
 
 2. **Inspect Machine Pools (The Drawer), trinkets, traits and discard pile and the battle board (player/enemy)**
    * View exact contents of each tier pool and Discard Pile (Physics Drawers).
    * **Note**: The Physics Drawers are **Read-Only**. Actions listed below (3-7) cannot be performed directly on balls within the drawers. Hover inspections are only allowed for entities inside the drawer while it is open (Rule S8).
 
 3. **Place Units**
-   * Drag from bench (8 slots) to lineup (5 slots) and vice versa.
+   * Drag from shelf (8 slots) to lineup (5 slots) and vice versa.
    * Lineup grid is fixed; units do not shift automatically.
 
 4. **Rearrange Units**
-   * Change formation (Board/Bench).
+   * Change formation (Board/Shelf).
 
 5. **Equip/use Items**
-   * Drag item from **Bench** to unit.
+   * Drag item from **Shelf** to unit.
    * Drag consumable item to use on units.
 
 6. **Equipping Rules**
-   * Drag item from **Bench/Inventory** to a unit.
+   * Drag item from **Shelf/Inventory** to a unit.
    * If the unit already has an item, the existing item is **discarded** (moved to the discard pile).
-   * **Bench Item Merging**: Dragging an item onto another item in the **PlayerBench** (or an inventory container) triggers recipe detection via `MergeManager`. If a valid recipe exists, a `ChoiceWindow` preview displays the predicted merge outcome for player confirmation. State transitions are atomic; ingredients are only consumed upon successful confirmation.
+   * **Shelf Item Merging**: Dragging an item onto another item in the **PlayerShelf** (or an inventory container) triggers recipe detection via `MergeManager`. If a valid recipe exists, a `ChoiceWindow` preview displays the predicted merge outcome for player confirmation. State transitions are atomic; ingredients are only consumed upon successful confirmation.
 
 
 7. **Merge Units**
-   * On bench or board.
+   * On shelf or board.
    * Requires unlocked recipe.
    * Creates new instance for current battle.
 

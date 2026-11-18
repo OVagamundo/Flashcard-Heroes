@@ -2,36 +2,34 @@
 @tool
 extends EffectDefinition
 
-## Grants +3 PWR for every OTHER Doppleganger in the Battle Pool.
+## Grants PWR for every other allied BubbleGunger anywhere in the battle pool.
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
-	var is_simulation := true # Always true so it generates visual events for animator
-	var all_instances = battle_manager.get_all_instances()
-	var copy_count = 0
+	var all_instances: Dictionary = battle_manager.get_all_instances()
+	var copy_count: int = 0
 	
-	var source = battle_manager.get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(source) or battle_manager.is_dead_this_turn(source_uuid):
+	var source: GachaBallInstance = battle_manager.get_instance_by_uuid(source_uuid)
+	assert(source != null, "BubbleGunger scaling: source must be registered")
+	if battle_manager.is_dead_this_turn(source_uuid):
 		return EffectResult.empty()
 		
-	var source_is_player = _is_player_unit_team(source, battle_manager)
+	var source_is_player: bool = battle_manager._is_player_owned(source)
 	
-	for uuid in all_instances:
+	for uuid: String in all_instances:
 		if uuid == source_uuid: 
 			continue
-		var inst = all_instances[uuid]
-		if not is_instance_valid(inst):
-			continue
-		if inst.definition_id == &"EFWASpeFod" and _is_on_board(inst):
-			if _is_player_unit_team(inst, battle_manager) == source_is_player:
+		var inst: GachaBallInstance = all_instances[uuid]
+		if inst.definition_id == source.definition_id:
+			if battle_manager._is_player_owned(inst) == source_is_player:
 				copy_count += 1
 	
-	var scale_amount = self.parameters.get("scale_amount", 3)
-	var bonus_pwr = copy_count * scale_amount
+	var scale_amount: int = parameters.get("scale_amount", 3)
+	var bonus_pwr: int = copy_count * scale_amount
 	if not _is_on_board(source):
 		bonus_pwr = 0
 		
-	var status_key = &"doppleganger_scaling"
-	var last_scaling = source.get_status_effect_amount(status_key)
-	var delta = bonus_pwr - last_scaling
+	var status_key: StringName = &"doppleganger_scaling"
+	var last_scaling: int = source.get_status_effect_amount(status_key)
+	var delta: int = bonus_pwr - last_scaling
 	
 	if delta == 0: 
 		return EffectResult.empty()
@@ -44,15 +42,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		
 	# Apply standard PWR modification
 	source.apply_pwr_delta(delta, {
-		"silent": is_simulation,
+		"silent": true,
 		"merge_source_type": &"CONDITIONAL_ABILITY"
 	})
 
 	var result := EffectResult.new()
-	if is_simulation and _is_on_board(source):
+	if _is_on_board(source):
 		# Use BUFF for both positive and negative stat changes to avoid attack/damage animations
-		var visual_source_uuid = source_uuid
-		var payload = CombatPayload.pwr_change(visual_source_uuid, delta, [source.current_pwr - delta], [source.current_pwr])
+		var visual_source_uuid: String = source_uuid
+		var payload: CombatPayload = CombatPayload.pwr_change(visual_source_uuid, delta, [source.current_pwr - delta], [source.current_pwr])
 		
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": visual_source_uuid,
@@ -63,19 +61,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		}))
 		
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "Doppleganger scales by %+d PWR (%d copies)" % [delta, copy_count]
+			"text": "BubbleGunger scales by %+d PWR (%d copies)" % [delta, copy_count]
 		}))
 	
 	result.state_applied = true
 	return result
 
-func _is_player_unit_team(inst: GachaBallInstance, battle_manager: Node) -> bool:
-	if not is_instance_valid(inst):
-		return false
-	return battle_manager._is_player_unit(inst) or battle_manager._is_player_owned(inst)
-
 func _is_on_board(inst: GachaBallInstance) -> bool:
-	if not is_instance_valid(inst):
-		return false
 	var container: StringName = inst.location_container_tag
 	return container == &"PlayerLineup" or container == &"EnemyLineup"

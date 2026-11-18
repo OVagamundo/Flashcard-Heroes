@@ -3,8 +3,8 @@
 class_name EffectRecruitingCharm
 extends EffectDefinition
 
-## Recruiting Charm: At turn start, if Gold >= 1 and a bench slot is open,
-## spends 1 Gold to hire a Level 1 Tier 1 Mercenary (Coinling / ?MerSpe) onto the player's bench.
+## Recruiting Charm: At turn start, if Gold >= 1 and a shelf slot is open,
+## spends 1 Gold to hire a Level 1 Tier 1 Mercenary (Coinling / ?MerSpe) onto the player's shelf.
 
 const C = preload("res://scripts/Constants.gd")
 
@@ -16,11 +16,11 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if not is_instance_valid(GameManager.run_state) or GameManager.run_state.gold < 1:
 		return EffectResult.empty()
 
-	var bench = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-	if not is_instance_valid(bench):
+	var shelf = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
+	if not is_instance_valid(shelf):
 		return EffectResult.empty()
 
-	if bench.find_first_empty_slot() == -1:
+	if battle_manager._state.find_first_empty_player_shelf_slot() == -1:
 		return EffectResult.empty()
 
 	var spent = battle_manager.spend_gold(1, source_uuid)
@@ -30,9 +30,9 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var result := EffectResult.new()
 	result.summon_units_request = [{"unit_id": &"?MerSpe", "level": 1}]
 	result.summon_team = "PLAYER"
-	result.summon_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+	result.summon_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-		"text": "Recruiting Charm hires 1 Coinling (?MerSpe) to the bench for 1 Gold!"
+		"text": "Recruiting Charm hires 1 Coinling (?MerSpe) to the shelf for 1 Gold!"
 	}))
 	result.state_applied = true
 	return result

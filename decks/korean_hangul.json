@@ -3,7 +3,7 @@
     "display_name": "Korean Hangul",
     "display_name_pt": "Hangul Coreano",
     "description": "Learn Korean Hangul alphabet and pronunciation rules",
-    "description_pt": "Aprenda o alfabeto coreano Hangul e as regras de pronúncia",
+    "description_pt": "O [b]hangul[/b] é o alfabeto oficial da língua coreana, composto por 24 letras básicas (14 consoantes e 10 vogais) cujo formato foi projetado cientificamente para imitar a anatomia dos órgãos vocais durante a fala. Criado no século XV pelo rei Sejong, o Grande, para promover a alfabetização popular, ele se diferencia dos alfabetos ocidentais por agrupar suas letras em blocos silábicos quadrados em vez de escrevê-las linearmente uma ao lado da outra, sendo amplamente reconhecido por sua lógica, simplicidade e facilidade de aprendizado.",
     "cards": [
         {
             "id": "KOR_001",

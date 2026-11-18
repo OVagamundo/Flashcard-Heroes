@@ -92,14 +92,18 @@
 ---
 
 ### `BUG-SIM-05`: Dynamic Hero Pack Tags Vanish on Save/Load
+- **Status**: [RESOLVED]
 - **Severity**: High (Run save/load state corruption)
 - **Files & Lines**:
-  - [RunState.gd:1298-1319](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/RunState.gd#L1298-L1319) (`_adapt_hero_pack`)
-  - [RunState.gd:1418-1522](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/RunState.gd#L1418-L1522) (`from_save_dict`)
+  - [RunState.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/RunState.gd) (`hero_element`, `dynamic_tag_overrides`, `_adapt_hero_pack`, `get_effective_unit_tags`, `to_save_dict`, `from_save_dict`)
+  - [GachaBallInstance.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GachaBallInstance.gd) (`_build_definition_components`)
+  - [MergeManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/MergeManager.gd) (`_perform_merge_logic`)
+  - [BattleManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleManager.gd) (`execute_hero_entrance_sequence`)
+  - [GachaBallView.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GachaBallView.gd) (`_update_trait_trinket_visuals`, `_get_run_trait_count_for_view`, `_on_run_data_changed`)
 - **Root Cause**:
-  When a Hero Pack like Bounty Hunter rolls a dynamic element (e.g., Fire, Water), `RunState._adapt_hero_pack()` mutates the shared `def.tags` array directly on `Database.units["?MerSpe"]`. When loading a saved run from disk via `from_save_dict()`, `_adapt_hero_pack()` is **never called**, so the units revert to un-adapted tags. Furthermore, mutating shared `Resource` definitions globally leaks into subsequent runs!
+  When a Hero Pack like Bounty Hunter or Starter rolls a dynamic element (Fire, Water, etc.), `RunState._adapt_hero_pack()` directly mutated the shared `def.tags` array directly on `Database.units["?MerSpe"]`. When loading a saved run from disk via `from_save_dict()`, `_adapt_hero_pack()` was never called, so units lost their dynamic elemental soul tags upon continuing a run. In addition, in-memory mutation contaminated subsequent runs and the loadout screen. In combat, `execute_hero_entrance_sequence()` did not emit `_emit_battle_inventory_changed()`, leaving trait trinket visual badges stale.
 - **Clean Resolution**:
-  Treat all `Database` resources as strictly immutable flyweights. Store run-level dynamic tags in `RunState.dynamic_tag_overrides: Dictionary[StringName, Array[StringName]]`, serialize this dictionary into the save file, and query `RunState.get_effective_tags(definition_id)`.
+  Treated all `Database` resources as strictly immutable flyweights. Run-level dynamic tags are kept in `RunState.dynamic_tag_overrides`, serialized via `to_save_dict`, and queried by `GachaBallInstance._build_definition_components()` and `MergeManager`. In `BattleManager.execute_hero_entrance_sequence()`, `_emit_battle_inventory_changed()` is emitted immediately upon hero entrance. In `GachaBallView._update_trait_trinket_visuals()`, outside-of-battle trait counts query `_get_run_trait_count_for_view()`.
 - **Model**: `Gemini 4 Argon`
 
 ---

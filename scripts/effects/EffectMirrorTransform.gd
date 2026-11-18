@@ -47,8 +47,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if target_def.is_hero:
 		return EffectResult.empty()
 		
-	# Safety check for Bosses
-	if target_def.id.begins_with("boss_") or target_def.id == "enemy_hero":
+	# Validation: Do not transform into Bosses, Elites or enemy hero
+	if target_def.tags.has(&"BOSS") or target_def.id == &"enemy_hero":
 		return EffectResult.empty()
 
 	if target_def.category != &"UNIT":

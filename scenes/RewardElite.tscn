@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/RewardElite.gd" id="1_reward_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/reward.png" id="4_bg"]
 
 [node name="Reward" type="Control"]
 layout_mode = 3

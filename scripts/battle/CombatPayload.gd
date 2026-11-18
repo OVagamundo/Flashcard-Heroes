@@ -60,6 +60,7 @@ var static_reflection_data_list: Array[CombatStaticReflectionData] = []
 # Nested animation event phases.
 var windup_events: Array[CombatEvent] = []
 var pre_impact_events: Array[CombatEvent] = []
+var contact_events: Array[CombatEvent] = []
 var impact_events: Array[CombatEvent] = []
 
 # Summon, transform, and draw fields.  new_unit_snapshot remains a Dictionary
@@ -284,6 +285,14 @@ static func container_payload(p_container_tag: StringName) -> CombatPayload:
 	payload.container_tag = p_container_tag
 	return payload
 
+static func slot_effect_change(p_container_tag: StringName, p_slot_index: int, p_from_effect: StringName, p_to_effect: StringName) -> CombatPayload:
+	var payload := CombatPayload.new()
+	payload.container_tag = p_container_tag
+	payload.slot_index = p_slot_index
+	payload.from_effect = p_from_effect
+	payload.to_effect = p_to_effect
+	return payload
+
 static func item_discard(p_source_uuid: String, p_item_uuid: String, p_icon: Texture2D = null, p_icon_path: String = "", p_item_name: String = "Item") -> CombatPayload:
 	var payload := CombatPayload.new()
 	payload.source_uuid = p_source_uuid
@@ -352,6 +361,8 @@ func deep_clone() -> CombatPayload:
 		copy.windup_events.append(event.deep_clone())
 	for event in pre_impact_events:
 		copy.pre_impact_events.append(event.deep_clone())
+	for event in contact_events:
+		copy.contact_events.append(event.deep_clone())
 	for event in impact_events:
 		copy.impact_events.append(event.deep_clone())
 	copy.old_unit_uuid = old_unit_uuid

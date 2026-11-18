@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="2_ability"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitA.png" id="3_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/Tier2unitA.png" id="3_icon"]
 
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance.tres" id="100_ability"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2A_DefensiveStance_L2.tres" id="101_ability"]

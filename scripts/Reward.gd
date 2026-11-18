@@ -134,9 +134,10 @@ func _update_localized_text() -> void:
 	var cost_t2 = GameManager.get_gacha_token_cost(2)
 	var cost_t3 = GameManager.get_gacha_token_cost(3)
 	
-	tier1_draw_button.text = "Tier 1 prizes\n(%d Token%s)" % [cost_t1, "" if cost_t1 == 1 else "s"]
-	tier2_draw_button.text = "Tier 2 prizes\n(%d Token%s)" % [cost_t2, "" if cost_t2 == 1 else "s"]
-	tier3_draw_button.text = "Tier 3 prizes\n(%d Token%s)" % [cost_t3, "" if cost_t3 == 1 else "s"]
+	var tier_prize_format: String = tr("ui.reward_tier_prizes")
+	tier1_draw_button.text = tier_prize_format % [1, cost_t1, "" if cost_t1 == 1 else "s"]
+	tier2_draw_button.text = tier_prize_format % [2, cost_t2, "" if cost_t2 == 1 else "s"]
+	tier3_draw_button.text = tier_prize_format % [3, cost_t3, "" if cost_t3 == 1 else "s"]
 
 func _setup_prize_slots() -> void:
 	var slots = prize_lineup.get_children()

@@ -16,6 +16,7 @@ id = &"ability_unit_t2_d_power_init_l2"
 name_key = "" # Share same name/desc
 description_key = "ability.unit_t2_d_power_l2.desc"
 trigger = &"on_board_state_changed"
+activation_scope = 1
 effects = Array[Resource]([SubResource("Resource_effect")])
 sub_phase = 64
 replaces_basic_attack = false

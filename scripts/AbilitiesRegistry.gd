@@ -8,6 +8,7 @@ extends RefCounted
 
 ## Trigger Types Reference:
 ## - on_attack: Unit performs its turn action attack (NOT retaliate/extra attack)
+## - on_attack_impact: When a direct attack reaches its final target, before damage is applied
 ## - on_damage_dealt: After this unit deals attack damage (any source)
 ## - on_hurt: After this unit receives attack damage
 ## - on_before_damage: Before this unit receives attack damage
@@ -17,7 +18,7 @@ extends RefCounted
 ## - on_turn_start: Turn begins
 ## - on_turn_end: Turn ends
 ## - on_battle_start: Battle begins
-## - on_merge: A merge is completed on the battle board (lineup/bench/equipped item)
+## - on_merge: A merge is completed on the battle board (lineup/shelf/equipped item)
 ## - passive_intercept: Special BattleManager-handled passive (e.g., Guardian)
 
 const ABILITIES: Dictionary = {
@@ -425,30 +426,6 @@ const ABILITIES: Dictionary = {
 		"trigger": "on_pre_combat",
 		"condition": null,
 		"effect": "At combat start, Air units steal 1 PWR from mirrored enemies if 2+ Air souls.",
-	},
-
-	
-	# ==================== BOSS ABILITIES ====================
-	
-	"ability_boss_summon": {
-		"owner": "All Bosses",
-		"trigger": "on_turn_end",
-		"condition": null,
-		"effect": "Summon units to fill empty team slots using boss budget",
-	},
-	
-	"ability_boss_1_draw_drain": {
-		"owner": "The Awakened Guardian (Boss 1)",
-		"trigger": "on_draw",
-		"condition": null,
-		"effect": "Gain +1 HP when the player draws from any gacha machine",
-	},
-	
-	"ability_boss_2_token_drain": {
-		"owner": "The Shadow Warden (Boss 2)",
-		"trigger": "on_token_spent",
-		"condition": null,
-		"effect": "Gain +1 HP for each token the player spends on gacha draws",
 	},
 	
 	# ==================== PENDING MERGES ====================

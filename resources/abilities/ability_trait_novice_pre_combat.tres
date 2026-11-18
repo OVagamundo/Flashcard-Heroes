@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/effects/EffectTraitNovicePreCombat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="EffectTraitNovicePreCombat_1"]
+script = ExtResource("2_effect")
+target_type = &"NONE"
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_trait_novice_pre_combat"
+description_key = "ability.trait_novice.pre_combat.desc"
+trigger = &"pre_combat"
+effects = Array[Resource]([SubResource("EffectTraitNovicePreCombat_1")])
+sub_phase = 98
+max_level = 1

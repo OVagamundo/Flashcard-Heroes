@@ -2,11 +2,12 @@
 
 [ext_resource type="Script" path="res://scripts/GachaBallView.gd" id="1_cm7jq"]
 [ext_resource type="Shader" path="res://assets/shaders/sprite_outline.gdshader" id="2_outline"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_heart_pixel.png" id="4_icon_heart"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_fist_pixel.png" id="5_icon_power"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_burn_pixel.png" id="6_icon_burn"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_armor_pixel.png" id="7_icon_armor"]
 [ext_resource type="Script" path="res://scripts/animations/UnitAnimationController.gd" id="8_anim_ctrl"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/unit_level_1_stars.png" id="9_level_1_stars"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_outline"]
 shader = ExtResource("2_outline")
@@ -104,33 +105,32 @@ mouse_filter = 2
 [node name="EquippedItemIcon" type="TextureRect" parent="UnitOverlay"]
 unique_name_in_owner = true
 visible = false
-custom_minimum_size = Vector2(34, 34)
+custom_minimum_size = Vector2(32, 32)
 layout_mode = 1
 anchors_preset = 0
 offset_left = 6.0
 offset_top = 6.0
-offset_right = 40.0
-offset_bottom = 40.0
+offset_right = 38.0
+offset_bottom = 38.0
 expand_mode = 1
 stretch_mode = 5
 texture_filter = 1
 
-[node name="LevelLabel" type="Label" parent="UnitOverlay"]
+[node name="LevelStarsIcon" type="TextureRect" parent="UnitOverlay"]
 unique_name_in_owner = true
 visible = false
+mouse_filter = 2
+custom_minimum_size = Vector2(16, 16)
 layout_mode = 1
-anchors_preset = 1
-anchor_left = 1.0
-anchor_right = 1.0
-offset_left = -54.0
+anchors_preset = 0
+offset_left = 6.0
 offset_top = 6.0
-offset_right = -6.0
-offset_bottom = 24.0
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 3
-text = "LV. 1"
-horizontal_alignment = 2
+offset_right = 22.0
+offset_bottom = 22.0
+texture = ExtResource("9_level_1_stars")
+expand_mode = 1
+stretch_mode = 5
+texture_filter = 1
 
 [node name="StatsOverlay" type="Control" parent="."]
 unique_name_in_owner = true

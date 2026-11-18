@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/Reward.gd" id="1_reward_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="2_slot_view"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/reward.png" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/reward.png" id="4_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.14, 0.18, 1)
@@ -144,45 +144,20 @@ alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 140)
 layout_mode = 2
-mouse_filter = 0
-
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier1Machine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier1Machine"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -50.0
-offset_top = -28.0
-offset_right = 50.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(1, 0.4, 0.4, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-text = "Tier 1"
-horizontal_alignment = 1
 
 [node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier1Machine"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 100.0
-offset_top = 22.0
-offset_right = 210.0
-offset_bottom = 94.0
+custom_minimum_size = Vector2(260, 80)
+offset_left = 240.0
+offset_top = 18.0
+offset_right = 500.0
+offset_bottom = 98.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_font_sizes/font_size = 30
 theme_override_constants/outline_size = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
@@ -195,45 +170,20 @@ text = "Tier 1 prizes\n(1 Token)"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 140)
 layout_mode = 2
-mouse_filter = 0
-
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier2Machine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier2Machine"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -50.0
-offset_top = -28.0
-offset_right = 50.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(0.6, 0.4, 1, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-text = "Tier 2"
-horizontal_alignment = 1
 
 [node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier2Machine"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 100.0
-offset_top = 22.0
-offset_right = 210.0
-offset_bottom = 94.0
+custom_minimum_size = Vector2(260, 80)
+offset_left = 90.0
+offset_top = 18.0
+offset_right = 350.0
+offset_bottom = 98.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_font_sizes/font_size = 30
 theme_override_constants/outline_size = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")
@@ -246,45 +196,20 @@ text = "Tier 2 prizes\n(2 Tokens)"
 unique_name_in_owner = true
 custom_minimum_size = Vector2(400, 140)
 layout_mode = 2
-mouse_filter = 0
-
-[node name="Outline" type="Panel" parent="VBoxContainer/MachinesArea/Tier3Machine"]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
 mouse_filter = 2
-
-[node name="StatLabel" type="Label" parent="VBoxContainer/MachinesArea/Tier3Machine"]
-layout_mode = 1
-anchors_preset = 7
-anchor_left = 0.5
-anchor_top = 1.0
-anchor_right = 0.5
-anchor_bottom = 1.0
-offset_left = -60.0
-offset_top = -28.0
-offset_right = 60.0
-grow_horizontal = 2
-grow_vertical = 0
-theme_override_colors/font_color = Color(1, 0.7, 0.9, 1)
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 4
-text = "Tier 3"
-horizontal_alignment = 1
 
 [node name="DrawButton" type="Button" parent="VBoxContainer/MachinesArea/Tier3Machine"]
 unique_name_in_owner = true
 layout_mode = 0
-offset_left = 100.0
-offset_top = 22.0
-offset_right = 210.0
-offset_bottom = 94.0
+custom_minimum_size = Vector2(260, 80)
+offset_left = -60.0
+offset_top = 18.0
+offset_right = 200.0
+offset_bottom = 98.0
 mouse_filter = 0
 theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
 theme_override_colors/font_outline_color = Color(0.15, 0.17, 0.22, 1)
+theme_override_font_sizes/font_size = 30
 theme_override_constants/outline_size = 4
 theme_override_styles/normal = SubResource("StyleBoxFlat_knob_normal")
 theme_override_styles/hover = SubResource("StyleBoxFlat_knob_hover")

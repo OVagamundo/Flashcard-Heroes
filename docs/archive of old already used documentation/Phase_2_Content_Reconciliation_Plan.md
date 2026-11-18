@@ -713,7 +713,7 @@ Verify with ./.agents/skills/verify-headless/scripts/run_headless.sh res://tests
    - `PolishedPlate.tres`: Pre-Battle, grant 1 Reinforce stack to all allies.
    - `trinket_rusty_ring.tres`: +1 HP / +1 PWR while unequipped, removed when an Item is equipped.
    - `trinket_aegis.tres`: Once-per-turn team lethal save at 1 HP.
-   - `trinket_recruiting_charm.tres`: Spend 1 Gold at turn start to hire L1 `?MerSpe` when bench slot open.
+   - `trinket_recruiting_charm.tres`: Spend 1 Gold at turn start to hire L1 `?MerSpe` when shelf slot open.
 2. Verify all 16 Trait Sigils and Insignias across Elemental (3/6/12/20/32), Class (2/3/4/5), and Thematic (2/3/4/5) thresholds.
 3. Update [localization/game.csv](file:///Users/danhh/Desktop/Flashcard%20Heroes/localization/game.csv) for all renamed entities (Bubblegum Slime, approved item names), style triggers with approved `#ffd166` markup, and compile translations via `python scripts/utils/sync_translations.py`.
 4. Update [tests/run_fast_suite.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/tests/run_fast_suite.gd) with dedicated Phase 2 content regression assertions.

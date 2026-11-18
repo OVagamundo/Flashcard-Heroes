@@ -12,9 +12,7 @@ func validate() -> bool:
 	return true
 
 func execute() -> void:
-	var popup = Engine.get_main_loop().root.find_child("TutorialPopup", true, false)
-	if is_instance_valid(popup) and popup.has_method("_close_popup"):
-		popup._close_popup()
+	WindowManager.close_tutorial_overlay(tutorial_id)
 
 	if not tutorial_id.is_empty() and is_instance_valid(TutorialManager):
 		TutorialManager.mark_completed(tutorial_id)

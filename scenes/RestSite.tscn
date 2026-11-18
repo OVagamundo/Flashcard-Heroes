@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/RestSite.gd" id="1_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="4_slotview"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/rest.png" id="8_bg"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/rest.png" id="8_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.12, 0.14, 0.18, 1)

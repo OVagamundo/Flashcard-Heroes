@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_banner_reinforce.tres" id="2_effect"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_banner_reinforce_fire"
+description_key = "ability.banner_reinforce.desc"
+trigger = &"at_turn_end"
+sub_phase = 250
+effects = Array[Resource]([ExtResource("2_effect")])

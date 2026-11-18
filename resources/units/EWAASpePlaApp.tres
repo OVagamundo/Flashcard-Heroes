@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier3UnitL.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/Tier3UnitL.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3L_Ability.tres" id="4_ability"]
 
@@ -17,7 +17,7 @@ description_key = "EWAASpeApp.desc"
 icon = ExtResource("2_icon")
 tags = Array[StringName]([&"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Specialist", &"Appliance"])
 is_hero = false
-is_player_exclusive = true
+is_player_exclusive = false
 tier = 3
 level = 1
 category = &"UNIT"

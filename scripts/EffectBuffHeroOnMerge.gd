@@ -157,7 +157,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	return result
 
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"

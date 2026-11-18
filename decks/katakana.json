@@ -3,7 +3,7 @@
   "display_name": "Katakana",
   "display_name_pt": "Katakana",
   "description_key": "deck_desc_katakana",
-  "description_pt": "Aprenda os caracteres japoneses katakana",
+  "description_pt": "O [b]katakana[/b] é um dos três sistemas de escrita da língua japonesa, caracterizado por um silabário de 46 caracteres básicos com traços retos e angulares. Criado a partir de fragmentos de ideogramas chineses ([i]kanjis[/i]), ele é utilizado principalmente para transcrever palavras e nomes próprios de origem estrangeira, representar onomatopeias, destacar termos com ênfase (como o itálico no português) e grafar nomes científicos de plantas e animais.",
   "cards": [
     {
       "id": "KANA_001",

@@ -14,12 +14,7 @@ func validate() -> bool:
 	return not tutorial_id.is_empty()
 
 func execute() -> void:
-	var popup = Engine.get_main_loop().root.find_child("TutorialPopup", true, false)
-	if is_instance_valid(popup):
-		if popup.has_method("set_page"):
-			popup.set_page(target_page)
-		elif popup.has_method("_advance_page"):
-			popup._advance_page()
+	WindowManager.advance_tutorial_page(StringName(tutorial_id), target_page)
 
 func yields_for_visuals() -> bool:
 	return false

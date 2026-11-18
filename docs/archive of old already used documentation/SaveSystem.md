@@ -20,7 +20,7 @@ The `RunState` resource serves as the single source of truth for a run's data. I
 - **Deck State**: `deck_def_id`, `active_deck_ids`, `cards_presented_count`.
 - **Flashcard Progress**: Full history of card mastery (`mastery_level`, `times_reviewed`, `last_review_day`).
 - **Instances**: All `GachaBallInstance` objects (Units, Items, Trinkets) including their stats, equipment, and modifiers.
-- **Containers**: The layout of all inventories (`PlayerLineup`, `PlayerBench`, `RunInventory`, etc.).
+- **Containers**: The layout of all inventories (`PlayerLineup`, `PlayerShelf`, `RunInventory`, etc.).
 - **Action Queue Log**: Option to serialize `ActionQueue.get_history()` (`_history` array containing `to_dict()` outputs of all processed `GameAction` commands) for VCR session replayability.
 
 ### 2.3. GachaBallInstance Serialization

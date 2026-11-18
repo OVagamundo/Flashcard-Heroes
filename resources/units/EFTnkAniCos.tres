@@ -4,7 +4,7 @@
 [ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating.tres" id="2_ability"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L2.tres" id="l2"]
 [ext_resource type="Resource" path="res://resources/abilities/Ability_MudCoating_L3.tres" id="l3"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitI.png" id="3_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/Tier2unitI.png" id="3_icon"]
 
 [resource]
 script = ExtResource("1_script")

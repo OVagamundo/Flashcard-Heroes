@@ -1,7 +1,7 @@
 # res://scripts/ResultsPopup.gd
 extends Control
 
-## A modal popup used to display the outcome of an event, like the flashcard mini-game.
+## A modal popup used to display the outcome of an event, like a flashcard Challenge.
 ## TDD Section 4.1: ResultsPopup.gd
 
 signal results_acknowledged

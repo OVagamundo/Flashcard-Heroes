@@ -2,9 +2,19 @@
 
 [ext_resource type="Script" path="res://scripts/BattleManager.gd" id="1_battle_manager_script"]
 [ext_resource type="Script" path="res://scripts/BattleView.gd" id="3_battle_view_script"]
+[ext_resource type="Script" path="res://scripts/ui/EnemyBannerView.gd" id="banner_view_script"]
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 [ext_resource type="Texture2D" uid="uid://bas2ifuq47flt" path="res://assets/PixelArt/ui/BGs/BattleSpring.png" id="8_bg"]
+[ext_resource type="Shader" path="res://assets/shaders/misty_fog.gdshader" id="fog_shader"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_battle_lineup_mist"]
+shader = ExtResource("fog_shader")
+shader_parameter/max_opacity = 0.18
+shader_parameter/drift_speed = 0.85
+shader_parameter/field_offset = Vector2(8.2, 3.7)
+shader_parameter/source_line_y = 1.0
+shader_parameter/source_fade_height = 0.85
+shader_parameter/source_edge_fade = 0.045
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -17,6 +27,7 @@ mouse_filter = 1
 script = ExtResource("3_battle_view_script")
 
 [node name="Background" type="TextureRect" parent="."]
+z_index = -2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -27,6 +38,27 @@ mouse_filter = 2
 texture = ExtResource("8_bg")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="BattleLineupMist" type="ColorRect" parent="."]
+z_as_relative = false
+z_index = -1
+layout_mode = 0
+offset_right = 1920.0
+offset_bottom = 205.0
+mouse_filter = 2
+material = SubResource("ShaderMaterial_battle_lineup_mist")
+
+[node name="EnemyBanner" type="Control" parent="."]
+unique_name_in_owner = true
+top_level = true
+z_as_relative = false
+z_index = -1
+layout_mode = 0
+offset_left = 960.0
+offset_top = 290.0
+offset_right = 1072.0
+offset_bottom = 530.0
+script = ExtResource("banner_view_script")
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
@@ -107,48 +139,48 @@ layout_mode = 2
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="PlayerBench" type="HBoxContainer" parent="TeamAreas"]
+[node name="PlayerShelf" type="HBoxContainer" parent="TeamAreas"]
 unique_name_in_owner = true
 top_level = true
 layout_mode = 0
 offset_left = 20.0
-offset_top = 591.0
+offset_top = 631.0
 offset_right = 1524.0
-offset_bottom = 779.0
+offset_bottom = 819.0
 custom_minimum_size = Vector2(1504, 188)
 theme_override_constants/separation = 0
 alignment = 0
 mouse_filter = 2
 
-[node name="BenchSlot0" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot0" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot1" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot1" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot2" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot2" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot3" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot3" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot4" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot4" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot5" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot5" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot6" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot6" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="BenchSlot7" parent="TeamAreas/PlayerBench" instance=ExtResource("5_slotview")]
+[node name="ShelfSlot7" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 

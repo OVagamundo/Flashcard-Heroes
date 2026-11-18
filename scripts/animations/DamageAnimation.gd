@@ -82,6 +82,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# 2. IMPACT! - Apply damage effects NOW (while attacker is at target)
 		# This makes the hit feel impactful - recoil/flash happens at moment of contact
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+		if not payload.contact_events.is_empty():
+			await animator._animate_events(payload.contact_events)
 		
 		# 3. Return - attacker jumps back to original position
 		SignalBus.emit_signal("unit_melee_return", source_uuid)
@@ -151,6 +153,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		
 		# Apply Damage
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
+		if not payload.contact_events.is_empty():
+			await animator._animate_events(payload.contact_events)
 		
 		# Wait for bump to fully return
 		if should_bump:

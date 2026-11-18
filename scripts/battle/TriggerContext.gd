@@ -84,6 +84,7 @@ var merged_uuid: String = ""
 var merged_team: String = ""
 var merge_container: StringName = &""
 var merge_category: StringName = &""
+var merged_definition_id: StringName = &""
 var bounty_target_uuids: Array[String] = []
 var bounty_stacks: int = 0
 
@@ -163,6 +164,7 @@ func duplicate_context() -> TriggerContext:
 	copy.merged_team = merged_team
 	copy.merge_container = merge_container
 	copy.merge_category = merge_category
+	copy.merged_definition_id = merged_definition_id
 	copy.bounty_target_uuids = bounty_target_uuids.duplicate()
 	copy.bounty_stacks = bounty_stacks
 	return copy

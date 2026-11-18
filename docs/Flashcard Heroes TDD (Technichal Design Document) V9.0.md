@@ -7,7 +7,7 @@ The game follows a mandatory hybrid architecture that separates data truth from 
 
 1. **The Instance is the Source of Truth:** `GachaBallInstance` is a stateful composition container and the single source of truth for an individual gachaball's state (stats, components, location).
 2. **Component-Based Composition:** All modifications to a gachaball (equipment, buffs, levels, rarity, permanent upgrades) are represented as source-aware components, allowing for deterministic resolution, inspection, and serialization.
-3. **The Container is a Positional Index:** `DataContainer` (Lineups, Benches, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
+3. **The Container is a Positional Index:** `DataContainer` (Lineups, Shelves, Inventories) holds only UUIDs. It provides O(1) location-based lookups but does not "own" the instance data.
 4. **The Golden Rule of State Synchronization:** Any operation moving an instance (move, swap, equip, discard) must update both the Index (`DataContainer`) and the Truth (`GachaBallInstance`) in a single atomic transaction.
 
 ### 1.2 The Command Pipeline (Slay the Spire 2 Architecture)
@@ -45,8 +45,10 @@ The game uses a strict Command Pattern to isolate user intent from state mutatio
 
 ### 2.2 Location Registry
 Logical locations are categorized by their lifecycle:
-- **Run State**: `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`.
-- **Battle State**: `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `EnemyLineup`, `EnemyBench`, `DiscardPile`, `EnemyTrinkets`.
+- **Run State**: `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerShelf`.
+- **Battle State**: `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `EnemyLineup`, `EnemyShelf`, `DiscardPile`, `EnemyTrinkets`.
+- **Player Shelf Capacity**: A battle starts with 3 unlocked player slots. `BattleState` tracks this encounter's unlocked count; the player can buy the next slot for 1 Token at a time, up to the 8-slot storage maximum. The count resets when a new battle state is created.
+- **Capsule Contract**: Sealed presentation is derived from authoritative Shelf/machine locations and included in immutable visual snapshots. Atomic transfers prohibit Lineup-to-Shelf movement; equip and merge targets resolve their holder's Lineup location. `on_enter_board` denotes Lineup entry, while `on_gacha_draw` retains true draw reactions. Purchase actions mutate state synchronously; presentation holds the slot dark and input locked until the Token flight and pop finish.
 - **Equipped**: `equipped_item` (conceptual slot attached directly to a unit).
 
 ---
@@ -63,7 +65,7 @@ Logical locations are categorized by their lifecycle:
   - **Snapshotting**: Captures value-based snapshots of board states before turn execution to ensure views render consistent visual baselines.
 - **Ability System (`AbilityResolver.gd`)**: A source-aware broadcast system that queries active ability entries from units, items, and traits in a unified priority pass (**Unit -> Item -> Trinket**).
 - **Encounter System (`EncounterGenerator.gd`)**: Budget-based procedural enemy generator (`3 + (Day-1)`) utilizing a greedy fill algorithm to guarantee 100% budget spend. (See [EncounterSystem.md](EncounterSystem.md)).
-- **Flashcard System (`FlashcardManager.gd`)**: Persistent autoload managing SRS minigame sessions, weighted distractor generation, and mid-minigame streak unlocks. (See [FlashcardSystem.md](FlashcardSystem.md)).
+- **Flashcard System (`FlashcardManager.gd`)**: Persistent autoload managing SRS challenge sessions, weighted distractor generation, and mid-challenge streak unlocks. (See [FlashcardSystem.md](FlashcardSystem.md)).
 - **Inventory System (`InventoryManager.gd`)**: Stateless logic controller executing validated moves, equips, merges, and item replacements. (See [InventoryManager.md](InventoryManager.md)).
 
 ### 3.2 Interactions & UI Flow
@@ -143,7 +145,7 @@ The `SaveManager` autoload singleton (`res://scripts/SaveManager.gd`) manages fi
   - **Deck State**: `deck_def_id`, `active_deck_ids`, `cards_presented_count`.
   - **Flashcard Progress**: Full mastery history per card (`mastery_level`, `times_reviewed`, `last_review_day`).
   - **Instance Registry**: All `GachaBallInstance` dictionaries (`ball_uuid`, `definition_id`, `origin_uuid`, stats, components, equipment UUIDs, tags, status effects).
-  - **Containers**: UUID layouts across all inventory containers (`PlayerLineup`, `PlayerBench`, `RunInventoryT1/T2/T3`).
+  - **Containers**: UUID layouts across all inventory containers (`PlayerLineup`, `PlayerShelf`, `RunInventoryT1/T2/T3`).
   - **Action Queue History**: Processed `GameAction` history for session audit and VCR playback.
 
 ### 6.3 Loading & Scene Transitions
@@ -182,7 +184,7 @@ The battle inventory system uses a pure Godot 2D Physics simulation for the gach
 ### 8.2 Boundary Buffering & Fast Movement
 - **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) use a thickness of **5000.0 pixels**, preventing physics escape during extreme single-frame positional deltas.
 - **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on Layers 12/13), allowing bounds of one container to overlap another without unintended collisions.
-- **Overflow Detection**: A 30px sensor at the top of the drawer detects overflow. Contact for 5 continuous seconds triggers discard penalty routing to the Battle Discard Pile.
+- **Overflow Detection**: A 30px sensor at the top of the drawer detects overflow. Contact for 5 continuous seconds triggers discard penalty routing to the Battle Discard.
 
 ### 8.3 Rendering Fidelity & Interpolation
 - **Physics Interpolation**: Uses Godot 4 native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (120 Hz).

@@ -10,6 +10,7 @@ var _armed_request: Dictionary = {}
 var _is_armed_by_press: bool = false
 var _timer: Timer = null
 var _dismiss_timer: Timer = null
+var _tutorial_pause_id: StringName = &""
 
 # Click suppression: after a selection click occurs on an inspectable element,
 # hover peek is suppressed for that element until the cursor exits the element.
@@ -38,10 +39,24 @@ func _ready() -> void:
 
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
+	SignalBus.tutorial_pause_changed.connect(_on_tutorial_pause_changed)
 
 func _exit_tree() -> void:
 	if SignalBus.has_signal("interaction_lock_requested") and SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
 		SignalBus.interaction_lock_requested.disconnect(_on_interaction_lock_requested)
+	if SignalBus.tutorial_pause_changed.is_connected(_on_tutorial_pause_changed):
+		SignalBus.tutorial_pause_changed.disconnect(_on_tutorial_pause_changed)
+
+func _on_tutorial_pause_changed(tutorial_id: StringName, is_paused: bool) -> void:
+	if is_paused:
+		_tutorial_pause_id = tutorial_id
+		_dismiss_timer.stop()
+		return
+	if _tutorial_pause_id != tutorial_id:
+		return
+	_tutorial_pause_id = &""
+	if _state == State.OPEN:
+		close_peek()
 
 func _on_interaction_lock_requested(locked: bool) -> void:
 	if locked:
@@ -93,6 +108,9 @@ func hover_exit(view: Control) -> void:
 			_cancel_internal()
 	elif _state == State.OPEN:
 		if not _is_armed_by_press:
+			if not _tutorial_pause_id.is_empty():
+				_dismiss_timer.stop()
+				return
 			# Give player a short grace period to move mouse into inspection window or toggle pill
 			if is_instance_valid(_dismiss_timer):
 				_dismiss_timer.start(0.25)
@@ -203,6 +221,12 @@ func _on_timer_timeout() -> void:
 		var trait_id: String = _armed_request["trait_id"]
 		if not trait_id.is_empty() and is_instance_valid(WindowManager):
 			WindowManager.open_trait_inspection_window(trait_id, _armed_source_view)
+	elif _armed_request.has("title_key") and _armed_request.has("description_key"):
+		WindowManager.open_description_inspection_window(
+			String(_armed_request["title_key"]),
+			String(_armed_request["description_key"]),
+			_armed_source_view
+		)
 	else:
 		_cancel_internal()
 

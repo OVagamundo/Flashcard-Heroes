@@ -17,6 +17,7 @@ static func _get_action_map() -> Dictionary:
 			"ConfirmSwapAction": ConfirmSwapAction,
 			"DrawGachaAction": DrawGachaAction,
 			"DrawDiscardAction": DrawDiscardAction,
+			"PurchaseShelfSlotAction": PurchaseShelfSlotAction,
 			"EndTurnAction": EndTurnAction,
 			"AcknowledgeBattleResultsAction": AcknowledgeBattleResultsAction,
 			"SetCombatSpeedAction": SetCombatSpeedAction,

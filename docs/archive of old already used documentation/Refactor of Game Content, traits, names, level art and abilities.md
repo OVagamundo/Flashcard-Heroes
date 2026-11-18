@@ -274,7 +274,7 @@ Unit abilities do not have standalone fantasy names or titles. They are identifi
 - **Visual Trait(s)**: `Toy`
 - **Tags Array**: `[&"SOUL_FIRE", &"SOUL_WATER", &"SOUL_AIR", &"SOUL_AIR", &"Support", &"Toy"]`
 - **Base Stats**: 4 HP / 5 PWR
-- **Ability Description**: Deal (PWR) damage to frontmost enemy. If on the player bench at start of turn, gain [+3 / +5 / +7] HP and PWR.
+- **Ability Description**: Deal (PWR) damage to frontmost enemy. If on the player shelf at start of turn, gain [+3 / +5 / +7] HP and PWR.
 
 #### [EFFWSupMecApp]
 - **ID / Name**: `EFFWSupMecApp`

@@ -3,13 +3,15 @@ class_name BattleView
 extends Control
 
 const SlotViewScene = preload("res://scenes/SlotView.tscn")
-const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+# Global action/manager scripts resolve BattleView while this scene is loading.
+# Load it at draw time so a circular preload cannot retain an empty PackedScene.
+const GACHA_BALL_VIEW_SCENE_PATH: String = "res://scenes/GachaBallView.tscn"
 const TraitTrackerScene = preload("res://scenes/TraitTracker.tscn")
 const InputUtils = preload("res://scripts/InputUtils.gd")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
-@onready var player_bench: HBoxContainer = %PlayerBench
+@onready var player_shelf: HBoxContainer = %PlayerShelf
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
 
 var discard_pile_button: Control:
@@ -29,6 +31,7 @@ var discard_pile_button: Control:
 var _discard_pile_button: Control = null
 @onready var end_turn_button: Button = %EndTurnButton
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
+@onready var enemy_banner_view: EnemyBannerView = %EnemyBanner
 
 var _visual_discard_count: int = 0
 var player_traits: Control = null
@@ -49,6 +52,7 @@ const BATTLE_CONTENT_TOP_PADDING: float = 152.0
 
 var _battle_animator: Node = null
 var _pending_board_redraw: bool = false
+var _pending_shelf_purchase_index: int = -1
 
 var _waiting_for_management_tutorial: bool = false
 var _waiting_for_first_draw_tutorial: bool = false
@@ -101,6 +105,11 @@ func _initialize_slots(ui_container: HBoxContainer, container_name: StringName) 
 		# EnemyLineup and EnemyTrinkets must be inspection-only: configure SlotView accordingly
 		if container_name in [&"EnemyLineup", &"EnemyTrinkets"]:
 			slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
+		if container_name == &"PlayerShelf":
+			var shelf_slot_view: SlotView = slot_view as SlotView
+			assert(is_instance_valid(shelf_slot_view), "BattleView._initialize_slots: PlayerShelf slot must use SlotView")
+			if not shelf_slot_view.shelf_slot_purchase_requested.is_connected(_on_shelf_slot_purchase_requested):
+				shelf_slot_view.shelf_slot_purchase_requested.connect(_on_shelf_slot_purchase_requested)
 
 func _ready() -> void:
 	# Main.tscn reserves the large HUD regions, and battle still needs a modest
@@ -149,10 +158,11 @@ func _ready() -> void:
 	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
-	_initialize_slots(player_bench, &"PlayerBench")
+	_initialize_slots(player_shelf, &"PlayerShelf")
 	_initialize_slots(enemy_lineup, &"EnemyLineup")
 	_initialize_slots(enemy_trinket_bar, &"EnemyTrinkets")
 	_position_combat_controls()
+	_update_shelf_slot_states()
 
 	# The initial draw is now handled directly in _ready to avoid race conditions.
 	# Subsequent updates will be handled by the battle_inventory_changed signal.
@@ -191,6 +201,18 @@ func _on_turn_animation_finished_redraw() -> void:
 	if _pending_board_redraw:
 		_pending_board_redraw = false
 		_redraw_board()
+	_refresh_shelf_hover_after_playback()
+
+func _refresh_shelf_hover_after_playback() -> void:
+	# Playback rejects mouse entry. Recheck the pointer after playback unlocks
+	# and any replacement views have completed their container layout.
+	await get_tree().process_frame
+	if GlobalInteractionRouter.is_vcr_playing():
+		return
+	for slot: Node in player_shelf.get_children():
+		for child: Node in slot.get_children():
+			if child is GachaBallView and not child.is_queued_for_deletion():
+				(child as GachaBallView).refresh_hover_state_from_pointer()
 
 func _apply_battle_vertical_padding() -> void:
 	# Battle slots have exact pixel positions per UI specification
@@ -227,9 +249,52 @@ func _on_discard_pile_pressed() -> void:
 
 func _update_localized_text() -> void:
 	if is_instance_valid(end_turn_button):
-		end_turn_button.text = tr("ui.end_turn")
+		end_turn_button.text = tr("ui.ready")
 	if is_instance_valid(discard_pile_button):
 		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+	_update_shelf_slot_states()
+
+func _on_shelf_slot_purchase_requested(_slot_index: int) -> void:
+	ActionQueue.request(PurchaseShelfSlotAction.new())
+
+func _update_shelf_slot_states() -> void:
+	if not is_instance_valid(player_shelf) or not is_instance_valid(battle_manager):
+		return
+	var unlocked_slots: int = battle_manager.get_player_shelf_slots_unlocked()
+	if _pending_shelf_purchase_index >= 0:
+		unlocked_slots = mini(unlocked_slots, _pending_shelf_purchase_index)
+	for slot_index in range(player_shelf.get_child_count()):
+		var slot: SlotView = player_shelf.get_child(slot_index) as SlotView
+		if is_instance_valid(slot):
+			slot.set_shelf_slot_state(slot_index >= unlocked_slots, slot_index == unlocked_slots and _pending_shelf_purchase_index < 0)
+
+func prepare_shelf_purchase(slot_index: int) -> void:
+	_pending_shelf_purchase_index = slot_index
+	_update_shelf_slot_states()
+	GameManager.get_main_node().begin_token_animation()
+
+func animate_shelf_purchase(slot_index: int, action: GameAction) -> void:
+	var slot: SlotView = player_shelf.get_child(slot_index) as SlotView
+	await CurrencyAnimator.animate_token_spend(C.SHELF_SLOT_TOKEN_COST, slot.get_global_rect().get_center())
+	_pending_shelf_purchase_index = -1
+	_update_shelf_slot_states()
+	await slot.animate_shelf_unlock()
+	GameManager.get_main_node().end_token_animation()
+	if battle_manager.is_animating_management_queue():
+		await battle_manager.management_animation_queue_completed
+	ActionQueue.finish_action(action)
+
+func play_lineup_capsule_open(source_location: LocationIdentifier, target_location: LocationIdentifier) -> void:
+	if source_location.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or ActionQueue.is_headless_mode():
+		return
+	var location: LocationIdentifier = target_location
+	if location.container == C.CONTAINER_EQUIPPED_ITEM:
+		var holder: GachaBallInstance = battle_manager.get_instance_by_uuid(location.unit_uuid)
+		location = holder.get_location()
+	assert(battle_manager._state.is_lineup_location(location), "Capsules can only open in a Lineup")
+	var lineup: HBoxContainer = player_lineup if location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP else enemy_lineup
+	var slot: SlotView = lineup.get_child(location.index) as SlotView
+	VFXFactory.spawn_capsule_pop_vfx(slot.get_global_rect().get_center(), self, 1.5, Vector2.ZERO)
 
 
 
@@ -239,7 +304,7 @@ func init_visual_discard_count(initial_count: int) -> void:
 	if is_instance_valid(discard_pile_button):
 		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
 
-## Animates arrival of a unit/item at the discard pile, bumping button and updating counter
+## Animates arrival of a unit/item at the Discard, bumping button and updating counter
 func animate_discard_pile_arrival(amount: int = 1) -> void:
 	_visual_discard_count += amount
 	if is_instance_valid(discard_pile_button):
@@ -250,7 +315,7 @@ func animate_discard_pile_arrival(amount: int = 1) -> void:
 		else:
 			play_machine_landing_bounce(discard_pile_button)
 
-## Subtle vertical landing bounce for machines and discard pile (compression -> hop -> squish -> settle)
+## Subtle vertical landing bounce for machines and Discard (compression -> hop -> squish -> settle)
 func play_machine_landing_bounce(machine: Control) -> void:
 	if not is_instance_valid(machine):
 		return
@@ -348,9 +413,10 @@ func _redraw_board() -> void:
 	
 
 	_populate_container(player_lineup, "PlayerLineup", false)
-	_populate_container(player_bench, "PlayerBench", false)
+	_populate_container(player_shelf, "PlayerShelf", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
 	_populate_enemy_trinkets()
+	_populate_enemy_banner()
 
 	var discard_container = battle_manager.get_container(&"DiscardPile")
 	if is_instance_valid(discard_container):
@@ -358,6 +424,7 @@ func _redraw_board() -> void:
 		_visual_discard_count = discard_count
 		if is_instance_valid(discard_pile_button):
 			discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+	_update_shelf_slot_states()
 
 
 func _populate_container(ui_container: HBoxContainer, container_name: StringName, is_enemy: bool) -> void:
@@ -549,6 +616,10 @@ func _gui_input(event) -> void:
 		
 		SignalBus.emit_signal("interaction_context_received", context)
 
+func _populate_enemy_banner() -> void:
+	var banner: GachaBallInstance = battle_manager.get_instance_by_location(LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER, 0))
+	enemy_banner_view.populate(VisualDataAdapter.create_visual_data(banner) if banner != null else {})
+
 func _populate_enemy_trinkets() -> void:
 	if not is_instance_valid(battle_manager):
 		return
@@ -568,7 +639,7 @@ func _populate_enemy_trinkets() -> void:
 		if not is_instance_valid(slot_view):
 			continue
 			
-		# Use 1x scale for enemy trinkets (64x64 native texture in 98x98 cell)
+			# Trinkets fit the 98px HUD cell at the shared compact context scale.
 		if slot_view.has_method("set_size_scale"):
 			slot_view.set_size_scale(1.0)
 		if slot_view.has_method("populate"):
@@ -801,7 +872,7 @@ func _refresh_trait_hud_positions() -> void:
 
 var _pending_animated_uuids: Array[String] = []
 
-func _on_gacha_draw_animated(draw_result) -> void:
+func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) -> void:
 	# Add the drawn UUID to the pending list. This prevents _populate_container from
 	# showing it in the grid prematurely (it will be filtered out).
 	if draw_result.drawn_uuid:
@@ -810,7 +881,7 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	# Attempt to find the Gacha Machine (Start Position)
 	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node):
-		_force_refresh_after_anim()
+		_force_refresh_after_anim(draw_result, new_unit_snapshot)
 		return
 	
 	var is_from_discard: bool = (draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile")
@@ -865,18 +936,21 @@ func _on_gacha_draw_animated(draw_result) -> void:
 		else:
 			# Map destination container to UI container
 			var target_ui_container: HBoxContainer = null
-			if draw_result.dest_container == "PlayerBench":
-				target_ui_container = player_bench
+			if draw_result.dest_container == "PlayerShelf":
+				target_ui_container = player_shelf
 
 			if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
 				dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
-				end_pos = dest_slot_view.get_global_rect().get_center()
+				end_pos = dest_slot_view.get_global_transform() * GachaBallView.shelf_capsule_center(dest_slot_view.size)
 			else:
 				# Fallback if slot not found
 				end_pos = start_pos
 	
 	# Spawn animated ball
-	var anim_ball = GachaBallViewScene.instantiate()
+	var ball_scene: PackedScene = load(GACHA_BALL_VIEW_SCENE_PATH)
+	var anim_ball: GachaBallView = ball_scene.instantiate() as GachaBallView
+	anim_ball.set_size_scale(1.0)
+	anim_ball.force_inventory_mode = true
 	
 	# Add to VFX layer on root window (layer 150, renders in front of HUDLayer and all machines)
 	var effects_layer = WindowManager.get_vfx_layer() if is_instance_valid(WindowManager) else null
@@ -885,22 +959,24 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	else:
 		add_child(anim_ball)
 	
-	# Configure visual style: Force "Inventory Mode" (2x scale, overlay, circle)
-	anim_ball.force_inventory_mode = true
+	# Flight capsules use the same diameter as machine and Shelf capsules.
 	anim_ball.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	anim_ball.z_index = 100
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
-	anim_ball.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-	anim_ball.size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
+	anim_ball.custom_minimum_size = Vector2.ONE * C.GACHA_CAPSULE_DIAMETER
+	anim_ball.size = anim_ball.custom_minimum_size
 	
 	# Populate with visual data (after added to tree so @onready vars work)
-	var instance = battle_manager.get_instance(draw_result.drawn_uuid)
-	if is_instance_valid(instance):
-		var visual_data = VisualDataAdapter.create_visual_data(instance)
+	var visual_data: Dictionary = new_unit_snapshot
+	if visual_data.is_empty():
+		var instance = battle_manager.get_instance(draw_result.drawn_uuid)
+		if is_instance_valid(instance):
+			visual_data = VisualDataAdapter.create_visual_data(instance, battle_manager.get_all_instances())
+	if not visual_data.is_empty():
 		anim_ball.populate(null, visual_data)
 	
 	# Set pivot to center for proper centering during animation
-	anim_ball.pivot_offset = anim_ball.size / 2.0
+	anim_ball.pivot_offset = anim_ball.get_capsule_rect().get_center()
 	
 	# Calculate final target position (CENTER of the slot)
 	# end_pos is already the center of the slot rect from get_global_rect().get_center()
@@ -979,19 +1055,17 @@ func _on_gacha_draw_animated(draw_result) -> void:
 			elif is_instance_valid(discard_pile_button):
 				discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
 		else:
-			var is_bench = (draw_result != null and not draw_result.went_to_discard and str(draw_result.dest_container) == "PlayerBench")
-			if is_bench:
-				var pop_scale = anim_ball.size.x / 128.0 if is_instance_valid(anim_ball) and anim_ball.size.x > 0 else 1.5
-				var incoming_vel = end_center - control_point
-				VFXFactory.spawn_capsule_pop_vfx(end_center, self, pop_scale, incoming_vel)
+			var is_shelf = (draw_result != null and not draw_result.went_to_discard and str(draw_result.dest_container) == "PlayerShelf")
+			if is_shelf:
+				Audio.play_sfx("coin_land")
 			elif draw_result != null and (draw_result.went_to_discard or str(draw_result.dest_container) == "DiscardPile"):
 				Audio.play_sfx("coin_land")
 				animate_discard_pile_arrival(1)
 		anim_ball.queue_free()
-		_force_refresh_after_anim(draw_result)
+		_force_refresh_after_anim(draw_result, new_unit_snapshot)
 	)
 
-func _force_refresh_after_anim(draw_result = null) -> void:
+func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary = {}) -> void:
 	if draw_result and draw_result.drawn_uuid:
 		_pending_animated_uuids.erase(draw_result.drawn_uuid)
 	
@@ -999,7 +1073,7 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
-	# Trigger bounce/bump for discard pile
+	# Trigger bounce/bump for Discard
 	if draw_result.went_to_discard or draw_result.dest_container == "DiscardPile":
 		Audio.play_sfx("coin_land")
 		if is_instance_valid(discard_pile_button):
@@ -1013,8 +1087,8 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	
 	# Find the target slot
 	var target_ui_container: HBoxContainer = null
-	if str(draw_result.dest_container) == "PlayerBench":
-		target_ui_container = player_bench
+	if str(draw_result.dest_container) == "PlayerShelf":
+		target_ui_container = player_shelf
 	elif str(draw_result.dest_container) == "PlayerLineup":
 		target_ui_container = player_lineup
 	
@@ -1023,18 +1097,23 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 		return
 	
 	var slot_node = target_ui_container.get_child(draw_result.dest_slot)
-	var instance: GachaBallInstance = battle_manager.get_instance(draw_result.drawn_uuid)
 	var ball_view: GachaBallView = null
 	
-	if slot_node is SlotView and is_instance_valid(instance):
+	if slot_node is SlotView:
 		var slot_view := slot_node as SlotView
-		var visual_data = VisualDataAdapter.create_visual_data(instance, battle_manager.get_all_instances())
-		var loc := LocationIdentifier.new(draw_result.dest_container, draw_result.dest_slot)
-		slot_view.populate(loc)
-		slot_view.set_meta("location_identifier", loc)
-		ball_view = slot_view.set_content(visual_data, true, false)
-		if is_instance_valid(ball_view):
-			ball_view.set_meta("location_identifier", loc)
+		var visual_data: Dictionary = new_unit_snapshot
+		if visual_data.is_empty():
+			var instance: GachaBallInstance = battle_manager.get_instance(draw_result.drawn_uuid)
+			if is_instance_valid(instance):
+				visual_data = VisualDataAdapter.create_visual_data(instance, battle_manager.get_all_instances())
+
+		if not visual_data.is_empty():
+			var loc := LocationIdentifier.new(draw_result.dest_container, draw_result.dest_slot)
+			slot_view.populate(loc)
+			slot_view.set_meta("location_identifier", loc)
+			ball_view = slot_view.set_content(visual_data, true, false)
+			if is_instance_valid(ball_view):
+				ball_view.set_meta("location_identifier", loc)
 	
 	if not is_instance_valid(ball_view):
 		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
@@ -1071,20 +1150,45 @@ func _on_action_queue_idle() -> void:
 func _show_first_draw_tutorial() -> void:
 	if TutorialManager.is_completed(&"first_draw"):
 		return
-	var bench_slot_1 = player_bench.get_child(0) if player_bench.get_child_count() > 0 else player_bench
+	var shelf_slot_1 = player_shelf.get_child(0) if player_shelf.get_child_count() > 0 else player_shelf
 	var lineup_slot_2 = player_lineup.get_child(1) if player_lineup.get_child_count() > 1 else player_lineup
+	assert(player_lineup.get_child_count() == C.LINEUP_CAP, "BattleView._show_first_draw_tutorial: player lineup slot count must match LINEUP_CAP")
+	assert(enemy_lineup.get_child_count() == C.LINEUP_CAP, "BattleView._show_first_draw_tutorial: enemy lineup slot count must match LINEUP_CAP")
+	assert(is_instance_valid(end_turn_button), "BattleView._show_first_draw_tutorial: Ready button is required")
+
+	var numbered_slot_paths: Array[String] = []
+	var battle_order_anchor_paths: Array[String] = []
+	for rank in range(C.LINEUP_CAP):
+		var enemy_slot: Control = enemy_lineup.get_child(rank) as Control
+		var player_slot: Control = player_lineup.get_child(C.LINEUP_CAP - 1 - rank) as Control
+		assert(is_instance_valid(enemy_slot), "BattleView._show_first_draw_tutorial: enemy lineup slot is required")
+		assert(is_instance_valid(player_slot), "BattleView._show_first_draw_tutorial: player lineup slot is required")
+		numbered_slot_paths.append(str(enemy_slot.get_path()))
+		numbered_slot_paths.append(str(player_slot.get_path()))
+		battle_order_anchor_paths.append(str(enemy_slot.get_path()))
+		battle_order_anchor_paths.append(str(player_slot.get_path()))
+
+	battle_order_anchor_paths.append(str(end_turn_button.get_path()))
 	
 	TutorialManager.show_tutorial(&"first_draw", [
 		{
 			"text": tr("tutorial.first_draw_1"),
 			"anchor_side": "TOP_RIGHT",
-			"anchor_paths": [lineup_slot_2.get_path(), bench_slot_1.get_path(), discard_pile_button.get_path()]
+			"anchor_paths": [lineup_slot_2.get_path(), shelf_slot_1.get_path(), discard_pile_button.get_path()]
 		},
 		{
 			"title": tr("tutorial.first_draw_combat.title"),
 			"text": tr("tutorial.first_draw_2"),
-			"center": true,
-			"anchor_path": end_turn_button.get_path()
+			"anchor_side": "BOTTOM_LEFT",
+			"panel_width": 680.0,
+			"text_font_size": 19,
+			"title_font_size": 23,
+			"button_width": 210.0,
+			"button_height": 64.0,
+			"button_font_size": 28,
+			"fit_to_button": true,
+			"anchor_paths": battle_order_anchor_paths,
+			"numbered_anchor_paths": numbered_slot_paths
 		}
 	])
 
@@ -1115,6 +1219,3 @@ func execute_speed(speed: float) -> void:
 		_battle_animator.play_continuous(speed)
 	if SignalBus.has_signal("combat_speed_changed"):
 		SignalBus.emit_signal("combat_speed_changed", speed)
-
-
-

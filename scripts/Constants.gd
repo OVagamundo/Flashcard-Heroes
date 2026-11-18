@@ -7,18 +7,19 @@ const CONTAINER_EQUIPPED_ITEM = &"equipped_item"
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
+	PLAYER_SHELF = &"PlayerShelf",
 	ENEMY_LINEUP = &"EnemyLineup",
-	ENEMY_BENCH = &"EnemyBench",
+	ENEMY_SHELF = &"EnemyShelf",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
 	ENEMY_GRAVEYARD = &"EnemyGraveyard",
 	ENEMY_TRINKETS = &"EnemyTrinkets",
+	ENEMY_BANNER = &"EnemyBanner",
 	PLAYER_TRINKETS = &"PlayerTrinkets",
 }
 
 # Run State Containers
 const CONTAINER_PLAYER_LINEUP = &"PlayerLineup"
-const CONTAINER_PLAYER_BENCH = &"PlayerBench"
+const CONTAINER_PLAYER_SHELF = &"PlayerShelf"
 # Battle State Containers
 const CONTAINER_ENEMY_LINEUP = &"EnemyLineup"
 const CONTAINER_DISCARD_PILE = &"DiscardPile"
@@ -83,6 +84,7 @@ const TRIGGER_PREVENT_KNOCKOUT: StringName = &"prevent_knockout"
 const TRIGGER_ON_KNOCKOUT_BLOW: StringName = &"on_knockout_blow"
 
 const TRIGGER_WHEN_ATTACKING: StringName = &"when_attacking"
+const TRIGGER_ON_ATTACK_IMPACT: StringName = &"on_attack_impact"
 const TRIGGER_BEFORE_TAKING_DAMAGE: StringName = &"before_taking_damage"
 const TRIGGER_WHEN_TAKING_DAMAGE: StringName = &"when_taking_damage"
 const TRIGGER_WHEN_TAKING_MELEE_DAMAGE: StringName = &"when_taking_melee_damage"
@@ -107,6 +109,7 @@ const TRIGGER_ON_BOARD_STATE_CHANGED: StringName = &"on_board_state_changed"
 
 const TRIGGER_ON_GACHA_DRAW: StringName = &"on_gacha_draw"
 const TRIGGER_ON_MERGE: StringName = &"on_merge"
+const TRIGGER_WHEN_DUST_MINIONS_MERGE: StringName = &"when_dust_minions_merge"
 const TRIGGER_ON_TOKEN_SPENT: StringName = &"on_token_spent"
 const TRIGGER_ON_GACHA_TOKENS_CHANGED: StringName = &"on_gacha_tokens_changed"
 const TRIGGER_ON_GOLD_EARNED: StringName = &"on_gold_earned"
@@ -173,10 +176,12 @@ const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 
 # --- UI Sizing ---
 const SLOT_SIZE_BASE: int = 96
+const GACHA_CAPSULE_DIAMETER: int = 96
 const SLOT_SIZE_2X: int = 188
 const UNIT_SPRITE_SIZE: int = 128
 const SLOT_CENTER_OFFSET: int = 30 # (188-128)/2
 const SLOT_UNIT_OFFSET_Y: int = 5 # 188 - 55 - 128 = 5: base sits in the middle of platform surface (55px from bottom edge)
+const SHELF_SURFACE_Y: int = SLOT_UNIT_OFFSET_Y + UNIT_SPRITE_SIZE
 const SHADOW_WIDTH_2X: int = 128 # Scaled 2x to match 128px unit
 const SHADOW_HEIGHT_2X: int = 10 # Scaled 2x (native is 5px)
 const SHADOW_OFFSET_Y: int = 128 # Vertical center at y = 133 (133 - 10/2 = 128)
@@ -184,8 +189,10 @@ const SHADOW_ALPHA: float = 0.5
 const PLAYER_TRINKET_CAP: int = 9
 const ENEMY_TRINKET_CAP: int = 9
 const LINEUP_CAP: int = 5
-const BENCH_CAP: int = 8
-const PLAYER_BENCH_CAP: int = 8
+const SHELF_CAP: int = 8
+const PLAYER_SHELF_CAP: int = 8
+const INITIAL_SHELF_SLOTS: int = 3
+const SHELF_SLOT_TOKEN_COST: int = 1
 const RUN_INVENTORY_CAP: int = 25
 
 # --- Reaction Resolution Sub-Phases (Action Constitution Phase 3) ---

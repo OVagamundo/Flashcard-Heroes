@@ -4,6 +4,7 @@ class_name NodeView
 signal node_selected(node_def)
 
 const CARD_INTERACTION_SHADER = preload("res://assets/shaders/path_option_card.gdshader")
+const CARD_REFERENCE_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/BattlePath.png")
 
 @onready var label: Label = $Label
 
@@ -32,16 +33,16 @@ const MAX_PERSPECTIVE_Y: float = 0.15
 
 # Texture paths
 const CARD_TEXTURES = {
-	"BATTLE": "res://assets/Realistic/ui/textures/BattlePath.png",
-	"SHOP": "res://assets/Realistic/ui/textures/ShopCard.png",
-	"SHRINE": "res://assets/Realistic/ui/textures/ShrinePath.png",
-	"MERGE": "res://assets/Realistic/ui/textures/MergePath.png",
-	"REST": "res://assets/Realistic/ui/textures/RestSitePath.png",
-	"DOJO": "res://assets/Realistic/ui/textures/trainingGroundspath.png",
-	"GOLD": "res://assets/Realistic/ui/textures/GamblingDenPath.png",
-	"BOSS": "res://assets/Realistic/ui/textures/BossPath.png",
-	"ELITE": "res://assets/Realistic/ui/textures/EliteBattlePath.png",
-	"SURPRISE": "res://assets/Realistic/ui/textures/SurprisePath.png"
+	"BATTLE": "res://assets/PixelArt/ui/textures/BattlePath.png",
+	"SHOP": "res://assets/PixelArt/ui/textures/ShopCard.png",
+	"SHRINE": "res://assets/PixelArt/ui/textures/ShrinePath.png",
+	"MERGE": "res://assets/PixelArt/ui/textures/MergePath.png",
+	"REST": "res://assets/PixelArt/ui/textures/RestSitePath.png",
+	"DOJO": "res://assets/PixelArt/ui/textures/trainingGroundspath.png",
+	"GOLD": "res://assets/PixelArt/ui/textures/GamblingDenPath.png",
+	"BOSS": "res://assets/PixelArt/ui/textures/BossPath.png",
+	"ELITE": "res://assets/PixelArt/ui/textures/EliteBattlePath.png",
+	"SURPRISE": "res://assets/PixelArt/ui/textures/SurprisePath.png",
 }
 
 func populate(node_def) -> void:
@@ -49,13 +50,7 @@ func populate(node_def) -> void:
 		label = $Label
 		
 	_node_def = node_def
-	# Use translation for the display name
-	if node_def.boss_level > 0:
-		# Boss node: format with boss level
-		label.text = tr(node_def.display_name_key) % node_def.boss_level
-	else:
-		# Normal node: just translate the key
-		label.text = tr(node_def.display_name_key)
+	label.text = tr(node_def.display_name_key)
 	
 	# Set placeholder color based on node type
 	var bg_color = Color(0.2, 0.2, 0.2) # Default grey
@@ -100,14 +95,21 @@ func populate(node_def) -> void:
 		tex_path = CARD_TEXTURES[node_def.node_type]
 
 	if not tex_path.is_empty():
-		var tex = load(tex_path)
+		var tex: Texture2D = load(tex_path)
 		if tex:
+			# The interaction shader measures padding in texture pixels. Normalize
+			# smaller artwork so it renders at the same size as the other cards.
+			var card_texture_size: Vector2i = Vector2i(CARD_REFERENCE_TEXTURE.get_size())
+			if Vector2i(tex.get_size()) != card_texture_size:
+				var card_image: Image = tex.get_image()
+				card_image.resize(card_texture_size.x, card_texture_size.y, Image.INTERPOLATE_NEAREST)
+				tex = ImageTexture.create_from_image(card_image)
 			texture_normal = tex
 			# Ensure it expands
 			ignore_texture_size = true
 			stretch_mode = TextureButton.STRETCH_KEEP_ASPECT_CENTERED
-			# Hide dynamic label as text is baked into the texture
-			label.visible = false
+			# Path names are localized UI text over the shared lower title panel.
+			label.visible = true
 			# Hide placeholder background if we have a texture
 			if bg_rect:
 				bg_rect.visible = false

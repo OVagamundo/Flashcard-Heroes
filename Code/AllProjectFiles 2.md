@@ -3620,14 +3620,14 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="BenchAndInventory" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
+[node name="ShelfAndInventory" type="HBoxContainer" parent="TeamAreas/PlayerArea"]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="PlayerBench" type="HBoxContainer" parent="TeamAreas/PlayerArea/BenchAndInventory"]
+[node name="PlayerShelf" type="HBoxContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -3635,31 +3635,31 @@ mouse_filter = 2
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="BenchSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+[node name="ShelfSlot0" type="PanelContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="BenchSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+[node name="ShelfSlot1" type="PanelContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="BenchSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+[node name="ShelfSlot2" type="PanelContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="BenchSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+[node name="ShelfSlot3" type="PanelContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="BenchSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/BenchAndInventory/PlayerBench"]
+[node name="ShelfSlot4" type="PanelContainer" parent="TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -3724,7 +3724,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="EnemyBenchComposite" type="VBoxContainer" parent="TeamAreas/EnemyArea"]
+[node name="EnemyShelfComposite" type="VBoxContainer" parent="TeamAreas/EnemyArea"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -3734,52 +3734,52 @@ mouse_filter = 2
 theme_override_constants/separation = 10
 alignment = 0
 
-[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+[node name="EnemyTrinketBar" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 alignment = 1
 
-[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+[node name="TrinketSlot0" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/EnemyTrinketBar"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+[node name="TrinketSlot1" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/EnemyTrinketBar"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+[node name="TrinketSlot2" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/EnemyTrinketBar"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+[node name="TrinketSlot3" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/EnemyTrinketBar"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
-[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/EnemyTrinketBar"]
+[node name="TrinketSlot4" type="PanelContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/EnemyTrinketBar"]
 custom_minimum_size = Vector2(192, 192)
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 1
 
 
-[node name="ButtonMargins" type="MarginContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite"]
+[node name="ButtonMargins" type="MarginContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite"]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 10
 
-[node name="DiscardArea" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins"]
+[node name="DiscardArea" type="HBoxContainer" parent="TeamAreas/EnemyArea/EnemyShelfComposite/ButtonMargins"]
 custom_minimum_size = Vector2(0, 80)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -3788,7 +3788,7 @@ mouse_filter = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
+[node name="DiscardPileButton" type="Button" parent="TeamAreas/EnemyArea/EnemyShelfComposite/ButtonMargins/DiscardArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -3800,7 +3800,7 @@ theme_override_fonts/font = ExtResource("6_label_font")
 theme_override_font_sizes/font_size = 12
 text = "Discard Pile (0)"
 
-[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/EnemyBenchComposite/ButtonMargins/DiscardArea"]
+[node name="EndTurnButton" type="Button" parent="TeamAreas/EnemyArea/EnemyShelfComposite/ButtonMargins/DiscardArea"]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -10320,8 +10320,8 @@ static func get_combat_board_snapshot(battle_instances: Dictionary) -> Dictionar
 			continue
 		
 		var container: StringName = location.container
-		# Only include units in lineups and bench - these have GachaBallView instances
-		if container != &"PlayerLineup" and container != &"EnemyLineup" and container != &"PlayerBench":
+		# Only include units in lineups and shelf - these have GachaBallView instances
+		if container != &"PlayerLineup" and container != &"EnemyLineup" and container != &"PlayerShelf":
 			continue
 		
 		var def = inst.get_definition()
@@ -10489,8 +10489,8 @@ static func place_instances_from_run_state(state: BattleState, permanent_to_batt
 			match perm_loc.container:
 				RS.RUN_CONTAINER_TAGS.PLAYER_LINEUP:
 					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-				RS.RUN_CONTAINER_TAGS.PLAYER_BENCH:
-					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+				RS.RUN_CONTAINER_TAGS.PLAYER_SHELF:
+					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 				_:
 					continue
 
@@ -10673,7 +10673,7 @@ func get_container(container_name: StringName) -> DataContainer:
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(5)
-		BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 			new_container = FixedArrayContainer.new(5)
 		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
 			new_container = GrowableGridContainer.new(24)
@@ -10874,7 +10874,7 @@ func is_player_unit(instance: GachaBallInstance) -> bool:
 
 ## Check if a container tag is a player container
 func is_in_player_container_tag(tag: StringName) -> bool:
-	return tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or tag == BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+	return tag == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or tag == BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 
 # ============================================================================
 # ATOMIC MUTATION API (Pure Data - No Signals)
@@ -10926,7 +10926,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 		# If this is a player unit with equipped items, unequip and move them to inventory
 		if instance.equipped_item_uuids.size() > 0:
 			if is_player_unit(instance):
-				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+				var inv := get_container(BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 				for i in range(instance.equipped_item_uuids.size()):
 					var it_uuid := instance.equipped_item_uuids[i]
 					if it_uuid.is_empty():
@@ -10941,7 +10941,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						var empty := inv.find_first_empty_slot()
 						if empty != -1:
 							inv.set_uuid(empty, it.ball_uuid)
-							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
+							update_instance_location(it.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_SHELF, empty)
 						else:
 							return result
 			else:
@@ -10951,7 +10951,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						_battle_instances.erase(it_uuid)
 		# Extra hardening: clear any stray items that believe they are equipped on this unit
 		if is_player_unit(instance):
-			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+			var inv2 := get_container(BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 			for k in _battle_instances.keys():
 				var maybe_item: GachaBallInstance = _battle_instances[k]
 				if not is_instance_valid(maybe_item):
@@ -10963,7 +10963,7 @@ func bm_remove_instance(uuid: String) -> Dictionary:
 						var empty2 := inv2.find_first_empty_slot()
 						if empty2 != -1:
 							inv2.set_uuid(empty2, maybe_item.ball_uuid)
-							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty2)
+							update_instance_location(maybe_item.ball_uuid, BATTLE_CONTAINER_TAGS.PLAYER_SHELF, empty2)
 						else:
 							return result
 		remove_instance_from_container(instance)
@@ -11374,8 +11374,8 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 			var loc_tag: StringName = target_inst.location_container_tag
 			var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
 								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-								 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
-								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+								 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or
+								 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF)
 			if is_in_battle:
 				valid_targets.append(target_uuid)
 	
@@ -11844,9 +11844,9 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		var summoned_team := ""
 		if i < summon_result.container_updates.size():
 			var container_tag: StringName = summon_result.container_updates[i].container_tag
-			if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 				summoned_team = "PLAYER"
-			elif container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+			elif container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 				summoned_team = "ENEMY"
 		
 		# Skip if we can't determine team
@@ -12269,7 +12269,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 	# on_ally_death (trinket, priority 210) triggers.
 	var dying_units_data: Array[Dictionary] = [] # [{unit, death_location, team}]
 	
-	# Check player units (LINEUP only - bench items are not combatants)
+	# Check player units (LINEUP only - shelf items are not combatants)
 	var player_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP).duplicate()
 	for unit in player_units:
 		# Only process UNIT category (not items/trinkets)
@@ -12297,7 +12297,7 @@ static func check_for_deaths_with_counter_delay(is_simulation: bool, out_events,
 			elif not is_simulation:
 				bm._perform_unit_death_cleanup(unit)
 	
-	# Check enemy units (LINEUP only - bench items are not combatants)
+	# Check enemy units (LINEUP only - shelf items are not combatants)
 	var enemy_units = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).duplicate()
 	for unit in enemy_units:
 		# Only process UNIT category (not items/trinkets)
@@ -12563,9 +12563,9 @@ static func create_summon_event(unit_uuid: String, slot_index: int, is_player: b
 
 ## Determine bump direction for damage animations
 static func get_bump_direction(source_tag: StringName) -> Vector2:
-	if source_tag == &"PlayerLineup" or source_tag == &"PlayerBench":
+	if source_tag == &"PlayerLineup" or source_tag == &"PlayerShelf":
 		return Vector2(1, 0) # Player bumps right
-	elif source_tag == &"EnemyLineup" or source_tag == &"EnemyBench":
+	elif source_tag == &"EnemyLineup" or source_tag == &"EnemyShelf":
 		return Vector2(-1, 0) # Enemy bumps left
 	return Vector2.ZERO
 
@@ -12692,7 +12692,7 @@ static func handle_damage_effect(
 			continue
 		var loc_tag: StringName = tgt.location_container_tag
 		var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-								  loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+								  loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF)
 		if not is_in_battle:
 			continue
 		
@@ -12778,9 +12778,9 @@ static func handle_damage_effect(
 	var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 	if is_instance_valid(anim_source):
 		var src_tag: StringName = anim_source.location_container_tag
-		if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 			bump_dir = Vector2(1, 0)
-		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 			bump_dir = Vector2(-1, 0)
 	
 	# Add DAMAGE event with ARMOR data included for unified animation
@@ -12923,9 +12923,9 @@ static func handle_cascade_damage(
 		var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 		if is_instance_valid(anim_source):
 			var src_tag: StringName = anim_source.location_container_tag
-			if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 				bump_dir = Vector2(1, 0)
-			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 				bump_dir = Vector2(-1, 0)
 		
 		result.events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
@@ -13060,7 +13060,7 @@ static func handle_summon_unit(
 				final_location = new_loc
 			else:
 				# Lineup full. Try Discard Pile.
-				if holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+				if holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 					var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 					var discard_slot = find_empty_slot_in_container(discard)
 					if discard_slot != -1:
@@ -13414,7 +13414,7 @@ class DrawResult:
 
 ## Draw a random instance from a tier pool. Returns DrawResult.
 ## Does NOT handle token costs or signals - caller is responsible.
-static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity: int = 5) -> DrawResult:
+static func draw_from_tier(state: BattleState, tier: int, player_shelf_capacity: int = 5) -> DrawResult:
 	var result := DrawResult.new()
 	
 	var container_tag: StringName = "BattleInventoryT%d" % tier
@@ -13444,9 +13444,9 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 	var target_capacity: int
 	match def.category:
 		&"UNIT", &"ITEM":
-			# Both units and items go to the unified bench
-			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-			target_capacity = player_bench_capacity
+			# Both units and items go to the unified shelf
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
+			target_capacity = player_shelf_capacity
 		_:
 			# Unknown category - discard
 			target_container_tag = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
@@ -13545,12 +13545,12 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 		if is_instance_valid(existing):
 			existing.equipped_on_uuid = ""
 			existing.equipped_slot_index = -1
-			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+			var inv := state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 			if is_instance_valid(inv):
 				var empty := inv.find_first_empty_slot()
 				if empty != -1:
 					inv.set_uuid(empty, existing.ball_uuid)
-					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH, empty)
+					state.update_instance_location(existing.ball_uuid, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, empty)
 				else:
 					return result
 	
@@ -14543,8 +14543,8 @@ func play_turn_sequence(start_snapshot: Dictionary, turn_log: Array[CombatEvent]
 					lineup_container = battle_view.player_lineup
 				elif container_tag == &"EnemyLineup":
 					lineup_container = battle_view.enemy_lineup
-				elif container_tag == &"PlayerBench":
-					lineup_container = battle_view.player_bench
+				elif container_tag == &"PlayerShelf":
+					lineup_container = battle_view.player_shelf
 				
 				if is_instance_valid(lineup_container) and index >= 0:
 					var children = lineup_container.get_children()
@@ -14691,7 +14691,7 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 					var payload = event.visual_payload
 					if payload.has("container_tag"):
 						var tag = payload.get("container_tag")
-						is_player_unit = tag == &"PlayerLineup" or tag == &"PlayerBench" or tag == &"DiscardPile"
+						is_player_unit = tag == &"PlayerLineup" or tag == &"PlayerShelf" or tag == &"DiscardPile"
 					
 					# AUDIO HOOK: Death
 					Audio.play_sfx("combat_death")
@@ -16960,7 +16960,7 @@ const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
 
 # --- UI Node References ---
 @onready var player_lineup: HBoxContainer = %PlayerLineup
-@onready var player_bench: HBoxContainer = get_node("TeamAreas/PlayerArea/BenchAndInventory/PlayerBench")
+@onready var player_shelf: HBoxContainer = get_node("TeamAreas/PlayerArea/ShelfAndInventory/PlayerShelf")
 @onready var enemy_lineup: HBoxContainer = %EnemyLineupContainer
 
 @onready var discard_pile_button: Button = %DiscardPileButton
@@ -17061,7 +17061,7 @@ func _ready() -> void:
 	
 	# Pre-instantiate SlotView nodes to avoid runtime replacement duplicates
 	_initialize_slots(player_lineup, &"PlayerLineup")
-	_initialize_slots(player_bench, &"PlayerBench")
+	_initialize_slots(player_shelf, &"PlayerShelf")
 	_initialize_slots(enemy_lineup, &"EnemyLineup")
 	_initialize_slots(enemy_trinket_bar, &"EnemyTrinkets")
 
@@ -17155,7 +17155,7 @@ func _redraw_board() -> void:
 	
 
 	_populate_container(player_lineup, "PlayerLineup", false)
-	_populate_container(player_bench, "PlayerBench", false)
+	_populate_container(player_shelf, "PlayerShelf", false)
 	_populate_container(enemy_lineup, "EnemyLineup", true)
 	_populate_enemy_trinkets()
 
@@ -17401,8 +17401,8 @@ func _on_gacha_draw_animated(draw_result) -> void:
 	else:
 		# Map destination container to UI container
 		var target_ui_container: HBoxContainer = null
-		if draw_result.dest_container == "PlayerBench":
-			target_ui_container = player_bench
+		if draw_result.dest_container == "PlayerShelf":
+			target_ui_container = player_shelf
 		
 		if target_ui_container and draw_result.dest_slot >= 0 and draw_result.dest_slot < target_ui_container.get_child_count():
 			dest_slot_view = target_ui_container.get_child(draw_result.dest_slot)
@@ -17525,8 +17525,8 @@ func _force_refresh_after_anim(draw_result = null) -> void:
 	
 	# Find the target slot
 	var target_ui_container: HBoxContainer = null
-	if draw_result.dest_container == "PlayerBench":
-		target_ui_container = player_bench
+	if draw_result.dest_container == "PlayerShelf":
+		target_ui_container = player_shelf
 	
 	if not target_ui_container:
 		return
@@ -17888,9 +17888,9 @@ const CONTAINER_EQUIPPED_ITEM = &"equipped_item"
 
 const BATTLE_CONTAINER_TAGS = {
 	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
+	PLAYER_SHELF = &"PlayerShelf",
 	ENEMY_LINEUP = &"EnemyLineup",
-	ENEMY_BENCH = &"EnemyBench",
+	ENEMY_SHELF = &"EnemyShelf",
 	BATTLE_DISCARD_PILE = &"DiscardPile",
 	ENEMY_TRINKETS = &"EnemyTrinkets",
 	PLAYER_TRINKETS = &"PlayerTrinkets",
@@ -17898,7 +17898,7 @@ const BATTLE_CONTAINER_TAGS = {
 
 # Run State Containers
 const CONTAINER_PLAYER_LINEUP = &"PlayerLineup"
-const CONTAINER_PLAYER_BENCH = &"PlayerBench"
+const CONTAINER_PLAYER_SHELF = &"PlayerShelf"
 # Battle State Containers
 const CONTAINER_ENEMY_LINEUP = &"EnemyLineup"
 const CONTAINER_DISCARD_PILE = &"DiscardPile"
@@ -18861,7 +18861,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 # Helper to determine team from container
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"
@@ -25376,7 +25376,7 @@ func get_context_group(container_name: StringName) -> StringName:
 ## Internal container functional group resolver
 func _get_container_functional_group(container_name: StringName) -> StringName:
 	# Battle board containers (player-side only; enemy containers are inspection-only)
-	if container_name in [&"PlayerLineup", &"PlayerBench"]:
+	if container_name in [&"PlayerLineup", &"PlayerShelf"]:
 		return &"BattleBoard"
 
 	# Inventory containers (can interact with each other)
@@ -25808,15 +25808,15 @@ func _on_try_inventory_action(source_loc, target_loc) -> void:
 	if is_instance_valid(early_source_instance) and is_instance_valid(early_target_instance):
 		var sdef = early_source_instance.get_definition()
 		var tdef = early_target_instance.get_definition()
-		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerBench) onto a UNIT on the board
+		# Rule I3: Allow equipping from InventoryGrid or BattleBoard (PlayerShelf) onto a UNIT on the board
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		var allowed_containers = [&"PlayerLineup", &"PlayerBench"]
+		var allowed_containers = [&"PlayerLineup", &"PlayerShelf"]
 		# In test mode, also allow equipping on enemy units
 		if GameManager.is_test_mode:
 			allowed_containers.append(&"EnemyLineup")
-			allowed_containers.append(&"EnemyBench")
+			allowed_containers.append(&"EnemyShelf")
 		
-		# Items can be equipped from InventoryGrid OR BattleBoard (unified bench holds both units and items)
+		# Items can be equipped from InventoryGrid OR BattleBoard (unified shelf holds both units and items)
 		var is_valid_source = s_group == &"InventoryGrid" or s_group == &"BattleBoard"
 		if sdef.category == &"ITEM" and tdef.category == &"UNIT" and is_valid_source and target_loc.container in allowed_containers:
 			# Check if unit has available equip slots
@@ -25947,7 +25947,7 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		anchor_view = wm.find_view_for_location(source_loc)
 	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
 	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
+	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerShelf"]
 	if parent_id != -1:
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
 		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
@@ -26064,7 +26064,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# --- CONTEXT-AWARE PLACEMENT LOGIC (atomic) ---
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	# A "board merge" includes the PlayerLineup and PlayerBench.
+	# A "board merge" includes the PlayerLineup and PlayerShelf.
 	var is_board_merge = target_loc.container.begins_with("Player")
 
 	var placed_container: StringName = &""
@@ -26081,13 +26081,13 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 		# Remove old items first (safe for equipped items)
 		data_owner.remove_instance(source_instance.ball_uuid)
 		data_owner.remove_instance(target_instance.ball_uuid)
-		# Register new item temporarily into PlayerBench, then equip onto the unit slot
-		var temp_container: StringName = &"PlayerBench"
+		# Register new item temporarily into PlayerShelf, then equip onto the unit slot
+		var temp_container: StringName = &"PlayerShelf"
 		data_owner.add_instance(new_instance, temp_container, -1)
 		data_owner.equip_item(new_instance.ball_uuid, target_loc.unit_uuid, target_loc.index)
 		placed_container = C.CONTAINER_EQUIPPED_ITEM
 		placed_index = target_loc.index
-	# Case 2: Merging on the board (Lineup/Bench) -> place result into target slot
+	# Case 2: Merging on the board (Lineup/Shelf) -> place result into target slot
 	elif is_board_merge:
 		data_owner.add_instance(new_instance, target_loc.container, target_loc.index)
 		placed_container = target_loc.container
@@ -26185,11 +26185,11 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		return target_container_name == C.CONTAINER_EQUIPPED_ITEM and target_loc.unit_uuid == source_loc.unit_uuid
 
 	# 2. If the target is an equipped_item container, only allow equipping
-	#    from PlayerBench or InventoryGrid (Rule I3). All actual equipping is handled in the
+	#    from PlayerShelf or InventoryGrid (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid"
+		return source_loc.container == &"PlayerShelf" or s_group == &"InventoryGrid"
 
 
 	if target_container_name.begins_with("RunInventoryT"):
@@ -26203,7 +26203,7 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		if not ("tier" in def) or def.tier != container_tier_b:
 			return false
 
-	# Items cannot be placed in PlayerLineup (only bench and equipped slots)
+	# Items cannot be placed in PlayerLineup (only shelf and equipped slots)
 	if target_container_name == &"PlayerLineup" and def.category == &"ITEM":
 		return false
 
@@ -26433,7 +26433,7 @@ func _populate_grids() -> void:
 
 	# --- Step 1: Correctly identify all equipped items ---
 	var equipped_item_uuids: Dictionary = {}
-	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	var unit_container_names: Array[StringName] = [&"PlayerLineup", &"PlayerShelf"]
 	for container_name in unit_container_names:
 		var unit_container = data_owner.get_container(container_name)
 		if is_instance_valid(unit_container):
@@ -27633,7 +27633,7 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 func find_recipe(instance_a: GachaBallInstance, instance_b: GachaBallInstance, source_loc: LocationIdentifier, target_loc: LocationIdentifier, _all_instances_db: Dictionary) -> MergeRecipe:
 	# --- CONTEXT-AWARE VALIDATION ---
 	# TDD 4.3.III.3: Merging is not allowed between different interaction contexts.
-	# Use GIR functional groups (e.g., PlayerBench and PlayerLineup are both "BattleBoard").
+	# Use GIR functional groups (e.g., PlayerShelf and PlayerLineup are both "BattleBoard").
 	var src_group: StringName = GlobalInteractionRouter.get_context_group(source_loc.container)
 	var tgt_group: StringName = GlobalInteractionRouter.get_context_group(target_loc.container)
 	if src_group != tgt_group:
@@ -29489,7 +29489,7 @@ var _containers: Dictionary[StringName, DataContainer] = {}
 static var RUN_CONTAINER_TAGS: Dictionary = {
 	HERO = &"Hero",
 	PLAYER_LINEUP = &"PlayerLineup",
-	PLAYER_BENCH = &"PlayerBench",
+	PLAYER_SHELF = &"PlayerShelf",
 	PLAYER_TRINKETS = &"PlayerTrinkets"
 }
 
@@ -29557,7 +29557,7 @@ func get_container(container_name: StringName) -> DataContainer:
 		return _containers[container_name]
 	
 	# Handle standard containers with default sizes if they don't exist yet
-	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+	if container_name == RUN_CONTAINER_TAGS.PLAYER_LINEUP or container_name == RUN_CONTAINER_TAGS.PLAYER_SHELF:
 		_containers[container_name] = FixedArrayContainer.new(5)
 		return _containers[container_name]
 	elif container_name == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
@@ -29749,7 +29749,7 @@ func remove_instance(uuid: String) -> bool:
 				if is_instance_valid(it):
 					items_to_rehome.append(it)
 			# Capacity precheck to guarantee atomicity
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
 			if not is_instance_valid(inv):
 				return false
 			var inv_uuids := inv.get_all_uuids()
@@ -29774,7 +29774,7 @@ func remove_instance(uuid: String) -> bool:
 				if empty == -1:
 					return false
 				inv.set_uuid(empty, it2.ball_uuid)
-				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+				it2.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
 				it2.location_slot_index = empty
 		var container := get_container(loc.container)
 		if not is_instance_valid(container):
@@ -29964,20 +29964,20 @@ func equip_item(item_uuid: String, unit_uuid: String, slot_index: int = -1) -> b
 		var src_container := get_container(item_loc.container)
 		if is_instance_valid(src_container) and src_container.get_uuid(item_loc.index) == item.ball_uuid:
 			src_container.set_uuid(item_loc.index, "")
-	# If target slot occupied, unequip existing item to PlayerBench (fallback: first empty)
+	# If target slot occupied, unequip existing item to PlayerShelf (fallback: first empty)
 	var existing_uuid := unit.equipped_item_uuids[target_slot]
 	if not existing_uuid.is_empty():
 		var existing_item := get_instance_by_uuid(existing_uuid)
 		if is_instance_valid(existing_item):
 			existing_item.equipped_on_uuid = ""
 			existing_item.equipped_slot_index = -1
-			# Place into PlayerBench (or any available appropriate container)
-			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_BENCH)
+			# Place into PlayerShelf (or any available appropriate container)
+			var inv := get_container(RUN_CONTAINER_TAGS.PLAYER_SHELF)
 			if is_instance_valid(inv):
 				var empty := inv.find_first_empty_slot()
 				if empty != -1:
 					inv.set_uuid(empty, existing_item.ball_uuid)
-					existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_BENCH
+					existing_item.location_container_tag = RUN_CONTAINER_TAGS.PLAYER_SHELF
 					existing_item.location_slot_index = empty
 				else:
 					return false
@@ -30292,7 +30292,7 @@ func from_save_dict(data: Dictionary) -> void:
 		# Create appropriate container type based on name
 		if cname_str.begins_with("RunInventoryT"):
 			container = GrowableGridContainer.new(max(24, uuids.size()))
-		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_BENCH:
+		elif cname == RUN_CONTAINER_TAGS.PLAYER_LINEUP or cname == RUN_CONTAINER_TAGS.PLAYER_SHELF:
 			container = FixedArrayContainer.new(5)
 		elif cname == RUN_CONTAINER_TAGS.PLAYER_TRINKETS:
 			container = FixedArrayContainer.new(5)
@@ -31688,12 +31688,12 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, source_container: S
 	else:
 		# Battle context
 		if is_unit:
-			# Units can move to PlayerLineup, PlayerBench
+			# Units can move to PlayerLineup, PlayerShelf
 			containers.append(&"PlayerLineup")
-			containers.append(&"PlayerBench")
+			containers.append(&"PlayerShelf")
 		elif is_item:
-			# Items can move to PlayerBench
-			containers.append(&"PlayerBench")
+			# Items can move to PlayerShelf
+			containers.append(&"PlayerShelf")
 	
 	return containers
 
@@ -31766,8 +31766,8 @@ func _is_valid_target(source_instance: GachaBallInstance, source_loc: LocationId
 func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationIdentifier, data_owner: Object) -> Array:
 	var equip_targets: Array = []
 	
-	# Items can be equipped onto units in PlayerLineup or PlayerBench
-	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	# Items can be equipped onto units in PlayerLineup or PlayerShelf
+	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerShelf"]
 	
 	# In test mode, also allow equipping on enemy units
 	if GameManager.is_test_mode:
@@ -31883,7 +31883,7 @@ func set_slot_color(container_name: StringName) -> void:
 	match container_name:
 		&"PlayerLineup":
 			_background_style.modulate_color = Color(0.3, 0.5, 0.8, 0.8)
-		&"PlayerBench":
+		&"PlayerShelf":
 			_background_style.modulate_color = Color(0.3, 0.7, 0.3, 0.8)
 		&"EnemyLineup":
 			_background_style.modulate_color = Color(0.8, 0.3, 0.3, 0.8)
@@ -32539,7 +32539,7 @@ func _on_spawn_item_pressed() -> void:
 	if not def: return
 	var instance = GachaBallInstance.new()
 	instance.initialize(def)
-	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+	battle_manager.bm_add_instance(instance, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 	SignalBus.emit_signal("battle_inventory_changed")
 
 

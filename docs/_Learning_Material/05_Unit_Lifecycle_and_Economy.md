@@ -6,15 +6,24 @@ The life of a unit in Flashcard Heroes revolves around purchasing it from the sh
 ```mermaid
 flowchart TD
     Shop[Shop.gd\nPurchase Unit]
-    Bench[Player Bench]
+    RunInventory[Run Inventory]
+    Machines[Battle Gacha Machines]
+    Shelf[Player Shelf\nSealed Capsules]
+    Lineup[Battle Lineup]
     UTG[UnitTrainingGround.gd\nSpend Gold -> Play Minigame\nEarn Tokens -> Buy Stats]
     Merge[MergeManager.gd\nEvolution & Leveling]
     
-    Shop -- "Costs Gold\nCreates Instance" --> Bench
-    Bench -- "Drag to UTG" --> UTG
-    UTG -- "Stat Buffs\n(HP/PWR)" --> Bench
-    Bench -- "Drag identical/recipe\nunits together" --> Merge
-    Merge -- "Tier Evolution\nor Level Up" --> Bench
+    Shop -- "Costs Gold\nAdds Instance" --> RunInventory
+    RunInventory -- "Battle Start" --> Machines
+    Machines -- "Draw capsule" --> Shelf
+    RunInventory --> UTG
+    UTG -- "Permanent HP/PWR" --> RunInventory
+    Shelf -- "Deploy capsule" --> Lineup
+    RunInventory -- "Eligible run merge" --> Merge
+    Shelf -- "Source to eligible\nLineup merge target" --> Merge
+    Lineup -- "Target" --> Merge
+    Merge -- "Run result" --> RunInventory
+    Merge -- "Battle result opens\non Lineup" --> Lineup
 ```
 
 ---
@@ -76,7 +85,7 @@ func _spend_tokens_and_train(cost: int) -> void:
 ## 3. Merging: Level Up vs. Tier Evolution
 *File: `scripts/MergeManager.gd`*
 
-The `MergeManager` acts as a stateless calculator. When two units are dragged together, it determines whether they are leveling up (combining two identical units) or evolving to a new tier (combining two different units via a recipe).
+The `MergeManager` acts as a stateless calculator. It determines whether eligible units are leveling up (combining two identical units) or evolving to a new tier (combining two different units via a recipe). During battle, Shelf capsules can be the merge source only when the target is an eligible Lineup unit; Shelf-to-Shelf drops rearrange capsules and do not merge them. A battle merge result occupies the Lineup target's slot and is opened there.
 
 ### The Math of Merging
 When two units merge, the game adds their current stats together. However, it specifically *subtracts* the stats granted by equipped items to prevent "double-dipping" (since the items will be re-equipped to the new unit).

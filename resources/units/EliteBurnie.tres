@@ -1,0 +1,24 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/elite_burnie.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_burnie_attack.tres" id="3_attack"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"elite_burnie"
+display_name_key = "elite_burnie.name"
+description_key = "elite_burnie.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_FIRE", &"SOUL_FIRE", &"Fighter"])
+is_hero = false
+tier = 3
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 3
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_attack")
+])

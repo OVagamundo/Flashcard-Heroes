@@ -7,18 +7,25 @@ const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
 
 # Size scale constants for different contexts
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
-const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows, discard pile
+const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows and Discard
 
 # Gachaball overlay texture path for inventory items
-const GACHABALL_OVERLAY_PATH = "res://assets/Realistic/ui/textures/gachaballcapsule.png"
+const GACHABALL_OVERLAY_PATH = "res://assets/PixelArt/ui/textures/gachaballcapsule.png"
 const SHADOW_TEXTURE = preload("res://assets/PixelArt/ui/textures/Shadow.png")
+const LEVEL_1_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_1_stars.png")
+const LEVEL_2_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_2_stars.png")
+const LEVEL_3_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_3_stars.png")
+const LEVEL_STAR_ICON_SIZE: float = 16.0
+const EQUIPPED_ITEM_ICON_SIZE: float = 32.0
+const UNIT_CORNER_ICON_INSET: float = 6.0
+const DRAG_OUTLINE_TEXTURE_PADDING: int = 5
+static var _drag_outline_texture_cache: Dictionary[Texture2D, Texture2D] = {}
 
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
 const PRESS_SQUASH: float = 0.10
 const INVENTORY_BRIGHTNESS_BOOST: float = 0.18
 const INVENTORY_TRANSFORM_FACTOR: float = 0.92
-const INVENTORY_OVERLAY_INSET_PX: float = 0.0
 const HOVER_RAISED_Z_INDEX: int = 40
 const HOVER_RAISED_SLOT_Z_INDEX: int = 20
 
@@ -38,7 +45,7 @@ enum HoverFxMode {
 @onready var armor_container: HBoxContainer = %ArmorContainer
 @onready var armor_label: Label = %ArmorLabel
 @onready var equipped_item_icon_rect: TextureRect = %EquippedItemIcon
-@onready var level_label: Label = %LevelLabel
+@onready var level_stars_rect: TextureRect = %LevelStarsIcon
 
 var _location: LocationIdentifier
 var _instance_uuid: String
@@ -334,7 +341,21 @@ func get_instance_uuid() -> String:
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
 
+func _is_shelf_capsule() -> bool:
+	return not force_inventory_mode and _visual_capsule_sealed and _location != null and _location.container in [&"PlayerShelf", &"EnemyShelf"]
+
+static func shelf_capsule_center(slot_size: Vector2) -> Vector2:
+	return Vector2(slot_size.x * 0.5, C.SHELF_SURFACE_Y - C.GACHA_CAPSULE_DIAMETER * 0.5)
+
+func get_capsule_rect() -> Rect2:
+	var capsule_scale: float = 1.0 if _is_shelf_capsule() or force_inventory_mode else _size_scale
+	var capsule_size: Vector2 = Vector2.ONE * C.GACHA_CAPSULE_DIAMETER * capsule_scale
+	var center: Vector2 = shelf_capsule_center(Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)) if _is_shelf_capsule() else capsule_size * 0.5
+	return Rect2(center - capsule_size * 0.5, capsule_size)
+
 func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true) -> void:
+	tooltip_text = ""
+	_visual_capsule_sealed = bool(visual_data.get("capsule_sealed", false))
 	self._location = loc
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
@@ -412,45 +433,26 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	_has_locked_recipe = visual_data.get("has_locked_recipe", false)
 	
 	if icon_rect:
-		icon_rect.texture = visual_data.get("icon")
-		# Apply fixed size based on texture and scale factor
+		var icon_texture: Texture2D = visual_data.get("icon")
+		icon_rect.texture = icon_texture
+		# The context scale is shared with units. Smaller authored item icons
+		# stay smaller and are centered in the unit's 64x64 source-art footprint.
 		if icon_rect.texture:
-			# For Inventory (where overlay exists), keep icon smaller (1x) centered in 2x slot
-			# For Battle, scale icon to 2x
-			if _size_scale == WINDOW_SCALE or (_size_scale == BATTLE_SCALE and get_viewport().gui_get_focus_owner() == null): # Fallback heuristic
-				pass
-			
-			# Logic: If we are in inventory (using overlay), we want the icon to stay 1x (64px) 
-			# but the container to be 2x (128px).
-			# check if overlay was added? No easy way to check here without state.
-			# Let's use the fact that we added the overlay in _update_item_slots which is called AFTER this.
-			# We'll set the size here assuming standard behavior, and if needed we can adjust.
-			
-			# ACTUALLY: The user wants units INSIDE the ball.
-			# If slot is 128px, ball is 128px.
-			# Unit should be 64px (native) centered.
-			
-			var base_size = Vector2(C.UNIT_SPRITE_SIZE / 2.0, C.UNIT_SPRITE_SIZE / 2.0)
-			var target_size = base_size * _size_scale
-			
-			# Hack: If this is the inventory view (which we can infer or pass via populate options? No...)
-			# Let's rely on _create_gachaball_overlay to fix it? No, populate sets min_size.
-			
-			# Better: Always expand to _size_scale for the CONTAINER, but logic for content:
+			var base_size: Vector2 = Vector2(C.UNIT_SPRITE_SIZE / 2.0, C.UNIT_SPRITE_SIZE / 2.0)
+			var target_size: Vector2 = base_size * _size_scale
+			var sprite_display_size: Vector2 = Vector2(icon_texture.get_size()) * _size_scale
+
 			icon_rect.custom_minimum_size = target_size
-			
-			# If we are in inventory (indicated by checking if we are going to add overlay)
-			# We can't know for sure easily. 
-			# Let's change how we set stretch mode.
-			
-			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE # Fill the slot with the rect
-			icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED # Center texture
-			
-			# BUT, if we want to scale up for Battle (no overlay), we NEED to scale the texture.
-			# STRETCH_KEEP_ASPECT_CENTERED doesn't scale up.
-			
-			# Dual logic:
-			if _size_scale > 1.0 and not _has_overlay_heuristic():
+			icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+			icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
+			if visual_data.get("category", &"") == &"TRINKET":
+				# Trinkets fit their HUD cell; authored pixel sizing is for units/items.
+				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+				var old_sprite: Node = icon_rect.get_node_or_null("UnitSprite")
+				if old_sprite != null:
+					old_sprite.queue_free()
+				_setup_overlay_stats_layout()
+			elif _size_scale > 1.0 and not _has_overlay_heuristic():
 				# Battle Mode: Use UnitSprite to enforce 128x128 scale inside 192x192 slot
 				icon_rect.custom_minimum_size = target_size # 192x192
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -476,12 +478,14 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				if shadow_sprite:
 					icon_rect.move_child(shadow_sprite, 0)
 				
-				# Configure unit sprite size and position
-				unit_sprite.custom_minimum_size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
-				unit_sprite.size = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
-				# Position unit sprite standing on the middle of the platform surface (55px from bottom edge)
-				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_UNIT_OFFSET_Y)
-				unit_sprite.texture = visual_data.get("icon")
+				# Keep each icon at its authored pixel scale. Smaller item art is
+				# centered in the same 64x64 source-art footprint as a unit.
+				var unit_display_area: Vector2 = Vector2(C.UNIT_SPRITE_SIZE, C.UNIT_SPRITE_SIZE)
+				unit_sprite.custom_minimum_size = sprite_display_size
+				unit_sprite.size = sprite_display_size
+				# Position the sprite in the unit area standing on the platform surface.
+				unit_sprite.position = Vector2(C.SLOT_CENTER_OFFSET, C.SLOT_UNIT_OFFSET_Y) + (unit_display_area - sprite_display_size) / 2.0
+				unit_sprite.texture = icon_texture
 				unit_sprite.visible = true
 				# CRITICAL: Copy shader material so flash effects work on visible sprite
 				if icon_rect.material:
@@ -496,10 +500,12 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 				
 				# Ensure Overlay Layout
 				_setup_overlay_stats_layout()
-				var current_slot_size = C.SLOT_SIZE_BASE * _size_scale
-				var current_unit_size = (C.UNIT_SPRITE_SIZE / 2.0) * _size_scale
+				var capsule_rect: Rect2 = get_capsule_rect()
+				var capsule_scale: float = capsule_rect.size.x / C.GACHA_CAPSULE_DIAMETER
+				sprite_display_size = Vector2(icon_texture.get_size()) * capsule_scale
+				var footprint: Vector2 = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X) if _is_shelf_capsule() else capsule_rect.size
 				
-				icon_rect.custom_minimum_size = Vector2(current_slot_size, current_slot_size)
+				icon_rect.custom_minimum_size = footprint
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 				icon_rect.texture = null # Clear main texture, use child sprite
 				
@@ -513,31 +519,44 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
 				_match_icon_texture_filter(unit_sprite)
 				
-				# Configure unit sprite size and position (no anchor preset, direct positioning)
-				unit_sprite.custom_minimum_size = Vector2(current_unit_size, current_unit_size)
-				unit_sprite.size = Vector2(current_unit_size, current_unit_size)
-				var offset = (current_slot_size - current_unit_size) / 2.0
-				unit_sprite.position = Vector2(offset, offset)
-				unit_sprite.texture = visual_data.get("icon")
+				# Center the authored-size icon inside the unit's 64x64 source-art footprint.
+				unit_sprite.custom_minimum_size = sprite_display_size
+				unit_sprite.size = sprite_display_size
+				var offset: Vector2 = capsule_rect.get_center() - sprite_display_size * 0.5
+				unit_sprite.position = offset
+				unit_sprite.texture = icon_texture
 				unit_sprite.visible = true
 				# CRITICAL: Copy shader material so flash effects work on visible sprite
 				if icon_rect.material:
 					unit_sprite.material = icon_rect.material.duplicate()
 			else:
-				# Compact Mode: Native size (1x scale) for TopArea trinkets
+				# Compact Mode: keep the icon at its authored pixel scale, centered
+				# in the same footprint used by a 64x64 unit sprite.
 				var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
 				if shadow_sprite: shadow_sprite.visible = false
 				
-				# Ensure Layout (Compact uses overlay usually? or nothing? Assuming overlay/hidden)
 				_setup_overlay_stats_layout()
-				# Use native texture size and center in the slot
+				var compact_footprint_size: Vector2 = target_size
 				icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-				icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-				icon_rect.custom_minimum_size = target_size
-				
-				# Remove unit sprite if present (not needed in compact mode)
+				icon_rect.stretch_mode = TextureRect.STRETCH_SCALE
+				icon_rect.custom_minimum_size = compact_footprint_size
+				icon_rect.texture = null
 				var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-				if unit_sprite: unit_sprite.queue_free()
+				if not unit_sprite:
+					unit_sprite = TextureRect.new()
+					unit_sprite.name = "UnitSprite"
+					icon_rect.add_child(unit_sprite)
+					unit_sprite.mouse_filter = Control.MOUSE_FILTER_IGNORE
+					unit_sprite.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+					unit_sprite.stretch_mode = TextureRect.STRETCH_SCALE
+				_match_icon_texture_filter(unit_sprite)
+				unit_sprite.custom_minimum_size = sprite_display_size
+				unit_sprite.size = sprite_display_size
+				unit_sprite.position = (compact_footprint_size - sprite_display_size) / 2.0
+				unit_sprite.texture = icon_texture
+				unit_sprite.visible = true
+				if icon_rect.material:
+					unit_sprite.material = icon_rect.material.duplicate()
 		else:
 			# Fallback for missing textures
 			var shadow_sprite = icon_rect.get_node_or_null("ShadowSprite")
@@ -563,11 +582,6 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	if _has_overlay_heuristic():
 		_create_gachaball_overlay()
 
-	# Set tooltip from localization key
-	var loc_key: String = visual_data.get("display_name_key", "")
-	if not loc_key.is_empty():
-		tooltip_text = tr(loc_key)
-	
 	_update_item_slots()
 	_apply_selection_feedback()
 	_update_recipe_unlock_outline()
@@ -586,21 +600,17 @@ func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
 			trait_label.visible = false
 		return
 		
-	# Traits only calculate properly in battle
+	var current_souls: int = 0
 	if not GameManager.is_in_battle:
-		if trait_label:
-			trait_label.text = "0"
-			trait_label.visible = true
-		return
-		
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if not is_instance_valid(bm): 
-		return
-		
-	var is_enemy_team = is_enemy or (is_instance_valid(_location) and _location.container == &"EnemyTrinkets")
-	var team = "ENEMY" if is_enemy_team else "PLAYER"
-	var active_traits = bm.get_active_traits(team)
-	var current_souls = active_traits.get(_trait_name, 0)
+		current_souls = _get_run_trait_count_for_view(_trait_name)
+	else:
+		var bm = get_tree().get_first_node_in_group("battle_manager")
+		if not is_instance_valid(bm):
+			return
+		var is_enemy_team = is_enemy or (is_instance_valid(_location) and _location.container == &"EnemyTrinkets")
+		var team = "ENEMY" if is_enemy_team else "PLAYER"
+		var active_traits = bm.get_active_traits(team)
+		current_souls = active_traits.get(_trait_name, 0)
 	
 	if trait_label:
 		trait_label.text = str(current_souls)
@@ -623,6 +633,34 @@ func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
 	_last_soul_count = current_souls
 	
 	_update_outline_visuals()
+
+func _get_run_trait_count_for_view(trait_id: String) -> int:
+	if not is_instance_valid(GameManager) or not is_instance_valid(GameManager.run_state):
+		return 0
+
+	var counts: Dictionary = {}
+	for t in C.TRAIT_SORT_ORDER:
+		counts[t] = 0
+
+	var lineup = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_LINEUP)
+	if not is_instance_valid(lineup):
+		return 0
+
+	var all_inst = GameManager.run_state.get_all_instances()
+	for unit_uuid in lineup.get_all_non_empty_uuids():
+		var unit = GameManager.run_state.get_instance_by_uuid(unit_uuid)
+		if not is_instance_valid(unit):
+			continue
+		var soul_counts = unit.get_trait_soul_counts(all_inst)
+		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
+			if counts.has(soul_type):
+				counts[soul_type] += soul_counts.get(soul_type, 0)
+		for tag in unit.get_active_tags(all_inst):
+			var upper = String(tag).to_upper()
+			if counts.has(upper):
+				counts[upper] += 1
+
+	return int(counts.get(trait_id, 0))
 
 
 func update_visuals(visual_data: Dictionary) -> void:
@@ -707,6 +745,7 @@ func _apply_visual_layers(layers: Array) -> void:
 
 func set_is_enemy(p_is_enemy: bool, _definition_id: StringName = &"") -> void:
 	is_enemy = p_is_enemy
+	_apply_unit_corner_icon_layout()
 	if is_instance_valid(icon_rect):
 		if _entity_type == &"TRINKET":
 			return
@@ -873,10 +912,16 @@ func _build_drag_preview_visual() -> Control:
 	if unit_sprite and unit_sprite.texture:
 		drag_texture = unit_sprite.texture
 
-	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
-	var preview_size = Vector2(current_slot_size, current_slot_size)
-	var container_size = preview_size * 2.0
-	var offset = -preview_size / 2.0
+	var has_capsule_overlay: bool = _has_overlay_heuristic()
+	var is_battle_shelf_capsule: bool = GameManager.is_in_battle and _is_shelf_capsule()
+	var capsule_preview_size: float = float(C.GACHA_CAPSULE_DIAMETER) * (_size_scale if is_battle_shelf_capsule else 1.0)
+	var current_slot_size: float = capsule_preview_size if has_capsule_overlay else float(C.SLOT_SIZE_BASE) * _size_scale
+	var preview_size: Vector2 = Vector2(current_slot_size, current_slot_size)
+	var container_size: Vector2 = preview_size * 2.0
+	var offset: Vector2 = -preview_size / 2.0
+	var is_item_preview: bool = _entity_type == &"ITEM"
+	var preview_scale: float = current_slot_size / C.GACHA_CAPSULE_DIAMETER if has_capsule_overlay else _size_scale
+	var authored_preview_size: Vector2 = Vector2(drag_texture.get_size()) * preview_scale
 
 	var preview_container = Control.new()
 	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -889,20 +934,27 @@ func _build_drag_preview_visual() -> Control:
 	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 	preview.stretch_mode = TextureRect.STRETCH_SCALE
 	_match_icon_texture_filter(preview)
-	if _has_overlay_heuristic():
-		var current_unit_size = (float(C.UNIT_SPRITE_SIZE) / 2.0) * _size_scale
-		var unit_size = Vector2(current_unit_size, current_unit_size)
-		preview.custom_minimum_size = unit_size
-		preview.size = unit_size
-		preview.position = offset + (preview_size - unit_size) / 2.0
+	if has_capsule_overlay:
+		var current_unit_size: float = (float(C.UNIT_SPRITE_SIZE) / 2.0) * preview_scale
+		var unit_size: Vector2 = Vector2(current_unit_size, current_unit_size)
+		var displayed_size: Vector2 = authored_preview_size if is_item_preview else unit_size
+		preview.custom_minimum_size = displayed_size
+		preview.size = displayed_size
+		preview.position = offset + (preview_size - displayed_size) / 2.0
+	elif is_item_preview:
+		preview.custom_minimum_size = authored_preview_size
+		preview.size = authored_preview_size
+		preview.position = offset + (preview_size - authored_preview_size) / 2.0
 	else:
 		preview.custom_minimum_size = preview_size
 		preview.size = preview_size
 		preview.position = offset
 	preview_container.add_child(preview)
+	if icon_rect.material and (not has_capsule_overlay or _is_selected):
+		_add_padded_drag_outline(preview_container, preview, drag_texture)
 
-	if _has_overlay_heuristic():
-		var overlay_texture = ArtStyleManager.get_themed_texture(load(GACHABALL_OVERLAY_PATH))
+	if has_capsule_overlay:
+		var overlay_texture: Texture2D = load(GACHABALL_OVERLAY_PATH)
 		if overlay_texture:
 			var overlay_preview = TextureRect.new()
 			overlay_preview.texture = overlay_texture
@@ -914,18 +966,43 @@ func _build_drag_preview_visual() -> Control:
 			preview_container.add_child(overlay_preview)
 			preview_container.move_child(overlay_preview, 0)
 
-		if _is_selected and icon_rect.material:
-			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
-			drag_mat.set_shader_parameter("outline_enabled", true)
-			preview.material = drag_mat
-	else:
-		if icon_rect.material:
-			var drag_mat = icon_rect.material.duplicate() as ShaderMaterial
-			drag_mat.set_shader_parameter("outline_enabled", true)
-			preview.material = drag_mat
-
 	_set_preview_tree_mouse_ignore(preview_container)
 	return preview_container
+
+func _add_padded_drag_outline(preview_container: Control, preview: TextureRect, source_texture: Texture2D) -> void:
+	var outline_texture: Texture2D = _get_padded_drag_outline_texture(source_texture)
+	var source_size: Vector2 = Vector2(source_texture.get_size())
+	var pixels_per_source_pixel: Vector2 = preview.size / source_size
+	var displayed_padding: Vector2 = Vector2(DRAG_OUTLINE_TEXTURE_PADDING, DRAG_OUTLINE_TEXTURE_PADDING) * pixels_per_source_pixel
+	var outline_preview := TextureRect.new()
+	outline_preview.texture = outline_texture
+	outline_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	outline_preview.stretch_mode = TextureRect.STRETCH_SCALE
+	_match_icon_texture_filter(outline_preview)
+	outline_preview.custom_minimum_size = preview.size + displayed_padding * 2.0
+	outline_preview.size = outline_preview.custom_minimum_size
+	outline_preview.position = preview.position - displayed_padding
+	var outline_material: ShaderMaterial = icon_rect.material.duplicate() as ShaderMaterial
+	assert(outline_material != null, "GachaBallView drag outline requires a ShaderMaterial.")
+	outline_material.set_shader_parameter("outline_enabled", true)
+	outline_preview.material = outline_material
+	preview_container.add_child(outline_preview)
+	preview_container.move_child(outline_preview, preview.get_index())
+
+func _get_padded_drag_outline_texture(source_texture: Texture2D) -> Texture2D:
+	if _drag_outline_texture_cache.has(source_texture):
+		return _drag_outline_texture_cache[source_texture]
+	var source_image: Image = source_texture.get_image()
+	assert(not source_image.is_empty(), "GachaBallView drag outline source texture must be readable.")
+	source_image.convert(Image.FORMAT_RGBA8)
+	var padding: Vector2i = Vector2i(DRAG_OUTLINE_TEXTURE_PADDING, DRAG_OUTLINE_TEXTURE_PADDING)
+	var padded_size: Vector2i = source_image.get_size() + padding * 2
+	var padded_image: Image = Image.create(padded_size.x, padded_size.y, false, Image.FORMAT_RGBA8)
+	padded_image.fill(Color.TRANSPARENT)
+	padded_image.blit_rect(source_image, Rect2i(Vector2i.ZERO, source_image.get_size()), padding)
+	var padded_texture: Texture2D = ImageTexture.create_from_image(padded_image)
+	_drag_outline_texture_cache[source_texture] = padded_texture
+	return padded_texture
 
 func _build_drag_engine_preview_stub() -> Control:
 	var preview_stub := Control.new()
@@ -981,7 +1058,7 @@ func _apply_hover_visuals(mode: int) -> void:
 		return
 
 	if mode == HoverFxMode.INVENTORY_SPHERE:
-		pivot_offset = size / 2.0
+		pivot_offset = get_capsule_rect().get_center()
 	else:
 		pivot_offset = Vector2(size.x / 2.0, C.SLOT_UNIT_OFFSET_Y + C.UNIT_SPRITE_SIZE)
 	var transform_factor: float = INVENTORY_TRANSFORM_FACTOR if mode == HoverFxMode.INVENTORY_SPHERE else 1.0
@@ -1454,6 +1531,7 @@ func _pop_container(container: Control) -> void:
 	pop_tween.tween_property(container, "modulate", Color.WHITE, AnimationConstants.scaled(0.2)).set_delay(AnimationConstants.scaled(0.05))
 
 func _update_item_slots() -> void:
+	_apply_unit_corner_icon_layout()
 	_update_level_display()
 	_update_equipped_item_icon()
 
@@ -1523,34 +1601,52 @@ func _update_equipped_item_icon() -> void:
 		return
 	equipped_item_icon_rect.texture = _visual_equipped_item_icon
 	equipped_item_icon_rect.visible = true
+	_apply_unit_corner_icon_layout()
 
 func _update_level_display() -> void:
-	if not is_instance_valid(level_label):
-		return
 	if _entity_type != &"UNIT":
-		level_label.visible = false
+		level_stars_rect.visible = false
 		return
-	_apply_level_label_style()
-	level_label.text = "LV. %d" % maxi(_visual_level, 1)
-	level_label.visible = true
+	assert(_visual_level >= 1 and _visual_level <= 3, "GachaBallView: unit level must be between 1 and 3")
+	match _visual_level:
+		1:
+			level_stars_rect.texture = LEVEL_1_STARS_TEXTURE
+		2:
+			level_stars_rect.texture = LEVEL_2_STARS_TEXTURE
+		3:
+			level_stars_rect.texture = LEVEL_3_STARS_TEXTURE
+	level_stars_rect.visible = true
 
-func _apply_level_label_style() -> void:
-	if not is_instance_valid(level_label):
+func _apply_unit_corner_icon_layout() -> void:
+	# Player units face right: item left, level right. Enemy units mirror both.
+	var item_on_left: bool = not is_enemy
+	var item_icon_size: Vector2 = Vector2(EQUIPPED_ITEM_ICON_SIZE, EQUIPPED_ITEM_ICON_SIZE)
+	var level_icon_size: Vector2 = Vector2(LEVEL_STAR_ICON_SIZE, LEVEL_STAR_ICON_SIZE)
+	_set_unit_corner_icon(equipped_item_icon_rect, item_on_left, item_icon_size)
+	_set_unit_corner_icon(level_stars_rect, not item_on_left, level_icon_size)
+
+func _set_unit_corner_icon(icon_rect_to_position: TextureRect, align_left: bool, icon_size: Vector2) -> void:
+	icon_rect_to_position.custom_minimum_size = icon_size
+	icon_rect_to_position.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+	icon_rect_to_position.stretch_mode = TextureRect.STRETCH_SCALE
+	if _is_shelf_capsule():
+		var capsule_rect: Rect2 = get_capsule_rect()
+		var icon_left: float = capsule_rect.position.x + UNIT_CORNER_ICON_INSET if align_left else capsule_rect.end.x - UNIT_CORNER_ICON_INSET - icon_size.x
+		icon_rect_to_position.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		icon_rect_to_position.position = Vector2(icon_left, capsule_rect.position.y + UNIT_CORNER_ICON_INSET)
+		icon_rect_to_position.size = icon_size
 		return
-	if _is_run_inventory_context():
-		level_label.add_theme_font_size_override("font_size", 12)
-		level_label.add_theme_constant_override("outline_size", 2)
-		level_label.offset_left = -40.0
-		level_label.offset_top = 5.0
-		level_label.offset_right = -4.0
-		level_label.offset_bottom = 20.0
+	var scaled_inset: float = UNIT_CORNER_ICON_INSET * _size_scale
+	if align_left:
+		icon_rect_to_position.set_anchors_preset(Control.PRESET_TOP_LEFT)
+		icon_rect_to_position.offset_left = scaled_inset
+		icon_rect_to_position.offset_right = scaled_inset + icon_size.x
 	else:
-		level_label.add_theme_font_size_override("font_size", 16)
-		level_label.add_theme_constant_override("outline_size", 3)
-		level_label.offset_left = -54.0
-		level_label.offset_top = 6.0
-		level_label.offset_right = -6.0
-		level_label.offset_bottom = 24.0
+		icon_rect_to_position.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+		icon_rect_to_position.offset_left = -scaled_inset - icon_size.x
+		icon_rect_to_position.offset_right = -scaled_inset
+	icon_rect_to_position.offset_top = scaled_inset
+	icon_rect_to_position.offset_bottom = scaled_inset + icon_size.y
 
 ## Handle click on an equipped item icon
 func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
@@ -1606,7 +1702,7 @@ func _create_gachaball_overlay() -> void:
 		return
 	
 	# Load the overlay texture
-	var overlay_texture: Texture2D = ArtStyleManager.get_themed_texture(load(GACHABALL_OVERLAY_PATH))
+	var overlay_texture: Texture2D = load(GACHABALL_OVERLAY_PATH)
 	if not is_instance_valid(overlay_texture):
 		return
 	
@@ -1614,15 +1710,15 @@ func _create_gachaball_overlay() -> void:
 	var overlay = Sprite2D.new()
 	overlay.name = "GachaBallOverlay"
 	overlay.texture = overlay_texture
-	var current_slot_size = float(C.SLOT_SIZE_BASE) * _size_scale
-	var overlay_size: float = current_slot_size - (INVENTORY_OVERLAY_INSET_PX * 2.0 * _size_scale)
+	var capsule_rect: Rect2 = get_capsule_rect()
+	var overlay_size: float = capsule_rect.size.x
 	var overlay_texture_size: Vector2 = overlay_texture.get_size()
 	var base_scale: Vector2 = Vector2(
 		overlay_size / maxf(overlay_texture_size.x, 1.0),
 		overlay_size / maxf(overlay_texture_size.y, 1.0)
 	)
 	overlay.centered = true
-	overlay.position = Vector2(current_slot_size / 2.0, current_slot_size / 2.0)
+	overlay.position = capsule_rect.get_center()
 	overlay.scale = base_scale
 	overlay.set_meta("base_scale", base_scale)
 	
@@ -1749,6 +1845,23 @@ func _on_mouse_exited() -> void:
 	if GlobalInteractionRouter.is_drag_active(): return
 	if is_instance_valid(_inspection_trigger):
 		_inspection_trigger.on_mouse_exited()
+
+func refresh_hover_state_from_pointer() -> void:
+	assert(is_inside_tree(), "GachaBallView.refresh_hover_state_from_pointer requires a live view")
+	if InputUtils.prefers_touch_input():
+		return
+	# A view spawned beneath a stationary pointer may still report an ancestor
+	# as the GUI target. Unrelated controls above it must retain mouse priority.
+	var hovered_control: Control = get_viewport().gui_get_hovered_control()
+	var pointer_is_over_view: bool = hovered_control == null
+	if hovered_control != null:
+		pointer_is_over_view = (
+			hovered_control == self
+			or is_ancestor_of(hovered_control)
+			or hovered_control.is_ancestor_of(self)
+		)
+	if pointer_is_over_view and _has_point(get_local_mouse_position()):
+		_on_mouse_entered()
 
 func _has_point(point: Vector2) -> bool:
 	var radius = size.x / 2.0
@@ -2062,6 +2175,8 @@ func _update_recipe_unlock_outline() -> void:
 	_update_outline_visuals()
 
 func _on_run_data_changed() -> void:
+	if _is_trait_trinket:
+		_update_trait_trinket_visuals(true)
 	if not definition_id.is_empty() and _is_reward_or_shop_context():
 		var run_state = GameManager.run_state if is_instance_valid(GameManager) else null
 		if is_instance_valid(run_state):
@@ -2152,16 +2267,19 @@ func animate_leap_return() -> void:
 
 var force_inventory_mode: bool = false
 var show_capsule_overlay: bool = true
+var _visual_capsule_sealed: bool = false
 
 ## Heuristic to check if we should render in "Inventory Mode" (2x scale, 192px slot, circle outline)
 ## 1. Checks if parent name contains "InventoryWindow"
 ## 2. Checks if force_inventory_mode is set
 func _has_overlay_heuristic() -> bool:
+	if _visual_capsule_sealed:
+		return true
 	if force_inventory_mode:
 		return true
 	var p = get_parent()
 	while p:
-		# Check for inventory, shop, reward, or discard pile parent contexts
+		# Check for inventory, shop, reward, or Discard parent contexts
 		if "InventoryWindow" in p.name: return true
 		if "Shop" in p.name: return true
 		if "Reward" in p.name: return true
@@ -2423,7 +2541,7 @@ func _setup_overlay_stats_layout() -> void:
 	# Unit bottom is (SLOT_SIZE_BASE/2 + UNIT_SPRITE_SIZE/4) * _size_scale = (48+32) * _size_scale = 80 * _size_scale
 	# 5px gap -> 85 * _size_scale
 	top_container.anchors_preset = Control.PRESET_CENTER_TOP
-	top_container.offset_top = 85 * _size_scale
+	top_container.offset_top = C.SHELF_SURFACE_Y + 5 if _is_shelf_capsule() else 85 * _size_scale
 	
 	# Move Main Stats back to Top Container and scale
 	if hp_container.get_parent() != top_container:

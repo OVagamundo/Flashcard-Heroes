@@ -323,6 +323,11 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 	# are caught and released immediately.
 	battle_manager._check_for_deaths_with_counter_delay(true, turn_log, death_tracking)
 	battle_manager._process_completed_counter_deaths(turn_log, death_tracking)
+	if not _crr.is_empty():
+		CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
+	var final_inline := collect_and_clear_inline_events()
+	if not final_inline.is_empty():
+		CombatCommand.append_unified_events(turn_log, final_inline)
 	
 	return turn_log
 
@@ -443,15 +448,20 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 	for target_uuid in exec_targets:
 		var target_inst = bm.get_instance_by_uuid(target_uuid)
 		if is_instance_valid(target_inst):
+			var t_def = target_inst.get_definition()
+			var is_trinket: bool = is_instance_valid(t_def) and t_def.category == &"TRINKET"
 			var is_dying_subject: bool = is_knockout_trigger and (target_uuid == request.trigger_context.knocked_out_uuid or target_uuid == request.source_uuid)
-			var is_target_alive_or_chaining: bool = (target_inst.current_hp > 0 or is_dying_subject or (allow_dying_target and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and target_inst.location_container_tag != &""))
+			var is_target_alive_or_chaining: bool = is_trinket or (target_inst.current_hp > 0 or is_dying_subject or (allow_dying_target and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and target_inst.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD and target_inst.location_container_tag != &""))
 			if is_target_alive_or_chaining:
 				# Also verify the target is still in an active battle container (not discard/removed)
 				var loc_tag: StringName = target_inst.location_container_tag
 				var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or
 									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-									 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or
-									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS or
+									 loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER)
 				if is_in_battle:
 					valid_targets.append(target_uuid)
 	
@@ -551,6 +561,10 @@ func resolve_effect_request(request: EffectRequest, out_events: Array[CombatEven
 		var commands = build_commands(effect_result, request, self, bm)
 		for cmd in commands:
 			cmd.execute(out_events, death_tracking)
+		
+		var after_cmd_inline_evts = collect_and_clear_inline_events()
+		if not after_cmd_inline_evts.is_empty():
+			CombatCommand.append_unified_events(out_events, after_cmd_inline_evts)
 		
 		if not effect_result.skip_death_check and commands.is_empty():
 			bm._check_for_deaths_with_counter_delay(true, out_events, death_tracking)
@@ -730,9 +744,9 @@ func _trigger_summon_reactions_for_result(summon_result: EffectHandlers.SummonRe
 		var summoned_team := ""
 		if i < summon_result.container_updates.size():
 			var container_tag: StringName = summon_result.container_updates[i].container_tag
-			if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 				summoned_team = "PLAYER"
-			elif container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+			elif container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 				summoned_team = "ENEMY"
 		
 		# Skip if we can't determine team
@@ -782,7 +796,7 @@ func _tag_trinket_events(events: Array[CombatEvent], request: EffectRequest, bm,
 	if not is_instance_valid(definition) or not ("category" in definition) or definition.category != &"TRINKET":
 		return
 	var visual_uuid := source.origin_uuid if not source.origin_uuid.is_empty() else source.ball_uuid
-	var is_enemy_trinket := source.location_container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS
+	var is_enemy_trinket: bool = source.location_container_tag in [C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER]
 	var has_visual_event := false
 	for i in range(start_index, events.size()):
 		var candidate := events[i]

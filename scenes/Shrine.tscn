@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c6l8m7y3bv8k2"]
 
 [ext_resource type="Script" path="res://scripts/Shrine.gd" id="1_x0k8m"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/Shrine.png" id="4_bg"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/Shrine.png" id="4_bg"]
 
 [node name="Shrine" type="Control"]
 layout_mode = 3

@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://jsungguqbxwp"]
 
 [ext_resource type="Script" path="res://scripts/PathChoice.gd" id="1_defgh"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/BGs/pathScene.png" id="2_bg"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/pathScene.png" id="2_bg"]
 
 [node name="PathChoice" type="Control"]
 layout_mode = 3
@@ -32,6 +32,6 @@ anchor_bottom = 1.0
 
 [node name="HBoxContainer" type="HBoxContainer" parent="CenterContainer"]
 layout_mode = 2
-theme_override_constants/separation = 50
+theme_override_constants/separation = 100
 anchor_right = 1.0
 anchor_bottom = 1.0

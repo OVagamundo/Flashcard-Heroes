@@ -57,7 +57,7 @@ class DrawResult:
 
 ## Draw a random instance from a tier pool. Returns DrawResult.
 ## Does NOT handle token costs or signals - caller is responsible.
-static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity: int = C.BENCH_CAP) -> DrawResult:
+static func draw_from_tier(state: BattleState, tier: int, player_shelf_capacity: int = C.SHELF_CAP) -> DrawResult:
 	var result := DrawResult.new()
 
 	var container_tag: StringName = &"BattleInventoryT%d" % tier
@@ -82,8 +82,8 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 	var target_capacity: int
 	match def.category:
 		&"UNIT", &"ITEM", &"CONSUMABLE":
-			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-			target_capacity = player_bench_capacity
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
+			target_capacity = player_shelf_capacity
 		_:
 			target_container_tag = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
 			target_capacity = -1
@@ -95,7 +95,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 
 	var desired_slot := -1
 	if target_container_tag != C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
-		var empty_slot := target_container.find_first_empty_slot()
+		var empty_slot := state.find_first_empty_player_shelf_slot() if target_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF else target_container.find_first_empty_slot()
 		if empty_slot != -1 and empty_slot < target_capacity:
 			result.dest_container = target_container_tag
 			desired_slot = empty_slot
@@ -118,7 +118,7 @@ static func draw_from_tier(state: BattleState, tier: int, player_bench_capacity:
 
 	return result
 
-## Draw a random instance from the Discard Pile to its appropriate tier machine.
+## Draw a random instance from the Discard to its appropriate tier machine.
 ## Returns DrawResult with source_container = DiscardPile and dest_container = BattleInventoryT{tier}.
 static func draw_from_discard(state: BattleState) -> DrawResult:
 	var result := DrawResult.new()
@@ -176,6 +176,8 @@ static func register_and_equip_item(state: BattleState, item: GachaBallInstance,
 	var unit := state.get_instance(unit_uuid)
 	if not is_instance_valid(unit):
 		return result
+	if not state.is_lineup_location(unit.get_location()):
+		return result
 
 	var item_def = item.get_definition()
 	if not is_instance_valid(item_def) or item_def.category != &"ITEM":
@@ -231,6 +233,10 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	var item := state.get_instance(item_uuid)
 	var unit := state.get_instance(unit_uuid)
 	if not is_instance_valid(item) or not is_instance_valid(unit):
+		return result
+	if not state.is_lineup_location(unit.get_location()):
+		return result
+	if item.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not state.is_player_shelf_slot_unlocked(item.location_slot_index):
 		return result
 
 	var item_def = item.get_definition()
@@ -334,6 +340,8 @@ static func move_instance(state: BattleState, source_loc: LocationIdentifier, ta
 	if source_loc.container.is_empty() or target_loc.container.is_empty():
 		push_warning("move_instance rejected: source or target container tag is empty")
 		return result
+	if source_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not state.is_player_shelf_slot_unlocked(source_loc.index):
+		return result
 
 	# Target is equipping onto a unit - delegate to caller via special flag
 	if target_loc.container == C.CONTAINER_EQUIPPED_ITEM:
@@ -386,9 +394,16 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc):
 		return result
+	# A swap must never send a deployed ball or equipped item back to the Shelf.
+	if (source_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF) != (target_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF):
+		return result
 
 	if source_loc.container.is_empty() or target_loc.container.is_empty():
 		push_warning("swap_instances rejected: source or target container tag is empty")
+		return result
+	if source_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not state.is_player_shelf_slot_unlocked(source_loc.index):
+		return result
+	if target_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not state.is_player_shelf_slot_unlocked(target_loc.index):
 		return result
 
 	# Normalize so that if only one side is an equipped slot, it is target_loc
@@ -508,7 +523,7 @@ static func swap_instances(state: BattleState, source_loc: LocationIdentifier, t
 # MOVE TO DISCARD
 # ============================================================================
 
-## Move an instance to the discard pile atomically. Handles equipped items and containers.
+## Move an instance to the Discard atomically. Handles equipped items and containers.
 ## Returns OperationResult.
 static func move_instance_to_discard(state: BattleState, instance: GachaBallInstance, unequip_bonus: bool = true) -> OperationResult:
 	var result := OperationResult.new()

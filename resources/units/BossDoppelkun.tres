@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/boss_doppelkun.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_doppelkun_heroic_mirror.tres" id="4_mirror"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"boss_doppelkun"
+display_name_key = "boss_doppelkun.name"
+description_key = "boss_doppelkun.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 3
+category = &"UNIT"
+
+base_hp = 4
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("4_mirror")
+])

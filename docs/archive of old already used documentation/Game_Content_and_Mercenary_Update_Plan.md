@@ -177,7 +177,7 @@ The table below contrasts the two scenarios across the active 36-unit pool when 
 * `item_loaded_contract` (Coin Laundry, T2, 2 Gold): When 1 Gold earned, holder gains +1 PWR (+2 PWR).
 * `item_golden_seal` (Golden Seal, T3, 4 Gold): +2 HP / +2 PWR.
   * **Critical Bug Fix:** In [`EffectGoldenSealScaling.gd`](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/effects/EffectGoldenSealScaling.gd), remove `item.set_meta(...)` (violating Architectural Law 1 & 2). Listen to both `on_gold_earned` and `on_gold_spent` so the stat bonus updates downwards when Mercenaries spend Gold.
-* `item_mercenary_emblem` (Mercenary Emblem, T3 Standalone, 4 Gold): +1 Mercenary trait counter. +1/+1 when 1 Gold earned (lineup or bench).
+* `item_mercenary_emblem` (Mercenary Emblem, T3 Standalone, 4 Gold): +1 Mercenary trait counter. +1/+1 when 1 Gold earned (lineup or shelf).
 
 ---
 

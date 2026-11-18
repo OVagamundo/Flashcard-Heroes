@@ -6,6 +6,7 @@ shader_type canvas_item;
 uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // White by default
 uniform float outline_width : hint_range(0.0, 30.0) = 2.0;
 uniform bool outline_enabled = false;
+uniform bool grayscale_enabled = false;
 
 // Animation uniforms for flash and fade effects
 uniform float flash_intensity : hint_range(0.0, 1.0) = 0.0; // 0 = normal, 1 = full white flash
@@ -55,6 +56,12 @@ void fragment() {
     
     // Apply flash effect: lerp toward flash_color based on flash_intensity
     final_color.rgb = mix(final_color.rgb, flash_color.rgb, flash_intensity);
+
+    // Grayscale only the sprite's visible pixels. Texture alpha remains unchanged.
+    if (grayscale_enabled) {
+        float gray = dot(final_color.rgb, vec3(0.299, 0.587, 0.114));
+        final_color.rgb = vec3(gray);
+    }
     
     // Apply alpha multiplier for fade effects
     final_color.a *= alpha_multiplier;

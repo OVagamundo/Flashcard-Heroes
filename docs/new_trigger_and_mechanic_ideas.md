@@ -40,7 +40,7 @@ Currently, status effects (Armor, Spikes, Burn, Static, Bounty) apply and tick p
 
 ## 3. Flashcard Educational Combat Triggers
 
-Flashcard mini-games are currently evaluated in dedicated mini-game loops (`minigame_start`). If educational answers are tied directly into in-combat abilities, the following triggers would enable direct card-gameplay synergies:
+Flashcard challenges are currently evaluated in dedicated challenge loops (`minigame_start`). If educational answers are tied directly into in-combat abilities, the following triggers would enable direct card-gameplay synergies:
 
 | Proposed Tag | Proposed Engine Identifier | Intended Mechanic & Design Use Case |
 | :--- | :--- | :--- |

@@ -266,7 +266,7 @@ Create `tests/run_fast_suite.tscn` and `tests/run_fast_suite.gd` (touching **zer
 3. **Test Suite 3 — Deterministic Seed Parity (`Seed X == Seed X`)**:
    - Executes two independent seeded combat runs with the exact same seed (`start_run_with_seed` + 3 turns of combat resolution), captures `ReplayStateDigest` (or canonical board/instance state hash) after each run, and asserts **100% bit-for-bit equality**.
 4. **Test Suite 4 — `RunState` Save/Load Roundtrip Consistency**:
-   - Captures `var saved: Dictionary = rs.to_save_dict()`, reconstructs via `RunState.from_save_dict(saved)`, asserts `_validate_state_consistency()` on the restored `RunState`, and verifies container UUID parity (`PlayerLineup`, `PlayerBench`, `PlayerTrinkets`, `gold`, `gacha_tokens`). *(Note: test with a standard deterministic setup and do not alter `RunState.gd` in Phase 0.)*
+   - Captures `var saved: Dictionary = rs.to_save_dict()`, reconstructs via `RunState.from_save_dict(saved)`, asserts `_validate_state_consistency()` on the restored `RunState`, and verifies container UUID parity (`PlayerLineup`, `PlayerShelf`, `PlayerTrinkets`, `gold`, `gacha_tokens`). *(Note: test with a standard deterministic setup and do not alter `RunState.gd` in Phase 0.)*
 5. **Clean Up `scratch/`**:
    - Once `tests/run_fast_suite.tscn` passes 100%, delete the old one-off debug files inside `scratch/` so `scratch/` is completely clean.
 

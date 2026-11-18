@@ -6,7 +6,8 @@ extends EffectDefinition
 const C = preload("res://scripts/Constants.gd")
 
 ## Execute the item-stripping effect (Potion of Plunder).
-## Removes a random equipped item from the target unit and sends it directly to the Battle Discard Pile.
+## Removes a random equipped item from a Lineup target and sends it directly to
+## the player's matching tier machine, where it is sealed for its next draw.
 func execute(_source_uuid: String, targets: Array[String], battle_manager: Node, _context: TriggerContext) -> EffectResult:
 	if targets.is_empty():
 		return EffectResult.empty()
@@ -61,6 +62,7 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 
 	# Emit SUMMON event targeting BattleInventoryT{tier} for parabolic arc to Gacha Machine
 	var item_snapshot := {
+		"capsule_sealed": true,
 		"uuid": stolen_item.ball_uuid,
 		"category": "ITEM",
 		"icon": stolen_def.icon if stolen_def and "icon" in stolen_def else null,

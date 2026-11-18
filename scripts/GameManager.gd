@@ -807,6 +807,9 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				# Boss encounter - boss is free, support units use daily budget
 				var boss_level: int = node_def.difficulty
 				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, daily_budget, run_state.day)
+				var boss_id: StringName = encounter_def.boss_or_elite_unit_id
+				if boss_id != &"":
+					run_state.record_boss_encounter(boss_id)
 				# Track current boss level for victory handling
 				run_state.current_boss_level = boss_level
 				run_state.current_elite_level = 0
@@ -817,8 +820,8 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 				encounter_def = EncounterGenerator.generate_elite_encounter(budget, run_state.elite_encounter_history, run_state.last_elite_id)
 				
 				# Record encounter in history immediately upon generation/selection
-				var elite_id = encounter_def.get_meta("elite_boss_id")
-				if elite_id is StringName:
+				var elite_id: StringName = encounter_def.boss_or_elite_unit_id
+				if elite_id != &"":
 					run_state.record_elite_encounter(elite_id)
 				
 				# Track elite level for victory handling (trinket rewards)
@@ -828,6 +831,9 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 			else:
 				# Regular encounter - uses daily budget
 				encounter_def = EncounterGenerator.generate_encounter(daily_budget)
+				var banner_id: StringName = encounter_def.banner_trinket_id
+				if banner_id != &"":
+					run_state.record_regular_banner(banner_id)
 				run_state.current_boss_level = 0
 				run_state.current_elite_level = 0
 			
@@ -1135,7 +1141,12 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 	if loading_from_save:
 		loading_from_save = false
 		if not run_state.available_path_nodes.is_empty():
-			return run_state.available_path_nodes
+			if DemoContent.is_demo_mode():
+				for node_index in range(run_state.available_path_nodes.size() - 1, -1, -1):
+					if run_state.available_path_nodes[node_index].node_type == &"SURPRISE":
+						run_state.available_path_nodes.remove_at(node_index)
+			if not run_state.available_path_nodes.is_empty():
+				return run_state.available_path_nodes
 	
 	run_state.advance_day(1)
 	
@@ -1160,7 +1171,7 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 		selected_nodes.append(node_def)
 	else:
 		const MAX_TIER_ELITES: int = 4
-		const MAX_RUN_ELITES: int = 20
+		const MAX_RUN_ELITES: int = 12
 		const ELITE_PROGRESS_THRESHOLDS: Array[float] = [0.20, 0.40, 0.60, 0.80]
 		
 		var tier_progress: float = run_state.get_tier_progress()
@@ -1186,10 +1197,11 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
 				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
 				{"type": "MERGE", "subtype": "", "name": "ui.merge_node", "base_w": 100},
-				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100},
-				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
-				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
+				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100}
 			]
+			if not DemoContent.is_demo_mode():
+				candidate_types.append({"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100})
+			candidate_types.append({"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100})
 			
 			var pool: Array[PathNodeDefinition] = []
 			var current_day = run_state.day
@@ -1226,10 +1238,11 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 				{"type": "BATTLE", "subtype": "", "name": "ui.battle_node", "base_w": 1500},
 				{"type": "SHOP", "subtype": "", "name": "ui.shop_node", "base_w": 100},
 				{"type": "MERGE", "subtype": "", "name": "ui.merge_node", "base_w": 100},
-				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100},
-				{"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100},
-				{"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100}
+				{"type": "SHRINE", "subtype": "", "name": "ui.shrine_node", "base_w": 100}
 			]
+			if not DemoContent.is_demo_mode():
+				candidate_types.append({"type": "SURPRISE", "subtype": "", "name": "ui.surprise_node", "base_w": 100})
+			candidate_types.append({"type": "DOJO", "subtype": "", "name": "ui.training_grounds_node", "base_w": 100})
 			if can_encounter_elite:
 				candidate_types.append({"type": "BATTLE", "subtype": "ELITE", "name": "ui.elite_battle_node", "base_w": 350})
 			

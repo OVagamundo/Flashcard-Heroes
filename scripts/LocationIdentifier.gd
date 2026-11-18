@@ -14,7 +14,7 @@ func _init(p_container: StringName = &"", p_index: int = -1) -> void:
 
 ## Creates a new LocationIdentifier with the given container and index.
 func set_values(p_container: StringName = &"", p_index: int = -1) -> void:
-	container = p_container
+	container = _canonical_container_tag(p_container)
 	index = p_index
 
 ## Checks if this LocationIdentifier is equal to another.
@@ -33,13 +33,22 @@ func to_dict() -> Dictionary:
 
 ## Populates this location from a dictionary.
 func from_dict(data: Dictionary) -> void:
-	container = StringName(data.get("container", ""))
+	container = _canonical_container_tag(StringName(data.get("container", "")))
 	index = int(data.get("index", -1))
 	unit_uuid = String(data.get("unit_uuid", ""))
 
 ## Static factory to instantiate a LocationIdentifier from a dictionary.
 static func create_from_dict(data: Dictionary) -> LocationIdentifier:
-	var loc := LocationIdentifier.new(StringName(data.get("container", "")), int(data.get("index", -1)))
+	var loc := LocationIdentifier.new(_canonical_container_tag(StringName(data.get("container", ""))), int(data.get("index", -1)))
 	loc.unit_uuid = String(data.get("unit_uuid", ""))
 	return loc
+
+static func _canonical_container_tag(tag: StringName) -> StringName:
+	match tag:
+		&"PlayerBench":
+			return &"PlayerShelf"
+		&"EnemyBench":
+			return &"EnemyShelf"
+		_:
+			return tag
 

@@ -7,13 +7,13 @@ extends Control
 
 
 
-var _base_y: float = 320.0
-var _closed_y: float = 880.0
+var _base_y: float = 340.0
+var _closed_y: float = 900.0
 var _is_open: bool = false
 var _data_source: Dictionary
 
 func _ready() -> void:
-	# Clip trays at Y = 860 (offset_bottom = -220.0) so they emerge from behind the machine bases
+	# Clip trays at Y = 880 (offset_bottom = -200.0) so they emerge from behind the machine bases
 	clip_contents = true
 	
 	# Position the three 500x540 trays directly above the three 500x200 machine bases (X = 20, 520, 1020)

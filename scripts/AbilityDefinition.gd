@@ -3,6 +3,12 @@
 class_name AbilityDefinition
 extends Resource
 
+## Where the unit (or equipped item's holder) must be to activate this ability.
+## Trinkets remain team-wide listeners; their effects define their target scope.
+enum ActivationScope { LINEUP, BATTLE_BOARD, PLAYER_SHELF, ANY_LOCATION }
+
+@export var activation_scope: ActivationScope = ActivationScope.LINEUP
+
 ## The central "glue" resource that links a Trigger to one or more Effects, gated by an optional Condition.
 ## This is what is attached to a GachaBallDefinition's list of abilities.
 

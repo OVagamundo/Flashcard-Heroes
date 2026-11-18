@@ -44,16 +44,17 @@ The game implements a dedicated software cursor manager operating on CanvasLayer
 |---------|------|-------|
 | Battle slot | 192x192px | 2x scale. Opaque background (Alpha 1.0). Units positioned to stand on the floor. |
 | Inventory slot | 192x192px | Glass overlay, unit 128x128 centered |
-| TopArea trinket slot | 128x128px | Standard icon size |
-| Gacha machines | 260px height | Fixed bottom bar |
+| TopArea trinket slot | 98x98px | Trinket texture fits the HUD cell; authored item sizing does not apply |
+| Shelf capsule | 96x96px | Matches machine capsules; centered over the slot with its bottom on the Shelf surface |
+| Gacha machines | 200px height | Fixed bottom bar, flush with the screen's bottom edge |
 | Top gap spacer | 144px | Defines the HUD vertical boundary |
 | Title Screen Buttons | - | 50px offset towards bottom to clear logo. |
 
 **Critical:** `BattleView._initialize_slots()` overrides scene placeholders with SlotViews.
 ### GachaBall Animation & Spawning
 The game uses two distinct methods for GachaBall movement:
-1. **Draw Animation (Machine → Bench)**: When a player spends tokens, the ball animates along a Catmull-Rom spline starting from the **specific GachaMachine's knob position** and ending at the target `SlotView`.
-2. **Elite Summon (World → HUD)**: When an Elite unit summons a minion directly to the inventory, it uses the **Kinematic Projectile Standard**. The ball grows from 0.3x to 1.5x instantly at launch to maximize impact.
+1. **Draw Animation (Machine → Shelf)**: When a player spends tokens, the ball animates along a Catmull-Rom spline starting from the **specific GachaMachine's knob position** and ending at the target `SlotView`. The first three Shelf slots are unlocked at battle start; each next slot costs 1 Token and unlocks in order for that encounter. Locked slots darken only visible asset pixels, show a centered plus, and outline the next purchasable slot on hover. The slot stays locked during the Token flight, then lights up with a pop when the Token arrives. Drawn balls remain sealed on the Shelf until deployed to a Lineup or used in a valid Lineup action.
+2. **Machine / Discard Arrival (World → HUD)**: Capsule flights use the same 96px diameter as machine and Shelf capsules, reaching 1x scale after their launch growth. Shelf draw endpoints use the capsule's resting center above the platform, so flight and landed size/position match.
 3. **Pool Population (Top-down Gravity)**: Inside the Physics Drawers (Battle Inventory/Discard), balls spawn at the **top-center** with a random X-stagger and fall naturally. Spawning is sequential (0.15s interval) to prevent overlap explosions.
 
 ### Kinematic Projectile Standard
@@ -127,10 +128,10 @@ To ensure absolute visibility of contextual information, all windows managed by 
 
 ### Standardized Layering Policy
 The application maintains a strict four-tier UI hierarchy to resolve all occlusion issues:
-1. **BackgroundUILayer (40)**: Persistent inventory windows (Run/Battle) and Discard Pile.
+1. **BackgroundUILayer (40)**: Persistent inventory windows (Run/Battle) and Discard.
 2. **HUDLayer (60)**: Gacha Machine textures, count labels, and top/bottom panel buttons.
 3. **GlobalVFXLayer (150)**: High-priority currency animations (Gold Gain/Spend) and global transitions. Resides above all modal UI to ensure visibility.
-4. **ModalLayer (120)**: Inspection windows, pop-ups, tutorials, and minigames.
+4. **ModalLayer (120)**: Inspection windows, pop-ups, tutorials, and challenges.
 *Note: This ensures the "physical" UI (Inventory) slides out behind the Gacha Machines, while pop-ups always render on top of both, and global effects (coins) fly above everything.*
 
 ---
@@ -141,7 +142,7 @@ The game uses two distinct architectures for handling visual animations dependin
 
 ### 4.1 Sequential Combat Presentation (VCR)
 During Combat (`COMBAT`, `START_OF_TURN`, `END_OF_TURN`), the game uses a strict VCR pattern to preserve causal history:
-1. "Battle!" Button Pressed (End Turn) → Simulation runs instantly → TurnLog generated
+1. "Ready!" Button Pressed (End Turn) → Simulation runs instantly → TurnLog generated
 2. `BattleAnimator.play_turn_sequence()` plays the TurnLog sequentially.
 3. Views operate in **Puppet Mode** - only react to Animator signals, waiting for each event to finish before the next begins.
 
@@ -204,11 +205,11 @@ The application uses a **High-Performance Hybrid Cursor** system managed by `Cur
 - **1x Scale**: Gachaballs in the inventory are strictly forced to 1x scale and do not show stat/pwr overlays.
 - **Highlighting**: On selection, both sprites scale up (1.08x) and the capsule modulates to a brighter color (1.3x).
 
-### Physics Inventory & Discard Pile (Battle Only)
+### Physics Inventory & Discard (Battle Only)
 - **Persistence**: The physics simulation persists and continues running even when the drawer is closed/hidden. No "kinematic freeze" is required; standard Canvas Layer 2D Physics handles the translation of RigidBody2D nodes along with their parent Control.
 - **Hierarchy & Movement**:
     - **Battle Inventory**: Slides **vertically** from below.
-    - **Discard Pile**: Slides **horizontally** from the right.
+    - **Discard**: Slides **horizontally** from the right.
 - **Inescapable Boundaries**: Side walls are **5000px thick** and extend infinitely to prevent tunneling or escaping during high-velocity drawer animations.
 - **Interaction Rules**:
     - **Hover-to-Inspect**: Opens temporary window (PC).
@@ -239,7 +240,7 @@ The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-opti
 The inventory drawer movements are synchronized with physical jolts:
 - **Upward Slam (Battle Inventory)**: Triggered at the end of the "Open" animation.
 - **Downward Drop (Battle Inventory)**: Triggered at the start of the "Close" animation.
-- **Horizontal Movement (Discard Pile)**: The drawer persists state and populates *before* opening to match Battle Inventory behavior.
+- **Horizontal Movement (Discard)**: The drawer persists state and populates *before* opening to match Battle Inventory behavior.
 - **Implementation**: `WindowManager` calls `apply_jolt(base_impulse)` on the `PhysicsTierContainer` nodes.
 - **State Query**: `WindowManager.is_any_inventory_window_open()` is used by GIR to enforce interaction boundaries.
 
@@ -254,7 +255,7 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
 - **Merge Target Highlighting (Selection & Dragging):**
   - **Level-Up Targets (Cyan)**: Identical units of matching level (< Lv. 3) display a bright Cyan outline (`Color(0.0, 0.95, 1.0)`, `outline_width=3.0`).
   - **Recipe Tier-Up Targets (Magenta)**: Units combining via an unlocked merge recipe display a vibrant Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`).
-  - **Item Merge Targets (Magenta)**: Loose bench items combining via an unlocked item recipe display the Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`).
+  - **Item Merge Targets (Magenta)**: Eligible equipped items on Lineup units display the Magenta outline (`Color(1.0, 0.1, 0.9)`, `outline_width=3.0`) when a sealed Shelf item can merge with them via an unlocked recipe. Shelf-to-Shelf item drops only rearrange capsules.
   - **Equip Targets (White)**: Friendly units eligible to receive an item when selecting or dragging an equippable item display a crisp White outline (`Color.WHITE`, `outline_width=3.0`).
   - **Orchestration**: Managed by `SlotIndicatorController`, which listens to `SignalBus.selection_changed` and `SignalBus.drag_started`. Emits `SignalBus.show_merge_target_indicators(merge_targets)` to update active `GachaBallView` instances.
   - **Dismissal**: On drag end (`drag_ended`) or selection clear (`selection_changed(null)`), emits `SignalBus.hide_merge_target_indicators` to instantly clear target outlines.
@@ -290,7 +291,7 @@ To streamline interactions in Reward, Shop, and Shrine scenes, the game uses **I
 
 ```gdscript
 # Container → Group mapping (GlobalInteractionRouter.get_context_group)
-PlayerLineup, PlayerBench → BattleBoard
+PlayerLineup, PlayerShelf → BattleBoard
 RunInventoryT*, BattleInventoryT* → InventoryGrid
 equipped_item → EquippedGrid
 Rewards, Shop → SelectionOnly

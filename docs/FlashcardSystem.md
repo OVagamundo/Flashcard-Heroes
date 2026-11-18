@@ -5,7 +5,7 @@
 The Flashcard System is a core gameplay mechanic in *Flashcard Heroes* that integrates an *Anki*-style Spaced Repetition System (SRS) as the primary engine for encounter resource generation (Gacha Tokens). 
 
 The system follows a strictly decoupled architecture:
-- **Authoritative Data & Logic (`FlashcardManager.gd`)**: A persistent singleton managing minigame sessions, question generation, timer progression, SRS algorithmic weighting, streak tracking, and token calculation.
+- **Authoritative Data & Logic (`FlashcardManager.gd`)**: A persistent singleton managing challenge sessions, question generation, timer progression, SRS algorithmic weighting, streak tracking, and token calculation.
 - **Run Progression & Persistence (`RunState.gd`)**: Stores the run's deck pool (`ordered_deck_pool`), currently unlocked cards (`active_deck_ids`), presentation progress (`cards_presented_count`), and per-card mastery records (`flashcard_progress`).
 - **Modal Presentation (`FlashcardMinigame.gd`)**: Pure visual and input layer opened via `WindowManager`. Handles 2x3 answer grids, review popups, animations, particle VFX, audio hooks, and non-blocking celebration banners.
 - **Command Pipeline Integration (`ActionQueue`)**: Supports deterministic player command execution via `GameAction` subclasses (`AcknowledgeFlashcardIntroAction`, `SubmitFlashcardAnswerAction`, `SkipFlashcardAction`), enabling both headless testing and animated gameplay without state desynchronization.
@@ -56,12 +56,12 @@ Flashcard decks advance systematically across a run:
    - Unlocked cards available for question generation.
    - Initialized with 5 starter cards at run start.
    - Single source of truth for unlocked cards in the run.
-   - New cards append to this array whenever unlocked (either at the start of a mini game or mid-mini game).
+   - New cards append to this array whenever unlocked (either at the start of a challenge or mid-challenge).
 3. **`cards_presented_count: int`**:
    - Synchronized with `active_deck_ids.size()` upon each card unlock to maintain save data backward compatibility.
 4. **Authoritative Deck Unlocking (`RunState.unlock_next_deck_card() -> StringName`)**:
    - The single source of truth for unlocking cards across the run.
-   - Called at the start of each mini game session by `FlashcardManager.start_minigame()`, and mid-mini game when a 3-question streak is achieved.
+   - Called at the start of each challenge session by `FlashcardManager.start_minigame()`, and mid-challenge when a 3-question streak is achieved.
    - If `active_deck_ids.size() < ordered_deck_pool.size()`, unlocks the next locked card from `ordered_deck_pool`, initializes its progress at `MASTERY_MIN`, appends it to `active_deck_ids`, synchronizes `cards_presented_count = active_deck_ids.size()`, emits `run_data_changed`, and returns the newly unlocked `card_id`.
    - `RunState.check_deck_expansion() -> bool` delegates directly to `unlock_next_deck_card()`.
 
@@ -75,13 +75,13 @@ Flashcard decks advance systematically across a run:
 - `start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void`
   - Validates card definitions, triggers start deck expansion, configures session timers and counters, creates the first question, and opens the UI modal (if not in headless mode).
 - `submit_minigame_answer(question_id: StringName, selected_answer_id: StringName, think_time: float = 0.0) -> Dictionary`
-  - Authoritatively processes answer submissions, adjusts mastery, tracks streaks, evaluates mid-mini game unlocks, updates timer (+0.5s on correct, +1.0s bonus if unlock triggers), increments token count, and queues next question.
+  - Authoritatively processes answer submissions, adjusts mastery, tracks streaks, evaluates mid-challenge unlocks, updates timer (+0.5s on correct, +1.0s bonus if unlock triggers), increments token count, and queues next question.
 - `skip_minigame_question(question_id: StringName, think_time: float = 0.0) -> Dictionary`
   - Authoritatively skips the question, decreases mastery by 1, preserves current streak, grants +0.5s timer extension, and queues next question.
 - `get_next_question() -> Dictionary`
   - Selects next card using the weighted SRS algorithm, picks 5 random distractors from `_active_deck_ids`, and returns `{"question_id": StringName, "choices": Array[StringName]}`.
 - `get_question_for_card(card_id: StringName) -> Dictionary`
-  - Forces question generation for a specific card (used for mid-mini game unlocks) with 5 random distractors from `_active_deck_ids`.
+  - Forces question generation for a specific card (used for mid-challenge unlocks) with 5 random distractors from `_active_deck_ids`.
 - `acknowledge_intro() -> void`
   - Transitions from review popup to active question answering and sets `is_sprint_active = true`.
 - `advance_session_timer(seconds: float) -> void`
@@ -92,9 +92,9 @@ Flashcard decks advance systematically across a run:
 ### Authoritative Session Variables
 - `is_session_active: bool`: True while the modal window lifecycle is running.
 - `is_sprint_active: bool`: Internal state flag; true while the player is actively answering questions (as opposed to reviewing cards).
-- `is_introducing_new_card: bool`: True while the start-of-minigame review popup is displayed.
-- `introduced_card_id: StringName`: ID of the card featured in the start-of-minigame review popup.
-- `has_unlocked_midgame_card: bool`: Reset to `false` at minigame start; tracks whether a mid-mini game unlock has triggered in the active session.
+- `is_introducing_new_card: bool`: True while the start-of-challenge review popup is displayed.
+- `introduced_card_id: StringName`: ID of the card featured in the start-of-challenge review popup.
+- `has_unlocked_midgame_card: bool`: Reset to `false` at challenge start; tracks whether a mid-challenge unlock has triggered in the active session.
 - `session_timer: float`: Current countdown timer in seconds.
 - `session_duration: float`: Base duration configured for the session (7.0s base; +2.0s with Sprint Charm).
 - `correct_answers: int`: Total correct answers in the session.
@@ -110,9 +110,9 @@ Flashcard decks advance systematically across a run:
 
 ---
 
-## 5. Mini-Game Flow & Lifecycle
+## 5. Challenge Flow & Lifecycle
 
-The mini-game operates in four sequential phases:
+The challenge operates in four sequential phases:
 
 ```
 [start_minigame]
@@ -122,7 +122,7 @@ The mini-game operates in four sequential phases:
        │   - Displays card details & audio pronunciation
        │   - Displays up to 6 clickable priority cards strictly representing the lowest-mastery unlocked cards
        │   - Lowest mastery tiers (e.g. Red Level 1) are filled first; ties on the boundary tier are randomly selected
-       │   - The final collection is shuffled so the display order does not match the mini game's SRS question sequence
+       │   - The final collection is shuffled so the display order does not match the challenge's SRS question sequence
        │   - Clicking "Ready!" calls acknowledge_intro()
        ▼
 [Phase 2: Timed Question Loop]
@@ -133,7 +133,7 @@ The mini-game operates in four sequential phases:
        │   - Incorrect: -1 Mastery, streak reset, next after 1.0s
        │   - Skip: -1 Mastery, +0.5s time, streak preserved, next after 0.5s
        │
-       ├─► [Phase 3: Mid-Mini Game Unlock] (Triggers at streak == 3 if locked cards remain)
+       ├─► [Phase 3: Mid-Challenge Unlock] (Triggers at streak == 3 if locked cards remain)
        │       - Unlocks next card, adds +1.0s bonus time, queues card as next question
        │       - Plays fireworks, golden panel flash, white timer buff pop, and banner
        ▼
@@ -146,13 +146,13 @@ The mini-game operates in four sequential phases:
 
 ---
 
-## 6. Mid-Mini Game Card Unlock Specification
+## 6. Mid-Challenge Card Unlock Specification
 
 ### Trigger Conditions & Guard
 - Evaluated inside `submit_minigame_answer` when `was_correct == true`.
 - Condition: `current_streak == 3` AND `not has_unlocked_midgame_card`.
 - Guard: Evaluates `RunState.has_locked_cards()`. If `active_deck_ids.size() >= ordered_deck_pool.size()`, no card is unlocked and no timer bonus is granted.
-- Limit: Strictly **once per mini-game session** (`has_unlocked_midgame_card` set to `true`).
+- Limit: Strictly **once per challenge session** (`has_unlocked_midgame_card` set to `true`).
 
 ### Unlocking & State Synchronization Contract
 - Calls `RunState.unlock_next_deck_card()`:
@@ -183,11 +183,11 @@ The mini-game operates in four sequential phases:
    - **Audio**: Plays `ui_merge` celebratory chime.
    - **Celebration Banner (`_show_midgame_unlock_banner`)**: Non-blocking floating banner displaying `★ NEW CARD UNLOCKED! ★` (`ui.midgame_card_unlocked`) and `+1.0s TIME BONUS!` (`ui.midgame_bonus_info`), with elastic overshoot pop (`0.4 -> 1.1 -> 1.0`) and upward float.
 
-### Subsequent Mini-Game Progression Contract (Single Source of Truth)
-- `RunState.unlock_next_deck_card()` serves as the authoritative unlock mechanism across both start-of-game expansion and mid-mini game unlocks.
-- When a card is unlocked mid-mini game, it is appended to `active_deck_ids`.
-- At the start of the next mini-game, `RunState.unlock_next_deck_card()` unlocks the *following* locked card in `ordered_deck_pool` and `FlashcardManager` directly assigns this newly unlocked card to `introduced_card_id` for display in the review popup window.
-- Result: Up to 2 cards unlocked per mini-game encounter (1 at start review popup + 1 mid-mini game), cleanly doubling deck progression pace without repeating cards already unlocked mid-mini game.
+### Subsequent Challenge Progression Contract (Single Source of Truth)
+- `RunState.unlock_next_deck_card()` serves as the authoritative unlock mechanism across both start-of-game expansion and mid-challenge unlocks.
+- When a card is unlocked mid-challenge, it is appended to `active_deck_ids`.
+- At the start of the next challenge, `RunState.unlock_next_deck_card()` unlocks the *following* locked card in `ordered_deck_pool` and `FlashcardManager` directly assigns this newly unlocked card to `introduced_card_id` for display in the review popup window.
+- Result: Up to 2 cards unlocked per challenge encounter (1 at start review popup + 1 mid-challenge), cleanly doubling deck progression pace without repeating cards already unlocked mid-challenge.
 
 ---
 
@@ -214,7 +214,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
 ### Selection Rules & Distractors
 - **No Immediate Repeats**: The card matching `_last_shown_card_id` is excluded from candidate selection unless the active deck has only 1 card.
 - **Distractor Selection**: Exactly 5 distractors are picked randomly from `_active_deck_ids` (excluding the question card). The question and distractors are shuffled together into 6 choices.
-- **SRS Bypass**: When a mid-mini game unlock occurs, weighted SRS selection is bypassed for that single turn to immediately present the unlocked card via `get_question_for_card()`.
+- **SRS Bypass**: When a mid-challenge unlock occurs, weighted SRS selection is bypassed for that single turn to immediately present the unlocked card via `get_question_for_card()`.
 
 ---
 
@@ -231,7 +231,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
 - **BGM Tempo Escalation**: Active `BGM_MINIGAME` track pitch and tempo increase by `+0.02` per streak level (capped at `1.2x` at streak 10+). Incorrect answers reset BGM pitch immediately to `1.0`.
 
 ### Dynamic Visual Feedback (Juice)
-- **Minigame Aura VFX (`MinigameAuraVFX.tscn`)**: Edge border fire frames the outer boundaries of the panel using 4 particle emitters:
+- **Challenge Aura VFX (`MinigameAuraVFX.tscn`)**: Edge border fire frames the outer boundaries of the panel using 4 particle emitters:
   - Particle amount, speed, and spread scale linearly with correct streak.
   - Border fire shifts colors across streak tiers:
     - **Streak 1–2**: Cyan
@@ -242,7 +242,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
 - **Token Pop VFX**: Currency pop-up particles scale amount, size, and spin velocity with current streak tier.
 
 ### UI Token Counter Layering Exemption
-- To allow the player to observe live token changes during the mini-game, `_setup_token_counter_exemption()` reparents `%TokenGroup` to `%ModalLayer` above the modal backdrop dimming layer, restoring it to its original parent on window exit.
+- To allow the player to observe live token changes during the challenge, `_setup_token_counter_exemption()` reparents `%TokenGroup` to `%ModalLayer` above the modal backdrop dimming layer, restoring it to its original parent on window exit.
 
 ---
 
@@ -272,5 +272,5 @@ The Flashcard System fully supports the deterministic command pipeline:
 - **`AcknowledgeFlashcardIntroAction`**: Validates dismissal of the start review popup and transitions state to active question answering.
 - **`SubmitFlashcardAnswerAction`**: Dispatches `question_id`, `selected_answer_id`, and `think_time`, routed through `submit_minigame_answer()`.
 - **`SkipFlashcardAction`**: Dispatches `question_id` and `think_time`, routed through `skip_minigame_question()`.
-- **Headless Mode**: When `ActionQueue.is_headless_mode() == true`, `FlashcardManager` bypasses UI modal instantiation, allowing test suites and headless QA simulation bots to execute full mini-game sessions with synthetic think times.
+- **Headless Mode**: When `ActionQueue.is_headless_mode() == true`, `FlashcardManager` bypasses UI modal instantiation, allowing test suites and headless QA simulation bots to execute full challenge sessions with synthetic think times.
 - **Deadlock Safeguard**: `_on_minigame_complete()` automatically finishes any pending flashcard action in `ActionQueue` when the session timer expires.

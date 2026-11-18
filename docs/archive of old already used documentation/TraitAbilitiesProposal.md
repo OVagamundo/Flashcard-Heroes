@@ -9,7 +9,7 @@
 > - **Subtle Numbers**: Baseline numbers use single points (1-point values, single status stacks).
 > - **No "Max HP" Concept**: HP is an uncapped scalar resource; there are no "wounded" or "full HP" checks.
 > - **Static Status Effect**: When a unit with Static dies, it deals collateral damage equal to its Static stacks to adjacent units, then clears all stacks. This damage is **mitigated by Armor**, and Static stacks **decay by 1 each turn**.
-> - **Anti-Stall Combat**: Minimal summons (combat-only bench clone), single-use death defiance, and offensive momentum to guarantee turns resolve.
+> - **Anti-Stall Combat**: Minimal summons (combat-only shelf clone), single-use death defiance, and offensive momentum to guarantee turns resolve.
 > - **Thematic Purity**: Fire = Burn only; Earth = Armor & Spikes; Water = Healing & Cleanse; Air = Static only.
 >
 > **Related Documents**:
@@ -156,7 +156,7 @@ graph TD
 | **1 (Bronze)** | **2** | **Combat Start**: If you have 0 tokens remaining, gain **1 Token**. |
 | **2 (Silver)** | **3** | ...and the first Gacha draw of each battle costs **1 less Token** (minimum 1). |
 | **3 (Gold)** | **4** | Additionally, defeating an enemy with a Specialist awards **+1 Gold** (max 1/turn, 5/battle). |
-| **4 (Prismatic)** | **5** | Additionally, summons a **combat-only copy** of your lowest level/tier unit to the bench pre-combat, and at turn start, the frontmost Specialist gains **+1 PWR per 5 Gold**. *(Tie-breaker for clone: lowest tier first, lowest level second; random if tied)*. |
+| **4 (Prismatic)** | **5** | Additionally, summons a **combat-only copy** of your lowest level/tier unit to the shelf pre-combat, and at turn start, the frontmost Specialist gains **+1 PWR per 5 Gold**. *(Tie-breaker for clone: lowest tier first, lowest level second; random if tied)*. |
 
 ---
 
@@ -262,8 +262,8 @@ graph TD
 │    (Reflect & Cancellation)     │ How are items, trinkets, or mirror matches handled?         │ applied by an item, reflected to item holder. If from        │
 │                                 │                                                             │ consumable/trinket, negated. Appliances cancel out naturally.│
 ├─────────────────────────────────┼─────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
-│ 3. Specialist Bench Duplication │ Specialist Prismatic summons a copy of lowest unit to bench.│ **Combat-Only Lifecycle**: Summons copy to bench for combat  │
-│    (Bench Lifecycle & Tiebreak) │ How does it pick the unit and handle save persistence?      │ only (removed post-combat). Tie-breaker: lowest tier first,  │
+│ 3. Specialist Shelf Duplication │ Specialist Prismatic summons a copy of lowest unit to shelf.│ **Combat-Only Lifecycle**: Summons copy to shelf for combat  │
+│    (Shelf Lifecycle & Tiebreak) │ How does it pick the unit and handle save persistence?      │ only (removed post-combat). Tie-breaker: lowest tier first,  │
 │                                 │                                                             │ lowest level second; random if equal.                        │
 ├─────────────────────────────────┼─────────────────────────────────────────────────────────────┼──────────────────────────────────────────────────────────────┤
 │ 4. Toy Static Detonation        │ Toy Level 4 detonates Static on the enemy with highest      │ **Single-Target Detonate & Clear**: Deals damage equal to   │

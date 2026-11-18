@@ -41,8 +41,8 @@ static func register_test_unit(bm, unit_def_id: StringName, is_enemy: bool, posi
 	return unit_inst
 
 ## Register an item in test mode.
-## Player target: spawn to PlayerBench (same path as real battle draws).
-## Enemy target: spawn to PlayerBench, then atomically equip to the first enemy with a free slot.
+## Player target: spawn to PlayerShelf (same path as real battle draws).
+## Enemy target: spawn to PlayerShelf, then atomically equip to the first enemy with a free slot.
 static func register_test_item(bm, item_def_id: StringName, is_enemy: bool) -> GachaBallInstance:
 	var item_def: GachaBallDefinition = Database.get_definition(item_def_id)
 	if not is_instance_valid(item_def):
@@ -51,8 +51,8 @@ static func register_test_item(bm, item_def_id: StringName, is_enemy: bool) -> G
 	
 	var item_inst: GachaBallInstance = GachaBallInstance.new()
 	item_inst.initialize(item_def)
-	if not bm.bm_add_instance(item_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH):
-		push_warning("[TestMode] Failed to add item to PlayerBench: %s" % item_def_id)
+	if not bm.bm_add_instance(item_inst, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF):
+		push_warning("[TestMode] Failed to add item to PlayerShelf: %s" % item_def_id)
 		return null
 	
 	if not is_enemy:
@@ -60,7 +60,7 @@ static func register_test_item(bm, item_def_id: StringName, is_enemy: bool) -> G
 	
 	var enemy_unit_uuid: String = _find_first_unit_with_free_item_slot(bm, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP)
 	if enemy_unit_uuid.is_empty():
-		push_warning("[TestMode] Enemy target selected but no enemy unit has a free item slot; item left in PlayerBench")
+		push_warning("[TestMode] Enemy target selected but no enemy unit has a free item slot; item left in PlayerShelf")
 		return item_inst
 	
 	if not bm.bm_equip_item(item_inst.ball_uuid, enemy_unit_uuid, -1):
@@ -85,7 +85,7 @@ static func register_test_item_on_unit(bm, item_def_id: StringName, unit_uuid: S
 		push_warning("[TestMode] Unit %s has no empty equipment slots" % unit_uuid)
 		return null
 	
-	# Create and equip item atomically without intermediate bench placement.
+	# Create and equip item atomically without intermediate shelf placement.
 	var item_inst: GachaBallInstance = GachaBallInstance.new()
 	item_inst.initialize(item_def)
 	if not bm.bm_register_and_equip_item(item_inst, unit_uuid, -1):
@@ -105,6 +105,9 @@ static func register_test_trinket(bm, trinket_def_id: StringName, is_enemy: bool
 		return null
 	
 	var container_tag: StringName = C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS if is_enemy else C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS
+	if (trinket_def as TrinketDefinition).is_banner:
+		assert(is_enemy, "Banners belong exclusively to the enemy encounter")
+		container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER
 	var trinket_container: DataContainer = bm.get_container(container_tag)
 	if not is_instance_valid(trinket_container):
 		push_warning("[TestMode] Missing trinket container: %s" % container_tag)

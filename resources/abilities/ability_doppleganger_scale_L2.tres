@@ -13,6 +13,7 @@ script = ExtResource("1_script")
 id = &"ability_doppleganger_scale_l2"
 description_key = "ability.doppleganger_scale_l2.desc"
 trigger = &"on_board_state_changed"
+activation_scope = 1
 sub_phase = 64
 effects = Array[Resource]([SubResource("EffectDopplegangerScaling_2")])
 execute_before_knockout = false

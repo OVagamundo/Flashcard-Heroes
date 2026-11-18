@@ -61,7 +61,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	if animator._visual_registry.has(source_uuid):
 		animator._visual_registry.erase(source_uuid)
 		
-	# Departure to discard pile for player unit
+	# Departure to the Discard for player unit
 	if animator.has_method("animate_player_death_departure"):
 		await animator.animate_player_death_departure(source_uuid, target_position, payload)
 

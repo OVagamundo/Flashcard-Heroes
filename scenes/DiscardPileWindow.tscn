@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
 [ext_resource type="PackedScene" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/DiscardPileContainer.png" id="3_container_tex"]
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_left"]
 size = Vector2(2000, 4000)
@@ -20,13 +20,14 @@ size = Vector2(1252, 50)
 layout_mode = 3
 anchors_preset = 0
 offset_left = 1920.0
-offset_top = 180.0
+offset_top = 200.0
 offset_right = 3200.0
-offset_bottom = 860.0
+offset_bottom = 880.0
 mouse_filter = 1
 script = ExtResource("1_v38m6")
 
 [node name="ContainerBG" type="TextureRect" parent="."]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -35,8 +36,8 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_container_tex")
-expand_mode = 0
-stretch_mode = 3
+expand_mode = 1
+stretch_mode = 0
 
 [node name="DiscardPhysicsContainer" parent="." instance=ExtResource("2_physics_tier")]
 layout_mode = 1

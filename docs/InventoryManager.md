@@ -1,5 +1,5 @@
 # Inventory & Gacha Systems
-This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard Pile lifecycle. The InventoryManager is the central, stateless logic controller that executes the logic described herein.
+This document describes the architecture and definitive rules for all GachaBall manipulation systems, including inventory actions (Move, Swap, Equip, Merge), the Gacha draw mechanism, and the Discard lifecycle. The InventoryManager is the central, stateless logic controller that executes the logic described herein.
 1. Purpose & Core Philosophy
 The InventoryManager is a stateless logic controller. It is the "verb" system for all GachaBall instances. Its sole purpose is to execute commands and signals related to GachaBall manipulation, validate them against a strict set of gameplay rules, and instruct the appropriate data owner (RunState or BattleManager) to perform the state change via a unified polymorphic API.
 Core Principles:
@@ -24,7 +24,7 @@ This addendum documents the finalized flow for ambiguous actions (Swap/Merge) pr
   1) Resolve `anchor_view` using `WindowManager.find_view_for_location(target_loc)` with fallback to `source_loc`.
   2) Resolve `parent_window` via `WindowManager.find_ancestor_window_for_view(anchor_view)`.
   3) Call `GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_window.get_instance_id(), duration_msec)`.
-  4) Choose duration to cover deferred anchor checks (currently ~420ms for unit-context actions such as `equipped_item`, `PlayerLineup`, `PlayerBench`; ~320ms otherwise).
+  4) Choose duration to cover deferred anchor checks (currently ~420ms for unit-context actions such as `equipped_item`, `PlayerLineup`, `PlayerShelf`; ~320ms otherwise).
 - __Execute__: Perform `_merge(source_loc, target_loc, recipe_id)` or `_swap(source_loc, target_loc)`, emit selection/data-change signals as usual. No direct window-close is performed here.
 
 ### Rationale
@@ -65,15 +65,15 @@ Rationale: Provides a clear, type-based definition for the equip action.
 Rule I3: The Equip Legality Rule
 Statement: A valid Equip action is constrained by the item's origin (InventoryGrid or BattleBoard), the unit's capacity, and cross‑unit restrictions.
 Validation Checklist:
-- **Strict Bench Origin**: The source Item must strictly originate from the `PlayerBench` during battle. Items cannot be equipped directly from inventory grid drawers (which are read-only) and cannot be equipped outside of battle.
-- **No Manual Unequipping**: An item already equipped on Unit A cannot be directly moved to Unit B or back to the bench. Outside of specific item-stripping consumables (such as *Potion of Plunder*, which removes an equipped item from a unit and sends it directly to the player's matching tier Gacha Machine (`BattleInventoryT{tier}`) so it can be drawn in the future), equipment cannot be unequipped without being replaced.
-- **Target Legality**: The target must be a UNIT on `PlayerLineup` or `PlayerBench`, or that unit's `equipped_item` slot. **Note:** Items equipped on bench units provide passive stat bonuses, but their triggered abilities do not activate until the unit is in the `PlayerLineup` (combat-active).
-- **Consumable Item Rules**: Consumables are distinct from standard items. They can only be used from `PlayerBench`, can target **both Player units and Enemy units**, execute their effects immediately without occupying an item slot, and disappear from the active battle pool upon consumption **without** going to the Discard Pile. Item-stripping consumables (*Potion of Plunder*) transfer the stripped item directly into the player's corresponding Gacha Machine drawer (`BattleInventoryT{tier}`).
+- **Strict Shelf Origin**: The source Item must strictly originate from the `PlayerShelf` during battle. Items cannot be equipped directly from inventory grid drawers (which are read-only) and cannot be equipped outside of battle.
+- **No Manual Unequipping**: An item already equipped on Unit A cannot be directly moved to Unit B or back to the shelf. Outside of specific item-stripping consumables (such as *Potion of Plunder*, which removes an equipped item from a unit and sends it directly to the player's matching tier Gacha Machine (`BattleInventoryT{tier}`) so it can be drawn in the future), equipment cannot be unequipped without being replaced.
+- **Target Legality**: The target must be a UNIT on `PlayerLineup`, or that Lineup unit's `equipped_item` slot. A Shelf item capsule opens when equipped or merged into equipment on a Lineup holder. Shelf residents cannot receive equipment, merges, or consumables.
+- **Consumable Item Rules**: Consumables are distinct from standard items. Their sealed capsules can be used from `PlayerShelf` on eligible **Player or Enemy Lineup units**, opening the capsule and executing their effects without occupying an item slot. They disappear from the active battle pool upon consumption **without** going to the Discard. *Potion of Plunder* is an explicit exception to Discard-first recycling: it sends stripped equipment directly to the player's matching tier machine. Its next draw returns the item sealed to the Shelf.
   - **Buff Granular Tagging & Merge Inheritance**: Unlike equipped item buffs (`source_type = &"EQUIPMENT"`), which are conditional on holding the item and re-evaluated fresh upon merge (with only one item retained), consumable buffs (healing potions, stat potions, scrolls, elixirs) are **stackable regular buffs** tagged with granular origin `source_type = &"CONSUMABLE"` (`allow_stacking = true`).
   - **Additive Consolidation on Merge**: When units merge (both Evolutionary Level-ups and Recipe Tier-ups), all consumable buffs from both parent units are fully conserved and added together into the resulting unit's stats and merge inheritance surplus (`MERGE_INHERITANCE`).
 - **Single Item Capacity & Item Replacement**: All units possess strictly **one** item slot. If the target unit already holds an equipped item, equipping a new item executes as an **Item Replacement**.
-  - **Discard Destination**: The existing equipped item is immediately removed and sent directly to the **Battle Discard Pile** (`DiscardPile`). It does **NOT** return to the player bench or inventory.
-  - **Discard Animation**: The replaced item triggers a `CombatEvent.Type.ITEM_DISCARD` event, animating a parabolic arc toss from the unit's position into the Discard Pile UI button (`discard_pile_button`) using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.5` over a 500px arc) with `coin_land` audio feedback and button bump. This visualizes to the player exactly where the item was sent, precisely matching the death departure animation.
+  - **Discard Destination**: The existing equipped item is immediately removed and sent directly to the **Battle Discard** (`DiscardPile`). It does **NOT** return to the player shelf or inventory.
+  - **Discard Animation**: The replaced item triggers a `CombatEvent.Type.ITEM_DISCARD` event, animating a parabolic arc toss from the unit's position into the Discard UI button (`discard_pile_button`) using the full GachaBall capsule (`GachaBallView.tscn` in inventory mode, scaling from `0.3` to `1.0` over a 500px arc) with `coin_land` audio feedback and button bump. This visualizes to the player exactly where the item was sent, precisely matching the death departure animation.
   - **Sequential Resolution & Net Delta Evaluation**: The item discard animation resolves first sequentially. Afterwards, the unit's item slot updates to the new item and the system evaluates the net stat delta between the old and new item (`delta_hp = new_item.bonus_hp - old_item.bonus_hp`, `delta_pwr = new_item.bonus_pwr - old_item.bonus_pwr`). Positive stat increases launch a parabolic self-cast projectile onto the unit, while negative stat reductions display floating debuff text (`-X` in red for HP, black for PWR).
   - **Equip Pipeline Parity**: In-game equip and transfer effects (such as the Standard Bearer's *Standard's Legacy*) route through this exact same `InventoryOperations.equip_item` logic, ensuring replaced items are consistently discarded and animated regardless of whether equipping occurred manually or via an ability.
 Mechanism: If these checks pass, the manager performs an atomic equip transaction:
@@ -81,7 +81,7 @@ Mechanism: If these checks pass, the manager performs an atomic equip transactio
 2. An `ITEM_DISCARD` event is enqueued ahead of the equip inventory change to ensure sequential presentation.
 3. The new item is removed from its source container and attached to the target unit's `equipped_item_uuids[0]`.
 4. The unit's effective stats are updated, emitting unified stat delta events for presentation.
-Rationale: This makes equipping deliberate and predictable while ensuring replaced equipment is permanently committed to the discard pile rather than recycled onto the bench.
+Rationale: This makes equipping deliberate and predictable while ensuring replaced equipment is permanently committed to the discard rather than recycled onto the shelf.
 Rule I4: The Swap/Move Rule
 Statement: If an action is not a Merge and not an Equip, it is interpreted as a potential Swap or Move.
 Mechanism (Swap): If the target location contains an instance, the manager checks if the source instance can legally occupy the target's slot, AND if the target instance can legally occupy the source's original slot (per Rule I5). If both are true, it's a Swap. The data owner is instructed to exchange their location properties.
@@ -90,14 +90,14 @@ Rationale: This is the default fallback action, covering all standard board and 
 Rule I5: The Placement Legality Rules (The Final Gatekeeper)
 Statement: All Move and Swap actions are ultimately validated against a final set of hard-coded placement restrictions.
 The Definitive Checklist:
-Hero Restriction: The Hero instance can only exist in the PlayerLineup container. It cannot be moved to the bench or any inventory.
-Container Type Restriction: Items cannot be placed in PlayerLineup. Both units and items can be placed in PlayerBench.
+Hero Restriction: The Hero instance can only exist in the PlayerLineup container. It cannot be moved to the shelf or any inventory.
+Container Type Restriction: Items cannot be placed in PlayerLineup. Both units and items can be placed in PlayerShelf.
 Container Tier Integrity: A GachaBall of Tier X cannot be placed in an inventory container for Tier Y (e.g., RunInventoryT1 cannot hold a Tier 2 item).
-Single Item Slot Constraint: Units are constrained to a single item slot. Equipping an item onto a unit that already has an equipped item triggers an Item Replacement (the existing item is moved directly to the Battle Discard Pile).
+Single Item Slot Constraint: Units are constrained to a single item slot. Equipping an item onto a unit that already has an equipped item triggers an Item Replacement (the existing item is moved directly to the Battle Discard).
 Rationale: These rules enforce the fundamental structure of the game's inventories and battle board, preventing game-breaking states.
 Rule I6: The Merge Placement Context Rule
 Statement: The destination of a newly created merged GachaBall depends on where the merge was performed.
-Mechanism (Board Merge): If two units are merged on the PlayerLineup or PlayerBench, the new, higher-tier unit is placed in the target's original slot. Same for items merged in the PlayerBench container.
+Mechanism (Board Merge): The target must be a Lineup unit or an equipped item on a Lineup unit. The source may be a sealed Shelf capsule. The result occupies the target's slot and is opened. Shelf-to-Shelf drops rearrange capsules and never merge them.
 Mechanism (Inventory Merge): If two Tier 1 gachaballs are merged in the RunInventoryT1 container, the new Tier 2 gachaball is placed in the first available slot of the RunInventoryT2 container, the same is valid for merging tier 2 gachaballs that will be placed in the RunInventoryT3 container.
 Rationale: Creates a strategic distinction. Merging on the board is a tactical replacement. Merging in the inventory changes the probabilities of the next draw while in battle, or if done in the Run inventory, it changes your collection (or "deck") permanently for future battles.
 
@@ -119,8 +119,10 @@ Logic: The BattleManager is responsible for executing the draw.
 Cost Check: It verifies if the player has enough Gacha Tokens (token cost according to tier).
 Pool Check: It checks the appropriate BattleInventoryT<n> container (each draw is associated with one of the tier containers).
 Reshuffle Check (Rule G1): If the pool is empty, the draw fails, and the token is not spent. There is no automatic reshuffle.
-Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first available slot of the PlayerBench (for both Units and Items).
-Overflow (Rule G2): If the destination container (PlayerBench) is full, the drawn instance is sent directly to the DiscardPile. If a **Run Inventory** tiered container (`RunInventoryT*`) attempts to receive a 40th item, it triggers the **Random Eviction Rule** (see below).
+Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first empty unlocked PlayerShelf slot (for both Units and Items). The first three slots are unlocked at battle start; each additional slot costs 1 Token and stays unlocked only for that encounter.
+Capsule Lifecycle: Machine draws and Shelf summons stay sealed on the Shelf. Only Lineup deployment or a valid Lineup merge/equip/use opens the capsule and activates entry effects. Opened instances cannot return to the Shelf; only machine storage feeds new Shelf capsules. The normal return path is Discard recycling. Existing item-stripping effects retain their explicitly defined machine destination.
+Shelf Stats: All battle-pool copies still count for scaling. Sealed Shelf residents do not update HP/PWR, except for Wind-up-kun's explicit Shelf growth. Draw-tracking and Token-spend effects remain immediate.
+Overflow (Rule G2): If every unlocked PlayerShelf slot is occupied, the drawn instance is sent directly to the DiscardPile. If a **Run Inventory** tiered container (`RunInventoryT*`) attempts to receive a 40th item, it triggers the **Random Eviction Rule** (see below).
 Rule G2: The Hardcap & Random Eviction Rule (RUN ONLY):
 Statement: Each **Run Inventory** tiered container has a hard capacity of **39 slots**. If a new GachaBall is added to a run container that already holds 39 items, a **RANDOM** existing GachaBall is permanently removed from the run to make space for the new one.
 Mechanism:
@@ -133,18 +135,18 @@ Rationale: This enforces a strict UI limit (39 slots) while ensuring that gettin
 > [!IMPORTANT]
 > **Battle Inventory Exception:** The Battle Inventory does NOT use the Random Eviction Rule. It is physics-driven and follows the 5-second spring-loaded lid rule (Section 3.1).
 
-The Discard Pile & Reshuffle Mechanism
-What Goes to the Discard Pile:
-- Drawn GachaBalls when the bench/inventory is full (Rule G2).
+The Discard & Reshuffle Mechanism
+What Goes to the Discard:
+- Drawn GachaBalls when the shelf/inventory is full (Rule G2).
 - Items that were equipped on a Unit that is defeated in combat.
 - The defeated Unit instance itself.
-- **Replaced Items**: When an item is equipped onto a unit that already holds an equipped item, the existing item is immediately replaced and moved directly to the Battle Discard Pile (it does not return to the bench).
+- **Replaced Items**: When an item is equipped onto a unit that already holds an equipped item, the existing item is immediately replaced and moved directly to the Battle Discard (it does not return to the shelf).
 Rule G1: The Draw Fail Rule:
 Statement: If a tier pool is empty, any draw from that tier will fail and no tokens are spent. Discarded units do not return to the active draw pool.
 Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.
 
-## 3.1 Battle Physics Inventory & Discard Pile (PhysicsTierContainer)
-During battle, the drawer-based inventory (Battle Inventory) and the side-drawer Discard Pile act as **Read-Only Physics Visualizations**. 
+## 3.1 Battle Physics Inventory & Discard (PhysicsTierContainer)
+During battle, the drawer-based inventory (Battle Inventory) and the side-drawer Discard act as **Read-Only Physics Visualizations**. 
 
 ### Read-Only Constraints
 These containers are strictly for observation. The following player actions are **completely disabled** within their boundaries:
@@ -155,10 +157,10 @@ These containers are strictly for observation. The following player actions are 
 
 ### Pool Visualization Logic
 - **Inventory = Active Pool**: Battle Inventory balls represent `BattleInventoryT<n>` contents.
-- **Discard = Shared History**: Discard Pile balls represent the contents of the `BattleDiscardPile`.
+- **Discard = Shared History**: Discard balls represent the contents of the `BattleDiscardPile`.
 - **Persistent State**: Simulation continues running while drawers are hidden. No "Kinematic Freeze" is required for movement; child physics nodes translate reliably with parent Controls.
 - **Sequential Spawning**: When new balls are spawned or items are discarded, they spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
-- **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard Pile if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
+- **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
 
 ### High-Fidelity Physics Stabilization
 To achieve a "heavy," stable feel and prevent gachaballs from tunneling or jittering, the following physics properties are enforced:
@@ -172,7 +174,7 @@ To achieve a "heavy," stable feel and prevent gachaballs from tunneling or jitte
 - **Spring Lid**: Every container features a physical "lid" at the top of the tray.
 - **Visual Feedback**: The lid is represented by a **30px high translucent red rectangle** at the top of the container area.
 - **Overflow Threshold**: If the container is too full, balls will push against this lid into the overflow area.
-- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, it is considered "un-repackable." The `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard Pile**.
+- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, it is considered "un-repackable." The `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard**.
 
 ### Layout Safeguard
 The `PhysicsTierContainer` implements a **Vertical Safeguard**:
@@ -182,7 +184,7 @@ The `PhysicsTierContainer` implements a **Vertical Safeguard**:
 ### The Penalty Mechanic (Cleanup)
 - **Spring Lid**: Every container features a physical lid.
 - **Overflow Threshold**: If the container is too full, balls will push against the lid into the overflow area.
-- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, the `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard Pile**.
+- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, the `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard**.
 
 ### Tray Inertia (Jolts)
 To simulate the physical movement of the inventory drawer, the `WindowManager` triggers jolts via `apply_jolt(base_impulse: Vector2)`:
@@ -201,7 +203,7 @@ Unlike the Battle Inventory, the **Run Inventory** uses a static, non-physics la
 ### 3.3 Battle Inventory (Physics Rules)
 The Battle Inventory uses a **spring-loaded lid** mechanic for overflow:
 - **Active Repacking**: The lid actively applies a strong downward force (`apply_central_force`) to any GachaBall touching it, attempting to shove it back down so the pool can physically repack optimally.
-- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid (the 30px red detection area) for **5 seconds**, it is moved to the **Battle Discard Pile**.
+- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid (the 30px red detection area) for **5 seconds**, it is moved to the **Battle Discard**.
 - **No Deletion**: Unlike the Run Inventory, no items are ever randomly deleted during battle. They are merely shifted to history (discard).
 End of Battle Cleanup
 Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.

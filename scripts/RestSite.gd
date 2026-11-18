@@ -92,14 +92,11 @@ func _update_background_visuals() -> void:
 	var bg_texture: Texture2D = null
 	match site_type:
 		SiteType.PWR:
-			bg_texture = preload("res://assets/Realistic/ui/BGs/training.png")
+			bg_texture = preload("res://assets/PixelArt/ui/BGs/training.png")
 		SiteType.GOLD:
-			bg_texture = preload("res://assets/Realistic/ui/BGs/gambling.png")
+			bg_texture = preload("res://assets/PixelArt/ui/BGs/gambling.png")
 		SiteType.HP, _:
-			bg_texture = preload("res://assets/Realistic/ui/BGs/rest.png")
-	
-	if is_instance_valid(ArtStyleManager):
-		bg_texture = ArtStyleManager.get_themed_texture(bg_texture)
+			bg_texture = preload("res://assets/PixelArt/ui/BGs/rest.png")
 	
 	var bg_node := background if is_instance_valid(background) else get_node_or_null("Background") as TextureRect
 	if is_instance_valid(bg_node):
@@ -141,10 +138,10 @@ func _setup_machine_visuals() -> void:
 	
 	match site_type:
 		SiteType.HP:
-			stat_label_text = "HP"
+			stat_label_text = tr("ui.hp")
 			stat_color = Color.RED
 		SiteType.PWR:
-			stat_label_text = "PWR"
+			stat_label_text = tr("ui.pwr")
 			stat_color = Color.MEDIUM_PURPLE
 		SiteType.GOLD:
 			stat_label_text = "GOLD"
@@ -372,7 +369,7 @@ func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable
 	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
-	var icon_tex = preload("res://assets/Realistic/ui/textures/gachaballcapsule.png")
+	var icon_tex = preload("res://assets/PixelArt/ui/textures/gachaballcapsule.png")
 	return {
 		"uuid": "prize_%d" % prize_data.slot_index,
 		"icon": icon_tex,

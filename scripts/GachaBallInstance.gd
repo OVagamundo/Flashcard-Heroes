@@ -158,6 +158,46 @@ func replace_item_bonus(old_item: GachaBallInstance, new_item: GachaBallInstance
 		
 	return {"delta_hp": delta_hp, "delta_pwr": delta_pwr}
 
+# --- Unit Leveling & Encounter Stat Bonuses ---
+## Sets this unit's level (1..3) and updates its persistent LEVEL_BONUS StatComponent (+1/+1 per level above 1).
+func set_unit_level(target_level: int) -> void:
+	assert(target_level >= 1 and target_level <= 3, "GachaBallInstance.set_unit_level: invalid level %d" % target_level)
+	self.level = target_level
+	remove_component_by_id(&"level_bonus")
+	var level_delta_bonus: int = target_level - 1
+	if level_delta_bonus > 0:
+		add_or_update_stat_component(
+			&"level_bonus",
+			&"LEVEL_BONUS",
+			"level_scaling",
+			level_delta_bonus,
+			level_delta_bonus,
+			false,
+			"Level Bonus",
+			"Stat bonus from unit level"
+		)
+	reset_battle_stats_silent()
+
+func level_up() -> void:
+	if self.level < 3:
+		set_unit_level(self.level + 1)
+
+## Applies persistent encounter stat overflow or dynamic Boss/Elite budget scaling.
+func apply_encounter_stat_bonus(bonus_hp: int, bonus_pwr: int) -> void:
+	if bonus_hp == 0 and bonus_pwr == 0:
+		return
+	add_or_update_stat_component(
+		&"encounter_scaling",
+		&"ENCOUNTER_SCALING",
+		"encounter_budget",
+		bonus_hp,
+		bonus_pwr,
+		false,
+		"Encounter Scaling",
+		"Bonus stats from encounter budget scaling"
+	)
+	reset_battle_stats_silent()
+
 # --- Stat Management ---
 func set_current_hp(new_hp: int) -> void:
 	var old_hp = self.current_hp
@@ -178,16 +218,7 @@ func reset_battle_stats() -> void:
 	var old_hp = current_hp
 	var old_pwr = current_pwr
 	
-	# Restore HP and PWR using component-aware persistent modifiers
-	current_hp = get_definition_base_hp() + get_persistent_hp_modifier()
-	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier()
-	
-	# Clear all status effects (poison, etc.)
-	status_effects.clear()
-	battle_components.clear()
-	
-	# Reset dynamic tags
-	dynamic_tags.clear()
+	reset_battle_stats_silent()
 	
 	# Emit granular signals for each stat that changed
 	if old_hp != current_hp:
@@ -196,6 +227,11 @@ func reset_battle_stats() -> void:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 
 func reset_battle_stats_silent() -> void:
+	# Re-sealing ends Lineup-only conditional bonuses. Entry effects evaluate afresh
+	# when this capsule is deployed again; permanent growth remains on the instance.
+	for component_index: int in range(components.size() - 1, -1, -1):
+		if components[component_index].source_type == &"CONDITIONAL_TRINKET":
+			components.remove_at(component_index)
 	# Restore HP and PWR using component-aware persistent modifiers - SILENT VERSION
 	current_hp = get_definition_base_hp() + get_persistent_hp_modifier()
 	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier()
@@ -733,7 +769,10 @@ func _build_definition_components() -> Array[GachaBallComponent]:
 	tag_component.priority = -1000
 	tag_component.is_persistent = false
 	if "tags" in def:
-		tag_component.tags_to_add = def.tags.duplicate()
+		if is_instance_valid(GameManager.run_state) and GameManager.run_state.dynamic_tag_overrides.has(definition_id):
+			tag_component.tags_to_add = GameManager.run_state.get_effective_unit_tags(definition_id, def.tags)
+		else:
+			tag_component.tags_to_add = def.tags.duplicate()
 	if "tier" in def:
 		tag_component.attributes[&"tier"] = def.tier
 	if "category" in def:
@@ -1021,6 +1060,10 @@ func from_save_dict(data: Dictionary) -> void:
 	current_hp = data.get("current_hp", 0)
 	current_pwr = data.get("current_pwr", 0)
 	location_container_tag = StringName(data.get("location_container_tag", ""))
+	if location_container_tag == &"PlayerBench":
+		location_container_tag = &"PlayerShelf"
+	elif location_container_tag == &"EnemyBench":
+		location_container_tag = &"EnemyShelf"
 	location_slot_index = data.get("location_slot_index", -1)
 	equipped_on_uuid = data.get("equipped_on_uuid", "")
 	equipped_slot_index = data.get("equipped_slot_index", -1)

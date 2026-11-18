@@ -12,7 +12,7 @@ signal hero_selected(hero_def: GachaBallDefinition)
 const SPRITE_SIZE: int = 128 # 2x scale of 64px base
 
 @onready var hero_sprite: TextureRect = %HeroSprite
-@onready var lock_overlay: ColorRect = %LockOverlay
+@onready var lock_icon: Label = %LockIcon
 
 var _hero_def: GachaBallDefinition
 var _is_selected: bool = false
@@ -21,7 +21,7 @@ var _is_locked: bool = false
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
-	lock_overlay.visible = false
+	lock_icon.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	
 	# Ensure sprite has shader material for outline
 	_setup_shader_material()
@@ -36,6 +36,7 @@ func _setup_shader_material() -> void:
 		shader_mat.set_shader_parameter("outline_color", Color(1.0, 1.0, 1.0, 1.0))
 		shader_mat.set_shader_parameter("outline_width", 3.0)
 		shader_mat.set_shader_parameter("outline_enabled", false)
+		shader_mat.set_shader_parameter("grayscale_enabled", false)
 		hero_sprite.material = shader_mat
 
 
@@ -46,14 +47,10 @@ func populate(hero_def: GachaBallDefinition, is_locked: bool = false) -> void:
 	if hero_def.icon:
 		hero_sprite.texture = hero_def.icon
 	
-	# Apply locked state
-	if _is_locked:
-		lock_overlay.visible = true
-		# Grayscale effect
-		hero_sprite.modulate = Color(0.5, 0.5, 0.5, 1.0)
-	else:
-		lock_overlay.visible = false
-		hero_sprite.modulate = Color.WHITE
+	# The sprite shader preserves texture alpha, so only visible pixels are grayed out.
+	var shader_mat := hero_sprite.material as ShaderMaterial
+	shader_mat.set_shader_parameter("grayscale_enabled", _is_locked)
+	lock_icon.visible = _is_locked
 
 
 func set_selected(selected: bool) -> void:
@@ -85,9 +82,6 @@ func _play_selection_bounce() -> void:
 
 
 func _gui_input(event: InputEvent) -> void:
-	if _is_locked:
-		return
-	
 	if InputUtils.is_primary_pointer_press(event):
 		get_viewport().set_input_as_handled()
 		Audio.play_sfx("ui_click")

@@ -87,7 +87,7 @@ The following player decisions represent the interactions across the game that a
 | Room / Context | Typical Action | Player Intent |
 | :--- | :--- | :--- |
 | **Map Navigation** | `SelectPathAction` | Choose a node on the path map to transition rooms. |
-| **Battle Management** | `MoveInventoryAction` | Move, equip, or use units/items between bench, board, and inventory. |
+| **Battle Management** | `MoveInventoryAction` | Move, equip, or use units/items between shelf, board, and inventory. |
 | **Battle Management** | `ConfirmMergeAction` | Confirm a merge recipe between two units. |
 | **Battle Management** | `ConfirmSwapAction` | Swap positions of two units or items. |
 | **Battle Management** | `DrawGachaAction` | Pull a unit/item from combat gacha machines using battle tokens. |

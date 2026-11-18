@@ -5,7 +5,7 @@ extends Control
 ## Celebratory fireworks effect for mid-game flashcard unlocks.
 ## Bursts multiple vibrant firework sparks with additive blending around the target area.
 
-const FIRE_TEXTURE = preload("res://assets/Realistic/ui/textures/FireBall.png")
+const FIRE_TEXTURE = preload("res://assets/PixelArt/ui/textures/FireBall.png")
 
 const PALETTES: Array[Color] = [
 	Color(1.0, 0.85, 0.2),  # Gold

@@ -12,31 +12,36 @@ signal deck_selected(deck_meta: Dictionary)
 @onready var deck_name_label: Label = %DeckName
 @onready var card_count_label: Label = %CardCount
 @onready var selection_border: Panel = %SelectionBorder
+@onready var lock_overlay: ColorRect = %LockOverlay
 
 var _deck_meta: Dictionary
 var _is_selected: bool = false
+var _is_locked: bool = false
 
 
 func _ready() -> void:
 	mouse_filter = Control.MOUSE_FILTER_STOP
 	selection_border.visible = false
+	lock_overlay.visible = false
 
 
-func populate(deck_meta: Dictionary) -> void:
+func populate(deck_meta: Dictionary, is_locked: bool = false) -> void:
 	_deck_meta = deck_meta
+	_is_locked = is_locked
 	
 	deck_name_label.text = deck_meta.get("display_name", "Unknown")
 	
 	# Get card count from Database
 	var card_ids = Database.get_cards_for_deck(StringName(deck_meta.get("deck_id", "")))
 	card_count_label.text = str(card_ids.size()) + " " + tr("ui.cards")
+	lock_overlay.visible = _is_locked
 
 
 func set_selected(selected: bool) -> void:
 	_is_selected = selected
 	selection_border.visible = selected
 	
-	if selected:
+	if selected and not _is_locked:
 		_play_selection_bounce()
 
 

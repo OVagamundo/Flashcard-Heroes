@@ -48,7 +48,7 @@ Following architectural review, the description and inspection systems are being
 
 | Effect | Polarity | Decay & Turn Timing Rule | Functional Behavior |
 | :--- | :---: | :--- | :--- |
-| **Armor** | Positive | Clears to `0` at **Turn Start** unless preserved by **Reinforce**. | Absorbs all damage point-for-point. Bypassed only by **Burn** and Sudden Death. |
+| **Armor** | Positive | Clears to `0` at **Turn Start** unless preserved by **Reinforce**. | Absorbs all damage point-for-point. Bypassed only by **Burn**. |
 | **Reinforce** | Positive | Loses `1` stack at **Turn Start**. Stackable. | While active, protects Armor from clearing at Turn Start. |
 | **Spikes** | Positive | **No turn-end decay.** Loses `1` stack per retaliatory hit. | Deals damage equal to stacks back to **Melee attackers** upon impact. Bypassed by **Ranged Attacks**. |
 | **Burn** | Negative | Deals damage equal to stacks at **Turn End**, then **halves** (rounded down). | **Completely ignores Armor.** Does not halve on Burn Slots. |

@@ -29,10 +29,10 @@ func _get_study_font_for_card(card_id: StringName = &"") -> Font:
 	if card_id.begins_with("THAI_"):
 		return THAI_FONT
 	return JAPANESE_FONT
-const PANEL_TEXTURE = preload("res://assets/Realistic/ui/textures/panel_v4.png")
-const BUTTON_NORMAL_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_normal.png")
-const BUTTON_HOVER_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_hover.png")
-const BUTTON_PRESSED_TEXTURE = preload("res://assets/Realistic/ui/textures/button_v4_pressed.png")
+const PANEL_TEXTURE = preload("res://assets/PixelArt/ui/textures/panel_v4.png")
+const BUTTON_NORMAL_TEXTURE = preload("res://assets/PixelArt/ui/textures/button_v4_normal.png")
+const BUTTON_HOVER_TEXTURE = preload("res://assets/PixelArt/ui/textures/button_v4_hover.png")
+const BUTTON_PRESSED_TEXTURE = preload("res://assets/PixelArt/ui/textures/button_v4_pressed.png")
 const FireworksCelebrationVFXScene = preload("res://scripts/vfx/FireworksCelebrationVFX.gd")
 
 @onready var main_panel: PanelContainer = %MainPanel
@@ -264,6 +264,7 @@ func _check_for_new_card() -> void:
 func _show_card_introduction() -> void:
 	"""Show the new card introduction screen"""
 	card_intro_container.show()
+	intro_explanation_label.visible = not DemoContent.is_demo_mode()
 	choices_grid.hide()
 	question_label.hide()
 	if is_instance_valid(timer_bar):
@@ -328,6 +329,7 @@ func _get_priority_sorted_cards() -> Array[Dictionary]:
 
 func _update_localized_text() -> void:
 	if not is_inside_tree(): return
+	intro_explanation_label.visible = not DemoContent.is_demo_mode()
 	
 	if _is_introducing_new_card:
 		title_label.text = tr("ui.review_title")
@@ -482,7 +484,7 @@ func execute_acknowledge_intro() -> void:
 	_start_minigame_session()
 
 func _start_minigame_session() -> void:
-	"""Start the 3-second sprint mini-game"""
+	"""Start the 3-second sprint Challenge"""
 	# AUDIO HOOK: High-intensity minigame BGM (played at -7.0 dB so voice clips are clear but music is audible)
 	Audio.play_music(SoundRegistry.BGM_MINIGAME, 0.1, -7.0)
 	
@@ -1131,7 +1133,7 @@ func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
 			break
 
 func _end_minigame() -> void:
-	"""End the mini-game when timer expires"""
+	"""End the Challenge when timer expires"""
 	if not is_instance_valid(FlashcardManager) or not FlashcardManager.is_session_active:
 		return
 	

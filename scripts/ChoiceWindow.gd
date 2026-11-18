@@ -26,7 +26,7 @@ func _ready() -> void:
 	if SignalBus.has_signal("interaction_lock_requested"):
 		SignalBus.emit_signal("interaction_lock_requested", true)
 		
-	# Connect the SWAP button signal, as it's always available.
+	# Populate decides whether exchanging these two locations is legal.
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
 	# Prune only child windows when clicking on this window's background
 	gui_input.connect(_on_panel_gui_input)
@@ -92,6 +92,10 @@ func populate(context: Dictionary) -> void:
 	_result_id = context.get("result_id", &"")
 	_source_view_instance_id = context.get("source_view_id", -1)
 	_drop_pos = context.get("drop_pos", Vector2.ZERO)
+	var source_instance: GachaBallInstance = GameManager.get_instance_from_location(_source_location)
+	var target_instance: GachaBallInstance = GameManager.get_instance_from_location(_target_location)
+	assert(source_instance != null and target_instance != null, "ChoiceWindow requires both merge ingredients")
+	swap_button.visible = InventoryManager.is_valid_placement(source_instance, _target_location) and InventoryManager.is_valid_placement(target_instance, _source_location)
 
 	_update_localized_text()
 

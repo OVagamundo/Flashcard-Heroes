@@ -50,7 +50,7 @@ To prevent game crashes, the following pattern of Inversion of Control is mandat
 
 These `StringName` values define all possible logical locations for a `GachaBallInstance` and are used in its `location_container_tag` property.
 
--   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerBench`, `ItemInventory`.
+-   **Run State Locations:** `RunInventoryT1`, `RunInventoryT2`, `RunInventoryT3`, `PlayerLineup`, `PlayerShelf`, `ItemInventory`.
 -   **Battle State Locations:** `BattleInventoryT1`, `BattleInventoryT2`, `BattleInventoryT3`, `EnemyLineup`, `DiscardPile`.
 -   **Special Location:** `equipped_item` (conceptual, used by `LocationIdentifier`).
 
@@ -59,7 +59,7 @@ These `StringName` values define all possible logical locations for a `GachaBall
 A layer of `DataContainer` objects provides a fast, location-based index for O(1) lookups.
 
 -   **`DataContainer.gd`**: Abstract base class defining the common interface.
--   **`FixedArrayContainer.gd`**: Implements a fixed-size array for lineups and benches.
+-   **`FixedArrayContainer.gd`**: Implements a fixed-size array for lineups and shelves.
 -   **`GrowableGridContainer.gd`**: Implements an expandable container for inventories and discard piles.
 
 ## Part 3: System Architecture & Managers
@@ -120,7 +120,7 @@ All user gestures and inputs are processed through a unified, decoupled system.
 1.  A draw is requested for a specific tier.
 2.  A random GachaBall is drawn from the corresponding `BattleInventoryT<n>` pool.
 3.  If a pool becomes empty, it is immediately reshuffled with all matching GachaBalls from the `DiscardPile`. Reshuffled instances have their HP/PWR reset to base values.
-4.  The drawn instance's location is updated to the player's bench or item inventory.
+4.  The drawn instance's location is updated to the player's shelf or item inventory.
 
 ### 5.3 Merge Flow
 

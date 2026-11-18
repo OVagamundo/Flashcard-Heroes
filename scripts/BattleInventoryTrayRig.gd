@@ -48,8 +48,9 @@ func _ready() -> void:
 	SignalBus.battle_inventory_transition_started.connect(_on_battle_transition_started)
 	SignalBus.battle_inventory_transition_finished.connect(_on_battle_transition_finished)
 	
-	if is_instance_valid(back_texture):
-		back_art.texture = back_texture
+	assert(back_texture != null, "Battle inventory trays require container artwork.")
+	back_art.texture = back_texture
+	back_art.scale = container_size / back_texture.get_size()
 	if is_instance_valid(overlay_texture):
 		front_overlay.texture = overlay_texture
 		

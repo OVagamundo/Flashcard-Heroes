@@ -43,13 +43,13 @@ func populate(trait_name: String, count: int, is_active: bool) -> void:
 		else:
 			match trait_name:
 				"FIRE":
-					icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
+					icon_rect.texture = preload("res://assets/PixelArt/sprites/trinkets/Trinket7A.png")
 				"EARTH":
-					icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
+					icon_rect.texture = preload("res://assets/PixelArt/sprites/trinkets/Trinket6A.png")
 				"WATER":
-					icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
+					icon_rect.texture = preload("res://assets/PixelArt/sprites/items/WaterEmblem.png")
 				"AIR":
-					icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
+					icon_rect.texture = preload("res://assets/PixelArt/sprites/items/AirEmblem.png")
 	
 	if is_instance_valid(name_label):
 		var display_key = trait_def.get("display_name_key", "")

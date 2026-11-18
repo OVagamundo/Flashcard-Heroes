@@ -3,7 +3,7 @@
 extends EffectDefinition
 
 ## Grants allied units +1 PWR for each pair of that unit
-## in the allied battle pool (lineup, bench, gacha trays, discard).
+## in the allied battle pool (lineup, shelf, gacha trays, discard).
 func execute(source_uuid: String, _targets: Array[String], battle_manager: Node, context: TriggerContext) -> EffectResult:
 	var is_simulation := true # Always true so it generates visual events for animator
 	var all_instances: Dictionary = battle_manager.get_all_instances()
@@ -34,6 +34,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	for uuid in all_instances:
 		var inst: GachaBallInstance = all_instances[uuid]
 		if not is_instance_valid(inst) or battle_manager.is_dead_this_turn(uuid):
+			continue
+		if inst.location_container_tag in [&"PlayerShelf", &"EnemyShelf"]:
 			continue
 
 		var last_bonus: int = inst.get_status_effect_amount(status_key)
@@ -179,7 +181,7 @@ func _get_team_for_instance(inst: GachaBallInstance, battle_manager: Node) -> St
 		return "PLAYER"
 
 	var container: StringName = inst.location_container_tag
-	if container == &"EnemyLineup" or container == &"EnemyBench":
+	if container == &"EnemyLineup" or container == &"EnemyShelf":
 		return "ENEMY"
 
 	return ""
@@ -188,4 +190,4 @@ func _is_on_board(inst: GachaBallInstance) -> bool:
 	if not is_instance_valid(inst):
 		return false
 	var container: StringName = inst.location_container_tag
-	return container == &"PlayerLineup" or container == &"PlayerBench" or container == &"EnemyLineup" or container == &"EnemyBench"
+	return container == &"PlayerLineup" or container == &"EnemyLineup"

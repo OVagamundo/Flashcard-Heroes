@@ -198,6 +198,10 @@ static func animate_token_spend(
 	var tokens_to_spawn = amount
 	var stagger_delay = AnimationConstants.scaled(0.12)
 	var vfx_layer = WindowManager.get_vfx_layer()
+	# The shared VFX layer may be attached with a deferred tree operation on first use.
+	# Its children must be ready before TokenSpendVFX.play accesses their sprites.
+	if not vfx_layer.is_node_ready():
+		await vfx_layer.ready
 	var last_vfx = null
 	
 	for i in range(tokens_to_spawn):

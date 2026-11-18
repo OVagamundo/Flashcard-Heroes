@@ -262,7 +262,8 @@ signal draw_from_discard_requested
 
 ## Emitted when gacha draw result needs to be animated
 ## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
-signal gacha_draw_animated(draw_result)
+## @param new_unit_snapshot: Dictionary - Snapshot of unit visual data before reactive buffs
+signal gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary)
 
 ## Emitted when the visual presentation of a gacha draw (flight, capsule pop, landing bounce) completes
 ## @param draw_result: DrawResult - The result of the draw operation
@@ -469,7 +470,7 @@ signal all_inspection_windows_close_requested
 ## Emitted when inventory inspection is requested
 signal inspect_inventory_requested
 
-## Emitted when discard pile display is requested
+## Emitted when Discard display is requested
 signal display_discard_pile_requested
 
 ## Emitted when modal should be closed
@@ -530,6 +531,9 @@ signal minigame_bonus_time_changed(new_bonus_time: float)
 ## @param pages: Array - Array of page dictionaries with text and optional anchor_path
 ## @param anchor: Control - Optional control to point an arrow at
 signal tutorial_requested(tutorial_id: StringName, pages: Array, anchor: Control)
+
+## Emitted when a tutorial takes or releases ownership of the scene-tree pause
+signal tutorial_pause_changed(tutorial_id: StringName, is_paused: bool)
 
 ## Emitted when a tutorial is dismissed (completed)
 ## @param tutorial_id: StringName - The tutorial that was dismissed

@@ -43,9 +43,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if not is_instance_valid(target_instance) or target_instance.current_hp <= 0:
 			continue
 			
-		# Must be on the board (lineup or bench) and on the same team
+		# Must be on the board (lineup or shelf) and on the same team
 		var container = target_instance.location_container_tag
-		var is_on_board = container in [&"PlayerLineup", &"PlayerBench", &"EnemyLineup", &"EnemyBench"]
+		var is_on_board = container in [&"PlayerLineup", &"EnemyLineup"]
 		if not is_on_board or _get_team_from_container(container) != trinket_team:
 			continue
 			
@@ -155,7 +155,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 # Helper to determine team from container tag
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"

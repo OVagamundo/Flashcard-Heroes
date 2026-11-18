@@ -142,7 +142,8 @@ func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2, visual_d
 	# Fix warning: Reset anchors before setting size for a manual-transform node
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
 	
-	anim_ball.force_inventory_mode = true
+	anim_ball.force_inventory_mode = not GameManager.is_in_battle
+	anim_ball.show_capsule_overlay = not GameManager.is_in_battle
 	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
 	# to ensure stat labels and icons are correctly positioned.
 	if anim_ball.has_method("set_size_scale"):

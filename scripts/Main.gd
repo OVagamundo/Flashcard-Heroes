@@ -133,7 +133,7 @@ func _ready() -> void:
 	gacha_machine_2.gui_input.connect(func(event): _on_machine_gui_input(event))
 	gacha_machine_3.gui_input.connect(func(event): _on_machine_gui_input(event))
 	
-	# Connect discard machine base to open discard pile
+	# Connect discard machine base to open the Discard
 	if is_instance_valid(gacha_machine_discard):
 		gacha_machine_discard.pressed.connect(_on_discard_machine_pressed)
 	
@@ -387,10 +387,7 @@ func _sync_scene_background(scene_instance: Node) -> void:
 	# Look for a Background TextureRect child in the scene
 	var bg_node = scene_instance.get_node_or_null("Background")
 	if is_instance_valid(bg_node) and bg_node is TextureRect:
-		var tex = bg_node.texture
-		if is_instance_valid(ArtStyleManager) and is_instance_valid(tex):
-			tex = ArtStyleManager.get_themed_texture(tex)
-		scene_background.texture = tex
+		scene_background.texture = bg_node.texture
 		# Hide the scene's internal background since we're using the full-screen one
 		bg_node.visible = false
 	else:
@@ -613,7 +610,7 @@ func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
 	_is_drawing_token = true
 
 	# As part of the draw visual choreography, close the battle inventory drawer,
-	# discard pile drawer, and any open inspection popups so the battle board and ball animation are unobstructed
+	# Discard drawer, and any open inspection popups so the battle board and ball animation are unobstructed
 	if is_instance_valid(WindowManager):
 		if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
 			WindowManager.close_discard_pile_window()
@@ -1287,11 +1284,11 @@ func _build_confirm_drop_zone() -> void:
 	_confirm_drop_zone.name = "ConfirmDropZone"
 	_confirm_drop_zone.unique_name_in_owner = true
 	
-	# Match BottomArea anchors: full width, bottom-anchored, 220px tall
+	# Match the bottom machine bar's current height and anchors.
 	_confirm_drop_zone.layout_mode = 1 # Anchored
 	_confirm_drop_zone.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_confirm_drop_zone.custom_minimum_size = Vector2(0, 220)
-	_confirm_drop_zone.offset_top = -220
+	_confirm_drop_zone.custom_minimum_size = Vector2(0, bottom_area.size.y)
+	_confirm_drop_zone.offset_top = -bottom_area.size.y
 	_confirm_drop_zone.offset_bottom = 0
 	
 	# Warm white rounded rectangle style
@@ -1591,11 +1588,11 @@ func _build_split_action_drop_zones() -> void:
 	_split_action_drop_zone_container = PanelContainer.new()
 	_split_action_drop_zone_container.name = "ShrineDropZones"
 	
-	# Match BottomArea anchors: full width, bottom-anchored, 220px tall
+	# Match the bottom machine bar's current height and anchors.
 	_split_action_drop_zone_container.layout_mode = 1
 	_split_action_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_split_action_drop_zone_container.custom_minimum_size = Vector2(0, 220)
-	_split_action_drop_zone_container.offset_top = -220
+	_split_action_drop_zone_container.custom_minimum_size = Vector2(0, bottom_area.size.y)
+	_split_action_drop_zone_container.offset_top = -bottom_area.size.y
 	_split_action_drop_zone_container.offset_bottom = 0
 	
 	# Transparent panel (children provide the visuals)
@@ -1646,8 +1643,8 @@ func _build_action_instruction_overlay() -> void:
 	
 	_action_instruction_overlay.layout_mode = 1
 	_action_instruction_overlay.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_action_instruction_overlay.custom_minimum_size = Vector2(0, 220)
-	_action_instruction_overlay.offset_top = -220
+	_action_instruction_overlay.custom_minimum_size = Vector2(0, bottom_area.size.y)
+	_action_instruction_overlay.offset_top = -bottom_area.size.y
 	_action_instruction_overlay.offset_bottom = 0
 	
 	var style = StyleBoxFlat.new()
@@ -1875,8 +1872,8 @@ func _build_reward_drop_zones() -> void:
 	
 	_reward_drop_zone_container.layout_mode = 1
 	_reward_drop_zone_container.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
-	_reward_drop_zone_container.custom_minimum_size = Vector2(0, 220)
-	_reward_drop_zone_container.offset_top = -220
+	_reward_drop_zone_container.custom_minimum_size = Vector2(0, bottom_area.size.y)
+	_reward_drop_zone_container.offset_top = -bottom_area.size.y
 	_reward_drop_zone_container.offset_bottom = 0
 	
 	var container_style = StyleBoxFlat.new()

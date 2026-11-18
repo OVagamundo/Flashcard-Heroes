@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/elite_slimeblob.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_slimeblob_mitosis.tres" id="4_mitosis"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"elite_slimeblob"
+display_name_key = "elite_slimeblob.name"
+description_key = "elite_slimeblob.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"BOSS", &"HIDDEN"])
+is_hero = false
+tier = 3
+category = &"UNIT"
+
+base_hp = 6
+base_pwr = 2
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("4_mitosis")
+])

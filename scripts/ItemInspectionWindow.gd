@@ -94,8 +94,10 @@ func _update_description_and_stats(item_def: Resource) -> void:
 		
 		var base_desc := ""
 		if "description_key" in item_def and not item_def.description_key.is_empty():
-			var raw_desc: String = tr(item_def.description_key)
-			if not (raw_desc.contains("trait effects activate at") or raw_desc.contains("efeitos do traço")):
+			var description_key: String = item_def.description_key
+			var is_trait_threshold_summary: bool = description_key.begins_with("trinket.trait_") and description_key != "trinket.trait_novice.desc"
+			if not is_trait_threshold_summary:
+				var raw_desc: String = tr(description_key)
 				base_desc = raw_desc
 		
 		if not base_desc.is_empty():
@@ -307,7 +309,7 @@ func _build_trait_trinket_description(trait_id: String) -> String:
 	for level in trait_def.get("levels", []):
 		var min_req := int(level.get("min", 0))
 		var is_active := current_count >= min_req
-		var color_tag := "[color=#FFFF00]" if is_active else "[color=#888888]"
+		var color_tag := "[color=#8B0000]" if is_active else "[color=#888888]"
 		var prefix := "* " if is_active else "- "
 		lines.append("%s%s%d: %s[/color]" % [color_tag, prefix, min_req, tr(level.get("desc_key", ""))])
 
@@ -323,7 +325,7 @@ func _get_trait_count_for_context(trait_id: String) -> int:
 	return _get_run_trait_count(trait_id)
 
 func _get_trait_team_for_context() -> String:
-	if is_instance_valid(_location) and _location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
+	if is_instance_valid(_location) and _location.container in [C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER]:
 		return "ENEMY"
 	return "PLAYER"
 
@@ -519,14 +521,15 @@ func _trigger_trait_tutorial() -> void:
 	if _is_preview:
 		return
 	# Wait 1.0s before showing tutorial to avoid "quick pass" triggers as requested
-	await AnimationConstants.create_pausable_timer(get_tree(), 1.0).timeout
+	await get_tree().create_timer(1.0, true).timeout
 	
 	if not is_instance_valid(self) or not is_inside_tree():
 		return
 		
 	TutorialManager.show_tutorial(&"traits", [
 		{
-			"text": tr("tutorial.traits"),
-			"anchor_side": "AUTO_HORIZONTAL" # Attempt to place next to the inspection window without overlapping
+			"text": "tutorial.traits",
+			"anchor_side": "AUTO_HORIZONTAL",
+			"pause_game": true
 		}
-	], self)
+	], description_label)

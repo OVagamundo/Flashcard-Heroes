@@ -117,13 +117,14 @@ static func create_summon_event(unit_uuid: String, slot_index: int, is_player: b
 ##     Searches Front to Back (Slot 4 down to Slot 0).
 ##   Enemy (Right Side): Slot 0 (Left/Front) ... Slot 4 (Right/Back). Rank 0 = Slot 0.
 ##     Searches Front to Back (Slot 0 up to Slot 4).
-## For Bench (Player or Enemy) / Non-Lineup Storage:
+## For Shelf (Player or Enemy) / Non-Lineup Storage:
 ##   Always first available slot from left to right: Slot 0 up to Size - 1.
 static func find_best_summon_slot(
 	container: DataContainer,
 	is_player_team: bool,
 	exclude_slots: Array[int] = [],
-	container_tag: StringName = &""
+	container_tag: StringName = &"",
+	battle_manager: Node = null
 ) -> int:
 	if not is_instance_valid(container):
 		return -1
@@ -132,22 +133,31 @@ static func find_best_summon_slot(
 	if tag.is_empty():
 		tag = container.container_tag
 
-	var is_bench: bool = (
-		tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-		or tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
-		or tag == C.CONTAINER_PLAYER_BENCH
-		or (tag.is_empty() and container.get_size() == C.BENCH_CAP)
+	var is_shelf: bool = (
+		tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
+		or tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF
+		or tag == C.CONTAINER_PLAYER_SHELF
+		or (tag.is_empty() and container.get_size() == C.SHELF_CAP)
 	)
 
 	var size: int = container.get_size()
+	if tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and is_instance_valid(battle_manager):
+		var typed_battle_manager: BattleManager = battle_manager as BattleManager
+		size = mini(size, typed_battle_manager.get_player_shelf_slots_unlocked())
 
-	if is_bench:
-		# Bench: always first available slot from left to right (0 -> Size - 1)
+	if is_shelf:
+		# Shelf: always first available slot from left to right (0 -> Size - 1)
 		for i in range(size):
 			if i in exclude_slots:
 				continue
-			if container.get_uuid(i) == "":
+			var u_uuid: String = container.get_uuid(i)
+			if u_uuid == "":
 				return i
+			if is_instance_valid(battle_manager):
+				var u_inst = battle_manager.get_instance_by_uuid(u_uuid)
+				if not is_instance_valid(u_inst) or u_inst.current_hp <= 0 or battle_manager.is_dead_this_turn(u_uuid):
+					battle_manager._perform_unit_death_cleanup(u_inst)
+					return i
 		return -1
 
 	if is_player_team:
@@ -155,15 +165,27 @@ static func find_best_summon_slot(
 		for i in range(size - 1, -1, -1):
 			if i in exclude_slots:
 				continue
-			if container.get_uuid(i) == "":
+			var u_uuid: String = container.get_uuid(i)
+			if u_uuid == "":
 				return i
+			if is_instance_valid(battle_manager):
+				var u_inst = battle_manager.get_instance_by_uuid(u_uuid)
+				if not is_instance_valid(u_inst) or u_inst.current_hp <= 0 or battle_manager.is_dead_this_turn(u_uuid):
+					battle_manager._perform_unit_death_cleanup(u_inst)
+					return i
 	else:
 		# Enemy Lineup: Front (0) -> Back (Size - 1)
 		for i in range(size):
 			if i in exclude_slots:
 				continue
-			if container.get_uuid(i) == "":
+			var u_uuid: String = container.get_uuid(i)
+			if u_uuid == "":
 				return i
+			if is_instance_valid(battle_manager):
+				var u_inst = battle_manager.get_instance_by_uuid(u_uuid)
+				if not is_instance_valid(u_inst) or u_inst.current_hp <= 0 or battle_manager.is_dead_this_turn(u_uuid):
+					battle_manager._perform_unit_death_cleanup(u_inst)
+					return i
 	
 	return -1
 
@@ -173,9 +195,9 @@ static func find_best_summon_slot(
 
 ## Determine bump direction for damage animations
 static func get_bump_direction(source_tag: StringName) -> Vector2:
-	if source_tag == &"PlayerLineup" or source_tag == &"PlayerBench":
+	if source_tag == &"PlayerLineup" or source_tag == &"PlayerShelf":
 		return Vector2(1, 0) # Player bumps right
-	elif source_tag == &"EnemyLineup" or source_tag == &"EnemyBench":
+	elif source_tag == &"EnemyLineup" or source_tag == &"EnemyShelf":
 		return Vector2(-1, 0) # Enemy bumps left
 	return Vector2.ZERO
 
@@ -331,7 +353,7 @@ static func handle_damage_effect(
 		
 		var loc_tag: StringName = tgt.location_container_tag
 		var is_in_battle: bool = (loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or
-								  loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH)
+								  loc_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or loc_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF)
 		if not is_in_battle:
 			continue
 		
@@ -460,9 +482,9 @@ static func handle_damage_effect(
 	var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 	if is_instance_valid(anim_source):
 		var src_tag: StringName = anim_source.location_container_tag
-		if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+		if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 			bump_dir = Vector2(1, 0)
-		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+		elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 			bump_dir = Vector2(-1, 0)
 			
 	var attack_type := "trinket" if is_trinket else "melee"
@@ -666,9 +688,9 @@ static func handle_cascade_damage(
 		var anim_source: GachaBallInstance = battle_manager.get_instance_by_uuid(animation_source_uuid)
 		if is_instance_valid(anim_source):
 			var src_tag: StringName = anim_source.location_container_tag
-			if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+			if src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 				bump_dir = Vector2(1, 0)
-			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+			elif src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or src_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 				bump_dir = Vector2(-1, 0)
 		
 		var attack_type := "trinket" if is_trinket else "melee"
@@ -778,7 +800,7 @@ static func handle_summon_unit(
 		return result
 
 	# Invariant enforcement: Fail-Fast Law for team and hero set scoping
-	var is_player_container: bool = (holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
+	var is_player_container: bool = (holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or holder_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 	if not is_player_container:
 		assert(not unit_def.is_player_exclusive, "EffectHandlers: enemy team attempted to summon player-exclusive unit %s" % unit_def.id)
 		assert(Database.get_entity_set(unit_def) == Database.SET_BASE, "EffectHandlers: enemy team attempted to summon non-base set unit %s (%s)" % [unit_def.id, Database.get_entity_set(unit_def)])
@@ -821,12 +843,12 @@ static func handle_summon_unit(
 	if collision_detected:
 		# Collision detected! Attempt to find an empty slot.
 		# Priority 1: First empty slot in same container (Using Unified Finder)
-		var empty_slot = find_best_summon_slot(container, is_player_container, [], holder_location.container)
+		var empty_slot = find_best_summon_slot(container, is_player_container, [], holder_location.container, battle_manager)
 			
 		if empty_slot != -1:
 			final_location = LocationIdentifier.new(holder_location.container, empty_slot)
 		else:
-			# Priority 2: Discard Pile (Player only)
+			# Priority 2: Discard (Player only)
 			if is_player_container:
 				var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 				var discard_slot = find_empty_slot_in_container(discard)
@@ -837,7 +859,7 @@ static func handle_summon_unit(
 					result.new_instances.clear()
 					return result
 			else:
-				# Enemy has no discard pile. Cancel summon.
+				# Enemy has no Discard. Cancel summon.
 				result.new_instances.clear()
 				return result
 
@@ -929,7 +951,9 @@ static func handle_summon_units(
 	
 	var summon_list: Array = effect_data.get("summon_units", [])
 	var team: String = effect_data.get("team", "ENEMY")
-	var target_container_tag: StringName = effect_data.get("container_tag", C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	var target_container_tag: StringName = effect_data.get("container_tag", &"")
+	if target_container_tag.is_empty():
+		target_container_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "ENEMY" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 	
 	# Get container for slot finding
 	var target_container = battle_manager.get_container(target_container_tag)
@@ -955,8 +979,24 @@ static func handle_summon_units(
 			if active_set != &"ALL" and unit_set != Database.SET_BASE:
 				assert(unit_set == active_set, "EffectHandlers: player team attempted to summon unit %s from inactive set %s (active: %s)" % [unit_def.id, unit_set, active_set])
 		
-		# Find empty slot using Unified Finder
-		var empty_slot: int = find_best_summon_slot(target_container, team == "PLAYER", filled_slots, target_container_tag)
+		# Find empty slot using targeted slot or Unified Finder
+		var empty_slot: int = -1
+		if summon_data.has("slot"):
+			var requested_slot: int = int(summon_data["slot"])
+			var requested_slot_limit: int = target_container.get_size()
+			if target_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+				requested_slot_limit = battle_manager.get_player_shelf_slots_unlocked()
+			if requested_slot >= 0 and requested_slot < requested_slot_limit and not filled_slots.has(requested_slot):
+				var curr_uuid: String = target_container.get_uuid(requested_slot)
+				if curr_uuid.is_empty():
+					empty_slot = requested_slot
+				elif is_instance_valid(battle_manager):
+					var curr_inst: GachaBallInstance = battle_manager.get_instance_by_uuid(curr_uuid)
+					if not is_instance_valid(curr_inst) or curr_inst.current_hp <= 0 or battle_manager.is_dead_this_turn(curr_uuid):
+						battle_manager._perform_unit_death_cleanup(curr_inst)
+						empty_slot = requested_slot
+		if empty_slot == -1:
+			empty_slot = find_best_summon_slot(target_container, team == "PLAYER", filled_slots, target_container_tag, battle_manager)
 		
 		if empty_slot == -1:
 			break # No more slots
@@ -967,9 +1007,11 @@ static func handle_summon_units(
 		var new_unit := GachaBallInstance.new()
 		new_unit.initialize(unit_def)
 		if summon_data.has("level"):
-			var target_level = summon_data.get("level")
-			for i in range(1, target_level):
-				new_unit.level_up()
+			var target_level = int(summon_data.get("level", 1))
+			if target_level > 1:
+				new_unit.set_unit_level(target_level)
+		if summon_data.has("bonus_hp") or summon_data.has("bonus_pwr"):
+			new_unit.apply_encounter_stat_bonus(int(summon_data.get("bonus_hp", 0)), int(summon_data.get("bonus_pwr", 0)))
 		new_unit.reset_battle_stats_silent()
 		
 		# Equip items if provided in summon data
@@ -1157,6 +1199,8 @@ static func handle_mirror_transform(
 
 static func _make_summon_payload(old_unit_uuid: String, new_unit_uuid: String, old_unit_location: LocationIdentifier, new_unit_snapshot: Dictionary, spawn_source_uuid: String = "", unit_tier: int = 1, spawn_source_location: LocationIdentifier = null) -> CombatPayload:
 	var payload := CombatPayload.new()
+	new_unit_snapshot = new_unit_snapshot.duplicate(true)
+	new_unit_snapshot["capsule_sealed"] = old_unit_location.container in [C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF]
 	payload.old_unit_uuid = old_unit_uuid
 	payload.new_unit_uuid = new_unit_uuid
 	payload.old_unit_location = old_unit_location

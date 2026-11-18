@@ -22,7 +22,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
 	else:
-		var ctx_uuid: String = context.drawn_uuid
+		var ctx_uuid: String = context.entered_uuid
+		if ctx_uuid.is_empty():
+			ctx_uuid = context.drawn_uuid
 		if ctx_uuid.is_empty():
 			ctx_uuid = context.summoned_uuid
 		if ctx_uuid.is_empty():
@@ -61,6 +63,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		# Get the target instance
 		var target_instance = battle_manager.get_instance(target_uuid)
 		if not is_instance_valid(target_instance):
+			continue
+		if target_instance.location_container_tag not in [&"PlayerLineup", &"EnemyLineup"]:
 			continue
 		
 		# Team check
@@ -177,7 +181,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 # Helper to determine team from container
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"

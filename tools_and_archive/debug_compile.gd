@@ -7,7 +7,7 @@ func _init():
 		"res://scripts/Database.gd",
 		"res://scripts/EncounterGenerator.gd",
 		"res://scripts/battle/BattleSetup.gd",
-		"res://scripts/effects/EffectDustEliteSpawn.gd"
+		"res://scripts/effects/EffectBannerReinforce.gd"
 	]
 	
 	for s in scripts:

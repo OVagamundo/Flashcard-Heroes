@@ -177,6 +177,11 @@ func _compute_valid_targets(source_instance: GachaBallInstance, source_loc: Loca
 		
 		var slot_count = container.get_size()
 		for i in range(slot_count):
+			if GameManager.is_in_battle and container_name == &"PlayerShelf":
+				var battle_manager: BattleManager = data_owner as BattleManager
+				assert(is_instance_valid(battle_manager), "SlotIndicatorController._compute_valid_targets: battle manager is required")
+				if not battle_manager._state.is_player_shelf_slot_unlocked(i):
+					continue
 			var target_loc = LocationIdentifier.new()
 			target_loc.container = container_name
 			target_loc.index = i
@@ -233,18 +238,18 @@ func _get_checkable_containers(is_unit: bool, is_item: bool, is_consumable: bool
 	else:
 		# Battle context
 		if is_unit:
-			# Units can move to PlayerLineup, PlayerBench
+			# Units can move to PlayerLineup, PlayerShelf
 			containers.append(&"PlayerLineup")
-			containers.append(&"PlayerBench")
+			containers.append(&"PlayerShelf")
 		elif is_item or is_consumable:
-			# Items and consumables can move to PlayerBench
-			containers.append(&"PlayerBench")
+			# Items and consumables can move to PlayerShelf
+			containers.append(&"PlayerShelf")
 	
 	return containers
 
 func _get_consumable_targets(data_owner: Object) -> Array:
 	var targets: Array = []
-	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"EnemyLineup"]
 	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)
@@ -253,6 +258,11 @@ func _get_consumable_targets(data_owner: Object) -> Array:
 		
 		var slot_count = container.get_size()
 		for i in range(slot_count):
+			if GameManager.is_in_battle and container_name == &"PlayerShelf":
+				var battle_manager: BattleManager = data_owner as BattleManager
+				assert(is_instance_valid(battle_manager), "SlotIndicatorController._get_consumable_targets: battle manager is required")
+				if not battle_manager._state.is_player_shelf_slot_unlocked(i):
+					continue
 			var uuid = container.get_uuid(i)
 			if uuid.is_empty():
 				continue
@@ -339,8 +349,8 @@ func _is_valid_target(source_instance: GachaBallInstance, source_loc: LocationId
 func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationIdentifier, data_owner: Object) -> Array:
 	var equip_targets: Array = []
 	
-	# Items can be equipped onto units in PlayerLineup or PlayerBench
-	var allowed_containers: Array[StringName] = [&"PlayerLineup", &"PlayerBench"]
+	# Equipment capsule targets must be deployed player units.
+	var allowed_containers: Array[StringName] = [&"PlayerLineup"]
 	
 	for container_name in allowed_containers:
 		var container = data_owner.get_container(container_name)
@@ -349,6 +359,11 @@ func _get_equip_targets(item_instance: GachaBallInstance, _source_loc: LocationI
 		
 		var slot_count = container.get_size()
 		for i in range(slot_count):
+			if GameManager.is_in_battle and container_name == &"PlayerShelf":
+				var battle_manager: BattleManager = data_owner as BattleManager
+				assert(is_instance_valid(battle_manager), "SlotIndicatorController._get_equip_targets: battle manager is required")
+				if not battle_manager._state.is_player_shelf_slot_unlocked(i):
+					continue
 			var uuid = container.get_uuid(i)
 			if uuid.is_empty():
 				continue

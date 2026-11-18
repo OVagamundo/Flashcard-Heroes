@@ -2,6 +2,8 @@
 
 *Comprehensive design specification and master reference for all Universal Base Content (Units, Items, Trinkets), Hero Sets (Shiken, Dan), Heroes, Enemies, Positive & Negative Effects, Battlefield Slots, and Trait Balancing Architecture.*
 
+**Capsule deployment:** Entry buffs and passive HP/PWR bonuses in this reference activate in a Lineup. Shelf draws and summons remain sealed and can only be rearranged or deployed onto eligible Lineup targets. Sealed copies still count toward battle-pool abilities; Wind-up-kun's explicit Shelf growth is the only Shelf HP/PWR update. Draw rewards and draw/spend reactions retain their original timing.
+
 ---
 
 ## Architecture: Closed Run Pool & Content Sets
@@ -53,18 +55,18 @@ $$\text{\{Elemental Souls\}} + \text{\{Exactly 1 Class Trait\}} + \text{\{Exactl
 |---|---|---|:---:|---|:---:|---|
 | `EEFASpeCos` | **Mimicloak** | `EFTnkMec` + `EASupToy` | 6 HP / 4 PWR | 2x EARTH, FIRE, AIR, Specialist, Costume | Melee | At turn start, transforms into a Level 1 / 2 / 3 version of the enemy unit in the mirror slot and immediately takes its turn. If there is no unit in the mirror slot, performs a Melee Attack instead. |
 | `EEFWSupPla` | **Oakbark** | `EWFigCos` + `EFTnkMec` | 6 HP / 5 PWR | 2x EARTH, FIRE, WATER, Support, Plant | Melee | When hurt by an attack, grant +1/+1 (Level 1), +2/+1 (Level 2), +2/+2 (Level 3) HP/PWR to adjacent allies. If there is no adjacent ally in front or behind, grant the buff to itself. |
-| `EEWAFigAni` | **Griffoam** | `EWFigCos` + `EASupToy` | 6 HP / 5 PWR | 2x EARTH, WATER, AIR, Fighter, Animal | Melee | While in the active lineup, deals 1 / 2 / 3 damage as a ranged attack to any unit when they enter the lineup by any means (move from bench, summon, spawn after merge, or transform). |
+| `EEWAFigAni` | **Griffoam** | `EWFigCos` + `EASupToy` | 6 HP / 5 PWR | 2x EARTH, WATER, AIR, Fighter, Animal | Melee | While in the active lineup, deals 1 / 2 / 3 damage as a ranged attack to any unit when they enter the lineup by any means (move from shelf, summon, spawn after merge, or transform). |
 | `EFAASupToy` | **Matryoshkan** | `EASupToy` + `FASpeApp` | 5 HP / 5 PWR | EARTH, FIRE, 2x AIR, Support, Toy | Melee | When knocked out, summon a Level 1 / 2 / 3 Tier 2 unit (`Matryodust`). |
 | `EFFASupMec` | **Mechamom** | `EFTnkMec` + `FASpeApp` | 5 HP / 5 PWR | EARTH, 2x FIRE, AIR, Support, Mecha | Melee | Newly summoned allies gain +3 / +5 / +7 HP upon entering the board. |
 | `EFFWSpeApp` | **Blendroid** | `EFTnkMec` + `FWFigFod` | 5 HP / 5 PWR | EARTH, 2x FIRE, WATER, Specialist, Appliance | Melee | Whenever a merge occurs on the battle board, gain +2 / +3 / +4 HP and PWR. |
 | `EFWAFigMec` | **Pachinkannon** | `EASupToy` + `FWFigFod` | 5 HP / 5 PWR | EARTH, FIRE, WATER, AIR, Fighter, Mecha | Ranged | Ranged attacks Bounce 1 / 2 / 3 times to random enemies, halving damage per Bounce. |
-| `EFWASpeFod` | **BubbleGunger** | `EFTnkMec` + `WATnkAni` | 5 HP / 4 PWR | EARTH, FIRE, WATER, AIR, Specialist, Food | Melee | Gains +3 / +4 / +5 PWR for each other BubbleGunger in battle. When knocked out, add 1 copy of this unit into the Gacha Machine. |
+| `EFWASpeFod` | **BubbleGunger** | `EFTnkMec` + `WATnkAni` | 5 HP / 4 PWR | EARTH, FIRE, WATER, AIR, Specialist, Food | Melee | While deployed in a Lineup, gains +3 / +4 / +5 PWR for each other allied BubbleGunger anywhere in the battle pool, including sealed Shelf capsules, Gacha Machines and discard. Sealed copies count but do not recalculate their own PWR until deployed. When knocked out, add 1 copy of this unit into the Gacha Machine. |
 | `EFWATnkApp` | **Reizokun** | `EWFigCos` + `FASpeApp` | 5 HP / 6 PWR | EARTH, FIRE, WATER, AIR, Tank, Appliance | Melee | Before taking damage, gain +2 / +4 / +6 HP. |
 | `EFWWFigCos` | **Tsunamantle** | `EWFigCos` + `FWFigFod` | 5 HP / 6 PWR | EARTH, FIRE, 2x WATER, Fighter, Costume | Melee | Instead of attacking, deals 100% / 150% / 200% PWR damage as a cascade attack to the frontmost enemy, spilling backward into enemies behind. |
 | `EWAASpeApp` | **Sojikun** | `EASupToy` + `WATnkAni` | 5 HP / 4 PWR | EARTH, WATER, 2x AIR, Specialist, Appliance | Ranged | At turn start, cleanse 1 / 2 / 3 negative effect stacks from adjacent allies. When attacking, cleanse and remove all positive effect stacks (Armor, Spikes, Reinforce) from the target. |
-| `EWWATnkToy` | **Komatop** | `EWFigCos` + `WATnkAni` | 5 HP / 5 PWR | EARTH, 2x WATER, AIR, Tank, Toy | Melee | Leaps to intercept lethal damage targeting allies, taking the blow instead. Gains 0 / 1 / 2 Armor when intercepting. |
+| `EWWATnkToy` | **Komatop** | `EWFigCos` + `WATnkAni` | 5 HP / 5 PWR | EARTH, 2x WATER, AIR, Tank, Toy | Melee | When an ally would be knocked out, leaps in to intercept the hit. Gains 0 / 1 / 2 Armor when intercepting. |
 | `FFWASupMec` | **Relaytron** | `FWFigFod` + `FASpeApp` | 5 HP / 5 PWR | 2x FIRE, WATER, AIR, Support, Mecha | Melee | When knocked out, Transfer equipped item to the ally directly behind (Level 2: also duplicate 1 copy to the next ally behind; Level 3: duplicate 2 copies to next allies behind). |
-| `FWAASpeToy` | **Wind-up-kun** | `FASpeApp` + `WATnkAni` | 4 HP / 5 PWR | FIRE, WATER, 2x AIR, Specialist, Toy | Melee | At turn start, if placed on the bench, gain +3 / +5 / +7 HP and PWR. |
+| `FWAASpeToy` | **Wind-up-kun** | `FASpeApp` + `WATnkAni` | 4 HP / 5 PWR | FIRE, WATER, 2x AIR, Specialist, Toy | Melee | At turn start, if placed on the shelf, gain +3 / +5 / +7 HP and PWR. |
 | `FWWATnkFod` | **Nuton** | `FWFigFod` + `WATnkAni` | 4 HP / 5 PWR | FIRE, 2x WATER, AIR, Tank, Food | Melee | Whenever an adjacent ally receives a stat buff, Copy Buff at 100% / 150% / 200% effectiveness. |
 
 ---
@@ -130,9 +132,9 @@ The Mercenary trait scales based on the number of Mercenary-tagged units in the 
 | **Item** | `item_interest_ledger` | **Piggy Bank** | Tier 2: Claim Ticket + `item_t1_a` (Candy) | Whenever 1 Gold is earned, heal holder for 1 HP. (+2 HP). |
 | **Item** | `item_loaded_contract` | **Loaded Contract** | Tier 2: Claim Ticket + `item_t1_b` (Wakizashi) | Whenever 1 Gold is earned, holder gains +1 PWR. (+2 PWR). |
 | **Item** | `item_golden_seal` | **Golden Seal** | Tier 3: Piggy Bank + Loaded Contract | Dynamically grants +1 HP and +1 PWR for every full 10 Gold currently held. Recalculates immediately whenever Gold changes. (+2 HP / +2 PWR). |
-| **Item** | `item_mercenary_emblem` | **Mercenary Emblem** | Tier 3 Standalone | Contributes +1 Mercenary trait counter. Whenever 1 Gold is earned while equipped, holder gains +1 HP and +1 PWR. Works from lineup or bench. |
-| **Trinket** | `trinket_trait_mercenary` | **Mercenary Sigil** | Trait Thresholds | Enables and tracks the Mercenary Trait thresholds (2 / 3 / 4 / 5). |
-| **Trinket** | `trinket_recruiting_charm` | **Recruiting Charm** | Turn Start | At turn start, if holding at least 1 Gold and a bench slot is open, spend 1 Gold to hire one Level 1 Coinling (`?MerSpe`) to the bench. |
+| **Item** | `item_mercenary_emblem` | **Mercenary Emblem** | Tier 3 Standalone | Contributes +1 Mercenary trait counter. Whenever 1 Gold is earned while the holder is in the lineup, holder gains +1 HP and +1 PWR. No triggered growth while shelved. |
+| **Trinket** | `trinket_trait_mercenary` | **Mercenary Crest** | Trait Thresholds | Enables and tracks the Mercenary Trait thresholds (2 / 3 / 4 / 5). |
+| **Trinket** | `trinket_recruiting_charm` | **Recruiting Charm** | Turn Start | At turn start, if holding at least 1 Gold and a shelf slot is open, spend 1 Gold to hire one Level 1 Coinling (`?MerSpe`) to the shelf. |
 | **Trinket** | `trinket_wanted_poster` | **Wanted Poster** | Turn Start | At turn start, apply 1 stack of Bounty to a random enemy unit. |
 | **Trinket** | `trinket_mercenary_insignia` | **Mercenary Insignia** | Entry / Merge | When a Mercenary unit enters the board or merges, it gains +1 HP and +1 PWR. |
 
@@ -150,16 +152,16 @@ The Novice trait scales based on the number of Novice-tagged units in the active
 
 | Level | Threshold | Effect |
 |---|:---:|---|
-| **Bronze** | 2 Novices | Add **+1.0 second** to the starting time of each battle minigame. |
-| **Silver** | 3 Novices | In addition to Bronze, achieving a **3-correct-answer streak grants 1 bonus Gold** (once per minigame session, maximum 5 Gold per encounter). |
+| **Bronze** | 2 Novices | Add **+1.0 second** to the starting time of each battle challenge. |
+| **Silver** | 3 Novices | In addition to Bronze, achieving a **3-correct-answer streak grants 1 bonus Gold** (once per challenge session, maximum 5 Gold per encounter). |
 | **Gold** | 4 Novices | In addition to Silver, a correct answer to a card at **Mastery Level 1 (Very Hard)** grants **1 bonus Token**. |
-| **Prismatic** | 5 Novices | In addition to all previous levels: Each incorrect submitted answer adds **+0.5s** to the remaining time (panic buffer; does not apply to Skips). Achieving a **3-correct-answer streak grants +1 bonus Token** (once per minigame session). |
+| **Prismatic** | 5 Novices | In addition to all previous levels: Each incorrect submitted answer adds **+0.5s** to the remaining time (panic buffer; does not apply to Skips). Achieving a **3-correct-answer streak grants +1 bonus Token** (once per challenge session). |
 
 #### Novice Units (11 Units)
 
 | Tier | ID | Recipe | Stats | Tags | Attack | Ability (Levels 1 / 2 / 3) |
 |---|---|---|:---:|---|:---:|---|
-| **T1** | `?NovPla` | Starter | 1 HP / 1 PWR | `?`, Novice, Plant | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame. This effect stacks. |
+| **T1** | `?NovPla` | Starter | 1 HP / 1 PWR | `?`, Novice, Plant | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge. This effect stacks. |
 | **T2** | `?ANovFod` | `?NovPla` + `ASpeFod` | 2 HP / 3 PWR | `?`, AIR, Novice, Food | Ranged | Pre-Battle, Charge an Empowered Attack that inflicts 1 / 2 / 3 Static on the target for every 2 Current Tokens held. |
 | **T2** | `E?NovPla` | `?NovPla` + `ETnkPla` | 3 HP / 2 PWR | EARTH, `?`, Novice, Plant | Melee | Pre-Battle, gain 1 / 2 / 3 Armor for every 2 Current Tokens held. |
 | **T2** | `F?NovApp` | `?NovPla` + `FFigMec` | 2 HP / 3 PWR | FIRE, `?`, Novice, Appliance | Melee | Pre-Battle, Charge an Empowered Attack that applies 1 / 2 / 3 Burn to the target for every 2 Current Tokens held. |
@@ -169,7 +171,7 @@ The Novice trait scales based on the number of Novice-tagged units in the active
 | **T3** | `W??ANovCos` | `?ANovFod` + `W?NovCos` | 5 HP / 5 PWR | WATER, 2x `?`, AIR, Novice, Costume | Melee | When hurt by an attack, spend 1 Token to heal self for 1 / 2 / 3 HP for each Current Token held before the spend. (Can activate multiple times if tokens available). |
 | **T3** | `EF??NovApp` | `E?NovPla` + `F?NovApp` | 5 HP / 5 PWR | EARTH, FIRE, 2x `?`, Novice, Appliance | Ranged | When attacking, spend 1 Token to Charge an Empowered Attack that applies 1 / 2 / 3 Burn to the target per Current Token held before the spend. |
 | **T3** | `EW??NovPla` | `E?NovPla` + `W?NovCos` | 5 HP / 5 PWR | EARTH, WATER, 2x `?`, Novice, Plant | Ranged | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage per Current Token held before the spend. |
-| **T3** | `FW??NovAni` | `F?NovApp` + `W?NovCos` | 5 HP / 5 PWR | FIRE, WATER, 2x `?`, Novice, Animal | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle minigame and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
+| **T3** | `FW??NovAni` | `F?NovApp` + `W?NovCos` | 5 HP / 5 PWR | FIRE, WATER, 2x `?`, Novice, Animal | Ranged | When knocked out, add 1 / 2 / 3 seconds to the starting time of the next battle challenge and gain Tokens equal to this unit's level (1 / 2 / 3 Tokens). |
 
 #### Novice Items & Trinkets
 
@@ -179,10 +181,10 @@ The Novice trait scales based on the number of Novice-tagged units in the active
 | **Item** | `item_review_ledger` | **Nail** | Tier 2 | Pre-Battle, while equipped in the active lineup, holder gains 1 / 2 / 3 Spikes for each Current Token held. (+2 HP). |
 | **Item** | `item_answer_key` | **Burnout** | Tier 2 | When attacking, while equipped in the active lineup, apply 1 / 2 / 3 Burn to the target for each Current Token held. (+2 PWR). |
 | **Item** | `item_novice_archive` | **Novice's Archive** | Tier 3 | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage for each Current Token held before the spend. (+2 HP / +2 PWR). |
-| **Item** | `item_novice_emblem` | **Novice Emblem** | Tier 3 Standalone | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle minigame. |
-| **Trinket** | `trinket_trait_novice` | **Novice Sigil** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding minigame session (inside and outside battle). |
-| **Trinket** | `trinket_beginners_charm` | **Beginner's Charm** | Minigame | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
-| **Trinket** | `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or bench if full). Battle-only summon. |
+| **Item** | `item_novice_emblem` | **Novice Emblem** | Tier 3 Standalone | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle challenge. |
+| **Trinket** | `trinket_trait_novice` | **Novice Crest** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding challenge session (inside and outside battle). |
+| **Trinket** | `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
+| **Trinket** | `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or shelf if full). Battle-only summon. |
 
 ---
 
@@ -192,16 +194,16 @@ All Heroes adhere to the standard selection constitution:
 * **3 Elemental Souls of the Same Element:** Immediately activates that element's 3-Soul synergy threshold. Lineage Heroes pass this dynamic element to their 11 lineage units.
 * **Fixed Archetype / Class Trait:** Defines the Hero's mechanical identity.
 * **Bonus Random Trait:** 1 Random Class or Thematic trait to maintain starting trait parity.
-* **Starter Sigil:** Starts with the dedicated trait Sigil trinket in inventory.
+* **Starter Crest:** Starts with the dedicated trait Crest trinket in inventory.
 
-| ID | Name | Stats | Starting Trait & Soul Loadout | Starter Sigil | Abilities |
+| ID | Name | Stats | Starting Trait & Soul Loadout | Starter Crest | Abilities |
 |---|---|:---:|---|---|---|
-| `hero_starter` | **Dan** | 10 HP / 2 PWR | • 3x Random Element (`?`, inherited by Novice lineage)<br>• **Fixed Trait:** Novice<br>• **Bonus Trait:** 1 Random Thematic Trait | Novice Sigil | When an allied unit is knocked out, gain HP equal to that ally's PWR. |
-| `hero_bounty_hunter` | **Shiken** | 10 HP / 2 PWR | • 3x Random Element (`?`, inherited by Mercenary lineage)<br>• **Fixed Trait:** Mercenary<br>• **Bonus Trait:** 1 Random Thematic Trait | Mercenary Sigil | When this hero knocks out an enemy, earn 1 Gold. |
-| `hero_avenger` | **Han** | 6 HP / 2 PWR | • 3x Random Element<br>• **Fixed Trait:** Fighter<br>• **Bonus Trait:** 1 Random Thematic Trait | Ninja Sigil | When an allied unit is knocked out, immediately execute a Reactive Attack on the frontmost enemy. |
-| `hero_bastion` | **Kon** | 12 HP / 1 PWR | • 3x Random Element<br>• **Fixed Trait:** Tank<br>• **Bonus Trait:** 1 Random Thematic Trait | Bastion Sigil | Pre-Battle, gain 1 stack of Reinforce.<br><br>When this hero knocks out a unit, gain 1 Armor and 1 Spikes. |
-| `hero_pyro` | **Hiko** | 8 HP / 2 PWR | • 3x Fire (Assigned)<br>• **Fixed Trait:** Fire Ritual<br>• **Bonus Traits:** 1 Random Class + 1 Random Thematic Trait | Fire Sigil | Instead of attacking, shoots a Fireball at the mirror slot enemy that applies Burn stacks equal to PWR. |
-| `hero_timekeeper` | **Deko** | 10 HP / 1 PWR | • 3x Random Element<br>• **Fixed Trait:** Support (Monk Trait in development)<br>• **Bonus Trait:** 1 Random Thematic Trait | Monk Sigil | At turn start, grant +1 HP to the unit directly in front and +1 PWR to the unit directly behind. |
+| `hero_starter` | **Dan** | 10 HP / 2 PWR | • 3x Random Element (`?`, inherited by Novice lineage)<br>• **Fixed Trait:** Novice<br>• **Bonus Trait:** 1 Random Thematic Trait | Novice Crest | When an allied unit is knocked out, gain HP equal to that ally's PWR. |
+| `hero_bounty_hunter` | **Shiken** | 10 HP / 2 PWR | • 3x Random Element (`?`, inherited by Mercenary lineage)<br>• **Fixed Trait:** Mercenary<br>• **Bonus Trait:** 1 Random Thematic Trait | Mercenary Crest | When this hero knocks out an enemy, earn 1 Gold. |
+| `hero_avenger` | **Han** | 6 HP / 2 PWR | • 3x Random Element<br>• **Fixed Trait:** Fighter<br>• **Bonus Trait:** 1 Random Thematic Trait | Ninja Crest | When an allied unit is knocked out, immediately execute a Reactive Attack on the frontmost enemy. |
+| `hero_bastion` | **Kon** | 12 HP / 1 PWR | • 3x Random Element<br>• **Fixed Trait:** Tank<br>• **Bonus Trait:** 1 Random Thematic Trait | Bastion Crest | Pre-Battle, gain 1 stack of Reinforce.<br><br>When this hero knocks out a unit, gain 1 Armor and 1 Spikes. |
+| `hero_pyro` | **Hiko** | 8 HP / 2 PWR | • 3x Fire (Assigned)<br>• **Fixed Trait:** Fire Ritual<br>• **Bonus Traits:** 1 Random Class + 1 Random Thematic Trait | Fire Crest | Instead of attacking, shoots a Fireball at the mirror slot enemy that applies Burn stacks equal to PWR. |
+| `hero_timekeeper` | **Deko** | 10 HP / 1 PWR | • 3x Random Element<br>• **Fixed Trait:** Support (Monk Trait in development)<br>• **Bonus Trait:** 1 Random Thematic Trait | Monk Crest | At turn start, grant +1 HP to the unit directly in front and +1 PWR to the unit directly behind. |
 
 ---
 
@@ -211,7 +213,7 @@ These items are permanently available across all runs and gacha pools.
 
 | ID | Name | Stats | Tier / Tags | Ability Description |
 |---|---|:---:|---|---|
-| `consumable_potion_plunder` | **Plunder** | - | Consumable | Steals a random item from target and places it into matching tier Gacha Machine. |
+| `consumable_potion_plunder` | **Plunder** | - | Consumable | Steals a random equipped item from a Lineup target and sends it directly to the player's matching tier Gacha Machine, bypassing Discard. Drawing the item again returns it sealed to the Shelf. |
 | `item_emblem_air` | **Air Emblem** | +2 HP / +1 PWR | AIR | Grants the **Air** soul, enabling Air trait threshold scaling. |
 | `item_emblem_earth` | **Earth Emblem** | +4 HP | EARTH | Grants the **Earth** soul, enabling Earth trait threshold scaling. |
 | `item_emblem_fire` | **Fire Emblem** | +2 PWR | FIRE | Grants the **Fire** soul, enabling Fire trait threshold scaling. |
@@ -248,7 +250,7 @@ An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the bo
 
 ---
 
-### 5.2 Base Sigils & Charms Master Table
+### 5.2 Base Crests & Charms Master Table
 
 | ID | Name | Trigger / Type | Effect Description |
 |---|---|:---:|---|
@@ -262,29 +264,29 @@ An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the bo
 | `trinket_polished_plate` | **Polished Plate** | Pre-Battle | Pre-Battle, grants 1 stack of Reinforce to all allies. |
 | `trinket_purifying_pendant` | **Purifying Pendant** | Reactive | When an ally takes damage from a negative effect, cleanse and remove all remaining stacks of that effect. |
 | `trinket_rusty_ring` | **Rusty Ring** | Passive | Grants +1 HP and +1 PWR to all units with no equipment. |
-| `trinket_soul_echo` | **Soul Echo** | Ally Knockout | When an ally is knocked out, resurrect the first non-hero unit that died this turn. |
+| `trinket_soul_echo` | **Soul Echo** | Ally Knockout | When an ally is knocked out, resurrect the first non-Hero unit knocked out this turn. |
 | `trinket_spiked_armor` | **Spiked Armor** | Turn Start | At turn start, frontmost unit gains 2 Armor and 2 Spikes. |
-| `trinket_time_sprint_charm` | **Sprint Charm** | Minigame | Minigame time gets a flat 2-second increase in battle. |
+| `trinket_time_sprint_charm` | **Sprint Charm** | Challenge | Challenge time gets a flat 2-second increase in battle. |
 | `trinket_token_return_charm` | **Token Return Charm** | First Knockout / Round | When first unit is knocked out each round, return Tokens equal to its Tier. |
 | `trinket_trinity_charm` | **Trinity Charm** | Turn / Encounter | If you draw at least once from each tier machine (1, 2, and 3) in a turn or encounter, gain 1 Token. |
 | `trinket_twin_charm` | **Twin Charm** | Passive | Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
 | `trinket_underdog_emblem` | **Underdog Emblem** | Pre-Battle | If team fields fewer units than enemy, all allies gain 2 Armor per unit difference. |
 | `trinket_vengeance` | **Vengeance Charm** | Ally Knockout | When an ally is knocked out, grant +1 HP and +1 PWR to a random living ally. |
-| `trinket_trait_air` | **Air Sigil** | Trait Thresholds | Air trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_earth` | **Earth Sigil** | Trait Thresholds | Earth trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_fire` | **Fire Sigil** | Trait Thresholds | Fire trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_water` | **Water Sigil** | Trait Thresholds | Water trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_fighter` | **Fighter Sigil** | Trait Thresholds | Fighter trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_tank` | **Tank Sigil** | Trait Thresholds | Tank trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_support` | **Support Sigil** | Trait Thresholds | Support trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_specialist` | **Specialist Sigil** | Trait Thresholds | Specialist trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_animal` | **Animal Sigil** | Trait Thresholds | Animal trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_appliance` | **Appliance Sigil** | Trait Thresholds | Appliance trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_costume` | **Costume Sigil** | Trait Thresholds | Costume trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_food` | **Food Sigil** | Trait Thresholds | Food trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_mecha` | **Mecha Sigil** | Trait Thresholds | Mecha trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_plant` | **Plant Sigil** | Trait Thresholds | Plant trait effects activate at 2, 3, 4, and 5 units. |
-| `trinket_trait_toy` | **Toy Sigil** | Trait Thresholds | Toy trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_air` | **Air Crest** | Trait Thresholds | Air trait effects activate at 3, 6, 12, 20, and 32 units. |
+| `trinket_trait_earth` | **Earth Crest** | Trait Thresholds | Earth trait effects activate at 3, 6, 12, 20, and 32 units. |
+| `trinket_trait_fire` | **Fire Crest** | Trait Thresholds | Fire trait effects activate at 3, 6, 12, 20, and 32 units. |
+| `trinket_trait_water` | **Water Crest** | Trait Thresholds | Water trait effects activate at 3, 6, 12, 20, and 32 units. |
+| `trinket_trait_fighter` | **Fighter Crest** | Trait Thresholds | Fighter trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_tank` | **Tank Crest** | Trait Thresholds | Tank trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_support` | **Support Crest** | Trait Thresholds | Support trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_specialist` | **Specialist Crest** | Trait Thresholds | Specialist trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_animal` | **Animal Crest** | Trait Thresholds | Animal trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_appliance` | **Appliance Crest** | Trait Thresholds | Appliance trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_costume` | **Costume Crest** | Trait Thresholds | Costume trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_food` | **Food Crest** | Trait Thresholds | Food trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_mecha` | **Mecha Crest** | Trait Thresholds | Mecha trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_plant` | **Plant Crest** | Trait Thresholds | Plant trait effects activate at 2, 3, 4, and 5 units. |
+| `trinket_trait_toy` | **Toy Crest** | Trait Thresholds | Toy trait effects activate at 2, 3, 4, and 5 units. |
 
 ---
 
@@ -301,15 +303,15 @@ An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the bo
 | `unit_dust_elite_t1` | **Dust Guard (T1)** | 3 HP / 3 PWR | Elite | At turn end, summons minions to fill all empty team slots. When an allied unit is knocked out, spawns a T1 Dust minion. Gains HP and PWR based on tier of knocked-out Dust unit (+1/+1 for T1, +2/+2 for T2). |
 | `unit_dust_elite_t2` | **Dust Sentinel (T2)** | 4 HP / 4 PWR | Elite | At turn end, summons minions to fill all empty team slots. When an allied unit is knocked out, spawns random T1 or T2 Dust minion. Gains HP and PWR based on tier of knocked-out Dust unit (+1/+1 for T1, +2/+2 for T2). |
 | `unit_dust_elite_t3` | **Dust Overlord (T3)** | 5 HP / 5 PWR | Elite | At turn end, summons minions to fill all empty team slots. When an allied unit is knocked out, spawns random Dust minion. Gains HP and PWR based on tier of knocked-out Dust unit (+1/+1 for T1, +2/+2 for T2, +3/+3 for T3). |
-| `unit_dust_t1` | **Dust Minion (T1)** | 1 HP / 1 PWR | Minion | Melee Attack: Deal (PWR) damage to frontmost enemy. |
-| `unit_dust_t2` | **Dust Minion (T2)** | 2 HP / 2 PWR | Minion | Melee Attack: Deal (PWR) damage to frontmost enemy. |
-| `unit_dust_t3` | **Dust Minion (T3)** | 3 HP / 3 PWR | Minion | Melee Attack: Deal (PWR) damage to frontmost enemy. |
+| `unit_dust_t1` | **Dust Minion (T1)** | 1 HP / 1 PWR | Minion | On entering a Lineup, gains 1 Burn and 1 Static. Melee Attack: Deal (PWR) damage to frontmost enemy. |
+| `unit_dust_t2` | **Dust Minion (T2)** | 2 HP / 2 PWR | Minion | On entering a Lineup, gains 2 Burn and 2 Static. Melee Attack: Deal (PWR) damage to frontmost enemy. |
+| `unit_dust_t3` | **Dust Minion (T3)** | 3 HP / 3 PWR | Minion | On entering a Lineup, gains 3 Burn and 3 Static. Melee Attack: Deal (PWR) damage to frontmost enemy. |
 
 ---
 
 ## 7. Enemy Encounter Eligibility (Player-Only List)
 
-The following resources depend on player-only economies (Tokens, Flashcard Minigames, Gacha draws, Gold, Discard Pile) and are excluded from random enemy encounter pools:
+The following resources depend on player-only economies (Tokens, Flashcard Challenges, Gacha draws, Gold, Discard) and are excluded from random enemy encounter pools:
 
 * **Hero Set Units:** All 11 Mercenary Units and all 11 Novice Units.
 * **Hero Set Items:** `item_claim_ticket`, `item_interest_ledger`, `item_loaded_contract`, `item_golden_seal`, `item_mercenary_emblem`, `item_study_pouch`, `item_review_ledger`, `item_answer_key`, `item_novice_archive`, `item_novice_emblem`, `consumable_potion_plunder`, `item_t2_d`.
@@ -338,7 +340,6 @@ The following resources depend on player-only economies (Tokens, Flashcard Minig
 |---|---|:---:|---|:---:|
 | `burn` | **Burn Slot** | `on_turn_start` | Applies 1 stack of Burn to the unit standing on it. Burn stacks on units in this slot do not decay. | 3 Gold |
 | `lightning` | **Lightning Slot** | `on_turn_start` | Applies 1 stack of Static to the unit standing on it. | 2 Gold |
-| `death` | **Death Slot** | `on_turn_end` (Turn 10+) | Systemic sudden-death slot advancing forward from Turn 10+. Immediately reduces unit HP to 0. | Automatic |
 
 ---
 
@@ -351,9 +352,9 @@ The following resources depend on player-only economies (Tokens, Flashcard Minig
 | | **Water** | 3 / 6 / 12 / 20 / 32 Souls | Pre-Battle healing and cleansing; lowest-HP healing; consumes debuffs to heal. |
 | | **Air** | 3 / 6 / 12 / 20 / 32 Souls | Inflicts Static on attack, splashes Static to adjacent enemies, team Pre-Battle Static. |
 | **Class** | **Tank** | 2 / 3 / 4 / 5 Units | Frontline Armor, backward Armor passing, attack interception, Armor-to-Spikes. |
-| | **Fighter** | 2 / 3 / 4 / 5 Units | Bonus damage vs higher HP, ranged counter-attack, cleave splash, extra action on kill. |
+| | **Fighter** | 2 / 3 / 4 / 5 Units | Bonus damage vs higher HP, ranged counter-attack, Shockwave, extra action when knocking out an enemy. |
 | | **Support** | 2 / 3 / 4 / 5 Units | Positional +HP (front) / +PWR (behind), turn-start lowest-stat buffs, Hero empowerment. |
-| | **Specialist** | 2 / 3 / 4 / 5 Units | Opening tokens, Gacha discount, gold on kill, bench battle clone, +PWR per 5 Gold. |
+| | **Specialist** | 2 / 3 / 4 / 5 Units | Opening tokens, Gacha discount, Gold when knocking out an enemy, shelf battle clone, +PWR per 5 Gold. |
 | | **Mercenary** | 2 / 3 / 4 / 5 Units | Gold-focused scaling, Bounty triggering, wallet-based defense and attacks. |
 | | **Novice** | 2 / 3 / 4 / 5 Units | Extra starting study time, streak-preserving Skips, bonus tokens on Level 1 cards, panic buffer on wrong answers. |
 | **Thematic** | **Plant** | 2 / 3 / 4 / 5 Units | Frontline Spikes, turn-start healing, team Spikes & HP, converts heals to Spikes. |

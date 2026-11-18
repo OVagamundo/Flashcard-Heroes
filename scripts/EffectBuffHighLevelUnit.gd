@@ -24,7 +24,9 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	if not _targets.is_empty():
 		targets_to_process = _targets.duplicate()
 	else:
-		var ctx_uuid: String = context.drawn_uuid
+		var ctx_uuid: String = context.entered_uuid
+		if ctx_uuid.is_empty():
+			ctx_uuid = context.drawn_uuid
 		if ctx_uuid.is_empty():
 			ctx_uuid = context.summoned_uuid
 		if ctx_uuid.is_empty():
@@ -64,6 +66,8 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		var target_instance = battle_manager.get_instance(target_uuid)
 		if not is_instance_valid(target_instance):
 			continue
+		if target_instance.location_container_tag not in [&"PlayerLineup", &"EnemyLineup"]:
+			continue
 		
 		# Team check
 		if not source_team.is_empty():
@@ -80,15 +84,16 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.category != &"UNIT":
 			continue
 		
-		# Heroes do not have levels or tiers and are not affected by this trinket
-		if target_def.is_hero:
-			continue
-		
 		var raw_tier = parameters.get("target_tier", 0)
 		var target_tier: int = int(raw_tier) if raw_tier != null else 0
 		var target_trait := String(parameters.get("target_trait", "")).to_upper()
 		var raw_level = parameters.get("target_level", 2)
 		var target_level: int = int(raw_level) if raw_level != null else 2
+		# Heroes can receive trait-based insignia buffs. They do not participate in
+		# level- or tier-based insignia matching.
+		if target_def.is_hero and target_trait.is_empty():
+			continue
+
 		if not target_trait.is_empty():
 			if not battle_manager.has_trait(target_instance, target_trait):
 				continue
@@ -212,7 +217,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 
 # Helper to determine team from container
 func _get_team_from_container(container: StringName) -> String:
-	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerBench":
+	if container == &"PlayerLineup" or container == &"PlayerTrinkets" or container == &"PlayerShelf":
 		return "PLAYER"
 	elif container == &"EnemyLineup" or container == &"EnemyTrinkets":
 		return "ENEMY"

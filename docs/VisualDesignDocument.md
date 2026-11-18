@@ -68,6 +68,9 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
     - **2px Safety Margin**: The intentional gap between visual edge and collision edge prevents visual clipping and improves tactile "clacking".
 - **Aesthetic**: Translucent outer shell with the standard unit/item icon visible inside.
 - **Animation**: Reacts to gravity, collisions, and drawer movement with tactile physics and clack sounds.
+- **Shelf and Travel Size**: Shelf capsules and battle draw/return flights share the machine capsule's 96px diameter. Shelf contents are centered inside the capsule, and the capsule's lower edge rests on the platform surface. The Shelf row starts at y=631 in the 1920x1080 layout; machines occupy y=880..1080 with no bottom gap.
+- **Machine Container Alignment**: Inventory trays and the discard container end at y=880, flush with the machine tops; their visible and physics layouts shift together with the machine row.
+- **Trinket Size**: Player and enemy HUD trinkets fit their 98px cells. Native pixel sizing for unit/item sprites must not shrink trinket artwork.
 
 **Equipped Items:**
 - **Constraint:** All units (including the Hero) are restricted to **one single item slot**.
@@ -78,7 +81,7 @@ Visual rules for dynamic elements overlaid on the unit view during gameplay.
 
 **Trait Trinkets:**
 - **Dynamic Outlines:** Trait Trinkets (4 Elemental, 4 Class, and 7 Visual traits) use a dynamically thick outline shader (up to 30.0px) that cycles through metallic gradient colors when their synergy threshold is met.
-- **Soul & Unit Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls (elemental traits) or active units (class/visual traits) in the battle lineup.
+- **Soul & Unit Counters:** Trait Trinkets display a small label in the bottom-right corner showing the current number of active souls (elemental traits) or active units (class/visual traits) in the lineup.
 
 **GachaBall Outlines & Affordances:**
 - **Selection**: 3.0px crisp white outline shader on selected entity accompanied by hop animation.

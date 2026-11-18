@@ -2,7 +2,7 @@
 class_name CapsulePopVFX
 extends Node2D
 
-## Visual effect when a gacha capsule lands on the bench.
+## Visual effect when a gacha capsule lands on the shelf.
 ## - Spawns already halfway open and launches in a pronounced outward parabolic arc.
 ## - Left half arcs up and out to the left; Right half arcs up and out to the right.
 ## - Rotates continuously outward across the entire arc until the very end.
@@ -92,16 +92,9 @@ func _ensure_sprites() -> void:
 			add_child(bottom_sprite)
 
 func _load_textures() -> void:
-	var art_mgr = null
-	if is_inside_tree() and get_tree() and get_tree().root:
-		art_mgr = get_tree().root.get_node_or_null("ArtStyleManager")
-	
 	if is_instance_valid(top_sprite) and not top_sprite.texture:
 		if ResourceLoader.exists(TOP_TEXTURE_PATH):
-			var tex: Texture2D = load(TOP_TEXTURE_PATH)
-			if is_instance_valid(art_mgr) and art_mgr.has_method("get_themed_texture"):
-				tex = art_mgr.get_themed_texture(tex)
-			top_sprite.texture = tex
+			top_sprite.texture = load(TOP_TEXTURE_PATH)
 	
 	if is_instance_valid(bottom_sprite) and not bottom_sprite.texture:
 		var bottom_path := BOTTOM_TEXTURE_PATH
@@ -109,10 +102,7 @@ func _load_textures() -> void:
 			bottom_path = BOTTOM_TEXTURE_FALLBACK_PATH
 		
 		if ResourceLoader.exists(bottom_path):
-			var tex: Texture2D = load(bottom_path)
-			if is_instance_valid(art_mgr) and art_mgr.has_method("get_themed_texture"):
-				tex = art_mgr.get_themed_texture(tex)
-			bottom_sprite.texture = tex
+			bottom_sprite.texture = load(bottom_path)
 
 ## Configure initial spawn position and scale (incoming_velocity kept for API compatibility)
 func setup(spawn_pos: Vector2, scale_factor: float = DEFAULT_SCALE, _incoming_velocity: Vector2 = Vector2.ZERO) -> void:

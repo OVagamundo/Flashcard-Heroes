@@ -1,0 +1,26 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/unit_spikeslime.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_spikeslime_spikes.tres" id="4_spikes"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"unit_spikeslime"
+display_name_key = "unit_spikeslime.name"
+description_key = "unit_spikeslime.desc"
+icon = ExtResource("2_icon")
+tags = Array[StringName]([&"TOKEN", &"HIDDEN", &"Tank"])
+is_hero = false
+tier = 1
+category = &"UNIT"
+
+base_hp = 1
+base_pwr = 1
+bonus_hp = 0
+bonus_pwr = 0
+ability_definitions = Array[Resource]([
+	ExtResource("3_basic"),
+	ExtResource("4_spikes")
+])

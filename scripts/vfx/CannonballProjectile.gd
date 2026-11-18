@@ -1,6 +1,9 @@
 class_name CannonballProjectile
 extends Node2D
 
+const CANNONBALL_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/CannonBall.png")
+const FIREBALL_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/FireBall.png")
+
 signal impact
 
 @onready var label: Label = $Label
@@ -25,16 +28,10 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 	# Visual setup
 	label.visible = false # Never show text for attack projectiles
 	icon.visible = true
+	icon.texture = CANNONBALL_TEXTURE
 	
 	if stat == "burn":
-		var fireball_tex = load("res://assets/Realistic/ui/textures/FireBall.png")
-		if fireball_tex:
-			icon.texture = fireball_tex
-	else:
-		# Default to CannonBall for hp/damage
-		var cannonball_tex = load("res://assets/Realistic/ui/textures/CannonBall.png")
-		if cannonball_tex:
-			icon.texture = cannonball_tex
+		icon.texture = FIREBALL_TEXTURE
 	
 	# Apply Black font and matching outline to unit stat labels
 	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))

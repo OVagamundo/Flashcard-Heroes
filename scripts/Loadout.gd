@@ -42,6 +42,7 @@ const SlotViewScene = preload("res://scenes/SlotView.tscn")
 @onready var _btn_add_starter: Button = %AddStarterButton
 @onready var _btn_clear_starters: Button = %ClearStartersButton
 @onready var _test_starters_label: Label = %TestStartersLabel
+@onready var _dev_tools_container: VBoxContainer = $DevToolsContainer
 
 # Data
 var _hero_defs: Array[GachaBallDefinition] = []
@@ -66,8 +67,11 @@ func _ready() -> void:
 	
 	_load_hero_data()
 	_load_deck_data()
+	_selected_hero_index = _find_hero_index(&"hero_starter")
+	_selected_deck_index = _find_deck_index(&"katakana_main")
 	_update_hero_carousel()
 	_update_deck_carousel()
+	_dev_tools_container.visible = not DemoContent.is_demo_mode()
 	
 	# Create Deck Order setting UI
 	var order_container = HBoxContainer.new()
@@ -322,21 +326,63 @@ func _update_test_starters_label() -> void:
 
 func _load_hero_data() -> void:
 	_hero_defs = Database.get_hero_definitions()
+	# Keep Dan first and Shiken immediately to his right in the carousel.
+	_hero_defs.sort_custom(func(a: GachaBallDefinition, b: GachaBallDefinition) -> bool:
+		var a_order := _hero_sort_priority(a.id)
+		var b_order := _hero_sort_priority(b.id)
+		if a_order != b_order:
+			return a_order < b_order
+		return String(a.id) < String(b.id)
+	)
 	_selected_hero_index = clampi(_selected_hero_index, 0, maxi(_hero_defs.size() - 1, 0))
 	if _hero_defs.size() > 0:
 		_selected_hero_def = _hero_defs[_selected_hero_index]
 
 
+func _hero_sort_priority(hero_id: StringName) -> int:
+	if hero_id == &"hero_starter":
+		return 0
+	if hero_id == &"hero_bounty_hunter":
+		return 1
+	return 2
+
+
+func _find_hero_index(hero_id: StringName) -> int:
+	for i in range(_hero_defs.size()):
+		if _hero_defs[i].id == hero_id:
+			return i
+	assert(false, "Loadout: expected hero '%s' to exist" % hero_id)
+	return -1
+
+
+func _find_deck_index(deck_id: StringName) -> int:
+	for i in range(_deck_meta.size()):
+		if StringName(_deck_meta[i].get("deck_id", "")) == deck_id:
+			return i
+	assert(false, "Loadout: expected deck '%s' to exist" % deck_id)
+	return -1
+
+
+func _deck_sort_priority(deck_id: StringName) -> int:
+	if deck_id == &"katakana_main":
+		return 0
+	if deck_id == &"hiragana_main":
+		return 1
+	return 2
+
+
 func _load_deck_data() -> void:
 	_deck_meta = Database.get_all_deck_metadata()
 	
-	# Sort decks to put Katakana first
+	# Keep the two demo decks together and put Katakana first.
 	_deck_meta.sort_custom(func(a, b):
-		if a.get("deck_id", "") == "katakana_main":
-			return true
-		if b.get("deck_id", "") == "katakana_main":
-			return false
-		return a.get("display_name", "") < b.get("display_name", "")
+		var a_id := StringName(a.get("deck_id", ""))
+		var b_id := StringName(b.get("deck_id", ""))
+		var a_order: int = _deck_sort_priority(a_id)
+		var b_order: int = _deck_sort_priority(b_id)
+		if a_order != b_order:
+			return a_order < b_order
+		return String(a.get("display_name", "")) < String(b.get("display_name", ""))
 	)
 	
 	_selected_deck_index = clampi(_selected_deck_index, 0, maxi(_deck_meta.size() - 1, 0))
@@ -382,6 +428,7 @@ func _update_deck_carousel() -> void:
 	deck_carousel.add_child(right_arrow)
 	
 	_update_deck_info_panel(_selected_deck_meta)
+	_update_start_button_state()
 
 
 func _add_deck_carousel_item(index: int, is_selected: bool) -> void:
@@ -392,7 +439,8 @@ func _add_deck_carousel_item(index: int, is_selected: bool) -> void:
 		button.custom_minimum_size = Vector2(120, 80)
 	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	deck_carousel.add_child(button)
-	button.populate(_deck_meta[index])
+	var deck_id := StringName(_deck_meta[index].get("deck_id", ""))
+	button.populate(_deck_meta[index], not DemoContent.is_deck_unlocked(deck_id))
 	if is_selected:
 		button.set_selected(true)
 	else:
@@ -436,6 +484,7 @@ func _update_hero_carousel() -> void:
 	hero_carousel.add_child(right_arrow)
 	
 	_update_hero_info_panel(_selected_hero_def)
+	_update_start_button_state()
 
 
 func _add_hero_carousel_item(index: int, is_selected: bool) -> void:
@@ -446,7 +495,7 @@ func _add_hero_carousel_item(index: int, is_selected: bool) -> void:
 		button.custom_minimum_size = Vector2(80, 80)
 	button.size_flags_vertical = Control.SIZE_SHRINK_CENTER
 	hero_carousel.add_child(button)
-	button.populate(_hero_defs[index], false)
+	button.populate(_hero_defs[index], not DemoContent.is_hero_unlocked(_hero_defs[index].id))
 	if is_selected:
 		button.set_selected(true)
 	else:
@@ -519,6 +568,15 @@ func _navigate_hero_to(index: int) -> void:
 # --- Info Panel Updates ---
 
 
+func _update_start_button_state() -> void:
+	if _selected_hero_def == null or _selected_deck_meta.is_empty():
+		start_button.disabled = true
+		return
+	var hero_unlocked := DemoContent.is_hero_unlocked(_selected_hero_def.id)
+	var deck_id := StringName(_selected_deck_meta.get("deck_id", ""))
+	start_button.disabled = not hero_unlocked or not DemoContent.is_deck_unlocked(deck_id)
+
+
 func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	hero_info_panel.visible = true
 	
@@ -536,15 +594,31 @@ func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	hero_stats.text = tr("ui.hp") + ": " + str(hero_def.base_hp) + "  " + tr("ui.pwr") + ": " + str(hero_def.base_pwr)
 	
 	# Show only summary effects that are not already covered by the ability list.
-	hero_description.text = tr(hero_def.description_key)
+	var hero_summary: String = tr(hero_def.description_key)
 	var summary_is_covered_by_abilities := not hero_def.ability_definitions.is_empty()
-	var summary_text := hero_description.text.to_lower()
+	var summary_text := hero_summary.to_lower()
 	for ability_def in hero_def.ability_definitions:
 		var ability_description := tr(ability_def.description_key).strip_edges().to_lower()
 		if ability_description.is_empty() or not summary_text.contains(ability_description):
 			summary_is_covered_by_abilities = false
 			break
-	hero_description.visible = not hero_description.text.is_empty() and not summary_is_covered_by_abilities
+	var description_parts: Array[String] = []
+	if not hero_summary.is_empty() and not summary_is_covered_by_abilities:
+		description_parts.append(hero_summary)
+	var hero_set_name_key: String = ""
+	match Database.get_hero_set(hero_def.id):
+		Database.SET_BASE:
+			hero_set_name_key = "loadout.hero_set.base"
+		Database.SET_NOVICE:
+			hero_set_name_key = "loadout.hero_set.novice"
+		Database.SET_MERCENARY:
+			hero_set_name_key = "loadout.hero_set.mercenary"
+		_:
+			assert(false, "Loadout: hero has an unsupported set ID: %s" % Database.get_hero_set(hero_def.id))
+			return
+	description_parts.append(tr("loadout.hero_trait_assignment") % tr(hero_set_name_key))
+	hero_description.text = "\n\n".join(description_parts)
+	hero_description.visible = not description_parts.is_empty()
 	
 	# Abilities
 	if hero_def.ability_definitions.size() > 0:
@@ -605,11 +679,15 @@ func _on_start_run_pressed() -> void:
 	if _selected_hero_def == null or _selected_deck_meta.is_empty():
 		Audio.play_sfx("ui_error")
 		return
+	var selected_deck_id := StringName(_selected_deck_meta.get("deck_id", ""))
+	if not DemoContent.is_hero_unlocked(_selected_hero_def.id) or not DemoContent.is_deck_unlocked(selected_deck_id):
+		Audio.play_sfx("ui_error")
+		return
 	
 	_close_preview_windows()
 
 	var hero_id = _selected_hero_def.id
-	var deck_id = _selected_deck_meta.get("deck_id", "")
+	var deck_id = String(selected_deck_id)
 	
 	assert(deck_order_option != null, "deck_order_option not initialized")
 	assert(deck_size_option != null, "deck_size_option not initialized")

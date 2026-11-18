@@ -1,0 +1,13 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_script"]
+[ext_resource type="Resource" path="res://resources/effects/effect_dustmon_spore_injection.tres" id="2_spore"]
+[ext_resource type="Resource" path="res://resources/effects/effect_dustmon_merge_buff.tres" id="3_buff"]
+
+[resource]
+script = ExtResource("1_script")
+id = &"ability_dustmon_minions_merge"
+description_key = "ability.dustmon_merge.desc"
+trigger = &"when_dust_minions_merge"
+sub_phase = 70
+effects = Array[Resource]([ExtResource("2_spore"), ExtResource("3_buff")])

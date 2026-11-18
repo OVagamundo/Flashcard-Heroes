@@ -1,13 +1,11 @@
 [gd_scene format=3 uid="uid://b0fs8lab4tsoa"]
 
 [ext_resource type="Script" path="res://scripts/InventoryWindow.gd" id="1_yvw8v"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallContainer.png" id="2_tier1_container"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallContainer.png" id="4_tier2_container"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallContainer.png" id="5_tier3_container"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/GachaBallContainerDisplay.png" id="6_container_display"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier1GachaBallBase.png" id="7_tier1_base"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/GachaBallContainer.png" id="2_container"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/GachaBallContainerDisplay.png" id="6_container_display"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Tier1GachaBallBase.png" id="7_tier1_base"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
 [ext_resource type="PackedScene" path="res://scenes/PhysicsTierContainer.tscn" id="10_physics_tier"]
 [ext_resource type="Script" path="res://scripts/StaggeredGridContainer.gd" id="11_staggered_grid"]
 
@@ -19,7 +17,7 @@ layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_bottom = -220.0
+offset_bottom = -200.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
@@ -30,9 +28,9 @@ unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 0
 offset_left = 20.0
-offset_top = 320.0
+offset_top = 340.0
 offset_right = 1520.0
-offset_bottom = 860.0
+offset_bottom = 880.0
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
 
@@ -55,6 +53,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
 
 [node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -62,9 +61,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("2_tier1_container")
-expand_mode = 0
-stretch_mode = 3
+texture = ExtResource("2_container")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Tier1Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier1Panel"]
 custom_minimum_size = Vector2(500, 540)
@@ -127,6 +126,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
 
 [node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -134,9 +134,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("4_tier2_container")
-expand_mode = 0
-stretch_mode = 3
+texture = ExtResource("2_container")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Tier2Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier2Panel"]
 custom_minimum_size = Vector2(500, 540)
@@ -200,6 +200,7 @@ mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxEmpty_clean")
 
 [node name="ContainerBG" type="TextureRect" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
+texture_filter = 1
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -207,9 +208,9 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
-texture = ExtResource("5_tier3_container")
-expand_mode = 0
-stretch_mode = 3
+texture = ExtResource("2_container")
+expand_mode = 1
+stretch_mode = 0
 
 [node name="Tier3Column" type="VBoxContainer" parent="PanelContainer/VBoxContainer/GridsArea/Tier3Panel"]
 custom_minimum_size = Vector2(500, 540)

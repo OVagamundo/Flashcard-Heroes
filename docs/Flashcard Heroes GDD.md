@@ -9,7 +9,7 @@
 1. **Design by Synthesis:**
    Every entity in the game (Units, Items, Trinkets) is a legible synthesis of clear attributes: Tier, level, and traits. Upgrades, leveling, and merges follow deterministic, transparent rules rather than arbitrary branching.
 2. **Total Information Transparency:**
-   The player is never kept in the dark. All active board states, enemy abilities, upcoming actions, machine draw probabilities, remaining pool contents, status effects, and discard piles are fully inspectable at all times. Combat is a tactical puzzle to be solved, not a gamble. The player does not have to make all the math in their head to play, but they could if needed, although it might be overwhelming once too many factors and chain reactions are present.
+   The player is never kept in the dark. All active board states, enemy abilities, upcoming actions, machine draw probabilities, remaining pool contents, status effects, and Discard contents are fully inspectable at all times. Combat is a tactical puzzle to be solved, not a gamble. The player does not have to make all the math in their head to play, but they could if needed, although it might be overwhelming once too many factors and chain reactions are present.
 3. **Strict Determinism:**
    Combat outcomes are the exact mathematical consequence of team composition, stats, item synergies, positioning, and reaction priorities. There are some RNG aspects like random targeting and select random events that are not directly affected by or predictable to the player, but the RNG itself is seeded and deterministic.
 4. **Decoupled Truth & Visual Clarity:**
@@ -23,7 +23,7 @@
 - **Losing a Run (Permadeath)**: A run is lost immediately if the **Hero's health (HP) reaches zero**.
   - **Permadeath**: Upon victory or defeat, the run's save checkpoint is permanently cleared, enforcing true roguelike stakes.
   - **Hero Combatant Rules**: The Hero participates directly on the active battle board alongside standard units, behaving as an active combatant subject to damage, healing, buffs, and attacking.
-  - **Board Restriction**: The Hero is bound to the active team lineup and cannot be benched or moved to inventory.
+  - **Board Restriction**: The Hero is bound to the active team lineup and cannot be shelved or moved to inventory.
   - **Single Item Slot**: Like all other units, the Hero possesses strictly one item slot.
 
 ---
@@ -44,7 +44,7 @@ The game progresses through discrete player decisions and turn phases without an
 
 - **Hero and Unit Stats (HP, PWR)**: Persistent health and power for the entire run. Carries over between all encounters. Reaching 0 HP for the Hero ends the run immediately. There is no maximum HP or PWR in this game, only base stats (used across all encounters for the entire run) and current stats (modified dynamically during battle and reset at encounter conclusion).
 - **Gold**: Persistent run currency. Earned by winning battles, selling reward capsules, and through select abilities and encounter choices. Spent outside of combat for shop purchases, removal of unwanted GachaBalls, transformations, training sessions, and encounter-specific uses or ability scaling.
-- **Gacha Tokens**: Transient encounter currency. Earned primarily through the Flashcard minigame (and select abilities). Spent during encounters to draw units and items from tiered Gacha Machines or for other encounter-specific uses. Does not carry over between encounters.
+- **Gacha Tokens**: Transient encounter currency. Earned primarily through the Flashcard challenge (and select abilities). Spent during encounters to draw units and items from tiered Gacha Machines or for other encounter-specific uses. Does not carry over between encounters.
 
 ---
 
@@ -52,7 +52,7 @@ The game progresses through discrete player decisions and turn phases without an
 
 The Spaced Repetition System (SRS) serves as the game's active resource generation engine, bridging study mechanics with roguelike strategy.
 
-### 5.1 The Minigame
+### 5.1 The Challenge
 At the beginning of each turn (in battles) or upon entering non-combat study sites, players engage in a fast-paced, timed multiple-choice session:
 - **Starting Deck**: Runs begin with 5 active starter cards. New cards are introduced over the course of the run, preceded by an informational review window.
 - **SRS Weighting Algorithm**: Questions are selected dynamically based on card mastery and time elapsed since last review. Cards with lower mastery appear more frequently, while mastered cards appear less often. The same card never appears twice in a row.
@@ -61,8 +61,8 @@ At the beginning of each turn (in battles) or upon entering non-combat study sit
   - **Incorrect Answer**: Awards no tokens, decreases card mastery by 1, and resets the streak.
   - **Skip**: Awards no tokens, decreases card mastery by 1, grants a +0.5s timer extension, but preserves the active streak without penalty.
 
-### 5.2 Mid-Minigame Card Unlock (3-Streak Progression)
-To reward knowledgeable players and maintain engaging pacing, answering 3 questions correctly in succession triggers an immediate mid-minigame card unlock with bonus time, accelerating deck progression for players who have already mastered early study material.
+### 5.2 Mid-Challenge Card Unlock (3-Streak Progression)
+To reward knowledgeable players and maintain engaging pacing, answering 3 questions correctly in succession triggers an immediate mid-challenge card unlock with bonus time, accelerating deck progression for players who have already mastered early study material.
 
 ### 5.3 Design Rationale: Pacing, Economics & Natural Difficulty Balancing
 This mechanic addresses three core design imperatives:
@@ -74,21 +74,23 @@ This mechanic addresses three core design imperatives:
 
 ## 6. GachaBalls & Collection Architecture
 
-**GachaBalls** are the collectible entities (Units and Items) that comprise the player's lineup, bench, and inventory.
+**GachaBalls** are the collectible entities (Units and Items) that comprise the player's lineup, shelf, and inventory.
 
 ### 6.1 Entity Types
 - **Units**: Combatants defined by **Health (HP)** and **Power (PWR)** stats, along with unique passive or reactive abilities. Units act front-to-back in combat.
   - **Item Slot**: Every unit (including the Hero) is restricted to strictly **one item slot**, enforcing critical strategic trade-offs.
   - **Evolutionary Levels**: Units possess Levels (1 to 3). Leveling increases base stats (+1 HP and +1 PWR per level) and enhances ability potency.
 - **Items**: Equipment or consumables that provide stat buffs or abilities:
-  - **Equipment**: Equippable from the bench onto a unit. Remains attached across battles until replaced or stripped.
-  - **Consumables**: Single-use items (potions, scrolls) activated from the bench. Consumable stat buffs stack additively and are conserved across unit merges.
+  - **Equipment**: Sealed on the Shelf until equipped onto a Lineup unit. Remains attached across battles until replaced or stripped.
+  - **Consumables**: Single-use items (potions, scrolls) used from the Shelf on eligible Player or Enemy Lineup units. Consumable stat buffs stack additively and are conserved across unit merges.
   - **Trinkets**: Unique artifacts that confer powerful, game-altering effects. Trinkets persist across all encounters within a run. They serve as strategic tools that define unique builds and synergies.
 
 ### 6.2 Inventories & Lifecycle
 - **Run Inventory**: The player's persistent collection (deck) for the run, categorized into Tier 1, Tier 2, and Tier 3 containers (capacity of 39 slots per tier).
 - **Battle Inventory & Machines**: At battle start, the player's Run Inventory forms the initial contents of the three tiered Gacha Machines. As units are drawn, merged, or summoned, the Battle Inventory shifts dynamically without altering the persistent Run Inventory.
-- **The Discard Pile**: Defeated units, discarded items, and bench overflow are placed permanently into the Battle Discard Pile for the remainder of the battle.
+- **Player Shelf**: Each battle begins with the three leftmost Shelf slots unlocked. Additional slots unlock in order for 1 Token each, up to eight, for that encounter only. Locked artwork preserves transparency and darkens only visible pixels. The next slot shows a plus, a white hover outline and a cost description; purchasing animates a Token from the HUD, then brightens and pops the slot on arrival.
+- **Sealed Capsules & Deployment**: Shelf draws and summons retain their capsules. Capsules can be rearranged there, or deployed directly onto Lineup slots and eligible merge/equipment/consumable targets. Capsules open at the Lineup, where entry buffs activate. Opened units/items cannot return to the Shelf until recycled through the machines. Only Wind-up-kun changes its HP/PWR on the Shelf; other sealed copies still count toward pool-based abilities, and draw/spend reactions remain immediate.
+- **The Discard**: Defeated units, discarded items, and shelf overflow are placed permanently into the Battle Discard for the remainder of the battle.
 
 ---
 
@@ -120,7 +122,7 @@ In *Flashcard Heroes*, strength is governed by the **Density of Synergy** rather
 - **Dilution Penalty**: Adding non-synergistic units to the collection dilutes the Gacha Machine pools, making key synergy pieces harder to draw when needed.
 - **Lean Deck vs. Deck Exhaustion**:
   - Keeping a deck ultra-lean maximizes draw predictability.
-  - However, because defeated units and replaced items are committed permanently to the Discard Pile for the remainder of the encounter, an excessively lean deck risks complete pool exhaustion in protracted Elite or Boss battles.
+  - However, because defeated units and replaced items are committed permanently to the Discard for the remainder of the encounter, an excessively lean deck risks complete pool exhaustion in protracted Elite or Boss battles.
   - Players must balance tactical draw predictability against the raw endurance needed to outlast multi-turn boss encounters.
 
 ### 7.3 Combinatorial Pool Economics & Hero Content Packs
@@ -176,7 +178,7 @@ Merged units conserve stat bonuses from their constituents:
 
 Battles are deterministic contests resolved in three distinct phases:
 
-1. **Phase 1: Performance (Flashcard Minigame)**:
+1. **Phase 1: Performance (Flashcard Challenge)**:
    Speed and accuracy determine the turn's Gacha Token budget.
 2. **Phase 2: Management (The Tactical Puzzle)**:
    - **Spending Tokens**: Draw units and items from Tier 1, 2, or 3 machines.
@@ -194,7 +196,7 @@ Battles are deterministic contests resolved in three distinct phases:
 - **Shops**: Spend Gold to buy units/items, reroll inventory, or purchase upgrades.
 - **Shrine**: Specialized encounter offering unit purges (deck thinning) and transformations.
 - **Unit Merge Encounter**: Special encounter that allows players to merge units and items outside of combat.
-- **Unit Training Grounds (Dojo)**: Targeted stat training minigames to permanently increase individual unit stats.
+- **Unit Training Grounds (Dojo)**: Targeted stat training challenges to permanently increase individual unit stats.
 - **Surprise Events & Gambling Dens**: Risk/reward encounters offering Gold or stat boosts for the Hero and other special interactions.
 
 ### 10.2 Boss & Elite Scheduling

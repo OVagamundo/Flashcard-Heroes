@@ -2,7 +2,7 @@
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_unit"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2B_Shockwave.tres" id="2_ability"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitB.png" id="3_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/Tier2unitB.png" id="3_icon"]
 
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3Berserker_Shockwave_L2.tres" id="100_ability"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier3Berserker_Shockwave_L1.tres" id="101_ability"]

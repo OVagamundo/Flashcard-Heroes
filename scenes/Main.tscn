@@ -13,9 +13,10 @@
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/GachaMachineBaseDiscard.png" id="14_machine_discard"]
 [ext_resource type="Script" path="res://scripts/GachaMachineDiscard.gd" id="15_discard_script"]
 [ext_resource type="Script" path="res://scripts/ScreenShake.gd" id="13_screenshake"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/ui/textures/Knob.png" id="100_knob"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Knob.png" id="100_knob"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/MenuIcons.png" id="16_menu_icons"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_sandclock.png" id="17_sandclock"]
+[ext_resource type="Shader" path="res://assets/shaders/misty_fog.gdshader" id="18_misty_fog_shader"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
 atlas = ExtResource("8_gold_coin")
@@ -43,6 +44,8 @@ region = Rect2(192, 0, 64, 64)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_speed_btn"]
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_misty_fog"]
+shader = ExtResource("18_misty_fog_shader")
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_top"]
 bg_color = Color(0.15, 0.17, 0.22, 0)
@@ -54,7 +57,7 @@ bg_color = Color(0.15, 0.17, 0.22, 0)
 content_margin_left = 20.0
 content_margin_top = 0.0
 content_margin_right = 20.0
-content_margin_bottom = 20.0
+content_margin_bottom = 0.0
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_knob_normal"]
 bg_color = Color(0, 0, 0, 0)
@@ -170,6 +173,7 @@ render_target_update_mode = 4
 
 [node name="SceneBackground" type="TextureRect" parent="ContentArea/SubViewport"]
 unique_name_in_owner = true
+z_index = -2
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -179,6 +183,17 @@ grow_vertical = 2
 mouse_filter = 2
 expand_mode = 1
 stretch_mode = 6
+
+[node name="MistyFog" type="ColorRect" parent="ContentArea/SubViewport"]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+material = SubResource("ShaderMaterial_misty_fog")
 
 [node name="EffectsLayer" type="CanvasLayer" parent="ContentArea/SubViewport" groups=["effects_layer"]]
 layer = 90
@@ -203,7 +218,7 @@ layout_mode = 2
 size_flags_vertical = 3
 
 [node name="BottomAreaSpacer" type="Control" parent="ContentArea/SubViewport/VBoxContainer"]
-custom_minimum_size = Vector2(0, 220)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
 mouse_filter = 2
 
@@ -317,6 +332,9 @@ mouse_filter = 2
 unique_name_in_owner = true
 custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+size_flags_vertical = 4
+pivot_offset = Vector2(32, 32)
+scale = Vector2(0.8, 0.8)
 mouse_filter = 2
 texture = ExtResource("17_sandclock")
 expand_mode = 1
@@ -483,13 +501,13 @@ custom_minimum_size = Vector2(98, 98)
 
 [node name="BottomArea" type="PanelContainer" parent="HUDLayer/HUDContainer"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 220)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 1
 anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_top = -220.0
+offset_top = -200.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2

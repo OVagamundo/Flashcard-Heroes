@@ -88,7 +88,7 @@ Audio.set_music_pitch(1.2, 0.5)
 | `token_spend` | Token spent | `shop/coin.ogg` |
 | `token_land` | Token lands | `action/land.ogg` |
 
-#### Minigame Sounds
+#### Challenge Sounds
 | Sound ID | Description | Audio File |
 |----------|-------------|------------|
 | `minigame_correct` | Correct answer | `action/buff.ogg` |
@@ -104,7 +104,7 @@ Audio.set_music_pitch(1.2, 0.5)
 | `BGM_SHOP` | Shop scene | `bgm/shop.ogg` |
 | `BGM_REST` | Rest site | `bgm/rest.ogg` |
 | `BGM_REWARD` | Reward selection | `bgm/reward.ogg` |
-| `BGM_MINIGAME` | Flashcard minigame | `bgm/minigame.ogg` |
+| `BGM_MINIGAME` | Flashcard challenge | `bgm/challenge.ogg` |
 
 ---
 
@@ -164,7 +164,7 @@ res://assets/audio/
 │   ├── shop.ogg
 │   ├── rest.ogg
 │   ├── reward.ogg
-│   └── minigame.ogg
+│   └── challenge.ogg
 └── sfx/
     ├── ui/
     │   ├── click1.ogg

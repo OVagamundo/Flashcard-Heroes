@@ -4,7 +4,7 @@ class_name EffectStudyHallBell
 extends EffectDefinition
 
 ## Study Hall Bell: At turn start, if available, spend 1 Token to summon a Level 1 ?NovPla
-## into the first open lineup slot (or bench if full). Battle-only summon.
+## into the first open lineup slot (or shelf if full). Battle-only summon.
 
 const C = preload("res://scripts/Constants.gd")
 
@@ -17,8 +17,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		return EffectResult.empty()
 
 	var lineup = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	var bench = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH)
-	if not is_instance_valid(lineup) or not is_instance_valid(bench):
+	var shelf = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
+	if not is_instance_valid(lineup) or not is_instance_valid(shelf):
 		return EffectResult.empty()
 
 	var target_container_tag: StringName = &""
@@ -28,10 +28,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			break
 
 	if target_container_tag == &"":
-		for i in range(bench.get_size()):
-			if bench.get_uuid(i) == "":
-				target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
-				break
+		if battle_manager._state.find_first_empty_player_shelf_slot() != -1:
+			target_container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 
 	if target_container_tag == &"":
 		return EffectResult.empty()

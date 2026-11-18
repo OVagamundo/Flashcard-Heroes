@@ -54,10 +54,10 @@ func populate(context: Dictionary) -> void:
 		icon_rect.texture = load(def["icon_path"])
 	else:
 		match _trait_id:
-			"FIRE": icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket7A.png")
-			"EARTH": icon_rect.texture = preload("res://assets/Realistic/sprites/trinkets/Trinket6A.png")
-			"WATER": icon_rect.texture = preload("res://assets/Realistic/sprites/items/WaterEmblem.png")
-			"AIR": icon_rect.texture = preload("res://assets/Realistic/sprites/items/AirEmblem.png")
+			"FIRE": icon_rect.texture = preload("res://assets/PixelArt/sprites/trinkets/Trinket7A.png")
+			"EARTH": icon_rect.texture = preload("res://assets/PixelArt/sprites/trinkets/Trinket6A.png")
+			"WATER": icon_rect.texture = preload("res://assets/PixelArt/sprites/items/WaterEmblem.png")
+			"AIR": icon_rect.texture = preload("res://assets/PixelArt/sprites/items/AirEmblem.png")
 
 	
 	# Build description text with highlighting

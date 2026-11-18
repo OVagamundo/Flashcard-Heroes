@@ -169,6 +169,8 @@ func _input(event: InputEvent) -> void:
 			WindowManager.toggle_glossary_lock()
 			get_viewport().set_input_as_handled()
 			return
+	if WindowManager.is_tutorial_overlay_open():
+		return
 
 	if event is InputEventMouse or event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_last_pointer_pos = InputUtils.get_event_global_position(event)
@@ -1021,7 +1023,7 @@ func get_context_group(container_name: StringName) -> StringName:
 ## Internal container functional group resolver
 func _get_container_functional_group(container_name: StringName) -> StringName:
 	# Battle board containers
-	if container_name in [&"PlayerLineup", &"PlayerBench"]:
+	if container_name in [&"PlayerLineup", &"PlayerShelf"]:
 		return &"BattleBoard"
 
 	# Inventory containers (can interact with each other)
@@ -1037,7 +1039,7 @@ func _get_container_functional_group(container_name: StringName) -> StringName:
 		return &"EquippedGrid"
 
 	# Inspection-only containers (no actions allowed)
-	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets", &"EnemyLineup", &"EnemyBench"]:
+	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets", &"EnemyBanner", &"EnemyLineup", &"EnemyShelf"]:
 		return &"InspectionOnly"
 
 

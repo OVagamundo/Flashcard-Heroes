@@ -1,12 +1,14 @@
-[gd_resource type="Resource" script_class="CombatEffectDefinition" format=3]
+[gd_resource type="Resource" script_class="CombatEffectDefinition" load_steps=3 format=3]
 
 [ext_resource type="Script" path="res://scripts/CombatEffectDefinition.gd" id="1_script"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_reinforce_pixel.png" id="2_icon"]
 
 [resource]
 script = ExtResource("1_script")
 id = &"reinforce"
-display_name_key = "status_reinforce.name"
-description_key = "status_reinforce.desc"
+display_name_key = "STATUS_REINFORCE"
+description_key = "STATUS_REINFORCE_DESC"
+icon = ExtResource("2_icon")
 is_negative = false
 turn_phase = "START_OF_TURN"
 turn_effect = "NONE"

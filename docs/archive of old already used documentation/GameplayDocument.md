@@ -12,7 +12,7 @@ A run is successfully completed when the player defeats the Final Boss.
 ## Losing a Run
 A run is lost immediately if the Hero's health (HP) reaches zero. 
 *   **Permadeath**: Upon victory or defeat, the run's save file is deleted, and the player must start a new run.
-*   **Hero Unit**: The Hero participates directly in combat alongside standard units and is subject to the same rules, except that the Hero is restricted to the active board and cannot be placed on the bench.
+*   **Hero Unit**: The Hero participates directly in combat alongside standard units and is subject to the same rules, except that the Hero is restricted to the active board and cannot be placed on the shelf.
 
 ---
 
@@ -49,7 +49,7 @@ Before starting a run (or a testing session), the player configures their starti
 *   Temporary stat buffs or modifications applied during combat.
 *   Battle Inventory (draw pools).
 *   Discard Pile.
-*   Lineup and bench combat placement.
+*   Lineup and shelf combat placement.
 
 ---
 
@@ -78,7 +78,7 @@ Battles are resolved in a turn-based loop consisting of four phases:
     *   **Abilities Trigger**: Start-of-turn passive abilities and trait effects resolve.
     *   **First-Turn Suppression**: To allow players to establish their lineup, all start-of-turn abilities and trait triggers are suppressed on the very first turn of a battle, resuming normally on turn two.
 2.  **Management Phase**:
-    *   The player makes tactical choices: drawing units/items, arranging their formation, equipping items, or merging GachaBalls on their bench or board.
+    *   The player makes tactical choices: drawing units/items, arranging their formation, equipping items, or merging GachaBalls on their shelf or board.
 3.  **Combat Phase**:
     *   Units resolve their actions automatically, sequentially, and deterministically.
 4.  **End of Turn**:
@@ -98,10 +98,10 @@ Battles are resolved in a turn-based loop consisting of four phases:
 
 ## 5.2 Management Phase Verbs
 During the Management Phase, the player makes the following decisions:
-*   **Draw**: Spend Gacha Tokens to pull random GachaBalls from Tier 1, 2, or 3 machines onto the bench.
-*   **Place/Rearrange**: Position active units on the board (up to five active slots) or return them to the bench. Units resolve combat actions from front to back.
+*   **Draw**: Spend Gacha Tokens to pull random GachaBalls from Tier 1, 2, or 3 machines onto the shelf.
+*   **Place/Rearrange**: Position active units on the board (up to five active slots) or return them to the shelf. Units resolve combat actions from front to back.
 *   **Equip Item**: Drag items onto active units. Units are restricted to a single item slot. Equipping a new item over an existing one discards the old item to the Discard Pile.
-*   **Merge**: Combine units on the board or bench to level them up or evolve them into new definitions.
+*   **Merge**: Combine units on the board or shelf to level them up or evolve them into new definitions.
 
 ---
 
@@ -255,11 +255,11 @@ To enforce a fully deterministic architecture (for replays, headless QA bots, an
 
 **2. Combat Management (Battle Context)**
 - `MoveInventoryAction`: 
-  - **Deploy/Bench Unit**: Dragging a Unit from the Bench to the Board, or Swapping slots. (Drag & Drop / Click-to-Move).
+  - **Deploy/Shelf Unit**: Dragging a Unit from the Shelf to the Board, or Swapping slots. (Drag & Drop / Click-to-Move).
   - **Equip Item**: Dragging an Item onto a Unit to equip it. (Drag & Drop).
   - **Consume Item**: Dragging a Consumable onto a Unit to activate it. (Drag & Drop).
   - **Merge Units (Battle Temp)**: Dragging duplicate units together on the board to merge them. (Drag & Drop).
-- `DrawGachaAction` **[NEW]**: Clicking the tier lever on a Gacha Machine to draw an item/unit to the bench. (Click / Tap).
+- `DrawGachaAction` **[NEW]**: Clicking the tier lever on a Gacha Machine to draw an item/unit to the shelf. (Click / Tap).
 - `EndTurnAction` **[NEW]**: Clicking the "Battle!" button to transition from Management to Combat. (Click / Tap).
 - `CombatCommand`: (Existing System) Various internal engine commands executed automatically during the auto-battler layer.
 

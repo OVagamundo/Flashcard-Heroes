@@ -1,7 +1,7 @@
 [gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
 
 [ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_script"]
-[ext_resource type="Texture2D" path="res://assets/Realistic/sprites/units/Tier2unitH.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/units/Tier2unitH.png" id="2_icon"]
 [ext_resource type="Resource" path="res://resources/abilities/BasicAttack.tres" id="3_basic_attack"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2H_Ability.tres" id="4_ability"]
 [ext_resource type="Resource" path="res://resources/abilities/UnitTier2H_Ability_L2.tres" id="l2"]
@@ -10,7 +10,7 @@
 [resource]
 script = ExtResource("1_script")
 id = &"WATnkAni"
-min_day = 10
+min_day = 1
 max_day = 99
 display_name_key = "WATnkAni.name"
 description_key = "WATnkAni.desc"

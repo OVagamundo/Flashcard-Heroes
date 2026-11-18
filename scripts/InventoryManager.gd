@@ -33,6 +33,32 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 	var sdef = source_instance.get_definition()
 	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
 
+	if GameManager.is_in_battle:
+		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+		if source_loc.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not battle_manager._state.is_lineup_location(source_loc):
+			SignalBus.inventory_action_invalid.emit(source_loc, target_loc)
+			GlobalInteractionRouter.end_drag(false)
+			return
+		if source_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not battle_manager._state.is_player_shelf_slot_unlocked(source_loc.index):
+			GlobalInteractionRouter.end_drag(false)
+			return
+		if target_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+			if source_loc.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF or not battle_manager._state.is_player_shelf_slot_unlocked(target_loc.index):
+				SignalBus.inventory_action_invalid.emit(source_loc, target_loc)
+				GlobalInteractionRouter.end_drag(false)
+				return
+			# Sealed Shelf capsules are rearranged, never merged, equipped or consumed here.
+			if is_instance_valid(target_instance):
+				_swap(source_loc, target_loc)
+			else:
+				_move(source_loc, target_loc)
+			GlobalInteractionRouter.end_drag(true)
+			return
+		if not battle_manager._state.is_lineup_location(target_loc):
+			SignalBus.inventory_action_invalid.emit(source_loc, target_loc)
+			GlobalInteractionRouter.end_drag(false)
+			return
+
 	# Case 2: Consumable usage on a specific unit
 	if sdef.category == C.CATEGORY_CONSUMABLE:
 		var target_unit: GachaBallInstance = null
@@ -59,7 +85,9 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 			if target_group != &"InventoryGrid":
 				var owner = _get_data_owner()
 				if is_instance_valid(owner):
-					owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
+					var equipped: bool = owner.equip_item(source_instance.ball_uuid, target_instance.ball_uuid, -1)
+					if equipped:
+						_play_lineup_capsule_open(source_loc, target_loc)
 				GlobalInteractionRouter.end_drag(true)
 				SignalBus.emit_signal("inventory_action_completed", [target_instance.ball_uuid])
 				return
@@ -75,7 +103,9 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 					slot_is_empty = parent_unit.equipped_item_uuids[target_loc.index].is_empty()
 				
 				if slot_is_empty:
-					data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+					var equipped: bool = data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+					if equipped:
+						_play_lineup_capsule_open(source_loc, target_loc)
 					GlobalInteractionRouter.end_drag(true)
 					SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
 					return
@@ -85,7 +115,9 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 					var recipe = MergeManager.find_recipe(source_instance, target_instance, source_loc, target_loc, all_instances_db)
 					if not is_instance_valid(recipe):
 						# No merge recipe: equip/replace item directly (Rule I3)
-						data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+						var equipped: bool = data_owner.equip_item(source_instance.ball_uuid, parent_unit.ball_uuid, target_loc.index)
+						if equipped:
+							_play_lineup_capsule_open(source_loc, target_loc)
 						GlobalInteractionRouter.end_drag(true)
 						SignalBus.emit_signal("inventory_action_completed", [parent_unit.ball_uuid])
 						return
@@ -161,7 +193,7 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		anchor_view = wm.find_view_for_location(source_loc)
 	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
 	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerBench"]
+	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerShelf"]
 	if parent_id != -1:
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
 		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
@@ -185,6 +217,11 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 				bm.unblock_ui_updates()
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
+	if GameManager.is_in_battle:
+		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+		if not battle_manager._state.is_lineup_location(target_unit.get_location()):
+			GlobalInteractionRouter.end_drag(false)
+			return
 	var def = consumable_instance.get_definition()
 	if not def or def.ability_definitions.is_empty():
 		GlobalInteractionRouter.end_drag(false)
@@ -249,6 +286,7 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		any_success = true
 		
 	if any_success:
+		_play_lineup_capsule_open(consumable_instance.get_location(), target_unit.get_location())
 		# AUDIO HOOK: Consumable usage sound
 		Audio.play_sfx("ui_heal")
 		
@@ -339,7 +377,9 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner): return
 	
-	owner.move_instance(source_loc, target_loc)
+	var moved: bool = owner.move_instance(source_loc, target_loc)
+	if moved:
+		_play_lineup_capsule_open(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal.call_deferred("inventory_action_completed", [instance_to_move.ball_uuid])
 
@@ -428,6 +468,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			return
 		
 		var merged_inst: GachaBallInstance = sim_res["merged_instance"]
+		_play_lineup_capsule_open(source_loc, sim_res["final_loc"])
 		SignalBus.emit_signal("merge_animation_requested", {
 			"merged_uuid": merged_inst.ball_uuid,
 			"source_loc": source_loc,
@@ -472,7 +513,7 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	# Context-aware placement logic
 	var source_is_equipped = source_loc.container == C.CONTAINER_EQUIPPED_ITEM
 	var target_is_equipped = target_loc.container == C.CONTAINER_EQUIPPED_ITEM
-	var is_board_merge = target_loc.container == C.CONTAINER_PLAYER_LINEUP or target_loc.container == C.CONTAINER_PLAYER_BENCH
+	var is_board_merge = target_loc.container == C.CONTAINER_PLAYER_LINEUP or target_loc.container == C.CONTAINER_PLAYER_SHELF
 	var placed_container: StringName = &""
 	var placed_index: int = -1
 
@@ -580,18 +621,27 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 	
 # --- Other Helpers ---
 
+func _play_lineup_capsule_open(source_location: LocationIdentifier, target_location: LocationIdentifier) -> void:
+	if not GameManager.is_in_battle or ActionQueue.is_headless_mode() or source_location.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+		return
+	if target_location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+		return
+	var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+	var battle_view: BattleView = battle_manager.get_parent() as BattleView
+	battle_view.play_lineup_capsule_open(source_location, target_location)
+
 func _is_battle_board_container(container_tag: StringName) -> bool:
 	return (
 		container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
-		or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH
+		or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH
+		or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF
 	)
 
 func _get_team_for_board_container(container_tag: StringName) -> String:
-	if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_BENCH:
+	if container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
 		return "PLAYER"
-	if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_BENCH:
+	if container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP or container_tag == C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 		return "ENEMY"
 	return ""
 
@@ -599,6 +649,12 @@ func _get_team_for_board_container(container_tag: StringName) -> String:
 ## Made public for SlotIndicatorController to reuse this validation logic
 func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: LocationIdentifier) -> bool:
 	if not is_instance_valid(instance_to_check): return true
+	if GameManager.is_in_battle and target_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+		assert(is_instance_valid(battle_manager), "InventoryManager.is_valid_placement: battle manager is required")
+		if not battle_manager._state.is_player_shelf_slot_unlocked(target_loc.index):
+			return false
+		return instance_to_check.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
 
 	var def = instance_to_check.get_definition()
 	var target_container_name = target_loc.container
@@ -627,13 +683,17 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		return target_container_name == C.CONTAINER_EQUIPPED_ITEM and target_loc.unit_uuid == source_loc.unit_uuid
 
 	# 2. If the target is an equipped_item container, only allow equipping
-	#    from PlayerBench or InventoryGrid (Rule I3). All actual equipping is handled in the
+	#    from PlayerShelf or InventoryGrid (Rule I3). All actual equipping is handled in the
 	#    early equip path; general placement into equipped_item is otherwise illegal.
 	if target_container_name == C.CONTAINER_EQUIPPED_ITEM:
+		if GameManager.is_in_battle:
+			var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+			if not battle_manager._state.is_lineup_location(target_loc):
+				return false
 		if def.category != &"ITEM":
 			return false
 		var s_group = GlobalInteractionRouter.get_context_group(source_loc.container)
-		return source_loc.container == &"PlayerBench" or s_group == &"InventoryGrid" or s_group == &"EquippedGrid"
+		return source_loc.container == &"PlayerShelf" or s_group == &"InventoryGrid" or s_group == &"EquippedGrid"
 
 
 	if target_container_name.begins_with("RunInventoryT"):
@@ -647,7 +707,7 @@ func is_valid_placement(instance_to_check: GachaBallInstance, target_loc: Locati
 		if not ("tier" in def) or def.tier != container_tier_b:
 			return false
 
-	# Items and Consumables cannot be placed in lineup containers (only bench and equipped slots)
+	# Items and Consumables cannot be placed in lineup containers (only shelf and equipped slots)
 	if (target_container_name == &"PlayerLineup" or target_container_name == &"EnemyLineup") and \
 		(def.category == &"ITEM" or def.category == &"CONSUMABLE"):
 		return false

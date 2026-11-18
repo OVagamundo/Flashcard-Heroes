@@ -104,7 +104,7 @@ const NORMAL_SCALE := Vector2(1.0, 1.0) # Reset to normal
 const DEFORM_DURATION := 0.08 # Deformation time (increased slightly for sync)
 
 ## Appends the standard 4-phase landing bounce animation to any Tween targeting a Control or CanvasItem.
-## Canonical bounce for any action that places a unit/item on a slot (land in bench, move/place, swap, summon, merge).
+## Canonical bounce for any action that places a unit/item on a slot (land in shelf, move/place, swap, summon, merge).
 static func append_landing_bounce(tween: Tween, target: CanvasItem, original_scale: Vector2 = Vector2.ONE) -> void:
 	tween.tween_property(target, "scale", Vector2(1.2, 0.8), scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
 	tween.tween_property(target, "scale", Vector2(0.9, 1.15), scaled(0.1)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)

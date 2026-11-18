@@ -16,7 +16,8 @@ enum AnimationType {
 	MELEE_LUNGE,
 	MELEE_RETURN,
 	PREVENT_KNOCKOUT,
-	MOVE # Composable movement effect
+	MOVE, # Composable movement effect
+	DEFORM # Composable sprite deformation effect
 }
 
 # Default timeout durations per animation type (seconds)
@@ -29,7 +30,8 @@ const TIMEOUTS: Dictionary = {
 	AnimationType.MELEE_LUNGE: 1.0,
 	AnimationType.MELEE_RETURN: 0.6,
 	AnimationType.PREVENT_KNOCKOUT: 1.8,
-	AnimationType.MOVE: 0.6 # Movement effects are quick
+	AnimationType.MOVE: 0.6, # Movement effects are quick
+	AnimationType.DEFORM: 0.8 # Sprite deformation effects are quick
 }
 
 # Pending completions: Key = uuid, Value = Array of AnimationType still awaiting
@@ -57,6 +59,7 @@ func _connect_signals() -> void:
 	SignalBus.unit_melee_return_finished.connect(_on_melee_return_finished)
 	SignalBus.unit_lethal_save_finished.connect(_on_lethal_save_finished)
 	SignalBus.unit_move_finished.connect(_on_move_finished)
+	SignalBus.unit_deform_finished.connect(_on_deform_finished)
 
 ## Await completion of a specific animation for a specific unit.
 ## Returns immediately if not pending. Times out gracefully.
@@ -77,6 +80,35 @@ func await_completion(uuid: String, anim_type: AnimationType) -> void:
 	# If timed out, remove anyway
 	if _is_pending(uuid, anim_type):
 		_remove_pending(uuid, anim_type)
+
+## Await several composable animation channels together so faster channels cannot
+## finish before their completion handlers have been registered.
+func await_completions(uuid: String, anim_types: Array[AnimationType]) -> void:
+	assert(not uuid.is_empty(), "AnimationCompletionTracker.await_completions requires a unit UUID")
+	assert(not anim_types.is_empty(), "AnimationCompletionTracker.await_completions requires at least one animation type")
+
+	if not _pending.has(uuid):
+		_pending[uuid] = []
+	for anim_type in anim_types:
+		_pending[uuid].append(anim_type)
+
+	var timeout_duration: float = 0.0
+	for anim_type in anim_types:
+		timeout_duration = maxf(timeout_duration, float(TIMEOUTS[anim_type]))
+	var timeout_timer: SceneTreeTimer = AnimationConstants.create_pausable_timer(_tree, AnimationConstants.scaled(timeout_duration))
+
+	while _has_any_pending(uuid, anim_types) and timeout_timer.time_left > 0.0:
+		await _tree.process_frame
+
+	for anim_type in anim_types:
+		if _is_pending(uuid, anim_type):
+			_remove_pending(uuid, anim_type)
+
+func _has_any_pending(uuid: String, anim_types: Array[AnimationType]) -> bool:
+	for anim_type in anim_types:
+		if _is_pending(uuid, anim_type):
+			return true
+	return false
 
 ## Check if a specific animation is still pending
 func _is_pending(uuid: String, anim_type: AnimationType) -> bool:
@@ -120,6 +152,9 @@ func _on_lethal_save_finished(uuid: String) -> void:
 
 func _on_move_finished(uuid: String) -> void:
 	_remove_pending(uuid, AnimationType.MOVE)
+
+func _on_deform_finished(uuid: String) -> void:
+	_remove_pending(uuid, AnimationType.DEFORM)
 
 # Placeholder for early connection check
 func _on_animation_finished(_uuid: String) -> void:
