@@ -26,7 +26,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				eligible_tiers.append(tier)
 
 	if eligible_tiers.is_empty():
-		return EffectResult.empty()
+		eligible_tiers.assign([1, 2, 3])
 
 	var last_machine: int = source.get_status_effect_amount(&"dustmon_last_machine")
 	var candidates: Array[int] = eligible_tiers.duplicate()
@@ -37,15 +37,12 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	source.add_status_effect_silent(&"dustmon_last_machine", chosen_tier - last_machine)
 
 	var chosen_inv_tag: StringName = StringName("BattleInventoryT%d" % chosen_tier)
-	var chosen_inv = battle_manager.get_container(chosen_inv_tag)
-	var empty_slot: int = chosen_inv.find_first_empty_slot()
-	assert(empty_slot != -1, "EffectDustmonSporeInjection: empty_slot should be valid")
 
 	var result := EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": StringName("unit_dust_t%d" % chosen_tier),
 		"holder_uuid": "",
-		"holder_location": LocationIdentifier.new(chosen_inv_tag, empty_slot),
+		"holder_location": LocationIdentifier.new(chosen_inv_tag, -1),
 		"spawn_source_uuid": source_uuid,
 		"unit_tier": chosen_tier
 	}

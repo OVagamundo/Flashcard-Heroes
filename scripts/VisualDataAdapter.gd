@@ -1,6 +1,8 @@
 class_name VisualDataAdapter
 extends RefCounted
 
+const C = preload("res://scripts/Constants.gd")
+
 ## Static helper to convert Simulation Objects into Presentation Data.
 ## This ensures Views remain "dumb" and decoupled from the Simulation layer.
 
@@ -40,6 +42,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 	
 	# Build equipped items data for units
 	var equipped_items_data: Array = []
+	var incubating: bool = false
 	if def is GachaBallDefinition and def.category == &"UNIT":
 		for i in range(instance.equipped_item_uuids.size()):
 			var item_uuid = instance.equipped_item_uuids[i]
@@ -49,6 +52,8 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 			if is_instance_valid(item_instance):
 				var item_def = item_instance.get_definition()
 				if is_instance_valid(item_def):
+					if item_instance.definition_id == C.ITEM_INCUBATOR and instance.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+						incubating = true
 					equipped_items_data.append({
 						"uuid": item_uuid,
 						"icon": item_def.icon,
@@ -62,6 +67,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		has_locked_recipe = GameManager.run_state.has_locked_recipe_for_result(instance.definition_id)
 
 	var data = {
+		"incubating": incubating,
 		"capsule_sealed": instance.location_container_tag in [&"PlayerShelf", &"EnemyShelf"] or String(instance.location_container_tag).begins_with("BattleInventoryT"),
 		"uuid": instance.ball_uuid,
 		"definition_id": instance.definition_id,

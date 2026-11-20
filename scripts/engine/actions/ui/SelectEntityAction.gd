@@ -4,18 +4,20 @@ extends GameAction
 
 var location: LocationIdentifier = null
 var entity_uuid: String = ""
+var _source_view_id: int = 0
 
-func _init(p_location: LocationIdentifier = null, p_entity_uuid: String = "") -> void:
+func _init(p_location: LocationIdentifier = null, p_entity_uuid: String = "", p_source_view_id: int = 0) -> void:
 	super._init(&"SelectEntityAction")
 	location = p_location
 	entity_uuid = p_entity_uuid
+	_source_view_id = p_source_view_id
 
 func validate() -> bool:
 	return is_instance_valid(location) or not entity_uuid.is_empty()
 
 func execute() -> void:
 	if is_instance_valid(GlobalInteractionRouter):
-		GlobalInteractionRouter.apply_select_entity(location, entity_uuid)
+		GlobalInteractionRouter.apply_select_entity(location, entity_uuid, &"", _source_view_id)
 
 func yields_for_visuals() -> bool:
 	return false

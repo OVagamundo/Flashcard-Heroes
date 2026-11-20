@@ -18,7 +18,7 @@ func _check(condition: bool, message: String) -> void:
 
 func _reset() -> void:
 	bm._state = BattleState.new()
-	bm._state.player_shelf_slots_unlocked = C.SHELF_CAP
+	bm._state.player_shelf_slots_unlocked = C.PLAYER_SHELF_CAP
 	bm._combat = CombatSimulator.new()
 	GameManager.run_state = RunState.new()
 	GameManager.run_state.gold = 30
@@ -206,11 +206,17 @@ func _test_passive_exceptions() -> void:
 func _test_trinket_targets() -> void:
 	_reset()
 	var active: GachaBallInstance = _add(&"FFigMec", &"PlayerLineup")
+	var ally: GachaBallInstance = _add(&"FFigMec", &"PlayerLineup")
 	var shelf: GachaBallInstance = _add(&"FFigMec", &"PlayerShelf")
+	var enemy: GachaBallInstance = _add(&"FFigMec", &"EnemyLineup")
 	_add(&"trinket_armor_aura", &"PlayerTrinkets")
 	_trigger(C.TRIGGER_AT_TURN_START)
-	_check(active.get_status_effect_amount(&"armor") == 3, "Armor Aura must affect active allies")
+	_check(active.get_status_effect_amount(&"armor") == 0, "Armor Aura must wait until pre-combat")
+	_trigger(C.TRIGGER_PRE_COMBAT)
+	_check(active.get_status_effect_amount(&"armor") == 1, "Armor Aura must grant 1 Armor to active allies in pre-combat")
+	_check(ally.get_status_effect_amount(&"armor") == 1, "Armor Aura must grant 1 Armor to every active ally")
 	_check(shelf.get_status_effect_amount(&"armor") == 0, "Armor Aura must not affect shelved allies")
+	_check(enemy.get_status_effect_amount(&"armor") == 0, "Armor Aura must not affect the opposing lineup")
 	_add(&"trinket_rusty_ring", &"PlayerTrinkets")
 	_add(&"trinket_twin_charm", &"PlayerTrinkets")
 	var old_hp: int = shelf.current_hp

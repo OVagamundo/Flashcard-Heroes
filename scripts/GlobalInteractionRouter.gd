@@ -209,24 +209,12 @@ func _input(event: InputEvent) -> void:
 
 		# During Combat or VCR playback, the scene tree is paused while inspecting.
 		# Because paused Controls cannot receive _gui_input, GIR._input routes the click:
-		# - Click on another inspectable unit -> inspect that unit (game stays paused)
-		# - Click on same inspectable unit -> toggle off / close inspection (game unpauses)
-		# - Click on empty space / background -> close inspection (game unpauses)
+		# A different source switches inspection. The same source or the background closes it.
 		if _is_combat_phase or is_vcr_playing():
-			var inspectable_view := _find_inspectable_view_at_position(pos)
-			if is_instance_valid(inspectable_view):
-				if inspectable_view.get_instance_id() == _locked_entity_view_id:
-					# Clicking the same unit toggles it off
-					_is_inspection_locked = false
-					_locked_entity_view_id = -1
-					_execute_close_all_inspection_windows()
-				else:
-					# Clicking another inspectable element
-					if inspectable_view.has_method("_create_interaction_context"):
-						var new_ctx: InteractionContext = inspectable_view._create_interaction_context(&"SINGLE_CLICK", pos)
-						_on_interaction_context_received(new_ctx)
+			var context: InteractionContext = _find_combat_inspection_at_position(pos)
+			if context != null and context.source_view_instance_id != _locked_entity_view_id:
+				_on_interaction_context_received(context)
 			else:
-				# Click outside on background / empty space: close all inspection windows and resume
 				_is_inspection_locked = false
 				_locked_entity_view_id = -1
 				_execute_close_all_inspection_windows()
@@ -239,17 +227,23 @@ func _input(event: InputEvent) -> void:
 			_locked_entity_view_id = -1
 			_execute_close_all_inspection_windows()
 
-func _find_inspectable_view_at_position(pos: Vector2) -> Control:
-	var views := get_tree().get_nodes_in_group("gachaball_view")
+func _find_combat_inspection_at_position(pos: Vector2) -> InteractionContext:
+	var screen_position: Vector2 = get_viewport().get_screen_transform() * pos
+	var banner: EnemyBannerView = get_tree().get_first_node_in_group("enemy_banner_view") as EnemyBannerView
+	if banner != null and banner.is_visible_in_tree():
+		var banner_point: Vector2 = banner.get_screen_transform().affine_inverse() * screen_position
+		# The banner's hit test gives the unit drawn over it priority over the cloth.
+		if banner._has_point(banner_point):
+			return banner.create_inspection_context(pos)
+
+	var views: Array[Node] = get_tree().get_nodes_in_group("gachaball_view")
 	for i in range(views.size() - 1, -1, -1):
-		var view = views[i]
-		if is_instance_valid(view) and view is Control and view.is_visible_in_tree():
-			if view.get_global_rect().has_point(pos):
-				if view.has_method("_has_point"):
-					var local_pos: Vector2 = view.get_global_transform().affine_inverse() * pos
-					if not view._has_point(local_pos):
-						continue
-				return view
+		var view: GachaBallView = views[i] as GachaBallView
+		if not view.is_visible_in_tree():
+			continue
+		var local_pos: Vector2 = view.get_screen_transform().affine_inverse() * screen_position
+		if Rect2(Vector2.ZERO, view.size).has_point(local_pos) and view._has_point(local_pos):
+			return view._create_interaction_context(&"SINGLE_CLICK", pos)
 	return null
 
 
@@ -676,8 +670,9 @@ func _is_valid_action_target(selection: InteractionContext, target: InteractionC
 	if selection_group == &"InventoryGrid" and target_group == &"BattleBoard":
 		return true
 
-	# Allow consumables: Inventory -> InspectionOnly (e.g. EnemyLineup)
-	# This enables using consumables on enemy units despite them being InspectionOnly
+	# Consumables may target opposing units even though their slots are inspection-only.
+	if selection.location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and target.location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+		return selection.entity_type == C.CATEGORY_CONSUMABLE
 	if selection_group == &"InventoryGrid" and target_group == &"InspectionOnly":
 		if selection.entity_type == &"CONSUMABLE":
 			return true
@@ -813,7 +808,7 @@ func _execute_command(command: Command) -> void:
 		CommandType.SELECT:
 			var ctx: InteractionContext = command.context.get("context")
 			if is_instance_valid(ActionQueue) and is_instance_valid(ctx):
-				ActionQueue.request(SelectEntityAction.new(ctx.location, ctx.entity_uuid))
+				ActionQueue.request(SelectEntityAction.new(ctx.location, ctx.entity_uuid, ctx.source_view_instance_id))
 			else:
 				_execute_select(ctx)
 			Audio.play_sfx("ui_select")
@@ -856,17 +851,17 @@ func apply_deselect_entity() -> void:
 func _execute_select(context: InteractionContext) -> void:
 	if context == null:
 		return
-	apply_select_entity(context.location, context.entity_uuid, context.entity_type)
+	apply_select_entity(context.location, context.entity_uuid, context.entity_type, context.source_view_instance_id)
 
-func apply_select_entity(location: LocationIdentifier, entity_uuid: String = "", entity_type: StringName = &"") -> void:
+func apply_select_entity(location: LocationIdentifier, entity_uuid: String = "", entity_type: StringName = &"", source_view_id: int = 0) -> void:
 	var target_location = location
 	if not is_instance_valid(target_location) and not entity_uuid.is_empty():
 		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
 			target_location = GameManager.run_state.get_location_for_uuid(entity_uuid)
 	
-	var view: Control = null
-	if is_instance_valid(target_location) and is_instance_valid(_window_manager):
-		view = _window_manager.find_view_for_location(target_location)
+	var view: Control = _find_view_by_instance_id(source_view_id)
+	if view == null and target_location != null:
+		view = WindowManager.find_entity_view_for_location(target_location)
 	
 	var ctx = InteractionContext.new()
 	ctx.location = target_location
@@ -887,6 +882,8 @@ func apply_select_entity(location: LocationIdentifier, entity_uuid: String = "",
 			if is_instance_valid(def):
 				ctx.entity_type = def.category
 	
+	if _current_selection != null and _current_selection.source_view_instance_id != ctx.source_view_instance_id:
+		_emit_view_deselected(_current_selection)
 	_current_selection = ctx
 	if is_instance_valid(view):
 		SignalBus.emit_signal("view_selected", view, target_location)

@@ -93,7 +93,7 @@ msgstr ""
 msgid "E?TnkMerPlaToy.name"
 msgstr ""
 
-#. English: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.
+#. English: When this unit enters play, its starting PWR equals 50% of your current Gold.
 msgid "EASpeFodToy.desc"
 msgstr ""
 
@@ -729,7 +729,7 @@ msgstr ""
 msgid "ability.apprentice_insignia.desc"
 msgstr ""
 
-#. English: At the start of each turn, all allies gain 3 Armor.
+#. English: When you press Ready, all allies in the Lineup gain 1 Armor.
 msgid "ability.armor_aura.desc"
 msgstr ""
 
@@ -1357,15 +1357,15 @@ msgstr ""
 msgid "ability.unit_t2_e_mimic.desc"
 msgstr ""
 
-#. English: Initial PWR equals your current Gold multiplied by 50% when drawn or spawned.
+#. English: When this unit enters play, its starting PWR equals 50% of your current Gold.
 msgid "ability.unit_t2_f_gold_pwr_l1.desc"
 msgstr ""
 
-#. English: Initial PWR equals your current Gold multiplied by 100% when drawn or spawned.
+#. English: When this unit enters play, its starting PWR equals 100% of your current Gold.
 msgid "ability.unit_t2_f_gold_pwr_l2.desc"
 msgstr ""
 
-#. English: Initial PWR equals your current Gold multiplied by 150% when drawn or spawned.
+#. English: When this unit enters play, its starting PWR equals 150% of your current Gold.
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
 msgstr ""
 
@@ -2169,8 +2169,16 @@ msgstr ""
 msgid "loadout.hero_set.novice"
 msgstr ""
 
-#. English: At the start of the game, each hero is assigned 2 random Traits. Their Elemental Trait is shared by units in the %s set.
-msgid "loadout.hero_trait_assignment"
+#. English: Starting Crest
+msgid "ui.starting_trait_trinket"
+msgstr ""
+
+#. English: Starting Units
+msgid "ui.starting_units"
+msgstr ""
+
+#. English: Starting Items
+msgid "ui.starting_items"
 msgstr ""
 
 #. English: Master Volume
@@ -2677,7 +2685,7 @@ msgstr ""
 msgid "trinket.apprentice_insignia.name"
 msgstr ""
 
-#. English: At the start of each turn, all allies gain 3 Armor.
+#. English: When you press Ready, all allies in the Lineup gain 1 Armor.
 msgid "trinket.armor_aura.desc"
 msgstr ""
 
@@ -3601,7 +3609,7 @@ msgstr ""
 msgid "ui.mastery_level_5"
 msgstr ""
 
-#. English: Merge or level up your Gachamons or Spirits permanently!
+#. English: Permanently merge or level up your units and items.
 msgid "ui.merge_encounter_description"
 msgstr ""
 
@@ -4276,3 +4284,36 @@ msgstr ""
 #. English: Theft when you press Ready and PWR transfers when units are knocked out empower a growing backline carry. Grants the Costume Crest for free. Approved off-Trait partners receive free Costume Emblems. At the end of each odd-numbered turn, calls in reinforcements to repair its formation.
 msgid "trinket.banner_costume.desc"
 msgstr ""
+
+#. English: Order
+msgid "ui.battle_order"
+msgstr ""
+
+#. English: Preview
+msgid "ui.battle_preview"
+msgstr ""
+
+#. English: Incubator
+msgid "item.incubator.name"
+msgstr ""
+
+#. English: Move an allied Lineup unit into this capsule on the Shelf. It gains +1 HP and +1 PWR at the start of each turn it spends inside and keeps the bonus when deployed. Returning it to the Lineup sends the Incubator to Discard.
+msgid "item.incubator.desc"
+msgstr ""
+
+#. English: Fortifying Tonic
+msgid "item.encounter_tonic.name"
+msgstr ""
+
+#. English: Give a unit in the Lineup +3 HP and +2 PWR for this encounter.
+msgid "item.encounter_tonic.desc"
+msgstr ""
+
+#. English: Impact Vial
+msgid "item.damage_vial.name"
+msgstr ""
+
+#. English: Deal 5 damage to the chosen unit in either Lineup. Armor reduces this damage.
+msgid "item.damage_vial.desc"
+msgstr ""
+

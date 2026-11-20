@@ -161,7 +161,7 @@ func play_file(path: String) -> void:
 	_header = loaded.get("header", {})
 	_schema_version = int(_header.get("schema_version", 0))
 	if _schema_version < ReplayReaderScript.CURRENT_SCHEMA_VERSION:
-		playback_error.emit("This replay predates deterministic IDs, action state checks, or the initial manager snapshot. Start a new run to create a verified replay.")
+		playback_error.emit("This replay was recorded with an earlier version of the game. Continue a saved run or start a new run to create a compatible replay.")
 		return
 	var initial_state: Variant = _header.get("initial_state", {})
 	if not initial_state is Dictionary or not initial_state.has("uuid_state"):
@@ -631,6 +631,8 @@ static func _is_flashcard_action(action: GameAction) -> bool:
 
 static func _is_battle_management_action(action: GameAction) -> bool:
 	return action is DrawGachaAction \
+		or action is DrawDiscardAction \
+		or action is PurchaseShelfSlotAction \
 		or action is MoveInventoryAction \
 		or action is EndTurnAction \
 		or action is ConfirmMergeAction \
@@ -648,6 +650,9 @@ func _is_scene_busy_with_autonomous_work(action: GameAction) -> bool:
 				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
 					return true
 				if bm.has_method("get_current_phase") and bm.get_current_phase() != bm.Phases.MANAGEMENT:
+					return true
+			elif action is OpenInventoryAction or action is CloseInventoryAction or action is OpenDiscardPileAction or action is CloseDiscardPileAction:
+				if bm.is_animations_playing() or bm.get_current_phase() == BattleManager.Phases.START_OF_TURN:
 					return true
 			elif action is AcknowledgeBattleResultsAction:
 				if bm.has_method("is_animations_playing") and bm.is_animations_playing():

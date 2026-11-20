@@ -32,12 +32,7 @@ static func get_hud_token_center() -> Vector2:
 	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
 	if not is_instance_valid(main_node):
 		return Vector2.ZERO
-	var token_group = main_node.get_node_or_null("%TokenGroup")
-	if not is_instance_valid(token_group):
-		return Vector2.ZERO
-	var token_icon = token_group.get_node_or_null("TokenIcon")
-	var target = token_icon if is_instance_valid(token_icon) else token_group
-	return target.get_global_rect().get_center()
+	return main_node.get_token_animation_origin()
 
 static func get_hud_bonus_timer_center() -> Vector2:
 	var main_node = GameManager._active_main_node if is_instance_valid(GameManager) else null
@@ -267,7 +262,7 @@ static func animate_token_gain(
 			Audio.play_sfx("token_land")
 			var active_main = GameManager.get_main_node() if is_instance_valid(GameManager) else null
 			if is_instance_valid(active_main):
-				var group = active_main.get_node_or_null("%TokenGroup")
+				var group: Control = active_main.get_token_feedback_control()
 				if is_instance_valid(group):
 					var tween = group.create_tween()
 					group.pivot_offset = group.size / 2.0

@@ -176,8 +176,12 @@ static func setup_from_run_state(state: BattleState) -> void:
 					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
 					target_index = perm_loc.index
 				RS.RUN_CONTAINER_TAGS.PLAYER_SHELF:
-					target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
-					target_index = perm_loc.index
+					if perm_loc.index < C.PLAYER_SHELF_CAP:
+						target_container_name = C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
+						target_index = perm_loc.index
+					else:
+						# Run saves can use the last Shelf slot, which the tray occupies in battle.
+						target_container_name = &"BattleInventoryT%d" % def.tier
 				_:
 					assert(false, "BattleSetup: unhandled container %s for %s" % [perm_loc.container, perm_inst.ball_uuid])
 					continue

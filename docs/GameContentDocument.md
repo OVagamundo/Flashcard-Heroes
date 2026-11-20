@@ -182,8 +182,8 @@ The Novice trait scales based on the number of Novice-tagged units in the active
 | **Item** | `item_answer_key` | **Burnout** | Tier 2 | When attacking, while equipped in the active lineup, apply 1 / 2 / 3 Burn to the target for each Current Token held. (+2 PWR). |
 | **Item** | `item_novice_archive` | **Novice's Archive** | Tier 3 | When attacking, spend 1 Token to deal 1 / 2 / 3 Bonus Damage for each Current Token held before the spend. (+2 HP / +2 PWR). |
 | **Item** | `item_novice_emblem` | **Novice Emblem** | Tier 3 Standalone | Contributes +1 Novice trait counter while in active lineup. For each enemy unit knocked out by holder in battle, add 1 second to the starting time of the next battle challenge. |
-| **Trinket** | `trinket_trait_novice` | **Novice Crest** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding challenge session (inside and outside battle). |
-| **Trinket** | `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
+| **Trinket** | `trinket_trait_novice` | **Novice Crest** | Trait Thresholds | Guarantees at least 3 Tokens per Challenge. The cumulative thresholds at 2, 3, 4, and 5 Novices grant extra Challenge time, Gold, Armor, and Spikes respectively. See [Novice.md](Novice.md#4-novice-trait-ladder). |
+| **Trinket** | `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token when correctly answering a Mastery Level 1 card. |
 | **Trinket** | `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or shelf if full). Battle-only summon. |
 
 ---
@@ -213,7 +213,7 @@ These items are permanently available across all runs and gacha pools.
 
 | ID | Name | Stats | Tier / Tags | Ability Description |
 |---|---|:---:|---|---|
-| `consumable_potion_plunder` | **Plunder** | - | Consumable | Steals a random equipped item from a Lineup target and sends it directly to the player's matching tier Gacha Machine, bypassing Discard. Drawing the item again returns it sealed to the Shelf. |
+| `consumable_potion_plunder` | **Plunder** | - | Consumable | Steals an equipped item from a Lineup target and sends it to the player's matching tier machine. A full tier routes it to Discard. |
 | `item_emblem_air` | **Air Emblem** | +2 HP / +1 PWR | AIR | Grants the **Air** soul, enabling Air trait threshold scaling. |
 | `item_emblem_earth` | **Earth Emblem** | +4 HP | EARTH | Grants the **Earth** soul, enabling Earth trait threshold scaling. |
 | `item_emblem_fire` | **Fire Emblem** | +2 PWR | FIRE | Grants the **Fire** soul, enabling Fire trait threshold scaling. |
@@ -227,6 +227,7 @@ These items are permanently available across all runs and gacha pools.
 | `item_t2_b` | **Scythe** | +2 PWR | Tier 2 | When holder knocks out an enemy, gain an Extra Action immediately (once per turn). |
 | `item_t2_c` | **Anvil** | +1 HP / +1 PWR | Tier 2 | When hurt by an attack, heal holder for 1 HP and gain +1 PWR. |
 | `item_t2_d` | **Slime Cell** | - | Tier 2 | Grants holder +1 PWR for each Slime Cell in battle. When holder is knocked out, spawn a Slime Cell into the Tier 2 Gacha Machine. |
+| `item_incubator` | **Incubator** | +1 HP / +1 PWR per Turn Start | Tier 2, Equipment | Move a living allied Lineup unit into the Incubator's former Shelf slot. At each Turn Start on the Shelf, the holder gains +1 HP and +1 PWR. On redeployment, the holder keeps the growth and the Incubator goes to Discard. |
 | `item_t3_a` | **Ramune** | +4 HP | Tier 3 | When holder is hurt by an attack, heal two random allies for 2 HP each. |
 | `item_t3_b` | **HardCandy** | +4 PWR | Tier 3 | When holder attacks, grant 50% of damage dealt as Armor and Spikes stacks to holder. |
 | `item_t3_c` | **Leech Gumi** | +2 HP / +2 PWR | Tier 3 | When attacking, heal holder for 20% of damage dealt (minimum 1 HP). |
@@ -234,6 +235,8 @@ These items are permanently available across all runs and gacha pools.
 | `item_t3_e` | **Sour Candy** | +3 HP / +1 PWR | Tier 3 | When holder is knocked out, deal damage equal to 50% of the highest HP enemy's current HP to that enemy. |
 | `item_t3_f` | **popcorn** | +1 HP / +3 PWR | Tier 3 | After dealing attack damage, steal half of target's PWR (minimum 1). |
 | `item_t3_g` | **Slingshot** | +1 PWR | Tier 3 | Melee attacks convert to ranged attacks targeting the mirror slot enemy. |
+| `item_encounter_tonic` | **Fortifying Tonic** | +3 HP / +2 PWR | Tier 2, Consumable | Give a living Lineup unit the listed stats for this encounter. |
+| `item_damage_vial` | **Impact Vial** | - | Tier 3, Consumable | Deal 5 damage to the chosen living unit in either Lineup. Armor mitigates the damage. The impact bypasses Guardian interception. |
 
 ---
 
@@ -255,7 +258,7 @@ An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the bo
 | ID | Name | Trigger / Type | Effect Description |
 |---|---|:---:|---|
 | `trinket_aegis` | **Aegis Charm** | Once per turn | When an ally would be knocked out, they survive with 1 HP instead. |
-| `trinket_armor_aura` | **Armor Aura** | Turn Start | At turn start, all allies gain 3 Armor. |
+| `trinket_armor_aura` | **Armor Aura** | Pre-Battle | When you press Ready, all allies in the Lineup gain 1 Armor. |
 | `trinket_awe_inspiring_totem` | **Awe Inspiring Totem** | Turn Start | At turn start, if there is a Tier 3 or Level 3 unit in lineup, grants +1 HP and +1 PWR to all lower tier/level units. |
 | `trinket_bargain_charm` | **Bargain Charm** | Passive (Player) | Gacha draws cost 1 token less (minimum 1) once per machine, per turn. |
 | `trinket_burn_vial` | **Burn Vial** | When Attacking | Attacks apply 1 Burn stack. |
@@ -272,10 +275,10 @@ An **Insignia** grants +1 HP and +1 PWR to a matching unit when it enters the bo
 | `trinket_twin_charm` | **Twin Charm** | Passive | Your units gain +1 PWR for every 2 copies of that same unit in your battle pool. |
 | `trinket_underdog_emblem` | **Underdog Emblem** | Pre-Battle | If team fields fewer units than enemy, all allies gain 2 Armor per unit difference. |
 | `trinket_vengeance` | **Vengeance Charm** | Ally Knockout | When an ally is knocked out, grant +1 HP and +1 PWR to a random living ally. |
-| `trinket_trait_air` | **Air Crest** | Trait Thresholds | Air trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_earth` | **Earth Crest** | Trait Thresholds | Earth trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_fire` | **Fire Crest** | Trait Thresholds | Fire trait effects activate at 3, 6, 12, 20, and 32 units. |
-| `trinket_trait_water` | **Water Crest** | Trait Thresholds | Water trait effects activate at 3, 6, 12, 20, and 32 units. |
+| `trinket_trait_air` | **Air Crest** | Trait Thresholds | Air trait effects activate at 3, 6, 12, 20, and 32 Air souls. |
+| `trinket_trait_earth` | **Earth Crest** | Trait Thresholds | Earth trait effects activate at 3, 6, 12, 20, and 32 Earth souls. |
+| `trinket_trait_fire` | **Fire Crest** | Trait Thresholds | Fire trait effects activate at 3, 6, 12, 20, and 32 Fire souls. |
+| `trinket_trait_water` | **Water Crest** | Trait Thresholds | Water trait effects activate at 3, 6, 12, 20, and 32 Water souls. |
 | `trinket_trait_fighter` | **Fighter Crest** | Trait Thresholds | Fighter trait effects activate at 2, 3, 4, and 5 units. |
 | `trinket_trait_tank` | **Tank Crest** | Trait Thresholds | Tank trait effects activate at 2, 3, 4, and 5 units. |
 | `trinket_trait_support` | **Support Crest** | Trait Thresholds | Support trait effects activate at 2, 3, 4, and 5 units. |

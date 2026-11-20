@@ -107,6 +107,10 @@ func populate_actor_queue(state: BattleState) -> void:
 	_current_turn_is_player = false
 	_current_turn_step = -1
 	
+	_actor_queue.assign(starting_actors(state))
+
+static func starting_actors(state: BattleState) -> Array[GachaBallInstance]:
+	var actors: Array[GachaBallInstance] = []
 	var player_container = state.get_container(&"PlayerLineup")
 	var enemy_container = state.get_container(&"EnemyLineup")
 	
@@ -118,7 +122,7 @@ func populate_actor_queue(state: BattleState) -> void:
 			if not enemy_uuid.is_empty():
 				var enemy_inst: GachaBallInstance = state.get_instance(enemy_uuid)
 				if is_instance_valid(enemy_inst) and enemy_inst.current_hp > 0:
-					_actor_queue.append(enemy_inst)
+					actors.append(enemy_inst)
 		
 		# 2. Player slot for this rank (4 -> 0)
 		var player_slot: int = (C.LINEUP_CAP - 1) - rank
@@ -127,7 +131,20 @@ func populate_actor_queue(state: BattleState) -> void:
 			if not player_uuid.is_empty():
 				var player_inst: GachaBallInstance = state.get_instance(player_uuid)
 				if is_instance_valid(player_inst) and player_inst.current_hp > 0:
-					_actor_queue.append(player_inst)
+					actors.append(player_inst)
+	return actors
+
+static func actor_order(actors: Array[GachaBallInstance]) -> Array[String]:
+	var order: Array[String] = []
+	for actor: GachaBallInstance in actors:
+		if actor != null and actor.current_hp > 0 and not order.has(actor.ball_uuid):
+			order.append(actor.ball_uuid)
+	return order
+
+func _record_actor_order(events: Array[CombatEvent]) -> void:
+	var event := CombatEvent.new(CombatEvent.Type.ACTOR_ORDER)
+	event.target_uuids = actor_order(_actor_queue)
+	events.append(event)
 
 ## Grant a unit an extra action by inserting them at the front of the actor queue.
 ## Called by EffectGrantExtraAction when a unit equipped with Scythe gets a knockout.
@@ -261,6 +278,7 @@ func set_processing(value: bool) -> void:
 ## Returns the complete turn log as Array[CombatEvent].
 func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[CombatEvent]:
 	var turn_log: Array[CombatEvent] = []
+	_record_actor_order(turn_log)
 	
 	while not _actor_queue.is_empty():
 		# STABILITY GATE: Flush all deaths from previous reaction cascades before popping the next actor
@@ -314,7 +332,7 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 		if battle_manager._is_battle_over():
 			battle_manager._battle_over_deferred = true
 			_actor_queue.clear()
-			break
+		_record_actor_order(turn_log)
 	
 	# Final reaction drain - process remaining reactions after all actors
 	CombatCommand.append_unified_events(turn_log, process_reaction_queue(battle_manager, death_tracking))
@@ -329,13 +347,15 @@ func execute_combat_turn(battle_manager, death_tracking: Dictionary) -> Array[Co
 	if not final_inline.is_empty():
 		CombatCommand.append_unified_events(turn_log, final_inline)
 	
+	turn_log.append_array(battle_manager.take_inventory_events())
+	_record_actor_order(turn_log)
 	return turn_log
 
 ## Process the pending reaction queue until empty.
 ## Handles priority sorting, effect resolution, inline events, and deferred deaths.
 ## This ensures consistent behavior across all battle phases (Combat, Management, Start of Turn).
 func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
+	var events: Array[CombatEvent] = battle_manager.take_inventory_events()
 	
 	while not _crr.is_empty():
 		var current_reaction = _crr.pop_front()
@@ -348,6 +368,7 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 		var inline_evts = collect_and_clear_inline_events()
 		CombatCommand.append_unified_events(events, inline_evts)
 		
+		events.append_array(battle_manager.take_inventory_events())
 		CombatCommand.append_unified_events(events, reaction_events)
 		
 		# Process deferred deaths immediately to ensure correct ordering (e.g. before next reaction)
@@ -358,6 +379,7 @@ func process_reaction_queue(battle_manager, death_tracking: Dictionary) -> Array
 		# Immediately resolve any cascading deaths triggered by completed counter-attacks
 		battle_manager._check_for_deaths_with_counter_delay(true, events, death_tracking)
 		
+	events.append_array(battle_manager.take_inventory_events())
 	return events
 
 # ============================================================================

@@ -6,7 +6,7 @@ enum PointerArrival { BEFORE_LANDING, AT_LANDING, AFTER_UNLOCK }
 
 class BoardFixture extends BattleView:
 	func _ready() -> void:
-		pass
+		set_process(false)
 
 class HudFixture extends Control:
 	func animate_machine_inventory_change(_tier: int, _delta: int) -> void:
@@ -94,7 +94,6 @@ func _run() -> void:
 	board._resolve_battle_animator()
 	battle.management_animation_queue_completed.connect(board._on_turn_animation_finished_redraw)
 	SignalBus.battle_inventory_changed.connect(board._redraw_board)
-	SignalBus.gacha_draw_animated.connect(board._on_gacha_draw_animated)
 	var hud: HudFixture = HudFixture.new()
 	hud.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(hud)
@@ -135,7 +134,7 @@ func _draw_case(arrival: PointerArrival, leave_before_finish: bool, redraw_durin
 	var slot: SlotView = board.player_shelf.get_child(destination_index) as SlotView
 	var target: Vector2 = slot.get_global_transform() * GachaBallView.shelf_capsule_center(slot.size)
 	_move_pointer(Vector2(100, 820))
-	battle._on_draw_gacha_requested(1)
+	_check(ActionQueue.request(DrawGachaAction.new(1)), "The draw action is accepted")
 	if redraw_during_playback:
 		board._redraw_board()
 		_check(board._pending_board_redraw, "An inventory refresh defers replacement views until playback ends")

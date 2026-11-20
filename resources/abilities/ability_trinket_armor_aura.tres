@@ -7,6 +7,6 @@
 script = ExtResource("1_script")
 id = &"ability_trinket_armor_aura"
 description_key = "ability.armor_aura.desc"
-trigger = &"at_turn_start"
+trigger = &"pre_combat"
 sub_phase = 80
 effects = Array[Resource]([ExtResource("2_effect")])

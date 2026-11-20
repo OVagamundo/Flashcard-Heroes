@@ -14,6 +14,7 @@ name_key = "trinket.animal_insignia.name"
 description_key = "trinket.animal_insignia.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
+linked_trait_id = &"ANIMAL"
 is_player_exclusive = false
 rarity = 1
 ability_definitions = Array[Resource]([ExtResource("3_ability"), ExtResource("4_ability"), ExtResource("5_ability"), ExtResource("6_ability")])

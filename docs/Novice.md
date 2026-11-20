@@ -43,25 +43,24 @@ Every Hero Content Pack adheres to the following structural and balance standard
 | **Base Stats** | 10 HP / 2 PWR |
 | **Loadout** | Fixed **Novice** trait, plus 3 Elemental Souls of one randomly chosen element (all 3 of same element: Fire, Earth, Water, or Air: `?`), and one random Thematic trait. The dynamic element `?` is inherited by Dan's entire 11-unit lineage for that run. |
 | **Innate Combat Passive** | **Soul Harvest:** When an allied unit is knocked out, Dan gains HP equal to that ally's PWR (`resources/abilities/HeroStarter_AllyDeathAbsorb.tres`). |
-| **Starter Trinket** | **Novice Crest** (equipped at run start). |
+| **Starting economy** | 30 Gold, the equipped Novice Crest, and a Novice Emblem in the inventory. See [InventoryManager.md](InventoryManager.md#5-hero-starting-loadouts). |
 
 ---
 
 ## 4. Novice Trait Ladder
 
-The Novice trait scales based on the number of Novice-tagged units in the active lineup. Dan provides +1 Novice counter permanently. Trait levels are cumulative.
+The Novice Crest guarantees at least 3 Tokens from a completed token-awarding Challenge regardless of the active Hero or Lineup. Its cumulative trait thresholds count Novice units in the Lineup, including Dan and units with the Novice Emblem.
 
 | Level | Threshold | Effect |
 |---|:---:|---|
 | **Bronze** | 2 Novices | Add **+1.0 second** to the starting time of each battle challenge. |
-| **Silver** | 3 Novices | In addition to Bronze, achieving a **3-correct-answer streak grants 1 bonus Gold** (once per challenge session, maximum 5 Gold per encounter). |
-| **Gold** | 4 Novices | In addition to Silver, a correct answer to a card at **Mastery Level 1 (Very Hard)** grants **1 bonus Token**. |
-| **Prismatic** | 5 Novices | In addition to all previous levels: Each incorrect submitted answer adds **+0.5s** to the remaining time (panic buffer; does not apply to Skips). Achieving a **3-correct-answer streak grants +1 bonus Token** (once per challenge session). |
+| **Silver** | 3 Novices | On Ready, gain 1 Gold per 2 unspent Tokens. |
+| **Gold** | 4 Novices | On Ready, each Novice in the Lineup gains 1 Armor per 2 unspent Tokens. |
+| **Prismatic** | 5 Novices | On Ready, each Novice in the Lineup also gains 1 Spikes per 2 unspent Tokens. |
 
 ### Mechanics & Event Resolution Rules
-* **Correct-Answer vs. Generic Tokens:** Buffs requiring correct answers trigger strictly on answer submission events. Token guarantees, death refunds, or trinket payouts do not trigger answer-based buffs.
-* **Pre-Answer Mastery Check:** Low-mastery triggers evaluate the card's mastery level *before* recording the correct answer.
-* **Skip vs. Incorrect Outcomes:** An incorrect answer resets the streak. A Skip preserves the streak. Gold's Mastery 1 token bonus applies only to correct answers. Prismatic's +0.5s panic buffer applies only to incorrect submissions, whereas Silver's +1.0s applies strictly to Skips.
+* The three Ready effects use the same count of full Token pairs at resolution and leave those Tokens available. Ready abilities earlier in the reaction order can change the amount counted.
+* Incorrect submissions reset the streak. Skips preserve the streak and count against Challenge accuracy.
 
 ---
 
@@ -130,7 +129,7 @@ The item lineage merges the unique Tier 1 item with the neutral Tier 1 base item
 |---|---|:---:|---|
 | `trinket_trait_novice` | **Novice Crest** | Trait Thresholds | Enables and tracks the Novice Trait thresholds (2 / 3 / 4 / 5). Guarantees at least 3 Tokens from every token-awarding challenge session (inside and outside battle). |
 | `trinket_study_hall_bell` | **Study Hall Bell** | Turn Start | At turn start, if available, spend 1 Token to summon a Level 1 `?NovPla` into the first open lineup slot (or shelf if full). Battle-only summon. |
-| `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token if the answered flashcard is Mastery Level 1 (Very Hard). Synergizes directly with Gold Novice. |
+| `trinket_beginners_charm` | **Beginner's Charm** | Challenge | Gain 1 extra Token when correctly answering a Mastery Level 1 card. |
 
 ---
 

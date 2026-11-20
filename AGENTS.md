@@ -18,5 +18,11 @@
 - Restrict unprompted fixes strictly to code syntax, data routing, crash resolution, and architectural decoupling.
 
 ## 5. Temporary Utility Scripts & Scratch Hygiene
-- When writing temporary utility scripts (Python scripts, ad-hoc parser scripts, or Godot debug scripts), ALWAYS place them in `scratch/` and delete them when no longer needed.
+- Use existing checks that can run without approval. Skip optional temporary verification workflows that have previously triggered approval prompts, including creating and running a temporary Godot scene followed by shell cleanup.
+- Place any necessary temporary utility scripts in `scratch/`. Clean them up only when that can be done without prompting. If cleanup is interrupted by an approval prompt, leave the files in `scratch/`.
 - Never clutter the project root directory with one-off scripts.
+
+## 6. Sandbox Approval Prompts
+- Never ask the user to approve running a command outside the Codex sandbox. This includes Git commands that need to write to a read-only `.git` directory.
+- Avoid optional commands that previously surfaced a permission prompt in this workspace, even with default sandbox permissions. This includes shell deletion of temporary verification files. If a prompt interrupts a command, do not retry it.
+- Use an authorized alternative when available. If an essential operation remains blocked, name the exact operation and the access it requires.

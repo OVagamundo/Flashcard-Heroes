@@ -38,23 +38,11 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 	var item_tier = stolen_def.tier if stolen_def and "tier" in stolen_def else 1
 	item_tier = clampi(item_tier, 1, 3)
 	var target_tag = StringName("BattleInventoryT%d" % item_tier)
-	var target_container = battle_manager.get_container(target_tag)
-	if not is_instance_valid(target_container):
-		return EffectResult.empty()
-		
-	var target_slot = target_container.find_first_empty_slot()
-	if target_slot == -1:
-		return EffectResult.empty()
-
-	# 3. Capture Pre-Unequip Stats
 	var pre_stats: Dictionary = battle_manager._capture_all_unit_stats()
-
-	# 4. Move from equipped slot to target Gacha Machine inventory container
-	var source_loc = stolen_item.get_location()
-	var target_loc = LocationIdentifier.new(target_tag, target_slot)
-	var move_res = InventoryOperations.move_instance(battle_manager._state, source_loc, target_loc)
-	if not move_res.success:
-		return EffectResult.empty()
+	var state: BattleState = battle_manager._state
+	var placed: int = state.transfer_instance_to_container(stolen_item, target_tag)
+	assert(placed >= 0, "Plunder must route the stolen item to its tier or Discard")
+	var target_loc: LocationIdentifier = stolen_item.get_location()
 
 	# 5. Construct Result with Gacha Machine Arc Animation and Stat Change Events
 	var result := EffectResult.new()
@@ -90,7 +78,8 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 
 	# Log message
 	var target_name = BattleHelpers.get_instance_display_name(target_unit)
-	var log_text = "Plundered %s from %s to the Tier %d Gacha Machine!" % [item_name, target_name, item_tier]
+	var destination: String = tr("ui.discard_pile") if target_loc.container == C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE else "Tier %d" % item_tier
+	var log_text: String = "Plundered %s from %s to %s!" % [item_name, target_name, destination]
 	result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": log_text}))
 	
 	return result

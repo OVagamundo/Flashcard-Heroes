@@ -16,7 +16,6 @@ const PhysicsBallScene = preload("res://scenes/PhysicsGachaBall.tscn")
 
 @onready var motion_body: AnimatableBody2D = $MotionBody
 @onready var spawn_point: Marker2D = $MotionBody/SpawnPoint
-@onready var lid_area: Area2D = $MotionBody/LidArea
 @onready var balls_root: Node2D = $BallsRoot
 @onready var drop_timer: Timer = $DropTimer
 @onready var back_art: Sprite2D = $MotionBody/BackArt
@@ -24,11 +23,9 @@ const PhysicsBallScene = preload("res://scenes/PhysicsGachaBall.tscn")
 
 var _is_moving: bool = false
 
-var _penalties_active: bool = false
 var _active_balls: Dictionary = {}
 var _global_sleep_timer: Timer
 var _bounce_tween: Tween
-var _penalty_timers: Dictionary = {}
 var _spawn_queue: Array = []
 
 func _ready() -> void:
@@ -59,18 +56,6 @@ func _ready() -> void:
 	front_overlay.position = Vector2(container_size.x / 2.0, container_size.y / 2.0)
 	
 	_generate_bounds()
-	set_overflow_monitoring_active(false)
-
-func set_overflow_monitoring_active(active: bool) -> void:
-	_penalties_active = active
-	if not active:
-		_penalty_timers.clear()
-	
-	# Sync visual visibility
-	if is_instance_valid(lid_area):
-		var visual = lid_area.get_node_or_null("OverflowVisual") as ColorRect
-		if visual:
-			visual.visible = active
 
 func _generate_bounds() -> void:
 	var bound_layer = 10 + ((tier - 1) * 2)
@@ -79,8 +64,6 @@ func _generate_bounds() -> void:
 	motion_body.collision_layer = (1 << (bound_layer - 1))
 	motion_body.collision_mask = (1 << (ball_layer - 1))
 	
-	lid_area.collision_layer = 0
-	lid_area.collision_mask = (1 << (ball_layer - 1))
 	
 	var safe_y = container_size.y
 	var inner_left = left_wall_padding
@@ -107,29 +90,6 @@ func _generate_bounds() -> void:
 	hard_lid.position = Vector2(container_size.x / 2.0, -2500.0) # Massive buffer blocks balls from flying out top
 	
 	spawn_point.position = Vector2(container_size.x / 2.0, spawn_y)
-	
-	# OVERFLOW MECHANISM: 30px detection area positioned below the lid (y=0)
-	# Position at y=15.0 with height=30.0 covers from y=0 to y=30
-	lid_area.position = Vector2(container_size.x / 2.0, 15.0)
-	
-	var lid_shape_node = _get_or_create_area_shape(lid_area)
-	lid_shape_node.shape.size = Vector2(inner_right - inner_left, 30.0)
-	
-	# VISUAL: Translucent red rectangle for the overflow area
-	var visual_name = "OverflowVisual"
-	var visual = lid_area.get_node_or_null(visual_name) as ColorRect
-	if not visual:
-		visual = ColorRect.new()
-		visual.name = visual_name
-		visual.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		lid_area.add_child(visual)
-	
-	visual.color = Color(1.0, 0.0, 0.0, 0.4) # Translucent red
-	visual.size = lid_shape_node.shape.size
-	visual.position = -visual.size / 2.0
-	
-	# Only show visual if penalties are active
-	visual.visible = _penalties_active
 
 func _get_or_create_wall(wall_name: String) -> CollisionShape2D:
 	var wall = motion_body.get_node_or_null(wall_name) as CollisionShape2D
@@ -139,16 +99,6 @@ func _get_or_create_wall(wall_name: String) -> CollisionShape2D:
 		wall.shape = RectangleShape2D.new()
 		motion_body.add_child(wall)
 	return wall
-
-func _get_or_create_area_shape(area: Area2D) -> CollisionShape2D:
-	var shape_node: CollisionShape2D
-	if area.get_child_count() > 0:
-		shape_node = area.get_child(0) as CollisionShape2D
-	if not shape_node:
-		shape_node = CollisionShape2D.new()
-		shape_node.shape = RectangleShape2D.new()
-		area.add_child(shape_node)
-	return shape_node
 
 func sync_state(tier_instances: Array) -> void:
 	var target_uuids = []
@@ -179,7 +129,6 @@ func sync_state(tier_instances: Array) -> void:
 			if is_instance_valid(_active_balls[uuid]):
 				_active_balls[uuid].queue_free()
 			_active_balls.erase(uuid)
-			_penalty_timers.erase(uuid)
 			
 	if to_spawn.size() > 0:
 		_spawn_queue.append_array(to_spawn)
@@ -192,7 +141,6 @@ func clear() -> void:
 		if is_instance_valid(_active_balls[uuid]):
 			_active_balls[uuid].queue_free()
 	_active_balls.clear()
-	_penalty_timers.clear()
 	drop_timer.stop()
 
 func _on_drop_timer_timeout() -> void:
@@ -251,39 +199,8 @@ func _spawn_ball(inst) -> void:
 	
 	_active_balls[inst.ball_uuid] = ball
 
-func _physics_process(delta: float) -> void:
+func _physics_process(_delta: float) -> void:
 	_check_out_of_bounds()
-	
-	if not is_instance_valid(lid_area):
-		return
-		
-	var overlapping = lid_area.get_overlapping_bodies()
-	var current_overlapping_uuids = []
-	
-	for body in overlapping:
-		if body is PhysicsGachaBall:
-			if not _penalties_active: continue
-				
-			var uuid = body.instance_uuid
-			current_overlapping_uuids.append(uuid)
-			if not _penalty_timers.has(uuid):
-				_penalty_timers[uuid] = 0.0
-			
-			_penalty_timers[uuid] += delta
-			
-			if _penalty_timers[uuid] >= 5.0:
-				var bm = get_tree().get_first_node_in_group("battle_manager")
-				if is_instance_valid(bm) and bm.has_method("_on_battle_inventory_penalty"):
-					bm._on_battle_inventory_penalty(uuid)
-				elif SignalBus.has_signal("inventory_instance_removed_penalty"):
-					SignalBus.emit_signal("inventory_instance_removed_penalty", uuid)
-				_penalty_timers.erase(uuid)
-				
-	if _penalties_active:
-		var tracked_uuids = _penalty_timers.keys()
-		for uuid_to_check in tracked_uuids:
-			if not current_overlapping_uuids.has(uuid_to_check):
-				_penalty_timers.erase(uuid_to_check)
 
 func _check_out_of_bounds() -> void:
 	var safe_margin = 300.0
@@ -304,7 +221,6 @@ func _check_out_of_bounds() -> void:
 	for ball in objects_to_recover:
 		var uuid = ball.instance_uuid
 		_active_balls.erase(uuid)
-		_penalty_timers.erase(uuid)
 		
 		var bm = get_tree().get_first_node_in_group("battle_manager")
 		if is_instance_valid(bm):

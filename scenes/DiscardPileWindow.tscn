@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3 uid="uid://c28k46w6p3h0"]
+[gd_scene load_steps=7 format=3 uid="uid://c28k46w6p3h0"]
 
 [ext_resource type="Script" path="res://scripts/DiscardPileWindow.gd" id="1_v38m6"]
 [ext_resource type="PackedScene" path="res://scenes/PhysicsTierContainer.tscn" id="2_physics_tier"]
@@ -12,9 +12,6 @@ size = Vector2(2000, 4000)
 
 [sub_resource type="RectangleShape2D" id="RectangleShape2D_floor"]
 size = Vector2(4000, 2000)
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid2"]
-size = Vector2(1252, 50)
 
 [node name="DiscardPileWindow" type="Control"]
 layout_mode = 3
@@ -70,9 +67,3 @@ shape = SubResource("RectangleShape2D_right")
 [node name="FloorWall" type="CollisionShape2D" parent="DiscardPhysicsContainer/Bounds" index="2"]
 position = Vector2(640, 1665)
 shape = SubResource("RectangleShape2D_floor")
-
-[node name="LidArea" parent="DiscardPhysicsContainer" index="3"]
-position = Vector2(640, 0)
-
-[node name="CollisionShape2D" parent="DiscardPhysicsContainer/LidArea" index="0"]
-shape = SubResource("RectangleShape2D_lid2")

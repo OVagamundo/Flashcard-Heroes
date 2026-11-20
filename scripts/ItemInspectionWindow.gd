@@ -85,11 +85,11 @@ func _update_description_and_stats(item_def: Resource) -> void:
 			3: title_color = Color("#1E3A8A") # Deep Royal Navy / Azure
 	name_label.add_theme_color_override("font_color", title_color)
 
-	var trait_id := _get_linked_trait_id(item_def)
+	var crest_trait_id: String = _get_crest_trait_id(item_def.id) if item_def is TrinketDefinition else ""
 	var full_text := ""
 	
-	if not trait_id.is_empty():
-		var trait_ladder := _build_trait_trinket_description(trait_id)
+	if not crest_trait_id.is_empty():
+		var trait_ladder := _build_trait_trinket_description(crest_trait_id)
 		description_label.set_meta("effect_definition", null)
 		
 		var base_desc := ""
@@ -241,15 +241,7 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 			_on_inventory_changed()
 
 func _is_trinket(item_def: Resource) -> bool:
-	if not is_instance_valid(item_def):
-		return false
-	if item_def is TrinketDefinition:
-		return true
-	if item_def.get("category") == &"TRINKET":
-		return true
-	if not _get_linked_trait_id(item_def).is_empty():
-		return true
-	return false
+	return item_def is TrinketDefinition or (item_def is GachaBallDefinition and item_def.category == &"TRINKET")
 
 func _reset_window_size() -> void:
 	# With WindowManager now enforcing width before population, we can reset instantly
@@ -286,16 +278,10 @@ func _get_all_instances_db() -> Dictionary:
 		result[_instance.ball_uuid] = _instance
 	return result
 
-func _get_linked_trait_id(item_def: Resource) -> String:
-	if not is_instance_valid(item_def):
-		return ""
-	if "linked_trait_id" in item_def and item_def.linked_trait_id != &"":
-		return String(item_def.linked_trait_id)
-	
-
-	for trait_name in C.TRAIT_SORT_ORDER:
-		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_name, {})
-		if trait_def.get("trinket_id", &"") == item_def.id:
+func _get_crest_trait_id(trinket_id: StringName) -> String:
+	for trait_name: String in C.TRAIT_SORT_ORDER:
+		var trait_def: Dictionary = C.TRAIT_DEFINITIONS[trait_name]
+		if trait_def["trinket_id"] == trinket_id:
 			return trait_name
 	return ""
 

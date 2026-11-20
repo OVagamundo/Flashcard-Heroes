@@ -81,7 +81,7 @@ Mechanism: If these checks pass, the manager performs an atomic equip transactio
 2. An `ITEM_DISCARD` event is enqueued ahead of the equip inventory change to ensure sequential presentation.
 3. The new item is removed from its source container and attached to the target unit's `equipped_item_uuids[0]`.
 4. The unit's effective stats are updated, emitting unified stat delta events for presentation.
-Rationale: This makes equipping deliberate and predictable while ensuring replaced equipment is permanently committed to the discard rather than recycled onto the shelf.
+Rationale: This makes equipping deliberate and predictable while sending replaced equipment to Discard for potential recovery through a tier machine.
 Rule I4: The Swap/Move Rule
 Statement: If an action is not a Merge and not an Equip, it is interpreted as a potential Swap or Move.
 Mechanism (Swap): If the target location contains an instance, the manager checks if the source instance can legally occupy the target's slot, AND if the target instance can legally occupy the source's original slot (per Rule I5). If both are true, it's a Swap. The data owner is instructed to exchange their location properties.
@@ -90,7 +90,7 @@ Rationale: This is the default fallback action, covering all standard board and 
 Rule I5: The Placement Legality Rules (The Final Gatekeeper)
 Statement: All Move and Swap actions are ultimately validated against a final set of hard-coded placement restrictions.
 The Definitive Checklist:
-Hero Restriction: The Hero instance can only exist in the PlayerLineup container. It cannot be moved to the shelf or any inventory.
+Hero Restriction: The Hero normally stays in the Player Lineup. The Incubator provides the same temporary Shelf placement for living allied units, including the Hero.
 Container Type Restriction: Items cannot be placed in PlayerLineup. Both units and items can be placed in PlayerShelf.
 Container Tier Integrity: A GachaBall of Tier X cannot be placed in an inventory container for Tier Y (e.g., RunInventoryT1 cannot hold a Tier 2 item).
 Single Item Slot Constraint: Units are constrained to a single item slot. Equipping an item onto a unit that already has an equipped item triggers an Item Replacement (the existing item is moved directly to the Battle Discard).
@@ -111,109 +111,43 @@ Mechanism:
 5. When items are equipped or unequipped, `GachaBallInstance.recalculate_stats` is called, which preserves the unit's current stats without clamping them to base values.
 
 Rationale: This allows merged units to scale indefinitely, creating a strategic progression where units grow more powerful through successive merges. The stat preservation system ensures that a unit's power is never lost due to equipment changes, maintaining the value of merge investments.
-3. Gacha Draw & Discard Lifecycle (Battle-Only)
-These are system-driven actions that manipulate GachaBalls during the battle phase. They are triggered by signals, not direct player inventory actions.
-The Gacha Draw Mechanism
-Trigger: The draw_gacha_requested(tier) signal is emitted (typically from a UI button in Main.gd).
-Logic: The BattleManager is responsible for executing the draw.
-Cost Check: It verifies if the player has enough Gacha Tokens (token cost according to tier).
-Pool Check: It checks the appropriate BattleInventoryT<n> container (each draw is associated with one of the tier containers).
-Reshuffle Check (Rule G1): If the pool is empty, the draw fails, and the token is not spent. There is no automatic reshuffle.
-Draw & Place: It randomly selects one instance from the pool, removes it from the BattleInventoryT<n> container, and attempts to place it in the first empty unlocked PlayerShelf slot (for both Units and Items). The first three slots are unlocked at battle start; each additional slot costs 1 Token and stays unlocked only for that encounter.
-Capsule Lifecycle: Machine draws and Shelf summons stay sealed on the Shelf. Only Lineup deployment or a valid Lineup merge/equip/use opens the capsule and activates entry effects. Opened instances cannot return to the Shelf; only machine storage feeds new Shelf capsules. The normal return path is Discard recycling. Existing item-stripping effects retain their explicitly defined machine destination.
-Shelf Stats: All battle-pool copies still count for scaling. Sealed Shelf residents do not update HP/PWR, except for Wind-up-kun's explicit Shelf growth. Draw-tracking and Token-spend effects remain immediate.
-Overflow (Rule G2): If every unlocked PlayerShelf slot is occupied, the drawn instance is sent directly to the DiscardPile. If a **Run Inventory** tiered container (`RunInventoryT*`) attempts to receive a 40th item, it triggers the **Random Eviction Rule** (see below).
-Rule G2: The Hardcap & Random Eviction Rule (RUN ONLY):
-Statement: Each **Run Inventory** tiered container has a hard capacity of **39 slots**. If a new GachaBall is added to a run container that already holds 39 items, a **RANDOM** existing GachaBall is permanently removed from the run to make space for the new one.
-Mechanism:
-1. The `RunState` detects that `find_first_empty_slot()` returns -1 for a tiered container.
-2. It selects a random index between 0 and 38.
-3. The instance occupying that index is permanently deleted via `remove_instance()`.
-4. The new instance is placed in the now-vacant slot at that index.
-Rationale: This enforces a strict UI limit (39 slots) while ensuring that getting new items is never blocked by a full inventory.
+## 3. Gacha Draw & Discard Lifecycle
 
-> [!IMPORTANT]
-> **Battle Inventory Exception:** The Battle Inventory does NOT use the Random Eviction Rule. It is physics-driven and follows the 5-second spring-loaded lid rule (Section 3.1).
+`RunState` owns the permanent inventory. `BattleState` owns encounter copies, capacity checks, and storage transfers. `InventoryOperations` resolves draws, and `BattleManager` applies the associated cost and emits the resulting combat events.
 
-The Discard & Reshuffle Mechanism
-What Goes to the Discard:
-- Drawn GachaBalls when the shelf/inventory is full (Rule G2).
-- Items that were equipped on a Unit that is defeated in combat.
-- The defeated Unit instance itself.
-- **Replaced Items**: When an item is equipped onto a unit that already holds an equipped item, the existing item is immediately replaced and moved directly to the Battle Discard (it does not return to the shelf).
-Rule G1: The Draw Fail Rule:
-Statement: If a tier pool is empty, any draw from that tier will fail and no tokens are spent. Discarded units do not return to the active draw pool.
-Rationale: This creates a closed-loop economy within each battle. It ensures the player can never have no gachaballs, but the state of those units (which ones are active, available vs. defeated) creates a dynamic and evolving tactical puzzle throughout the encounter.
+| Storage | Capacity | Admission at capacity |
+| --- | --- | --- |
+| Run inventory | 25 per tier | The incoming capsule replaces a seeded random capsule of the same tier. The replaced capsule is removed from the run. |
+| Battle tier machine | 25 per tier | The incoming capsule goes to Battle Discard. |
+| Battle Discard | 80 total | The incoming capsule replaces a seeded random capsule already in Discard. Ejection affects the battle copy. |
+| Player Shelf | 3 unlocked at battle start, 7 maximum | Each additional slot costs 1 Token for the current battle. A tier draw with no empty unlocked Shelf slot goes to Discard. |
 
-## 3.1 Battle Physics Inventory & Discard (PhysicsTierContainer)
-During battle, the drawer-based inventory (Battle Inventory) and the side-drawer Discard act as **Read-Only Physics Visualizations**. 
+### Tier draws and deployment
 
-### Read-Only Constraints
-These containers are strictly for observation. The following player actions are **completely disabled** within their boundaries:
-- **No Dragging or Moving**: Balls cannot be manually repositioned.
-- **No Swapping**: Attempting to swap balls is ignored.
-- **No Merging**: Merging must be done on the Battle Board.
-- **No Equipping**: Items cannot be dragged directly from these drawers.
+- A tier draw selects one instance from that battle tier with `gacha_rng`. The base Token cost is the tier number. An empty tier rejects the draw without spending Tokens.
+- Tier draws and Shelf summons remain sealed. An eligible Lineup deployment, merge, equip, or consumable use opens the capsule. Shelf copies count for pool-based abilities. Wind-up-kun and Incubator growth can resolve on the Shelf. Draw and Token-spend reactions resolve when the draw or spend occurs.
+- The Incubator takes a living allied Lineup unit into the capsule's former Shelf slot and occupies its equipment slot. It grants the holder +1 HP and +1 PWR at each Turn Start on the Shelf. Redeployment keeps that growth and sends the Incubator to Discard. Outside incubation, deployed units return to a sealed Shelf capsule by first recycling through a machine.
 
-### Pool Visualization Logic
-- **Inventory = Active Pool**: Battle Inventory balls represent `BattleInventoryT<n>` contents.
-- **Discard = Shared History**: Discard balls represent the contents of the `BattleDiscardPile`.
-- **Persistent State**: Simulation continues running while drawers are hidden. No "Kinematic Freeze" is required for movement; child physics nodes translate reliably with parent Controls.
-- **Sequential Spawning**: When new balls are spawned or items are discarded, they spawn at the **top-center** with a random X/Y stagger. Spawning is **sequential** (0.15s interval) to prevent overlapping explosions.
-- **Spawning Timing**: `populate()` is called **before** the drawer begins its opening animation (Battle Inventory) or **after** it completes (Discard if horizontal momentum is a concern, though current implementation preferes consistency with Battle Inventory).
+### Discard recovery
 
-### High-Fidelity Physics Stabilization
-To achieve a "heavy," stable feel and prevent gachaballs from tunneling or jittering, the following physics properties are enforced:
-- **Gravity Scale**: Set to **4.0** for faster, more tactile settling.
-- **Continuous Collision Detection (CCD)**: Enabled on all gachaball RigidBody2D nodes to prevent tunneling through the container floor during high-velocity drawer animations.
-- **Sleep Thresholds**: Aggressive `linear_sleep_threshold` and `angular_sleep_threshold` ensure balls freeze to a zero-velocity state after 6 seconds of settling.
-- **Dynamic Bounciness (Decay)**: To ensure lively movement during container travel without sacrificing stability, bounciness (`mat.bounce`) is set to **0.8** when the container starts moving and smoothly decays to **0.15** (base) over **5.0 seconds** after it stops.
-- **Collision Shape**: Uses a **12-sided Dodecagon** (approximated circle) to provide stable "facets" for resting, preventing the micro-jittering common with perfect CircleShape2D contacts.
+Discard receives defeated player units, replaced or detached equipment routed there, and overflow. Recovery is a player action during preparation and costs 1 Token when accepted.
 
-### The Penalty Mechanic (Cleanup)
-- **Spring Lid**: Every container features a physical "lid" at the top of the tray.
-- **Visual Feedback**: The lid is represented by a **30px high translucent red rectangle** at the top of the container area.
-- **Overflow Threshold**: If the container is too full, balls will push against this lid into the overflow area.
-- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, it is considered "un-repackable." The `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard**.
+| Condition | Outcome |
+| --- | --- |
+| At least one Discard capsule has room in its own tier | Draw a seeded random capsule among the matching candidates, reset its battle stats for recycling, and move it to that tier machine. |
+| A tier has room but no Discard capsule matches it | Charge the Token, show the selected capsule returning to Discard, and keep the count steady. |
+| All tiers are full, Discard is empty, or the player lacks a Token | Reject the draw without spending a Token. |
 
-### Layout Safeguard
-The `PhysicsTierContainer` implements a **Vertical Safeguard**:
-- `_max_y_seen`: The container tracks the maximum height it has ever reached.
-- On resize, the floor is locked to this maximum height. This prevents the floor from "dropping out" or shifting upward due to one-frame UI layout fluctuations (e.g., when adding many elements to a background container).
+The inventory drawers are read-only views of battle data. Simulated capsule positions can change presentation only. Overflow, ejection, and recovery resolve against container membership before playback. Losing a battle copy to ejection leaves its run original available in future encounters.
 
-### The Penalty Mechanic (Cleanup)
-- **Spring Lid**: Every container features a physical lid.
-- **Overflow Threshold**: If the container is too full, balls will push against the lid into the overflow area.
-- **5-Second Removal**: If a ball maintains **continuous physical contact** with the lid for **5 seconds**, the `inventory_instance_removed_penalty` signal is fired, and the instance is **moved to the Battle Discard**.
-
-### Tray Inertia (Jolts)
-To simulate the physical movement of the inventory drawer, the `WindowManager` triggers jolts via `apply_jolt(base_impulse: Vector2)`:
-- **Upward Slam (Inventory Open)**: A `Vector2(0, -500)` impulse applied when the drawer finishes opening.
-- **Downward Slam (Inventory Close)**: A `Vector2(0, 400)` impulse applied when the drawer drops away.
-- **Variance**: impulses include random variance and torque (spin) for a more organic, chaotic feel.
-
-### 3.2 Run Inventory (Staggered Honeycomb Grid)
-Unlike the Battle Inventory, the **Run Inventory** uses a static, non-physics layout designed for maximum density and perfect visibility.
-- **Honeycomb Geometry**: Uses a zero-gap staggered grid alternating between 6 and 5 columns per row.
-- **39 Slot Hardcap**: The grid is perfectly sized to display exactly 39 slots (4 x 6 rows and 3 x 5 rows) without scrolling.
-- **1x Size Constraint**: Gachaballs are rendered at strictly 1x scale and are forced to be perfectly circular (no vertical stretching).
-- **Bottom-Up Ordering**: Slots are filled from the bottom row upwards to maintain visual weight and consistency.
-- **Auto-Centering**: The entire grid content is dynamically centered horizontally and vertically within the inventory panel.
-
-### 3.3 Battle Inventory (Physics Rules)
-The Battle Inventory uses a **spring-loaded lid** mechanic for overflow:
-- **Active Repacking**: The lid actively applies a strong downward force (`apply_central_force`) to any GachaBall touching it, attempting to shove it back down so the pool can physically repack optimally.
-- **Cleanup Rule**: If a GachaBall maintains continuous physical contact with the top lid (the 30px red detection area) for **5 seconds**, it is moved to the **Battle Discard**.
-- **No Deletion**: Unlike the Run Inventory, no items are ever randomly deleted during battle. They are merely shifted to history (discard).
-End of Battle Cleanup
-Mechanism: When a battle concludes, the BattleManager and all of its temporary data are destroyed. This includes all battle_copy instances, the entire DiscardPile, and all BattleInventoryT* containers.
-State Preservation: The original RunState and its RunInventory remain completely untouched and unmodified by the events of the battle. This ensures a clean state for the next encounter.
 ## 4. Shop System
 
 The Shop uses **temporary state** stored in GameManager (not a separate ShopManager):
 - `_temporary_shop_master_dict`: Actual `GachaBallInstance` objects
 - `_temporary_shop_container`: `FixedArrayContainer(3)` with UUIDs
 - `_reroll_cost`: Escalates with each reroll (starts at 1)
+
+Shop stock and rerolls draw three eligible unit or item capsules using the weighting rules in [EncounterSystem.md](EncounterSystem.md#6-player-shop-and-reward-pools).
 
 ### Purchase Flow
 1. Player selects item → clicks "Buy"
@@ -234,10 +168,8 @@ The Shop uses **temporary state** stored in GameManager (not a separate ShopMana
 Shop uses `FULLY_INTERACTIVE` - items can be clicked to select (buy via button) or dragged directly onto the buy overlay. Purchases trigger a **Financial Confirmation First** animation pipeline with VFX proxies.
 
 ## 5. Hero Starting Loadouts
-The `RunState` initializes different starting inventories based on the selected hero.
 
-| Hero | Loadout Strategy | Details |
-|------|------------------|---------|
-| **Timekeeper** | **Developer Testing** | **1000 Gold**, a special Prismatic ETnkPlaToy, and 2 copies of all mergeable entities plus 1 of non-mergeable entities. Used for high-level debugging and transaction testing. |
-| **Bounty Hunter** | **Tier 1 Abundance** | 4 copies of EVERY Tier 1 unit and item (16 total items). No Tier 2 or 3 items. Focuses on rapid early-game merging strategies. |
-| **Generic** | **Standard** | 2 copies of specific items per tier. Default balanced start for standard gameplay. |
+- Dan and Shiken start with 30 Gold, three copies of their Tier 1 signature unit, two of each universal Tier 1 unit, and their Novice or Mercenary Crest. Dan gets two Study Pouches and Shiken gets two Claim Tickets.
+- Base Set heroes start with 5 Gold and three of each universal Tier 1 unit. Han, Kon, Hiko, and Deko start with the Specialist, Tank, Fire, and Support Crest respectively.
+- Each hero starts with two Candies, two Wakizashis, an Incubator, a Fortifying Tonic, an Impact Vial, and one Emblem matching their starting Crest.
+- `RunState.initialize_run()` adds one seeded Tier 2 and one seeded Tier 3 unit or equipment item from the hero's own active set. The rolls exclude the fixed starter definitions and use `gacha_rng`. Base Set heroes draw both from Base. The consumables and equipment are described in [GameContentDocument.md](GameContentDocument.md#4-universal-neutral-items--equipment).

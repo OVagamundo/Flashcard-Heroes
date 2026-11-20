@@ -9,24 +9,12 @@ func _init(p_tier: int = 1) -> void:
 	tier = p_tier
 
 func validate() -> bool:
-	if tier < 1 or tier > 3:
-		return false
-	var bm = GameManager.get_battle_manager()
-	if not is_instance_valid(bm):
-		return false
-	if bm.has_method("can_draw_gacha_instance"):
-		return bm.can_draw_gacha_instance(tier)
-	return true
+	var battle: BattleManager = GameManager.get_battle_manager() as BattleManager
+	return battle != null and tier >= 1 and tier <= 3 and battle.can_draw_gacha_instance(tier)
 
 func execute() -> void:
-	var main_node = GameManager.get_main_node()
-	if is_instance_valid(main_node) and not ActionQueue.is_headless_mode() and main_node.has_method("execute_draw_gacha_visuals"):
-		var button = main_node.get_knob_button(tier)
-		main_node.execute_draw_gacha_visuals(button, tier)
-	else:
-		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("_on_draw_gacha_requested"):
-			bm._on_draw_gacha_requested(tier)
+	var battle: BattleManager = GameManager.get_battle_manager() as BattleManager
+	battle.execute_machine_draw(tier, self)
 
 func yields_for_visuals() -> bool:
 	var main_node = GameManager.get_main_node()

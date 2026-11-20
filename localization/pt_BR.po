@@ -73,7 +73,7 @@ msgid "E?TnkMerPlaToy.name"
 msgstr "Vaultbark"
 
 msgid "EASpeFodToy.desc"
-msgstr "O Poder inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
+msgstr "Ao entrar em jogo, a unidade começa com Poder igual a 50% do seu Ouro atual."
 
 msgid "EASpeFodToy.name"
 msgstr "EASpeFodToy"
@@ -550,10 +550,10 @@ msgid "ability.apprentice_insignia.desc"
 msgstr "Quando uma unidade de Nível 1 entra na Formação, ela recebe +1 de Vida e +1 Poder."
 
 msgid "ability.armor_aura.desc"
-msgstr "No início de cada turno, todos os aliados ganham 3 de Armadura."
+msgstr "Ao apertar Pronto, todos os aliados na Formação ganham 1 de Armadura."
 
 msgid "ability.bargain_charm.desc"
-msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
+msgstr "O primeiro uso de cada Máquina Gacha a cada turno custa 1 Ficha a menos (mínimo de 1). Válido apenas em batalhas e para o jogador."
 
 msgid "ability.basic_attack.desc"
 msgstr "Causa (PWR) de dano ao inimigo da frente."
@@ -562,7 +562,7 @@ msgid "ability.basic_attack_ranged_mirror.desc"
 msgstr "Causa (PWR) de dano ao inimigo no espaço espelhado."
 
 msgid "ability.boss_1_draw_drain.desc"
-msgstr "Toda vez que você saca um gachaball, este chefe ganha +1 de Vida."
+msgstr "Sempre que você obtém uma cápsula em uma Máquina Gacha, este chefe ganha +1 de Vida."
 
 msgid "ability.boss_2_token_drain.desc"
 msgstr "Toda vez que você gasta uma ficha, este chefe ganha +1 de Vida."
@@ -577,7 +577,7 @@ msgid "ability.costume_insignia.desc"
 msgstr "Quando uma unidade com o Tipo de Fantasia entra na Formação, ela recebe +1 de Vida e +1 Poder."
 
 msgid "ability.doppleganger_death.desc"
-msgstr "Gera um Doppleganger na Máquina Gacha de Nível 3 quando esta unidade é nocauteada."
+msgstr "Gera um Doppleganger na Máquina Gacha de Tier 3 quando esta unidade é nocauteada."
 
 msgid "ability.doppleganger_death_l1.desc"
 msgstr "Quando esta unidade é nocauteada, invoca 1 cópia de si mesma na Máquina Gacha."
@@ -628,7 +628,7 @@ msgid "ability.earth_insignia.desc"
 msgstr "Quando uma unidade com o Tipo de Terra entra na Formação, ela recebe +1 de Vida e +1 Poder."
 
 msgid "ability.echoing_orb_death.desc"
-msgstr "Gera um Orbe Ressonante na Máquina Gacha de Nível 2 quando o portador é nocauteado."
+msgstr "Gera um Orbe Ressonante na Máquina Gacha de Tier 2 quando o portador é nocauteado."
 
 msgid "ability.echoing_orb_scale.desc"
 msgstr "Concede ao portador +2 Poder para cada Orbe Ressonante em batalha."
@@ -841,7 +841,7 @@ msgid "ability.polished_plate.desc"
 msgstr "Ao apertar Pronto, todos os aliados ganham 1 de Reforço. Isso impede que a Armadura deles decaia no início de cada turno."
 
 msgid "ability.potion_plunder.desc"
-msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
+msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do Tier correspondente."
 
 msgid "ability.potion_t1.desc"
 msgstr "Restaura 4 de Vida."
@@ -886,7 +886,7 @@ msgid "ability.time_sprint_charm.desc"
 msgstr "O cronômetro do Desafio ganha um aumento de 2 segundos em batalhas."
 
 msgid "ability.token_return_charm.desc"
-msgstr "A primeira unidade a ser nocauteada a cada rodada retorna fichas equivalentes ao seu nível."
+msgstr "A primeira unidade a ser nocauteada a cada rodada retorna fichas equivalentes ao seu Tier."
 
 msgid "ability.toy_insignia.desc"
 msgstr "Quando uma unidade com o Tipo de Brinquedo entra na Formação, ela recebe +1 de Vida e +1 Poder."
@@ -949,7 +949,7 @@ msgid "ability.trait_plant_turn_start.desc"
 msgstr "No início de cada turno, cura a Planta com menor Vida, e concede +1 de Espinhos e +1 de Vida a todas as Plantas."
 
 msgid "ability.trait_specialist.desc"
-msgstr "Garante Fichas iniciais, dá desconto nos sorteios das Máquinas Gacha, ganha Ouro ao nocautear um inimigo e invoca um clone de batalha na Estante."
+msgstr "Garante Fichas iniciais, reduz o custo de uso das Máquinas Gacha, concede Ouro ao nocautear um inimigo e invoca um clone de batalha na Estante."
 
 msgid "ability.trait_specialist_turn_start.desc"
 msgstr "No início de cada turno, o Especialista mais à frente ganha +1 de Poder por cada 5 de Ouro possuído."
@@ -1021,13 +1021,13 @@ msgid "ability.unit_t2_e_mimic.desc"
 msgstr "No início de cada turno, transforma-se na unidade base do inimigo oposto, ganhando [+0 / +2 / +4] de Vida e Poder."
 
 msgid "ability.unit_t2_f_gold_pwr_l1.desc"
-msgstr "O Poder inicial é igual ao seu Ouro atual multiplicado por 50% ao ser comprado ou gerado."
+msgstr "Ao entrar em jogo, a unidade começa com Poder igual a 50% do seu Ouro atual."
 
 msgid "ability.unit_t2_f_gold_pwr_l2.desc"
-msgstr "O Poder inicial é igual ao seu Ouro atual multiplicado por 100% ao ser comprado ou gerado."
+msgstr "Ao entrar em jogo, a unidade começa com Poder igual a 100% do seu Ouro atual."
 
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
-msgstr "O Poder inicial é igual ao seu Ouro atual multiplicado por 150% ao ser comprado ou gerado."
+msgstr "Ao entrar em jogo, a unidade começa com Poder igual a 150% do seu Ouro atual."
 
 msgid "ability.unit_t2_g_buff_echo.desc"
 msgstr "Quando um aliado adjacente recebe um buff de Vida ou Poder, esta unidade repete [100% / 150% / 200%] desse buff nele."
@@ -1156,7 +1156,7 @@ msgid "ability.unit_tier3b_guardian_sacrifice_l3.desc"
 msgstr "Quando um aliado seria nocauteado, salta para interceptar o golpe e ganha 2 de Armadura."
 
 msgid "ability.unit_tier3c_soul_summon.desc"
-msgstr "Quando esta unidade é nocauteada, invoca uma unidade Nível 2 aleatória com [+0 / +2 / +4] de Vida e Poder."
+msgstr "Quando esta unidade é nocauteada, invoca uma unidade aleatória de Tier 2 com [+0 / +2 / +4] de Vida e Poder."
 
 msgid "ability.unit_tier3c_soul_summon_l1.desc"
 msgstr "Invoca uma unidade aleatória de Tier 2 no Nível 1 quando esta unidade é nocauteada."
@@ -1261,7 +1261,7 @@ msgid "battle_log.overflow_penalty"
 msgstr "[color=red]PENALIDADE POR EXCESSO:[/color] Excesso enviado ao Descarte: %s."
 
 msgid "boss_1.desc"
-msgstr "No fim de cada turno, invoca unidades para preencher espaços vazios. Toda vez que você saca um gachaball, este chefe ganha +1 de Vida."
+msgstr "No fim de cada turno, invoca unidades para preencher espaços vazios. Sempre que você obtém uma cápsula em uma Máquina Gacha, este chefe ganha +1 de Vida."
 
 msgid "boss_1.name"
 msgstr "O Guardião Desperto"
@@ -1507,7 +1507,7 @@ msgid "item.potion_heroism.name"
 msgstr "Bateria"
 
 msgid "item.potion_plunder.desc"
-msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do nível correspondente."
+msgstr "Rouba um item aleatório do alvo e o envia para sua Máquina Gacha do Tier correspondente."
 
 msgid "item.potion_plunder.name"
 msgstr "Saque"
@@ -1573,7 +1573,7 @@ msgid "item_t2_c.name"
 msgstr "Bigorna"
 
 msgid "item_t2_d.desc"
-msgstr "Concede ao portador +2 Poder para cada Orbe Ressonante em batalha. Gera um Orbe Ressonante na Máquina Gacha de Nível 2 quando o portador é nocauteado."
+msgstr "Concede ao portador +2 Poder para cada Orbe Ressonante em batalha. Gera um Orbe Ressonante na Máquina Gacha de Tier 2 quando o portador é nocauteado."
 
 msgid "item_t2_d.name"
 msgstr "Célula de Slime"
@@ -1629,8 +1629,14 @@ msgstr "Mercenário"
 msgid "loadout.hero_set.novice"
 msgstr "Novato"
 
-msgid "loadout.hero_trait_assignment"
-msgstr "No início do jogo, cada herói recebe 2 Tipos aleatórios. Seu Tipo Elemental é compartilhado pelas unidades do conjunto %s."
+msgid "ui.starting_trait_trinket"
+msgstr "Brasão inicial"
+
+msgid "ui.starting_units"
+msgstr "Unidades iniciais"
+
+msgid "ui.starting_items"
+msgstr "Itens iniciais"
 
 msgid "options.audio.master"
 msgstr "Volume Geral"
@@ -1669,22 +1675,22 @@ msgid "tooltip.end_turn"
 msgstr "Finalize sua fase de gerenciamento e inicie a batalha."
 
 msgid "tooltip.gacha_t1"
-msgstr "Máquina Nível 1 - Custo: 1 ficha. Gachaballs fracos mas abundantes."
+msgstr "Máquina Gacha de Tier 1. Custa 1 Ficha por uso. Suas cápsulas são mais comuns e menos poderosas."
 
 msgid "tooltip.gacha_t2"
-msgstr "Máquina Nível 2 - Custo: 2 fichas. Poder e custo balanceados."
+msgstr "Máquina Gacha de Tier 2. Custa 2 Fichas por uso. Equilibra poder e custo."
 
 msgid "tooltip.gacha_t3"
-msgstr "Máquina Nível 3 - Custo: 3 fichas. Alta potência alto risco."
+msgstr "Máquina Gacha de Tier 3. Custa 3 Fichas por uso. Oferece cápsulas mais poderosas e envolve mais risco."
 
 msgid "tooltip.gold"
-msgstr "Ouro - Gaste nas lojas para comprar gachaballs e rerolar estoque."
+msgstr "Use Ouro na Loja para comprar cápsulas ou renovar as ofertas."
 
 msgid "tooltip.hero_hp"
-msgstr "Vida do Herói - Se chegar a zero sua jogatina termina."
+msgstr "Se a Vida do Herói chegar a zero, sua partida termina."
 
 msgid "tooltip.inventory"
-msgstr "Inspecione sua coleção de gachaballs em todos os níveis."
+msgstr "Veja sua coleção de cápsulas de todos os Tiers."
 
 msgid "tooltip.item_slot"
 msgstr "Espaço de item equipado - Itens equipados nesta unidade fornecem bônus."
@@ -1693,19 +1699,19 @@ msgid "tooltip.lineup_slot"
 msgstr "Espaço de batalha - Unidades aqui lutam na batalha."
 
 msgid "tooltip.reroll"
-msgstr "Atualiza estoque da loja. Custo aumenta a cada rerolar."
+msgstr "Renova as ofertas da Loja. O custo aumenta a cada renovação."
 
 msgid "tooltip.tokens"
-msgstr "Fichas - Ganhe do Desafio de flashcards. Gaste para sacar gachaballs."
+msgstr "Ganhe Fichas no Desafio de flashcards e gaste-as para usar as Máquinas Gacha."
 
 msgid "tooltip.train_hp"
-msgstr "Gaste fichas do Desafio para aumentar permanentemente o Vida do herói."
+msgstr "Gaste Fichas do Desafio para aumentar permanentemente a Vida do Herói."
 
 msgid "tooltip.train_pwr"
 msgstr "Gaste fichas do Desafio para aumentar permanentemente o Poder do herói."
 
 msgid "tooltip.trinket_slot"
-msgstr "Trinket - Fornece bônus passivos para toda sua jogatina."
+msgstr "Amuleto. Concede bônus passivos ao longo da partida."
 
 msgid "trait.air.12"
 msgstr "Ataques de unidades de Ar espalham metade da Estática aplicada (mínimo 1) para inimigos adjacentes."
@@ -1906,7 +1912,7 @@ msgid "trait.specialist.2"
 msgstr "[color=#ffd166][b]Quando uma batalha começa[/b][/color], se você tiver 0 Fichas restantes, ganha 1 Ficha."
 
 msgid "trait.specialist.3"
-msgstr "O primeiro sorteio do Gacha em cada batalha custa 1 Ficha a menos (mínimo 1)."
+msgstr "O primeiro uso de uma Máquina Gacha em cada batalha custa 1 Ficha a menos (mínimo de 1)."
 
 msgid "trait.specialist.4"
 msgstr "Quando um Especialista nocauteia um inimigo, ganha +1 de Ouro (máximo de 1 por turno e 5 por batalha)."
@@ -2011,25 +2017,25 @@ msgid "trinket.apprentice_insignia.name"
 msgstr "Insígnia do Aprendiz"
 
 msgid "trinket.armor_aura.desc"
-msgstr "No início de cada turno, todos os aliados ganham 3 de Armadura."
+msgstr "Ao apertar Pronto, todos os aliados na Formação ganham 1 de Armadura."
 
 msgid "trinket.armor_aura.name"
 msgstr "Aura de Armadura"
 
 msgid "trinket.awe_inspiring_totem.desc"
-msgstr "No início de cada turno, se houver uma unidade de Nível 3 ou Tier 3 na Formação, concede +1 de Vida e +1 Poder a todas as outras unidades de tier e nível inferiores."
+msgstr "No início de cada turno, se houver uma unidade de Nível 3 ou Tier 3 na Formação, concede +1 de Vida e +1 Poder a todas as outras unidades de Tier e nível inferiores."
 
 msgid "trinket.awe_inspiring_totem.name"
 msgstr "Totem Inspirador"
 
 msgid "trinket.bargain_charm.desc"
-msgstr "Sorteios Gacha custam 1 ficha a menos (mínimo 1) uma vez por máquina, por turno. Válido apenas para batalhas. Exclusivo para o jogador."
+msgstr "O primeiro uso de cada Máquina Gacha a cada turno custa 1 Ficha a menos (mínimo de 1). Válido apenas em batalhas e para o jogador."
 
 msgid "trinket.bargain_charm.name"
 msgstr "Charme de Barganha"
 
 msgid "trinket.beginners_charm.desc"
-msgstr "Desafios: Ganhe 1 ficha extra se o nível de maestria do flashcard respondido for 1 (Muito Difícil)."
+msgstr "Nos Desafios, ganhe 1 Ficha extra se o flashcard respondido estiver no nível de domínio 1 (Muito Difícil)."
 
 msgid "trinket.beginners_charm.name"
 msgstr "Amuleto do Iniciante"
@@ -2311,7 +2317,7 @@ msgid "trinket.trait_water.name"
 msgstr "Brasão da Água"
 
 msgid "trinket.trinity_charm.desc"
-msgstr "Se você comprar pelo menos uma vez de cada máquina de tier (1, 2 e 3) em um turno ou encontro, ganha 1 Ficha."
+msgstr "Se você usar cada uma das três Máquinas Gacha (Tiers 1, 2 e 3) pelo menos uma vez em um turno ou encontro, ganha 1 Ficha."
 
 msgid "trinket.trinity_charm.name"
 msgstr "Amuleto da Trindade"
@@ -2353,7 +2359,7 @@ msgid "trinket.water_insignia.name"
 msgstr "Insígnia da Água"
 
 msgid "tutorial.battle_management"
-msgstr "Obtenha Cápsulas. Use suas Fichas nas Máquinas Gacha para obter novas unidades e itens! Cada máquina tem um valor diferente dependendo do seu Tier. Cada ficha conta!"
+msgstr "Use suas Fichas nas Máquinas Gacha para obter cápsulas com unidades e itens. Cada máquina tem um custo diferente dependendo do seu Tier."
 
 msgid "tutorial.battle_management_intro.title"
 msgstr "Máquinas Gacha"
@@ -2386,25 +2392,25 @@ msgid "tutorial.gacha_inspect_battle.title"
 msgstr "Cápsulas de Batalha"
 
 msgid "tutorial.gacha_inspect_run.mouse"
-msgstr "Coleção Gacha: Esta é a sua coleção atual. Passe o mouse sobre uma GachaBall para inspecioná-la!"
+msgstr "Esta é sua Coleção Gacha. Passe o mouse sobre uma cápsula para inspecioná-la!"
 
 msgid "tutorial.gacha_inspect_run.title"
 msgstr "Coleção Gacha"
 
 msgid "tutorial.gacha_inspect_run.touch"
-msgstr "Coleção Gacha: Esta é a sua coleção atual. Pressione e segure uma GachaBall para inspecioná-la!"
+msgstr "Esta é sua Coleção Gacha. Toque e segure uma cápsula para inspecioná-la!"
 
 msgid "tutorial.gambling_den"
 msgstr "Arrisque tudo por ouro. Ganhe fichas no Desafio para gastar nestas máquinas em recompensas imediatas de ouro."
 
 msgid "tutorial.loadout"
-msgstr "Escolha seu herói e Deck de flashcards. Heróis têm habilidades especiais que podem mudar drasticamente como o jogo flui, e o Deck é o conjunto de flashcards usado durante toda a jogatina."
+msgstr "Escolha seu Herói e seu Deck de flashcards. Cada Herói tem habilidades próprias. Você usa o Deck escolhido ao longo de toda a partida."
 
 msgid "tutorial.merge_choice"
 msgstr "Escolha Fundir para combinar dois em uma única entidade mais poderosa, ou Trocar para reorganizar suas fileiras? A escolha é sua."
 
 msgid "tutorial.new_card_intro"
-msgstr "A cada Desafio (ou a cada sequência de 3 acertos), um novo flashcard entra no seu Deck Ativo. Esta tela mostra a sua carta recém-adicionada e os flashcards com o menor domínio atual para você revisar antes do Desafio. Memorize alguns porque suas fichas para esse turno dependem disso!"
+msgstr "Novos flashcards podem entrar no Deck Ativo antes do Desafio, conforme seu progresso, ou durante o Desafio, ao acertar três respostas seguidas. Antes de começar, revise o novo flashcard e os que você menos domina. Seus acertos rendem Fichas!"
 
 msgid "tutorial.new_card_intro.title"
 msgstr "Novo Flashcard e Revisão"
@@ -2419,10 +2425,10 @@ msgid "tutorial.rest_site"
 msgstr "Um momento de descanso. Domine o Desafio de flashcards para ganhar fichas e use-as nestas máquinas para upgrades permanentes do Herói."
 
 msgid "tutorial.shop"
-msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se estiver procurando algo específico, mas cuidado: o preço sobe a cada rolagem!"
+msgstr "Gaste Ouro para ampliar sua coleção. Se estiver procurando algo específico, renove as ofertas da Loja. O custo aumenta a cada renovação!"
 
 msgid "tutorial.shrine_intro"
-msgstr "O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo nível.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
+msgstr "O Santuário permite ajustar sua Coleção de Cápsulas durante a partida.\n\nRemover uma cápsula a retira da sua coleção atual pelo restante da partida.\nRemover custa 5 de ouro e aumenta em +1 a cada uso pelo restante da partida.\n\nTransformar uma cápsula a converte em outra cápsula aleatória do mesmo Tier.\nTransformar sempre custa 5 de ouro e não aumenta por ativação."
 
 msgid "tutorial.shrine_intro.title"
 msgstr "Removendo e Transformando"
@@ -2518,7 +2524,7 @@ msgid "ui.confirm"
 msgstr "Confirmar"
 
 msgid "ui.confirm_reset"
-msgstr "Tem certeza que deseja resetar todo o progresso?"
+msgstr "Tem certeza de que deseja zerar todo o progresso?"
 
 msgid "ui.confirm_selection"
 msgstr "Confirmar Seleção"
@@ -2704,10 +2710,10 @@ msgid "ui.mastery_level_5"
 msgstr "Domínio 5 (Muito Fácil)"
 
 msgid "ui.merge_encounter_description"
-msgstr ""
+msgstr "Faça uma fusão ou aumente o level das suas unidades e itens de forma permanente."
 
 msgid "ui.merge_encounter_instruction"
-msgstr "Clique ou Arraste uma gachaball sobre outra válida para Fundir! Custo: {cost} Ouro (Fundir aqui desbloqueia essa receita pelo resto da partida!)"
+msgstr "Selecione duas cápsulas compatíveis ou arraste uma sobre a outra para fundi-las. Custa {cost} de Ouro por fusão. A receita fica disponível pelo resto da partida!"
 
 msgid "ui.merge_encounter_open_inventory"
 msgstr "CLIQUE AQUI PARA FUNDIR!"
@@ -2797,22 +2803,22 @@ msgid "ui.reward_desc"
 msgstr "Ganhe fichas para gastar em prêmios nas máquinas abaixo!"
 
 msgid "ui.reward_tier_prizes"
-msgstr "Prêmios Nível %d\n(%d Ficha%s)"
+msgstr "Prêmios de Tier %d\n(%d Ficha%s)"
 
 msgid "ui.reward_elite_instruction"
 msgstr "Mova o Amuleto para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
 
 msgid "ui.reward_instruction"
-msgstr "Mova a gacha ball para cá para: Pegar ou Vender.\nClique em qualquer lugar para fechar o inventário."
+msgstr "Mova a cápsula para cá para pegar ou vender.\nClique em qualquer lugar para fechar o inventário."
 
 msgid "ui.rewards_title"
 msgstr "RECOMPENSAS"
 
 msgid "ui.run_complete"
-msgstr "JOGATINA COMPLETA!"
+msgstr "PARTIDA CONCLUÍDA!"
 
 msgid "ui.run_complete_message"
-msgstr "Você derrotou todos os %d chefes e completou sua jogatina!"
+msgstr "Você derrotou todos os %d chefes e concluiu a partida!"
 
 msgid "ui.score"
 msgstr "Pontuação: %d"
@@ -2824,7 +2830,7 @@ msgid "ui.shop"
 msgstr "Loja"
 
 msgid "ui.shop_desc"
-msgstr "Gaste Ouro para expandir sua coleção. Rerole o estoque se necessário, mas o preço de rerolagem sobe a cada vez!"
+msgstr "Gaste Ouro para ampliar sua coleção. Você pode renovar as ofertas da Loja, e o custo aumenta a cada renovação."
 
 msgid "ui.shop_node"
 msgstr "Loja"
@@ -2836,7 +2842,7 @@ msgid "ui.show_tutorials"
 msgstr "Mostrar Tutoriais e Dicas"
 
 msgid "ui.shrine_desc"
-msgstr "Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo nível por 5 de Ouro."
+msgstr "Molde sua coleção!\nRemova cápsulas por um custo crescente em Ouro,\nou Transforme-as em uma cápsula aleatória do mesmo Tier por 5 de Ouro."
 
 msgid "ui.shrine_drop_remove"
 msgstr "Arraste ou clique aqui pra\n[font_size=72]REMOVER[/font_size]\n({cost} Ouro)"
@@ -2845,13 +2851,13 @@ msgid "ui.shrine_drop_transform"
 msgstr "Arraste ou clique aqui pra\n[font_size=72]TRANSFORMAR[/font_size]\n({cost} Ouro)"
 
 msgid "ui.shrine_instruction"
-msgstr "Mova a gacha ball para cá para: Transformar ou Remover.\nClique em qualquer lugar para fechar o inventário."
+msgstr "Mova a cápsula para cá para transformar ou remover.\nClique em qualquer lugar para fechar o inventário."
 
 msgid "ui.shrine_instructions"
-msgstr "Solte uma GachaBall aqui para Remover (%d de Ouro) ou Transformar (%d de Ouro)."
+msgstr "Solte uma cápsula aqui para removê-la (%d de Ouro) ou transformá-la (%d de Ouro)."
 
 msgid "ui.shrine_node"
-msgstr "Templo"
+msgstr "Santuário"
 
 msgid "ui.shrine_open_inventory"
 msgstr "REMOVER OU TRANSFORMAR"
@@ -2893,16 +2899,16 @@ msgid "ui.test_mode"
 msgstr "Modo Teste"
 
 msgid "ui.tier"
-msgstr "Nível"
+msgstr "Tier"
 
 msgid "ui.tier_1"
-msgstr "Nível 1"
+msgstr "Tier 1"
 
 msgid "ui.tier_2"
-msgstr "Nível 2"
+msgstr "Tier 2"
 
 msgid "ui.tier_3"
-msgstr "Nível 3"
+msgstr "Tier 3"
 
 msgid "ui.title"
 msgstr "FLASHCARD HEROES"
@@ -2926,7 +2932,7 @@ msgid "ui.training_complete"
 msgstr "Treinamento Completo!"
 
 msgid "ui.training_grounds"
-msgstr "Campus de Treinamento"
+msgstr "Dojo"
 
 msgid "ui.training_grounds_desc"
 msgstr "Jogue para ganhar fichas e gaste-as em melhorias permanentes de Poder."
@@ -2965,7 +2971,7 @@ msgid "ui.utg_popup_title"
 msgstr "Use suas Fichas para treinar!"
 
 msgid "ui.utg_title"
-msgstr "Campo de Treinamento"
+msgstr "Dojo"
 
 msgid "ui.victory"
 msgstr "VITÓRIA"
@@ -3209,3 +3215,28 @@ msgstr "Estandarte de Fantasia"
 
 msgid "trinket.banner_costume.desc"
 msgstr "O roubo ao apertar Pronto e as transferências de Poder quando unidades são nocauteadas fortalecem uma unidade ofensiva em crescimento na retaguarda. Concede o Brasão de Fantasia gratuitamente. Parceiros aprovados de outros Tipos recebem Emblemas de Fantasia gratuitos. No fim de cada turno ímpar, chama reforços para recompor a Formação."
+
+msgid "ui.battle_order"
+msgstr "Ordem"
+
+msgid "ui.battle_preview"
+msgstr "Prévia"
+
+msgid "item.incubator.name"
+msgstr "Incubadora"
+
+msgid "item.incubator.desc"
+msgstr "Move uma unidade aliada da Formação para esta cápsula na Estante. Ela ganha +1 de Vida e +1 de Poder no início de cada turno que passar dentro da cápsula e mantém o bônus ao voltar para a Formação. Ao voltar para a Formação, a Incubadora vai para o Descarte."
+
+msgid "item.encounter_tonic.name"
+msgstr "Tônico Fortificante"
+
+msgid "item.encounter_tonic.desc"
+msgstr "Concede +3 de Vida e +2 de Poder a uma unidade na Formação durante este encontro."
+
+msgid "item.damage_vial.name"
+msgstr "Frasco de Impacto"
+
+msgid "item.damage_vial.desc"
+msgstr "Causa 5 de dano à unidade escolhida em qualquer Formação. A Armadura reduz esse dano."
+

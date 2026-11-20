@@ -6,6 +6,8 @@
 [ext_resource type="PackedScene" path="res://scenes/SlotView.tscn" id="5_slotview"]
 [ext_resource type="Texture2D" uid="uid://bas2ifuq47flt" path="res://assets/PixelArt/ui/BGs/BattleSpring.png" id="8_bg"]
 [ext_resource type="Shader" path="res://assets/shaders/misty_fog.gdshader" id="fog_shader"]
+[ext_resource type="Script" path="res://scripts/ui/BattleTokenTray.gd" id="battle_token_tray"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/TokenRotationSpriteSheet.png" id="tray_token_sheet"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_battle_lineup_mist"]
 shader = ExtResource("fog_shader")
@@ -15,6 +17,10 @@ shader_parameter/field_offset = Vector2(8.2, 3.7)
 shader_parameter/source_line_y = 1.0
 shader_parameter/source_fade_height = 0.85
 shader_parameter/source_edge_fade = 0.045
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_tray_token_icon"]
+atlas = ExtResource("tray_token_sheet")
+region = Rect2(0, 0, 64, 64)
 
 [node name="Battle" type="Control"]
 layout_mode = 3
@@ -47,18 +53,6 @@ offset_right = 1920.0
 offset_bottom = 205.0
 mouse_filter = 2
 material = SubResource("ShaderMaterial_battle_lineup_mist")
-
-[node name="EnemyBanner" type="Control" parent="."]
-unique_name_in_owner = true
-top_level = true
-z_as_relative = false
-z_index = -1
-layout_mode = 0
-offset_left = 960.0
-offset_top = 290.0
-offset_right = 1072.0
-offset_bottom = 530.0
-script = ExtResource("banner_view_script")
 
 [node name="BattleManager" type="Node" parent="."]
 script = ExtResource("1_battle_manager_script")
@@ -145,9 +139,9 @@ top_level = true
 layout_mode = 0
 offset_left = 20.0
 offset_top = 631.0
-offset_right = 1524.0
+offset_right = 1336.0
 offset_bottom = 819.0
-custom_minimum_size = Vector2(1504, 188)
+custom_minimum_size = Vector2(1316, 188)
 theme_override_constants/separation = 0
 alignment = 0
 mouse_filter = 2
@@ -180,9 +174,61 @@ layout_mode = 2
 custom_minimum_size = Vector2(188, 188)
 layout_mode = 2
 
-[node name="ShelfSlot7" parent="TeamAreas/PlayerShelf" instance=ExtResource("5_slotview")]
-custom_minimum_size = Vector2(188, 188)
+[node name="BattleTokenTray" type="Control" parent="TeamAreas"]
+unique_name_in_owner = true
+top_level = true
+layout_mode = 0
+offset_left = 1392.0
+offset_top = 700.0
+offset_right = 1664.0
+offset_bottom = 868.0
+mouse_filter = 2
+script = ExtResource("battle_token_tray")
+
+[node name="CountDisplay" type="HBoxContainer" parent="TeamAreas/BattleTokenTray"]
+z_index = 2
+layout_mode = 1
+anchor_right = 1.0
+offset_top = 8.0
+offset_right = -24.0
+offset_bottom = 72.0
+mouse_filter = 2
+theme_override_constants/separation = 8
+alignment = 2
+
+[node name="TokenIcon" type="TextureRect" parent="TeamAreas/BattleTokenTray/CountDisplay"]
+texture_filter = 1
+custom_minimum_size = Vector2(64, 64)
 layout_mode = 2
+size_flags_vertical = 4
+mouse_filter = 2
+texture = SubResource("AtlasTexture_tray_token_icon")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Count" type="Label" parent="TeamAreas/BattleTokenTray/CountDisplay"]
+layout_mode = 2
+mouse_filter = 2
+theme_type_variation = &"HUDLabel"
+theme_override_colors/font_color = Color(0.98, 0.96, 0.92, 1)
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 4
+text = "0"
+vertical_alignment = 1
+
+[node name="EnemyBanner" type="Control" parent="." node_paths=PackedStringArray("front_enemy_slot")]
+unique_name_in_owner = true
+visible = false
+top_level = true
+z_as_relative = false
+z_index = -1
+layout_mode = 0
+offset_left = 960.0
+offset_top = 290.0
+offset_right = 1072.0
+offset_bottom = 530.0
+script = ExtResource("banner_view_script")
+front_enemy_slot = NodePath("../TeamAreas/EnemyLineupContainer/LineupSlot0")
 
 [node name="EnemyTrinketBar" type="HBoxContainer" parent="."]
 unique_name_in_owner = true
@@ -250,3 +296,27 @@ theme_override_colors/font_color = Color(1, 0.9, 0.4, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 3
 text = "End Turn"
+
+[node name="TurnControls" type="HBoxContainer" parent="."]
+unique_name_in_owner = true
+layout_mode = 0
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="OrderButton" type="Button" parent="TurnControls"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+clip_text = true
+action_mode = 0
+keep_pressed_outside = true
+
+[node name="PreviewButton" type="Button" parent="TurnControls"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+clip_text = true
+action_mode = 0
+keep_pressed_outside = true

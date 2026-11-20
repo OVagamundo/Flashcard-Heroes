@@ -1,0 +1,22 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_1"]
+script = ExtResource("2_effect")
+target_type = &"MANUAL"
+parameters = {"action_type": "BUFF", "base_value": 3, "stat": "hp"}
+
+[sub_resource type="Resource" id="Effect_2"]
+script = ExtResource("2_effect")
+target_type = &"MANUAL"
+parameters = {"action_type": "BUFF", "base_value": 2, "stat": "pwr"}
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_item_encounter_tonic"
+trigger = &"manual_activation"
+description_key = "item.encounter_tonic.desc"
+effects = Array[Resource]([SubResource("Effect_1"), SubResource("Effect_2")])
+sub_phase = 200

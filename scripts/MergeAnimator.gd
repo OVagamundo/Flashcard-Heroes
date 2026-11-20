@@ -29,7 +29,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	var source_view = WindowManager.find_view_for_location(source_loc)
 	var target_view = WindowManager.find_view_for_location(target_loc)
 	var final_view = WindowManager.find_view_for_location(final_loc)
-	var start_pos = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else Vector2.ZERO
+	var start_pos: Vector2 = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else context.get("start_pos", Vector2.ZERO)
 
 	# Hide ingredients
 	_set_unit_view_visible(source_view, false)
@@ -77,7 +77,13 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	# Wait for UI to completely refresh before arc toss
 	await get_tree().process_frame
 
-	if is_instance_valid(final_view) and not start_pos.is_zero_approx():
+	if GameManager.is_in_battle and final_loc != null and final_loc.container == C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and not start_pos.is_zero_approx():
+		vfx_ball.queue_free()
+		var animator: Node = get_tree().get_first_node_in_group("battle_animator")
+		assert(animator != null, "A battle merge needs its Discard presentation")
+		await animator._animate_gachaball_to_discard(start_pos, merge_visual_data)
+		SignalBus.inventory_action_completed.emit([merged_uuid])
+	elif is_instance_valid(final_view) and not start_pos.is_zero_approx():
 		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
 	else:
 		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
@@ -86,7 +92,7 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 		SignalBus.emit_signal.call_deferred("inventory_action_completed", [merged_uuid])
 
 	# Play VCR reactions AFTER the animation completes
-	if should_trigger_on_merge and is_instance_valid(bm):
+	if is_instance_valid(bm) and (should_trigger_on_merge or not reaction_events.is_empty()):
 		# Let queue_free/redraw settle so animator registers the latest merged views.
 		await get_tree().process_frame
 		

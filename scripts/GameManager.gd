@@ -1,6 +1,7 @@
 # res://scripts/GameManager.gd
 extends Node
 
+const C = preload("res://scripts/Constants.gd")
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 const SHRINE_SCENE = preload("res://scenes/Shrine.tscn")
 const REST_SITE_SCENE = preload("res://scenes/RestSite.tscn")
@@ -273,7 +274,7 @@ func _on_start_run_requested(hero_def_id: StringName, deck_id: StringName, deck_
 	start_run_with_seed(hero_def_id, deck_id, deck_order, deck_size)
 
 ## Starts a normal run, or a deterministic replay fallback, using the same setup path.
-## A seed of -1 preserves the existing random-seed behavior.
+## An unspecified seed uses the same roll shown in the Loadout.
 func start_run_with_seed(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL", seed: int = -1, for_replay: bool = false, replay_run_id: String = "") -> void:
 	# User Requirement: Start fresh tutorials every run if enabled
 	if TutorialManager and not for_replay:
@@ -294,12 +295,14 @@ func start_run_with_seed(hero_def_id: StringName, deck_id: StringName, deck_orde
 			"test_starting_items": serialized_test_items
 		}
 	}
+	if seed == -1 and not for_replay:
+		seed = SaveManager.get_loadout_seed()
 	RNGManager.initialize(seed)
 	UUIDUtils.clear_run_scope()
 	_reset_replay_transient_state()
 	run_state = RunState.new()
-	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	run_state.run_seed = RNGManager.get_master_seed()
+	run_state.initialize_run(hero_def_id, deck_id, deck_order, deck_size)
 	run_state.run_id = replay_run_id if not replay_run_id.is_empty() else UUIDUtils.generate_uuid(&"run")
 	UUIDUtils.begin_run_scope(run_state.run_id)
 	reset_gacha_discounts()
@@ -447,11 +450,15 @@ func _on_battle_ended(results: Dictionary) -> void:
 	
 	# Track boss defeat
 	if is_victory and run_state.current_boss_level > 0:
+		var boss_level: int = run_state.current_boss_level
+		run_state.defeated_boss_marker_positions[boss_level] = run_state.get_boss_marker_position(boss_level)
 		run_state.bosses_defeated += 1
+		run_state.refresh_boss_reveals()
+		SignalBus.run_data_changed.emit()
 		run_state.elites_encountered_in_tier = 0
 		run_state.elite_milestones_offered.clear()
 		
-		var max_boss_level = 3 if run_state.is_half_deck else 5
+		var max_boss_level: int = run_state.get_boss_count()
 		# Check for Boss victory (run complete)
 		if run_state.current_boss_level == max_boss_level:
 			_show_run_complete_popup()
@@ -492,6 +499,25 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 	director_run_state.player_gold = run_state.gold
 	director_run_state.unlock_percentage = run_state.get_deck_unlock_percentage()
 	director_run_state.current_purpose = purpose as DirectorRunState.Purpose
+	director_run_state.machine_trait_counts.clear()
+	director_run_state.machine_unit_counts.clear()
+	director_run_state.owned_crest_traits.clear()
+	var weights_offers: bool = purpose in [DirectorRunState.Purpose.SHOP, DirectorRunState.Purpose.REWARD]
+	if weights_offers:
+		director_run_state.unit_tag_overrides = run_state.dynamic_tag_overrides
+		for tier: int in [1, 2, 3]:
+			for unit: GachaBallInstance in run_state.get_inventory_tier_instances(tier):
+				if unit.get_definition().category != C.CATEGORY_UNIT:
+					continue
+				var units: Dictionary[StringName, int] = director_run_state.machine_unit_counts
+				units[unit.definition_id] = units.get(unit.definition_id, 0) + 1
+				var counts: Dictionary[String, int] = director_run_state.machine_trait_counts
+				var counted_traits: Array[String] = []
+				for tag: StringName in unit.get_active_tags(run_state.get_all_instances()):
+					var trait_id: String = WeightedPoolDirector.normalize_trait_tag(tag)
+					if C.TRAIT_DEFINITIONS.has(trait_id) and not counted_traits.has(trait_id):
+						counts[trait_id] = counts.get(trait_id, 0) + 1
+						counted_traits.append(trait_id)
 	# flashcard_mastery calculation could go here if available
 	director_run_state.unlocked_recipes.clear()
 	for r_id in run_state.unlocked_recipes.keys():
@@ -507,6 +533,10 @@ func _update_director_run_state(purpose: int = DirectorRunState.Purpose.ANY) -> 
 				var def = inst.get_definition()
 				if is_instance_valid(def):
 					director_run_state.exclude_entity(def.id)
+					if weights_offers and def is TrinketDefinition:
+						var trait_id: String = WeightedPoolDirector.get_crest_trait_id(def)
+						if not trait_id.is_empty() and not director_run_state.owned_crest_traits.has(trait_id):
+							director_run_state.owned_crest_traits.append(trait_id)
 
 func _on_battle_start_requested(_encounter_def: EncounterDefinition) -> void:
 	pass
@@ -806,10 +836,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 			if node_def.subtype == "BOSS":
 				# Boss encounter - boss is free, support units use daily budget
 				var boss_level: int = node_def.difficulty
-				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, daily_budget, run_state.day)
-				var boss_id: StringName = encounter_def.boss_or_elite_unit_id
-				if boss_id != &"":
-					run_state.record_boss_encounter(boss_id)
+				encounter_def = EncounterGenerator.generate_boss_encounter(boss_level, daily_budget, run_state.day, run_state.reveal_boss(boss_level))
 				# Track current boss level for victory handling
 				run_state.current_boss_level = boss_level
 				run_state.current_elite_level = 0
@@ -1152,16 +1179,11 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 	
 	_update_director_run_state(DirectorRunState.Purpose.NODE_GENERATION)
 	
-	var is_half_deck = run_state.is_half_deck
 	var boss_level: int = run_state.bosses_defeated + 1
-	var threshold: float = boss_level * 0.2
-	var max_bosses: int = 5
-	if is_half_deck:
-		threshold = boss_level * 0.3333
-		max_bosses = 3
-	
 	var selected_nodes: Array[PathNodeDefinition] = []
-	if director_run_state.unlock_percentage >= (threshold - 0.001) and boss_level <= max_bosses:
+	var offers_boss: bool = boss_level <= run_state.get_boss_count() and run_state.get_mastered_card_count() >= run_state.get_boss_mastery_threshold(boss_level)
+	if offers_boss:
+		run_state.reveal_boss(boss_level)
 		var node_def = PathNodeDefinition.new()
 		node_def.node_type = "BATTLE"
 		node_def.subtype = "BOSS"
@@ -1286,6 +1308,9 @@ func generate_path_nodes() -> Array[PathNodeDefinition]:
 	if not is_replay_run:
 		SaveManager.save_run(run_state)
 
+	if offers_boss:
+		SignalBus.run_data_changed.emit()
+
 	return selected_nodes
 
 ## Simulates and executes an atomic Reward Room draw transaction.
@@ -1320,14 +1345,15 @@ func simulate_reward_draw(tier: int, slot_index: int = -1) -> Dictionary:
 		if definition.tier != tier: continue
 		eligible.append(definition)
 	
-	if eligible.is_empty():
+	_update_director_run_state(DirectorRunState.Purpose.REWARD)
+	var definition: GachaBallDefinition = director.draw_item(eligible, director_run_state, RNGManager.reward_rng) as GachaBallDefinition
+	if definition == null:
 		run_state.add_room_tokens(cost)
 		if discount_active:
 			gacha_discounts_used[tier] = false
 		return {"success": false, "error": "No eligible definitions"}
 		
-	var definition = RNGManager.reward_rng.pick_random(eligible)
-	var instance = GachaBallInstance.new()
+	var instance := GachaBallInstance.new()
 	instance.initialize(definition)
 	instance.location_container_tag = &"Rewards"
 	instance.location_slot_index = slot_index

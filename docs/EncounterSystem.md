@@ -83,16 +83,19 @@ Starting at Day 1, special battlefield slots can generate on player and enemy li
 ## 3. Encounter Scheduling & Map RNG
 
 ### 3.1 Milestone Boss Battle Scheduling (Mastery-Driven)
-Boss battles are triggered strictly by **Flashcard Deck Mastery Progression**, not fixed calendar days:
-- **Full Deck (Standard):** Occurs at **20%, 40%, 60%, 80%, and 100%** of the selected deck unlocked. Maximum 5 Bosses per run.
-- **Half Deck (Quick Run):** Occurs at **33.3%, 66.6%, and 100%** of the deck unlocked. Maximum 3 Bosses per run.
-- **Dynamic Selection (No Predefined Order):** There is **no static boss sequencing** (e.g. no fixed "Boss 1", "Boss 2", "Boss 3"). Bosses (`boss_dustmon`, `boss_toughmon`, `boss_doppelkun`) are selected dynamically from the milestone pool using the Unified Weighted Decay algorithm.
+The next Boss becomes the only Crossroads choice when enough cards in the selected run Deck are currently at Mastery Level 3 or higher. Cards that drop below Level 3 stop counting. Thresholds round up, with the final Boss at 80% of the selected pool.
+
+| Deck mode | Mastery thresholds | Example |
+| --- | --- | --- |
+| Full Deck | 16%, 32%, 48%, 64%, 80% | 16, 32, 48, 64, 80 cards in a 100-card Deck |
+| Half Deck | Three evenly spaced thresholds through 80% | 14, 27, 40 cards in a 50-card Deck |
+
+`RunState` reveals the next Boss at the start of its leg. Later Boss previews unlock at fifths of the Full Deck or thirds of the Half Deck as cards are introduced. `EncounterGenerator.pick_boss_identity()` uses a seed derived from the run seed and milestone number with the weighted history below. `RunState` saves the revealed identity and the actual encounter uses it to resolve the Boss and its Banner.
 
 ### 3.2 Elite Battle Scheduling & Inventory-Bound Quota
 Elite nodes are high-risk, high-reward optional encounters paced toward upcoming Bosses:
-- **Progress-Paced Milestones:** Crossing **20%, 40%, 60%, and 80%** of the cards required for the next boss level guarantees that an Elite battle node is included as one of the 3 path choices.
-- **Inventory-Bound Lifetime Quota (12 Trinkets):** Players have a maximum capacity of **12 trinkets per run**. Consequently, a player can fight a baseline maximum of **12 Elite battles per run**.
-  * **Trinket Liquidation Rule:** If the player sells a trinket in the Shop, an additional Elite encounter is restored to their available run pool ($+1$ Elite encounter per trinket sold), allowing strategic players to hunt additional elites if they curate their trinket inventory.
+- Elite milestones at **20%, 40%, 60%, and 80%** use unlocked-card progress within the current boss tier. An eligible, unoffered milestone adds an Elite to the Crossroads choices unless the Boss is due.
+- The run quota uses **12 Elite victories**. The player has **9 trinket slots**.
 - **Per-Tier Quota Limit:** Players can fight at most **4 Elite battles per mini-boss tier** (quota resets to 0 upon defeating each mini-boss).
 - **Elite Pool:** Selected dynamically between `elite_slimeblob` and `elite_burnie` using Weighted Decay.
 
@@ -163,3 +166,31 @@ For complete specifications on banner drafting mechanics, package contiguous cha
 
 $$\longrightarrow \text{See } \textbf{docs/BannerDraftingSystem.md}$$
 $$\longrightarrow \text{See } \textbf{docs/Encounter\_Synergies\_and\_Pairs\_Reference.md}$$
+
+## 6. Player Shop and Reward Pools
+
+[WeightedPoolDirector](../scripts/systems/director/WeightedPoolDirector.gd) applies stock and reward weights with the relevant seeded stream. Initial stock and rerolls use a fresh snapshot of the player's run inventory and equipped trinkets.
+
+| Source | Eligible offerings | Roll |
+| --- | --- | --- |
+| Shop stock and rerolls | Universal and active Hero Set unit and item capsules | Three distinct offers using `shop_rng` |
+| Regular reward machines | Universal and active Hero Set unit and item capsules of the selected tier | One capsule per paid draw using `reward_rng` |
+| Elite and Boss reward stock and rerolls | Eligible unowned universal and active Hero Set trinkets | Up to three distinct offers using `reward_rng` |
+
+The director starts with the definition's base weight and its existing dynamic rules. Offer affinity adds 15% per exact unit copy in the run’s tier machines and per match for the candidate's strongest matching trait or set. Each machine unit contributes once per matching trait. An owned Crest adds one match for its trait. A linked trinket uses its linked trait for affinity. Affinity uses active unit tags, including run-specific Hero Set tags.
+
+### Crest offer weight
+
+Each distinct Crest in the player's trinket slots counts toward the total, including the starting Crest. A Crest is the trinket ID registered for its linked trait in `Constants.TRAIT_DEFINITIONS`. Insignias, Emblems, other trinkets, and enemy Banners are outside that count. Already owned trinket IDs are excluded before the roll.
+
+Apply the following factor to the affinity-adjusted weight of each new Crest. Each Crest owned from the second onward multiplies that weight by 0.35. This makes the third Crest less common and keeps later Crests eligible at progressively lower weights.
+
+| Distinct Crests owned | New Crest weight multiplier |
+| --- | ---: |
+| 0–1 | 1.0 |
+| 2 | 0.35 |
+| 3 | 0.1225 |
+| 4 | 0.042875 |
+| 5+ | 0.35 raised to the number of Crests owned minus 1 |
+
+These are relative weights in a roll. The probability of seeing a Crest depends on the other eligible offers in the pool. Other trinkets use their ordinary weights and affinity.

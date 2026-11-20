@@ -37,6 +37,7 @@ const FireworksCelebrationVFXScene = preload("res://scripts/vfx/FireworksCelebra
 
 @onready var main_panel: PanelContainer = %MainPanel
 @onready var question_label: Label = %QuestionLabel
+@onready var correction_label: Label = %CorrectionLabel
 @onready var choices_grid: GridContainer = %ChoicesGrid
 @onready var timer_label: Label = %TimerLabel
 @onready var timer_bar: ProgressBar = %TimerBar
@@ -65,6 +66,7 @@ var _current_question_id: StringName = &""
 var _current_choices: Array[StringName] = []
 var _current_mastery_color: Color = FlashcardProgress.MASTERY_COLORS[FlashcardProgress.MASTERY_MIN]
 var _panel_style: StyleBox = null
+var _answer_focus_style: StyleBoxFlat
 var _priority_card_list: Array[Dictionary] = []
 
 # Token counter references for live update
@@ -82,6 +84,13 @@ func _ready() -> void:
 	FlashcardManager.session_timer_updated.connect(_on_session_timer_updated)
 	got_it_button.pressed.connect(_on_got_it_pressed)
 	skip_button.pressed.connect(_on_skip_pressed)
+	_answer_focus_style = StyleBoxFlat.new()
+	_answer_focus_style.draw_center = false
+	_answer_focus_style.border_color = COLOR_COOL_BLACK
+	_answer_focus_style.set_border_width_all(4)
+	_answer_focus_style.set_corner_radius_all(14)
+	skip_button.add_theme_stylebox_override("focus", _answer_focus_style)
+	skip_button.add_theme_color_override("font_focus_color", COLOR_COOL_BLACK)
 	
 	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
@@ -214,6 +223,10 @@ func _setup_question_label_style() -> void:
 	intro_answer_label.add_theme_color_override("font_color", Color.WHITE)
 	intro_answer_label.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
 	intro_answer_label.add_theme_constant_override("outline_size", 8)
+	correction_label.add_theme_font_size_override("font_size", 64)
+	correction_label.add_theme_color_override("font_color", Color.WHITE)
+	correction_label.add_theme_color_override("font_outline_color", COLOR_COOL_BLACK)
+	correction_label.add_theme_constant_override("outline_size", 8)
 	
 	var intro_arrow = %IntroArrow
 	intro_arrow.add_theme_font_override("font", JAPANESE_FONT)
@@ -267,6 +280,7 @@ func _show_card_introduction() -> void:
 	intro_explanation_label.visible = not DemoContent.is_demo_mode()
 	choices_grid.hide()
 	question_label.hide()
+	correction_label.hide()
 	if is_instance_valid(timer_bar):
 		timer_bar.hide()
 	timer_label.hide()
@@ -571,6 +585,7 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 		_end_minigame()
 		return
 	
+	correction_label.hide()
 	question_label.text = card_data.get("question", "Error: No question")
 	question_label.add_theme_font_override("font", _get_study_font_for_card(question_card_id))
 	_current_question_id = question_card_id
@@ -586,8 +601,7 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 		_update_panel_to_mastery_color(question_card_id)
 	
 	# Clear previous choices
-	for child in choices_grid.get_children():
-		child.queue_free()
+	_clear_choice_buttons()
 	
 	# Create 6 choice buttons in a 2x3 grid
 	for i in range(mini(6, _current_choices.size())):
@@ -595,6 +609,7 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 		var choice_data: Dictionary = Database.get_flashcard_definition(choice_id)
 		if not choice_data.is_empty():
 			var button := Button.new()
+			button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
 			var answer_text: String = choice_data.get("answer", "Error")
 			var is_jp: bool = _is_japanese(answer_text)
 			
@@ -611,8 +626,10 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 				button.add_theme_font_size_override("font_size", 34) # Adjusted for Noto Sans Bold
 			
 			button.add_theme_color_override("font_color", COLOR_COOL_BLACK)
+			button.add_theme_color_override("font_focus_color", COLOR_COOL_BLACK)
 			button.add_theme_color_override("font_outline_color", COLOR_WARM_WHITE)
 			button.add_theme_constant_override("outline_size", 6)
+			button.add_theme_stylebox_override("focus", _answer_focus_style)
 			
 			# Enable autowrap for long translations
 			button.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
@@ -621,8 +638,45 @@ func _show_next_question_with_data(current_question: Dictionary, set_panel_color
 			button.pressed.connect(_on_choice_button_pressed.bind(choice_id))
 			choices_grid.add_child(button)
 			
-	# Unlock input now that new buttons are ready
+	_configure_choice_focus()
 	_input_locked = false
+
+func _clear_choice_buttons() -> void:
+	for child: Node in choices_grid.get_children():
+		choices_grid.remove_child(child)
+		child.queue_free()
+
+func _input(event: InputEvent) -> void:
+	var confirm: bool = event.is_action_pressed(&"ui_accept")
+	if not (confirm or event.is_action_pressed(&"ui_left") or event.is_action_pressed(&"ui_right")
+			or event.is_action_pressed(&"ui_up") or event.is_action_pressed(&"ui_down")):
+		return
+	if _input_locked or _session_timer <= 0 or not choices_grid.is_visible_in_tree() or choices_grid.get_child_count() == 0:
+		return
+	if WindowManager.is_tutorial_overlay_open() or WindowManager.is_options_window_open():
+		return
+	var focused: Control = get_viewport().gui_get_focus_owner()
+	if focused == skip_button or (focused != null and focused.get_parent() == choices_grid):
+		return
+	(choices_grid.get_child(0) as Button).grab_focus()
+	if confirm:
+		get_viewport().set_input_as_handled()
+
+func _configure_choice_focus() -> void:
+	var buttons: Array[Node] = choices_grid.get_children()
+	assert(buttons.size() == 6, "Challenge requires six navigable answer buttons")
+	for index: int in range(buttons.size()):
+		var button: Button = buttons[index] as Button
+		var column: int = index % 3
+		button.focus_neighbor_left = button.get_path_to(buttons[index - 1] if column > 0 else button)
+		button.focus_neighbor_right = button.get_path_to(buttons[index + 1] if column < 2 else button)
+		button.focus_neighbor_top = button.get_path_to(buttons[index - 3] if index >= 3 else button)
+		button.focus_neighbor_bottom = button.get_path_to(buttons[index + 3] if index < 3 else skip_button)
+	skip_button.disabled = false
+	skip_button.action_mode = BaseButton.ACTION_MODE_BUTTON_PRESS
+	skip_button.focus_neighbor_top = skip_button.get_path_to(buttons[4])
+	skip_button.focus_neighbor_bottom = NodePath(".")
+	skip_button.release_focus()
 
 func _on_choice_button_pressed(selected_answer_id: StringName) -> void:
 	if _input_locked or _session_timer <= 0:
@@ -745,9 +799,8 @@ func _present_choice_result(selected_answer_id: StringName, question_id: StringN
 		
 		Audio.set_music_pitch(1.0)
 			
-		_flash_button_incorrect(selected_answer_id)
+		_reveal_wrong_answer_correction(question_id)
 		_flash_timer_bar_incorrect()
-		_flash_button_correct(question_id, 0) # Reveal correct answer, no token
 		# AUDIO HOOK: Incorrect
 		Audio.play_sfx("minigame_incorrect")
 		
@@ -1122,15 +1175,21 @@ func execute_skip(question_id: StringName, committed_result: Dictionary) -> void
 
 
 
-func _flash_button_incorrect(incorrect_answer_id: StringName) -> void:
-	"""Flash the incorrect answer button red"""
-	for i in range(choices_grid.get_child_count()):
-		var button: Control = choices_grid.get_child(i)
-		if not is_instance_valid(button):
-			continue
-		if button.get_meta(&"choice_id", &"") == incorrect_answer_id:
-			button.modulate = Color.RED
-			break
+func _reveal_wrong_answer_correction(question_id: StringName) -> void:
+	var card: Dictionary = Database.get_flashcard_definition(question_id)
+	var answer: String = card["answer"]
+	correction_label.text = answer if _is_japanese(answer) else answer.to_upper()
+	correction_label.add_theme_font_override("font", _get_study_font_for_card(question_id))
+	correction_label.show()
+	skip_button.disabled = true
+	var flash: Tween = choices_grid.create_tween().set_parallel()
+	for child: Node in choices_grid.get_children():
+		var button: Button = child as Button
+		button.focus_mode = Control.FOCUS_NONE
+		button.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		button.modulate = COLOR_FLASH_INCORRECT
+		flash.tween_property(button, "modulate:a", 0.0, 0.25).set_delay(0.10)
+	flash.finished.connect(_clear_choice_buttons)
 
 func _end_minigame() -> void:
 	"""End the Challenge when timer expires"""

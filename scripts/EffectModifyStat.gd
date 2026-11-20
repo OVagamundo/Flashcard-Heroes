@@ -83,9 +83,10 @@ func execute(_source_uuid: String, targets: Array[String], battle_manager: Node,
 				abs(amount),
 				damage_type,
 				valid_targets,
-				false,
+				bool(parameters.get("skip_bump", false)),
 				cause
 			)
+			damage_result.damage_request.can_be_intercepted = bool(parameters.get("can_be_intercepted", true))
 			return damage_result
 		
 		# HEALS, BUFFS, DEBUFFS, and STATUS EFFECTS

@@ -61,7 +61,8 @@ Flashcard decks advance systematically across a run:
    - Synchronized with `active_deck_ids.size()` upon each card unlock to maintain save data backward compatibility.
 4. **Authoritative Deck Unlocking (`RunState.unlock_next_deck_card() -> StringName`)**:
    - The single source of truth for unlocking cards across the run.
-   - Called at the start of each challenge session by `FlashcardManager.start_minigame()`, and mid-challenge when a 3-question streak is achieved.
+   - `FlashcardManager.start_minigame()` introduces the sixth starter card for the first Challenge. Later Challenges unlock one card at the start if at least 50% of active cards are currently at Mastery Level 3 or higher and the previous Challenge had at least 3 correct answers and 50% accuracy.
+   - Also called mid-Challenge when a 3-question streak is achieved.
    - If `active_deck_ids.size() < ordered_deck_pool.size()`, unlocks the next locked card from `ordered_deck_pool`, initializes its progress at `MASTERY_MIN`, appends it to `active_deck_ids`, synchronizes `cards_presented_count = active_deck_ids.size()`, emits `run_data_changed`, and returns the newly unlocked `card_id`.
    - `RunState.check_deck_expansion() -> bool` delegates directly to `unlock_next_deck_card()`.
 
@@ -73,7 +74,7 @@ Flashcard decks advance systematically across a run:
 
 ### Public API
 - `start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void`
-  - Validates card definitions, triggers start deck expansion, configures session timers and counters, creates the first question, and opens the UI modal (if not in headless mode).
+  - Validates card definitions, checks eligibility for a start-of-Challenge unlock, configures session timers and counters, creates the first question, and opens the UI modal (if not in headless mode).
 - `submit_minigame_answer(question_id: StringName, selected_answer_id: StringName, think_time: float = 0.0) -> Dictionary`
   - Authoritatively processes answer submissions, adjusts mastery, tracks streaks, evaluates mid-challenge unlocks, updates timer (+0.5s on correct, +1.0s bonus if unlock triggers), increments token count, and queues next question.
 - `skip_minigame_question(question_id: StringName, think_time: float = 0.0) -> Dictionary`
@@ -99,7 +100,7 @@ Flashcard decks advance systematically across a run:
 - `session_duration: float`: Base duration configured for the session (7.0s base; +2.0s with Sprint Charm).
 - `correct_answers: int`: Total correct answers in the session.
 - `total_answers: int`: Total questions answered or skipped.
-- `current_streak: int`: Consecutive correct answers without an incorrect answer or skip.
+- `current_streak: int` counts correct answers since the last wrong submission. Skips preserve the count.
 - `tokens_earned: int`: Total tokens earned during the session.
 - `current_question: Dictionary`: Active question payload `{"question_id": StringName, "choices": Array[StringName]}`.
 
@@ -186,8 +187,9 @@ The challenge operates in four sequential phases:
 ### Subsequent Challenge Progression Contract (Single Source of Truth)
 - `RunState.unlock_next_deck_card()` serves as the authoritative unlock mechanism across both start-of-game expansion and mid-challenge unlocks.
 - When a card is unlocked mid-challenge, it is appended to `active_deck_ids`.
-- At the start of the next challenge, `RunState.unlock_next_deck_card()` unlocks the *following* locked card in `ordered_deck_pool` and `FlashcardManager` directly assigns this newly unlocked card to `introduced_card_id` for display in the review popup window.
-- Result: Up to 2 cards unlocked per challenge encounter (1 at start review popup + 1 mid-challenge), cleanly doubling deck progression pace without repeating cards already unlocked mid-challenge.
+- The next Challenge checks all active cards, including any unlocked by a streak. The required count is half of the active deck rounded up. Six active cards require three at Mastery Level 3 or higher, and seven active cards require four.
+- The previous Challenge must also have at least 3 correct answers and at least 50% accuracy. Skips count as incorrect for accuracy. The result is saved in `RunState` on completion and restored on Continue. Saves without a recorded result require a qualifying Challenge before the next start-of-Challenge unlock.
+- When both thresholds are met and a locked card remains, the next card in `ordered_deck_pool` is unlocked and assigned to `introduced_card_id` for the review popup. Otherwise the Challenge starts with the existing deck.
 
 ---
 
@@ -256,8 +258,7 @@ To ensure mastered cards do not crowd out active study material, selection weigh
   - Correct answers award Tokens used at stat shrines for permanent Hero base stat increases.
 
 ### Trinket & Hero Modifiers
-- **Starter Hero Guarantee (`hero_starter`)**:
-  - If the active hero is `hero_starter` and the player achieves fewer than 3 correct answers, a bonus of `3 - correct` tokens is awarded upon session completion, ensuring a baseline of at least 3 tokens.
+- **Novice Crest (`trinket_trait_novice`)** raises the session's Token payout to at least 3 on completion, regardless of the Hero and active Novice threshold. With two matching Lineup units, it also adds 1 second to the starting time of Battle Challenges. See [Novice.md](Novice.md#4-novice-trait-ladder).
 - **Beginner's Charm (`trinket_beginners_charm`)**:
   - Awards **2 Gacha Tokens** instead of 1 when answering a card at Level 1 mastery (`MASTERY_MIN`).
 - **Sprint Charm (`trinket_time_sprint_charm`)**:

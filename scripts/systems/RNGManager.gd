@@ -27,9 +27,7 @@ func _ready() -> void:
 ## Pass a specific seed for replays or deterministic testing.
 func initialize(master_seed: int = -1) -> void:
 	if master_seed == -1:
-		# Use Godot's system-level randomness ONLY here, once, to pick the master seed.
-		randomize()
-		_master_seed = randi()
+		_master_seed = generate_master_seed()
 	else:
 		_master_seed = master_seed
 
@@ -46,7 +44,16 @@ func get_master_seed() -> int:
 
 ## Deterministically derive a per-stream seed from the master seed.
 func _derive_seed(stream_key: String) -> int:
-	return hash(str(_master_seed) + "_" + stream_key)
+	return _derive_stream_seed(_master_seed, stream_key)
+
+func generate_master_seed() -> int:
+	return randi()
+
+func create_stream(master_seed: int, stream_key: String) -> SeededRNG:
+	return SeededRNG.new(StringName(stream_key), _derive_stream_seed(master_seed, stream_key))
+
+func _derive_stream_seed(master_seed: int, stream_key: String) -> int:
+	return hash(str(master_seed) + "_" + stream_key)
 
 # =============================================================================
 # SERIALIZATION (for run saves and replay checkpoints)

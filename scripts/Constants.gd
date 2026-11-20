@@ -1,6 +1,10 @@
 # res://scripts/Constants.gd
 extends Node
 
+const ITEM_INCUBATOR: StringName = &"item_incubator"
+const ITEM_ENCOUNTER_TONIC: StringName = &"item_encounter_tonic"
+const ITEM_DAMAGE_VIAL: StringName = &"item_damage_vial"
+
 # --- Location Container Tags ---
 # Conceptual location for items equipped on a unit
 const CONTAINER_EQUIPPED_ITEM = &"equipped_item"
@@ -177,6 +181,7 @@ const CAUSE_REPLACEMENT = &"CAUSE_REPLACEMENT" # Unit being replaced by summon
 # --- UI Sizing ---
 const SLOT_SIZE_BASE: int = 96
 const GACHA_CAPSULE_DIAMETER: int = 96
+const SHELF_CAPSULE_SCALE: float = 1.7
 const SLOT_SIZE_2X: int = 188
 const UNIT_SPRITE_SIZE: int = 128
 const SLOT_CENTER_OFFSET: int = 30 # (188-128)/2
@@ -190,10 +195,12 @@ const PLAYER_TRINKET_CAP: int = 9
 const ENEMY_TRINKET_CAP: int = 9
 const LINEUP_CAP: int = 5
 const SHELF_CAP: int = 8
-const PLAYER_SHELF_CAP: int = 8
+const PLAYER_SHELF_CAP: int = 7
 const INITIAL_SHELF_SLOTS: int = 3
 const SHELF_SLOT_TOKEN_COST: int = 1
 const RUN_INVENTORY_CAP: int = 25
+const BATTLE_TIER_CAP: int = RUN_INVENTORY_CAP
+const BATTLE_DISCARD_CAP: int = 3 * BATTLE_TIER_CAP + LINEUP_CAP
 
 # --- Reaction Resolution Sub-Phases (Action Constitution Phase 3) ---
 # SubPhase determines the execution order of abilities triggering simultaneously.

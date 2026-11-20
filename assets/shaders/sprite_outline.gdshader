@@ -6,12 +6,19 @@ shader_type canvas_item;
 uniform vec4 outline_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // White by default
 uniform float outline_width : hint_range(0.0, 30.0) = 2.0;
 uniform bool outline_enabled = false;
+uniform bool outline_only = false;
 uniform bool grayscale_enabled = false;
 
 // Animation uniforms for flash and fade effects
 uniform float flash_intensity : hint_range(0.0, 1.0) = 0.0; // 0 = normal, 1 = full white flash
 uniform vec4 flash_color : source_color = vec4(1.0, 1.0, 1.0, 1.0); // Flash color (white by default)
 uniform float alpha_multiplier : hint_range(0.0, 1.0) = 1.0; // Alpha fade multiplier
+
+varying float inherited_alpha;
+
+void vertex() {
+    inherited_alpha = COLOR.a;
+}
 
 void fragment() {
     vec4 sprite_color = texture(TEXTURE, UV);
@@ -65,6 +72,10 @@ void fragment() {
     
     // Apply alpha multiplier for fade effects
     final_color.a *= alpha_multiplier;
+
+    if (outline_only) {
+        final_color.a *= sprite_color.a < 0.1 ? inherited_alpha : 0.0;
+    }
     
     COLOR = final_color;
 }

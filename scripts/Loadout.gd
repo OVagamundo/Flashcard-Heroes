@@ -8,6 +8,10 @@ extends Control
 const HeroSelectButtonScene = preload("res://scenes/HeroSelectButton.tscn")
 const DeckSelectButtonScene = preload("res://scenes/DeckSelectButton.tscn")
 const SlotViewScene = preload("res://scenes/SlotView.tscn")
+const TraitTags = preload("res://scripts/ui/TraitTags.gd")
+const STARTER_COMPACT_ART_SIZE := Vector2(84, 72)
+const STARTER_UNIT_ART_SIZE := Vector2.ONE * (C.UNIT_SPRITE_SIZE + 8)
+const STARTER_STATS_HEIGHT: float = 28.0
 
 # UI References - Carousels
 @onready var hero_title: Label = %HeroTitle
@@ -19,10 +23,10 @@ const SlotViewScene = preload("res://scenes/SlotView.tscn")
 @onready var hero_info_panel: PanelContainer = %HeroInfoPanel
 @onready var hero_scroll_container: ScrollContainer = %HeroScrollContainer
 @onready var hero_sprite: TextureRect = %HeroSprite
+@onready var hero_trait_tags: TraitTags = %HeroTraitTags
 @onready var hero_name: Label = %HeroName
 @onready var hero_stats: Label = %HeroStats
 @onready var hero_description: RichTextLabel = %HeroDescription
-@onready var hero_abilities: RichTextLabel = %HeroAbilities
 @onready var starting_set_separator: HSeparator = %StartingSetSeparator
 @onready var starting_set_container: VBoxContainer = %StartingSetContainer
 
@@ -58,6 +62,9 @@ var deck_size_option: OptionButton # Deck size selection
 
 var _test_starters: Array[StringName] = []
 var _active_inspected_card: Control = null
+var _loadout_seed: int
+var _starting_loadout: RunState.StartingLoadout
+var _preview_hero: GachaBallInstance
 
 
 func _ready() -> void:
@@ -65,6 +72,7 @@ func _ready() -> void:
 	# AUDIO HOOK: Loadout BGM
 	Audio.play_music(SoundRegistry.BGM_LOADOUT)
 	
+	_loadout_seed = SaveManager.get_loadout_seed()
 	_load_hero_data()
 	_load_deck_data()
 	_selected_hero_index = _find_hero_index(&"hero_starter")
@@ -119,8 +127,7 @@ func _ready() -> void:
 	hero_sprite.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
 	hero_sprite.gui_input.connect(func(event: InputEvent):
 		if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-			if _selected_hero_def:
-				_inspect_definition(hero_sprite, _selected_hero_def.id, false)
+			_inspect_preview_hero()
 	)
 	
 	# Keep _active_inspected_card in sync when inspection windows close
@@ -579,6 +586,10 @@ func _update_start_button_state() -> void:
 
 func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	hero_info_panel.visible = true
+	_starting_loadout = RunState.preview_starting_loadout(hero_def.id, _loadout_seed)
+	_preview_hero = GachaBallInstance.new()
+	_preview_hero.initialize(hero_def, "loadout_hero", hero_def.tags)
+	_preview_hero.components.append(_starting_loadout.hero_traits)
 	
 	# Sprite
 	if hero_def.icon:
@@ -593,49 +604,15 @@ func _update_hero_info_panel(hero_def: GachaBallDefinition) -> void:
 	# Stats
 	hero_stats.text = tr("ui.hp") + ": " + str(hero_def.base_hp) + "  " + tr("ui.pwr") + ": " + str(hero_def.base_pwr)
 	
-	# Show only summary effects that are not already covered by the ability list.
-	var hero_summary: String = tr(hero_def.description_key)
-	var summary_is_covered_by_abilities := not hero_def.ability_definitions.is_empty()
-	var summary_text := hero_summary.to_lower()
-	for ability_def in hero_def.ability_definitions:
-		var ability_description := tr(ability_def.description_key).strip_edges().to_lower()
-		if ability_description.is_empty() or not summary_text.contains(ability_description):
-			summary_is_covered_by_abilities = false
-			break
-	var description_parts: Array[String] = []
-	if not hero_summary.is_empty() and not summary_is_covered_by_abilities:
-		description_parts.append(hero_summary)
-	var hero_set_name_key: String = ""
-	match Database.get_hero_set(hero_def.id):
-		Database.SET_BASE:
-			hero_set_name_key = "loadout.hero_set.base"
-		Database.SET_NOVICE:
-			hero_set_name_key = "loadout.hero_set.novice"
-		Database.SET_MERCENARY:
-			hero_set_name_key = "loadout.hero_set.mercenary"
-		_:
-			assert(false, "Loadout: hero has an unsupported set ID: %s" % Database.get_hero_set(hero_def.id))
-			return
-	description_parts.append(tr("loadout.hero_trait_assignment") % tr(hero_set_name_key))
-	hero_description.text = "\n\n".join(description_parts)
-	hero_description.visible = not description_parts.is_empty()
-	
-	# Abilities
-	if hero_def.ability_definitions.size() > 0:
-		var ability_text = "[b]" + tr("ui.ability") + ":[/b]\n"
-		for ability_def in hero_def.ability_definitions:
-			var ability_description := tr(ability_def.description_key)
-			if not ability_description.is_empty() and ability_description != ability_def.description_key:
-				ability_text += "• " + ability_description + "\n"
-		hero_abilities.text = ability_text
-		hero_abilities.visible = true
-	else:
-		hero_abilities.text = ""
-		hero_abilities.visible = false
-	
-	_update_hero_starting_set(hero_def)
-	if is_instance_valid(hero_scroll_container):
-		hero_scroll_container.scroll_vertical = 0
+	hero_trait_tags.populate(_preview_hero)
+	var ability_texts: Array[String] = []
+	for ability: AbilityDefinition in hero_def.ability_definitions:
+		ability_texts.append(tr(ability.description_key))
+	hero_description.text = "\n\n".join(ability_texts)
+	hero_description.visible = not ability_texts.is_empty()
+
+	_update_hero_starting_set()
+	hero_scroll_container.scroll_vertical = 0
 
 
 func _update_deck_info_panel(deck_meta: Dictionary) -> void:
@@ -714,20 +691,10 @@ func _on_start_run_pressed() -> void:
 # --- Hero Starting Set & Inspectable Views ---
 
 
-func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
+func _update_hero_starting_set() -> void:
 	for child in starting_set_container.get_children():
+		starting_set_container.remove_child(child)
 		child.queue_free()
-	
-	if hero_def == null:
-		starting_set_separator.visible = false
-		starting_set_container.visible = false
-		return
-	
-	var starter_ids: Array[StringName] = RunState.get_starters_for_hero(hero_def.id)
-	if starter_ids.is_empty():
-		starting_set_separator.visible = false
-		starting_set_container.visible = false
-		return
 	
 	starting_set_separator.visible = true
 	starting_set_container.visible = true
@@ -738,7 +705,7 @@ func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
 	var item_ids: Array[StringName] = []
 	var item_counts: Dictionary = {}
 	
-	for id in starter_ids:
+	for id: StringName in _starting_loadout.starter_ids:
 		var def: Resource = Database.get_definition(id)
 		if not def:
 			continue
@@ -752,37 +719,17 @@ func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
 					unit_counts[id] = 1
 				else:
 					unit_counts[id] += 1
-			elif gb.category == &"ITEM":
+			elif gb.category in [&"ITEM", &"CONSUMABLE"]:
 				if not item_counts.has(id):
 					item_ids.append(id)
 					item_counts[id] = 1
 				else:
 					item_counts[id] += 1
 	
-	# Section Header & Hint
-	var header_vbox := VBoxContainer.new()
-	header_vbox.add_theme_constant_override("separation", 2)
-	
-	var title_lbl := Label.new()
-	title_lbl.text = tr("ui.starting_set") if tr("ui.starting_set") != "ui.starting_set" else "Starting Set & Loadout"
-	title_lbl.add_theme_font_size_override("font_size", 18)
-	title_lbl.add_theme_color_override("font_color", Color(1.0, 0.88, 0.5, 1.0))
-	title_lbl.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1))
-	title_lbl.add_theme_constant_override("outline_size", 2)
-	header_vbox.add_child(title_lbl)
-	
-	var hint_lbl := Label.new()
-	hint_lbl.text = tr("ui.inspect_set_hint") if tr("ui.inspect_set_hint") != "ui.inspect_set_hint" else "Click or hover any view to inspect abilities, stats, and recipes."
-	hint_lbl.add_theme_font_size_override("font_size", 12)
-	hint_lbl.add_theme_color_override("font_color", Color(0.7, 0.75, 0.8, 0.8))
-	header_vbox.add_child(hint_lbl)
-	
-	starting_set_container.add_child(header_vbox)
-	
 	# Trait Trinket
 	if trait_trinket_id != &"":
 		var trinket_lbl := Label.new()
-		trinket_lbl.text = tr("ui.starting_trait_trinket") if tr("ui.starting_trait_trinket") != "ui.starting_trait_trinket" else "Starting Trait Trinket:"
+		trinket_lbl.text = tr("ui.starting_trait_trinket")
 		trinket_lbl.add_theme_font_size_override("font_size", 14)
 		trinket_lbl.add_theme_color_override("font_color", Color(0.9, 0.8, 0.45, 1.0))
 		starting_set_container.add_child(trinket_lbl)
@@ -791,7 +738,7 @@ func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
 		t_hbox.add_theme_constant_override("separation", 14)
 		starting_set_container.add_child(t_hbox)
 		
-		_create_starter_slot_entry(trait_trinket_id, 1, true, 0, t_hbox, false)
+		_create_starter_slot_entry(trait_trinket_id, 1, 0, t_hbox)
 		
 		var t_def: Resource = Database.get_definition(trait_trinket_id)
 		var desc_vbox := VBoxContainer.new()
@@ -818,158 +765,124 @@ func _update_hero_starting_set(hero_def: GachaBallDefinition) -> void:
 	# Starting Units
 	if not unit_ids.is_empty():
 		var units_lbl := Label.new()
-		units_lbl.text = tr("ui.starting_units") if tr("ui.starting_units") != "ui.starting_units" else "Starting Units:"
+		units_lbl.text = tr("ui.starting_units")
 		units_lbl.add_theme_font_size_override("font_size", 14)
 		units_lbl.add_theme_color_override("font_color", Color(0.65, 0.85, 1.0, 1.0))
 		starting_set_container.add_child(units_lbl)
 		
 		var units_flow := HFlowContainer.new()
-		units_flow.add_theme_constant_override("h_separation", 12)
-		units_flow.add_theme_constant_override("v_separation", 10)
+		units_flow.add_theme_constant_override("h_separation", 6)
+		units_flow.add_theme_constant_override("v_separation", 8)
 		starting_set_container.add_child(units_flow)
 		
 		var slot_idx := 0
 		for uid in unit_ids:
-			_create_starter_slot_entry(uid, unit_counts[uid], false, slot_idx, units_flow, true)
+			_create_starter_slot_entry(uid, unit_counts[uid], slot_idx, units_flow)
 			slot_idx += 1
 	
 	# Starting Items
 	if not item_ids.is_empty():
 		var items_lbl := Label.new()
-		items_lbl.text = tr("ui.starting_items") if tr("ui.starting_items") != "ui.starting_items" else "Starting Items:"
+		items_lbl.text = tr("ui.starting_items")
 		items_lbl.add_theme_font_size_override("font_size", 14)
 		items_lbl.add_theme_color_override("font_color", Color(0.65, 0.95, 0.8, 1.0))
 		starting_set_container.add_child(items_lbl)
 		
 		var items_flow := HFlowContainer.new()
-		items_flow.add_theme_constant_override("h_separation", 12)
-		items_flow.add_theme_constant_override("v_separation", 10)
+		items_flow.add_theme_constant_override("h_separation", 6)
+		items_flow.add_theme_constant_override("v_separation", 8)
 		starting_set_container.add_child(items_flow)
 		
 		var slot_idx := 0
 		for iid in item_ids:
-			_create_starter_slot_entry(iid, item_counts[iid], false, slot_idx, items_flow, true)
+			_create_starter_slot_entry(iid, item_counts[iid], slot_idx, items_flow)
 			slot_idx += 1
 
 
-func _create_starter_slot_entry(def_id: StringName, count: int, is_trinket: bool, slot_idx: int, parent_container: Node, show_name_label: bool = true) -> Control:
+func _create_starter_slot_entry(def_id: StringName, count: int, slot_idx: int, parent_container: Container) -> void:
 	var def: Resource = Database.get_definition(def_id)
 	assert(def != null, "Definition not found for starter id: %s" % str(def_id))
 	
 	var inst := GachaBallInstance.new()
-	if is_trinket or def is TrinketDefinition:
-		inst.initialize_from_trinket(def)
+	var preview_uuid: String = "loadout_%s" % def_id
+	if def is TrinketDefinition:
+		inst.initialize_from_trinket(def, preview_uuid)
 	else:
-		inst.initialize(def as GachaBallDefinition)
-	
+		var unit_or_item: GachaBallDefinition = def as GachaBallDefinition
+		var preview_tags: Array[StringName] = _starting_loadout.unit_tag_overrides.get(def_id, unit_or_item.tags)
+		inst.initialize(unit_or_item, preview_uuid, preview_tags)
+
+	var is_unit: bool = def is GachaBallDefinition and def.category == &"UNIT"
+	var art_size: Vector2 = STARTER_UNIT_ART_SIZE if is_unit else STARTER_COMPACT_ART_SIZE
+	var stats_height: float = STARTER_STATS_HEIGHT if is_unit else 0.0
+	var cell_size: Vector2 = art_size + Vector2(0.0, stats_height)
+	var cell := Control.new()
+	cell.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	cell.custom_minimum_size = cell_size
+	parent_container.add_child(cell)
+
 	var slot_view: SlotView = SlotViewScene.instantiate()
 	slot_view.set_size_scale(1.0)
-	# Hide slot pedestal texture frame ("the thin line for the slots can also not be used since it's making things too busy")
 	slot_view.show_background = false
-	
-	# Unit stats reach y = 109, so give unit slots 116px height to completely enclose the stats and keep names cleanly below
-	var is_unit: bool = (def is GachaBallDefinition and (def as GachaBallDefinition).category == &"UNIT")
-	var slot_h: int = 116 if is_unit else C.SLOT_SIZE_BASE
-	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, slot_h)
-	
-	var container_name: StringName = &"PlayerTrinkets" if (is_trinket or def is TrinketDefinition) else &"RunInventoryT1"
+	slot_view.custom_minimum_size = cell_size
+	cell.add_child(slot_view)
+	slot_view.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+
+	var container_name: StringName = &"PlayerTrinkets" if def is TrinketDefinition else &"RunInventoryT1"
 	var loc := LocationIdentifier.new(container_name, slot_idx)
 	loc.set_meta("gachaball_instance", inst)
 	loc.set_meta("is_preview", true)
 	slot_view.populate(loc)
 	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
-	
-	var entry_vbox := VBoxContainer.new()
-	entry_vbox.alignment = BoxContainer.ALIGNMENT_BEGIN
-	entry_vbox.add_theme_constant_override("separation", 6)
-	entry_vbox.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, 0)
-	
-	# Add entry to parent before populating content so node tree and @onready variables are initialized
-	parent_container.add_child(entry_vbox)
-	entry_vbox.add_child(slot_view)
-	
-	var visual_data := VisualDataAdapter.create_visual_data(inst)
+
+	var visual_data: Dictionary = VisualDataAdapter.create_visual_data(inst)
 	var gb: GachaBallView = slot_view.set_content(visual_data, true, false)
-	assert(gb != null, "Failed to instantiate GachaBallView for %s" % str(def_id))
-	
-	# Capsule overlay is omitted: raw unit sprite or item icon on slot pedestal
-	gb.show_capsule_overlay = false
-	var overlay = gb.get_node_or_null("GachaBallOverlay")
-	if is_instance_valid(overlay):
-		overlay.queue_free()
-	
-	# Disable unit animations for inspection-only previews
-	var anim_ctrl: UnitAnimationController = gb.get_node_or_null("AnimationController") as UnitAnimationController
-	if anim_ctrl != null:
-		anim_ctrl.set_active(false)
-		anim_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
-	
+	assert(gb != null, "Failed to instantiate GachaBallView for %s" % def_id)
+	gb.layout_loadout_preview(art_size.y)
+
+	var anim_ctrl: UnitAnimationController = gb.get_node("AnimationController")
+	anim_ctrl.set_active(false)
+	anim_ctrl.process_mode = Node.PROCESS_MODE_DISABLED
+
 	gb.set_meta("gachaball_instance", inst)
 	gb.set_meta("is_preview", true)
 	slot_view.set_meta("gachaball_instance", inst)
 	slot_view.set_meta("is_preview", true)
-	
-	# Count badge for multiple copies
+
 	if count > 1:
 		var badge := Label.new()
+		badge.name = "Quantity"
 		badge.text = "%dx" % count
 		badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+		badge.vertical_alignment = VERTICAL_ALIGNMENT_BOTTOM
 		badge.add_theme_font_size_override("font_size", 14)
 		badge.add_theme_color_override("font_color", Color(1.0, 0.9, 0.3, 1.0))
-		badge.add_theme_color_override("font_outline_color", Color(0, 0, 0, 1.0))
+		badge.add_theme_color_override("font_outline_color", Color.BLACK)
 		badge.add_theme_constant_override("outline_size", 3)
-		badge.z_index = 15
-		badge.anchors_preset = Control.PRESET_TOP_RIGHT
-		badge.anchor_left = 1.0
-		badge.anchor_right = 1.0
-		badge.offset_left = -32
-		badge.offset_top = 4
-		badge.offset_right = -6
-		badge.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-		badge.set_meta("slot_persistent_child", true)
-		slot_view.add_child(badge)
-	
-	if show_name_label:
-		var name_label := Label.new()
-		name_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-		var name_key: String = def.name_key if "name_key" in def else (def.display_name_key if "display_name_key" in def else String(def_id))
-		name_label.text = tr(name_key)
-		name_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		name_label.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-		name_label.add_theme_font_size_override("font_size", 12)
-		name_label.add_theme_color_override("font_color", Color(0.9, 0.9, 0.9, 1.0))
-		name_label.custom_minimum_size = Vector2(C.SLOT_SIZE_BASE, 0)
-		entry_vbox.add_child(name_label)
-	
-	return entry_vbox
+		badge.z_index = 3
+		cell.add_child(badge)
+		badge.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+		badge.offset_left = -32.0
+		badge.offset_right = -4.0
+		badge.offset_top = -stats_height - 24.0
+		badge.offset_bottom = -stats_height - 2.0
 
 
-func _inspect_definition(anchor: Control, def_id: StringName, is_trinket: bool = false) -> void:
+func _inspect_preview_hero() -> void:
 	Audio.play_sfx("ui_click")
-	if _active_inspected_card == anchor and WindowManager.is_any_inspection_window_open():
+	if _active_inspected_card == hero_sprite and WindowManager.is_any_inspection_window_open():
 		WindowManager.close_all_inspection_windows(true)
 		_active_inspected_card = null
 		return
-	
-	var def: Resource = Database.get_definition(def_id)
-	assert(def != null, "Definition not found: %s" % str(def_id))
-	
-	var inst := GachaBallInstance.new()
-	var window_type: StringName
-	if is_trinket or def is TrinketDefinition:
-		inst.initialize_from_trinket(def)
-		window_type = &"ItemInspection"
-	else:
-		inst.initialize(def as GachaBallDefinition)
-		window_type = &"UnitInspection" if (def as GachaBallDefinition).category == &"UNIT" else &"ItemInspection"
-	
-	_active_inspected_card = anchor
+
+	_active_inspected_card = hero_sprite
 	var context: Dictionary = {
-		"window_type": window_type,
-		"anchor_view": anchor,
+		"window_type": &"UnitInspection",
+		"anchor_view": hero_sprite,
 		"populate_context": {
-			"source_view": anchor,
-			"instance": inst,
+			"source_view": hero_sprite,
+			"instance": _preview_hero,
 			"is_preview": true
 		}
 	}

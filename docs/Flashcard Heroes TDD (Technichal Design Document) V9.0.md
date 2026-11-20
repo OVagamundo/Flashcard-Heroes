@@ -142,7 +142,8 @@ The `SaveManager` autoload singleton (`res://scripts/SaveManager.gd`) manages fi
   - **Run Seed & Seeded PRNG**: Master seed `run_seed` (32-bit uint) and stream states (`rng_state` for `map_rng`, `gacha_rng`, `shop_rng`, `combat_rng`, `reward_rng`), ensuring 100% deterministic run resumption.
   - **Run Progress**: `day`, `gold`, `tokens`, `bosses_defeated`, `current_boss_level`.
   - **Run Statistics**: `total_enemies_defeated`, `total_gold_earned`.
-  - **Deck State**: `deck_def_id`, `active_deck_ids`, `cards_presented_count`.
+  - **Deck State** includes `deck_def_id`, `ordered_deck_pool`, `active_deck_ids`, `cards_presented_count`, and `last_challenge_met_unlock_requirements`.
+  - **Boss Progression** saves `revealed_boss_ids` so Continue and actual encounters use the same Boss identity as the preview.
   - **Flashcard Progress**: Full mastery history per card (`mastery_level`, `times_reviewed`, `last_review_day`).
   - **Instance Registry**: All `GachaBallInstance` dictionaries (`ball_uuid`, `definition_id`, `origin_uuid`, stats, components, equipment UUIDs, tags, status effects).
   - **Containers**: UUID layouts across all inventory containers (`PlayerLineup`, `PlayerShelf`, `RunInventoryT1/T2/T3`).
@@ -160,9 +161,9 @@ The `SaveManager` autoload singleton (`res://scripts/SaveManager.gd`) manages fi
 
 To guarantee that gameplay decisions, combat outcomes, and replays remain 100% deterministic and immune to desynchronization:
 - **Stream Isolation (`RNGManager.gd`)**: Game systems are strictly prohibited from calling global unseeded random methods (`randi()`, `randf()`). All randomness routes through dedicated `SeededRNG` streams derived from `RunState.run_seed`:
-  - `map_rng`: Node generation and path randomization.
-  - `gacha_rng`: In-combat gacha machine draw order and distractor picks.
-  - `shop_rng`: Shop inventory generation and Shrine transformations.
+  - `map_rng` drives path generation, encounter generation, and Challenge questions and answer-choice shuffles. Boss milestone identities use separately derived seeds.
+  - `gacha_rng` drives starter capsule rolls, battle tier draws, Discard recovery and ejection, and Shrine transformations.
+  - `shop_rng` drives shop stock and rerolls.
   - `combat_rng`: Combat targeting choices (`TARGET_RANDOM_ENEMY`, `TARGET_RANDOM_ALLY`) and effect rolls.
   - `reward_rng`: Post-battle reward capsules and trinket offerings.
 - **State Capture**: When saving a checkpoint, the internal state of each RNG stream is serialized into `rng_state`, guaranteeing identical outcome sequences upon run continuation.
@@ -184,7 +185,7 @@ The battle inventory system uses a pure Godot 2D Physics simulation for the gach
 ### 8.2 Boundary Buffering & Fast Movement
 - **Massive Boundary Buffering**: Container boundaries (walls, floor, and hard lid) use a thickness of **5000.0 pixels**, preventing physics escape during extreme single-frame positional deltas.
 - **Discrete Layering**: Containers use mutually exclusive physics layers (e.g., Tier 1 on Layers 10/11, Tier 2 on Layers 12/13), allowing bounds of one container to overlap another without unintended collisions.
-- **Overflow Detection**: A 30px sensor at the top of the drawer detects overflow. Contact for 5 continuous seconds triggers discard penalty routing to the Battle Discard.
+- `BattleState` routes overflow by capsule count before presentation. The tier caps are 25 each and Battle Discard holds 80. Drawer physics displays the resulting memberships. See [InventoryManager.md](InventoryManager.md#3-gacha-draw--discard-lifecycle).
 
 ### 8.3 Rendering Fidelity & Interpolation
 - **Physics Interpolation**: Uses Godot 4 native `Node.PHYSICS_INTERPOLATION_MODE_ON` to decouple visual rendering from the fixed physics tick rate (120 Hz).

@@ -50,4 +50,5 @@ static func load_standard_animations() -> void:
 	
 	var transform_anim_script = load("res://scripts/animations/TransformAnimation.gd")
 	register("transform", transform_anim_script.new())
-	
+	var discard_eject_script: GDScript = load("res://scripts/animations/DiscardEjectAnimation.gd")
+	register("discard_eject", discard_eject_script.new())

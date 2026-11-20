@@ -39,14 +39,16 @@ var charged_empowered_attack: Dictionary = {} # Prepared Empowered Attack data (
 # --- Component Composition ---
 var components: Array[GachaBallComponent] = []
 var battle_components: Array[GachaBallComponent] = []
+var _preview_definition_tags: Array[StringName] = []
 
 # --- Initialization ---
-func initialize(definition: GachaBallDefinition) -> void:
+func initialize(definition: GachaBallDefinition, instance_uuid: String = "", preview_definition_tags: Array[StringName] = []) -> void:
 	if not is_instance_valid(definition):
 		return
 
 	self.definition_id = definition.id
-	self.ball_uuid = UUIDUtils.generate_uuid(definition.id)
+	self.ball_uuid = UUIDUtils.generate_uuid(definition.id) if instance_uuid.is_empty() else instance_uuid
+	_preview_definition_tags = preview_definition_tags.duplicate()
 	self.level = definition.level if "level" in definition else 1
 	self.current_hp = definition.base_hp
 	self.current_pwr = definition.base_pwr
@@ -95,13 +97,37 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	return copy
 
 
+## Copies an instance without changing its identity or current combat stats.
+func copy_for_simulation() -> GachaBallInstance:
+	var copy := GachaBallInstance.new()
+	copy.definition_id = definition_id
+	copy.ball_uuid = ball_uuid
+	copy.origin_uuid = origin_uuid
+	copy.level = level
+	copy.current_hp = current_hp
+	copy.current_pwr = current_pwr
+	copy._hp_debt = _hp_debt
+	copy._pwr_debt = _pwr_debt
+	copy.location_container_tag = location_container_tag
+	copy.location_slot_index = location_slot_index
+	copy.is_temporary = is_temporary
+	copy.equipped_on_uuid = equipped_on_uuid
+	copy.equipped_slot_index = equipped_slot_index
+	copy.equipped_item_uuids = equipped_item_uuids.duplicate()
+	copy.dynamic_tags = dynamic_tags.duplicate()
+	copy.status_effects = status_effects.duplicate(true)
+	copy.charged_empowered_attack = charged_empowered_attack.duplicate(true)
+	copy.components = _duplicate_components(components)
+	copy.battle_components = _duplicate_components(battle_components)
+	return copy
+
 # --- Trinket Initialization ---
 # Initialize this instance from a TrinketDefinition (no base stats, no item slots).
-func initialize_from_trinket(trinket_def: Resource) -> void:
+func initialize_from_trinket(trinket_def: Resource, instance_uuid: String = "") -> void:
 	if not is_instance_valid(trinket_def):
 		return
 	self.definition_id = trinket_def.id if "id" in trinket_def else &""
-	self.ball_uuid = UUIDUtils.generate_uuid(self.definition_id)
+	self.ball_uuid = UUIDUtils.generate_uuid(self.definition_id) if instance_uuid.is_empty() else instance_uuid
 	self.components.clear()
 	self.battle_components.clear()
 	# Neutralize stats and equipment for trinkets
@@ -769,7 +795,9 @@ func _build_definition_components() -> Array[GachaBallComponent]:
 	tag_component.priority = -1000
 	tag_component.is_persistent = false
 	if "tags" in def:
-		if is_instance_valid(GameManager.run_state) and GameManager.run_state.dynamic_tag_overrides.has(definition_id):
+		if not _preview_definition_tags.is_empty():
+			tag_component.tags_to_add = _preview_definition_tags.duplicate()
+		elif is_instance_valid(GameManager.run_state) and GameManager.run_state.dynamic_tag_overrides.has(definition_id):
 			tag_component.tags_to_add = GameManager.run_state.get_effective_unit_tags(definition_id, def.tags)
 		else:
 			tag_component.tags_to_add = def.tags.duplicate()

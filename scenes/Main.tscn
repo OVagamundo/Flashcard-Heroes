@@ -18,6 +18,8 @@
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/icon_sandclock.png" id="17_sandclock"]
 [ext_resource type="Shader" path="res://assets/shaders/misty_fog.gdshader" id="18_misty_fog_shader"]
 
+[ext_resource type="Script" path="res://scripts/ui/DeckMasteryBar.gd" id="mastery_bar_script"]
+
 [sub_resource type="AtlasTexture" id="AtlasTexture_gold_icon"]
 atlas = ExtResource("8_gold_coin")
 region = Rect2(0, 0, 64, 64)
@@ -368,12 +370,11 @@ text = "Day 1"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="FlashcardProgressBar" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
+[node name="FlashcardProgressBar" type="Control" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow/CenterStats/CenterContent"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(480, 10)
+custom_minimum_size = Vector2(960, 47)
 layout_mode = 2
-theme_override_constants/separation = 2
-alignment = 1
+script = ExtResource("mastery_bar_script")
 
 [node name="RightStats" type="HBoxContainer" parent="HUDLayer/HUDContainer/TopArea/TopRows/StatsRow"]
 unique_name_in_owner = true

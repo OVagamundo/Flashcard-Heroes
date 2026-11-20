@@ -1,0 +1,17 @@
+[gd_resource type="Resource" script_class="AbilityDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/AbilityDefinition.gd" id="1_ability"]
+[ext_resource type="Script" path="res://scripts/EffectModifyStat.gd" id="2_effect"]
+
+[sub_resource type="Resource" id="Effect_1"]
+script = ExtResource("2_effect")
+target_type = &"MANUAL"
+parameters = {"action_type": "DAMAGE", "base_value": -5, "stat": "hp", "can_be_intercepted": false, "skip_bump": true}
+
+[resource]
+script = ExtResource("1_ability")
+id = &"ability_item_damage_vial"
+trigger = &"manual_activation"
+description_key = "item.damage_vial.desc"
+effects = Array[Resource]([SubResource("Effect_1")])
+sub_phase = 200

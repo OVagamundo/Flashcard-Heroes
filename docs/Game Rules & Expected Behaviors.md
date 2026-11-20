@@ -22,7 +22,7 @@ A run is lost immediately if the **Hero's health (HP) reaches zero**.
 * **Permadeath**: Upon victory or defeat, the run's save checkpoint is permanently cleared, and the run ends immediately.
 * **Hero Unit Rules**:
   * The Hero participates directly on the active battle board alongside standard units and behaves as an active combatant (subject to damage, healing, buffs, and attacking).
-  * **Lineup Restriction**: The Hero is permanently bound to the active team lineup and **cannot** be moved to the shelf or inventory.
+  * The Hero starts in the Player Lineup. Incubation can temporarily move a living Hero to the Shelf under the same rules as other allied units.
   * **Item Slot**: Like all other units, the Hero possesses strictly **one item slot**.
 
 ---
@@ -60,6 +60,9 @@ Before starting a run, the player configures their starting setup:
   * `Inverted`: Reviews cards in reverse catalog order.
   * `Random`: Shuffles cards deterministically using the run's map random seed.
 * **Test Mode Starters Option**: In developer Test Mode, a debug dropdown utility allows granting starting items or trinkets directly into the Hero's starting loadout.
+* Each hero starts with a matching Crest and Emblem, plus a seeded Tier 2 and Tier 3 capsule picked from their own set. The fixed starters and eligibility rules are in [InventoryManager.md](InventoryManager.md#5-hero-starting-loadouts).
+
+Demo mode allows Dan and Shiken with the Katakana and Hiragana Decks. The other selections remain browsable, with Play disabled for a locked Hero or Deck. Continue is available for compatible saves. Demo mode hides the replay browser and loadout debug tools, and excludes Surprise from the Crossroads. Pressing O toggles access to full content and returns to Title.
 
 ## 2.2 State Lifecycles
 
@@ -104,7 +107,7 @@ The game operates on a dual-economy system that separates long-term collection c
 ## 3.3 The Strategic Duality: Swarming vs. Slot Power
 * **Swarming (Tier 1 Focus)**: Tier 1 units are cheap to draw in battle (costing only 1 Token) but have modest base stats. Merging duplicate Tier 1 units permanently upgrades their level, which doubles their Gold valuation in shops while their Token draw cost remains strictly 1 Token. This yields exceptional deployment efficiency.
 * **Slot Power (Tier 2 & Tier 3 Focus)**: Higher-tier units cost more Tokens to draw (2 or 3 Tokens) but provide concentrated slot efficiency, higher base stat packages, and multiplicative abilities.
-* **Exhaustion Risk**: Because defeated units and replaced items are committed permanently to the Discard for the remainder of a battle, an ultra-lean deck can run out of GachaBalls during prolonged encounters, resulting in defeat. Players must balance deck predictability (small decks) against raw endurance (larger decks).
+* **Exhaustion Risk** applies when tier machines run empty. Discard recovery costs 1 Token and returns a matching capsule to its tier when space permits.
 
 ## 3.4 Run Pool Composition & Hero Set Scoping Law
 * **Single Active Set Rule**: In any given run, exactly **one** Hero Set is active alongside the 25 Universal Neutral Base Units, universal items, and base trinkets.
@@ -134,7 +137,7 @@ The Spaced Repetition System (SRS) powers tactical resource generation:
     3. *Random Factor (Low)*: Slight randomization to prevent rigid predictability.
   * The same card **never** appears twice in succession.
 * **Review Popup Window (New Card Introduction)**:
-  * Triggers at the start of a challenge session when a new card is introduced into the active deck.
+  * The first Challenge introduces the sixth starter card. Later Challenges introduce one card if at least half of the active cards are at Level 3 or higher and the previous Challenge had at least 3 correct answers with at least 50% accuracy. Skips count against accuracy.
   * Features the newly unlocked card in the main view (question, answer, audio pronunciation, and grammatical explanation).
   * Displays a bottom row of up to 6 clickable priority cards strictly representing the lowest-mastery cards currently unlocked in the deck.
 
@@ -155,7 +158,7 @@ Answering 3 questions correctly in a row triggers an immediate mid-challenge car
 * **+1.0s Timer Extension**: Awards an immediate +1.0s bonus time extension directly to the countdown timer (in addition to the standard +0.5s for a correct answer, yielding +1.5s total time gained on the triggering question).
 * **Celebration Feedback**: Celebrated with multi-point fireworks, golden window flash, bright white timer bar flash with a floating `+1.0s` popup, and an animated announcement banner.
 * **Single Occurrence**: Can only trigger once per challenge session.
-* **Progression Accounting**: The mid-challenge unlocked card is recorded as presented. At the start of subsequent challenges, the next locked card is introduced in the review popup—never repeating cards already unlocked mid-challenge.
+* A card unlocked mid-Challenge joins the active deck immediately and counts toward the next Challenge's mastery requirement.
 
 ---
 
@@ -163,19 +166,13 @@ Answering 3 questions correctly in a row triggers an immediate mid-challenge car
 
 Battles resolve in distinct phases:
 
-```
-[Turn Start] ──► [Flashcard Challenge] ──► [Management Phase] ──► [Combat Execution] ──► [End of Turn]
-                                                 │
-                                         ("Ready!" Click)
-```
-
-1. **Turn Start Phase**: Any turn-start abilities or battlefield slot effects evaluate.
-2. **Flashcard Challenge**: The player answers questions to generate their Gacha Token budget for the turn.
+1. The timed **Flashcard Challenge** provides Tokens.
+2. **Turn Start effects** resolve after the Challenge and before preparation when applicable.
 3. **Management Phase**: The player spends tokens, draws units/items, repositions their team, merges units, equips items, uses consumables, and inspects the enemy lineup.
-4. **Pre-Combat Phase**: Triggered when the player clicks "Ready!". All 15 Trait Trinkets (Elemental, Class, Visual) activate and deliver their combat-start effects.
-5. **Combat Execution Phase**: Units take turns acting strictly front-to-back. Attacks, abilities, reactions, and deaths resolve automatically and deterministically.
+4. **Pre-Combat Phase** begins when the player presses **Ready!** and resolves abilities assigned to the Ready trigger, including applicable Crest effects.
+5. **Combat Execution** alternates between both Lineups by rank. Attacks, abilities, reactions, and knockouts resolve deterministically.
 6. **End-of-Turn Phase**: Status effects decay, end-of-turn abilities resolve, and pending deaths/summons clear. If enemies remain, a new turn begins.
-7. **Battle Result**: Defeating all enemies opens Victory results leading to post-battle rewards. The Hero reaching 0 HP triggers Defeat results and ends the run.
+7. **Battle Results** open after pending combat presentation finishes. Victory leads to rewards or completes the run after the final Boss. The Hero reaching 0 HP ends the run in Defeat.
 
 ---
 
@@ -197,18 +194,16 @@ When an entity is dropped onto another entity, intent resolves in strict priorit
 
 ## 6.3 Gacha Draw & Shelf Overflow
 * Each battle begins with only the three leftmost Player Shelf slots unlocked.
-* The next locked slot can be unlocked for 1 Token. Unlocks proceed from left to right, up to the eight-slot maximum; each unlock lasts for the current encounter only and resets at the next battle.
-* Only visible platform pixels are darkened; transparent areas remain transparent. The next slot shows a centered plus and a white outline on hover, along with the 1 Token description.
-* Purchasing sends a Token from the HUD to the slot. The slot remains visually locked and interaction stays blocked until the Token arrives, then it brightens with a quick pop.
+* The next locked slot can be unlocked for 1 Token. Unlocks proceed from left to right, up to seven slots, and reset for the next battle.
 * Drawn GachaBalls and Shelf summons remain sealed in capsules in the first empty unlocked Shelf slot. Capsules open only on deployment, equipment, merging, or consumable use in a Lineup.
 * Sealed capsules can be rearranged or swapped on the Shelf. They cannot be merged together there, equipped there, or used on Shelf residents.
 * A sealed capsule can merge directly into an eligible Lineup unit or equipped item. Equipment and consumables can be applied directly to eligible Lineup units; consumables retain enemy Lineup targeting.
-* An opened unit or item cannot return to the Shelf or swap places with a Shelf capsule. Discard recycling returns it to a machine, after which drawing it produces a sealed Shelf capsule again.
+* Opened units and items can return sealed through Discard recovery and a tier draw. An equipped Incubator can instead reseal a living allied Lineup unit in the Incubator's former Shelf slot.
 * Insignia, self-entry and other entry buffs apply when the unit enters a Lineup, including direct summons, merge/transformation results, and deployment after recycling. Rearranging within the Lineup does not repeat entry buffs.
 * Draw tracking, draw rewards, enemy draw reactions and Token-spending reactions still resolve when the draw/spend occurs.
-* Shelf copies still count toward battle-pool calculations, but only Wind-up-kun updates its HP/PWR while on the Shelf. Other passive stat calculations resume on deployment.
+* Shelf copies count toward battle-pool calculations. Wind-up-kun and Incubator growth apply on the Shelf. Other passive stat calculations resume on deployment.
 * **Overflow**: If all unlocked Shelf slots are occupied when a draw occurs, the drawn ball is sent directly to the **Battle Discard**.
-* Units or items already occupying a locked slot remain there but cannot be accessed until that slot is unlocked again in the current encounter.
+* Each tier machine holds up to 25 capsules. An arrival at a full tier goes to Discard. Discard holds up to 80 and ejects a seeded random existing capsule to admit a new one at capacity. See [InventoryManager.md](InventoryManager.md#3-gacha-draw--discard-lifecycle) for recovery cases.
 
 ## 6.4 Dynamic Token Scaling (Templar / Token Power)
 Units with token-scaling abilities scale dynamically with active resources:
@@ -218,7 +213,7 @@ Units with token-scaling abilities scale dynamically with active resources:
 * When drawn, the unit remains sealed with its existing stats. On entering the Lineup, its token power ability calculates the bonus from the current Token balance.
 
 ## 6.5 Formation & Placement Constraints
-* **Active Lineup**: Consists of up to 5 fixed slots. Units resolve attacks strictly from front (Slot 0) to back (Slot 4).
+* Each **Lineup** has up to five fixed slots. Enemy Slot 0 and Player Slot 4 are frontmost.
 * **Player Shelf**: Staging area for sealed capsules; only capsule rearrangement and deployment to Lineup targets are allowed.
 * **Items on Lineup**: Items cannot be placed directly into lineup slots; they can only be equipped onto units.
 * **Tier Container Integrity**: Tier 1, 2, and 3 containers cannot hold entities of mismatched tiers.
@@ -226,7 +221,7 @@ Units with token-scaling abilities scale dynamically with active resources:
 ## 6.6 Equipping Items
 * **Shelf Origin Only**: Sealed items can be equipped directly from the Player Shelf onto a Lineup unit, opening their capsule. Shelf residents cannot receive equipment. Inventory drawers remain read-only, and equipment cannot be applied outside battle.
 * **No Manual Unequipping**: An equipped item cannot be dragged back to the shelf or moved to another unit. Aside from specific item-stripping consumables (such as *Potion of Plunder*), equipment cannot be unequipped without being replaced.
-* **Sealed Item Passives**: Items and their holders do not update HP/PWR or activate abilities on the Shelf. Equipment becomes active on a Lineup holder.
+* Ordinary equipment becomes active on a Lineup holder. An Incubator grants its Shelf holder +1 HP and +1 PWR at Turn Start and goes to Discard when the holder redeploys.
 * **Single Item Capacity & Item Replacement**:
   * Every unit holds at most **one item**.
   * Equipping an item onto a unit that already has an item executes an **Item Replacement**.
@@ -237,9 +232,9 @@ Units with token-scaling abilities scale dynamically with active resources:
 ## 6.7 Consumable Items
 * **Usage**: Consumables can only be dragged and used from the Player Shelf. They can target both friendly and enemy units.
 * **Consumption**: Consumables execute their effects immediately without occupying an item slot and disappear from the battle pool without entering the Discard.
-* **Item-Stripping Consumables (*Potion of Plunder*)**: Strips an equipped item from a Lineup target and sends it directly to the player's matching tier Gacha Machine drawer. This is an explicit exception to Discard-first recycling: the item is sealed in the machine, and its next draw returns it sealed to the Shelf.
+* **Item-Stripping Consumables (*Potion of Plunder*)** send the stripped item to its tier machine. Normal capacity rules apply and can route the item to Discard.
 * **Stackable Regular Buffs**: Consumable stat modifications (healing potions, stat potions, scrolls, elixirs) are stackable buffs that become direct enhancements of the recipient unit.
-* **Consolidation on Merge**: In all merges (both Evolutionary Level-ups and Recipe Tier-ups), all consumable buffs from both parent units are fully conserved and added together additively into the resulting unit's stats and merge surplus.
+* Permanent consumable boosts can contribute to merge inheritance. Fortifying Tonic grants +3 HP and +2 PWR for the encounter. Impact Vial deals 5 damage to the chosen living unit in either Lineup, reduced by Armor.
 
 ## 6.8 Merging GachaBalls
 Merging combines two units to create a stronger unit:
@@ -263,11 +258,9 @@ Merging combines two units to create a stronger unit:
   * Equip targets on friendly units highlight in White.
   * Undiscovered recipe candidates in shops and rewards highlight in Violet.
 
-## 6.9 Physics Drawers & Overflow (Battle Only)
-* During battle, the Battle Inventory drawers (Tier 1, 2, 3) and the side Discard drawer are **Read-Only Visualizations**. Players cannot drag, equip, or move balls directly from these physics containers.
-* **Spawning**: Balls spawn sequentially at the top-center at 0.15s intervals to prevent overlapping impulse explosions.
-* **Lid Overflow Penalty**: If a drawer becomes physically overfilled and a ball maintains continuous contact with the top lid sensor for 5.0 seconds, it is penalized and moved to the **Battle Discard**.
-* **Permanent Discard**: Defeated units and discarded items remain in the Discard permanently for the remainder of the battle. There is no automatic reshuffle.
+## 6.9 Battle Storage and Recovery
+
+Battle Inventory and Discard drawers are read-only. The Discard machine is the recovery action. It uses the current capsule counts to select a compatible tier destination and charges 1 Token if accepted. See [InventoryManager.md](InventoryManager.md#discard-recovery).
 
 ## 6.10 Battle Pool Scoping & Dynamic Scaling Passives
 Passives that scale based on duplicate copies (*Twin Charm*, *Doppleganger*, *Echoing Orb*) evaluate against the total count of matching entities across the entire team's **Battle Pool** (Lineup, Shelf, Gacha Drawers, and Discard):
@@ -279,7 +272,7 @@ Passives that scale based on duplicate copies (*Twin Charm*, *Doppleganger*, *Ec
 * **Identical Arc Animation**: All player units and items entering the Battle Discard travel along a 500px parabolic capsule arc directly into the Discard button, accompanied by sound and button scale bump.
 * **Player Unit Death**: When a player unit reaches 0 HP, its board puppet view plays its death fade animation, followed by its GachaBall capsule flying along the arc into the Discard button. Equipped items follow sequentially along the exact same arc.
 * **Enemy Units Do NOT Discard**: When an enemy unit dies, it dissolves and is removed; no capsule arc spawns and the Discard counter is untouched.
-* **Gacha Machine Arrivals**: Units and items entering Gacha Machine drawers (such as *Echoing Orb* death duplication or *Potion of Plunder* item stripping) animate along a parabolic arc directly into the matching tier machine, updating the machine's counter badge upon impact.
+* **Gacha Machine Arrivals** resolve to the matching tier or to Discard if that tier is full. Playback uses the resolved destination and updates the corresponding count.
 
 ---
 
@@ -415,7 +408,7 @@ Buffs are routed through typed subgroups to enforce clear behavioral boundaries 
 
 Units carry traits across three taxonomy categories:
 - **Elemental Traits (4)**: Fire, Earth, Water, Air (tracked via elemental Soul counts: Tier 1 = 1, Tier 2 = 2, Tier 3 = 4).
-- **Class Traits (4)**: Tank, Fighter, Support, Specialist (tracked via lineup unit count).
+- **Class Traits (6)** include Tank, Fighter, Support, Specialist, Mercenary, and Novice. Thresholds use matching Lineup unit counts.
 - **Visual Archetype Traits (7)**: Food, Mecha, Animal, Plant, Toy, Appliance, Costume (tracked via lineup unit count).
 
 Equipping the corresponding Trait Trinket enables team-wide synergies for both player and enemy lineups.
@@ -425,20 +418,11 @@ At the start of combat and each turn, active traits and souls in the lineup are 
 
 ## 9.2 Trait Synergies & Thresholds
 
-### Elemental Traits (Souls)
-Activated when the team holds the required elemental soul count and equips that element's trait trinket. Opening effects trigger once at combat start (when the Battle button is clicked, before turns begin):
-* **Fire (3 / 5 / 7 / 9 Souls)**: Applies Burn on attack. At 7+ souls, applies 2 Burn to the entire opposing team at combat start.
-* **Earth (3 / 5 / 7 / 9 Souls)**: Grants Armor (3, 5, 7, 9) and Spikes (7, 9) to allies at combat start. Earth units gain double armor bonus.
-* **Water (2 / 4 / 6 / 8 Souls)**: Water units heal adjacent allies 1 HP at combat start.
-* **Air (2 / 4 / 6 / 8 Souls)**: Air units steal 1 Power from mirrored enemy slots at combat start.
-
-### Class & Visual Traits (Units)
-Activated when the team holds the required count of units possessing that trait in their lineup and equips that trait's trinket. All 11 Class and Visual trait trinkets trigger at the start of combat:
-* **Class Traits (Tank, Fighter, Support, Specialist - 2 / 3 / 4 / 5 Units)**: Grants +1 Power (2 units), +2 Power (3 units), +3 Power (4 units), +4 Power (5 units) to matching trait units at combat start.
-* **Visual Traits (Food, Mecha, Animal, Plant, Toy, Appliance, Costume - 2 / 3 / 4 / 5 Units)**: Grants +1 Power (2 units), +2 Power (3 units), +3 Power (4 units), +4 Power (5 units) to matching trait units at combat start.
+- Elemental Crests use **3, 6, 12, 20, and 32 souls**. Class and visual Crests use **2, 3, 4, and 5 matching Lineup units**.
+- Each Crest has its own abilities and activation triggers. Use `Constants.TRAIT_DEFINITIONS` for threshold IDs and the corresponding `resources/trinkets/trinket_trait_*.tres` for effects. See [Novice.md](Novice.md#4-novice-trait-ladder) for the Novice rules.
 
 ## 9.3 Key Trinket Rules
-* **Pre-Combat Timing**: All 15 Trait Trinkets activate strictly during the opening Pre-Combat phase when the Battle button is pressed, not during the management phase. Available to both player and enemy teams.
+* Ready-triggered, Turn Start, and reactive Crest effects follow their individual triggers. Player-exclusive Crests are filtered out of enemy pools.
 * **Insignia Trinkets (*Apprentice Insignia* & *Veteran Insignia*)**:
   * *Apprentice Insignia* grants +1 HP and +1 Power to any Level 1 unit entering the board.
   * *Veteran Insignia* grants +1 HP and +1 Power to any Level 2 unit entering the board or leveling up.
@@ -460,23 +444,24 @@ Activated when the team holds the required count of units possessing that trait 
 * **Elites & Bosses**: Mini-boss and Boss units are free; support units consume 85% of the daily budget. Boss reinforcements consume 33% of the daily budget.
 * **Path Choice Priorities**:
   * **Regular Battles**: Dominant appearance priority (~96%–98% of 3-path choices).
-  * **Elite Battles**: Paced by progress toward the upcoming Boss (guaranteed at 20%, 40%, 60%, and 80% card unlock milestones; capped at 4 elite encounters per boss tier, max 20 per run).
+  * **Boss Battles** use the current count of Level 3+ active cards. The next Boss becomes the sole option at its threshold. The final Boss requires 80% of the selected Deck rounded up.
+  * **Elite Battles** use unlocked-card progress in the current boss tier, with guaranteed milestones at 20%, 40%, 60%, and 80% when eligible. The caps are four Elite encounters per tier and 12 Elite victories per run. See [EncounterSystem.md](EncounterSystem.md#3-encounter-scheduling--map-rng).
   * **Non-Battle Encounters**: Shop, Merge Encounter, Shrine, Surprise Events, and Unit Training Ground share equal base weights with anti-starvation weight bonuses when not offered.
 
 ## 10.2 Standard Nodes
 * **Regular Battles**: Standard budget-based combat encounters.
 * **Shop Node**:
-  * Offers 3 random GachaBalls from the active run pool (Universal Neutral Base Set + Active Hero Set).
+  * Offers three distinct unit or item capsules from the eligible run pool. Stock and rerolls favor machine copies and traits that match the player's units or Crests.
   * Undiscovered merge recipes for the current run highlight in Violet.
   * **Reroll Cost**: Starts at **1 Gold**, increases by **+1 Gold** per reroll in that visit, and resets to 1 Gold on the next visit.
 * **Shrine Node**:
   * **Remove**: Permanently purges a GachaBall from the run deck (starts at 5 Gold, increases by +1 Gold per removal across the run).
   * **Transform**: Replaces a GachaBall with a random alternative of the same tier and category from the active run pool for a flat fee of **5 Gold**.
 * **Post-Battle Rewards**:
-  * Displays 5 reward capsules. Standard capsules are drawn from the active run pool (`Universal Base + Active Hero Set`).
-  * Elite and Boss battles award 3 trinket choices drawn strictly from eligible run trinkets (`Universal Base + Active Hero Set`).
+  * Regular reward rooms have five capsule slots filled by paid tier-machine draws. These draws use the same affinity rules as shops.
+  * Elite and Boss reward rooms roll up to three distinct eligible unowned trinkets. With two Crests already owned, new Crests retain 35% of their normal weight. Each additional Crest owned multiplies that weight by 0.35 again. See [EncounterSystem.md](EncounterSystem.md#crest-offer-weight).
   * **Collect**: Adds the capsule to the Run Inventory for free.
-  * **Sell**: Sells the capsule for Gold (standard items sell for tier value; Elite rewards sell for a flat **10 Gold**).
+  * A standard capsule sells for half its Gold value rounded down, with a minimum of 1 Gold. Elite and Boss reward sales pay 10 Gold while the special victory is active.
   * **Auto-Collection**: Leaving the scene with uncollected items automatically collects all remaining prizes.
   * Gacha Machines remain interactive in the reward room for spending tokens earned during Study sessions; unspent tokens clear upon leaving.
 
@@ -562,12 +547,12 @@ The player can select one of the currently available path nodes to transition to
 
 ## 12.7 Battle Phases
 * **Turn-Start Flashcard**: Answer or skip questions until timer expiry or completion.
-* **Management Phase**: Draw sealed capsules onto the Shelf using Tokens; rearrange Shelf capsules; deploy them to the Lineup; rearrange deployed units within the Lineup; equip, replace, use items, or merge onto eligible Lineup targets; inspect board states, drawers, and the Discard; toggle pause or change speed; click "Ready!" to end management.
+* During preparation, players can draw capsules, buy Shelf slots, recover Discard capsules to a tier, rearrange and deploy eligible capsules, equip or use items, and merge onto eligible Lineup targets. Holding Order shows the starting actor sequence. Holding Preview shows the simulated result of Ready for the current turn. Press **Ready!** to commit the turn.
 * **Combat & Resolution Phases**: Combat resolves automatically. The player can pause playback, inspect entities on screen, or change playback speed. Board editing and draws are locked.
 * **Battle Results**: Acknowledge Victory (transitions to Rewards) or Defeat (returns to Title Screen).
 
 ## 12.8 Replay Fidelity Contract
-Replay playback reproduces the initial seed, loadout configuration, accepted player choices, room transitions, battle outcomes, and discrete inspection states. Replay operates through the identical validated command pipeline, ensuring 100% mathematical and behavioral parity.
+Replay playback uses the saved initial state and the validated action pipeline to reproduce gameplay outcomes under matching rules. Shelf purchases and Discard draws are recorded battle actions. Inspection and drawer actions wait for the required presentation state. Replay recording has no automatic count limit. The current replay schema is 5 and playback requires a matching schema.
 
 ---
 

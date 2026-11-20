@@ -3,6 +3,12 @@ extends Resource
 
 ## Persistent state for a run using the single-source-of-truth data model.
 
+class StartingLoadout:
+	var hero_element: StringName
+	var hero_traits: TagComponent
+	var starter_ids: Array[StringName] = []
+	var bonus_starter_ids: Array[StringName] = []
+	var unit_tag_overrides: Dictionary = {}
 
 @export var gold: int = 0
 @export var day: int = 1
@@ -32,6 +38,8 @@ var dynamic_tag_overrides: Dictionary = {} # Key: StringName (unit_def_id), Valu
 @export var elite_encounter_history: Dictionary = {}
 @export var last_boss_id: StringName = &""
 @export var boss_encounter_history: Dictionary = {}
+var revealed_boss_ids: Dictionary[int, StringName] = {}
+var defeated_boss_marker_positions: Dictionary[int, float] = {}
 @export var run_id: String = ""
 @export var run_seed: int = 0
 
@@ -107,6 +115,7 @@ func reset_room_tokens() -> void:
 @export var deck_def_id: StringName = &"" # The definition ID of the chosen deck
 @export var is_half_deck: bool = false # Tracks if the run uses a quick/half deck
 @export var cards_presented_count: int = 0 # Updates the progressive presentation of cards
+var last_challenge_met_unlock_requirements: bool = false
 
 # All containers indexed by name (e.g., "RunInventoryT1", "PlayerLineup", etc.)
 var _containers: Dictionary[StringName, DataContainer] = {}
@@ -129,6 +138,53 @@ func get_deck_unlock_percentage() -> float:
 		return 0.0
 		
 	return float(active_deck_ids.size()) / float(ordered_deck_pool.size())
+
+func get_boss_count() -> int:
+	return 3 if is_half_deck else 5
+
+func get_mastered_card_count() -> int:
+	var count: int = 0
+	for card_id: StringName in active_deck_ids:
+		var progress: FlashcardProgress = flashcard_progress[card_id]
+		if progress.mastery_level >= 3:
+			count += 1
+	return count
+
+func get_boss_mastery_threshold(level: int) -> int:
+	return ceili(float(ordered_deck_pool.size() * level * 4) / float(get_boss_count() * 5))
+
+func get_boss_reveal_threshold(level: int) -> int:
+	return ceili(float(ordered_deck_pool.size() * level) / float(get_boss_count()))
+
+func get_encounter_boss_level() -> int:
+	if current_boss_level > bosses_defeated:
+		return current_boss_level
+	for node: PathNodeDefinition in available_path_nodes:
+		if node.node_type == &"BATTLE" and node.subtype == &"BOSS" and node.difficulty > bosses_defeated:
+			return node.difficulty
+	return 0
+
+func get_boss_marker_position(level: int) -> float:
+	if defeated_boss_marker_positions.has(level):
+		return defeated_boss_marker_positions[level]
+	var total: int = ordered_deck_pool.size()
+	assert(total > 0, "Boss markers require a selected Deck")
+	var locked: int = total - active_deck_ids.size()
+	return clampf(float(locked + get_boss_mastery_threshold(level)) / float(total), 0.0, 1.0)
+
+func reveal_boss(level: int) -> StringName:
+	if not revealed_boss_ids.has(level):
+		revealed_boss_ids[level] = EncounterGenerator.pick_boss_identity(self, level)
+	return revealed_boss_ids[level]
+
+func refresh_boss_reveals() -> void:
+	if ordered_deck_pool.is_empty():
+		return
+	var next_boss_level: int = bosses_defeated + 1
+	var encounter_level: int = get_encounter_boss_level()
+	for level: int in range(next_boss_level, get_boss_count() + 1):
+		if level == next_boss_level or level == encounter_level or active_deck_ids.size() >= get_boss_reveal_threshold(level):
+			reveal_boss(level)
 
 func get_tier_progress() -> float:
 	"""Returns the progress (0.0 to 1.0) towards the upcoming mini boss in the current tier."""
@@ -1180,6 +1236,7 @@ func start_new_run() -> void:
 	flashcard_progress.clear()
 	active_deck_ids.clear()
 	cards_presented_count = 0
+	last_challenge_met_unlock_requirements = false
 	unlocked_recipes.clear() # All recipes start locked
 	encounter_last_offered_day.clear()
 	available_path_nodes.clear()
@@ -1188,6 +1245,8 @@ func start_new_run() -> void:
 	elite_encounter_history.clear()
 	last_elite_id = &""
 	boss_encounter_history.clear()
+	revealed_boss_ids.clear()
+	defeated_boss_marker_positions.clear()
 	last_boss_id = &""
 
 func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: String = "REGULAR", deck_size: String = "FULL") -> void:
@@ -1198,58 +1257,17 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	if active_hero_set == Database.SET_MERCENARY or active_hero_set == Database.SET_NOVICE:
 		gold = 30
 	
-	# Create hero instance from the selected hero definition
-	var hero_def = Database.get_definition(hero_def_id)
-	if hero_def:
-		self.hero_instance = GachaBallInstance.new()
-		self.hero_instance.initialize(hero_def)
-		# Register hero via atomic API in the first lineup slot
-		add_instance(self.hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
-		
-		var elemental_souls: Array[StringName] = [&"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR"]
-		var thematic_traits: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
-		var class_traits: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary"]
-		var chosen_element: StringName = elemental_souls[RNGManager.map_rng.randi() % elemental_souls.size()]
-		var bonus_tags: Array[StringName] = []
-		var archetype_tag: StringName = &""
-		
-		match hero_def_id:
-			&"hero_avenger":
-				archetype_tag = &"Fighter"
-				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
-			&"hero_bastion":
-				archetype_tag = &"Tank"
-				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
-			&"hero_bounty_hunter", &"hero":
-				archetype_tag = &"Mercenary"
-				var bounty_trait_pool: Array[StringName] = class_traits + thematic_traits
-				var shiken_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(bounty_trait_pool, archetype_tag, elemental_souls)
-				bonus_tags = [chosen_element, chosen_element, chosen_element, shiken_bonus_trait]
-				_adapt_hero_pack(hero_def_id, chosen_element)
-			&"hero_pyro":
-				archetype_tag = &"Fire Ritual"
-				chosen_element = &"SOUL_FIRE"
-				bonus_tags = [chosen_element, chosen_element, chosen_element, class_traits[RNGManager.map_rng.randi() % class_traits.size()], thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
-			&"hero_starter":
-				archetype_tag = &"Novice"
-				var dan_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(thematic_traits, archetype_tag, elemental_souls)
-				bonus_tags = [chosen_element, chosen_element, chosen_element, dan_bonus_trait]
-				_adapt_hero_pack(hero_def_id, chosen_element)
-			&"hero_timekeeper":
-				archetype_tag = &"Support"
-				bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[RNGManager.map_rng.randi() % thematic_traits.size()]]
-		assert(not archetype_tag.is_empty(), "RunState.initialize_run: no hero constitution defined for '%s'" % hero_def_id)
-		self.hero_element = chosen_element
-		
-		var hero_tags_comp := TagComponent.new()
-		hero_tags_comp.id = &"hero_run_traits"
-		hero_tags_comp.category = &"TAG"
-		hero_tags_comp.source_type = &"RUN_STATE"
-		hero_tags_comp.is_persistent = true
-		hero_tags_comp.tags_to_add = [archetype_tag]
-		hero_tags_comp.tags_to_add.append_array(bonus_tags)
-		self.hero_instance.components.append(hero_tags_comp)
-	
+	var hero_def: GachaBallDefinition = Database.get_definition(hero_def_id) as GachaBallDefinition
+	assert(hero_def != null and hero_def.is_hero, "Cannot initialize run for unknown hero: %s" % hero_def_id)
+	hero_instance = GachaBallInstance.new()
+	hero_instance.initialize(hero_def)
+	add_instance(hero_instance, RUN_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+
+	var loadout: StartingLoadout = _roll_starting_loadout(hero_def_id, RNGManager.map_rng, RNGManager.gacha_rng)
+	hero_element = loadout.hero_element
+	hero_instance.components.append(loadout.hero_traits)
+	dynamic_tag_overrides = loadout.unit_tag_overrides
+
 	# Initialize flashcard progress for the selected deck
 	var deck_card_ids = Database.get_cards_for_deck(deck_id)
 	# Fallback if deck not found or empty (shouldn't happen with valid UI)
@@ -1288,6 +1306,8 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	for i in range(min(5, ordered_deck_pool.size())):
 		active_deck_ids.append(ordered_deck_pool[i])
 	
+	refresh_boss_reveals()
+
 	# Initial 5 cards are considered "introduced" to start expansion immediately
 	cards_presented_count = 5
 	
@@ -1303,15 +1323,8 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 	trinket_c.container_tag = RUN_CONTAINER_TAGS.PLAYER_TRINKETS
 	_containers[RUN_CONTAINER_TAGS.PLAYER_TRINKETS] = trinket_c
 
-
-
-	# NOTE: Player trinkets are now obtained exclusively through boss victories.
-	# No starter trinkets are given - the player earns them by progressing.
-
-	# --- Add starter units/items to inventory ---
-	var starters: Array[StringName] = get_starters_for_hero(hero_def_id)
-	if GameManager.test_starting_items.size() > 0:
-		starters.append_array(GameManager.test_starting_items)
+	var starters: Array[StringName] = loadout.starter_ids
+	starters.append_array(GameManager.test_starting_items)
 
 	for id in starters:
 		var def: Resource = Database.get_definition(id)
@@ -1336,7 +1349,78 @@ func initialize_run(hero_def_id: StringName, deck_id: StringName, deck_order: St
 		# Unlock recipes for this acquired gachaball
 		unlock_recipe_for_result(def.id)
 
-func _choose_distinct_hero_bonus_trait(candidate_traits: Array[StringName], fixed_trait: StringName, elemental_souls: Array[StringName]) -> StringName:
+## Evaluate a prospective loadout without advancing a live run's RNG streams.
+static func preview_starting_loadout(hero_def_id: StringName, seed: int) -> StartingLoadout:
+	var map_rng: SeededRNG = RNGManager.create_stream(seed, "map")
+	var gacha_rng: SeededRNG = RNGManager.create_stream(seed, "gacha")
+	# Run initialization consumes one gacha value when assigning the hero's UUID.
+	gacha_rng.randi()
+	return _roll_starting_loadout(hero_def_id, map_rng, gacha_rng)
+
+static func _roll_starting_loadout(hero_def_id: StringName, map_rng: SeededRNG, gacha_rng: SeededRNG) -> StartingLoadout:
+	var elemental_souls: Array[StringName] = [&"SOUL_FIRE", &"SOUL_EARTH", &"SOUL_WATER", &"SOUL_AIR"]
+	var thematic_traits: Array[StringName] = [&"Food", &"Mecha", &"Animal", &"Plant", &"Toy", &"Appliance", &"Costume"]
+	var class_traits: Array[StringName] = [&"Tank", &"Fighter", &"Support", &"Specialist", &"Mercenary"]
+	var chosen_element: StringName = elemental_souls[map_rng.randi() % elemental_souls.size()]
+	var bonus_tags: Array[StringName] = []
+	var archetype_tag: StringName = &""
+
+	match hero_def_id:
+		&"hero_avenger":
+			archetype_tag = &"Fighter"
+			bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[map_rng.randi() % thematic_traits.size()]]
+		&"hero_bastion":
+			archetype_tag = &"Tank"
+			bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[map_rng.randi() % thematic_traits.size()]]
+		&"hero_bounty_hunter", &"hero":
+			archetype_tag = &"Mercenary"
+			var bounty_trait_pool: Array[StringName] = class_traits + thematic_traits
+			var shiken_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(bounty_trait_pool, archetype_tag, elemental_souls, map_rng)
+			bonus_tags = [chosen_element, chosen_element, chosen_element, shiken_bonus_trait]
+		&"hero_pyro":
+			archetype_tag = &"Fire Ritual"
+			chosen_element = &"SOUL_FIRE"
+			bonus_tags = [chosen_element, chosen_element, chosen_element, class_traits[map_rng.randi() % class_traits.size()], thematic_traits[map_rng.randi() % thematic_traits.size()]]
+		&"hero_starter":
+			archetype_tag = &"Novice"
+			var dan_bonus_trait: StringName = _choose_distinct_hero_bonus_trait(thematic_traits, archetype_tag, elemental_souls, map_rng)
+			bonus_tags = [chosen_element, chosen_element, chosen_element, dan_bonus_trait]
+		&"hero_timekeeper":
+			archetype_tag = &"Support"
+			bonus_tags = [chosen_element, chosen_element, chosen_element, thematic_traits[map_rng.randi() % thematic_traits.size()]]
+	assert(not archetype_tag.is_empty(), "RunState._roll_starting_loadout: no hero constitution defined for '%s'" % hero_def_id)
+
+	var hero_tags := TagComponent.new()
+	hero_tags.id = &"hero_run_traits"
+	hero_tags.category = &"TAG"
+	hero_tags.source_type = &"RUN_STATE"
+	hero_tags.is_persistent = true
+	hero_tags.tags_to_add = [archetype_tag]
+	hero_tags.tags_to_add.append_array(bonus_tags)
+
+	var hero_set: StringName = Database.get_hero_set(hero_def_id)
+	var starters: Array[StringName] = _get_fixed_starters_for_hero(hero_def_id)
+	var bonus_starters: Array[StringName] = []
+	var starter_pool: Array[GachaBallDefinition] = Database.get_all_pool_definitions(hero_set)
+	for tier: int in [2, 3]:
+		var candidates: Array[StringName] = []
+		for definition: GachaBallDefinition in starter_pool:
+			if definition.tier == tier and Database.get_entity_set(definition) == hero_set \
+					and definition.category in [C.CATEGORY_UNIT, C.CATEGORY_ITEM] and not starters.has(definition.id):
+				candidates.append(definition.id)
+		assert(not candidates.is_empty(), "No Tier %d starter candidates for %s" % [tier, hero_set])
+		bonus_starters.append(gacha_rng.pick_random(candidates))
+	starters.append_array(bonus_starters)
+
+	var loadout := StartingLoadout.new()
+	loadout.hero_element = chosen_element
+	loadout.hero_traits = hero_tags
+	loadout.starter_ids = starters
+	loadout.bonus_starter_ids = bonus_starters
+	loadout.unit_tag_overrides = _get_hero_pack_tags(hero_def_id, chosen_element)
+	return loadout
+
+static func _choose_distinct_hero_bonus_trait(candidate_traits: Array[StringName], fixed_trait: StringName, elemental_souls: Array[StringName], rng: SeededRNG) -> StringName:
 	var eligible_traits: Array[StringName] = []
 	for candidate_trait in candidate_traits:
 		if candidate_trait == fixed_trait or elemental_souls.has(candidate_trait):
@@ -1344,12 +1428,32 @@ func _choose_distinct_hero_bonus_trait(candidate_traits: Array[StringName], fixe
 		if not eligible_traits.has(candidate_trait):
 			eligible_traits.append(candidate_trait)
 	assert(not eligible_traits.is_empty(), "RunState._choose_distinct_hero_bonus_trait: no eligible bonus traits")
-	var chosen_trait: StringName = eligible_traits[RNGManager.map_rng.randi() % eligible_traits.size()]
+	var chosen_trait: StringName = rng.pick_random(eligible_traits)
 	assert(chosen_trait != fixed_trait, "Hero bonus trait must differ from the fixed trait")
 	assert(not elemental_souls.has(chosen_trait), "Hero bonus trait must differ from all elemental souls")
 	return chosen_trait
 
-static func get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+static func _get_fixed_starters_for_hero(hero_id: StringName) -> Array[StringName]:
+	var starters: Array[StringName] = _get_hero_starter_pack(hero_id)
+	var emblem_id: StringName
+	match hero_id:
+		&"hero_starter":
+			emblem_id = &"item_novice_emblem"
+		&"hero_bounty_hunter", &"hero":
+			emblem_id = &"item_mercenary_emblem"
+		&"hero_avenger":
+			emblem_id = &"item_emblem_specialist"
+		&"hero_bastion":
+			emblem_id = &"item_emblem_tank"
+		&"hero_pyro":
+			emblem_id = &"item_emblem_fire"
+		&"hero_timekeeper":
+			emblem_id = &"item_emblem_support"
+	assert(not emblem_id.is_empty(), "No starter Emblem configured for %s" % hero_id)
+	starters.append_array([C.ITEM_INCUBATOR, C.ITEM_ENCOUNTER_TONIC, C.ITEM_DAMAGE_VIAL, emblem_id])
+	return starters
+
+static func _get_hero_starter_pack(hero_id: StringName) -> Array[StringName]:
 	if hero_id == &"hero_starter":
 		return [
 			&"?NovPla", &"?NovPla", &"?NovPla",
@@ -1395,9 +1499,8 @@ static func get_starters_for_hero(hero_id: StringName) -> Array[StringName]:
 			starters.append(&"trinket_trait_support")
 	return starters
 
-func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
-	if rolled_element == &"":
-		return
+static func _get_hero_pack_tags(hero_id: StringName, rolled_element: StringName) -> Dictionary:
+	var overrides: Dictionary = {}
 	if hero_id == &"hero_bounty_hunter" or hero_id == &"hero":
 		var bounty_hunter_unit_tags: Dictionary = {
 			&"?MerSpe": [rolled_element, &"Mercenary", &"Specialist"],
@@ -1416,7 +1519,7 @@ func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 			var updated_tags: Array[StringName] = []
 			for tag in bounty_hunter_unit_tags[unit_id]:
 				updated_tags.append(tag)
-			dynamic_tag_overrides[unit_id] = updated_tags
+			overrides[unit_id] = updated_tags
 	elif hero_id == &"hero_starter":
 		var novice_unit_tags: Dictionary = {
 			&"?NovPla": [rolled_element, &"Novice", &"Plant"],
@@ -1435,7 +1538,9 @@ func _adapt_hero_pack(hero_id: StringName, rolled_element: StringName) -> void:
 			var updated_tags: Array[StringName] = []
 			for tag in novice_unit_tags[unit_id]:
 				updated_tags.append(tag)
-			dynamic_tag_overrides[unit_id] = updated_tags
+			overrides[unit_id] = updated_tags
+
+	return overrides
 
 func get_effective_unit_tags(unit_def_id: StringName, default_tags: Array[StringName] = []) -> Array[StringName]:
 	if dynamic_tag_overrides.has(unit_def_id):
@@ -1464,6 +1569,7 @@ func unlock_next_deck_card() -> StringName:
 				progress.mastery_level = FlashcardProgress.MASTERY_MIN
 				flashcard_progress[card_id] = progress
 			cards_presented_count = active_deck_ids.size()
+			refresh_boss_reveals()
 			SignalBus.emit_signal("run_data_changed")
 			return card_id
 			
@@ -1485,9 +1591,16 @@ func prismatize_unit(instance: GachaBallInstance) -> void:
 # ------------------------------------------------------------------
 
 ## Converts the entire run state to a Dictionary for saving.
-func to_save_dict() -> Dictionary:
-	if is_instance_valid(ActionQueue):
+func to_save_dict(refresh_elapsed_time: bool = true) -> Dictionary:
+	if refresh_elapsed_time and is_instance_valid(ActionQueue):
 		elapsed_simulation_time = ActionQueue.get_global_run_timer()
+
+	var saved_boss_ids: Dictionary = {}
+	for level: int in revealed_boss_ids:
+		saved_boss_ids[str(level)] = String(revealed_boss_ids[level])
+	var saved_boss_positions: Dictionary = {}
+	for level: int in defeated_boss_marker_positions:
+		saved_boss_positions[str(level)] = defeated_boss_marker_positions[level]
 
 	var data: Dictionary = {
 		"run_id": run_id,
@@ -1513,12 +1626,15 @@ func to_save_dict() -> Dictionary:
 		"deck_def_id": String(deck_def_id),
 		"is_half_deck": is_half_deck,
 		"cards_presented_count": cards_presented_count,
+		"last_challenge_met_unlock_requirements": last_challenge_met_unlock_requirements,
 		"last_regular_banner_id": String(last_regular_banner_id),
 		"regular_banner_history": _serialize_stringname_int_dict(regular_banner_history),
 		"last_elite_id": String(last_elite_id),
 		"elite_encounter_history": _serialize_elite_encounter_history(),
 		"last_boss_id": String(last_boss_id),
 		"boss_encounter_history": _serialize_stringname_int_dict(boss_encounter_history),
+		"revealed_boss_ids": saved_boss_ids,
+		"defeated_boss_marker_positions": saved_boss_positions,
 		"active_hero_set": String(get_active_hero_set()),
 		"hero_element": String(hero_element),
 		"encounter_last_offered_day": _serialize_encounter_last_offered_day(),
@@ -1581,12 +1697,19 @@ func from_save_dict(data: Dictionary) -> void:
 	deck_def_id = StringName(data.get("deck_def_id", ""))
 	is_half_deck = data.get("is_half_deck", false)
 	cards_presented_count = data.get("cards_presented_count", 0)
+	last_challenge_met_unlock_requirements = data.get("last_challenge_met_unlock_requirements", false)
 	last_regular_banner_id = StringName(data.get("last_regular_banner_id", ""))
 	_deserialize_stringname_int_dict(regular_banner_history, data.get("regular_banner_history", {}))
 	last_elite_id = StringName(data.get("last_elite_id", ""))
 	_deserialize_elite_encounter_history(data.get("elite_encounter_history", {}))
 	last_boss_id = StringName(data.get("last_boss_id", ""))
 	_deserialize_stringname_int_dict(boss_encounter_history, data.get("boss_encounter_history", {}))
+	revealed_boss_ids.clear()
+	for level: Variant in data.get("revealed_boss_ids", {}):
+		revealed_boss_ids[int(level)] = StringName(data["revealed_boss_ids"][level])
+	defeated_boss_marker_positions.clear()
+	for level: Variant in data.get("defeated_boss_marker_positions", {}):
+		defeated_boss_marker_positions[int(level)] = float(data["defeated_boss_marker_positions"][level])
 	active_hero_set = StringName(data.get("active_hero_set", Database.SET_BASE))
 	
 	_deserialize_encounter_last_offered_day(data.get("encounter_last_offered_day", {}))
@@ -1661,6 +1784,7 @@ func from_save_dict(data: Dictionary) -> void:
 	_deserialize_flashcard_progress(data.get("flashcard_progress", {}))
 	_deserialize_active_deck_ids(data.get("active_deck_ids", []))
 	_deserialize_ordered_deck_pool(data.get("ordered_deck_pool", []))
+	refresh_boss_reveals()
 	
 	# Restore unlocked recipes
 	_deserialize_unlocked_recipes(data.get("unlocked_recipes", {}))
@@ -1678,7 +1802,7 @@ func from_save_dict(data: Dictionary) -> void:
 					hero_element = StringName("SOUL_" + s)
 					break
 		if not hero_element.is_empty():
-			_adapt_hero_pack(hero_instance.definition_id, hero_element)
+			dynamic_tag_overrides = _get_hero_pack_tags(hero_instance.definition_id, hero_element)
 
 func _serialize_available_path_nodes() -> Array:
 	var result: Array = []

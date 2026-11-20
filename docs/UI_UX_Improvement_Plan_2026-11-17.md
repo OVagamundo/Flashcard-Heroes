@@ -2,11 +2,11 @@
 
 - Updated: 2026-11-18
 - Project: Flashcard Heroes — replacement title still to be chosen
-- Status: planning document; work is not marked implemented
+- Status: historical design review with remaining proposals
 
 This plan records the UI work and decisions from the screenshot review. It focuses on changes to make, with unresolved choices listed separately. The aim is for players to understand actions, consequences, and game state with minimal persistent text, so they can focus on strategy and learning.
 
-See the [November 18 implementation plan](UI_UX_Implementation_Plan_2026-11-18.md) for the updated rules, code findings, and remaining decisions. Section 7 is a design draft for a dedicated contextual helper session.
+The [implementation status](UI_UX_Implementation_Plan_2026-11-18.md) records the current interactions and links to the gameplay rules. Section 7 below is a design draft for a dedicated contextual helper session.
 
 ## 1. Battle flow and action controls
 

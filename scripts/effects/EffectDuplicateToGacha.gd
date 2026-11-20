@@ -27,19 +27,11 @@ func execute(source_uuid: String, _targets: Array[String], _battle_manager: Node
 			return EffectResult.empty()
 
 	var target_tag = StringName("BattleInventoryT%d" % dup_tier)
-	var container = _battle_manager.get_container(target_tag)
-	var target_index = -1
-	
-	if is_instance_valid(container) and container.has_method("find_first_empty_slot"):
-		target_index = container.find_first_empty_slot()
-		
-	if target_index == -1:
-		return EffectResult.empty()
 
 	var result = EffectResult.new()
 	result.summon_request = {
 		"summon_unit_id": dup_def_id,
-		"holder_location": LocationIdentifier.new(target_tag, target_index),
+		"holder_location": LocationIdentifier.new(target_tag, -1),
 		"spawn_source_uuid": ko_uuid, # Feeds into the Bezier Arc spawn animation towards the Gacha Machine UI
 		"unit_tier": dup_tier
 	}

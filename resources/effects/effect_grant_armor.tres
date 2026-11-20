@@ -7,5 +7,5 @@ script = ExtResource("1_script")
 target_type = &"ALL_ALLIES"
 parameters = {
 "stat": "armor_stacks",
-"base_value": 3
+"base_value": 1
 }

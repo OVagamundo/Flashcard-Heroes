@@ -3,6 +3,7 @@ extends RigidBody2D
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
 const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
+const SpriteOutline = preload("res://scripts/ui/SpriteOutline.gd")
 
 # Shared across all balls
 static var next_allowed_clack_time: int = 0
@@ -24,6 +25,8 @@ var _orig_icon_scale: Vector2
 var _inspection_trigger: InspectionTrigger = null
 var _touch_press_active: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
+var _is_selected: bool = false
+var _is_inspected: bool = false
 
 func _ready() -> void:
 	add_to_group("physics_gacha_ball")
@@ -35,6 +38,7 @@ func _ready() -> void:
 	# Hook into global selection state for visual highlighting
 	SignalBus.view_selected.connect(_on_view_selected)
 	SignalBus.view_deselected.connect(_on_view_deselected)
+	SignalBus.view_inspection_changed.connect(_on_view_inspection_changed)
 	
 	# Add the collision listener for sound
 	body_entered.connect(_on_body_entered)
@@ -52,7 +56,7 @@ func _ready() -> void:
 
 	if not instance_uuid.is_empty():
 		ui_anchor.set_meta("bound_uuid", instance_uuid)
-		ui_anchor.set_meta("location", location)
+		ui_anchor.set_meta("location_identifier", location)
 
 	if _pending_texture:
 		icon_sprite.texture = _pending_texture
@@ -80,7 +84,7 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 	location = loc
 	if is_instance_valid(ui_anchor):
 		ui_anchor.set_meta("bound_uuid", uuid)
-		ui_anchor.set_meta("location", loc)
+		ui_anchor.set_meta("location_identifier", loc)
 	if tex:
 		if is_node_ready() and is_instance_valid(icon_sprite):
 			icon_sprite.texture = tex
@@ -225,6 +229,8 @@ func _emit_interaction(event_type: StringName) -> void:
 
 func _on_view_selected(view: Control, _loc: LocationIdentifier) -> void:
 	if view == ui_anchor:
+		_is_selected = true
+		SpriteOutline.set_highlight(icon_sprite, true)
 		capsule_sprite.modulate = Color(1.3, 1.3, 1.3) # Brighten to highlight
 		var tween = create_tween()
 		tween.set_parallel(true)
@@ -233,11 +239,18 @@ func _on_view_selected(view: Control, _loc: LocationIdentifier) -> void:
 
 func _on_view_deselected(view: Control) -> void:
 	if view == ui_anchor:
+		_is_selected = false
+		SpriteOutline.set_highlight(icon_sprite, _is_inspected)
 		capsule_sprite.modulate = Color.WHITE
 		var tween = create_tween()
 		tween.set_parallel(true)
 		tween.tween_property(capsule_sprite, "scale", _orig_capsule_scale, 0.1)
 		tween.tween_property(icon_sprite, "scale", _orig_icon_scale, 0.1)
+
+func _on_view_inspection_changed(view: Control, active: bool) -> void:
+	if view == ui_anchor:
+		_is_inspected = active
+		SpriteOutline.set_highlight(icon_sprite, active or _is_selected)
 
 func _on_body_entered(body: Node) -> void:
 	var impact_velocity: float = linear_velocity.length()

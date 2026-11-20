@@ -4,13 +4,16 @@ extends PanelContainer
 
 const InputUtils = preload("res://scripts/InputUtils.gd")
 const InspectionTrigger = preload("res://scripts/ui/InspectionTrigger.gd")
+const SpriteOutline = preload("res://scripts/ui/SpriteOutline.gd")
 
 # Size scale constants for different contexts
 const BATTLE_SCALE: float = 2.0 # 2x size for battle scene
 const WINDOW_SCALE: float = 1.0 # 1x size for inventory windows and Discard
+const LOADOUT_ITEM_SOURCE_SIZE: float = 32.0
 
 # Gachaball overlay texture path for inventory items
 const GACHABALL_OVERLAY_PATH = "res://assets/PixelArt/ui/textures/gachaballcapsule.png"
+const INCUBATOR_CAPSULE_TINT: Color = Color(1.0, 0.87, 0.42)
 const SHADOW_TEXTURE = preload("res://assets/PixelArt/ui/textures/Shadow.png")
 const LEVEL_1_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_1_stars.png")
 const LEVEL_2_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_2_stars.png")
@@ -18,8 +21,6 @@ const LEVEL_3_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textu
 const LEVEL_STAR_ICON_SIZE: float = 16.0
 const EQUIPPED_ITEM_ICON_SIZE: float = 32.0
 const UNIT_CORNER_ICON_INSET: float = 6.0
-const DRAG_OUTLINE_TEXTURE_PADDING: int = 5
-static var _drag_outline_texture_cache: Dictionary[Texture2D, Texture2D] = {}
 
 # Path-choice-style hover motion for selectable gachaballs.
 const HOVER_SCALE: float = 0.12
@@ -50,6 +51,7 @@ enum HoverFxMode {
 var _location: LocationIdentifier
 var _instance_uuid: String
 var _is_selected: bool = false
+var _is_inspected: bool = false
 var _is_inspectable: bool = true
 var _is_interactive: bool = true
 var definition_id: StringName = &""
@@ -99,6 +101,8 @@ var _visual_level: int = 1
 var _visual_tier: int = 1
 var _bound_uuid: String = "" # UUID bound during populate()
 var _size_scale: float = BATTLE_SCALE # Default to 2x for battle context
+var _hit_test_sprite_texture: Texture2D
+var _hit_test_sprite_image: Image
 
 var _is_trait_trinket: bool = false
 var _trait_name: String = ""
@@ -146,6 +150,7 @@ func _on_unit_deform_finished(uuid: String) -> void:
 
 func _ready() -> void:
 	add_to_group("gachaball_view")
+	SignalBus.view_inspection_changed.connect(_on_view_inspection_changed)
 	z_as_relative = false
 	z_index = 2
 	_base_z_index = z_index
@@ -272,6 +277,7 @@ func _update_drag_deformation(delta: float) -> void:
 	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
 
 func _exit_tree() -> void:
+	SignalBus.view_inspection_changed.disconnect(_on_view_inspection_changed)
 	if is_instance_valid(_inspection_trigger):
 		_inspection_trigger.cancel()
 	_is_hovered = false
@@ -337,18 +343,67 @@ func _on_drag_ended(was_handled: bool) -> void:
 func get_instance_uuid() -> String:
 	return _instance_uuid
 
+func get_sprite_global_bounds() -> Rect2:
+	var sprite: TextureRect = icon_rect.get_node_or_null("UnitSprite") as TextureRect
+	if sprite == null:
+		sprite = icon_rect
+	return sprite.get_global_transform() * Rect2(Vector2.ZERO, sprite.size)
+
+func has_battle_sprite_at(canvas_position: Vector2) -> bool:
+	var sprite: TextureRect = _get_active_visual_sprite()
+	var local_position: Vector2 = sprite.get_global_transform().affine_inverse() * canvas_position
+	if not Rect2(Vector2.ZERO, sprite.size).has_point(local_position):
+		return false
+	var texture: Texture2D = sprite.texture
+	assert(texture != null, "GachaBallView.has_battle_sprite_at requires a rendered unit sprite")
+	if _hit_test_sprite_texture != texture:
+		_hit_test_sprite_texture = texture
+		_hit_test_sprite_image = texture.get_image()
+	var pixel: Vector2i = Vector2i(local_position / sprite.size * Vector2(_hit_test_sprite_image.get_size()))
+	if sprite.flip_h:
+		pixel.x = _hit_test_sprite_image.get_width() - 1 - pixel.x
+	return _hit_test_sprite_image.get_pixelv(pixel).a > 0.0
+
 ## Set the size scale for this view (2.0 for battle, 1.0 for windows)
 func set_size_scale(size_scale: float) -> void:
 	_size_scale = size_scale
+
+## Lay out starter units at deployment scale and items at Shelf capsule scale.
+func layout_loadout_preview(art_height: float) -> void:
+	if _entity_type == &"TRINKET":
+		return
+
+	var sprite: TextureRect = icon_rect.get_node("UnitSprite")
+	var source_size: Vector2 = Vector2(sprite.texture.get_size())
+	var sprite_scale: float = BATTLE_SCALE
+	if _entity_type != &"UNIT":
+		# Some Emblem textures are larger than the standard item canvas.
+		var item_fit: float = minf(1.0, LOADOUT_ITEM_SOURCE_SIZE / maxf(source_size.x, source_size.y))
+		sprite_scale = item_fit * C.SHELF_CAPSULE_SCALE
+	var sprite_size: Vector2 = (source_size * sprite_scale).round()
+	sprite.custom_minimum_size = Vector2.ZERO
+	sprite.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	sprite.offset_left = -sprite_size.x * 0.5
+	sprite.offset_right = sprite_size.x * 0.5
+	sprite.offset_top = (art_height - sprite_size.y) * 0.5
+	sprite.offset_bottom = sprite.offset_top + sprite_size.y
+
+	if _entity_type == &"UNIT":
+		var stats: HBoxContainer = %StatsContainer
+		stats.set_anchors_preset(Control.PRESET_TOP_WIDE)
+		stats.offset_left = 0.0
+		stats.offset_right = 0.0
+		stats.offset_top = art_height
+		stats.offset_bottom = art_height
 
 func _is_shelf_capsule() -> bool:
 	return not force_inventory_mode and _visual_capsule_sealed and _location != null and _location.container in [&"PlayerShelf", &"EnemyShelf"]
 
 static func shelf_capsule_center(slot_size: Vector2) -> Vector2:
-	return Vector2(slot_size.x * 0.5, C.SHELF_SURFACE_Y - C.GACHA_CAPSULE_DIAMETER * 0.5)
+	return Vector2(slot_size.x * 0.5, C.SHELF_SURFACE_Y - C.GACHA_CAPSULE_DIAMETER * C.SHELF_CAPSULE_SCALE * 0.5)
 
 func get_capsule_rect() -> Rect2:
-	var capsule_scale: float = 1.0 if _is_shelf_capsule() or force_inventory_mode else _size_scale
+	var capsule_scale: float = C.SHELF_CAPSULE_SCALE if _is_shelf_capsule() else (1.0 if force_inventory_mode else _size_scale)
 	var capsule_size: Vector2 = Vector2.ONE * C.GACHA_CAPSULE_DIAMETER * capsule_scale
 	var center: Vector2 = shelf_capsule_center(Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)) if _is_shelf_capsule() else capsule_size * 0.5
 	return Rect2(center - capsule_size * 0.5, capsule_size)
@@ -356,7 +411,10 @@ func get_capsule_rect() -> Rect2:
 func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: bool = true) -> void:
 	tooltip_text = ""
 	_visual_capsule_sealed = bool(visual_data.get("capsule_sealed", false))
+	_visual_incubating = bool(visual_data.get("incubating", false))
 	self._location = loc
+	if _instance_uuid != visual_data.get("uuid", ""):
+		_is_inspected = false
 	self._instance_uuid = visual_data.get("uuid", "")
 	self._bound_uuid = visual_data.get("uuid", "")
 	self._is_inspectable = is_inspectable
@@ -958,6 +1016,8 @@ func _build_drag_preview_visual() -> Control:
 		if overlay_texture:
 			var overlay_preview = TextureRect.new()
 			overlay_preview.texture = overlay_texture
+			if _visual_incubating:
+				overlay_preview.modulate = INCUBATOR_CAPSULE_TINT
 			overlay_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
 			overlay_preview.stretch_mode = TextureRect.STRETCH_SCALE
 			overlay_preview.custom_minimum_size = preview_size
@@ -970,10 +1030,10 @@ func _build_drag_preview_visual() -> Control:
 	return preview_container
 
 func _add_padded_drag_outline(preview_container: Control, preview: TextureRect, source_texture: Texture2D) -> void:
-	var outline_texture: Texture2D = _get_padded_drag_outline_texture(source_texture)
+	var outline_texture: Texture2D = SpriteOutline.padded_texture(source_texture)
 	var source_size: Vector2 = Vector2(source_texture.get_size())
 	var pixels_per_source_pixel: Vector2 = preview.size / source_size
-	var displayed_padding: Vector2 = Vector2(DRAG_OUTLINE_TEXTURE_PADDING, DRAG_OUTLINE_TEXTURE_PADDING) * pixels_per_source_pixel
+	var displayed_padding: Vector2 = float(SpriteOutline.PADDING) * pixels_per_source_pixel
 	var outline_preview := TextureRect.new()
 	outline_preview.texture = outline_texture
 	outline_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -985,24 +1045,12 @@ func _add_padded_drag_outline(preview_container: Control, preview: TextureRect, 
 	var outline_material: ShaderMaterial = icon_rect.material.duplicate() as ShaderMaterial
 	assert(outline_material != null, "GachaBallView drag outline requires a ShaderMaterial.")
 	outline_material.set_shader_parameter("outline_enabled", true)
+	if _is_selected:
+		outline_material.set_shader_parameter("outline_color", Color.WHITE)
+		outline_material.set_shader_parameter("outline_width", 3.0)
 	outline_preview.material = outline_material
 	preview_container.add_child(outline_preview)
 	preview_container.move_child(outline_preview, preview.get_index())
-
-func _get_padded_drag_outline_texture(source_texture: Texture2D) -> Texture2D:
-	if _drag_outline_texture_cache.has(source_texture):
-		return _drag_outline_texture_cache[source_texture]
-	var source_image: Image = source_texture.get_image()
-	assert(not source_image.is_empty(), "GachaBallView drag outline source texture must be readable.")
-	source_image.convert(Image.FORMAT_RGBA8)
-	var padding: Vector2i = Vector2i(DRAG_OUTLINE_TEXTURE_PADDING, DRAG_OUTLINE_TEXTURE_PADDING)
-	var padded_size: Vector2i = source_image.get_size() + padding * 2
-	var padded_image: Image = Image.create(padded_size.x, padded_size.y, false, Image.FORMAT_RGBA8)
-	padded_image.fill(Color.TRANSPARENT)
-	padded_image.blit_rect(source_image, Rect2i(Vector2i.ZERO, source_image.get_size()), padding)
-	var padded_texture: Texture2D = ImageTexture.create_from_image(padded_image)
-	_drag_outline_texture_cache[source_texture] = padded_texture
-	return padded_texture
 
 func _build_drag_engine_preview_stub() -> Control:
 	var preview_stub := Control.new()
@@ -1699,6 +1747,7 @@ func _create_gachaball_overlay() -> void:
 	# Check if overlay already exists (prevent duplication on repopulate)
 	var existing_overlay = get_node_or_null("GachaBallOverlay") as Sprite2D
 	if is_instance_valid(existing_overlay):
+		_update_incubator_glow(existing_overlay)
 		return
 	
 	# Load the overlay texture
@@ -1726,11 +1775,33 @@ func _create_gachaball_overlay() -> void:
 	# capsule under the icon/unit, selection ring above it.
 	add_child(overlay)
 	move_child(overlay, 1)
+	_update_incubator_glow(overlay)
 	
 	# Ensure clipping is disabled so glow can spill outside the bounding box
 	clip_contents = false
 	if get_parent() is Control:
 		get_parent().clip_contents = false
+
+func _update_incubator_glow(capsule: Sprite2D) -> void:
+	capsule.modulate = INCUBATOR_CAPSULE_TINT if _visual_incubating else Color.WHITE
+	var glow: Sprite2D = capsule.get_node_or_null("IncubatorGlow") as Sprite2D
+	if _visual_incubating and glow == null:
+		var falloff := Gradient.new()
+		falloff.offsets = PackedFloat32Array([0.0, 0.64, 1.0])
+		falloff.colors = PackedColorArray([Color(1.0, 0.79, 0.19, 0.72), Color(1.0, 0.69, 0.1, 0.32), Color(1.0, 0.69, 0.1, 0.0)])
+		var light_texture := GradientTexture2D.new()
+		light_texture.gradient = falloff
+		light_texture.fill = GradientTexture2D.FILL_RADIAL
+		light_texture.fill_from = Vector2(0.5, 0.5)
+		light_texture.fill_to = Vector2(1.0, 0.5)
+		glow = Sprite2D.new()
+		glow.name = "IncubatorGlow"
+		glow.texture = light_texture
+		glow.scale = Vector2(capsule.texture.get_size()) / float(light_texture.width) * 1.5
+		glow.show_behind_parent = true
+		capsule.add_child(glow)
+	if glow != null:
+		glow.visible = _visual_incubating
 
 
 
@@ -2025,6 +2096,11 @@ func _on_view_deselected(view: Control) -> void:
 		_is_selected = false
 		_apply_selection_feedback()
 
+func _on_view_inspection_changed(view: Control, active: bool) -> void:
+	if view == self:
+		_is_inspected = active
+		_update_outline_visuals()
+
 ## Fail-safe handler for global selection changes
 ## Ensures this view deselects even if the instance ID lookup failed in GIR
 func _on_selection_changed(new_loc: LocationIdentifier) -> void:
@@ -2074,9 +2150,6 @@ func _apply_selection_feedback() -> void:
 	var overlay = get_node_or_null("GachaBallOverlay")
 	var use_inventory_capsule_feedback := is_instance_valid(overlay) and _has_overlay_heuristic()
 
-	if is_instance_valid(_anim_controller):
-		_anim_controller.set_selection_outline(_is_selected)
-
 	if use_inventory_capsule_feedback:
 		var selection_ring = get_node_or_null("SelectionRing")
 		if is_instance_valid(selection_ring):
@@ -2084,13 +2157,6 @@ func _apply_selection_feedback() -> void:
 		var overlay_base_scale: Vector2 = overlay.get_meta("base_scale", Vector2.ONE)
 		overlay.scale = overlay_base_scale * (1.05 if _is_selected else 1.0)
 		overlay.modulate = Color(1.3, 1.3, 1.3) if _is_selected else Color.WHITE
-	else:
-		# Battle mode: Use shader-based outline on icon_rect
-		# NOTE: Do NOT modify icon_rect.scale here - it conflicts with animations
-		var mat = icon_rect.material as ShaderMaterial
-		if mat:
-			mat.set_shader_parameter("outline_enabled", _is_selected)
-
 	_update_outline_visuals()
 
 func _is_reward_or_shop_context() -> bool:
@@ -2128,7 +2194,7 @@ func _update_outline_visuals() -> void:
 	if not is_instance_valid(icon_rect):
 		return
 
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	var unit_sprite: TextureRect = icon_rect.get_node_or_null("UnitSprite") as TextureRect
 	var unit_sprite_mat = unit_sprite.material as ShaderMaterial if is_instance_valid(unit_sprite) and is_instance_valid(unit_sprite.material) else null
 	var icon_mat = icon_rect.material as ShaderMaterial if is_instance_valid(icon_rect.material) else null
 
@@ -2136,11 +2202,15 @@ func _update_outline_visuals() -> void:
 	var outline_color: Color = Color.WHITE
 	var outline_width: float = 3.0
 
-	# Priority 1: Selection outline on the selected ball (White)
-	if _is_selected:
-		outline_enabled = true
-		outline_color = Color.WHITE
-		outline_width = 3.0
+	var focused: bool = _is_selected or _is_inspected
+	var use_unit_sprite: bool = icon_rect.texture == null and unit_sprite != null
+	SpriteOutline.set_highlight(icon_rect, focused and not use_unit_sprite)
+	if unit_sprite != null:
+		SpriteOutline.set_highlight(unit_sprite, focused and use_unit_sprite)
+
+	# Selection and inspection take precedence over the sprite's other outlines.
+	if focused:
+		outline_enabled = false
 	# Priority 2: Merge target highlight (Cyan for Level Up, Magenta for Recipe Tier Up / Items)
 	elif _merge_target_type == &"LEVEL_UP":
 		outline_enabled = true
@@ -2268,6 +2338,7 @@ func animate_leap_return() -> void:
 var force_inventory_mode: bool = false
 var show_capsule_overlay: bool = true
 var _visual_capsule_sealed: bool = false
+var _visual_incubating: bool = false
 
 ## Heuristic to check if we should render in "Inventory Mode" (2x scale, 192px slot, circle outline)
 ## 1. Checks if parent name contains "InventoryWindow"

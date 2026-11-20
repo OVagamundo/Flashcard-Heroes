@@ -31,7 +31,9 @@ enum Type {
 	MERGE, # Merge action on battle board
 	GOLD_SPEND, # Payload: { "amount": int }
 	TOKEN_SPEND, # Payload: { "amount": int }
-	TIMER_BONUS # Payload: { "amount": int/float, "origin_uuid": str, "target_bonus_time": float }
+	TIMER_BONUS, # Payload: { "amount": int/float, "origin_uuid": str, "target_bonus_time": float }
+	DISCARD_EJECT,
+	ACTOR_ORDER,
 }
 
 var type: Type

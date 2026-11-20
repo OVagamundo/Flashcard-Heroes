@@ -36,6 +36,7 @@ class DamageRequest extends RefCounted:
 	var targets: Array[String]
 	var skip_bump: bool
 	var cause: StringName
+	var can_be_intercepted: bool = true
 	
 	func _init(p_amount: int, p_damage_type: int, p_targets: Array[String], p_skip_bump: bool = false, p_cause: StringName = &"CAUSE_ATTACK"):
 		amount = p_amount

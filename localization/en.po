@@ -73,7 +73,7 @@ msgid "E?TnkMerPlaToy.name"
 msgstr "Vaultbark"
 
 msgid "EASpeFodToy.desc"
-msgstr "Initial PWR equals your current Gold multiplied by 50% when drawn or spawned."
+msgstr "When this unit enters play, its starting PWR equals 50% of your current Gold."
 
 msgid "EASpeFodToy.name"
 msgstr "EASpeFodToy"
@@ -550,7 +550,7 @@ msgid "ability.apprentice_insignia.desc"
 msgstr "When a Level 1 unit enters a Lineup, it gains +1 HP and +1 PWR."
 
 msgid "ability.armor_aura.desc"
-msgstr "At the start of each turn, all allies gain 3 Armor."
+msgstr "When you press Ready, all allies in the Lineup gain 1 Armor."
 
 msgid "ability.bargain_charm.desc"
 msgstr "Gacha draws cost 1 token less (minimum 1) once per machine, per turn. Valid for battles only. Player exclusive."
@@ -1021,13 +1021,13 @@ msgid "ability.unit_t2_e_mimic.desc"
 msgstr "At the start of each turn, transforms into the base unit of the mirror enemy, gaining [+0 / +2 / +4] HP and PWR."
 
 msgid "ability.unit_t2_f_gold_pwr_l1.desc"
-msgstr "Initial PWR equals your current Gold multiplied by 50% when drawn or spawned."
+msgstr "When this unit enters play, its starting PWR equals 50% of your current Gold."
 
 msgid "ability.unit_t2_f_gold_pwr_l2.desc"
-msgstr "Initial PWR equals your current Gold multiplied by 100% when drawn or spawned."
+msgstr "When this unit enters play, its starting PWR equals 100% of your current Gold."
 
 msgid "ability.unit_t2_f_gold_pwr_l3.desc"
-msgstr "Initial PWR equals your current Gold multiplied by 150% when drawn or spawned."
+msgstr "When this unit enters play, its starting PWR equals 150% of your current Gold."
 
 msgid "ability.unit_t2_g_buff_echo.desc"
 msgstr "When an adjacent ally receives a HP or PWR buff, this unit repeats [100% / 150% / 200%] of that buff on them."
@@ -1629,8 +1629,14 @@ msgstr "Mercenary"
 msgid "loadout.hero_set.novice"
 msgstr "Novice"
 
-msgid "loadout.hero_trait_assignment"
-msgstr "At the start of the game, each hero is assigned 2 random Traits. Their Elemental Trait is shared by units in the %s set."
+msgid "ui.starting_trait_trinket"
+msgstr "Starting Crest"
+
+msgid "ui.starting_units"
+msgstr "Starting Units"
+
+msgid "ui.starting_items"
+msgstr "Starting Items"
 
 msgid "options.audio.master"
 msgstr "Master Volume"
@@ -2011,7 +2017,7 @@ msgid "trinket.apprentice_insignia.name"
 msgstr "Apprentice Insignia"
 
 msgid "trinket.armor_aura.desc"
-msgstr "At the start of each turn, all allies gain 3 Armor."
+msgstr "When you press Ready, all allies in the Lineup gain 1 Armor."
 
 msgid "trinket.armor_aura.name"
 msgstr "Armor Aura"
@@ -2704,7 +2710,7 @@ msgid "ui.mastery_level_5"
 msgstr "Mastery 5 (Very Easy)"
 
 msgid "ui.merge_encounter_description"
-msgstr "Merge or level up your Gachamons or Spirits permanently!"
+msgstr "Permanently merge or level up your units and items."
 
 msgid "ui.merge_encounter_instruction"
 msgstr "Click or Drag and Drop one gachaball on another valid one to Merge! Cost: {cost} Gold (Merging here unlocks that recipe for the rest of the run!)"
@@ -3209,3 +3215,28 @@ msgstr "Costume Banner"
 
 msgid "trinket.banner_costume.desc"
 msgstr "Theft when you press Ready and PWR transfers when units are knocked out empower a growing backline carry. Grants the Costume Crest for free. Approved off-Trait partners receive free Costume Emblems. At the end of each odd-numbered turn, calls in reinforcements to repair its formation."
+
+msgid "ui.battle_order"
+msgstr "Order"
+
+msgid "ui.battle_preview"
+msgstr "Preview"
+
+msgid "item.incubator.name"
+msgstr "Incubator"
+
+msgid "item.incubator.desc"
+msgstr "Move an allied Lineup unit into this capsule on the Shelf. It gains +1 HP and +1 PWR at the start of each turn it spends inside and keeps the bonus when deployed. Returning it to the Lineup sends the Incubator to Discard."
+
+msgid "item.encounter_tonic.name"
+msgstr "Fortifying Tonic"
+
+msgid "item.encounter_tonic.desc"
+msgstr "Give a unit in the Lineup +3 HP and +2 PWR for this encounter."
+
+msgid "item.damage_vial.name"
+msgstr "Impact Vial"
+
+msgid "item.damage_vial.desc"
+msgstr "Deal 5 damage to the chosen unit in either Lineup. Armor reduces this damage."
+

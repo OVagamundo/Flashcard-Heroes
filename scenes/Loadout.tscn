@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dsgh5wwasg7xe"]
 
 [ext_resource type="Script" path="res://scripts/Loadout.gd" id="1_bcdef"]
+[ext_resource type="Script" path="res://scripts/ui/TraitTags.gd" id="2_trait_tags"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/BGs/loadout.png" id="4_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hero_panel"]
@@ -197,7 +198,13 @@ theme_override_constants/separation = 12
 layout_mode = 2
 theme_override_constants/separation = 18
 
-[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox"]
+[node name="HeroPortrait" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox"]
+custom_minimum_size = Vector2(172, 0)
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/separation = 6
+
+[node name="HeroSprite" type="TextureRect" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox/HeroPortrait"]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(144, 144)
 layout_mode = 2
@@ -206,6 +213,14 @@ size_flags_vertical = 0
 texture_filter = 3
 expand_mode = 1
 stretch_mode = 5
+
+[node name="HeroTraitTags" type="HFlowContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox/HeroPortrait"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 4
+script = ExtResource("2_trait_tags")
 
 [node name="HeroHeaderDetails" type="VBoxContainer" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent/HeroHeaderBox"]
 layout_mode = 2
@@ -236,15 +251,6 @@ size_flags_horizontal = 3
 theme_override_colors/default_color = Color(0.85, 0.85, 0.85, 1)
 bbcode_enabled = true
 text = "Choose a hero to see their details."
-fit_content = true
-scroll_active = false
-
-[node name="HeroAbilities" type="RichTextLabel" parent="MainContent/HeroColumn/HeroInfoPanel/HeroScrollContainer/HeroScrollContent"]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/default_color = Color(0.7, 0.85, 1, 1)
-bbcode_enabled = true
 fit_content = true
 scroll_active = false
 

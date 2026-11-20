@@ -13,6 +13,9 @@ signal session_question_changed(question_data: Dictionary)
 const SRS_MASTERY_WEIGHT_POWER: float = 2.0
 const SRS_RECENCY_WEIGHT: float = 1.0
 const SRS_RANDOM_FACTOR: float = 0.1
+const QUESTION_CHOICE_COUNT: int = 6
+const CHALLENGE_UNLOCK_MASTERY_FRACTION: float = 0.5
+const CHALLENGE_UNLOCK_MIN_CORRECT: int = 3
 
 var _run_state_ref: RunState = null
 var _active_deck_ids: Array[StringName] = []
@@ -106,9 +109,16 @@ func start_minigame(run_state: RunState, active_deck: Array[StringName]) -> void
 			push_error("[FlashcardManager] Card definition missing for: " + str(card_id))
 			return
 	
-	# Expand deck at START of minigame session via single source of truth
-	# This unlocks exactly one new card from the ordered deck pool if available.
-	var newly_unlocked_id: StringName = run_state.unlock_next_deck_card()
+	var newly_unlocked_id: StringName = &""
+	var active_card_count: int = run_state.active_deck_ids.size()
+	var required_mastered_cards: int = ceili(active_card_count * CHALLENGE_UNLOCK_MASTERY_FRACTION)
+	var can_expand_deck: bool = (
+		run_state.last_challenge_met_unlock_requirements
+		and run_state.get_mastered_card_count() >= required_mastered_cards
+	)
+	# The first Challenge introduces the sixth card needed to fill the answer choices.
+	if active_card_count < QUESTION_CHOICE_COUNT or can_expand_deck:
+		newly_unlocked_id = run_state.unlock_next_deck_card()
 	
 	self._run_state_ref = run_state
 	self._active_deck_ids = run_state.active_deck_ids.duplicate()
@@ -318,7 +328,7 @@ func get_next_question() -> Dictionary:
 		push_error("[FlashcardManager] _run_state_ref is invalid!")
 		return {}
 	
-	if _active_deck_ids.size() < 6:
+	if _active_deck_ids.size() < QUESTION_CHOICE_COUNT:
 		push_error("[FlashcardManager] Not enough cards in active deck! Size is: " + str(_active_deck_ids.size()))
 		return {} # Not enough cards for a question and 5 distractors
 	
@@ -334,7 +344,7 @@ func get_next_question() -> Dictionary:
 	RNGManager.map_rng.shuffle(distractors)
 	
 	var choices: Array[StringName] = [question_card_id]
-	choices.append_array(distractors.slice(0, 5))
+	choices.append_array(distractors.slice(0, QUESTION_CHOICE_COUNT - 1))
 	RNGManager.map_rng.shuffle(choices)
 	
 	return {
@@ -373,7 +383,7 @@ func get_question_for_card(card_id: StringName) -> Dictionary:
 		push_error("[FlashcardManager] _run_state_ref is invalid!")
 		return {}
 	
-	if _active_deck_ids.size() < 6:
+	if _active_deck_ids.size() < QUESTION_CHOICE_COUNT:
 		push_error("[FlashcardManager] Not enough cards in active deck! Size is: " + str(_active_deck_ids.size()))
 		return {}
 	
@@ -384,7 +394,7 @@ func get_question_for_card(card_id: StringName) -> Dictionary:
 	RNGManager.map_rng.shuffle(distractors)
 	
 	var choices: Array[StringName] = [card_id]
-	choices.append_array(distractors.slice(0, 5))
+	choices.append_array(distractors.slice(0, QUESTION_CHOICE_COUNT - 1))
 	RNGManager.map_rng.shuffle(choices)
 	
 	return {
@@ -413,7 +423,10 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	"""Called when the minigame is completed - FlashcardManager owns window lifecycle"""
 	if not is_session_active:
 		return
-		
+	assert(_run_state_ref != null, "FlashcardManager: completing a Challenge requires its RunState")
+	# Correct answers must make up at least half of all responses, including skips.
+	_run_state_ref.last_challenge_met_unlock_requirements = correct >= CHALLENGE_UNLOCK_MIN_CORRECT and correct >= incorrect
+
 	is_session_active = false
 	is_sprint_active = false
 	is_introducing_new_card = false

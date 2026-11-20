@@ -35,6 +35,7 @@ const INSPECTION_WINDOW_WIDTH: float = 360.0
 const GLOSSARY_WINDOW_WIDTH: float = 260.0
 
 var _tracked_windows: Dictionary = {}
+var _inspection_sources: Dictionary[int, int] = {}
 var _modal_layer: CanvasLayer = null
 var _background_ui_layer: CanvasLayer = null
 var _vfx_layer: CanvasLayer = null
@@ -810,6 +811,11 @@ func _open_contextual_window(context: Dictionary) -> Control:
 	if window_instance.has_method("populate"):
 		window_instance.populate(populate_context)
 
+	if anchor_view != null and window_instance in _active_inspection_group and (window_instance is UnitInspectionWindow or window_instance is ItemInspectionWindow):
+		var source: Control = _entity_view_for_anchor(anchor_view)
+		_inspection_sources[window_instance.get_instance_id()] = source.get_instance_id()
+		SignalBus.view_inspection_changed.emit(source, true)
+
 	# (diagnostics removed)
 
 	var pos_hint: String = context.get("positioning_hint", "")
@@ -1554,6 +1560,9 @@ func _resolve_parent_window(anchor_view: Control, populate_context: Dictionary) 
 func find_view_for_location(loc: LocationIdentifier) -> Control:
 	if not is_instance_valid(loc):
 		return null
+	if loc.container == C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER and loc.index == 0:
+		var banner: EnemyBannerView = get_tree().get_first_node_in_group("enemy_banner_view") as EnemyBannerView
+		return banner if banner != null and banner.is_visible_in_tree() else null
 	# Breadth-first traversal to find any Control with matching location metadata
 	var queue: Array = [get_tree().root]
 	while not queue.is_empty():
@@ -1568,15 +1577,14 @@ func find_view_for_location(loc: LocationIdentifier) -> Control:
 
 # Public API: find the entity view (e.g. GachaBallView) for a location, unwrapping SlotView if necessary
 func find_entity_view_for_location(loc: LocationIdentifier) -> Control:
-	var slot_or_view = find_view_for_location(loc)
-	if not is_instance_valid(slot_or_view):
-		return null
-	if slot_or_view is GachaBallView or slot_or_view.has_method("play_landing_bounce"):
-		return slot_or_view
-	for child in slot_or_view.get_children():
-		if not child.is_queued_for_deletion() and (child is GachaBallView or (child is Control and child.has_method("play_landing_bounce"))):
-			return child
-	return slot_or_view
+	return _entity_view_for_anchor(find_view_for_location(loc))
+
+func _entity_view_for_anchor(anchor: Control) -> Control:
+	if anchor is SlotView:
+		for child: Node in anchor.get_children():
+			if child is GachaBallView and not child.is_queued_for_deletion():
+				return child as GachaBallView
+	return anchor
 
 # Helper: compare two LocationIdentifier values safely (by fields)
 func _locations_equal(a, b) -> bool:
@@ -1705,6 +1713,13 @@ func _track_inspection_anchor(window_instance: Control, anchor: Control, loc: Lo
 	_tracked_windows[window_id] = {"anchor": anchor, "geom_callable": geom_callable, "freed_callable": freed_callable, "pos_hint": pos_hint}
 
 func stop_tracking_window(window_id: int) -> void:
+	if _inspection_sources.has(window_id):
+		var source_id: int = _inspection_sources[window_id]
+		_inspection_sources.erase(window_id)
+		var source: Control = instance_from_id(source_id) as Control
+		if source != null and not _inspection_sources.values().has(source_id):
+			SignalBus.view_inspection_changed.emit(source, false)
+
 	# Emit signal that window is closing/stopping tracking
 	# We try to get the instance to pass it.
 	var window = instance_from_id(window_id)

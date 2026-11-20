@@ -57,7 +57,7 @@ class DrawResult:
 
 ## Draw a random instance from a tier pool. Returns DrawResult.
 ## Does NOT handle token costs or signals - caller is responsible.
-static func draw_from_tier(state: BattleState, tier: int, player_shelf_capacity: int = C.SHELF_CAP) -> DrawResult:
+static func draw_from_tier(state: BattleState, tier: int, player_shelf_capacity: int = C.PLAYER_SHELF_CAP) -> DrawResult:
 	var result := DrawResult.new()
 
 	var container_tag: StringName = &"BattleInventoryT%d" % tier
@@ -125,35 +125,27 @@ static func draw_from_discard(state: BattleState) -> DrawResult:
 	var discard_pool := state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
 	if discard_pool.is_empty():
 		return result
-
-	var drawn_instance: GachaBallInstance = RNGManager.gacha_rng.pick_random(discard_pool)
-	if not is_instance_valid(drawn_instance):
+	var tiers_with_room: Array[int] = []
+	for tier: int in range(1, 4):
+		if state.has_tier_space(tier):
+			tiers_with_room.append(tier)
+	if tiers_with_room.is_empty():
 		return result
-
-	var def := drawn_instance.get_definition()
-	if not is_instance_valid(def):
-		return result
-
-	var tier: int = clampi(def.tier, 1, 3)
-	var target_container_tag: StringName = &"BattleInventoryT%d" % tier
-	var target_container := state.get_container(target_container_tag)
-	if not is_instance_valid(target_container):
-		return result
-
-	var source_loc := drawn_instance.get_location()
-	if is_instance_valid(source_loc):
-		result.source_container = source_loc.container
-		result.source_slot = source_loc.index
-	else:
-		result.source_container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
-
-	drawn_instance.reset_battle_stats_silent()
-
-	var final_slot := state.transfer_instance_to_container(drawn_instance, target_container_tag, -1)
-	assert(final_slot != -1, "draw_from_discard: failed to transfer %s to %s" % [drawn_instance.ball_uuid, String(target_container_tag)])
-
-	result.dest_container = target_container_tag
-	result.dest_slot = final_slot
+	var eligible: Array[GachaBallInstance] = []
+	for instance: GachaBallInstance in discard_pool:
+		if tiers_with_room.has(instance.get_definition().tier):
+			eligible.append(instance)
+	var drawn_instance: GachaBallInstance = RNGManager.gacha_rng.pick_random(discard_pool if eligible.is_empty() else eligible)
+	result.source_container = C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+	result.source_slot = drawn_instance.location_slot_index
+	result.dest_container = result.source_container
+	result.dest_slot = result.source_slot
+	result.went_to_discard = eligible.is_empty()
+	if not result.went_to_discard:
+		drawn_instance.reset_battle_stats_silent()
+		result.dest_container = &"BattleInventoryT%d" % drawn_instance.get_definition().tier
+		result.dest_slot = state.transfer_instance_to_container(drawn_instance, result.dest_container)
+		assert(result.dest_slot >= 0, "Eligible capsule must have a free tier slot")
 	result.drawn_uuid = drawn_instance.ball_uuid
 	result.success = true
 	if state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE).is_empty():
@@ -172,6 +164,8 @@ static func register_and_equip_item(state: BattleState, item: GachaBallInstance,
 
 	assert(is_instance_valid(item), "register_and_equip_item: item is null")
 	assert(not state.get_all_instances().has(item.ball_uuid), "register_and_equip_item: item %s is already registered" % item.ball_uuid)
+	if item.definition_id == C.ITEM_INCUBATOR:
+		return result
 
 	var unit := state.get_instance(unit_uuid)
 	if not is_instance_valid(unit):
@@ -227,6 +221,12 @@ static func register_and_equip_item(state: BattleState, item: GachaBallInstance,
 
 ## Equip an already-registered item to a unit atomically. Returns OperationResult.
 ## Caller is responsible for signal emission.
+static func can_incubate(state: BattleState, item: GachaBallInstance, unit: GachaBallInstance) -> bool:
+	return item.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF \
+		and state.is_player_shelf_slot_unlocked(item.location_slot_index) \
+		and unit.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP \
+		and unit.get_definition().category == C.CATEGORY_UNIT and unit.current_hp > 0
+
 static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String, slot_index: int = -1) -> OperationResult:
 	var result := OperationResult.new()
 
@@ -237,6 +237,9 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	if not state.is_lineup_location(unit.get_location()):
 		return result
 	if item.location_container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not state.is_player_shelf_slot_unlocked(item.location_slot_index):
+		return result
+	var incubating: bool = item.definition_id == C.ITEM_INCUBATOR
+	if incubating and not can_incubate(state, item, unit):
 		return result
 
 	var item_def = item.get_definition()
@@ -320,6 +323,10 @@ static func equip_item(state: BattleState, item_uuid: String, unit_uuid: String,
 	result.delta_hp = deltas.get("delta_hp", 0)
 	result.delta_pwr = deltas.get("delta_pwr", 0)
 	result.inventory_changed = true
+
+	if incubating:
+		var moved_slot: int = state.transfer_instance_to_container(unit, item_loc.container, src_slot)
+		assert(moved_slot == src_slot, "Incubator must move its holder to the vacated Shelf slot")
 
 	result.add_unit_change(unit.ball_uuid)
 	result.set_success()

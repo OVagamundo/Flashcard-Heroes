@@ -33,6 +33,17 @@ func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: Locati
 	var sdef = source_instance.get_definition()
 	var target_def = target_instance.get_definition() if is_instance_valid(target_instance) else null
 
+	if source_instance.definition_id == C.ITEM_INCUBATOR and target_loc.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF \
+			and not target_loc.container.begins_with("RunInventoryT") and not target_loc.container.begins_with("BattleInventoryT"):
+		var incubated: bool = false
+		if GameManager.is_in_battle and target_instance != null:
+			var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
+			incubated = battle_manager.bm_equip_item(source_instance.ball_uuid, target_instance.ball_uuid)
+		if not incubated:
+			SignalBus.inventory_action_invalid.emit(source_loc, target_loc)
+		GlobalInteractionRouter.end_drag(incubated)
+		return
+
 	if GameManager.is_in_battle:
 		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
 		if source_loc.container != C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not battle_manager._state.is_lineup_location(source_loc):
@@ -217,6 +228,10 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 				bm.unblock_ui_updates()
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
+	var encounter_only: bool = consumable_instance.definition_id in [C.ITEM_ENCOUNTER_TONIC, C.ITEM_DAMAGE_VIAL]
+	if encounter_only and (not GameManager.is_in_battle or target_unit.current_hp <= 0):
+		GlobalInteractionRouter.end_drag(false)
+		return
 	if GameManager.is_in_battle:
 		var battle_manager: BattleManager = GameManager.get_battle_manager() as BattleManager
 		if not battle_manager._state.is_lineup_location(target_unit.get_location()):
@@ -261,6 +276,10 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 	
 	var targets: Array[String] = [target_unit.ball_uuid]
 	var any_success = false
+	var source_uuid: String = target_unit.ball_uuid
+	if consumable_instance.definition_id == C.ITEM_DAMAGE_VIAL:
+		# A manual impact has no attacking unit.
+		source_uuid = ""
 	
 	for effect in ability.effects:
 		if not is_instance_valid(effect): continue
@@ -271,10 +290,11 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 		trig_context.source_holder_uuid = target_unit.ball_uuid
 		trig_context.source_consumable_id = def.id
 		trig_context.consumable_uuid = consumable_uuid
+		trig_context.team = "PLAYER"
 		
 		# Construct Request
 		var req = EffectRequest.new(
-			target_unit.ball_uuid, # Source is the UNIT (Visual Preference: Self-Cast)
+			source_uuid,
 			ability.id,
 			effect,
 			targets,
@@ -288,7 +308,8 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 	if any_success:
 		_play_lineup_capsule_open(consumable_instance.get_location(), target_unit.get_location())
 		# AUDIO HOOK: Consumable usage sound
-		Audio.play_sfx("ui_heal")
+		if consumable_instance.definition_id != C.ITEM_DAMAGE_VIAL:
+			Audio.play_sfx("ui_heal")
 		
 		# 4. Consume the Item (Truth) - IMMEDIATELY (Before Animation)
 		owner.remove_instance(consumable_uuid)
@@ -377,8 +398,10 @@ func _move(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> vo
 	var owner = _get_data_owner()
 	if not is_instance_valid(owner): return
 	
+	var was_incubating: bool = source_loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF \
+		and owner is BattleManager and owner._state.get_equipped_incubator(instance_to_move) != null
 	var moved: bool = owner.move_instance(source_loc, target_loc)
-	if moved:
+	if moved and not was_incubating:
 		_play_lineup_capsule_open(source_loc, target_loc)
 	SignalBus.emit_signal("selection_clear_requested")
 	SignalBus.emit_signal.call_deferred("inventory_action_completed", [instance_to_move.ball_uuid])

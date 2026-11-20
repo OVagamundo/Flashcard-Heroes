@@ -20,6 +20,10 @@ var unlock_percentage: float = 0.0
 var unlocked_recipes: Array[String] = []
 var encountered_bosses: Array[String] = []
 var excluded_entity_ids: Array[StringName] = []
+var machine_trait_counts: Dictionary[String, int] = {}
+var machine_unit_counts: Dictionary[StringName, int] = {}
+var owned_crest_traits: Array[String] = []
+var unit_tag_overrides: Dictionary = {}
 
 func has_unlocked_recipe(recipe_id: String) -> bool:
     return unlocked_recipes.has(recipe_id)

@@ -480,20 +480,6 @@ func play_selection_bounce() -> void:
 	_on_unit_move(uuid, &"HOP", Vector2.ZERO)
 	_on_unit_deform(uuid, &"HOP_DEFORM")
 
-func set_selection_outline(enabled: bool) -> void:
-	var sprite := _get_sprite()
-	if not is_instance_valid(sprite):
-		return
-		
-	var mat = sprite.material as ShaderMaterial
-	if is_instance_valid(mat):
-		mat.set_shader_parameter("outline_enabled", enabled)
-		if enabled:
-			# Ensure width is thick as requested (user said "thick white outlines")
-			mat.set_shader_parameter("outline_width", 3.0)
-			mat.set_shader_parameter("outline_color", Color.WHITE)
-
-
 func _on_melee_lunge_tween_finished() -> void:
 	var sprite := _get_sprite()
 	if is_instance_valid(sprite) and sprite != _icon_rect:

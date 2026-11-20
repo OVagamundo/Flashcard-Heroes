@@ -69,13 +69,17 @@ graph TD
 
 ### Shelf Activation Rules
 
-Unit and equipped-item abilities activate only while their unit or holder is in a Lineup. `AbilityDefinition.activation_scope` declares the exceptions per ability: `BATTLE_BOARD` for board-wide checks and `PLAYER_SHELF` for Wind-up-kun's turn-start growth. `ANY_LOCATION` lifecycle hooks do not make a sealed Shelf holder active, and none of these scopes enables the source's other abilities.
+Ordinary unit and equipped-item abilities require the unit or holder to be in a Lineup. `AbilityDefinition.activation_scope` declares exceptions per ability. `PLAYER_SHELF` allows the Turn Start growth from Wind-up-kun and the Incubator. `BATTLE_BOARD` supports board-wide checks and `ANY_LOCATION` supports lifecycle hooks. The scope applies to the individual ability.
 
 Shelf statuses retain their stacks without activating or decaying. Burn, Armor, Spikes, Static, Bounty and Reinforce resume their normal processing upon deployment to a Lineup, without catching up skipped turns. Consumable and equipment stat changes do not update sealed Shelf units.
 
 Trinkets remain active listeners with their existing event scopes and can still track events involving Shelf copies. Any HP/PWR changes they grant apply to Lineup units only; Rusty Ring and Twin Charm do not update sealed Shelf units. Shelf-to-Shelf drops rearrange capsules and never merge them; a sealed Shelf capsule may be merged into an eligible Lineup unit or equipped item. Shelf summons remain sealed, and entry effects resolve when they enter a Lineup.
 
 BubbleGunger counts every other allied copy in the entire battle pool, including Lineup, Shelf, Gacha Machines and Discard. Only deployed BubbleGungers recalculate their PWR. Coinling, other Mercenaries, and Mercenary Emblem do not gain triggered growth from Gold earned while shelved.
+
+### Held Turn Preview
+
+`BattleManager.get_held_turn_preview()` is available during settled preparation. It copies battle and run state, then uses the Ready, combat, and end-of-turn resolvers to build a final board snapshot. It stops at an earlier battle-ending result or before the next Challenge. It temporarily uses the live RNG state and restores it along with the live battle, run, UUID counters, event IDs, and signal delivery before returning. The held preview produces no saved or recorded action. Holding Order displays the occupied starting actors from the same combat order resolver.
 
 ### Gold Coin VFX & Layering
 Currency animations follow strict directionality and layering rules:

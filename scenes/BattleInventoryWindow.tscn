@@ -8,12 +8,6 @@
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Tier2GachaBallBase.png" id="8_tier2_base"]
 [ext_resource type="Texture2D" path="res://assets/PixelArt/ui/textures/Tier3GachaBallBase.png" id="9_tier3_base"]
 
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid1"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid2"]
-
-[sub_resource type="RectangleShape2D" id="RectangleShape2D_lid3"]
-
 [node name="BattleInventoryWindow" type="Control"]
 clip_contents = true
 layout_mode = 3
@@ -49,11 +43,6 @@ texture_filter = 1
 [node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
 z_index = 2
 
-[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier1Tray/MotionBody/LidArea"]
-shape = SubResource("RectangleShape2D_lid1")
-
 [node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier1Tray/MotionBody"]
 
 [node name="BallsRoot" type="Node2D" parent="PhysicsRoot/Tier1Tray"]
@@ -81,11 +70,6 @@ texture_filter = 1
 
 [node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
 z_index = 2
-
-[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier2Tray/MotionBody/LidArea"]
-shape = SubResource("RectangleShape2D_lid2")
 
 [node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier2Tray/MotionBody"]
 
@@ -115,15 +99,9 @@ texture_filter = 1
 [node name="FrontOverlay" type="Sprite2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
 z_index = 2
 
-[node name="LidArea" type="Area2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
-
-[node name="CollisionShape2D" type="CollisionShape2D" parent="PhysicsRoot/Tier3Tray/MotionBody/LidArea"]
-shape = SubResource("RectangleShape2D_lid3")
-
 [node name="SpawnPoint" type="Marker2D" parent="PhysicsRoot/Tier3Tray/MotionBody"]
 
 [node name="BallsRoot" type="Node2D" parent="PhysicsRoot/Tier3Tray"]
 
 [node name="DropTimer" type="Timer" parent="PhysicsRoot/Tier3Tray"]
 wait_time = 0.12
-

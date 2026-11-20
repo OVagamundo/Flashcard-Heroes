@@ -4,7 +4,7 @@ const C = preload("res://scripts/Constants.gd")
 
 class PurchaseViewFixture extends BattleView:
 	func _ready() -> void:
-		pass
+		set_process(false)
 
 class TokenHudFixture extends Control:
 	var visual_tokens: int = 20
@@ -16,6 +16,9 @@ class TokenHudFixture extends Control:
 		return get_node("GachaMachine%d" % tier) as Control
 	func get_discard_machine() -> Control:
 		return get_node("GachaMachineDiscard") as Control
+	func get_token_animation_origin() -> Vector2:
+		var icon: TextureRect = get_node("TokenGroup/TokenIcon") as TextureRect
+		return icon.get_global_rect().get_center()
 	func begin_token_animation() -> void:
 		flights += 1
 	func modify_visual_tokens(delta: int, _pop: bool = true) -> void:
@@ -199,6 +202,48 @@ func _test_draw_tracking() -> void:
 	_check(charm.get_status_effect_amount(&"trinity_rewarded_this_cycle") == 1, "True draw reactions remain active before deployment")
 	_check(battle.get_gacha_tokens() == 21, "Trinity Charm still awards its Token after all three tiers are drawn")
 
+func _test_incubator_and_consumables() -> void:
+	_reset()
+	battle._current_battle_phase = BattleManager.Phases.MANAGEMENT
+	GameManager.is_in_battle = true
+	var unit: GachaBallInstance = _add(&"EWFigCos", &"PlayerLineup")
+	var enemy: GachaBallInstance = _add(&"EWFigCos", &"EnemyLineup")
+	var incubator: GachaBallInstance = _add(C.ITEM_INCUBATOR, &"PlayerShelf")
+	var original_position: LocationIdentifier = unit.get_location()
+	var shelf_position: LocationIdentifier = incubator.get_location()
+	var initial_hp: int = unit.current_hp
+	var initial_pwr: int = unit.current_pwr
+	MoveInventoryAction.new(shelf_position, original_position, "DRAG").execute()
+	_check(battle.get_instance_by_location(shelf_position) == unit and incubator.equipped_on_uuid == unit.ball_uuid, "Using an Incubator atomically moves the holder to the capsule's Shelf slot")
+	await battle.management_animation_queue_completed
+	_check(battle.get_current_phase() == BattleManager.Phases.MANAGEMENT, "Putting the final allied unit in an Incubator leaves time to redeploy it")
+	_trigger(C.TRIGGER_AT_TURN_START)
+	_trigger(C.TRIGGER_AT_TURN_START)
+	_check(unit.current_hp == initial_hp + 2 and unit.current_pwr == initial_pwr + 2, "Incubator grants +1 HP and +1 PWR each turn on the Shelf")
+	MoveInventoryAction.new(shelf_position, original_position, "DRAG").execute()
+	_check(battle.get_instance_by_location(original_position) == unit and incubator.location_container_tag == &"DiscardPile", "Redeployment immediately sends the Incubator to Discard")
+	await battle.management_animation_queue_completed
+	_trigger(C.TRIGGER_AT_TURN_START)
+	_check(unit.current_hp == initial_hp + 2 and unit.current_pwr == initial_pwr + 2, "Redeployment keeps the earned stats and stops incubation")
+
+	var tonic: GachaBallInstance = _add(C.ITEM_ENCOUNTER_TONIC, &"PlayerShelf")
+	MoveInventoryAction.new(tonic.get_location(), original_position, "DRAG").execute()
+	_check(unit.current_hp == initial_hp + 5 and unit.current_pwr == initial_pwr + 4, "Fortifying Tonic adds +3 HP and +2 PWR")
+	_check(battle.get_instance_by_uuid(tonic.ball_uuid) == null, "Fortifying Tonic is consumed")
+	await battle.management_animation_queue_completed
+	unit.reset_battle_stats_silent()
+	_check(unit.current_hp == initial_hp + 2 and unit.current_pwr == initial_pwr + 2, "The tonic uses encounter-only stats")
+
+	for target: GachaBallInstance in [enemy, unit]:
+		var vial: GachaBallInstance = _add(C.ITEM_DAMAGE_VIAL, &"PlayerShelf")
+		var previous_hp: int = target.current_hp
+		target.add_status_effect_silent(&"armor", 3)
+		MoveInventoryAction.new(vial.get_location(), target.get_location(), "DRAG").execute()
+		_check(target.current_hp == previous_hp - 2 and target.get_status_effect_amount(&"armor") == 0, "Impact Vial hits the selected %s through Armor (HP %d -> %d, Armor %d)" % [target.definition_id, previous_hp, target.current_hp, target.get_status_effect_amount(&"armor")])
+		_check(battle.get_instance_by_uuid(vial.ball_uuid) == null, "Impact Vial is consumed")
+		await battle.management_animation_queue_completed
+	_check(battle._state.validate_state_consistency(), "Incubation and manual consumables preserve battle containers")
+
 func _test_purchase_presentation() -> void:
 	battle.free()
 	var view: PurchaseViewFixture = PurchaseViewFixture.new()
@@ -208,6 +253,11 @@ func _test_purchase_presentation() -> void:
 		view.add_child(child)
 		child.owner = view
 		child.unique_name_in_owner = true
+	var banner := EnemyBannerView.new()
+	banner.name = "EnemyBanner"
+	view.add_child(banner)
+	banner.owner = view
+	banner.unique_name_in_owner = true
 	add_child(view)
 	battle = BattleManager.new()
 	view.add_child(battle)
@@ -230,7 +280,7 @@ func _test_purchase_presentation() -> void:
 	icon.size = Vector2(32, 32)
 	group.add_child(icon)
 	var shelf: HBoxContainer = view.player_shelf
-	for slot_index: int in range(8):
+	for slot_index: int in range(C.PLAYER_SHELF_CAP):
 		var slot: SlotView = preload("res://scenes/SlotView.tscn").instantiate()
 		shelf.add_child(slot)
 		slot.custom_minimum_size = Vector2(188, 188)
@@ -255,7 +305,78 @@ func _test_purchase_presentation() -> void:
 	_check(hud.visual_tokens == 19 and hud.flights == 0, "Token flight decrements the HUD exactly once and balances its animation guards")
 	ActionQueue.set_headless_mode(true)
 	await _test_draw_presentation(view, hud)
+	await _test_incubator_animation(view)
+	await _test_insignia_buff_presentation(view)
 	GameManager.unregister_main_node()
+
+func _test_incubator_animation(view: BattleView) -> void:
+	_reset()
+	battle._current_battle_phase = BattleManager.Phases.MANAGEMENT
+	GameManager.is_in_battle = true
+	view.add_to_group("battle_view")
+	var unit: GachaBallInstance = _add(&"ETnkPla", &"PlayerLineup")
+	_add(&"EWFigCos", &"EnemyLineup")
+	var item: GachaBallInstance = _add(C.ITEM_INCUBATOR, &"PlayerShelf")
+	var lineup_slot: SlotView = preload("res://scenes/SlotView.tscn").instantiate()
+	view.player_lineup.add_child(lineup_slot)
+	lineup_slot.populate(unit.get_location())
+	lineup_slot.set_content(VisualDataAdapter.create_visual_data(unit))
+	var shelf_slot: SlotView = view.player_shelf.get_child(0) as SlotView
+	var item_view: GachaBallView = shelf_slot.set_content(VisualDataAdapter.create_visual_data(item))
+	_check(not item_view.has_node("GachaBallOverlay/IncubatorGlow"), "An unused Incubator capsule is unlit")
+	await get_tree().process_frame
+
+	ActionQueue.set_headless_mode(false)
+	MoveInventoryAction.new(shelf_slot._location, lineup_slot._location, "DRAG").execute()
+	await battle.management_animation_queue_completed
+	var inside_view: GachaBallView = WindowManager.find_entity_view_for_location(shelf_slot._location) as GachaBallView
+	_check(inside_view != null and inside_view.get_parent() == shelf_slot and inside_view.has_node("GachaBallOverlay/IncubatorGlow"), "Incubator flight lands the unit on the Shelf in a glowing capsule")
+	MoveInventoryAction.new(shelf_slot._location, lineup_slot._location, "DRAG").execute()
+	await battle.management_animation_queue_completed
+	var redeployed_view: GachaBallView = WindowManager.find_entity_view_for_location(lineup_slot._location) as GachaBallView
+	_check(redeployed_view != null and redeployed_view.get_parent() == lineup_slot and not redeployed_view.has_node("GachaBallOverlay"), "The redeployed unit returns to the Lineup outside its capsule")
+	ActionQueue.set_headless_mode(true)
+	view.remove_from_group("battle_view")
+
+func _test_insignia_buff_presentation(view: BattleView) -> void:
+	await get_tree().process_frame
+	_reset()
+	battle._current_battle_phase = BattleManager.Phases.MANAGEMENT
+	GameManager.is_in_battle = true
+	view.add_to_group("battle_view")
+	SignalBus.battle_inventory_changed.connect(view._redraw_board)
+	_add(&"FFigMec", &"EnemyLineup")
+	var unit: GachaBallInstance = _add(&"E?NovPla", &"PlayerShelf")
+	var hp_before: int = unit.current_hp
+	var pwr_before: int = unit.current_pwr
+	var trinket_slots: Array[SlotView] = []
+	for insignia_id: StringName in [&"trinket_earth_insignia", &"trinket_novice_insignia"]:
+		var insignia: GachaBallInstance = _add(insignia_id, &"PlayerTrinkets")
+		var slot: SlotView = preload("res://scenes/SlotView.tscn").instantiate()
+		add_child(slot)
+		slot.populate(insignia.get_location())
+		slot.set_content(VisualDataAdapter.create_visual_data(insignia))
+		trinket_slots.append(slot)
+	view._redraw_board()
+	await get_tree().process_frame
+
+	var hops: Array[String] = []
+	var record_hop: Callable = func(uuid: String, motion: StringName, _offset: Vector2) -> void:
+		if uuid == unit.ball_uuid and motion == &"HOP":
+			hops.append(uuid)
+	SignalBus.unit_move.connect(record_hop)
+	ActionQueue.set_headless_mode(false)
+	MoveInventoryAction.new(unit.get_location(), LocationIdentifier.new(&"PlayerLineup", 0), "DRAG").execute()
+	_check(unit.current_hp == hp_before + 2 and unit.current_pwr == pwr_before + 2, "Earth and Novice Insignia each grant +1 HP and +1 PWR on deployment")
+	if battle.is_animating_management_queue():
+		await battle.management_animation_queue_completed
+	_check(hops.size() == 4, "Each HP and PWR impact from Earth and Novice Insignia plays the unit's buff hop (got %d)" % hops.size())
+	ActionQueue.set_headless_mode(true)
+	SignalBus.unit_move.disconnect(record_hop)
+	SignalBus.battle_inventory_changed.disconnect(view._redraw_board)
+	view.remove_from_group("battle_view")
+	for slot: SlotView in trinket_slots:
+		slot.queue_free()
 
 func _test_capsule_geometry(shelf_ball: GachaBallView) -> void:
 	var machine_ball: PhysicsGachaBall = load("res://scenes/PhysicsGachaBall.tscn").instantiate()
@@ -264,8 +385,9 @@ func _test_capsule_geometry(shelf_ball: GachaBallView) -> void:
 	await get_tree().process_frame
 	var shell: Sprite2D = shelf_ball.get_node("GachaBallOverlay") as Sprite2D
 	var machine_size: Vector2 = machine_ball.capsule_sprite.texture.get_size() * machine_ball.capsule_sprite.scale
-	_check((shell.texture.get_size() * shell.scale).is_equal_approx(machine_size), "Shelf capsules match the physical machine capsule diameter")
-	_check(is_equal_approx(shell.position.y + machine_size.y * 0.5, 133.0), "The capsule bottom rests on the Shelf surface instead of crossing through it")
+	var shelf_size: Vector2 = shelf_ball.get_capsule_rect().size
+	_check((shell.texture.get_size() * shell.scale).is_equal_approx(shelf_size) and shelf_size.is_equal_approx(machine_size * C.SHELF_CAPSULE_SCALE), "Shelf capsules enlarge from the machine diameter")
+	_check(is_equal_approx(shell.position.y + shelf_size.y * 0.5, 133.0), "The capsule bottom rests on the Shelf surface instead of crossing through it")
 	var content: TextureRect = shelf_ball.icon_rect.get_node("UnitSprite") as TextureRect
 	_check(content.get_global_rect().get_center().is_equal_approx(shelf_ball.get_global_transform() * shell.position), "The unit is centered inside its Shelf capsule")
 	_check(shelf_ball.size.is_equal_approx(Vector2(188, 188)), "The sealed capsule does not stretch the 188px Shelf slot")
@@ -303,7 +425,7 @@ func _test_draw_presentation(view: BattleView, hud: TokenHudFixture) -> void:
 	var drawn: GachaBallInstance = _add(&"FFigMec", &"BattleInventoryT1")
 	var result: InventoryOperations.DrawResult = InventoryOperations.draw_from_tier(battle._state, 1)
 	_check(result.success, "The visual draw has an authoritative Shelf destination")
-	view._on_gacha_draw_animated(result, VisualDataAdapter.create_visual_data(drawn, battle.get_all_instances()))
+	view.animate_gacha_draw(result, VisualDataAdapter.create_visual_data(drawn, battle.get_all_instances()))
 	var flying_ball: GachaBallView = null
 	for child: Node in WindowManager.get_vfx_layer().get_children():
 		if child is GachaBallView and child.get_instance_uuid() == drawn.ball_uuid:
@@ -319,7 +441,7 @@ func _test_draw_presentation(view: BattleView, hud: TokenHudFixture) -> void:
 		if child is GachaBallView and child.get_instance_uuid() == drawn.ball_uuid:
 			landed_ball = child as GachaBallView
 	_check(landed_ball != null and landed_ball.has_node("GachaBallOverlay"), "The drawn unit lands in its Shelf slot with its capsule intact")
-	_check(flight_capsule_size == landed_ball.get_capsule_rect().size, "Flight and Shelf presentation use identical capsule sizes")
+	_check((flight_capsule_size * C.SHELF_CAPSULE_SCALE).is_equal_approx(landed_ball.get_capsule_rect().size), "The flight grows to the Shelf presentation size at landing")
 	_check(not view._pending_animated_uuids.has(drawn.ball_uuid), "The completed draw clears its pending presentation state")
 	_check(hud.machine_changes == [Vector2i(1, -1)], "The draw updates its machine counter exactly once")
 	var discard: Button = Button.new()
@@ -335,7 +457,7 @@ func _test_draw_presentation(view: BattleView, hud: TokenHudFixture) -> void:
 	discard_knob.size = Vector2(40, 40)
 	_check(InventoryOperations.move_instance_to_discard(battle._state, drawn).success, "The return-flight fixture places its capsule in Discard")
 	var returned: InventoryOperations.DrawResult = InventoryOperations.draw_from_discard(battle._state)
-	view._on_gacha_draw_animated(returned, VisualDataAdapter.create_visual_data(drawn, battle.get_all_instances()))
+	view.animate_gacha_draw(returned, VisualDataAdapter.create_visual_data(drawn, battle.get_all_instances()))
 	var return_flight: GachaBallView = null
 	for child: Node in WindowManager.get_vfx_layer().get_children():
 		if child is GachaBallView and child.get_instance_uuid() == drawn.ball_uuid and not child.is_queued_for_deletion():
@@ -358,6 +480,8 @@ func _run() -> void:
 	_test_sealed_stats_and_summons()
 	_test_plunder_machine_exception()
 	_test_draw_tracking()
+	await _test_incubator_and_consumables()
+	await get_tree().process_frame
 	await _test_purchase_presentation()
 	print("Shelf capsule suite: %d checks, %d failures" % [checks, failures])
 	get_tree().quit(1 if failures > 0 else 0)

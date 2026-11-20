@@ -100,8 +100,19 @@ func generate_elite_encounter(daily_budget: int, history: Dictionary = {}, last_
 	encounter.enemy_slot_effects = temp_encounter.enemy_slot_effects
 	return encounter
 
+func pick_boss_identity(run_state: RunState, level: int) -> StringName:
+	var options: Array[StringName] = [&"boss_dustmon", &"boss_toughmon", &"boss_doppelkun"]
+	var history: Dictionary = run_state.boss_encounter_history.duplicate()
+	var last: StringName = run_state.last_boss_id
+	for previous: int in range(run_state.bosses_defeated + 1, level):
+		if run_state.revealed_boss_ids.has(previous):
+			last = run_state.revealed_boss_ids[previous]
+			history[last] = int(history.get(last, 0)) + 1
+	var milestone_rng := SeededRNG.new(&"boss_milestone", hash("%s_boss_%s" % [run_state.run_seed, level]))
+	return _pick_weighted_decay(options, history, last, milestone_rng)
+
 ## Generates a milestone boss encounter governed by the chosen Boss Banner.
-func generate_boss_encounter(_boss_level: int, daily_budget: int, current_day: int) -> EncounterDefinition:
+func generate_boss_encounter(_boss_level: int, daily_budget: int, current_day: int, revealed_boss: StringName = &"") -> EncounterDefinition:
 	assert(daily_budget > 0, "generate_boss_encounter: daily_budget must be positive")
 	_update_director_run_state()
 
@@ -110,7 +121,9 @@ func generate_boss_encounter(_boss_level: int, daily_budget: int, current_day: i
 	var last_id: StringName = run_state.last_boss_id if is_instance_valid(run_state) else &""
 
 	var boss_options: Array[StringName] = [&"boss_dustmon", &"boss_toughmon", &"boss_doppelkun"]
-	var chosen_boss: StringName = _pick_weighted_decay(boss_options, history, last_id, RNGManager.map_rng)
+	var chosen_boss: StringName = revealed_boss
+	if chosen_boss.is_empty():
+		chosen_boss = _pick_weighted_decay(boss_options, history, last_id, RNGManager.map_rng)
 	if is_instance_valid(run_state):
 		run_state.record_boss_encounter(chosen_boss)
 

@@ -360,13 +360,14 @@ static func handle_damage_effect(
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var original_tgt_uuid = tgt_uuid
 		var actual_damage = abs(damage_to_apply)
-		var intercept_res = BattleHelpers.resolve_guardian_intercept(
-			tgt, actual_damage, damage_type, is_player_source, battle_manager
-		)
-		if intercept_res.intercepted:
-			tgt = intercept_res.interceptor
-			tgt_uuid = tgt.ball_uuid
-			result.events.append_array(intercept_res.events)
+		if damage_req.can_be_intercepted:
+			var intercept_res: BattleHelpers.InterceptResolution = BattleHelpers.resolve_guardian_intercept(
+				tgt, actual_damage, damage_type, is_player_source, battle_manager
+			)
+			if intercept_res.intercepted:
+				tgt = intercept_res.interceptor
+				tgt_uuid = tgt.ball_uuid
+				result.events.append_array(intercept_res.events)
 		
 		original_target_uuids.append(original_tgt_uuid)
 		targets_old_hp.append(tgt.current_hp)
@@ -489,7 +490,7 @@ static func handle_damage_effect(
 			
 	var attack_type := "trinket" if is_trinket else "melee"
 	if not is_trinket and damage_type == C.DamageType.RANGED:
-		attack_type = "ranged"
+		attack_type = "direct" if animation_source_uuid.is_empty() and skip_bump else "ranged"
 	
 	var t_acts: Array[CombatTrinketActivation] = []
 	if burn_from_trinket:
@@ -850,14 +851,7 @@ static func handle_summon_unit(
 		else:
 			# Priority 2: Discard (Player only)
 			if is_player_container:
-				var discard = battle_manager.get_container(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
-				var discard_slot = find_empty_slot_in_container(discard)
-				if discard_slot != -1:
-					final_location = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, discard_slot)
-				else:
-					# Discard full. Cancel summon.
-					result.new_instances.clear()
-					return result
+				final_location = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, -1)
 			else:
 				# Enemy has no Discard. Cancel summon.
 				result.new_instances.clear()

@@ -54,7 +54,7 @@ The Spaced Repetition System (SRS) serves as the game's active resource generati
 
 ### 5.1 The Challenge
 At the beginning of each turn (in battles) or upon entering non-combat study sites, players engage in a fast-paced, timed multiple-choice session:
-- **Starting Deck**: Runs begin with 5 active starter cards. New cards are introduced over the course of the run, preceded by an informational review window.
+- Runs begin with five active cards. The first Challenge introduces the sixth. Later Challenges introduce one card when at least half of the active cards are currently at Level 3 or higher and the previous Challenge had at least three correct answers and at least 50% accuracy. Skips count against accuracy. The introduction opens the review window.
 - **SRS Weighting Algorithm**: Questions are selected dynamically based on card mastery and time elapsed since last review. Cards with lower mastery appear more frequently, while mastered cards appear less often. The same card never appears twice in a row.
 - **Scoring & Resource Generation**:
   - **Correct Answer**: Awards 1 Token, increases card mastery, grants a +0.5s timer extension, and builds the correct-answer streak.
@@ -82,15 +82,15 @@ This mechanic addresses three core design imperatives:
   - **Evolutionary Levels**: Units possess Levels (1 to 3). Leveling increases base stats (+1 HP and +1 PWR per level) and enhances ability potency.
 - **Items**: Equipment or consumables that provide stat buffs or abilities:
   - **Equipment**: Sealed on the Shelf until equipped onto a Lineup unit. Remains attached across battles until replaced or stripped.
-  - **Consumables**: Single-use items (potions, scrolls) used from the Shelf on eligible Player or Enemy Lineup units. Consumable stat buffs stack additively and are conserved across unit merges.
+  - **Consumables** are single-use items applied from the Shelf to eligible Lineup units. Permanent stat boosts can carry into merges. Fortifying Tonic and Impact Vial resolve within the active encounter.
   - **Trinkets**: Unique artifacts that confer powerful, game-altering effects. Trinkets persist across all encounters within a run. They serve as strategic tools that define unique builds and synergies.
 
 ### 6.2 Inventories & Lifecycle
-- **Run Inventory**: The player's persistent collection (deck) for the run, categorized into Tier 1, Tier 2, and Tier 3 containers (capacity of 39 slots per tier).
+- **Run Inventory** holds the player's persistent collection, with 25 slots per tier.
 - **Battle Inventory & Machines**: At battle start, the player's Run Inventory forms the initial contents of the three tiered Gacha Machines. As units are drawn, merged, or summoned, the Battle Inventory shifts dynamically without altering the persistent Run Inventory.
-- **Player Shelf**: Each battle begins with the three leftmost Shelf slots unlocked. Additional slots unlock in order for 1 Token each, up to eight, for that encounter only. Locked artwork preserves transparency and darkens only visible pixels. The next slot shows a plus, a white hover outline and a cost description; purchasing animates a Token from the HUD, then brightens and pops the slot on arrival.
-- **Sealed Capsules & Deployment**: Shelf draws and summons retain their capsules. Capsules can be rearranged there, or deployed directly onto Lineup slots and eligible merge/equipment/consumable targets. Capsules open at the Lineup, where entry buffs activate. Opened units/items cannot return to the Shelf until recycled through the machines. Only Wind-up-kun changes its HP/PWR on the Shelf; other sealed copies still count toward pool-based abilities, and draw/spend reactions remain immediate.
-- **The Discard**: Defeated units, discarded items, and shelf overflow are placed permanently into the Battle Discard for the remainder of the battle.
+- **Player Shelf** starts each battle with three slots. Additional slots unlock in order for 1 Token each, up to seven, for the current battle.
+- **Sealed Capsules & Deployment** allow rearrangement on the Shelf and opening at eligible Lineup destinations. Entry buffs apply in the Lineup. Shelf copies count for pool-based abilities. Wind-up-kun and Incubator growth can resolve on the Shelf.
+- **Battle Discard** holds up to 80 capsules. Defeated units, discarded items, and overflow can be recovered to their tier for 1 Token when their tier has room. Each battle tier holds up to 25 capsules. See [InventoryManager.md](InventoryManager.md#3-gacha-draw--discard-lifecycle) for overflow and recovery rules.
 
 ---
 
@@ -122,7 +122,7 @@ In *Flashcard Heroes*, strength is governed by the **Density of Synergy** rather
 - **Dilution Penalty**: Adding non-synergistic units to the collection dilutes the Gacha Machine pools, making key synergy pieces harder to draw when needed.
 - **Lean Deck vs. Deck Exhaustion**:
   - Keeping a deck ultra-lean maximizes draw predictability.
-  - However, because defeated units and replaced items are committed permanently to the Discard for the remainder of the encounter, an excessively lean deck risks complete pool exhaustion in protracted Elite or Boss battles.
+  - A lean capsule pool can empty during a long fight. Recovering a capsule from Discard costs a Token before it can be drawn again from its tier.
   - Players must balance tactical draw predictability against the raw endurance needed to outlast multi-turn boss encounters.
 
 ### 7.3 Combinatorial Pool Economics & Hero Content Packs
@@ -193,15 +193,15 @@ Battles are deterministic contests resolved in three distinct phases:
 
 ### 10.1 Encounter Node Types
 - **Battles**: Common, Elite, and Boss fights. Elite and Boss victories award permanent Trinkets and greater Gold rewards.
-- **Shops**: Spend Gold to buy units/items, reroll inventory, or purchase upgrades.
+- **Shops** sell unit and item capsules and allow paid stock rerolls. Shops and reward draws favor copies and traits the player already uses. Elite and Boss reward rolls progressively reduce the weight of new Crests once the player owns two. See [EncounterSystem.md](EncounterSystem.md#6-player-shop-and-reward-pools).
 - **Shrine**: Specialized encounter offering unit purges (deck thinning) and transformations.
 - **Unit Merge Encounter**: Special encounter that allows players to merge units and items outside of combat.
 - **Unit Training Grounds (Dojo)**: Targeted stat training challenges to permanently increase individual unit stats.
 - **Surprise Events & Gambling Dens**: Risk/reward encounters offering Gold or stat boosts for the Hero and other special interactions.
 
 ### 10.2 Boss & Elite Scheduling
-- **Boss Scheduling**: Boss encounters are paced by **Flashcard Deck Mastery Milestones** rather than rigid day counts. In a Full Deck, a Boss is triggered every 20% of the deck introduced (up to 5 Bosses); in a Half Deck, every 33.3% (up to 3 Bosses).
-- **Elite Scheduling**: Elite encounters are paced by progress toward the upcoming Boss, guaranteed at intermediate card mastery thresholds (20%, 40%, 60%, 80%) with a quota limit of 4 elite battles per boss tier.
+- Boss eligibility counts active cards currently at Level 3 or higher. A Full Deck has five milestones through 80% and a Half Deck has three through 80%, each rounded up to a whole card. The eligible Boss becomes the sole Crossroads choice.
+- Elite milestones use unlocked-card progress within each boss tier. An eligible milestone guarantees an offer at 20%, 40%, 60%, and 80%. The limits are four Elite encounters per boss tier and 12 Elite victories per run. See [EncounterSystem.md](EncounterSystem.md#3-encounter-scheduling--map-rng).
 
 ---
 

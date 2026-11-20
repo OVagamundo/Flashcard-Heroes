@@ -1,6 +1,7 @@
 # Implementation Plan: Novice Lineage & Challenge Mechanics Refactor
 
-**Status:** Canonical Implementation Plan  
+**Status:** Historical proposal. Current Crest and Challenge behavior is documented in [Novice.md](Novice.md#4-novice-trait-ladder) and [FlashcardSystem.md](FlashcardSystem.md).
+
 **Target Scope:** Novice Hero Set (Dan), 5 Units, 3 Items, Silver Trait Gold Pop VFX, Gold Trait Multi-Token Verification, Sandclock Bonus Timer UI  
 **Companion Documents:**  
 - [GameContentDocument.md](file:///Users/danhh/Desktop/Flashcard%20Heroes/docs/GameContentDocument.md)

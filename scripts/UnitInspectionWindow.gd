@@ -5,13 +5,14 @@ const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
 const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 const C = preload("res://scripts/Constants.gd")
+const TraitTags = preload("res://scripts/ui/TraitTags.gd")
 const LEVEL_1_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_1_stars.png")
 const LEVEL_2_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_2_stars.png")
 const LEVEL_3_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textures/unit_level_3_stars.png")
 
 @onready var name_label: Label = %NameLabel
 @onready var level_stars_icon: TextureRect = %LevelStarsIcon
-@onready var trait_tags_container: HFlowContainer = %TraitTagsContainer
+@onready var trait_tags_container: TraitTags = %TraitTagsContainer
 @onready var attack_row: RichTextLabel = %AttackRow
 @onready var view_container: CenterContainer = %ViewContainer
 @onready var description_label: RichTextLabel = %DescriptionLabel
@@ -23,26 +24,6 @@ const LEVEL_3_STARS_TEXTURE: Texture2D = preload("res://assets/PixelArt/ui/textu
 @onready var recipe_container: HBoxContainer = %RecipeContainer
 @onready var separator: HSeparator = %HSeparator
 @onready var internal_background: ColorRect = $InternalBackground
-
-const TRAIT_COLORS: Dictionary = {
-	"FIRE": Color(0.85, 0.22, 0.12, 1.0),       # Fiery Vermilion
-	"EARTH": Color(0.58, 0.35, 0.18, 1.0),      # Terracotta Brown
-	"WATER": Color(0.12, 0.46, 0.86, 1.0),      # Ocean Blue
-	"AIR": Color(0.15, 0.68, 0.82, 1.0),        # Sky Cyan
-	"TANK": Color(0.32, 0.42, 0.54, 1.0),       # Slate Steel
-	"FIGHTER": Color(0.72, 0.12, 0.22, 1.0),    # Ruby Crimson
-	"SUPPORT": Color(0.12, 0.65, 0.48, 1.0),    # Emerald Mint
-	"SPECIALIST": Color(0.58, 0.22, 0.78, 1.0), # Royal Violet
-	"MERCENARY": Color(0.85, 0.65, 0.15, 1.0),  # Mercenary Amber/Gold
-	"NOVICE": Color(0.38, 0.44, 0.52, 1.0),     # Slate Steel Grey
-	"FOOD": Color(0.85, 0.42, 0.05, 1.0),       # Warm Tangerine
-	"MECHA": Color(0.24, 0.28, 0.33, 1.0),      # Dark Gunmetal
-	"ANIMAL": Color(0.48, 0.56, 0.18, 1.0),     # Wild Olive
-	"PLANT": Color(0.18, 0.58, 0.18, 1.0),      # Leaf Green
-	"TOY": Color(0.85, 0.18, 0.55, 1.0),        # Hot Pink
-	"APPLIANCE": Color(0.78, 0.55, 0.06, 1.0),  # Electric Amber Gold
-	"COSTUME": Color(0.34, 0.14, 0.52, 1.0)     # Velvet Indigo
-}
 
 var _inspected_unit_uuid: String
 var _source_view: Control
@@ -765,74 +746,4 @@ func _update_trait_display() -> void:
 			child.queue_free()
 		trait_icons_container.visible = false
 
-	if not is_instance_valid(trait_tags_container):
-		return
-
-	# Clear existing trait tags
-	for child in trait_tags_container.get_children():
-		trait_tags_container.remove_child(child)
-		child.queue_free()
-
-	if not is_instance_valid(_instance):
-		trait_tags_container.visible = false
-		return
-
-	var all_instances_db = _get_all_instances_db()
-	var soul_counts = _instance.get_trait_soul_counts(all_instances_db)
-	var active_tags = _instance.get_active_tags(all_instances_db)
-
-	for trait_id in C.TRAIT_SORT_ORDER:
-		var trait_def: Dictionary = C.TRAIT_DEFINITIONS.get(trait_id, {})
-		var trait_name: String = tr(trait_def.get("display_name_key", trait_id.capitalize()))
-
-		if trait_id in ["FIRE", "EARTH", "WATER", "AIR"]:
-			var count: int = soul_counts.get(trait_id, 0)
-			if count > 0:
-				var tag_text = "%dx %s" % [count, trait_name]
-				_create_trait_tag(trait_id, tag_text)
-		else:
-			var has_trait := false
-			for tag in active_tags:
-				if String(tag).to_upper() == trait_id:
-					has_trait = true
-					break
-			if has_trait:
-				_create_trait_tag(trait_id, trait_name)
-
-	trait_tags_container.visible = trait_tags_container.get_child_count() > 0
-
-func _create_trait_tag(trait_id: String, text: String) -> void:
-	var tag_panel = PanelContainer.new()
-	tag_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-
-	var style = StyleBoxFlat.new()
-	var base_color: Color = TRAIT_COLORS.get(trait_id, Color(0.35, 0.35, 0.35, 1.0))
-	style.bg_color = base_color
-	style.corner_radius_top_left = 6
-	style.corner_radius_top_right = 6
-	style.corner_radius_bottom_left = 6
-	style.corner_radius_bottom_right = 6
-	style.content_margin_left = 8
-	style.content_margin_right = 8
-	style.content_margin_top = 2
-	style.content_margin_bottom = 2
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_width_right = 1
-	style.border_width_bottom = 1
-	style.border_color = Color(1.0, 1.0, 1.0, 0.3)
-	tag_panel.add_theme_stylebox_override("panel", style)
-
-	var label = Label.new()
-	label.text = text
-	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	label.add_theme_font_override("font", Database.get_current_locale_font())
-	label.add_theme_font_size_override("font_size", 18)
-	label.add_theme_color_override("font_color", Color(1.0, 1.0, 1.0, 1.0))
-	label.add_theme_color_override("font_outline_color", Color(0.0, 0.0, 0.0, 0.85))
-	label.add_theme_constant_override("outline_size", 2)
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-
-	tag_panel.add_child(label)
-	trait_tags_container.add_child(tag_panel)
+	trait_tags_container.populate(_instance, _get_all_instances_db())

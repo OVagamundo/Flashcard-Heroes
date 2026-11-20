@@ -255,19 +255,8 @@ signal battle_phase_changed(phase_name: StringName)
 ## Emitted when turn should end
 signal end_turn_requested
 
-## Emitted when gacha draw is requested
-## @param tier: int - The tier to draw from
-signal draw_gacha_requested(tier: int)
-signal draw_from_discard_requested
-
-## Emitted when gacha draw result needs to be animated
-## @param draw_result: DrawResult - The result of the draw operation (from InventoryOperations)
-## @param new_unit_snapshot: Dictionary - Snapshot of unit visual data before reactive buffs
-signal gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary)
-
-## Emitted when the visual presentation of a gacha draw (flight, capsule pop, landing bounce) completes
-## @param draw_result: DrawResult - The result of the draw operation
-signal gacha_draw_animation_completed(draw_result)
+## Visual completion of a draw, before the VCR releases input.
+signal gacha_draw_animation_completed(draw_result: InventoryOperations.DrawResult)
 
 ## Emitted when gacha tokens change (canonical signal for both logic and UI presentation)
 ## @param new_amount: int - The new token amount
@@ -291,7 +280,6 @@ signal battle_entry_animation_finished()
 # -----------------------------------------------------------------------------
 
 ## Emitted when an item overflows a physics container lid for 5 consecutive seconds
-signal inventory_instance_removed_penalty(uuid: String)
 
 ## Emitted when run data changes (inventory, gold, etc.)
 signal run_data_changed
@@ -444,6 +432,9 @@ signal view_selected(view: Control, location: LocationIdentifier)
 ## Emitted when a view is deselected
 ## @param view: Control - The deselected view
 signal view_deselected(view: Control)
+
+## Emitted when an entity's inspection panel starts or stops using this source.
+signal view_inspection_changed(view: Control, active: bool)
 
 ## Emitted when an invalid action is triggered
 ## @param view: Control - The view that triggered the action

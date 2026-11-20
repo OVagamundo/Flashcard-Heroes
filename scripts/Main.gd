@@ -25,9 +25,10 @@ const InputUtils = preload("res://scripts/InputUtils.gd")
 @onready var gold_label: Label = %GoldLabel
 @onready var days_label: Label = %DaysLabel
 @onready var tokens_label: Label = %TokensLabel
+@onready var token_icon: TextureRect = %TokenIcon
 @onready var bonus_timer_group: HBoxContainer = %BonusTimerGroup
 @onready var bonus_timer_label: Label = %BonusTimerLabel
-@onready var flashcard_progress_bar: HBoxContainer = %FlashcardProgressBar
+@onready var flashcard_progress_bar: Control = %FlashcardProgressBar
 
 @onready var player_trinket_bar: HBoxContainer = %PlayerTrinketBar
 
@@ -59,16 +60,6 @@ const REWARD_ELITE_SCENE = preload("res://scenes/RewardElite.tscn")
 
 const SHOP_SCENE = preload("res://scenes/Shop.tscn")
 
-# Mastery level colors (matching FlashcardSystem.md)
-const MASTERY_COLORS = {
-	1: Color(0.9, 0.2, 0.2), # Very Hard - Red
-	2: Color(0.95, 0.5, 0.1), # Hard - Orange
-	3: Color(0.95, 0.8, 0.1), # Medium - Yellow
-	4: Color(0.2, 0.8, 0.2), # Easy - Green
-	5: Color(0.2, 0.4, 0.9) # Very Easy - Blue
-}
-const LOCKED_COLOR = Color(0.4, 0.4, 0.4) # Grey for locked cards
-
 var _current_content_node: Node = null
 
 # Confirm drop zone overlay (covers bottom area for Reward/Shop confirm)
@@ -78,7 +69,10 @@ var _confirm_drop_zone_mode: StringName = &"" # &"Rewards" or &"Shop"
 var _confirm_drop_zone_visible: bool = false
 var _drop_zone_drag_context: InteractionContext = null # Saved drag origin for restoring selection on drop
 
-var _visual_machine_counts: Dictionary = {1: 0, 2: 0, 3: 0}
+var _visual_machine_counts: Dictionary[int, int] = {1: 0, 2: 0, 3: 0}
+var _machine_costs: Dictionary[int, HBoxContainer] = {}
+var _battle_token_tray: Control
+
 
 # Shrine split drop zones (Remove / Transform)
 var _split_action_drop_zone_container: PanelContainer = null
@@ -108,6 +102,7 @@ var _action_zone_2_text: String = "" # Right zone custom text
 
 func _ready() -> void:
 	add_to_group("main")
+	_build_machine_labels()
 	GameManager.register_main_node(self) # Register self with GameManager
 	
 	# Connect knob buttons to draw functionality
@@ -398,6 +393,7 @@ func _on_battle_start_requested(encounter_def: EncounterDefinition) -> void:
 	load_content(BATTLE_SCENE)
 	# Snap visuals to model on screen transition
 	sync_visual_machine_counts_with_model()
+	_populate_flashcard_progress()
 	_start_battle_with_encounter(encounter_def)
 
 func _on_path_choice_scene_requested() -> void:
@@ -449,229 +445,39 @@ func get_knob_button(tier: int) -> BaseButton:
 func get_discard_knob_button() -> BaseButton:
 	return knob_button_discard
 
-func _on_draw_discard_button_pressed(button: BaseButton) -> void:
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
+func _on_draw_discard_button_pressed(_button: BaseButton) -> void:
+	_request_machine_draw(4, DrawDiscardAction.new())
+
+func _on_draw_button_pressed(_button: BaseButton, tier: int) -> void:
+	_request_machine_draw(tier, DrawGachaAction.new(tier))
+
+func _request_machine_draw(tier: int, action: GameAction) -> void:
+	var battle: BattleManager = GameManager.get_battle_manager() as BattleManager
+	if battle == null or battle.is_animations_playing():
 		return
-	var action := DrawDiscardAction.new()
-	if is_instance_valid(ActionQueue):
-		var accepted = ActionQueue.request(action)
-		if not accepted and not ActionQueue.is_busy():
-			var token_group = get_node_or_null("%TokenGroup")
-			if is_instance_valid(gacha_machine_discard):
-				RejectionFeedbackScript.play_rejection_with_counter(gacha_machine_discard, token_group, get_tree())
-	else:
-		execute_draw_discard_visuals(button)
+	if not ActionQueue.request(action) and not ActionQueue.is_busy():
+		RejectionFeedbackScript.play_rejection_with_counter(get_gacha_machine(tier), get_token_feedback_control(), get_tree())
 
-func execute_draw_discard_visuals(button: BaseButton) -> void:
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	while _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
-		await get_tree().process_frame
-	const cost := 1
-	if is_instance_valid(bm):
-		var can_draw = true
-		if bm.has_method("can_draw_from_discard"):
-			can_draw = bm.can_draw_from_discard()
-		elif bm.has_method("get_gacha_tokens"):
-			var current_tokens: int = bm.get_gacha_tokens()
-			if current_tokens < cost:
-				can_draw = false
-		
-		if not can_draw:
-			var token_group = get_node_or_null("%TokenGroup")
-			if is_instance_valid(gacha_machine_discard):
-				RejectionFeedbackScript.play_rejection_with_counter(gacha_machine_discard, token_group, get_tree())
-			if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
-				ActionQueue.finish_action(ActionQueue.get_active_action())
-			return
-
-	if is_instance_valid(button):
-		button.release_focus()
-		button.rotation_degrees = 0.0
-		var knob_tween = create_tween()
-		knob_tween.tween_property(button, "rotation_degrees", 360.0, AnimationConstants.scaled(0.4)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0)
-
+func play_machine_draw(tier: int, cost: int) -> void:
+	var button: BaseButton = get_knob_button(tier)
+	var machine: Control = get_gacha_machine(tier)
 	_is_drawing_token = true
+	button.release_focus()
+	var knob_tween: Tween = button.create_tween()
+	knob_tween.tween_property(button, "rotation_degrees", 360.0, AnimationConstants.scaled(0.4)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0)
+	if WindowManager.is_discard_pile_window_open():
+		WindowManager.close_discard_pile_window()
+	if WindowManager.is_battle_inventory_window_open() or WindowManager.is_run_inventory_window_open():
+		WindowManager.close_inventory_window(true)
+	if WindowManager.is_any_inspection_window_open():
+		WindowManager.close_all_inspection_windows(false)
+	GlobalInteractionRouter.clear_current_selection()
 
-	if is_instance_valid(WindowManager):
-		if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
-			WindowManager.close_discard_pile_window()
-		if WindowManager.is_battle_inventory_window_open() or WindowManager.is_run_inventory_window_open():
-			var is_battle: bool = (is_instance_valid(GameManager) and GameManager.is_in_battle)
-			WindowManager.close_inventory_window(is_battle)
-		if WindowManager.is_any_inspection_window_open():
-			WindowManager.close_all_inspection_windows(false)
-
-	var context = InteractionContext.new()
-	if is_instance_valid(button):
-		context.source_view_instance_id = button.get_instance_id()
-	context.event_type = &"SINGLE_CLICK"
-	context.location = null
-	context.entity_uuid = ""
-	context.entity_type = &"GLOBAL_BACKGROUND"
-	context.interaction_mode = &"FULLY_INTERACTIVE"
-	context.window_group_id = 0
-	SignalBus.emit_signal("interaction_context_received", context)
-
-	_animate_token_spend_to_discard(cost, button)
-
-func _animate_token_spend_to_discard(cost: int, _button: BaseButton) -> void:
-	"""Animate tokens flying from counter to discard machine before drawing"""
-	if not is_instance_valid(gacha_machine_discard):
-		_is_drawing_token = false
-		SignalBus.emit_signal("draw_from_discard_requested")
-		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
-			await bm.management_animation_queue_completed
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
-
-	var machine_rect = gacha_machine_discard.get_global_rect()
-	var target_pos = Vector2(
-		machine_rect.position.x + machine_rect.size.x * 0.75,
-		machine_rect.position.y + machine_rect.size.y * 0.4
-	)
-
-	var on_token_landed := func(_pos: Vector2):
-		_on_coin_landed_on_machine(_pos, gacha_machine_discard)
-
-	var on_complete := func():
-		_is_drawing_token = false
-		SignalBus.emit_signal("draw_from_discard_requested")
-		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
-			await bm.management_animation_queue_completed
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawDiscardAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-
-	CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed, on_complete)
-
-func _on_draw_button_pressed(button: BaseButton, tier: int) -> void:
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
-		return
-	var action := DrawGachaAction.new(tier)
-	if is_instance_valid(ActionQueue):
-		var accepted = ActionQueue.request(action)
-		if not accepted and not ActionQueue.is_busy():
-			var target_machine: Control = null
-			match tier:
-				1: target_machine = gacha_machine_1
-				2: target_machine = gacha_machine_2
-				3: target_machine = gacha_machine_3
-			var token_group = get_node_or_null("%TokenGroup")
-			if is_instance_valid(target_machine):
-				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
-	else:
-		execute_draw_gacha_visuals(button, tier)
-
-func execute_draw_gacha_visuals(button: BaseButton, tier: int) -> void:
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	while _is_drawing_token or (is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing()):
-		await get_tree().process_frame
-	var effective_cost := tier
-	if is_instance_valid(bm):
-		if bm.has_method("get_gacha_draw_cost"):
-			effective_cost = bm.get_gacha_draw_cost(tier)
-		
-		var can_draw = true
-		if bm.has_method("can_draw_gacha_instance"):
-			can_draw = bm.can_draw_gacha_instance(tier)
-		elif bm.has_method("get_gacha_tokens"):
-			var current_tokens: int = bm.get_gacha_tokens()
-			if current_tokens < effective_cost:
-				can_draw = false
-				
-		if not can_draw:
-			# Insufficient tokens or invalid state - play rejection feedback on machine and token counter
-			var target_machine: Control = null
-			match tier:
-				1: target_machine = gacha_machine_1
-				2: target_machine = gacha_machine_2
-				3: target_machine = gacha_machine_3
-			var token_group = get_node_or_null("%TokenGroup")
-			if is_instance_valid(target_machine):
-				RejectionFeedbackScript.play_rejection_with_counter(target_machine, token_group, get_tree())
-			if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-				ActionQueue.finish_action(ActionQueue.get_active_action())
-			return
-	
-	# Ensure UI focus doesn't interfere
-	if is_instance_valid(button):
-		button.release_focus()
-		button.rotation_degrees = 0.0
-		var knob_tween = create_tween()
-		knob_tween.tween_property(button, "rotation_degrees", 360.0, AnimationConstants.scaled(0.4)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-		knob_tween.tween_property(button, "rotation_degrees", 0.0, 0.0) # Reset
-	
-	# We've committed to this draw. Set _is_drawing_token to true.
-	_is_drawing_token = true
-
-	# As part of the draw visual choreography, close the battle inventory drawer,
-	# Discard drawer, and any open inspection popups so the battle board and ball animation are unobstructed
-	if is_instance_valid(WindowManager):
-		if WindowManager.has_method("is_discard_pile_window_open") and WindowManager.is_discard_pile_window_open():
-			WindowManager.close_discard_pile_window()
-		if WindowManager.is_battle_inventory_window_open() or WindowManager.is_run_inventory_window_open():
-			var is_battle: bool = (is_instance_valid(GameManager) and GameManager.is_in_battle)
-			WindowManager.close_inventory_window(is_battle)
-		if WindowManager.is_any_inspection_window_open():
-			WindowManager.close_all_inspection_windows(false)
-
-	# Route a background interaction through GIR so any open inspection windows close and selections clear
-	var context = InteractionContext.new()
-	if is_instance_valid(button):
-		context.source_view_instance_id = button.get_instance_id()
-	context.event_type = &"SINGLE_CLICK"
-	context.location = null
-	context.entity_uuid = ""
-	context.entity_type = &"GLOBAL_BACKGROUND"
-	context.interaction_mode = &"FULLY_INTERACTIVE"
-	context.window_group_id = 0
-	SignalBus.emit_signal("interaction_context_received", context)
-	
-	# Animate tokens flying from counter to machine, then proceed with draw
-	_animate_token_spend(tier, effective_cost, button)
-
-func _animate_token_spend(tier: int, cost: int, _button: BaseButton) -> void:
-	"""Animate tokens flying from counter to gacha machine before drawing"""
-	var target_machine: Control = null
-	match tier:
-		1: target_machine = gacha_machine_1
-		2: target_machine = gacha_machine_2
-		3: target_machine = gacha_machine_3
-	
-	if not is_instance_valid(target_machine):
-		_is_drawing_token = false
-		SignalBus.emit_signal("draw_gacha_requested", tier)
-		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
-			await bm.management_animation_queue_completed
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-		return
-	
-	var machine_rect = target_machine.get_global_rect()
-	var target_pos = Vector2(
-		machine_rect.position.x + machine_rect.size.x / 2,
-		machine_rect.position.y + machine_rect.size.y * 0.4 # Aim for coin slot area
-	)
-	
-	var on_token_landed := func(_pos: Vector2):
-		_on_coin_landed_on_machine(_pos, target_machine)
-	
-	var on_complete := func():
-		_is_drawing_token = false
-		SignalBus.emit_signal("draw_gacha_requested", tier)
-		var bm = GameManager.get_battle_manager()
-		if is_instance_valid(bm) and bm.has_method("is_animating_management_queue") and bm.is_animating_management_queue():
-			await bm.management_animation_queue_completed
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is DrawGachaAction:
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-	
-	CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed, on_complete)
+	var rect: Rect2 = machine.get_global_rect()
+	var target: Vector2 = rect.position + rect.size * Vector2(0.75 if tier == 4 else 0.5, 0.4)
+	await CurrencyAnimator.animate_token_spend(cost, target, _on_coin_landed_on_machine.bind(machine))
+	_is_drawing_token = false
 
 func _on_coin_landed_on_machine(target_pos: Vector2, machine: Control) -> void:
 	"""React when a coin lands on a gacha machine - bounce and flash"""
@@ -752,6 +558,7 @@ func _play_machine_bounce(machine: Control) -> void:
 	reaction_tween.tween_property(machine_image, "modulate", Color.WHITE, f2).set_delay(f1)
 
 func _on_battle_inventory_changed() -> void:
+	_update_machine_costs()
 	# TDD Safeguard: Re-enable buttons after the state has been updated.
 	knob_button_1.disabled = false
 	knob_button_2.disabled = false
@@ -882,6 +689,8 @@ func modify_visual_gold(delta: int, animate_pop: bool = true) -> void:
 func set_visual_tokens(new_amount: int, animate_pop: bool = true) -> void:
 	var old_amount = _visual_tokens
 	_visual_tokens = new_amount
+	if _battle_token_tray != null:
+		_battle_token_tray.set_balance(new_amount)
 	if is_instance_valid(tokens_label):
 		tokens_label.text = "%d" % _visual_tokens
 		if old_amount != _visual_tokens and animate_pop:
@@ -1017,6 +826,7 @@ func _on_gacha_tokens_changed(new_amount: int) -> void:
 	set_visual_tokens(new_amount, true)
 
 func _on_action_queue_idle() -> void:
+	sync_visual_machine_counts_with_model()
 	if _gold_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
 		set_visual_gold(GameManager.run_state.gold, false)
 	if _token_animations_in_flight == 0 and is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
@@ -1177,70 +987,7 @@ func hide_empty_trinket_slots() -> void:
 			slot.show_empty_trinket_slot = false
 
 func _populate_flashcard_progress() -> void:
-	"""Populate the flashcard progress bar with colored rectangles for each card in main deck."""
-	if not is_instance_valid(flashcard_progress_bar):
-		return
-	if not is_instance_valid(GameManager.run_state):
-		return
-	
-	# Clear existing indicators
-	for child in flashcard_progress_bar.get_children():
-		child.queue_free()
-	
-	# Get main deck cards based on chosen play order
-	var main_deck_cards = GameManager.run_state.ordered_deck_pool
-	if main_deck_cards.is_empty():
-		return
-	
-	# Calculate individual card width
-	var total_width = 480.0
-	var gap = 2.0
-	var total_gaps = (main_deck_cards.size() - 1) * gap
-	var card_width = (total_width - total_gaps) / main_deck_cards.size()
-	
-	# Create a rectangle for each card in main deck order
-	var boss_thresholds = [0.2, 0.4, 0.6, 0.8, 1.0]
-	if GameManager.run_state.is_half_deck:
-		boss_thresholds = [0.3333, 0.6666, 1.0]
-		
-	var boss_indices = []
-	for t in boss_thresholds:
-		var idx = clampi(ceil(main_deck_cards.size() * t) - 1, 0, main_deck_cards.size() - 1)
-		if not boss_indices.has(idx):
-			boss_indices.append(idx)
-	
-	for i in range(main_deck_cards.size()):
-		var card_id = main_deck_cards[i]
-		var rect = ColorRect.new()
-		
-		# Check if card is in active deck
-		var is_active = GameManager.run_state.active_deck_ids.has(card_id)
-		var is_boss_trigger = boss_indices.has(i)
-		
-		var height = 10.0
-		if is_boss_trigger and not is_active:
-			height = 24.0 # Taller marker for future bosses
-		
-		rect.custom_minimum_size = Vector2(card_width, height)
-		# Center taller markers vertically relative to the bar
-		rect.size_flags_vertical = Control.SIZE_SHRINK_CENTER
-		
-		if is_active:
-			# Get mastery level and apply corresponding color
-			var progress = GameManager.run_state.flashcard_progress.get(card_id)
-			if is_instance_valid(progress):
-				var mastery = progress.mastery_level
-				rect.color = MASTERY_COLORS.get(mastery, LOCKED_COLOR)
-			else:
-				rect.color = MASTERY_COLORS[1] # Default to level 1 if no progress
-		else:
-			# Card not yet unlocked
-			if is_boss_trigger:
-				rect.color = Color.WHITE # White for locked bosses
-			else:
-				rect.color = LOCKED_COLOR # Grey for locked normal cards
-		
-		flashcard_progress_bar.add_child(rect)
+	flashcard_progress_bar.populate(GameManager.run_state)
 
 func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 	# Find the BattleManager in the loaded scene and start the battle
@@ -1252,27 +999,103 @@ func _start_battle_with_encounter(encounter_def: EncounterDefinition) -> void:
 
 ## Hard-sync visual counts to current model data (only during screen transitions or loading)
 func sync_visual_machine_counts_with_model() -> void:
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	
-	for tier in [1, 2, 3]:
-		var count = 0
-		if is_instance_valid(bm) and bm.has_method("get_inventory_tier_instances"):
-			count = bm.get_inventory_tier_instances(tier).size()
+	var battle: BattleManager = GameManager.get_battle_manager() as BattleManager
+	for tier: int in range(1, 4):
+		var count: int = 0
+		if battle != null:
+			count = battle.get_inventory_tier_instances(tier).size()
 		elif is_instance_valid(GameManager.run_state):
 			count = GameManager.run_state.get_inventory_tier_instances(tier).size()
 		
 		_visual_machine_counts[tier] = count
 	
 	_update_machine_count_labels()
+	_update_machine_costs()
+	var discard_count: int = battle.get_discard_count() if battle != null else 0
+	gacha_machine_discard.text = "x%d/%d" % [discard_count, C.BATTLE_DISCARD_CAP]
 
-## Update the inventory count labels on all three gacha machines from visual variables
 func _update_machine_count_labels() -> void:
-	if is_instance_valid(machine_1_count_label):
-		machine_1_count_label.text = "x%d" % _visual_machine_counts[1]
-	if is_instance_valid(machine_2_count_label):
-		machine_2_count_label.text = "x%d" % _visual_machine_counts[2]
-	if is_instance_valid(machine_3_count_label):
-		machine_3_count_label.text = "x%d" % _visual_machine_counts[3]
+	machine_1_count_label.text = "x%d/%d" % [_visual_machine_counts[1], C.RUN_INVENTORY_CAP]
+	machine_2_count_label.text = "x%d/%d" % [_visual_machine_counts[2], C.RUN_INVENTORY_CAP]
+	machine_3_count_label.text = "x%d/%d" % [_visual_machine_counts[3], C.RUN_INVENTORY_CAP]
+
+func _build_machine_labels() -> void:
+	for tier: int in range(1, 5):
+		var machine: Control = get_gacha_machine(tier)
+		var knob: BaseButton = get_knob_button(tier)
+		var row := HBoxContainer.new()
+		row.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		row.add_theme_constant_override("separation", 7)
+		row.position = knob.position + Vector2(-116, 5)
+		row.alignment = BoxContainer.ALIGNMENT_CENTER
+		row.custom_minimum_size.x = 110
+		machine.add_child(row)
+		if tier <= 3:
+			var badge := PanelContainer.new()
+			badge.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			badge.custom_minimum_size = Vector2(35, 35)
+			var style := StyleBoxFlat.new()
+			style.bg_color = [Color(0.10, 0.44, 0.49), Color(0.53, 0.19, 0.40), Color(0.48, 0.38, 0.11)][tier - 1]
+			style.set_border_width_all(2)
+			style.border_color = Color(0.96, 0.91, 0.72)
+			badge.add_theme_stylebox_override("panel", style)
+			var number := _machine_number_label(str(tier))
+			badge.add_child(number)
+			row.add_child(badge)
+		var cost := HBoxContainer.new()
+		cost.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		var token := TextureRect.new()
+		token.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		token.texture = token_icon.texture
+		token.custom_minimum_size = Vector2(33, 33)
+		token.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
+		token.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
+		cost.add_child(token)
+		cost.add_child(_machine_number_label(str(mini(tier, 3) if tier < 4 else 1)))
+		row.add_child(cost)
+		_machine_costs[tier] = cost
+		var count: Label = machine.get_node("CountLabel") as Label
+		if tier <= 3:
+			count.offset_top += 30
+			count.add_theme_font_size_override("font_size", 28)
+		else:
+			count.text = "x0/%d" % C.BATTLE_DISCARD_CAP
+
+func _machine_number_label(value: String) -> Label:
+	var label := Label.new()
+	label.text = value
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 24)
+	label.add_theme_color_override("font_outline_color", Color(0.09, 0.12, 0.16))
+	label.add_theme_constant_override("outline_size", 4)
+	return label
+
+func _update_machine_costs() -> void:
+	var battle: BattleManager = GameManager.get_battle_manager() as BattleManager
+	for tier: int in range(1, 4):
+		var cost: Label = _machine_costs[tier].get_child(1) as Label
+		cost.text = str(battle.get_gacha_draw_cost(tier) if battle != null and GameManager.is_in_battle else tier)
+	_machine_costs[4].visible = battle != null and GameManager.is_in_battle and battle.can_draw_from_discard()
+
+func set_battle_token_tray(tray: Control) -> void:
+	_battle_token_tray = tray
+	tokens_label.visible = tray == null
+	token_icon.visible = tray == null
+	if tray != null:
+		tray.set_balance(_visual_tokens)
+
+func clear_battle_token_tray(tray: Control) -> void:
+	if _battle_token_tray == tray:
+		_battle_token_tray = null
+		if not is_queued_for_deletion():
+			set_battle_token_tray(null)
+
+func get_token_feedback_control() -> Control:
+	return _battle_token_tray.get_count_feedback_control() if _battle_token_tray != null else %TokenGroup
+
+func get_token_animation_origin() -> Vector2:
+	return _battle_token_tray.get_currency_origin() if _battle_token_tray != null else token_icon.get_global_rect().get_center()
 
 # =============================================================================
 # CONFIRM DROP ZONE OVERLAY

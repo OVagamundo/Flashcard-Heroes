@@ -84,7 +84,7 @@ To ensure the UI presentation remains completely decoupled from the instantaneou
 | **S4** Selection Without Inspection | Outside combat, click/tap selects entity only; it does NOT open an inspection window. Quick click/tap (< 0.5s) suppresses hover re-arming on the clicked element until the cursor exits. |
 | **S5** Hover Peek | Hovering an inspectable entity opens a temporary inspection peek window after a `0.4s` delay (PC/mouse only). The peek stays open only while hovering and closes immediately when the cursor exits. Hover peek is disabled during Combat and VCR playback. |
 | **S5a** Long-Press Peek | Long-press (`0.5s`) opens a temporary inspection peek window (touch and mouse). The peek stays open only while held; releasing closes it immediately and suppresses click/tap selection. Drag movement > 24px cancels peek. |
-| **S6** Combat Click-to-Pin | During Combat / VCR playback, all gameplay input is blocked except for instant pause-and-inspect. Pressing on any inspectable unit immediately freezes playback and opens its inspection window on pointer press without playing click/press animations. Clicking another inspectable element while frozen switches inspection to that element; clicking outside on empty space or the same unit resumes playback. |
+| **S6** Combat Click-to-Pin | During Combat or VCR playback, pressing an inspectable entity, including an enemy banner, pauses playback and opens its inspection immediately. Clicking another entity switches the inspection. Clicking the same entity or empty space closes the inspection and resumes playback. |
 | **S7** Deselect on Action | Any `REQUEST_ACTION` immediately clears selection |
 | **S8** Hover Boundary | When an inventory window is open, hover/press peeks outside it are blocked |
 | **S9** Auto Child Windows & Display-Only | Inspection windows are display-only (`MOUSE_FILTER_IGNORE`). Root inspection automatically displays all child windows (keywords/status effects, equipped items) arranged around the root without overlapping the inspected source entity and clamped to the 1920x1080 viewport. |
@@ -217,12 +217,12 @@ The application uses a **High-Performance Hybrid Cursor** system managed by `Cur
     - **Rule S8 (Hover Boundary)**: If an inventory window is open, hovers originating from the background battle board are blocked to prevent accidental window closure.
     - **Click-to-Select**: Locks window open.
     - **All Other Input Blocked**: No dragging, clicking, or double-clicking is permitted within physics containers.
-    - **39-Item Constraint**: Spawning/Logic uses `GrowableGridContainer(24)` as a baseline but does NOT enforce a hard numerical cap. Overflow is managed entirely by physics (see lid rule).
+    - The drawers display the 25-per-tier and 80-entry Discard limits from `BattleState`. Transfer and ejection events drive updates to the displayed counts. [InventoryManager.md](InventoryManager.md#3-gacha-draw--discard-lifecycle)
 
 ### Staggered Grid (Run Inventory ONLY)
 The Run Inventory uses the `StaggeredGridContainer` for a compact, circular-optimized layout.
 - **Geometry**: A hexagonal/honeycomb pattern where even-numbered rows are offset by half a slot's width.
-- **39-Slot Capacity**: Perfectly sized to display 39 slots (4 x 6 and 3 x 5) without scrolling.
+- Each Run Inventory tier displays 25 slots in a 5×5 grid.
 - **Separation**: `v_separation` is calculated as `SlotHeight * 0.75` to allow circular caps to nest perfectly.
 - **Alignment**: Uses `bottom_to_top = true` to fill from the base of the container.
 - **1x Scale**: Gachaballs are fixed at `1.0` scale to maximize grid density.

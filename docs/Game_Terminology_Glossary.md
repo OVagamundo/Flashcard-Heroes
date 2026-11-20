@@ -32,6 +32,11 @@
 | Start-battle button | **Ready!** | **Pronto!** |
 | Losing the battle or run | **Defeat** | **Derrota** |
 | Overflow and knocked-out unit storage | **Discard** | **Descarte** |
+| Capsule dispensed by a Gacha Machine | **GachaBall** | **Cápsula** |
+| Spend Tokens to get a capsule | **Draw from a Gacha Machine** | **Usar uma Máquina Gacha** |
+| Tokens spent per machine use | **Draw cost** | **Custo por uso** |
+| Classification of a capsule or Gacha Machine | **Tier** | **Tier** |
+| Refresh the shop's selection | **Reroll shop stock** | **Renovar as ofertas da Loja** |
 | Team or global relic | **Trinket** | **Amuleto** |
 | Unit category such as Fire or Water | **Trait / Traits** | **Tipo / Tipos** |
 | Close-range standard attack | **Melee Attack** | **Ataque Corpo a Corpo** |

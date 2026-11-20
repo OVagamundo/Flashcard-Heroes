@@ -41,6 +41,7 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	print("[SUITE 1/8] Database & Localization Referential Integrity...")
 	_run_suite_1_database()
+	_test_insignia_and_crest_inspection()
 	print("  -> [PASS] Suite 1 Passed!")
 
 	# ----------------------------------------------------
@@ -105,6 +106,37 @@ func _ready() -> void:
 # ==============================================================================
 # SUITE 1 IMPLEMENTATION
 # ==============================================================================
+func _test_insignia_and_crest_inspection() -> void:
+	var previous_locale: String = TranslationServer.get_locale()
+	var window: ItemInspectionWindow = preload("res://scenes/ItemInspectionWindow.tscn").instantiate()
+	get_tree().root.add_child(window)
+
+	for locale: String in ["en", "pt_BR"]:
+		TranslationServer.set_locale(locale)
+		for id: StringName in Database.trinkets:
+			if not String(id).ends_with("_insignia"):
+				continue
+			var insignia: TrinketDefinition = Database.trinkets[id]
+			var instance := GachaBallInstance.new()
+			instance.initialize_from_trinket(insignia)
+			window.populate({"instance": instance, "is_preview": true})
+			var own_effect: String = TranslationServer.translate(insignia.description_key)
+			_assert_ok(window.description_label.get_parsed_text() == own_effect, "[%s] %s shows only its own effect" % [locale, id])
+
+		for trait_id: String in C.TRAIT_SORT_ORDER:
+			var trait_definition: Dictionary = C.TRAIT_DEFINITIONS[trait_id]
+			var crest: TrinketDefinition = Database.trinkets[trait_definition["trinket_id"]]
+			var instance := GachaBallInstance.new()
+			instance.initialize_from_trinket(crest)
+			window.populate({"instance": instance, "is_preview": true})
+			var inspection_text: String = window.description_label.get_parsed_text()
+			for level: Dictionary in trait_definition["levels"]:
+				_assert_ok(inspection_text.contains(" %d: " % int(level["min"])), "[%s] %s shows its %d threshold" % [locale, crest.id, level["min"]])
+
+	window.queue_free()
+	TranslationServer.set_locale(previous_locale)
+
+
 func _run_suite_1_database() -> void:
 	_assert_ok(not Database.units.is_empty(), "Database.units must not be empty")
 	_assert_ok(not Database.items.is_empty(), "Database.items must not be empty")
@@ -1886,6 +1918,7 @@ func _run_suite_7_novice_set() -> void:
 	var crest_inst := GachaBallInstance.new()
 	crest_inst.initialize_from_trinket(crest_def)
 	fm_test_rs.add_instance(crest_inst, RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS, -1)
+	FlashcardManager._run_state_ref = fm_test_rs
 	FlashcardManager.is_session_active = true
 	FlashcardManager.tokens_earned = 1
 	FlashcardManager._on_minigame_complete(1, 0)
@@ -2206,7 +2239,7 @@ func _run_suite_8_alternating_initiative() -> void:
 
 	# 6. Shelf summon slot search (Left to Right: 0 -> Size - 1)
 	var shelf_state := BattleState.new()
-	shelf_state.player_shelf_slots_unlocked = C.SHELF_CAP
+	shelf_state.player_shelf_slots_unlocked = C.PLAYER_SHELF_CAP
 	var p_shelf := shelf_state.get_container(C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF)
 	var e_shelf := shelf_state.get_container(C.BATTLE_CONTAINER_TAGS.ENEMY_SHELF)
 
@@ -2226,20 +2259,19 @@ func _run_suite_8_alternating_initiative() -> void:
 	shelf_state.bm_add_instance(b2, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, 2)
 	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 1, "Player shelf finds Slot 1 when Slots 0 and 2 are taken")
 
-	# If Slots 0 through 6 are taken, Player finds Slot 7 (rightmost)
-	for i in range(1, 7):
-		if i == 2:
+	var last_slot: int = C.PLAYER_SHELF_CAP - 1
+	for slot_index: int in range(1, last_slot):
+		if slot_index == 2:
 			continue
-		var bi := GachaBallInstance.new()
-		bi.initialize(def)
-		shelf_state.bm_add_instance(bi, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, i)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == 7, "Player shelf finds Slot 7 when Slots 0-6 are taken")
+		var unit := GachaBallInstance.new()
+		unit.initialize(def)
+		shelf_state.bm_add_instance(unit, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, slot_index)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == last_slot, "Player shelf finds its last purchasable slot")
 
-	# If all 8 slots are taken, returns -1
-	var b7 := GachaBallInstance.new()
-	b7.initialize(def)
-	shelf_state.bm_add_instance(b7, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, 7)
-	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == -1, "Full player shelf returns -1")
+	var last_unit := GachaBallInstance.new()
+	last_unit.initialize(def)
+	shelf_state.bm_add_instance(last_unit, C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF, last_slot)
+	_assert_ok(EffectHandlers.find_best_summon_slot(p_shelf, true) == -1, "Full six-slot player Shelf returns -1")
 
 	# 7. End-to-end Recruiting Charm shelf summon (left to right placement)
 	var recruit_bm = BattleManagerScript.new()

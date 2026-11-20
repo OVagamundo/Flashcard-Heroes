@@ -14,6 +14,7 @@ name_key = "trinket.novice_insignia.name"
 description_key = "trinket.novice_insignia.desc"
 icon = ExtResource("2_icon")
 category = &"TRINKET"
+linked_trait_id = &"NOVICE"
 is_player_exclusive = true
 set_id = &"NOVICE"
 rarity = 1

@@ -56,6 +56,7 @@ var deferred_ally_knockouts_enemy: Array[TriggerContext] = []
 
 ## Enemy instance UUIDs deferred from final erasure until combat event playback finishes
 var deferred_enemy_erasures: Array[String] = []
+var _inventory_events: Array[CombatEvent] = []
 
 ## Gacha tokens available for spending (synchronized with RunState if present)
 var _gacha_tokens: int = 0:
@@ -83,6 +84,32 @@ var staged_hero_instance: GachaBallInstance = null
 var staged_hero_items: Array[GachaBallInstance] = []
 
 
+func copy_for_simulation() -> BattleState:
+	assert(staged_hero_placement.is_empty() and staged_enemy_placements.is_empty(), "Preview requires a settled battle entrance")
+	assert(not is_resolving_knockouts and deferred_knockouts.is_empty() and deferred_enemy_erasures.is_empty(), "Preview requires settled knockouts")
+	assert(deferred_ally_knockouts_player.is_empty() and deferred_ally_knockouts_enemy.is_empty(), "Preview requires settled ally knockout effects")
+	assert(_inventory_events.is_empty(), "Preview requires settled inventory events")
+	var copy := BattleState.new()
+	copy._turn_metadata = _turn_metadata.duplicate(true)
+	copy._dead_this_turn = _dead_this_turn.duplicate(true)
+	copy._lethal_sequence_counter = _lethal_sequence_counter
+	copy._lethal_sequence_by_uuid = _lethal_sequence_by_uuid.duplicate()
+	copy.player_shelf_slots_unlocked = player_shelf_slots_unlocked
+	copy.player_slot_effects = player_slot_effects.duplicate()
+	copy.enemy_slot_effects = enemy_slot_effects.duplicate()
+	for uuid: String in _battle_instances:
+		copy._battle_instances[uuid] = get_instance(uuid).copy_for_simulation()
+	for tag: StringName in _containers:
+		var source: DataContainer = _containers[tag]
+		var target: DataContainer = GrowableGridContainer.new(source.get_size()) if source is GrowableGridContainer else FixedArrayContainer.new(source.get_size())
+		target.container_tag = tag
+		for index: int in range(source.get_size()):
+			target.set_uuid(index, source.get_uuid(index))
+		copy._containers[tag] = target
+	for trinket: GachaBallInstance in enemy_trinkets:
+		copy.enemy_trinkets.append(copy.get_instance(trinket.ball_uuid))
+	return copy
+
 # ============================================================================
 # CONTAINER ACCESS
 # ============================================================================
@@ -98,9 +125,13 @@ func get_container(container_name: StringName) -> DataContainer:
 	match container_name:
 		BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
 			new_container = FixedArrayContainer.new(C.LINEUP_CAP)
-		BATTLE_CONTAINER_TAGS.PLAYER_SHELF, BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
+		BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
+			new_container = FixedArrayContainer.new(C.PLAYER_SHELF_CAP)
+		BATTLE_CONTAINER_TAGS.ENEMY_SHELF:
 			new_container = FixedArrayContainer.new(C.SHELF_CAP)
-		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE, BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD:
+		BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+			new_container = FixedArrayContainer.new(C.BATTLE_DISCARD_CAP)
+		BATTLE_CONTAINER_TAGS.ENEMY_GRAVEYARD:
 			new_container = GrowableGridContainer.new(24)
 		BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS:
 			new_container = FixedArrayContainer.new(C.ENEMY_TRINKET_CAP)
@@ -110,7 +141,7 @@ func get_container(container_name: StringName) -> DataContainer:
 			new_container = FixedArrayContainer.new(C.PLAYER_TRINKET_CAP)
 		_:
 			if String(container_name).begins_with("BattleInventoryT"):
-				new_container = GrowableGridContainer.new(24)
+				new_container = FixedArrayContainer.new(C.BATTLE_TIER_CAP)
 			else:
 				return null
 
@@ -211,6 +242,44 @@ func update_instance_location(uuid: String, container_name: StringName, index: i
 		instance.equipped_on_uuid = ""
 		instance.equipped_slot_index = -1
 
+func has_tier_space(tier: int) -> bool:
+	return get_container(&"BattleInventoryT%d" % tier).find_first_empty_slot() >= 0
+
+func _resolve_storage_destination(tag: StringName) -> StringName:
+	if String(tag).begins_with("BattleInventoryT") and get_container(tag).find_first_empty_slot() == -1:
+		return BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE
+	return tag
+
+func _allocate_discard_slot() -> int:
+	var discard: DataContainer = get_container(BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE)
+	var empty_slot: int = discard.find_first_empty_slot()
+	if empty_slot >= 0:
+		return empty_slot
+	var ejected_uuid: String = RNGManager.gacha_rng.pick_random(discard.get_all_non_empty_uuids())
+	var ejected: GachaBallInstance = get_instance(ejected_uuid)
+	var slot: int = ejected.location_slot_index
+	var payload := CombatPayload.new()
+	payload.unit_tier = ejected.get_definition().tier
+	payload.new_unit_snapshot = {
+		"tier": payload.unit_tier,
+		"attributes": {&"level": ejected.level},
+		"definition_id": ejected.definition_id,
+	}
+	var event := CombatEvent.new(CombatEvent.Type.DISCARD_EJECT, {"source_uuid": ejected_uuid, "visual_payload": payload})
+	_inventory_events.append(event)
+	# Discarded capsules are sealed. Remove any attached equipment from this battle with its capsule.
+	for item_uuid: String in ejected.equipped_item_uuids:
+		if not item_uuid.is_empty():
+			_battle_instances.erase(item_uuid)
+	discard.set_uuid(slot, "")
+	_battle_instances.erase(ejected_uuid)
+	return slot
+
+func take_inventory_events() -> Array[CombatEvent]:
+	var events: Array[CombatEvent] = _inventory_events
+	_inventory_events = []
+	return events
+
 ## Atomically transfer a registered instance from its current location (container or equipped slot)
 ## into a destination container slot. Validates destination BEFORE mutating source.
 ## Returns the destination slot index on success, or -1 if destination has no valid slot.
@@ -219,23 +288,32 @@ func transfer_instance_to_container(instance: GachaBallInstance, dest_container_
 	assert(_battle_instances.has(instance.ball_uuid), "transfer_instance_to_container: instance %s is not registered in BattleState" % instance.ball_uuid)
 	assert(not dest_container_name.is_empty() and dest_container_name != C.CONTAINER_EQUIPPED_ITEM, "transfer_instance_to_container: invalid destination container '%s'" % String(dest_container_name))
 
-	var dest_container := get_container(dest_container_name)
-	assert(is_instance_valid(dest_container), "transfer_instance_to_container: unknown destination container '%s'" % String(dest_container_name))
-
 	var loc := instance.get_location()
 	assert(is_instance_valid(loc), "transfer_instance_to_container: instance %s has invalid location" % instance.ball_uuid)
-	# Only sealed storage can feed the Shelf. Deployment is one way until recycling.
+	# Incubation is the only way to reseal a deployed unit.
 	if dest_container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF:
-		if loc.container != BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not String(loc.container).begins_with("BattleInventoryT"):
+		var incubating: bool = loc.container == BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and get_equipped_incubator(instance) != null
+		if not incubating and loc.container != BATTLE_CONTAINER_TAGS.PLAYER_SHELF and not String(loc.container).begins_with("BattleInventoryT"):
 			return -1
 
 	# No-op if already at exact destination container and slot
 	if loc.container == dest_container_name and dest_index >= 0 and loc.index == dest_index:
 		return dest_index
+	if loc.container != dest_container_name:
+		dest_container_name = _resolve_storage_destination(dest_container_name)
+		if loc.container == dest_container_name:
+			return loc.index
+	var entering_discard: bool = dest_container_name == BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and loc.container != dest_container_name
+	if not entering_discard and dest_container_name == BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and dest_index < 0:
+		return loc.index
+	var dest_container: DataContainer = get_container(dest_container_name)
+	assert(dest_container != null, "transfer_instance_to_container: unknown destination %s" % dest_container_name)
 
-	# Validate destination slot BEFORE mutating source
-	var slot := dest_index
-	if slot < 0:
+	# Validate the destination before detaching the source. Discard always makes room.
+	var slot: int = dest_index
+	if entering_discard:
+		slot = -1
+	elif slot < 0:
 		slot = find_first_empty_player_shelf_slot() if dest_container_name == BATTLE_CONTAINER_TAGS.PLAYER_SHELF else dest_container.find_first_empty_slot()
 		if slot == -1:
 			return -1
@@ -263,10 +341,22 @@ func transfer_instance_to_container(instance: GachaBallInstance, dest_container_
 		assert(src_container.get_uuid(loc.index) == instance.ball_uuid, "transfer_instance_to_container: source slot %s:%d mismatch for %s" % [String(loc.container), loc.index, instance.ball_uuid])
 		src_container.set_uuid(loc.index, "")
 
-	# Place into destination container and update location atomically
+	# An equipped source is already detached if its old holder is ejected.
+	if entering_discard:
+		slot = _allocate_discard_slot()
 	dest_container.set_uuid(slot, instance.ball_uuid)
 	update_instance_location(instance.ball_uuid, dest_container_name, slot)
 	return slot
+
+func get_equipped_incubator(unit: GachaBallInstance) -> GachaBallInstance:
+	for item_uuid: String in unit.equipped_item_uuids:
+		if item_uuid.is_empty():
+			continue
+		var item: GachaBallInstance = get_instance(item_uuid)
+		assert(item != null, "Equipped item %s must be registered" % item_uuid)
+		if item.definition_id == C.ITEM_INCUBATOR:
+			return item
+	return null
 
 ## Atomically place the staged hero (and register any equipped hero items) into PlayerLineup.
 func place_staged_hero() -> GachaBallInstance:
@@ -434,6 +524,7 @@ func reshuffle_tier_from_discard(tier_to_reshuffle: int) -> bool:
 # ============================================================================
 
 func clear() -> void:
+	player_shelf_slots_unlocked = C.INITIAL_SHELF_SLOTS
 	_battle_instances.clear()
 	_containers.clear()
 	enemy_trinkets.clear()
@@ -446,6 +537,7 @@ func clear() -> void:
 	deferred_ally_knockouts_player.clear()
 	deferred_ally_knockouts_enemy.clear()
 	deferred_enemy_erasures.clear()
+	_inventory_events.clear()
 	_gacha_tokens = 0
 	player_slot_effects = [&"", &"", &"", &"", &""]
 	enemy_slot_effects = [&"", &"", &"", &"", &""]
@@ -487,7 +579,10 @@ func is_in_player_container_tag(tag: StringName) -> bool:
 func bm_add_instance(instance: GachaBallInstance, container_name: StringName, index: int = -1, allow_locked_shelf_slot: bool = false) -> bool:
 	assert(is_instance_valid(instance), "bm_add_instance: instance is null")
 	assert(not container_name.is_empty() and container_name != C.CONTAINER_EQUIPPED_ITEM, "bm_add_instance: invalid container_name '%s' for %s" % [String(container_name), instance.ball_uuid])
-	var container = get_container(container_name)
+	container_name = _resolve_storage_destination(container_name)
+	if container_name == BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE:
+		index = _allocate_discard_slot()
+	var container: DataContainer = get_container(container_name)
 	assert(is_instance_valid(container), "bm_add_instance: unknown battle container '%s'" % String(container_name))
 	var slot := index
 	if slot < 0:

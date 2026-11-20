@@ -312,6 +312,8 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 		_currency_main.begin_bonus_timer_animation()
 
 	for event in events:
+		if event.type == CombatEvent.Type.ACTOR_ORDER:
+			continue
 		SignalBus.log_animation_event.emit(event)
 		
 		_play_trinket_activations_for_event(event)
@@ -330,26 +332,17 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 			CombatEvent.Type.LOG_MESSAGE:
 				pass
 
+			CombatEvent.Type.DISCARD_EJECT:
+				var animation: BattleAnimation = AnimationRegistry.get_animation("discard_eject")
+				await animation.execute(self, event.target_uuids, event.visual_payload)
+
 			CombatEvent.Type.DRAW:
 				var payload: CombatPayload = event.visual_payload
-				var draw_result = payload.draw_result
-				if draw_result:
-					SignalBus.emit_signal("gacha_draw_animated", draw_result, payload.new_unit_snapshot if payload != null else {})
-					
-					var completed := false
-					var on_draw_finished = func(res):
-						if res == draw_result or (res != null and draw_result != null and res.drawn_uuid == draw_result.drawn_uuid):
-							completed = true
-					SignalBus.gacha_draw_animation_completed.connect(on_draw_finished)
-					
-					var timeout_duration: float = (0.45 + 0.35 + 0.2) / AnimationConstants.speed_factor
-					var safety_timer = AnimationConstants.create_pausable_timer(get_tree(), timeout_duration)
-					while not completed and safety_timer.time_left > 0.0:
-						await get_tree().process_frame
-					
-					if SignalBus.gacha_draw_animation_completed.is_connected(on_draw_finished):
-						SignalBus.gacha_draw_animation_completed.disconnect(on_draw_finished)
-					
+				var draw_result: InventoryOperations.DrawResult = payload.draw_result
+				var draw_view: BattleView = get_tree().get_first_node_in_group("battle_view") as BattleView
+				if draw_result != null and draw_view != null:
+					await draw_view.animate_gacha_draw(draw_result, payload.new_unit_snapshot)
+
 					if not draw_result.went_to_discard and not draw_result.drawn_uuid.is_empty():
 						var battle_view = get_tree().get_first_node_in_group("battle_view") as BattleView
 						if battle_view != null:
@@ -670,6 +663,9 @@ func _animate_events(events: Array[CombatEvent]) -> void:
 				var origin_uuid = payload.origin_uuid
 				var target_bonus_time = payload.target_bonus_time if "target_bonus_time" in payload else -1.0
 				await _animate_bonus_timer_gain(origin_uuid, amount, target_bonus_time)
+
+			CombatEvent.Type.MOVE:
+				await _animate_incubator_move(event)
 
 			CombatEvent.Type.ITEM_TRANSFER:
 				var payload = event.visual_payload
@@ -1269,6 +1265,57 @@ func _animate_item_transfer(source_uuid: String, target_uuid: String, payload: C
 				"icon": replaced_texture
 			}
 			await _animate_gachaball_to_discard(discard_start_pos, capsule_snapshot)
+
+func _animate_incubator_move(event: CombatEvent) -> void:
+	if ActionQueue.is_headless_mode():
+		return
+	var payload: CombatPayload = event.visual_payload
+	var source_view: GachaBallView = _visual_registry.get(event.source_uuid) as GachaBallView
+	var destination: SlotView = _get_slot_view(payload.container_tag, payload.slot_index) as SlotView
+	assert(source_view != null and destination != null, "Incubator animation requires both board slots")
+
+	var entering_shelf: bool = payload.container_tag == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF
+	var shelf_location: LocationIdentifier = destination._location if entering_shelf else payload.old_unit_location
+	var capsule_data: Dictionary = payload.new_unit_snapshot if entering_shelf else _start_snapshot[event.source_uuid]
+	var start_center: Vector2 = source_view.get_global_rect().get_center()
+	var end_center: Vector2 = destination.get_global_rect().get_center()
+	if entering_shelf:
+		_hide_item_source_view(payload.item_uuid)
+		end_center = destination.get_global_transform() * GachaBallView.shelf_capsule_center(destination.size)
+	else:
+		start_center = source_view.get_global_transform() * source_view.get_capsule_rect().get_center()
+
+	var capsule: GachaBallView = preload("res://scenes/GachaBallView.tscn").instantiate() as GachaBallView
+	WindowManager.get_vfx_layer().add_child(capsule)
+	capsule.set_size_scale(2.0)
+	capsule.populate(shelf_location, capsule_data, false)
+	capsule.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	var center_offset: Vector2 = capsule.get_capsule_rect().get_center()
+	capsule.pivot_offset = center_offset
+	capsule.global_position = start_center - center_offset
+	if entering_shelf:
+		capsule.modulate.a = 0.0
+		source_view.pivot_offset = source_view.size * 0.5
+		var close_duration: float = AnimationConstants.scaled(0.15)
+		var closing: Tween = capsule.create_tween().set_parallel(true)
+		closing.tween_property(source_view, "scale", source_view.scale * 0.72, close_duration)
+		closing.tween_property(source_view, "modulate:a", 0.0, close_duration)
+		closing.tween_property(capsule, "modulate:a", 1.0, close_duration)
+		await closing.finished
+	source_view.hide()
+	source_view.queue_free()
+	var flight: Tween = capsule.create_tween()
+	flight.tween_method(func(t: float) -> void:
+		capsule.global_position = start_center.lerp(end_center, t) - center_offset - Vector2(0.0, 52.0 * sin(t * PI))
+	, 0.0, 1.0, AnimationConstants.scaled(0.38))
+	await flight.finished
+	capsule.queue_free()
+
+	var moved_view: GachaBallView = destination.set_content(payload.new_unit_snapshot)
+	register_dynamic_position(event.source_uuid, moved_view)
+	if not entering_shelf:
+		VFXFactory.spawn_capsule_pop_vfx(end_center, self, 1.5, Vector2.ZERO)
+	moved_view.play_landing_bounce()
 
 func _animate_item_discard(source_uuid: String, payload: CombatPayload) -> void:
 	var source_view = _visual_registry.get(source_uuid)

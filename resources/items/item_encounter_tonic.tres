@@ -1,0 +1,16 @@
+[gd_resource type="Resource" script_class="GachaBallDefinition" format=3]
+
+[ext_resource type="Script" path="res://scripts/GachaBallDefinition.gd" id="1_item"]
+[ext_resource type="Texture2D" path="res://assets/PixelArt/sprites/items/FortifyingTonic.png" id="2_icon"]
+[ext_resource type="Resource" path="res://resources/abilities/ability_item_encounter_tonic.tres" id="3_ability"]
+
+[resource]
+script = ExtResource("1_item")
+id = &"item_encounter_tonic"
+display_name_key = "item.encounter_tonic.name"
+description_key = "item.encounter_tonic.desc"
+icon = ExtResource("2_icon")
+tier = 2
+category = &"CONSUMABLE"
+is_player_exclusive = true
+ability_definitions = Array[AbilityDefinition]([ExtResource("3_ability")])

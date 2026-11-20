@@ -30,6 +30,15 @@ var discard_pile_button: Control:
 		_discard_pile_button = val
 var _discard_pile_button: Control = null
 @onready var end_turn_button: Button = %EndTurnButton
+var turn_controls: HBoxContainer
+var order_button: Button
+var preview_button: Button
+var token_tray: Control
+
+var _order_button_held: bool = false
+var _order_labels: Array[Label] = []
+var _preview_board: Control
+
 @onready var enemy_trinket_bar: HBoxContainer = %EnemyTrinketBar
 @onready var enemy_banner_view: EnemyBannerView = %EnemyBanner
 
@@ -49,6 +58,7 @@ const TRAIT_HUD_Y: float = 10.0
 const TRAIT_TRACKER_SPACING: float = 8.0
 const TRAIT_SCREEN_MARGIN: float = 24.0
 const BATTLE_CONTENT_TOP_PADDING: float = 152.0
+const ORDER_LABEL_GAP: float = 8.0
 
 var _battle_animator: Node = null
 var _pending_board_redraw: bool = false
@@ -130,7 +140,6 @@ func _ready() -> void:
 	# Connect to all relevant state change signals
 	SignalBus.battle_inventory_changed.connect(_redraw_board)
 	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
-	SignalBus.gacha_draw_animated.connect(_on_gacha_draw_animated)
 	battle_manager.management_animation_queue_completed.connect(_on_turn_animation_finished_redraw)
 	
 	# NOTE: Unit death tutorial is handled directly in BattleAnimator._animate_events
@@ -144,10 +153,23 @@ func _ready() -> void:
 	
 	if is_instance_valid(ActionQueue):
 		ActionQueue.action_completed.connect(_on_action_completed)
+		ActionQueue.action_started.connect(_close_preview_for_action)
 		ActionQueue.queue_idle.connect(_on_action_queue_idle)
 	
+	turn_controls = %TurnControls
+	order_button = %OrderButton
+	preview_button = %PreviewButton
+	token_tray = %BattleTokenTray
 	# Connect this view's buttons to emit the correct intent signals
 	end_turn_button.pressed.connect(_on_end_turn_button_pressed)
+	end_turn_button.resized.connect(_position_combat_controls)
+	order_button.button_down.connect(func() -> void: _order_button_held = true)
+	order_button.button_up.connect(func() -> void: _order_button_held = false)
+	preview_button.button_down.connect(_begin_turn_preview)
+	preview_button.button_up.connect(_end_turn_preview)
+	var main: Node = GameManager.get_main_node()
+	if main != null:
+		main.set_battle_token_tray(token_tray)
 	if is_instance_valid(discard_pile_button):
 		if not discard_pile_button.pressed.is_connected(_on_discard_pile_pressed):
 			discard_pile_button.pressed.connect(_on_discard_pile_pressed)
@@ -219,8 +241,127 @@ func _apply_battle_vertical_padding() -> void:
 	pass
 
 func _position_combat_controls() -> void:
-	pass
+	const CONTROL_HEIGHT: float = 40.0
+	turn_controls.size = Vector2(end_turn_button.size.x, CONTROL_HEIGHT)
+	turn_controls.global_position = end_turn_button.global_position - Vector2(0.0, turn_controls.size.y + 8.0)
+	var controls_top: float = turn_controls.global_position.y
+	token_tray.global_position.y = controls_top
+	token_tray.size.y = end_turn_button.global_position.y + end_turn_button.size.y - controls_top
 
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_APPLICATION_FOCUS_OUT:
+		_order_button_held = false
+		_end_turn_preview()
+
+func _process(_delta: float) -> void:
+	if battle_manager == null:
+		return
+	_sync_turn_control_availability()
+	_position_combat_controls()
+	_refresh_order_labels()
+
+func _sync_turn_control_availability() -> void:
+	var can_inspect_turn: bool = battle_manager.can_hold_turn_preview()
+	order_button.disabled = not can_inspect_turn
+	preview_button.disabled = _preview_board == null and not can_inspect_turn
+	if order_button.disabled:
+		_order_button_held = false
+
+func _refresh_order_labels() -> void:
+	var order: Array[String] = []
+	if not order_button.disabled and _preview_board == null and not WindowManager.is_modal_open():
+		if _order_button_held or Input.is_physical_key_pressed(KEY_R):
+			order = battle_manager.get_starting_actor_order()
+
+	for index: int in range(order.size()):
+		if index >= _order_labels.size():
+			_order_labels.append(_create_order_label())
+		var label: Label = _order_labels[index]
+		var unit: GachaBallView = _find_displayed_actor(order[index])
+		label.visible = unit != null
+		if unit != null:
+			label.text = str(index + 1)
+			var sprite_bounds: Rect2 = unit.get_sprite_global_bounds()
+			var top: float = minf(unit.get_global_rect().position.y, sprite_bounds.position.y)
+			label.global_position = Vector2(
+				sprite_bounds.get_center().x - label.size.x * 0.5,
+				top - label.size.y - ORDER_LABEL_GAP,
+			)
+
+	for index: int in range(order.size(), _order_labels.size()):
+		_order_labels[index].hide()
+
+func _create_order_label() -> Label:
+	var label := Label.new()
+	label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	label.z_index = 35
+	label.custom_minimum_size = Vector2(76, 62)
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
+	label.add_theme_font_size_override("font_size", 52)
+	label.add_theme_color_override("font_color", Color(1.0, 0.97, 0.80))
+	label.add_theme_color_override("font_outline_color", Color(0.08, 0.10, 0.15))
+	label.add_theme_constant_override("outline_size", 8)
+	add_child(label)
+	return label
+
+func _find_displayed_actor(uuid: String) -> GachaBallView:
+	for lineup: HBoxContainer in [player_lineup, enemy_lineup]:
+		for slot: Node in lineup.get_children():
+			for child: Node in slot.get_children():
+				var unit: GachaBallView = child as GachaBallView
+				if unit != null and not unit.is_queued_for_deletion() and unit.is_visible_in_tree() and unit.get_instance_uuid() == uuid:
+					return unit
+	return null
+
+func _begin_turn_preview() -> void:
+	if _preview_board != null or not battle_manager.can_hold_turn_preview():
+		return
+	var snapshot: Dictionary = battle_manager.get_held_turn_preview()
+	var units: Dictionary = snapshot["units"]
+	var player_effects: Array[StringName] = snapshot["player_slot_effects"]
+	var enemy_effects: Array[StringName] = snapshot["enemy_slot_effects"]
+	_preview_board = Control.new()
+	_preview_board.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	add_child(_preview_board)
+	_preview_board.modulate = Color(0.79, 0.91, 1.0)
+	_render_preview_lineup(player_lineup, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, player_effects, units, false)
+	_render_preview_lineup(enemy_lineup, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, enemy_effects, units, true)
+	player_lineup.hide()
+	enemy_lineup.hide()
+	end_turn_button.disabled = true
+
+func _render_preview_lineup(live: HBoxContainer, tag: StringName, effects: Array[StringName], units: Dictionary, is_enemy: bool) -> void:
+	var occupants: Dictionary[int, Dictionary] = {}
+	for data: Dictionary in units.values():
+		if data["container_tag"] == tag:
+			occupants[data["slot_index"]] = data
+	for index: int in range(live.get_child_count()):
+		var live_slot: SlotView = live.get_child(index) as SlotView
+		var slot: SlotView = SlotViewScene.instantiate() as SlotView
+		_preview_board.add_child(slot)
+		slot.populate(LocationIdentifier.new(tag, index))
+		slot.set_slot_color(tag)
+		slot.set_size_scale(2.0)
+		slot.size = live_slot.size
+		slot.global_position = live_slot.global_position
+		slot.set_slot_effect(effects[index])
+		slot.set_interaction_context(&"INSPECTION_ONLY")
+		slot.set_content(occupants.get(index, {}), false, is_enemy)
+		slot._recursively_set_mouse_filter_ignore(slot)
+
+func _end_turn_preview() -> void:
+	if _preview_board == null:
+		return
+	_preview_board.hide()
+	_preview_board.queue_free()
+	_preview_board = null
+	player_lineup.show()
+	enemy_lineup.show()
+	end_turn_button.disabled = battle_manager.get_current_phase() != BattleManager.Phases.MANAGEMENT
+
+func _close_preview_for_action(_action: GameAction) -> void:
+	_end_turn_preview()
 
 func _on_battle_entry_animation_requested() -> void:
 	"""Called when battle starts - triggers entry animation on turn 1"""
@@ -238,6 +379,9 @@ func _on_results_acknowledged() -> void:
 		_waiting_for_management_tutorial = true
 
 func _exit_tree() -> void:
+	var main: Node = GameManager.get_main_node()
+	if main != null and token_tray != null:
+		main.clear_battle_token_tray(token_tray)
 	if is_instance_valid(discard_pile_button) and discard_pile_button.pressed.is_connected(_on_discard_pile_pressed):
 		discard_pile_button.pressed.disconnect(_on_discard_pile_pressed)
 
@@ -248,10 +392,12 @@ func _on_discard_pile_pressed() -> void:
 		ActionQueue.request(OpenDiscardPileAction.new())
 
 func _update_localized_text() -> void:
+	order_button.text = tr("ui.battle_order")
+	preview_button.text = tr("ui.battle_preview")
 	if is_instance_valid(end_turn_button):
 		end_turn_button.text = tr("ui.ready")
 	if is_instance_valid(discard_pile_button):
-		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		discard_pile_button.text = "x%d/%d" % [_visual_discard_count, C.BATTLE_DISCARD_CAP]
 	_update_shelf_slot_states()
 
 func _on_shelf_slot_purchase_requested(_slot_index: int) -> void:
@@ -302,13 +448,13 @@ func play_lineup_capsule_open(source_location: LocationIdentifier, target_locati
 func init_visual_discard_count(initial_count: int) -> void:
 	_visual_discard_count = initial_count
 	if is_instance_valid(discard_pile_button):
-		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		discard_pile_button.text = "x%d/%d" % [_visual_discard_count, C.BATTLE_DISCARD_CAP]
 
 ## Animates arrival of a unit/item at the Discard, bumping button and updating counter
 func animate_discard_pile_arrival(amount: int = 1) -> void:
-	_visual_discard_count += amount
+	_visual_discard_count = clampi(_visual_discard_count + amount, 0, C.BATTLE_DISCARD_CAP)
 	if is_instance_valid(discard_pile_button):
-		discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+		discard_pile_button.text = "x%d/%d" % [_visual_discard_count, C.BATTLE_DISCARD_CAP]
 		var main_node = GameManager.get_main_node() if is_instance_valid(GameManager) else null
 		if is_instance_valid(main_node) and main_node.has_method("play_machine_landing_bounce"):
 			main_node.play_machine_landing_bounce(discard_pile_button)
@@ -423,7 +569,7 @@ func _redraw_board() -> void:
 		var discard_count = discard_container.get_all_non_empty_uuids().size()
 		_visual_discard_count = discard_count
 		if is_instance_valid(discard_pile_button):
-			discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+			discard_pile_button.text = "x%d/%d" % [_visual_discard_count, C.BATTLE_DISCARD_CAP]
 	_update_shelf_slot_states()
 
 
@@ -539,6 +685,9 @@ func _populate_container(ui_container: HBoxContainer, container_name: StringName
 
 
 func _on_battle_phase_changed(phase_name: StringName) -> void:
+	_end_turn_preview()
+	_sync_turn_control_availability()
+	_refresh_order_labels()
 	var is_management_phase = (phase_name == &"MANAGEMENT")
 	var is_combat = (phase_name == &"COMBAT")
 	# End Turn is only available during MANAGEMENT
@@ -859,6 +1008,7 @@ func _clamp_trait_trackers_to_viewport(container: Control) -> void:
 		container.position.x += delta_x
 
 func _on_viewport_size_changed() -> void:
+	_end_turn_preview()
 	call_deferred("_refresh_trait_hud_positions")
 
 func _on_lineup_resized() -> void:
@@ -872,7 +1022,7 @@ func _refresh_trait_hud_positions() -> void:
 
 var _pending_animated_uuids: Array[String] = []
 
-func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) -> void:
+func animate_gacha_draw(draw_result: InventoryOperations.DrawResult, new_unit_snapshot: Dictionary) -> void:
 	# Add the drawn UUID to the pending list. This prevents _populate_container from
 	# showing it in the grid prematurely (it will be filtered out).
 	if draw_result.drawn_uuid:
@@ -881,10 +1031,11 @@ func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) ->
 	# Attempt to find the Gacha Machine (Start Position)
 	var main_node = GameManager.get_main_node()
 	if not is_instance_valid(main_node):
-		_force_refresh_after_anim(draw_result, new_unit_snapshot)
+		await _force_refresh_after_anim(draw_result, new_unit_snapshot)
 		return
 	
-	var is_from_discard: bool = (draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile")
+	var is_from_discard: bool = draw_result.source_container == &"DiscardPile"
+	var returns_to_discard: bool = is_from_discard and draw_result.dest_container == &"DiscardPile"
 	var tier = 1
 	var start_pos: Vector2
 	var end_pos: Vector2
@@ -903,7 +1054,7 @@ func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) ->
 		if draw_result.dest_container.ends_with("T2"): tier = 2
 		elif draw_result.dest_container.ends_with("T3"): tier = 3
 
-		var target_machine = main_node.get_gacha_machine(tier)
+		var target_machine: Control = discard_machine if returns_to_discard else main_node.get_gacha_machine(tier)
 		var target_knob = target_machine.get_node_or_null("KnobButton") if target_machine else null
 		if is_instance_valid(target_knob):
 			end_pos = target_knob.get_global_rect().get_center()
@@ -1030,7 +1181,8 @@ func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) ->
 		
 		# Scale animation: expands out of knob rapidly during launch
 		var scale_eased = 1.0 - pow(1.0 - t, 2.0)
-		var current_scale = lerp(initial_scale, 1.0, scale_eased)
+		var landing_scale: float = C.SHELF_CAPSULE_SCALE if dest_slot_view != null else 1.0
+		var current_scale: float = lerpf(initial_scale, landing_scale, scale_eased)
 		anim_ball.scale = Vector2(current_scale, current_scale)
 		
 		# Quadratic Bezier formula: P = (1-t)²*P0 + 2*(1-t)*t*P1 + t²*P2
@@ -1042,35 +1194,27 @@ func _on_gacha_draw_animated(draw_result, new_unit_snapshot: Dictionary = {}) ->
 		anim_ball.global_position = pos - anim_ball.pivot_offset
 	, 0.0, 1.0, duration)
 	
-	# Clean up after animation
-	tween.tween_callback(func():
-		if is_from_discard:
-			# Arrived at the appropriate tier machine!
-			Audio.play_sfx("coin_land")
-			if main_node.has_method("animate_machine_inventory_change"):
-				main_node.animate_machine_inventory_change(tier, 1)
-			_visual_discard_count = max(0, _visual_discard_count - 1)
-			if is_instance_valid(discard_pile_button) and discard_pile_button.has_method("set_count"):
-				discard_pile_button.set_count(_visual_discard_count)
-			elif is_instance_valid(discard_pile_button):
-				discard_pile_button.text = tr("ui.discard_pile_count") % _visual_discard_count
+	await tween.finished
+	if is_from_discard:
+		Audio.play_sfx("coin_land")
+		if returns_to_discard:
+			animate_discard_pile_arrival(0)
 		else:
-			var is_shelf = (draw_result != null and not draw_result.went_to_discard and str(draw_result.dest_container) == "PlayerShelf")
-			if is_shelf:
-				Audio.play_sfx("coin_land")
-			elif draw_result != null and (draw_result.went_to_discard or str(draw_result.dest_container) == "DiscardPile"):
-				Audio.play_sfx("coin_land")
-				animate_discard_pile_arrival(1)
-		anim_ball.queue_free()
-		_force_refresh_after_anim(draw_result, new_unit_snapshot)
-	)
+			main_node.animate_machine_inventory_change(tier, 1)
+			init_visual_discard_count(maxi(0, _visual_discard_count - 1))
+	else:
+		Audio.play_sfx("coin_land")
+		if draw_result.went_to_discard:
+			animate_discard_pile_arrival()
+	anim_ball.queue_free()
+	await _force_refresh_after_anim(draw_result, new_unit_snapshot)
+	SignalBus.gacha_draw_animation_completed.emit(draw_result)
 
 func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary = {}) -> void:
 	if draw_result and draw_result.drawn_uuid:
 		_pending_animated_uuids.erase(draw_result.drawn_uuid)
 	
 	if draw_result == null or draw_result.source_container == "DiscardPile" or draw_result.source_container == &"DiscardPile":
-		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
 	# Trigger bounce/bump for Discard
@@ -1082,7 +1226,6 @@ func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary
 			bump_tween.tween_property(discard_pile_button, "scale", Vector2(1.15, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 			bump_tween.tween_property(discard_pile_button, "scale", Vector2.ONE, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN_OUT)
 			await bump_tween.finished
-		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
 	# Find the target slot
@@ -1093,7 +1236,6 @@ func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary
 		target_ui_container = player_lineup
 	
 	if not target_ui_container or draw_result.dest_slot < 0 or draw_result.dest_slot >= target_ui_container.get_child_count():
-		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
 	var slot_node = target_ui_container.get_child(draw_result.dest_slot)
@@ -1116,7 +1258,6 @@ func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary
 				ball_view.set_meta("location_identifier", loc)
 	
 	if not is_instance_valid(ball_view):
-		SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 		return
 	
 	# Wait one frame for UI layout and children positioning
@@ -1135,7 +1276,6 @@ func _force_refresh_after_anim(draw_result = null, new_unit_snapshot: Dictionary
 	# Await full bounce completion (0.34s canonical bounce scaled by speed_factor)
 	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
 	
-	SignalBus.emit_signal("gacha_draw_animation_completed", draw_result)
 
 func _on_action_completed(action: GameAction) -> void:
 	if action is DrawGachaAction and _waiting_for_first_draw_tutorial:

@@ -53,9 +53,6 @@ func prepare_for_open() -> void:
 	SignalBus.battle_inventory_transition_started.emit(true)
 	self.mouse_filter = Control.MOUSE_FILTER_STOP
 	# Open action disables overflow penalty until fully open
-	tier_1_tray.set_overflow_monitoring_active(false)
-	tier_2_tray.set_overflow_monitoring_active(false)
-	tier_3_tray.set_overflow_monitoring_active(false)
 
 func set_moving(moving: bool) -> void:
 	pass
@@ -81,9 +78,6 @@ func get_open_progress() -> float:
 func finish_open() -> void:
 	_is_open = true
 	# Re-enable overflow now that tray is fully exposed
-	tier_1_tray.set_overflow_monitoring_active(true)
-	tier_2_tray.set_overflow_monitoring_active(true)
-	tier_3_tray.set_overflow_monitoring_active(true)
 	
 	_sync_all_trays()
 	
@@ -99,9 +93,6 @@ func prepare_for_close() -> void:
 	SignalBus.battle_inventory_transition_started.emit(false)
 	self.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Closing disables overflow penalty so it doesn't trigger while offscreen
-	tier_1_tray.set_overflow_monitoring_active(false)
-	tier_2_tray.set_overflow_monitoring_active(false)
-	tier_3_tray.set_overflow_monitoring_active(false)
 
 func finish_close() -> void:
 	_is_open = false
