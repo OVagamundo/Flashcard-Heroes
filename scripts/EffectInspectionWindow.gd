@@ -39,8 +39,7 @@ func populate(window_data: Dictionary) -> void:
 	if first is Dictionary:
 		desc_key = first.get("description_key", "")
 	elif first is Object:
-		# Use safe field access via get() to avoid relying on typed properties
-		desc_key = first.get("description_key") if first.has_method("get") else (first.description_key if "description_key" in first else "")
+		desc_key = String(first.get("description_key")) if "description_key" in first else ""
 
 	if desc_key == "":
 		name_label.text = tr("ui.effects")
@@ -104,18 +103,7 @@ func populate(window_data: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	if is_instance_valid(self):
-		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var margin_container = get_node_or_null("MarginContainer")
-		if margin_container:
-			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
-		if vbox:
-			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-			
-		custom_minimum_size = Vector2(260, 0)
-		size = Vector2(260, 0) # Force immediate recalculation of minimum size
-		reset_size()
+	_shrink_window_layout(260.0, false)
 
 func get_own_keyword_canonical() -> String:
 	return _canonical_keyword

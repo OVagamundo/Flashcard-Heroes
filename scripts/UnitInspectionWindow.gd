@@ -1,8 +1,6 @@
 class_name UnitInspectionWindow
 extends InspectionWindow
 
-const _GachaBallView = preload("res://scenes/GachaBallView.tscn")
-const _SlotView = preload("res://scenes/SlotView.tscn")
 const _InputUtils = preload("res://scripts/InputUtils.gd")
 const C = preload("res://scripts/Constants.gd")
 const TraitTags = preload("res://scripts/ui/TraitTags.gd")
@@ -31,6 +29,8 @@ var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _is_enemy_context: bool = false
 var _is_preview: bool = false
+var _is_vcr_snapshot: bool = false
+var _snapshot_instances_db: Dictionary = {}
 var _explicit_recipe_id: StringName = &""
 var _window_group_id: int = 1 # Inspection window group
 
@@ -80,6 +80,8 @@ func populate(context: Dictionary) -> void:
 	_location = context.get("location")
 	_is_enemy_context = context.get("is_enemy_context", false)
 	_is_preview = context.get("is_preview", false)
+	_is_vcr_snapshot = context.get("is_vcr_snapshot", false)
+	_snapshot_instances_db = context.get("snapshot_instances_db", {})
 	_explicit_recipe_id = context.get("recipe_id", &"")
 
 	if not is_instance_valid(_instance):
@@ -125,17 +127,8 @@ func populate(context: Dictionary) -> void:
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
-	call_deferred("_deferred_shrink")
+	_schedule_deferred_shrink()
 	enforce_display_only()
-
-func _deferred_shrink() -> void:
-	if not is_instance_valid(self) or not is_inside_tree():
-		return
-	await get_tree().process_frame
-	await get_tree().process_frame
-	if not is_instance_valid(self):
-		return
-	_reset_window_size()
 
 func _update_level_star_display() -> void:
 	assert(_instance.level >= 1 and _instance.level <= 3, "UnitInspectionWindow: unit level must be between 1 and 3")
@@ -149,25 +142,11 @@ func _update_level_star_display() -> void:
 	level_stars_icon.visible = true
 
 func _reset_window_size() -> void:
-	# With WindowManager now enforcing width before population, we can reset instantly
-	if is_instance_valid(self):
-		# Zero out hidden containers completely to ensure they contribute NO height
-		for container in [view_container, equipped_container, recipe_container, trait_icons_container, trait_tags_container, separator, bottom_description_label, attack_row]:
-			if is_instance_valid(container) and not container.visible:
-				container.custom_minimum_size = Vector2.ZERO
-		
-		# Enforce shrinking on EVERY container in the hierarchy
-		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var margin_container = get_node_or_null("MarginContainer")
-		if margin_container:
-			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
-		if vbox:
-			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-			
-		custom_minimum_size = Vector2(0 if _is_preview else 360, 0)
-		size = Vector2(0 if _is_preview else 360, 0) # Force immediate recalculation of minimum size
-		reset_size()
+	_shrink_window_layout(
+		0.0 if _is_preview else 360.0,
+		false,
+		[view_container, equipped_container, recipe_container, trait_icons_container, trait_tags_container, separator, bottom_description_label, attack_row]
+	)
 
 func _update_equipped_items_display() -> void:
 	if not is_instance_valid(equipped_container):
@@ -383,21 +362,10 @@ func _update_description() -> void:
 		if is_instance_valid(_instance):
 			ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 			ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
-			if ability_def.id == &"ability_slime_cell_scale":
-				var source_uuid = entry.get("source_uuid", "")
-				var current_bonus = _instance.get_status_effect_amount(StringName("slime_cell_scaling_" + source_uuid))
-				if current_bonus == 0:
-					var count = 0
-					for uuid in all_instances_db:
-						var inst = all_instances_db[uuid]
-						if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
-							count += 1
-					current_bonus = maxi(1, count)
-				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
-				ability_desc += " [color=#4ade80]%s[/color]" % suffix
-			elif ability_def.id == &"ability_doppleganger_scale":
-				var current_bonus = _instance.get_status_effect_amount(&"doppleganger_scaling")
-				var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+			if ability_def.id in [&"ability_slime_cell_scale", &"ability_doppleganger_scale"]:
+				var source_uuid: String = String(entry.get("source_uuid", ""))
+				var current_bonus: int = AuraEvaluator.get_displayed_aura_pwr(_instance, ability_def.id, source_uuid, all_instances_db)
+				var suffix: String = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 				ability_desc += " [color=#4ade80]%s[/color]" % suffix
 		
 		if not ability_desc.is_empty():
@@ -443,7 +411,7 @@ func _update_description() -> void:
 		bottom_description_label.custom_minimum_size = Vector2.ZERO
 ## Granular stat change handler - updates description when any stat changes
 func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
-	if _is_preview:
+	if _is_preview or _is_vcr_snapshot:
 		return
 	if unit_uuid == _inspected_unit_uuid:
 		# Update the instance reference and refresh the description
@@ -457,7 +425,7 @@ func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value
 			_reset_window_size()
 
 func _on_inventory_changed() -> void:
-	if _is_preview or not is_instance_valid(self):
+	if _is_preview or _is_vcr_snapshot:
 		return
 	# Check if the inspected unit still exists. If not, the window should close.
 	var all_instances: Dictionary = _get_all_instances_db()
@@ -477,7 +445,7 @@ func _on_inventory_changed() -> void:
 	_reset_window_size()
 
 func _on_unit_inventory_changed(unit_uuid: String) -> void:
-	if _is_preview or not is_instance_valid(self):
+	if _is_preview or _is_vcr_snapshot:
 		return
 	
 	# Only update if the changed unit is the one we're inspecting
@@ -501,6 +469,8 @@ func _on_unit_inventory_changed(unit_uuid: String) -> void:
 	_reset_window_size()
 
 func _get_all_instances_db() -> Dictionary:
+	if _is_vcr_snapshot:
+		return _snapshot_instances_db
 	var result: Dictionary
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -614,129 +584,12 @@ func _calculate_unit_trait_counts() -> Dictionary:
 
 ## Populate the ViewContainer to show the resulting unit's view at 2x scale (battle board size) during merge preview.
 func _update_unit_view() -> void:
-	if not is_instance_valid(view_container):
-		return
-	
-	for child in view_container.get_children():
-		view_container.remove_child(child)
-		child.queue_free()
-	
-	if not _is_preview or not is_instance_valid(_instance):
-		view_container.visible = false
-		view_container.custom_minimum_size = Vector2.ZERO
-		return
-	
-	var slot_view: SlotView = _SlotView.instantiate()
-	slot_view.show_background = false
-	slot_view.set_size_scale(2.0)
-	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-	
-	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"PlayerShelf"
-	slot_view.set_slot_color(slot_color)
-	
-	# Disconnect interactive / indicator signals for inspection view
-	if SignalBus.show_slot_indicators.is_connected(slot_view._on_show_slot_indicators):
-		SignalBus.show_slot_indicators.disconnect(slot_view._on_show_slot_indicators)
-	if SignalBus.hide_slot_indicators.is_connected(slot_view._on_hide_slot_indicators):
-		SignalBus.hide_slot_indicators.disconnect(slot_view._on_hide_slot_indicators)
-	if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
-		SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
-	
-	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
-	
-	view_container.add_child(slot_view)
-	slot_view.z_as_relative = true
-	slot_view.z_index = 1
-	view_container.visible = true
-	view_container.custom_minimum_size = Vector2(0, C.SLOT_SIZE_2X)
-
-	var all_instances_db = _get_all_instances_db()
-	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
-	var gb = slot_view.set_content(visual_data, false, false)
-	if is_instance_valid(gb):
-		gb.z_as_relative = true
-		gb.z_index = 1
-		gb._base_z_index = 1
-		gb._slot_base_z_index = 1
-		gb.show_capsule_overlay = false
-		gb.set_is_interactive(false)
-		var overlay = gb.get_node_or_null("GachaBallOverlay")
-		if is_instance_valid(overlay):
-			overlay.queue_free()
-		var trait_count = gb.get_node_or_null("%TraitCountLabel")
-		if is_instance_valid(trait_count):
-			trait_count.visible = false
+	_populate_preview_slot_view(view_container, _instance, _location, _get_all_instances_db(), _is_preview, &"PlayerShelf")
 
 ## Populate the RecipeContainer to show the merge ingredients for this unit.
 func _update_recipe_display() -> void:
-	if not is_instance_valid(recipe_container):
-		return
-	
-	for child in recipe_container.get_children():
-		recipe_container.remove_child(child)
-		child.queue_free()
-	
-	if _is_preview:
-		recipe_container.visible = false
-		recipe_container.custom_minimum_size = Vector2.ZERO
-		return
-	
-	var unit_def = _instance.get_definition() if is_instance_valid(_instance) else null
-	if not is_instance_valid(unit_def):
-		recipe_container.visible = false
-		return
-	
-	# Normal inspection: show crafting recipe if unit has one
-	var recipe: MergeRecipe = null
-	if not _explicit_recipe_id.is_empty():
-		recipe = Database.recipes.get(_explicit_recipe_id)
-	if not is_instance_valid(recipe):
-		recipe = Database.get_recipe_for_result(unit_def.id)
-	if not is_instance_valid(recipe):
-		recipe_container.visible = false
-		return
-	
-	var def_a = Database.get_definition(recipe.ingredient_a_id)
-	var def_b = Database.get_definition(recipe.ingredient_b_id)
-	
-	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
-		recipe_container.visible = false
-		return
-	
-	recipe_container.alignment = BoxContainer.ALIGNMENT_BEGIN
-	recipe_container.custom_minimum_size = Vector2(0, 96)
-	
-	# Build: [Icon A] [+] [Icon B]
-	var _make_icon = func(def: Resource) -> TextureRect:
-		var tex = TextureRect.new()
-		if def and def.icon:
-			tex.texture = def.icon
-		tex.custom_minimum_size = Vector2(96, 96)
-		tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex.mouse_filter = MOUSE_FILTER_IGNORE
-		return tex
-	
-	var _make_label = func(txt: String) -> Control:
-		var container = CenterContainer.new()
-		container.custom_minimum_size = Vector2(32, 96)
-		container.mouse_filter = MOUSE_FILTER_IGNORE
-		
-		var lbl = Label.new()
-		lbl.text = txt
-		lbl.add_theme_font_override("font", Database.get_current_locale_font())
-		lbl.add_theme_font_size_override("font_size", 32)
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.mouse_filter = MOUSE_FILTER_IGNORE
-		
-		container.add_child(lbl)
-		return container
-	
-	recipe_container.add_child(_make_icon.call(def_a))
-	recipe_container.add_child(_make_label.call("+"))
-	recipe_container.add_child(_make_icon.call(def_b))
-	recipe_container.visible = true
+	var unit_def: Resource = _instance.get_definition() if is_instance_valid(_instance) else null
+	_populate_recipe_container(recipe_container, unit_def, _explicit_recipe_id, _is_preview)
 
 ## Update the trait tags display at the top
 func _update_trait_display() -> void:

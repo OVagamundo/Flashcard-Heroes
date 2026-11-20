@@ -81,71 +81,33 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if is_instance_valid(source_instance):
 		is_player_source = battle_manager._is_player_unit(source_instance)
 	
-	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
-	var fire_level: int = active_traits.get("FIRE", 0)
-	var earth_level: int = active_traits.get("EARTH", 0)
-	var air_level: int = active_traits.get("AIR", 0)
-	var fighter_level: int = active_traits.get("FIGHTER", 0)
-	var animal_level: int = active_traits.get("ANIMAL", 0)
-	var mecha_level: int = active_traits.get("MECHA", 0)
-	var appliance_level: int = active_traits.get("APPLIANCE", 0)
+	var active_traits: Dictionary = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
 	
-	# Fire Burn Stacks Calculation & Appliance L2 Burn
-	var burn_amount := 0
-	if is_instance_valid(source_instance):
-		if battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial"):
-			burn_amount += 1
-		if fire_level >= 3 and battle_manager.has_trait(source_instance, "FIRE"):
-			burn_amount += 1
-			# L2 (6 Souls): If target already holds Burn stacks > 0, apply +1 additional Burn (total 2)
-			if fire_level >= 6 and target_instance.get_status_effect_amount(&"burn") > 0:
-				burn_amount += 1
-		# Appliance L2 (3 Units): Appliance attacks inflict 1 Burn
-		if appliance_level >= 3 and battle_manager.has_trait(source_instance, "APPLIANCE"):
-			burn_amount += 1
+	# Burn stacks (Burn Vial + Fire L1/L2 + Appliance L2)
+	var burn_amount: int = TraitRulesEngine.get_bonus_burn_stacks_for_attack(source_instance, target_instance, battle_manager)
+	var should_apply_burn: bool = burn_amount > 0
 	
-	var should_apply_burn = burn_amount > 0
-	
-	# Fire L4 (20 Souls): Fire units deal bonus attack damage equal to target's current Burn stacks
-	# Combustion Strike: Burnie also adds target's current Burn stacks to damage without consuming Burn
-	if (fire_level >= 20 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIRE")) or (is_instance_valid(source_instance) and source_instance.definition_id == &"elite_burnie"):
-		var burn_count = target_instance.get_status_effect_amount(&"burn")
-		if burn_count > 0:
-			damage += burn_count
+	# Fire L4 / Burnie Combustion Strike bonus damage
+	damage += TraitRulesEngine.get_fire_burn_bonus_damage(source_instance, target_instance, battle_manager, true)
 
-	# Earth L5 (32 Souls): Earth units deal bonus attack damage equal to current Spikes.
+	# Earth L5: Earth units deal bonus attack damage equal to current Spikes.
 	# Decays 1 stack per attack damage instance at impact.
 	var earth_spikes_applied := false
 	var earth_spikes_old := 0
-	if earth_level >= 32 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "EARTH"):
+	if TraitRulesEngine.has_tier(active_traits, "EARTH", 5) and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "EARTH"):
 		var earth_spikes = source_instance.get_status_effect_amount(&"spikes")
 		if earth_spikes > 0:
 			damage += earth_spikes
 			earth_spikes_applied = true
 			earth_spikes_old = earth_spikes
 
-	# Fighter L1 (2 Units): If target HP > Fighter HP, attacks deal +1 damage
-	if fighter_level >= 2 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
+	# Fighter L1: If target HP > Fighter HP, attacks deal +1 damage
+	if TraitRulesEngine.has_tier(active_traits, "FIGHTER", 1) and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
 		if target_instance.current_hp > source_instance.current_hp:
 			damage += 1
 
-	# Air Trait Static Application
-	var static_amount := 0
-	if is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
-		if air_level >= 32:
-			static_amount = max(1, source_instance.current_pwr)
-		elif air_level >= 6:
-			static_amount = 2
-		elif air_level >= 3:
-			static_amount = 1
-
-	# Mecha L2 (3 Units): Attacks inflict 1 Static
-	if mecha_level >= 3 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "MECHA"):
-		static_amount += 1
-
-	# Appliance L1 (2 Units): Attacks inflict 1 Static
-	if appliance_level >= 2 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "APPLIANCE"):
-		static_amount += 1
+	# Static stacks (Air L1/L2/L5 + Mecha L2 + Appliance L1)
+	var static_amount: int = TraitRulesEngine.get_bonus_static_stacks_for_attack(source_instance, battle_manager)
 
 	# Consume Charged Empowered Attack if present
 	if is_instance_valid(source_instance) and not source_instance.charged_empowered_attack.is_empty():
@@ -258,7 +220,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		should_apply_static = true
 		
 		# Air L3 (12 Souls): Attacks splash half of applied Static (min 1) to adjacent enemies
-		if air_level >= 12 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
+		if TraitRulesEngine.has_tier(active_traits, "AIR", 3) and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "AIR"):
 			var splash_static = max(1, int(floor(static_amount / 2.0)))
 			var target_loc = battle_manager.get_location_for_uuid(final_target.ball_uuid)
 			if is_instance_valid(target_loc):
@@ -280,51 +242,16 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 
 	# Toy L1-L3 Melee Static Reflection (Resolved at point of contact)
 	var static_reflection_list: Array[CombatStaticReflectionData] = []
-	if damage_type == C.DamageType.MELEE and is_instance_valid(final_target) and is_instance_valid(source_instance) and source_instance.current_hp > 0:
-		var def_is_player = battle_manager._is_player_unit(final_target)
-		var def_traits = battle_manager.get_active_traits("PLAYER" if def_is_player else "ENEMY")
-		var toy_level = def_traits.get("TOY", 0)
-		if toy_level >= 2 and battle_manager.has_trait(final_target, "TOY"):
-			var toy_static := 2
-			if toy_level >= 4:
-				toy_static = 4
-			elif toy_level >= 3:
-				toy_static = 3
-			var atk_old_st = source_instance.get_status_effect_amount(&"static")
-			var atk_new_st = battle_manager.apply_stat_delta(source_instance, "static_stacks", toy_static, final_target.ball_uuid)
-			var static_refl := CombatStaticReflectionData.new()
-			static_refl.attacker_uuid = source_instance.ball_uuid
-			static_refl.defender_uuid = final_target.ball_uuid
-			static_refl.static_amount = toy_static
-			static_refl.attacker_old_static = atk_old_st
-			static_refl.attacker_new_static = atk_new_st
-			static_reflection_list.append(static_refl)
+	if damage_type == C.DamageType.MELEE:
+		var toy_refl: CombatStaticReflectionData = TraitRulesEngine.apply_melee_defender_toy_reflection(source_instance, final_target, battle_manager)
+		if is_instance_valid(toy_refl):
+			static_reflection_list.append(toy_refl)
 
 	# Animal L1-L4 Heal on Attack
-	if animal_level >= 2 and is_instance_valid(source_instance) and source_instance.current_hp > 0 and battle_manager.has_trait(source_instance, "ANIMAL"):
-		var heal_amount := 1
-		if animal_level >= 5:
-			heal_amount = 3 + max(1, int(floor(source_instance.current_pwr * 0.25)))
-		elif animal_level >= 4:
-			heal_amount = 3
-		elif animal_level >= 3:
-			heal_amount = 2
-		
-		var a_old_hp = source_instance.current_hp
-		var a_new_hp = battle_manager.apply_stat_delta(source_instance, "hp", heal_amount, source_instance.ball_uuid, C.ACTION_HEAL)
-		var a_max_hp := 0
-		var a_def = source_instance.get_definition()
-		if is_instance_valid(a_def):
-			a_max_hp = a_def.base_hp
-		impact_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-			"source_uuid": source_instance.ball_uuid,
-			"target_uuids": [source_instance.ball_uuid],
-			"action_type": C.ACTION_HEAL,
-			"visual_payload": CombatPayload.heal(source_instance.ball_uuid, heal_amount, [a_old_hp], [a_new_hp], [a_max_hp])
-		}))
+	TraitRulesEngine.apply_animal_attack_heal(source_instance, battle_manager, impact_events)
 
-	# Fighter L3 (4 Units): Cleave damage to enemy directly behind target
-	if fighter_level >= 4 and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
+	# Fighter L3: Cleave damage to enemy directly behind target
+	if TraitRulesEngine.has_tier(active_traits, "FIGHTER", 3) and is_instance_valid(source_instance) and battle_manager.has_trait(source_instance, "FIGHTER"):
 		var cleave_damage = max(1, int(floor(source_instance.current_pwr / 2.0)))
 		var target_behind = battle_manager._get_ally_behind(final_target)
 		if is_instance_valid(target_behind) and target_behind.current_hp > 0:

@@ -9,15 +9,10 @@ func is_meta_action() -> bool:
 	return true
 
 func validate() -> bool:
-	if not is_instance_valid(WindowManager):
-		return false
-	if WindowManager.has_method("is_discard_pile_window_open"):
-		return WindowManager.is_discard_pile_window_open()
-	return true
+	return WindowManager.is_discard_pile_window_open()
 
 func execute() -> void:
-	if is_instance_valid(WindowManager):
-		WindowManager.close_discard_pile_window()
+	WindowManager.close_discard_pile_window()
 
 func yields_for_visuals() -> bool:
 	return false

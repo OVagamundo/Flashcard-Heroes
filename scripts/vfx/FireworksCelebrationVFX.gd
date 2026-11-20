@@ -42,21 +42,15 @@ func play(target_global_rect: Rect2) -> void:
 		_spawn_burst(pos, delay)
 		delay += 0.08
 
-	# Automatically cleanup after all bursts expire
-	var cleanup_timer = get_tree().create_timer(delay + 1.2)
-	cleanup_timer.timeout.connect(func():
-		if is_instance_valid(self):
-			queue_free()
-	)
+	# Automatically cleanup after all bursts expire (node-bound Tween cancels if freed early)
+	var cleanup_tween: Tween = create_tween()
+	cleanup_tween.tween_interval(delay + 1.2)
+	cleanup_tween.tween_callback(queue_free)
 
 func _spawn_burst(global_pos: Vector2, delay: float) -> void:
-	var tween = create_tween()
+	var tween: Tween = create_tween()
 	tween.tween_interval(delay)
-	tween.tween_callback(func():
-		if not is_instance_valid(self):
-			return
-		_create_particle_burst(global_pos)
-	)
+	tween.tween_callback(_create_particle_burst.bind(global_pos))
 
 func _create_particle_burst(global_pos: Vector2) -> void:
 	var particles := GPUParticles2D.new()

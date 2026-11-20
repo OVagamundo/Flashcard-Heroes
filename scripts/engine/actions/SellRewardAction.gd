@@ -27,7 +27,7 @@ func execute() -> void:
 	if not is_instance_valid(reward_view):
 		reward_view = Engine.get_main_loop().root.find_child("RewardElite", true, false)
 		
-	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode() and reward_view.has_method("execute_sell_visuals"):
+	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode():
 		reward_view.execute_sell_visuals(instance_uuid, gold_yield, drop_pos)
 
 func yields_for_visuals() -> bool:

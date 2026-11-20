@@ -1,17 +1,15 @@
 # res://scripts/RestSite.gd
-extends Control
 class_name ResourceSite
+extends EncounterBase
 
-## Rest Site with token-based stat gacha system
-## Supports HP, PWR, and GOLD variations
-
-const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
-const TokenSpendScene = preload("res://scenes/vfx/TokenSpendVFX.tscn")
-const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
-const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
-const InputUtils = preload("res://scripts/InputUtils.gd")
+## Rest Site with token-based stat gacha system.
+## Supports HP, PWR, and GOLD variations.
 
 enum SiteType { HP, PWR, GOLD }
+
+const COST_TIER1: int = 1
+const COST_TIER2: int = 2
+const COST_TIER3: int = 3
 
 @export var site_type: SiteType = SiteType.HP:
 	set(val):
@@ -21,29 +19,21 @@ enum SiteType { HP, PWR, GOLD }
 			_setup_machine_visuals()
 			_update_background_visuals()
 
-# Machine references
 @onready var tier1_machine: Control = %Tier1Machine
 @onready var tier2_machine: Control = %Tier2Machine
 @onready var tier3_machine: Control = %Tier3Machine
+@onready var tier1_draw_button: Button = %Tier1Machine.get_node("DrawButton") as Button
+@onready var tier2_draw_button: Button = %Tier2Machine.get_node("DrawButton") as Button
+@onready var tier3_draw_button: Button = %Tier3Machine.get_node("DrawButton") as Button
 
-@onready var tier1_draw_button: Button = tier1_machine.get_draw_button() if tier1_machine.has_method("get_draw_button") else tier1_machine.get_node_or_null("DrawButton")
-@onready var tier2_draw_button: Button = tier2_machine.get_draw_button() if tier2_machine.has_method("get_draw_button") else tier2_machine.get_node_or_null("DrawButton")
-@onready var tier3_draw_button: Button = tier3_machine.get_draw_button() if tier3_machine.has_method("get_draw_button") else tier3_machine.get_node_or_null("DrawButton")
-
-# UI references
 @onready var background: TextureRect = $Background
 @onready var study_button: Button = %StudyButton
 @onready var leave_button: Button = %LeaveButton
 @onready var prize_lineup: HBoxContainer = %PrizeLineup
-@onready var hero_slot: Control = %HeroSlot
+@onready var hero_slot: SlotView = %HeroSlot
 @onready var title_label: Label = $VBoxContainer/TitleLabel
 @onready var description_label: Label = %DescriptionLabel
 @onready var effects_layer: CanvasLayer = $EffectsLayer
-
-# Token costs
-const COST_TIER1: int = 1
-const COST_TIER2: int = 2
-const COST_TIER3: int = 3
 
 var _tokens: int:
 	get:
@@ -53,40 +43,34 @@ var _tokens: int:
 	set(val):
 		if is_instance_valid(GameManager.run_state):
 			GameManager.run_state.current_room_tokens = val
-var _prizes: Array[Dictionary] = [] # [{slot_index, stat_type, hp_value, pwr_value, gold_value}]
+
+var _prizes: Array[Dictionary] = []
 var _has_studied: bool = false
 var _action_in_progress: bool = false
 
+
 func _ready() -> void:
-	# AUDIO HOOK: Rest Site BGM
 	Audio.play_music(SoundRegistry.BGM_REST)
-	
-	# Connect buttons
-	tier1_draw_button.pressed.connect(_on_tier1_draw_pressed)
-	tier2_draw_button.pressed.connect(_on_tier2_draw_pressed)
-	tier3_draw_button.pressed.connect(_on_tier3_draw_pressed)
+
+	tier1_draw_button.pressed.connect(func() -> void: ActionQueue.request(DrawRestSiteAction.new(1)))
+	tier2_draw_button.pressed.connect(func() -> void: ActionQueue.request(DrawRestSiteAction.new(2)))
+	tier3_draw_button.pressed.connect(func() -> void: ActionQueue.request(DrawRestSiteAction.new(3)))
 	study_button.pressed.connect(_on_study_pressed)
 	leave_button.pressed.connect(_on_leave_pressed)
-	
-	# Connect to flashcard completion
-	FlashcardManager.minigame_finished.connect(_on_flashcard_completed)
-	
-	# Connect locale changes
+
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
-	
-	# Initialize token display
 	_update_token_display()
-	_update_button_states()
 	_populate_hero_slot()
 	_setup_prize_slot_clicks()
 	_update_background_visuals()
 
+
 func setup_site() -> void:
-	"""Call this after setting site_type to correctly initialize visuals and tutorials"""
 	_update_localized_text()
 	_setup_machine_visuals()
 	_update_background_visuals()
+
 
 func _update_background_visuals() -> void:
 	var bg_texture: Texture2D = null
@@ -97,23 +81,18 @@ func _update_background_visuals() -> void:
 			bg_texture = preload("res://assets/PixelArt/ui/BGs/gambling.png")
 		SiteType.HP, _:
 			bg_texture = preload("res://assets/PixelArt/ui/BGs/rest.png")
-	
-	var bg_node := background if is_instance_valid(background) else get_node_or_null("Background") as TextureRect
+
+	var bg_node: TextureRect = background if is_instance_valid(background) else get_node_or_null("Background") as TextureRect
 	if is_instance_valid(bg_node):
 		bg_node.texture = bg_texture
-	
-	var main_node = GameManager._active_main_node
+
+	var main_node: Node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("sync_scene_background"):
-			main_node.sync_scene_background(self)
-		elif main_node.has_method("_sync_scene_background"):
-			main_node._sync_scene_background(self)
+		main_node.sync_scene_background(self)
+
 
 func _update_localized_text() -> void:
-	var cost = 5
-	if is_instance_valid(GameManager.run_state):
-		cost = GameManager.run_state.get_tokens_cost
-
+	var cost: int = GameManager.run_state.get_tokens_cost if is_instance_valid(GameManager.run_state) else 5
 	match site_type:
 		SiteType.HP:
 			title_label.text = tr("ui.rest_site")
@@ -124,18 +103,17 @@ func _update_localized_text() -> void:
 		SiteType.GOLD:
 			title_label.text = tr("ui.gambling_den")
 			description_label.text = tr("ui.gambling_den_desc")
-	
+
 	study_button.text = tr("ui.rest_study") % cost
 	leave_button.text = tr("ui.leave")
 
+
 func _setup_machine_visuals() -> void:
-	"""Configure machine labels and colors based on site type"""
-	var machines = [tier1_machine, tier2_machine, tier3_machine]
-	var costs = [COST_TIER1, COST_TIER2, COST_TIER3]
-	
-	var stat_label_text = ""
-	var stat_color = Color.WHITE
-	
+	var machines: Array[Control] = [tier1_machine, tier2_machine, tier3_machine]
+	var costs: Array[int] = [COST_TIER1, COST_TIER2, COST_TIER3]
+
+	var stat_label_text: String = ""
+	var stat_color: Color = Color.WHITE
 	match site_type:
 		SiteType.HP:
 			stat_label_text = tr("ui.hp")
@@ -146,202 +124,129 @@ func _setup_machine_visuals() -> void:
 		SiteType.GOLD:
 			stat_label_text = "GOLD"
 			stat_color = Color.GOLD
-	
-	for i in range(machines.size()):
-		var machine = machines[i]
-		var label: Label = machine.get_stat_label() if machine.has_method("get_stat_label") else machine.get_node_or_null("StatLabel")
-		var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
-		
+
+	for i: int in range(machines.size()):
+		var machine: Control = machines[i]
+		var label: Label = machine.get_node_or_null("StatLabel") as Label
+		var button: Button = machine.get_node_or_null("DrawButton") as Button
 		if is_instance_valid(label):
 			label.text = stat_label_text
 			label.add_theme_color_override("font_color", stat_color)
 		if is_instance_valid(button):
 			button.text = "%d Tokens" % costs[i]
 
+
 func _populate_hero_slot() -> void:
-	"""Display the hero in the first slot with entry animation"""
 	if not is_instance_valid(GameManager.run_state) or not is_instance_valid(GameManager.run_state.hero_instance):
 		return
-	
-	var hero = GameManager.run_state.hero_instance
-	var visual_data = VisualDataAdapter.create_visual_data(hero)
-	
-	if hero_slot.has_method("set_content"):
-		hero_slot.set_content(visual_data, true, false)
-	
-	# Animate hero entry after layout is ready
+	var visual_data: Dictionary = VisualDataAdapter.create_visual_data(GameManager.run_state.hero_instance)
+	hero_slot.set_content(visual_data, true, false)
 	await get_tree().process_frame
 	_animate_hero_entry()
 
+
 func _animate_hero_entry() -> void:
-	"""Animate hero appearing with landing bounce"""
-	# Find GachaBallView in hero slot
-	var ball_view: GachaBallView = null
-	for child in hero_slot.get_children():
-		if child is GachaBallView:
-			ball_view = child
-			break
-	
+	var ball_view: GachaBallView = _resolve_ball_view(hero_slot)
 	if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-		# Hide initially
 		ball_view.icon_rect.scale = Vector2.ZERO
 		ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
-		
-		# Animate reveal with bounce (small delay for polish)
-		var wait_tween = ball_view.create_tween()
+		var wait_tween: Tween = ball_view.create_tween()
 		wait_tween.tween_interval(0.05)
-		wait_tween.tween_callback(func():
+		wait_tween.tween_callback(func() -> void:
 			if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
 				ball_view.icon_rect.scale = Vector2.ONE
 				ball_view.play_landing_bounce()
 		)
 
+
 func _setup_prize_slot_clicks() -> void:
-	"""Setup click handlers for prize slots"""
-	var slots = prize_lineup.get_children()
-	for i in range(1, slots.size()): # Skip hero slot (index 0)
-		var slot = slots[i]
+	var slots: Array[Node] = prize_lineup.get_children()
+	for i: int in range(1, slots.size()): # Skip hero slot (index 0)
+		var slot: Control = slots[i] as Control
 		slot.mouse_filter = Control.MOUSE_FILTER_STOP
 		slot.gui_input.connect(_on_prize_slot_gui_input.bind(i - 1))
 
-# --- Token System ---
+
+# --- Token & Draw System ---
 
 func _on_study_pressed() -> void:
-	if _has_studied or _action_in_progress: return
-	var action := StudyRestSiteAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		_execute_study()
+	if _has_studied or _action_in_progress:
+		return
+	ActionQueue.request(StudyRestSiteAction.new())
+
 
 func _execute_study() -> void:
 	_has_studied = true
 	study_button.disabled = true
 
-func _on_flashcard_completed(_results: Dictionary) -> void:
-	pass
 
 func _update_token_display() -> void:
-	"""Update the top-area token counter via the existing signal"""
-	SignalBus.emit_signal("gacha_tokens_changed", _tokens)
+	SignalBus.gacha_tokens_changed.emit(_tokens)
 
-func _update_button_states() -> void:
-	pass
-
-# --- Draw Logic ---
-
-func _on_tier1_draw_pressed() -> void:
-	_request_draw_tier(1)
-
-func _on_tier2_draw_pressed() -> void:
-	_request_draw_tier(2)
-
-func _on_tier3_draw_pressed() -> void:
-	_request_draw_tier(3)
-
-func _request_draw_tier(tier: int) -> void:
-	var action := DrawRestSiteAction.new(tier)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_draw_tier_visuals(tier)
 
 func play_transaction_log(event_log: Dictionary) -> void:
 	if not event_log.get("success", false):
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
 	var tier: int = int(event_log.get("tier", 1))
 	var prize_data: Dictionary = event_log.get("prize_data", {})
 	execute_draw_tier_visuals(tier, prize_data)
 
+
 func execute_draw_tier_visuals(tier: int, pre_rolled_prize: Dictionary = {}) -> void:
-	var cost = COST_TIER1 if tier == 1 else (COST_TIER2 if tier == 2 else COST_TIER3)
-	var machine = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
-	_try_draw_tier(tier, cost, machine, pre_rolled_prize)
+	var cost: int = COST_TIER1 if tier == 1 else (COST_TIER2 if tier == 2 else COST_TIER3)
+	var machine: Control = tier1_machine if tier == 1 else (tier2_machine if tier == 2 else tier3_machine)
+	await _try_draw_tier(tier, cost, machine, pre_rolled_prize)
+
 
 func _try_draw_tier(tier: int, cost: int, machine: Control, pre_rolled_prize: Dictionary = {}) -> void:
-	"""Attempt to draw a prize from a machine"""
-	var main_node = GameManager._active_main_node
-	var token_group = main_node.get_node_or_null("%TokenGroup") if is_instance_valid(main_node) else null
-	
+	var main_node: Node = GameManager._active_main_node
+	var token_group: Control = main_node.get_node_or_null("%TokenGroup") as Control if is_instance_valid(main_node) else null
+
 	if pre_rolled_prize.is_empty() and _tokens < cost:
 		RejectionFeedbackScript.play_rejection_with_counter(machine, token_group, get_tree())
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
-	
-	var button: Button = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+
+	var button: Button = machine.get_node_or_null("DrawButton") as Button
 	if is_instance_valid(button):
 		button.disabled = true
-	
-	# Animate token spend
-	await _animate_token_spend(machine, cost, token_group)
-	
-	var prize_data = pre_rolled_prize
+
+	await _animate_machine_token_spend(machine, cost)
+
+	var prize_data: Dictionary = pre_rolled_prize
 	if prize_data.is_empty():
 		GameManager.current_rest_site_type = int(site_type)
 		prize_data = GameManager.roll_rest_site_prize(tier)
 	_update_token_display()
-	
+
 	if prize_data.is_empty():
-		button.disabled = _tokens < cost
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		if is_instance_valid(button):
+			button.disabled = _tokens < cost
+		_finish_active_action()
 		return
-	
-	var slot_index = prize_data.slot_index
+
+	var slot_index: int = prize_data["slot_index"]
 	_prizes = GameManager._temporary_rest_site_prizes.duplicate(true)
 	_refresh_all_prize_slots()
-	
-	# Animate draw and add prize
+
 	await _animate_prize_draw(machine, slot_index, prize_data)
 	_populate_prize_slot(slot_index, prize_data)
-	
-	button.disabled = _tokens < cost
-	if is_instance_valid(ActionQueue):
-		ActionQueue.finish_action(ActionQueue.get_active_action())
 
-func _roll_value_for_tier(tier: int) -> int:
-	return GameManager.roll_training_reward(tier)
+	if is_instance_valid(button):
+		button.disabled = _tokens < cost
+	_finish_active_action()
 
-func _find_next_prize_slot() -> int:
-	for i in range(4):
-		var has_prize = false
-		for prize in _prizes:
-			if prize.slot_index == i:
-				has_prize = true
-				break
-		if not has_prize:
-			return i
-	return -1
 
-# --- Animations ---
-
-func _animate_token_spend(target_machine: Control, cost: int, _token_group: Control = null) -> void:
-	var machine_rect = target_machine.get_global_rect()
-	var target_pos = Vector2(machine_rect.get_center().x, machine_rect.position.y + machine_rect.size.y * 0.4)
-	var on_token_landed := func(land_pos: Vector2):
-		_on_coin_landed(land_pos, target_machine)
-	await CurrencyAnimator.animate_token_spend(cost, target_pos, on_token_landed)
-
-func _on_coin_landed(_target_pos: Vector2, machine: Control) -> void:
-	if not is_instance_valid(machine): return
-	Audio.play_sfx("token_land")
-	var machine_image = machine.get_node_or_null("MachineImage")
-	machine.pivot_offset = Vector2(machine.size.x / 2, machine.size.y)
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(machine, "scale", Vector2(1.03, 0.97), 0.04)
-	tween.tween_property(machine, "scale", Vector2(0.98, 1.02), 0.06).set_delay(0.04)
-	tween.tween_property(machine, "scale", Vector2(1.0, 1.0), 0.08).set_delay(0.10).set_trans(Tween.TRANS_ELASTIC)
+# --- Animations & Prize Slots ---
 
 func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictionary) -> void:
-	var draw_btn: Control = machine.get_draw_button() if machine.has_method("get_draw_button") else machine.get_node_or_null("DrawButton")
+	var draw_btn: Control = machine.get_node_or_null("DrawButton") as Control
 	var start_pos: Vector2 = draw_btn.get_global_rect().get_center() if is_instance_valid(draw_btn) else machine.get_global_rect().get_center()
-	var target_slot = prize_lineup.get_child(slot_index + 1)
-	var end_pos = target_slot.get_global_rect().get_center()
-	
-	var anim_ball = GachaBallViewScene.instantiate()
+	var target_slot: Control = prize_lineup.get_child(slot_index + 1) as Control
+	var end_pos: Vector2 = target_slot.get_global_rect().get_center()
+
+	var anim_ball: GachaBallView = GachaBallViewScene.instantiate() as GachaBallView
 	effects_layer.add_child(anim_ball)
 	anim_ball.force_inventory_mode = true
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
@@ -349,178 +254,163 @@ func _animate_prize_draw(machine: Control, slot_index: int, prize_data: Dictiona
 	anim_ball.size = Vector2(128, 128)
 	anim_ball.populate(null, _create_prize_visual_data(prize_data))
 	anim_ball.pivot_offset = anim_ball.size / 2.0
-	
-	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 200)
-	var tween = create_tween()
-	tween.tween_method(func(t: float):
-		var eased_t = pow(t, 0.55)
-		var scale_eased = 1.0 - pow(1.0 - t, 2)
-		var current_scale = lerp(0.3, 1.0, scale_eased)
-		anim_ball.scale = Vector2(current_scale, current_scale)
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
-		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
-	, 0.0, 1.0, 0.45)
-	
+
+	var tween: Tween = ArcTossAnimator.toss_bezier(anim_ball, start_pos, end_pos, {
+		"arc_height": 200.0,
+		"duration": 0.45,
+		"ease_power": 0.55,
+		"start_scale": 0.3,
+		"end_scale": 1.0,
+		"scale_curve": &"quad_out",
+		"scale_pivot_offset": true,
+	})
 	await tween.finished
 	anim_ball.queue_free()
 
-func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
 func _create_prize_visual_data(prize_data: Dictionary) -> Dictionary:
-	var icon_tex = preload("res://assets/PixelArt/ui/textures/gachaballcapsule.png")
+	var icon_tex: Texture2D = preload("res://assets/PixelArt/ui/textures/gachaballcapsule.png")
 	return {
-		"uuid": "prize_%d" % prize_data.slot_index,
+		"uuid": "prize_%d" % prize_data["slot_index"],
 		"icon": icon_tex,
-		"hp": prize_data.hp_value,
-		"pwr": prize_data.pwr_value,
-		"gold": prize_data.gold_value,
+		"hp": prize_data["hp_value"],
+		"pwr": prize_data["pwr_value"],
+		"gold": prize_data["gold_value"],
 		"display_name_key": "ui.stat_prize",
 		"tier": 0,
-		"category": &"ITEM"
+		"category": &"ITEM",
 	}
 
+
 func _populate_prize_slot(slot_index: int, prize_data: Dictionary) -> void:
-	var slot = prize_lineup.get_child(slot_index + 1)
-	if slot.has_method("set_content"):
-		slot.set_content(_create_prize_visual_data(prize_data), true, false)
+	var slot: SlotView = prize_lineup.get_child(slot_index + 1) as SlotView
+	slot.set_content(_create_prize_visual_data(prize_data), true, false)
 	_add_stat_label_to_slot(slot, prize_data)
 
+
 func _add_stat_label_to_slot(slot: Control, prize_data: Dictionary) -> void:
-	var existing = slot.get_node_or_null("StatLabelContainer")
-	if existing: existing.queue_free()
-	
-	var container = VBoxContainer.new()
+	var existing: Node = slot.get_node_or_null("StatLabelContainer")
+	if is_instance_valid(existing):
+		existing.queue_free()
+
+	var container := VBoxContainer.new()
 	container.name = "StatLabelContainer"
 	container.alignment = BoxContainer.ALIGNMENT_CENTER
 	container.set_anchors_preset(Control.PRESET_FULL_RECT)
 	container.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	slot.add_child(container)
-	
-	var val = prize_data.hp_value + prize_data.pwr_value + prize_data.gold_value
+
+	var val: int = int(prize_data["hp_value"]) + int(prize_data["pwr_value"]) + int(prize_data["gold_value"])
 	if val > 0:
-		var label = Label.new()
+		var label := Label.new()
 		label.text = "%d" % val
 		label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 		label.add_theme_font_size_override("font_size", 36)
-		var color = Color.RED if prize_data.hp_value > 0 else (Color.MEDIUM_PURPLE if prize_data.pwr_value > 0 else Color.GOLD)
+		var color: Color = Color.RED if int(prize_data["hp_value"]) > 0 else (Color.MEDIUM_PURPLE if int(prize_data["pwr_value"]) > 0 else Color.GOLD)
 		label.add_theme_color_override("font_color", color)
 		label.add_theme_color_override("font_outline_color", Color.WHITE)
 		label.add_theme_constant_override("outline_size", 6)
 		label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 		container.add_child(label)
 
-# --- Prize Application ---
+
+# --- Prize Application & Leave ---
 
 func _on_prize_slot_gui_input(event: InputEvent, prize_index: int) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		var action: GameAction
-		if site_type == SiteType.GOLD:
-			action = ClaimRestSiteGoldAction.new(prize_index)
-		else:
-			action = UpgradeRestSiteAction.new(prize_index)
-		if is_instance_valid(ActionQueue):
-			ActionQueue.request(action)
-		else:
-			execute_upgrade_visuals(prize_index)
+		var action: GameAction = ClaimRestSiteGoldAction.new(prize_index) if site_type == SiteType.GOLD else UpgradeRestSiteAction.new(prize_index)
+		ActionQueue.request(action)
+
 
 func execute_upgrade_visuals(prize_index: int) -> void:
 	await _apply_prize(prize_index)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.finish_action(ActionQueue.get_active_action())
+	_finish_active_action()
+
 
 func _apply_prize(prize_index: int) -> void:
 	Audio.play_sfx("ui_click")
-	var prize = GameManager.claim_rest_site_prize(prize_index)
+	var prize: Dictionary = GameManager.claim_rest_site_prize(prize_index)
 	if prize.is_empty():
 		return
-	
 	_prizes = GameManager._temporary_rest_site_prizes.duplicate(true)
 	await _animate_buff_application(prize_index, prize)
 	_clear_prize_slot(prize_index)
 	_populate_hero_slot()
 
+
 func _animate_buff_application(prize_index: int, prize_data: Dictionary) -> void:
-	var prize_slot = prize_lineup.get_child(prize_index + 1)
-	var ball_view: GachaBallView = null
-	for child in prize_slot.get_children():
-		if child is GachaBallView:
-			ball_view = child
-			break
-	if not is_instance_valid(ball_view): return
-	
-	var start_pos = ball_view.get_global_rect().get_center()
+	var prize_slot: Control = prize_lineup.get_child(prize_index + 1) as Control
+	var ball_view: GachaBallView = _resolve_ball_view(prize_slot)
+	if not is_instance_valid(ball_view):
+		return
+
+	var start_pos: Vector2 = ball_view.get_global_rect().get_center()
 	var end_pos: Vector2
 	if site_type == SiteType.GOLD:
-		var main_node = GameManager._active_main_node
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-		end_pos = gold_group.get_global_rect().get_center() if gold_group else Vector2(100, 60)
+		var main_node: Node = GameManager._active_main_node
+		var gold_group: Control = main_node.get_node_or_null("%GoldGroup") as Control if is_instance_valid(main_node) else null
+		end_pos = gold_group.get_global_rect().get_center() if is_instance_valid(gold_group) else Vector2(100, 60)
 	else:
 		end_pos = hero_slot.get_global_rect().get_center()
-	
+
 	ball_view.pivot_offset = ball_view.size / 2.0
-	var tween = create_tween().set_parallel(true)
+	var tween: Tween = create_tween().set_parallel(true)
 	tween.tween_property(ball_view, "scale", Vector2(1.4, 1.4), 0.1)
 	tween.tween_property(ball_view, "modulate:a", 0.0, 0.15).set_delay(0.1)
-	
-	var val = prize_data.hp_value + prize_data.pwr_value + prize_data.gold_value
-	var type_str = "hp" if prize_data.hp_value > 0 else ("pwr" if prize_data.pwr_value > 0 else "gold")
-	
-	var proj = VFXFactory.spawn_projectile_on_layer(val, type_str, start_pos, end_pos, false)
-	if proj:
+
+	var val: int = int(prize_data["hp_value"]) + int(prize_data["pwr_value"]) + int(prize_data["gold_value"])
+	var type_str: String = "hp" if int(prize_data["hp_value"]) > 0 else ("pwr" if int(prize_data["pwr_value"]) > 0 else "gold")
+
+	var proj: Node = VFXFactory.spawn_projectile_on_layer(val, type_str, start_pos, end_pos, false)
+	if is_instance_valid(proj):
 		proj.launch()
 		await proj.impact
 		if site_type != SiteType.GOLD:
 			_do_hero_buff_hop(Color.RED if type_str == "hp" else Color.MEDIUM_PURPLE)
-	
+
 	ball_view.hide()
 	await AnimationConstants.create_pausable_timer(get_tree(), 0.2).timeout
+
 
 func _do_hero_buff_hop(flash_color: Color) -> void:
 	Audio.play_sfx("unit_buff")
 	if is_instance_valid(GameManager.run_state.hero_instance):
-		var uuid = GameManager.run_state.hero_instance.ball_uuid
-		SignalBus.emit_signal("unit_color_flash", uuid, flash_color, 0.4)
-		SignalBus.emit_signal("unit_deform", uuid, &"HOP_DEFORM")
+		var uuid: String = GameManager.run_state.hero_instance.ball_uuid
+		SignalBus.unit_color_flash.emit(uuid, flash_color, 0.4)
+		SignalBus.unit_deform.emit(uuid, &"HOP_DEFORM")
+
 
 func _clear_prize_slot(prize_index: int) -> void:
-	var slot = prize_lineup.get_child(prize_index + 1)
-	var label_container = slot.get_node_or_null("StatLabelContainer")
-	if label_container: label_container.queue_free()
-	if slot.has_method("set_content"):
-		slot.set_content({}, false, false)
+	var slot: SlotView = prize_lineup.get_child(prize_index + 1) as SlotView
+	var label_container: Node = slot.get_node_or_null("StatLabelContainer")
+	if is_instance_valid(label_container):
+		label_container.queue_free()
+	slot.set_content({}, false, false)
+
 
 func _refresh_all_prize_slots() -> void:
-	for i in range(4): _clear_prize_slot(i)
-	for p in _prizes: _populate_prize_slot(p.slot_index, p)
+	for i: int in range(4):
+		_clear_prize_slot(i)
+	for p: Dictionary in _prizes:
+		_populate_prize_slot(p["slot_index"], p)
+
 
 func _on_leave_pressed() -> void:
-	var action := LeaveRestSiteAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_leave_visuals()
+	ActionQueue.request(LeaveRestSiteAction.new())
+
 
 func execute_leave_visuals() -> void:
-	# Disable all interactions during auto-collection
 	leave_button.disabled = true
 	study_button.disabled = true
 	tier1_draw_button.disabled = true
 	tier2_draw_button.disabled = true
 	tier3_draw_button.disabled = true
-	
-	# Collect remaining prizes one by one
+
 	while not _prizes.is_empty():
-		var prize = _prizes[0]
-		# Use the slot_index stored in the prize dictionary
-		await _apply_prize(prize.slot_index)
+		var prize: Dictionary = _prizes[0]
+		await _apply_prize(prize["slot_index"])
 	GameManager.finish_rest_site_leave()
 
-	SignalBus.emit_signal("gacha_tokens_changed", 0)
-	SignalBus.emit_signal("path_choice_scene_requested")
+	SignalBus.gacha_tokens_changed.emit(0)
+	SignalBus.path_choice_scene_requested.emit()
 	queue_free()
-
-func _exit_tree() -> void:
-	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
-		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)

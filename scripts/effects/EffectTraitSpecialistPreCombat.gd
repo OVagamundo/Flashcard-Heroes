@@ -32,15 +32,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var specialist_units: int = int(active_traits.get("SPECIALIST", 0))
-	if specialist_units < 2:
+	var specialist_tier: int = TraitRulesEngine.get_active_tier(active_traits, "SPECIALIST")
+	if specialist_tier < 1:
 		return EffectResult.empty()
 
 	var result := EffectResult.new()
 	var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"ability_trait_specialist")
 
 	# L1 (2 Units): If player tokens == 0, grants 1 Token
-	if is_player and specialist_units >= 2:
+	if is_player and specialist_tier >= 1:
 		var current_tokens = battle_manager.get_gacha_tokens()
 		if current_tokens == 0:
 			battle_manager.add_gacha_tokens(1)
@@ -59,7 +59,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			}))
 
 	# L4 (5 Units): Summon combat copy of lowest tier/level unit
-	if specialist_units >= 5:
+	if specialist_tier >= 4:
 		var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
 		var units = battle_manager.get_instances_in_container(container_tag)
 		var eligible: Array[GachaBallInstance] = []

@@ -17,7 +17,7 @@ func execute() -> void:
 	var popup = Engine.get_main_loop().root.find_child("EndBattlePopup", true, false)
 	if is_instance_valid(popup):
 		popup.queue_free()
-	elif is_instance_valid(WindowManager) and WindowManager.has_method("_close_top_modal"):
+	else:
 		WindowManager._close_top_modal()
 	if is_victory:
 		SignalBus.emit_signal("battle_victory_acknowledged")

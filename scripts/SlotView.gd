@@ -346,7 +346,12 @@ func _finish_slot_background_crossfade() -> void:
 	_slot_background_transition_overlay.modulate = Color.WHITE
 	_slot_background_transition_overlay.self_modulate = Color.WHITE
 
+func _enter_tree() -> void:
+	if is_instance_valid(_location):
+		WindowManager.register_location_view(_location, self, true)
+
 func _exit_tree() -> void:
+	WindowManager.unregister_location_view(self)
 	if SignalBus.unit_stat_changed.is_connected(_on_unit_stat_changed):
 		SignalBus.unit_stat_changed.disconnect(_on_unit_stat_changed)
 	if SignalBus.show_slot_indicators.is_connected(_on_show_slot_indicators):
@@ -469,6 +474,7 @@ func _start_pulse_animation() -> void:
 func populate(loc: LocationIdentifier) -> void:
 	self._location = loc
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
+	WindowManager.register_location_view(loc, self, true)
 	if is_instance_valid(loc) and loc.container != &"":
 		set_slot_color(loc.container)
 
@@ -499,8 +505,7 @@ func set_content(visual_data: Dictionary, is_inspectable: bool = true, is_enemy:
 		return null
 	
 	# Set size scale before adding to tree (so populate uses correct scale)
-	if view.has_method("set_size_scale"):
-		view.set_size_scale(_size_scale)
+	view.set_size_scale(_size_scale)
 	
 	add_child(view)
 	
@@ -547,10 +552,8 @@ func _recursively_set_mouse_filter_ignore(node: Node) -> void:
 func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: int, new_value: int) -> void:
 	# Check if we have a child view that matches this UUID
 	for child in get_children():
-		if child is GachaBallView and child.get_instance_uuid() == unit_uuid:
-			# Delegate to view's granular handler
-			if is_instance_valid(child) and child.has_method("_on_unit_stat_changed"):
-				child._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
+		if child is GachaBallView and (child as GachaBallView).get_instance_uuid() == unit_uuid:
+			(child as GachaBallView)._on_unit_stat_changed(unit_uuid, stat_name, old_value, new_value)
 			break
 
 

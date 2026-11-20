@@ -27,7 +27,7 @@ func _get_instance_team(instance: GachaBallInstance, battle_manager: Node) -> St
 		return "PLAYER"
 	elif container in [C.BATTLE_CONTAINER_TAGS.ENEMY_TRINKETS, C.BATTLE_CONTAINER_TAGS.ENEMY_BANNER]:
 		return "ENEMY"
-	elif not instance.equipped_on_uuid.is_empty() and battle_manager != null and battle_manager.has_method("get_instance_by_uuid"):
+	elif not instance.equipped_on_uuid.is_empty() and is_instance_valid(battle_manager):
 		var parent_unit = battle_manager.get_instance_by_uuid(instance.equipped_on_uuid)
 		if is_instance_valid(parent_unit):
 			return _get_instance_team(parent_unit, battle_manager)
@@ -51,9 +51,13 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			var unit_team = _get_instance_team(unit, battle_manager)
 			return unit_team == fainting_team and unit_uuid != fainting_uuid and unit.current_hp > 0
 		
-		C.TRIGGER_WHEN_TAKING_DAMAGE:
+		C.TRIGGER_WHEN_TAKING_DAMAGE, C.TRIGGER_WHEN_TAKING_MELEE_DAMAGE, C.TRIGGER_WHEN_TAKING_RANGED_DAMAGE, C.TRIGGER_WHEN_TAKING_STATUS_DAMAGE:
 			# Only the unit that received damage responds
 			return unit_uuid == context.damaged_uuid
+		
+		C.TRIGGER_BEFORE_TURN_ACTION:
+			# Only the unit about to perform its turn action responds
+			return unit.current_hp > 0 and unit_uuid == context.actor_uuid
 		
 		C.TRIGGER_WHEN_KNOCKED_OUT, C.TRIGGER_BEFORE_BEING_KNOCKED_OUT, C.TRIGGER_PREVENT_KNOCKOUT:
 			# Only the affected unit responds (allowing current_hp <= 0)
@@ -154,7 +158,7 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 			# All living units respond to any unit death
 			return unit.current_hp > 0 and _is_on_battle_board(unit)
 			
-		C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
+		C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME, C.TRIGGER_ON_BOUNTY_CLAIMED:
 			# Living units respond if in active lineup (AMer does not trigger while shelved)
 			var container: StringName = unit.location_container_tag
 			return unit.current_hp > 0 and (
@@ -186,9 +190,9 @@ func _should_unit_respond(trigger: StringName, unit_uuid: String, unit: GachaBal
 				return unit_team == target_team
 				
 			return false
-	
-	# Default: respond (for any new triggers)
-	return true
+
+	assert(false, "AbilityResolver._should_unit_respond: Unhandled trigger '%s'" % trigger)
+	return false
 
 ## Determine if a unit is on the battle board (lineup or shelf)
 func _is_on_battle_board(unit: GachaBallInstance) -> bool:
@@ -216,12 +220,18 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 	assert(not holder_uuid.is_empty(), "AbilityResolver: item must be equipped to respond to combat triggers")
 	
 	match trigger:
-		C.TRIGGER_WHEN_TAKING_DAMAGE:
+		C.TRIGGER_WHEN_TAKING_DAMAGE, C.TRIGGER_WHEN_TAKING_MELEE_DAMAGE, C.TRIGGER_WHEN_TAKING_RANGED_DAMAGE, C.TRIGGER_WHEN_TAKING_STATUS_DAMAGE:
 			return holder_uuid == context.damaged_uuid
 		
 		C.TRIGGER_WHEN_KNOCKED_OUT, C.TRIGGER_BEFORE_BEING_KNOCKED_OUT, C.TRIGGER_PREVENT_KNOCKOUT:
 			var target_uuid = context.knocked_out_uuid if not context.knocked_out_uuid.is_empty() else context.damaged_uuid
 			return holder_uuid == target_uuid
+		
+		C.TRIGGER_INTERCEPT_ATTACK:
+			return holder_uuid == context.source_uuid
+		
+		C.TRIGGER_BEFORE_TURN_ACTION:
+			return holder_uuid == context.actor_uuid
 		
 		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_ATTACK_IMPACT, \
 		C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
@@ -235,7 +245,18 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var fainting_uuid = context.ally_knocked_out_uuid
 			return holder_uuid != fainting_uuid
 		
-		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
+		C.TRIGGER_WHEN_ALLY_TAKES_DAMAGE:
+			return holder_uuid != context.damaged_uuid
+		
+		C.TRIGGER_ON_ENTER_BOARD:
+			return holder_uuid == context.entered_uuid
+		
+		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, \
+		C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, \
+		C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME, \
+		C.TRIGGER_ON_MERGE, C.TRIGGER_WHEN_DUST_MINIONS_MERGE, C.TRIGGER_WHEN_ALLY_SUMMONED, \
+		C.TRIGGER_WHEN_ENEMY_SUMMONED, C.TRIGGER_ON_TOKEN_SPENT, C.TRIGGER_ON_GACHA_TOKENS_CHANGED, \
+		C.TRIGGER_WHEN_ANY_UNIT_KNOCKED_OUT, C.TRIGGER_ON_BOUNTY_CLAIMED:
 			# All equipped items on living holders respond
 			return true
 		
@@ -251,7 +272,8 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 			var target_uuid = context.unit_uuid
 			return holder_uuid == target_uuid
 	
-	return true
+	assert(false, "AbilityResolver._should_item_respond: Unhandled trigger '%s'" % trigger)
+	return false
 
 ## Unified filter: Should this trinket respond to this trigger?
 ## @param trigger: The trigger type being processed
@@ -262,8 +284,6 @@ func _should_item_respond(trigger: StringName, item: GachaBallInstance, context:
 func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 							 context: TriggerContext, battle_manager: Node) -> bool:
 	var trinket_team = _get_instance_team(trinket, battle_manager)
-	var trinket_def = trinket.get_definition()
-	var trinket_name = trinket_def.name_key if is_instance_valid(trinket_def) else "Unknown"
 	
 	match trigger:
 		C.TRIGGER_WHEN_ALLY_KNOCKED_OUT:
@@ -271,17 +291,25 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			var fainting_team = context.ally_knocked_out_team
 			return trinket_team == fainting_team
 		
-		C.TRIGGER_PREVENT_KNOCKOUT:
+		C.TRIGGER_PREVENT_KNOCKOUT, C.TRIGGER_WHEN_TAKING_DAMAGE, C.TRIGGER_WHEN_TAKING_MELEE_DAMAGE, \
+		C.TRIGGER_WHEN_TAKING_RANGED_DAMAGE, C.TRIGGER_WHEN_TAKING_STATUS_DAMAGE, C.TRIGGER_WHEN_ALLY_TAKES_DAMAGE:
 			var target_team = context.damaged_team
-			return trinket_team == target_team
+			return target_team.is_empty() or trinket_team == target_team
 		
-		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME:
+		C.TRIGGER_WHEN_KNOCKED_OUT, C.TRIGGER_BEFORE_BEING_KNOCKED_OUT:
+			var ko_team = context.knocked_out_team if not context.knocked_out_team.is_empty() else context.damaged_team
+			return ko_team.is_empty() or trinket_team == ko_team
+		
+		C.TRIGGER_AT_TURN_START, C.TRIGGER_AT_TURN_END, C.TRIGGER_AT_BATTLE_START, \
+		C.TRIGGER_ON_BOARD_STATE_CHANGED, C.TRIGGER_PRE_COMBAT, C.TRIGGER_ON_GOLD_EARNED, \
+		C.TRIGGER_ON_GOLD_SPENT, C.TRIGGER_AT_MINIGAME_END, C.TRIGGER_BEFORE_MINIGAME, \
+		C.TRIGGER_WHEN_ANY_UNIT_KNOCKED_OUT, C.TRIGGER_ON_GACHA_TOKENS_CHANGED, \
+		C.TRIGGER_WHEN_DUST_MINIONS_MERGE, C.TRIGGER_ON_BOUNTY_CLAIMED:
 			# All trinkets respond
 			return true
 		
-		C.TRIGGER_ON_GACHA_DRAW:
-			# Only player trinkets respond to player draws
-			# (enemies don't draw, so this is always player team for now)
+		C.TRIGGER_ON_GACHA_DRAW, C.TRIGGER_ON_TOKEN_SPENT:
+			# Only player trinkets respond to player draws / token spend
 			return trinket_team == "PLAYER"
 		
 		C.TRIGGER_ON_MERGE:
@@ -294,15 +322,56 @@ func _should_trinket_respond(trigger: StringName, trinket: GachaBallInstance,
 			var summoned_team = context.summoned_team
 			return trinket_team == summoned_team
 		
+		C.TRIGGER_WHEN_ENEMY_SUMMONED:
+			var summoned_team = context.summoned_team
+			return not summoned_team.is_empty() and trinket_team != summoned_team
+		
+		C.TRIGGER_ON_ENTER_BOARD:
+			var entered_inst = battle_manager.get_instance_by_uuid(context.entered_uuid)
+			if is_instance_valid(entered_inst):
+				return trinket_team == _get_instance_team(entered_inst, battle_manager)
+			return false
+		
+		C.TRIGGER_WHEN_ATTACKING, C.TRIGGER_ON_ATTACK_IMPACT, C.TRIGGER_ON_KNOCKOUT_BLOW, C.TRIGGER_ON_DAMAGE_DEALT:
+			var attacker_inst = battle_manager.get_instance_by_uuid(context.attacker_uuid)
+			if is_instance_valid(attacker_inst):
+				return trinket_team == _get_instance_team(attacker_inst, battle_manager)
+			return false
+		
+		C.TRIGGER_BEFORE_TAKING_DAMAGE:
+			var defender_inst = battle_manager.get_instance_by_uuid(context.defender_uuid)
+			if is_instance_valid(defender_inst):
+				return trinket_team == _get_instance_team(defender_inst, battle_manager)
+			return false
+		
+		C.TRIGGER_INTERCEPT_ATTACK:
+			var interceptor_inst = battle_manager.get_instance_by_uuid(context.source_uuid)
+			if is_instance_valid(interceptor_inst):
+				return trinket_team == _get_instance_team(interceptor_inst, battle_manager)
+			return false
+		
+		C.TRIGGER_BEFORE_TURN_ACTION:
+			var actor_inst = battle_manager.get_instance_by_uuid(context.actor_uuid)
+			if is_instance_valid(actor_inst):
+				return trinket_team == _get_instance_team(actor_inst, battle_manager)
+			return false
+		
+		C.TRIGGER_WHEN_HEALED:
+			var healed_uuid = context.healed_uuid if not context.healed_uuid.is_empty() else context.unit_uuid
+			var healed_inst = battle_manager.get_instance_by_uuid(healed_uuid)
+			if is_instance_valid(healed_inst):
+				return trinket_team == _get_instance_team(healed_inst, battle_manager)
+			return false
+		
 		C.TRIGGER_ON_STAT_INCREASED, C.TRIGGER_ON_STAT_DECREASED:
 			var target_uuid = context.unit_uuid
 			var target_inst = battle_manager.get_instance_by_uuid(target_uuid)
 			if is_instance_valid(target_inst):
 				return trinket_team == _get_instance_team(target_inst, battle_manager)
-			return true
+			return false
 	
-	# For other triggers, trinkets respond based on team context if available
-	return true
+	assert(false, "AbilityResolver._should_trinket_respond: Unhandled trigger '%s'" % trigger)
+	return false
 
 # =============================================================================
 # MAIN TRIGGER PROCESSING
@@ -469,17 +538,13 @@ func _process_ability(ability: AbilityDefinition, source_uuid: String, battle_ma
 		var source_def = source.get_definition()
 		if is_instance_valid(source_def) and ("category" in source_def):
 			category = source_def.category
-		if battle_manager.has_method("_is_player_owned"):
-			is_player = battle_manager._is_player_owned(source)
-		elif battle_manager.has_method("_is_player_unit"):
-			is_player = battle_manager._is_player_unit(source)
+		is_player = battle_manager._is_player_owned(source)
 		
 		if not source.equipped_on_uuid.is_empty():
 			var holder = battle_manager.get_instance_by_uuid(source.equipped_on_uuid)
 			if is_instance_valid(holder):
 				slot_index = holder.location_slot_index
-				if battle_manager.has_method("_is_player_owned"):
-					is_player = battle_manager._is_player_owned(holder)
+				is_player = battle_manager._is_player_owned(holder)
 			sub_index = source.equipped_slot_index
 		else:
 			slot_index = source.location_slot_index

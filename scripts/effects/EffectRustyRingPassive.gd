@@ -22,8 +22,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	if trinket_team.is_empty():
 		return EffectResult.empty()
 		
-	var buff_tag := &"rusty_ring_buffed"
-	var debuff_tag := &"rusty_ring_debuffed"
+	var aura_key: StringName = AuraEvaluator.make_key(&"rusty_ring", source_uuid)
 	var changed_units := 0
 	var total_hp_delta := 0
 	var total_pwr_delta := 0
@@ -44,54 +43,40 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if _get_team_from_container(inst.location_container_tag) != trinket_team:
 			continue
 
-		# Only process units that have been registered by the active triggers
-		if not inst.has_tag(buff_tag):
+		# Only process units that have been registered by the entry trigger
+		if not inst.has_aura(aura_key):
 			continue
 
-		# Check if they have equipment
-		var has_equip := false
-		for eq_uuid in inst.equipped_item_uuids:
-			if not eq_uuid.is_empty():
-				has_equip = true
-				break
-				
-		var is_debuffed := inst.has_tag(debuff_tag)
-		var delta := 0
-		
-		if has_equip and not is_debuffed:
-			# Just equipped an item -> Apply Debuff
-			inst.add_tag(debuff_tag)
-			delta = -1
-		elif not has_equip and is_debuffed:
-			# Just unequipped an item -> Remove Debuff
-			inst.remove_tag(debuff_tag)
-			delta = 1
-			
-		if delta != 0:
-			var old_hp = inst.current_hp
-			var old_pwr = inst.current_pwr
-			
-			# Keep the component and live stats in sync. This means a later merge
-			# cannot inherit a stale Ring bonus after the unit equips an item.
-			battle_manager.set_conditional_trinket_bonus(inst, source_uuid, 1, 1, not has_equip, is_simulation)
-			
-			if is_simulation:
-				# If delta < 0 (debuff on equip): self debuff
-				# If delta > 0 (buff on unequip): originates from Rusty Ring trinket
-				var visual_source = source_uuid if delta > 0 else ""
-				var multi_payload = CombatPayload.both_stats_change(visual_source, delta, delta, [old_hp], [inst.current_hp], [old_pwr], [inst.current_pwr])
-				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": visual_source,
-					"target_uuids": [uuid],
-					"ability_id": (context.ability_id if context.ability_id != &"" else &"rusty_ring_passive"),
-					"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
-					"ability_holder_uuid": source_uuid,
-					"visual_payload": multi_payload
-				}))
-				
-			changed_units += 1
-			total_hp_delta += delta
-			total_pwr_delta += delta
+		var has_equip: bool = AuraEvaluator._unit_has_equipment(inst)
+		var target_val: int = 0 if has_equip else 1
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			inst, aura_key, target_val, target_val,
+			source_uuid, AuraEvaluator.KIND_RUSTY_RING,
+			{"keep_registered": true, "silent": is_simulation}
+		)
+		if not rec_res.changed:
+			continue
+
+		if is_simulation:
+			# If delta < 0 (debuff on equip): self debuff
+			# If delta > 0 (buff on unequip): originates from Rusty Ring trinket
+			var visual_source: String = source_uuid if rec_res.delta_hp > 0 else ""
+			var multi_payload := CombatPayload.both_stats_change(
+				visual_source, rec_res.delta_hp, rec_res.delta_pwr,
+				[rec_res.old_hp], [rec_res.new_hp], [rec_res.old_pwr], [rec_res.new_pwr]
+			)
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": visual_source,
+				"target_uuids": [uuid],
+				"ability_id": (context.ability_id if context.ability_id != &"" else &"rusty_ring_passive"),
+				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
+				"ability_holder_uuid": source_uuid,
+				"visual_payload": multi_payload
+			}))
+
+		changed_units += 1
+		total_hp_delta += rec_res.delta_hp
+		total_pwr_delta += rec_res.delta_pwr
 
 	if changed_units == 0:
 		return EffectResult.empty()

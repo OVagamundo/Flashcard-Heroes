@@ -4,10 +4,6 @@ extends Node
 const C = preload("res://scripts/Constants.gd")
 const AC = preload("res://scripts/animations/AnimationConstants.gd")
 
-func _ready() -> void:
-	SignalBus.try_inventory_action.connect(_on_try_inventory_action)
-	SignalBus.choice_made.connect(_on_choice_made)
-
 # --- Main Action Handler ---
 
 func _on_try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier, interaction_type: String = "CLICK", drop_pos: Vector2 = Vector2.ZERO) -> void:
@@ -204,18 +200,16 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 		anchor_view = wm.find_view_for_location(source_loc)
 	var parent_window: Control = wm.find_ancestor_window_for_view(anchor_view) if is_instance_valid(anchor_view) else null
 	var parent_id: int = parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
-	var inside_unit: bool = target_loc.container == C.CONTAINER_EQUIPPED_ITEM or target_loc.container in [&"PlayerLineup", &"PlayerShelf"]
 	if parent_id != -1:
 		# Note: Using GIR's suppression helper to ensure WindowManager.request_close_inspection_window honors it.
-		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id, 420 if inside_unit else 320)
+		GlobalInteractionRouter.activate_close_suppression_for_window_id(parent_id)
 
 	var data_owner = _get_data_owner()
 	if not is_instance_valid(data_owner):
 		_finish_merge_action_if_active()
 		return
 		
-	var bm = data_owner if data_owner.has_method("block_ui_updates") else null
-	
+	var bm: BattleManager = data_owner as BattleManager
 	if is_instance_valid(bm):
 		bm.block_ui_updates()
 
@@ -228,7 +222,7 @@ func _on_choice_made(choice: StringName, source_loc: LocationIdentifier, target_
 				bm.unblock_ui_updates()
 
 func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
-	var encounter_only: bool = consumable_instance.definition_id in [C.ITEM_ENCOUNTER_TONIC, C.ITEM_DAMAGE_VIAL]
+	var encounter_only: bool = consumable_instance.definition_id in [C.ITEM_ENCOUNTER_TONIC, C.ITEM_DAMAGE_VIAL, &"consumable_potion_plunder"]
 	if encounter_only and (not GameManager.is_in_battle or target_unit.current_hp <= 0):
 		GlobalInteractionRouter.end_drag(false)
 		return
@@ -248,20 +242,15 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 	# process it through the standard pipeline (Simulation -> Truth -> Animation).
 	# This ensures Priority, Triggers (Echo), and State Consistency are handled identically to combat.
 	
-	var is_battle = GameManager.is_in_battle
-	var bm = null
-	if is_battle:
-		bm = get_tree().get_first_node_in_group("battle_manager")
+	var is_battle: bool = GameManager.is_in_battle
+	var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager if is_battle else null
 	
 	if not is_battle or not is_instance_valid(bm):
-		# Fallback for Run State (outside battle) - simplistic execution
-		# (RunState logic dictates this, but usually consumables are used in Battle/Shop)
-		_use_consumable_simple(consumable_instance, target_unit)
+		_use_consumable_outside_battle(consumable_instance, target_unit)
 		return
 
 	# 1. Block UI Updates (Prevent Scene Tree thrashing during logic)
-	if bm.has_method("block_ui_updates"):
-		bm.block_ui_updates()
+	bm.block_ui_updates()
 	
 	# 2. Capture Snapshot (Includes Consumable + Target)
 	var snapshot = VisualDataAdapter.create_board_snapshot(bm.get_all_instances())
@@ -323,48 +312,119 @@ func _use_consumable(consumable_instance: GachaBallInstance, target_unit: GachaB
 	else:
 		SignalBus.emit_signal("inventory_action_invalid", consumable_instance.get_location(), target_unit.get_location())
 		GlobalInteractionRouter.end_drag(false)
-		if bm.has_method("unblock_ui_updates"):
-			bm.unblock_ui_updates()
+		bm.unblock_ui_updates()
 
-func _use_consumable_simple(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
-	var def = consumable_instance.get_definition()
-	if not def or def.ability_definitions.is_empty():
+class _OutOfBattleEffectAdapter extends Node:
+	var run_state: RunState
+	var consumable_uuid: String
+	var any_applied: bool = false
+
+	func _init(p_run_state: RunState, p_consumable_uuid: String) -> void:
+		run_state = p_run_state
+		consumable_uuid = p_consumable_uuid
+
+	func get_instance_by_uuid(uuid: String) -> GachaBallInstance:
+		return run_state.get_instance_by_uuid(uuid) if is_instance_valid(run_state) else null
+
+	func get_all_instances() -> Dictionary:
+		return run_state.get_all_instances() if is_instance_valid(run_state) else {}
+
+	func get_active_traits(_team: String) -> Dictionary:
+		return {}
+
+	func has_trait(_instance: GachaBallInstance, _trait_name: String) -> bool:
+		return false
+
+	func _is_player_unit(_instance: GachaBallInstance) -> bool:
+		return true
+
+	func earn_gold(amount: int, _origin_uuid: String = "") -> void:
+		if is_instance_valid(run_state) and amount > 0:
+			run_state.add_gold(amount)
+			any_applied = true
+
+	func spend_gold(amount: int, _origin_uuid: String = "") -> bool:
+		if is_instance_valid(run_state) and amount > 0 and run_state.spend_gold(amount):
+			any_applied = true
+			return true
+		return false
+
+	func apply_stat_delta(
+		instance: GachaBallInstance,
+		stat_type: String,
+		delta: int,
+		_source_uuid: String = "",
+		_action_type: StringName = &"",
+		_is_stackable: bool = true,
+		_source_category: StringName = &"",
+		source_def_id: StringName = &""
+	) -> int:
+		assert(is_instance_valid(instance), "_OutOfBattleEffectAdapter.apply_stat_delta: instance must be valid")
+		if delta == 0:
+			return instance.current_hp if stat_type == "hp" else (instance.current_pwr if stat_type == "pwr" else 0)
+		match stat_type:
+			"hp":
+				instance.add_or_update_stat_component(
+					StringName("consumable_buff_hp_" + consumable_uuid),
+					&"CONSUMABLE",
+					String(source_def_id),
+					delta,
+					0,
+					true
+				)
+				instance.set_current_hp(instance.current_hp + delta)
+				any_applied = true
+				return instance.current_hp
+			"pwr":
+				instance.add_or_update_stat_component(
+					StringName("consumable_buff_pwr_" + consumable_uuid),
+					&"CONSUMABLE",
+					String(source_def_id),
+					0,
+					delta,
+					true
+				)
+				instance.apply_pwr_delta(delta)
+				any_applied = true
+				return instance.current_pwr
+			_:
+				if stat_type.ends_with("_stacks"):
+					var effect_name := StringName(stat_type.trim_suffix("_stacks"))
+					instance.add_status_effect(effect_name, delta)
+					any_applied = true
+					return instance.get_status_effect_amount(effect_name)
+				assert(false, "_OutOfBattleEffectAdapter: Unsupported stat_type '%s'" % stat_type)
+				return 0
+
+func _use_consumable_outside_battle(consumable_instance: GachaBallInstance, target_unit: GachaBallInstance) -> void:
+	var def: GachaBallDefinition = consumable_instance.get_definition() as GachaBallDefinition
+	if not is_instance_valid(def) or def.ability_definitions.is_empty():
 		GlobalInteractionRouter.end_drag(false)
 		return
 	
-	var ability = def.ability_definitions[0]
-	var owner = _get_data_owner()
-	var any_applied := false
+	var ability: AbilityDefinition = def.ability_definitions[0]
+	var owner: RunState = GameManager.run_state
+	var adapter := _OutOfBattleEffectAdapter.new(owner, consumable_instance.ball_uuid)
+	var targets: Array[String] = [target_unit.ball_uuid]
+	var any_applied: bool = false
 	
-	for effect in ability.effects:
+	for effect: EffectDefinition in ability.effects:
 		if not is_instance_valid(effect):
 			continue
-		if "parameters" in effect and effect.parameters is Dictionary:
-			var stat: String = String(effect.parameters.get("stat", ""))
-			if stat in ["hp", "health", "current_hp"]:
-				stat = "hp"
-			elif stat in ["pwr", "power", "current_pwr"]:
-				stat = "pwr"
-			var amount: int = int(effect.parameters.get("base_value", 0))
-			if amount > 0 and (stat == "hp" or stat == "pwr"):
-				target_unit.add_or_update_stat_component(
-					StringName("consumable_buff_" + stat + "_" + consumable_instance.ball_uuid),
-					&"CONSUMABLE",
-					String(def.id),
-					amount if stat == "hp" else 0,
-					amount if stat == "pwr" else 0,
-					true
-				)
-				if stat == "hp":
-					target_unit.set_current_hp(target_unit.current_hp + amount)
-				elif stat == "pwr":
-					target_unit.apply_pwr_delta(amount)
-				any_applied = true
-			var effect_id: StringName = StringName(effect.parameters.get("status_id", effect.parameters.get("effect_id", "")))
-			var stacks: int = int(effect.parameters.get("amount", effect.parameters.get("stacks", 0)))
-			if not effect_id.is_empty() and stacks > 0:
-				target_unit.add_status_effect(effect_id, stacks)
-				any_applied = true
+		var trig_context := TriggerContext.new()
+		trig_context.is_simulation = true
+		trig_context.ability_id = ability.id
+		trig_context.source_category = C.CATEGORY_CONSUMABLE
+		trig_context.source_holder_uuid = target_unit.ball_uuid
+		trig_context.source_consumable_id = def.id
+		trig_context.consumable_uuid = consumable_instance.ball_uuid
+		trig_context.team = "PLAYER"
+		var result: EffectResult = effect.execute(target_unit.ball_uuid, targets, adapter, trig_context)
+		if is_instance_valid(result) and result.state_applied:
+			any_applied = true
+	
+	any_applied = any_applied or adapter.any_applied
+	adapter.free()
 				
 	if any_applied:
 		Audio.play_sfx("ui_heal")
@@ -484,8 +544,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 				return
 
 	# In battle, route through BattleManager's atomic merge simulation
-	if GameManager.is_in_battle and data_owner.has_method("bm_merge_instances"):
-		var sim_res: Dictionary = data_owner.bm_merge_instances(source_loc, target_loc, recipe_id)
+	if GameManager.is_in_battle and data_owner is BattleManager:
+		var sim_res: Dictionary = (data_owner as BattleManager).bm_merge_instances(source_loc, target_loc, recipe_id)
 		if sim_res.is_empty() or not sim_res.get("success", false):
 			_finish_merge_action_if_active()
 			return
@@ -542,8 +602,8 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 
 	for discarded_item in parent_items_to_discard:
 		if is_instance_valid(discarded_item):
-			if GameManager.is_in_battle and data_owner.has_method("bm_move_instance_to_discard"):
-				data_owner.bm_move_instance_to_discard(discarded_item.ball_uuid)
+			if GameManager.is_in_battle and data_owner is BattleManager:
+				(data_owner as BattleManager).bm_move_instance_to_discard(discarded_item.ball_uuid)
 			else:
 				data_owner.remove_instance(discarded_item.ball_uuid)
 
@@ -569,9 +629,9 @@ func _merge(source_loc: LocationIdentifier, target_loc: LocationIdentifier, reci
 			dest_container_tag = target_loc.container
 			dest_index = target_loc.index
 
-		if data_owner.has_method("replace_units_for_merge"):
+		if data_owner is RunState:
 			var keep_items: Array = all_parent_items if result_def.category == &"UNIT" else []
-			var replaced_ok: bool = data_owner.replace_units_for_merge(
+			var replaced_ok: bool = (data_owner as RunState).replace_units_for_merge(
 				source_instance.ball_uuid,
 				target_instance.ball_uuid,
 				new_instance,
@@ -791,9 +851,9 @@ func _atomic_move_instance(instance: GachaBallInstance, from_loc: LocationIdenti
 
 func _finish_merge_action_if_active() -> void:
 	var data_owner = _get_data_owner()
-	if is_instance_valid(data_owner) and data_owner.has_method("unblock_ui_updates"):
-		data_owner.unblock_ui_updates()
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+	if data_owner is BattleManager:
+		(data_owner as BattleManager).unblock_ui_updates()
+	if ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
 			ActionQueue.finish_action(act)

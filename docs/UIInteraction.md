@@ -272,14 +272,15 @@ The GachaBall presentation system uses a unified shader-based outline pipeline o
   4. `_last_trait_level > 0 and is_in_battle` -> Trait synergy metallic outline (5.0px).
   5. Default -> Outline disabled.
 
-### 5.5 Interactive Overlays
-To streamline interactions in Reward, Shop, and Shrine scenes, the game uses **Interactive Overlays** instead of modal choice windows.
-- **Implementation**: Managed programmatically by `Main.gd` and synchronized with inventory window states.
+### 5.5 Interactive Overlays & Shared Encounter Base
+To streamline interactions in Reward, Elite Reward, Shop, Shrine, RestSite, and UnitTrainingGround scenes:
+- **Shared Base (`EncounterBase.gd` & `ArcTossAnimator.gd`)**: All 6 non-combat encounter scenes inherit from `scripts/ui/EncounterBase.gd` and share unified parabolic capsule-toss choreography via `scripts/ui/ArcTossAnimator.gd`.
+- **Interactive Overlays (`EncounterDropZoneBar.gd`)**: Managed by `Main.gd` via `EncounterDropZoneBar` and synchronized with inventory window states.
 - **Mode 1: Get or Sell Drop Zones**: Both standard Reward and Elite Reward scenes implement a split action layout consisting of a **Collect ("Get")** zone and a **Sell** zone.
   - **Standard Rewards**: Items can be collected or sold for their base tier value.
   - **Elite Rewards**: Selling grants a flat premium of **10 Gold**.
   - **Auto-Collection**: Trying to leave the scene with rewards still on board automatically triggers sequential collection of all remaining items to prevent player loss.
-- **Mode 2: Split Action Zones**: Two side-by-side zones used for the Shrine ("Transform" / "Remove").
+- **Mode 2: Split Action Zones**: Two side-by-side zones used for the Shrine ("Transform" / "Remove") and Unit Training Ground ("Train HP" / "Train PWR").
 - **Native Drag-Drop**: All overlays use `DropZone.gd` to integrate with Godot's built-in drag-and-drop system. This prevents "snap-back" glitches by reporting successful drops to the engine.
 - **VFX Proxy Pipeline**: To ensure fluid visuals during gold-spending animations, a static "proxy" view of the gachaball is spawned at the drop point until the financial transaction completes and the final movement animation begins.
 - **UI Context**: Overlays are anchored to the `BottomArea` and render on the `HUDLayer` (Z-index 5) to ensure they are always accessible above machine bases.
@@ -287,10 +288,22 @@ To streamline interactions in Reward, Shop, and Shrine scenes, the game uses **I
 
 ---
 
-## 6. Functional Groups & APIs
+## 6. Modular UI Architecture, Functional Groups & APIs
+
+### Decomposed UI Sub-Controllers (`scripts/ui/`)
+Core presentation scripts delegate focused responsibilities to dedicated helper classes:
+
+| Owner | Extracted Helpers |
+|-------|-------------------|
+| `WindowManager.gd` | `LocationViewRegistry` (O(1) slot/view registry), `TooltipPositioner`, `DrawerAnimator`, `GlossaryClusterController` |
+| `GlobalInteractionRouter.gd` | `InteractionTargetRules`, `DragSessionController`, `CloseSuppressionState` |
+| `Main.gd` | `HudTopBarPresenter`, `EncounterDropZoneBar`, `GachaMachineBarPresenter` |
+| `BattleView.gd` | `BattleTurnPreviewOverlay`, `BattleDrawAnimator` |
+| `GachaBallView.gd` | `GachaBallStatusStrip`, `GachaBallDragController`, `GachaBallHoverOutlineController` |
+| Encounter Scenes (6) | `EncounterBase`, `ArcTossAnimator` |
 
 ```gdscript
-# Container → Group mapping (GlobalInteractionRouter.get_context_group)
+# Container → Group mapping (InteractionTargetRules / GlobalInteractionRouter.get_context_group)
 PlayerLineup, PlayerShelf → BattleBoard
 RunInventoryT*, BattleInventoryT* → InventoryGrid
 equipped_item → EquippedGrid
@@ -298,12 +311,11 @@ Rewards, Shop → SelectionOnly
 EnemyLineup, DiscardPile, PlayerTrinkets → InspectionOnly
 ```
 
-### Suppression Windows
-For Swap/Merge via ChoiceWindow:
+### Suppression Windows (`CloseSuppressionState`)
+For Swap/Merge via `ChoiceWindow` and deferred anchor rebuilds, close suppression is **deterministic and frame/action-scoped** (no wall-clock millisecond timers):
 1. Resolve anchor view from target location
 2. Find ancestor window via `find_ancestor_window_for_view()`
-3. Call `GIR.activate_close_suppression_for_window_id(id, duration)`
-4. Duration: 420ms for unit-context, 320ms otherwise
+3. Arm `CloseSuppressionState.arm(parent_window_id, grace_frames, hold_during_action)` (default `CLOSE_SUPPRESS_GRACE_FRAMES = 2`), which holds suppression while `ActionQueue.is_busy()` and clears deterministically once the grace frames elapse.
 
 ### Key APIs
 | API | Purpose |

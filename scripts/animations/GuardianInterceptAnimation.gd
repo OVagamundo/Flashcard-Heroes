@@ -24,8 +24,8 @@ func execute(animator: Node, _targets: Array[String], payload: CombatPayload) ->
 		return
 	
 	# Leap to target's position
-	if guardian_view.has_method("animate_leap_to"):
-		await guardian_view.animate_leap_to(target_pos.center)
+	if guardian_view is GachaBallView:
+		await (guardian_view as GachaBallView).animate_leap_to(target_pos.center)
 	else:
 		# Fallback: instant move
 		guardian_view.global_position = Vector2(

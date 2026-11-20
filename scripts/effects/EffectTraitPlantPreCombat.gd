@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var plant_units: int = int(active_traits.get("PLANT", 0))
-	if plant_units < 2:
+	var plant_tier: int = TraitRulesEngine.get_active_tier(active_traits, "PLANT")
+	if plant_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -56,7 +56,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	}))
 
 	# L3 (4 Units): All Plants gain 1 Spikes and +1 HP
-	if plant_units >= 4:
+	if plant_tier >= 3:
 		for unit in units:
 			if not is_instance_valid(unit) or unit.current_hp <= 0:
 				continue

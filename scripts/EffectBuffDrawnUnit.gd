@@ -59,6 +59,24 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var raw_pwr = parameters.get("pwr_amount", 1)
 	var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 	
+	var trinket_name: String = ""
+	if is_instance_valid(trinket_instance):
+		var trinket_def = trinket_instance.get_definition()
+		if is_instance_valid(trinket_def):
+			trinket_name = tr(trinket_def.name_key)
+	if trinket_name.is_empty():
+		trinket_name = "Apprentice Insignia"
+
+	var aura_key: StringName = AuraEvaluator.make_key(&"insignia", _source_uuid)
+	var aura_meta: Dictionary = {
+		"hp_amount": hp_amount,
+		"pwr_amount": pwr_amount,
+		"target_level": 1,
+		"target_tier": 0,
+		"target_trait": "",
+		"trinket_name": trinket_name,
+	}
+
 	for target_uuid in targets_to_process:
 		# Get the target instance
 		var target_instance = battle_manager.get_instance(target_uuid)
@@ -90,46 +108,26 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_instance.level != 1:
 			continue
 		
-		var buff_tag := StringName("royal_insignia_buffed_%s" % _source_uuid)
-		# Check recursion prevention tag
-		if target_instance.has_tag(buff_tag):
+		# Prevent duplicate aura application for this insignia instance
+		if target_instance.has_aura(aura_key):
 			continue
 		
-		# Mark as buffed to prevent recursion
-		target_instance.add_tag(buff_tag)
-		
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			target_instance, aura_key, hp_amount, pwr_amount,
+			_source_uuid, AuraEvaluator.KIND_INSIGNIA,
+			{"keep_registered": true, "silent": is_simulation, "meta": aura_meta}
+		)
 		if is_simulation:
-			# Capture old stats
-			var old_hp: int = target_instance.current_hp
-			var old_pwr: int = target_instance.current_pwr
-			var max_hp: int = target_def.base_hp
-			
-			# Apply HP & PWR buff as conditional trinket bonus
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, true)
-			var new_hp: int = target_instance.current_hp
-			var new_pwr: int = target_instance.current_pwr
-			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
-			batched_old_hp.append(old_hp)
-			batched_new_hp.append(new_hp)
-			batched_max_hp.append(max_hp)
-			batched_old_pwr.append(old_pwr)
-			batched_new_pwr.append(new_pwr)
+			batched_old_hp.append(rec_res.old_hp)
+			batched_new_hp.append(rec_res.new_hp)
+			batched_max_hp.append(target_def.base_hp)
+			batched_old_pwr.append(rec_res.old_pwr)
+			batched_new_pwr.append(rec_res.new_pwr)
 			state_applied_any = true
-			
 		else:
-			# Non-simulation: apply immediately
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, false)
 			state_applied_any = true
-
-	var trinket_name: String = ""
-	if is_instance_valid(trinket_instance):
-		var trinket_def = trinket_instance.get_definition()
-		if is_instance_valid(trinket_def):
-			trinket_name = tr(trinket_def.name_key)
-	if trinket_name.is_empty():
-		trinket_name = "Apprentice Insignia"
 
 
 

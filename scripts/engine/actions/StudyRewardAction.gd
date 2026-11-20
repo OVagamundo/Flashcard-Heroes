@@ -11,9 +11,7 @@ func validate() -> bool:
 func execute() -> void:
 	GameManager._reward_study_used = true
 	var reward_view = Engine.get_main_loop().root.find_child("Reward", true, false)
-	if not is_instance_valid(reward_view):
-		reward_view = Engine.get_main_loop().root.find_child("RewardElite", true, false)
-	if is_instance_valid(reward_view) and reward_view.has_method("_execute_study"):
+	if is_instance_valid(reward_view):
 		reward_view._execute_study()
 	FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 

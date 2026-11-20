@@ -22,35 +22,23 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			if battle_manager._is_player_owned(inst) == source_is_player:
 				copy_count += 1
 	
-	var scale_amount: int = parameters.get("scale_amount", 3)
+	var scale_amount: int = int(parameters.get("scale_amount", 3))
 	var bonus_pwr: int = copy_count * scale_amount
 	if not _is_on_board(source):
 		bonus_pwr = 0
-		
-	var status_key: StringName = &"doppleganger_scaling"
-	var last_scaling: int = source.get_status_effect_amount(status_key)
-	var delta: int = bonus_pwr - last_scaling
-	
-	if delta == 0: 
-		return EffectResult.empty()
 
-	# Sync status effect amount silently
-	if last_scaling > 0: 
-		source.clear_status_effect(status_key)
-	if bonus_pwr > 0: 
-		source.add_status_effect_silent(status_key, bonus_pwr)
-		
-	# Apply standard PWR modification
-	source.apply_pwr_delta(delta, {
-		"silent": true,
-		"merge_source_type": &"CONDITIONAL_ABILITY"
-	})
+	var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+		source, &"doppleganger", 0, bonus_pwr, source_uuid, AuraEvaluator.KIND_DOPPLEGANGER,
+		{"silent": true, "meta": {"scale_amount": scale_amount}}
+	)
+	if not rec_res.changed:
+		return EffectResult.empty()
 
 	var result := EffectResult.new()
 	if _is_on_board(source):
 		# Use BUFF for both positive and negative stat changes to avoid attack/damage animations
 		var visual_source_uuid: String = source_uuid
-		var payload: CombatPayload = CombatPayload.pwr_change(visual_source_uuid, delta, [source.current_pwr - delta], [source.current_pwr])
+		var payload: CombatPayload = CombatPayload.pwr_change(visual_source_uuid, rec_res.delta_pwr, [rec_res.old_pwr], [rec_res.new_pwr])
 		
 		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
 			"source_uuid": visual_source_uuid,
@@ -61,7 +49,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		}))
 		
 		result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-			"text": "BubbleGunger scales by %+d PWR (%d copies)" % [delta, copy_count]
+			"text": "BubbleGunger scales by %+d PWR (%d copies)" % [rec_res.delta_pwr, copy_count]
 		}))
 	
 	result.state_applied = true

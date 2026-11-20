@@ -17,9 +17,8 @@ var _pending_stop_reason := ""
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	if is_instance_valid(ActionQueue):
-		ActionQueue.action_started.connect(_on_action_started)
-		ActionQueue.action_completed.connect(_on_action_completed)
+	ActionQueue.action_started.connect(_on_action_started)
+	ActionQueue.action_completed.connect(_on_action_completed)
 	if is_instance_valid(SignalBus):
 		SignalBus.run_initialized.connect(_on_run_initialized)
 		SignalBus.run_ending.connect(_on_run_ending)
@@ -68,7 +67,7 @@ func get_replay_files() -> Array[Dictionary]:
 	return results
 
 func _on_run_initialized(run_state: RunState, metadata: Dictionary, continuing: bool) -> void:
-	if _suppressed or (is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode()):
+	if _suppressed or ActionQueue.is_replay_mode():
 		return
 	if continuing:
 		_resume_run(run_state)

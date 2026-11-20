@@ -1,11 +1,5 @@
 # res://scripts/Shop.gd
-extends Control
-
-const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
-const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
-const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
-const InputUtils = preload("res://scripts/InputUtils.gd")
-const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
+extends EncounterBase
 
 @onready var slots_container: HBoxContainer = %ShopSlotsContainer
 @onready var reroll_button: Button = %RerollButton
@@ -14,171 +8,98 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var description_label: Label = %DescriptionLabel
 
 var _current_shop_instances: Array = []
-var _selected_cost: int = 0
 var _price_tag_nodes: Array[Control] = []
 var _current_reroll_cost: int = 1
-var _is_first_populate: bool = true
-var _transient_drop_pos: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	SignalBus.shop_stock_refreshed.connect(populate)
-	SignalBus.selection_changed.connect(_on_selection_changed)
-
 	SignalBus.confirm_drop_zone_activated.connect(_on_buy_pressed)
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	leave_button.pressed.connect(_on_leave_pressed)
-	
+	gui_input.connect(_handle_window_background_click)
 
-	# Add background input handling for the new InteractionContext system
-	gui_input.connect(_on_gui_input)
-	
-	# Connect to locale changes
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
-	_mark_shop_action_buttons()
-	
-	# AUDIO HOOK: Shop BGM
+	_mark_action_buttons_for_avoidance([reroll_button, leave_button], &"Shop")
+
 	Audio.play_music(SoundRegistry.BGM_SHOP)
 
-func _mark_shop_action_buttons() -> void:
-	_mark_action_button_for_inspection_avoidance(reroll_button)
-	_mark_action_button_for_inspection_avoidance(leave_button)
-
-func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
-	if not is_instance_valid(button):
-		return
-	button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Shop")
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.shop")
-	if description_label:
+	if is_instance_valid(description_label):
 		description_label.text = tr("ui.shop_desc")
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 	leave_button.text = tr("ui.leave")
+
 
 func populate(context: Dictionary) -> void:
 	_current_shop_instances = context.get("shop_instances", [])
 	_current_reroll_cost = context.get("reroll_cost", 1)
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 
-	var slot_nodes = slots_container.get_children()
-
-	for i in range(slot_nodes.size()):
-		var slot_view = slot_nodes[i]
-		# Ensure slot is visible and has full alpha (resets after any purchase-hiding)
+	var slot_nodes: Array[Node] = slots_container.get_children()
+	for i: int in range(slot_nodes.size()):
+		var slot_view: SlotView = slot_nodes[i] as SlotView
 		slot_view.visible = true
 		slot_view.modulate.a = 1.0
-		# Set size scale for inventory-style rendering (2.0 = 192px slots)
 		slot_view.set_size_scale(2.0)
-		# Clear any previous content (except indicator overlay)
 		for child in slot_view.get_children():
-			# Skip the indicator overlay (TextureRect with z_index 10)
 			if child is TextureRect and (child.z_index == 10 or child.z_index == -1):
 				continue
 			child.queue_free()
 
-		var loc = LocationIdentifier.new(&"Shop", i)
-		slot_view.populate(loc)
+		slot_view.populate(LocationIdentifier.new(&"Shop", i))
 		slot_view.set_interaction_context(&"FULLY_INTERACTIVE", 0)
 
-		var inst_for_slot = _find_instance_for_slot(i)
+		var inst_for_slot: GachaBallInstance = _find_instance_for_slot(i)
 		if is_instance_valid(inst_for_slot):
-			# Use adapter to create visual data
-			var visual_data = VisualDataAdapter.create_visual_data(inst_for_slot)
-			var ball_view = slot_view.set_content(visual_data, true)
-			
-			# Hide immediately for staggered entry; preserve scale
+			var ball_view: GachaBallView = slot_view.set_content(VisualDataAdapter.create_visual_data(inst_for_slot), true)
 			if is_instance_valid(ball_view):
 				ball_view.visible = false
 				ball_view.scale = Vector2.ONE
-	
+
 	_update_fixed_price_tags()
-	_animate_staggered_entry()
+	_animate_staggered_slot_entry(slots_container)
 
-func _animate_staggered_entry() -> void:
-	"""Animate gachaballs appearing one-by-one with landing bounce"""
-	var slot_nodes = slots_container.get_children()
-	
-	# STAGE 2: Wait before starting the population sequence
-	# Only wait a short time on first entry (per USER request)
-	if _is_first_populate:
-		await AnimationConstants.create_pausable_timer(get_tree(), 0.5).timeout
-		_is_first_populate = false
-	else:
-		# Just a tiny delay for rerolls to let layout settle
-		await get_tree().process_frame
-
-	# STAGE 3: Wait for layout to settle so icon_rect.size is populated
-	# This is critical for play_landing_bounce() which skips if size is zero.
-	await get_tree().process_frame
-	
-	var ball_index: int = 0
-	for slot_view in slot_nodes:
-		# Find GachaBallView in slot
-		var ball_view: GachaBallView = null
-		for child in slot_view.get_children():
-			if child is GachaBallView:
-				ball_view = child
-				break
-		
-		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-			# Ensure pivot is centered based on now-valid size
-			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
-			
-			# Schedule delayed reveal with bounce
-			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
-			var wait_tween = ball_view.create_tween()
-			wait_tween.tween_interval(delay)
-			wait_tween.tween_callback(func():
-				if is_instance_valid(ball_view):
-					ball_view.visible = true
-					ball_view.scale = Vector2.ONE
-					ball_view.play_landing_bounce()
-			)
-			ball_index += 1
-			
 
 func _update_fixed_price_tags() -> void:
-	const TAG_W := 84.0
-	const TAG_H := 38.0
-	
+	const TAG_W: float = 84.0
+	const TAG_H: float = 38.0
+
 	if _price_tag_nodes.is_empty():
-		for i in range(3):
-			var tag = _create_price_tag_node(TAG_W, TAG_H)
+		for i: int in range(3):
+			var tag: Control = _create_price_tag_node(TAG_W, TAG_H)
 			add_child(tag)
 			_price_tag_nodes.append(tag)
-	
-	# Wait for layout to settle so global_position is accurate
+
 	await get_tree().process_frame
-	
-	var slot_nodes = slots_container.get_children()
-	for i in range(slot_nodes.size()):
-		if i >= _price_tag_nodes.size(): break
-		
-		var tag = _price_tag_nodes[i]
-		var slot = slot_nodes[i]
-		var inst = _find_instance_for_slot(i)
-		
-		# Pinned to the slot's top-right corner in the Shop scene
-		# This ensures they stay put even when balls are dragged
-		tag.global_position = slot.global_position + Vector2(slot.size.x - TAG_W, 0)
-		
+
+	var slot_nodes: Array[Node] = slots_container.get_children()
+	for i: int in range(slot_nodes.size()):
+		if i >= _price_tag_nodes.size():
+			break
+		var tag: Control = _price_tag_nodes[i]
+		var slot: Control = slot_nodes[i] as Control
+		var inst: GachaBallInstance = _find_instance_for_slot(i)
+		tag.global_position = slot.global_position + Vector2(slot.size.x - TAG_W, 0.0)
+
 		var lbl: Label = tag.get_node_or_null("PriceLabel") as Label
 		if is_instance_valid(lbl):
 			if is_instance_valid(inst):
-				var price = GameManager.get_item_cost(inst.get_definition())
-				lbl.text = tr("ui.gold_price") % price
+				lbl.text = tr("ui.gold_price") % GameManager.get_item_cost(inst.get_definition())
 			else:
 				lbl.text = "Sold!"
 
+
 func _create_price_tag_node(w: float, h: float) -> Control:
-	var tag_wrapper = Control.new()
+	var tag_wrapper := Control.new()
 	tag_wrapper.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tag_wrapper.z_index = 5
 	tag_wrapper.size = Vector2(w, h)
-	
-	# Proportional background texture
-	var tag_texture = TextureRect.new()
+
+	var tag_texture := TextureRect.new()
 	tag_texture.name = "PriceTagTexture"
 	tag_texture.texture = load("res://assets/PixelArt/ui/textures/PriceTag.png")
 	tag_texture.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
@@ -187,13 +108,12 @@ func _create_price_tag_node(w: float, h: float) -> Control:
 	tag_texture.set_offsets_preset(Control.PRESET_FULL_RECT)
 	tag_texture.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tag_wrapper.add_child(tag_texture)
-	
-	# Price label
-	var price_label = Label.new()
+
+	var price_label := Label.new()
 	price_label.name = "PriceLabel"
 	price_label.set_anchors_preset(Control.PRESET_FULL_RECT)
 	price_label.set_offsets_preset(Control.PRESET_FULL_RECT)
-	price_label.offset_left = 18 # Clear the hole graphic
+	price_label.offset_left = 18
 	price_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	price_label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
 	price_label.add_theme_color_override("font_color", Color("#000000"))
@@ -201,280 +121,155 @@ func _create_price_tag_node(w: float, h: float) -> Control:
 	price_label.add_theme_font_size_override("font_size", 16)
 	price_label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	tag_wrapper.add_child(price_label)
-	
+
 	return tag_wrapper
 
 
 func _find_instance_for_slot(slot_index: int) -> GachaBallInstance:
 	for inst in _current_shop_instances:
-		if is_instance_valid(inst) and inst.get_location().index == slot_index:
-			return inst
+		if inst is GachaBallInstance and is_instance_valid(inst) and (inst as GachaBallInstance).get_location().index == slot_index:
+			return inst as GachaBallInstance
 	return null
 
-## Handle selection changes from the new InteractionContext system
-func _on_selection_changed(new_location: LocationIdentifier) -> void:
-	if new_location and new_location.container == &"Shop":
-		var instance = _find_instance_for_slot(new_location.index)
-		if is_instance_valid(instance):
-			var shop_def = instance.get_definition()
-			_selected_cost = GameManager.get_item_cost(shop_def)
-			return
-
-	_selected_cost = 0
 
 func _on_buy_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	var selected_ctx = GlobalInteractionRouter.get_current_selection()
-	var selected_loc = selected_ctx.location if selected_ctx else null
-	if selected_loc and selected_loc.container == &"Shop":
-		var instance = _find_instance_for_slot(selected_loc.index)
-		if not is_instance_valid(instance):
-			return
-		var actual_cost: int = GameManager.get_item_cost(instance.get_definition())
-		var current_gold: int = 0
-		if is_instance_valid(GameManager.run_state):
-			current_gold = GameManager.run_state.gold
-		
-		var drop_pos := Vector2.ZERO
-		var interaction_type := "CLICK"
+	var selected_ctx: InteractionContext = GlobalInteractionRouter.get_current_selection()
+	var selected_loc: LocationIdentifier = selected_ctx.location if selected_ctx != null else null
+	if selected_loc == null or selected_loc.container != &"Shop":
+		return
+	var instance: GachaBallInstance = _find_instance_for_slot(selected_loc.index)
+	if not is_instance_valid(instance):
+		return
+
+	var actual_cost: int = GameManager.get_item_cost(instance.get_definition())
+	var current_gold: int = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
+	var drop: Dictionary = _resolve_drop_interaction(is_drag, mouse_pos)
+	var drop_pos: Vector2 = drop["drop_pos"]
+
+	if current_gold < actual_cost:
+		var main_node: Node = GameManager._active_main_node
+		var gold_group: Control = main_node.get_node_or_null("%GoldGroup") as Control if is_instance_valid(main_node) else null
+		var drop_zone: Control = main_node.get_node_or_null("%ConfirmDropZone") as Control if is_instance_valid(main_node) else null
+		var rejection_target: Control = drop_zone if is_instance_valid(drop_zone) else reroll_button
+		RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
 		if is_drag:
-			drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
-			interaction_type = "DRAG"
-		_transient_drop_pos = drop_pos
-		var source_view_id: int = selected_ctx.source_view_instance_id if selected_ctx else -1
-
-		if current_gold < actual_cost:
-			var main_node = GameManager._active_main_node
-			var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
-			var drop_zone = main_node.get_node_or_null("%ConfirmDropZone") if is_instance_valid(main_node) else null
-			var rejection_target = drop_zone if is_instance_valid(drop_zone) else reroll_button
-			RejectionFeedbackScript.play_rejection_with_counter(rejection_target, gold_group, get_tree())
-			if is_drag:
-				if is_instance_valid(ActionQueue):
-					ActionQueue.request(CancelDragAction.new(selected_loc, null, "insufficient_gold", drop_pos, source_view_id))
-				else:
-					GlobalInteractionRouter.apply_deselect_entity()
-			else:
-				GlobalInteractionRouter.apply_deselect_entity()
-			return
-
-		var action := BuyShopAction.new(selected_loc.index, actual_cost, String(instance.definition_id), interaction_type, drop_pos)
-		if is_instance_valid(ActionQueue):
-			var accepted = ActionQueue.request(action)
-			if not accepted:
-				if is_drag:
-					ActionQueue.request(CancelDragAction.new(selected_loc, null, "action_rejected", drop_pos, source_view_id))
-				else:
-					GlobalInteractionRouter.apply_deselect_entity()
+			ActionQueue.request(CancelDragAction.new(selected_loc, null, "insufficient_gold", drop_pos))
 		else:
-			execute_buy_visuals(selected_loc.index, actual_cost, instance, drop_pos)
+			GlobalInteractionRouter.apply_deselect_entity()
+		return
+
+	var action := BuyShopAction.new(selected_loc.index, actual_cost, String(instance.definition_id), drop["interaction_type"], drop_pos)
+	if not ActionQueue.request(action):
+		if is_drag:
+			ActionQueue.request(CancelDragAction.new(selected_loc, null, "action_rejected", drop_pos))
+		else:
+			GlobalInteractionRouter.apply_deselect_entity()
+
 
 func play_transaction_log(event_log: Dictionary) -> void:
 	if not event_log.get("success", false):
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
 	var slot_index: int = int(event_log.get("slot_index", -1))
 	var cost: int = int(event_log.get("cost", 0))
-	var instance: GachaBallInstance = event_log.get("purchased_instance", null)
+	var instance: GachaBallInstance = event_log.get("purchased_instance", null) as GachaBallInstance
 	var drop_pos: Vector2 = event_log.get("drop_pos", Vector2.ZERO)
 	execute_buy_visuals(slot_index, cost, instance, drop_pos)
+
 
 func execute_buy_visuals(slot_index: int, cost: int, instance: GachaBallInstance = null, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
 	if not is_instance_valid(instance):
 		instance = _find_instance_for_slot(slot_index)
 	if not is_instance_valid(instance):
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
-	
-	var slot_nodes = slots_container.get_children()
-	var slot_view = slot_nodes[slot_index] if slot_index < slot_nodes.size() else null
-	var slot_center: Vector2 = Vector2.ZERO
-	if is_instance_valid(slot_view):
-		slot_center = slot_view.get_global_rect().get_center()
-		var main_node = GameManager._active_main_node
-		if is_instance_valid(main_node):
-			var content_area = main_node.get_node_or_null("%ContentArea")
-			if is_instance_valid(content_area):
-				slot_center += content_area.global_position
-	
-	var interaction_pos = slot_center
-	if not p_drop_pos.is_zero_approx():
-		interaction_pos = p_drop_pos
-	elif not _transient_drop_pos.is_zero_approx():
-		interaction_pos = _transient_drop_pos
-		_transient_drop_pos = Vector2.ZERO
-	
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var def = instance.get_definition()
-	var tier: int = 1
-	if "tier" in def:
-		tier = int(def.tier)
-	if is_instance_valid(def) and def.category == &"TRINKET":
+
+	var interaction_pos: Vector2 = _consume_animation_start_pos(_get_content_slot_global_center(slots_container, slot_index), p_drop_pos)
+	var visual_data: Dictionary = VisualDataAdapter.create_visual_data(instance)
+	var def: Resource = instance.get_definition()
+	var tier: int = int((def as GachaBallDefinition).tier) if def is GachaBallDefinition else 1
+	if is_instance_valid(def) and "category" in def and def.category == &"TRINKET":
 		tier = 3
-	
-	var selected_loc = LocationIdentifier.new(&"Shop", slot_index)
-	var source_anchor = WindowManager.find_view_for_location(selected_loc)
+
+	var source_anchor: Node = WindowManager.find_view_for_location(LocationIdentifier.new(&"Shop", slot_index))
 	if is_instance_valid(source_anchor):
 		for child in source_anchor.get_children():
 			if child is GachaBallView:
-				child.modulate.a = 0.0
-				child.visible = false
-	
-	var vfx_ball = _create_vfx_gachaball(visual_data, interaction_pos)
-	var ball_uuid = instance.ball_uuid
-	
-	_animate_gold_spend(cost, interaction_pos, func():
-		if not is_instance_valid(ActionQueue):
-			SignalBus.emit_signal("shop_purchase_requested", ball_uuid, cost)
+				(child as GachaBallView).modulate.a = 0.0
+				(child as GachaBallView).visible = false
+
+	var vfx_ball: GachaBallView = _spawn_vfx_gachaball(visual_data, Vector2(192, 192), false, true)
+	vfx_ball.set_is_interactive(false)
+	vfx_ball.global_position = interaction_pos - vfx_ball.pivot_offset
+
+	CurrencyAnimator.animate_gold_spend(cost, interaction_pos, func() -> void:
 		Audio.play_sfx("shop_buy")
-		_animate_gachaball_to_machine_vfx(vfx_ball, interaction_pos, tier)
-		var mn = GameManager._active_main_node
-		if is_instance_valid(mn) and mn.has_method("hide_confirm_drop_zone"):
-			mn.hide_confirm_drop_zone()
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_animate_shop_ball_to_machine(vfx_ball, interaction_pos, tier)
+		var main_node: Node = GameManager._active_main_node
+		if is_instance_valid(main_node):
+			main_node.hide_confirm_drop_zone()
+		_finish_active_action()
 	)
 
+
 func _on_reroll_pressed() -> void:
-	var current_gold: int = 0
-	if is_instance_valid(GameManager.run_state):
-		current_gold = GameManager.run_state.gold
-	
+	var current_gold: int = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
 	if current_gold < _current_reroll_cost:
-		var main_node = GameManager._active_main_node
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		var main_node: Node = GameManager._active_main_node
+		var gold_group: Control = main_node.get_node_or_null("%GoldGroup") as Control if is_instance_valid(main_node) else null
 		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
 		return
+	ActionQueue.request(RerollShopAction.new())
 
-	var action := RerollShopAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_reroll_visuals()
 
 func execute_reroll_visuals(cost: int = -1) -> void:
 	reroll_button.disabled = true
-	var target_pos = reroll_button.get_global_rect().get_center()
-			
-	var spend_cost = cost if cost >= 0 else _current_reroll_cost
-	_animate_gold_spend(spend_cost, target_pos, func():
-		SignalBus.emit_signal("selection_clear_requested")
-		if not is_instance_valid(ActionQueue):
-			SignalBus.emit_signal("shop_reroll_requested")
+	var target_pos: Vector2 = reroll_button.get_global_rect().get_center()
+	var spend_cost: int = cost if cost >= 0 else _current_reroll_cost
+	CurrencyAnimator.animate_gold_spend(spend_cost, target_pos, func() -> void:
+		SignalBus.selection_clear_requested.emit()
 		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 	)
 
-func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
 
-func _create_vfx_gachaball(visual_data: Dictionary, pos: Vector2) -> GachaBallView:
-	"""Create a static VFX gachaball at a specific screen position."""
-	var anim_ball = GachaBallViewScene.instantiate()
-	var effects_layer = WindowManager.get_vfx_layer()
-	effects_layer.add_child(anim_ball)
-	
-	# Clear anchors so size is not overridden
-	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
-	
-	anim_ball.force_inventory_mode = true
-	# Use 2.0 scale (192x192) to match the Shop's slot scale
-	var target_size = Vector2(192, 192)
-	anim_ball.custom_minimum_size = target_size
-	anim_ball.size = target_size
-	anim_ball.populate(null, visual_data, false)
-	anim_ball.set_is_interactive(false)
-	
-	var pivot = target_size / 2.0
-	anim_ball.pivot_offset = pivot
-	anim_ball.global_position = pos - pivot
-	return anim_ball
-
-func _animate_gachaball_to_machine_vfx(anim_ball: GachaBallView, start_pos: Vector2, tier: int) -> void:
+func _animate_shop_ball_to_machine(anim_ball: GachaBallView, start_pos: Vector2, tier: int) -> void:
 	if not is_instance_valid(anim_ball):
 		return
-		
-	var main_node = GameManager._active_main_node
+	var main_node: Node = GameManager._active_main_node
 	if not is_instance_valid(main_node):
 		anim_ball.queue_free()
 		return
-	
-	# Get target machine position
-	var machine = main_node.get_gacha_machine(tier)
+	var machine: Control = main_node.get_gacha_machine(tier) as Control
 	if not is_instance_valid(machine):
 		anim_ball.queue_free()
 		return
-	
-	var end_pos: Vector2 = machine.get_global_rect().get_center()
-	# Offset target position DOWN slightly (towards coin slot area)
-	end_pos.y = machine.get_global_rect().position.y + machine.get_global_rect().size.y * 0.4
-	
-	# AUDIO HOOK: Ball toss sound at animation start
+
+	var machine_rect: Rect2 = machine.get_global_rect()
+	var end_pos := Vector2(machine_rect.get_center().x, machine_rect.position.y + machine_rect.size.y * 0.4)
 	Audio.play_sfx("ui_drag_drop")
-	
-	# For animation, track CENTER position and derive global_position from it
-	var start_center: Vector2 = start_pos
-	var end_center: Vector2 = end_pos
-	
-	# Arc parameters - fast and smooth
-	var arc_height := 200.0
-	var duration := 0.45
-	
-	var control_point := Vector2(
-		(start_center.x + end_center.x) / 2.0,
-		min(start_center.y, end_center.y) - arc_height
-	)
-	
-	var tween = anim_ball.create_tween()
-	tween.set_trans(Tween.TRANS_LINEAR)
-	
-	tween.tween_method(func(t: float):
-		var eased_t = pow(t, 1.05)
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_center) + \
-				  (2.0 * inv_t * eased_t * control_point) + \
-				  (eased_t * eased_t * end_center)
-		
-		anim_ball.global_position = pos - anim_ball.pivot_offset
-	, 0.0, 1.0, duration)
-	
-	tween.tween_callback(func():
+
+	var tween: Tween = ArcTossAnimator.toss_bezier(anim_ball, start_pos, end_pos, {
+		"arc_height": 200.0,
+		"duration": 0.45,
+		"ease_power": 1.05,
+	})
+	tween.tween_callback(func() -> void:
 		Audio.play_sfx("coin_land")
 		anim_ball.queue_free()
-		if is_instance_valid(main_node) and main_node.has_method("animate_machine_inventory_change"):
+		if is_instance_valid(main_node):
 			main_node.animate_machine_inventory_change(tier, 1)
 	)
 
+
 func _on_leave_pressed() -> void:
-	var action := LeaveShopAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_leave_visuals()
+	ActionQueue.request(LeaveShopAction.new())
+
 
 func execute_leave_visuals() -> void:
-	# Hide the drop zone overlay before leaving
-	var main_node = GameManager._active_main_node
-	if is_instance_valid(main_node) and main_node.has_method("hide_confirm_drop_zone"):
+	var main_node: Node = GameManager._active_main_node
+	if is_instance_valid(main_node):
 		main_node.hide_confirm_drop_zone()
-	SignalBus.emit_signal("path_choice_scene_requested")
+	SignalBus.path_choice_scene_requested.emit()
 	queue_free()
-
-func _on_gui_input(event: InputEvent) -> void:
-	# Handle background clicks using the new InteractionContext system
-	if InputUtils.is_primary_pointer_press(event):
-		# Create and emit InteractionContext for shop background
-		var context = InteractionContext.new()
-		context.source_view_instance_id = get_instance_id()
-		context.event_type = &"SINGLE_CLICK"
-		context.location = null # No specific location for background
-		context.entity_uuid = ""
-		context.entity_type = &"WINDOW_BACKGROUND"
-		context.interaction_mode = &"FULLY_INTERACTIVE"
-		context.window_group_id = 0 # Main window group
-		
-		SignalBus.emit_signal("interaction_context_received", context)
-		get_viewport().set_input_as_handled()

@@ -42,7 +42,7 @@ func _on_node_selected(node_def: PathNodeDefinition) -> void:
 	var idx = -1
 	if is_instance_valid(GameManager.run_state):
 		idx = GameManager.run_state.available_path_nodes.find(node_def)
-	if idx != -1 and is_instance_valid(ActionQueue):
+	if idx != -1:
 		var expected_node := {
 			"node_type": String(node_def.node_type),
 			"subtype": String(node_def.subtype),

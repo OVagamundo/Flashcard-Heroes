@@ -3,10 +3,10 @@ extends Node
 const InputUtils = preload("res://scripts/InputUtils.gd")
 const InspectionPeekController = preload("res://scripts/ui/InspectionPeekController.gd")
 
-## The GlobalInteractionRouter is the single source of truth for interpreting user intent.
-## It receives InteractionContext from clicked views and generates command queues.
+## GlobalInteractionRouter is the single source of truth for interpreting user intent.
+## Receives InteractionContext from clicked views, generates command queues, and coordinates
+## selection, inspection lock, drag sessions, and close suppression.
 
-## Command types that can be generated
 enum CommandType {
 	DESELECT,
 	SELECT,
@@ -15,229 +15,168 @@ enum CommandType {
 	CLOSE_CHILD_WINDOWS,
 	CLOSE_TOP_CONTEXTUAL_WINDOW,
 	REQUEST_ACTION,
-	INVALID_ACTION
+	INVALID_ACTION,
 }
 
-## Command structure for the command queue
 class Command:
 	var cmd: CommandType
 	var context: Dictionary = {}
-	
+
 	func _init(command_type: CommandType, command_context: Dictionary = {}) -> void:
 		cmd = command_type
 		context = command_context
 
-## Current selection state
+
 var _current_selection: InteractionContext = null
-
-## Reference to WindowManager for window operations
-var _window_manager: Node = null
-
-## Combat state (gated interactions during COMBAT phase)
 var _is_combat_phase: bool = false
-
-## Drag-and-drop state (centralized in GIR per spec)
-var _is_drag_active: bool = false
-var _drag_origin_context: InteractionContext = null
-var _drag_source_view: Control = null
-var _drag_placeholder: Control = null
-var _drag_overlay_preview: Control = null
-var _drag_preview_layer: CanvasLayer = null
-var _suppress_close_parent_window_id: int = -1
-var _suppress_close_until_msec: int = 0
 var _is_ui_transitioning: bool = false
 var _last_pointer_pos: Vector2 = Vector2.ZERO
 
-## Lock inspection state (SEPARATE from _current_selection)
-var _locked_entity_view_id: int = -1 # instance_id of view with locked inspection
-var _is_inspection_locked: bool = false # true = sticky window (combat pinned)
+## Lock inspection state (separate from _current_selection; CloseInspectionAction resets via set())
+var _locked_entity_view_id: int = -1
+var _is_inspection_locked: bool = false
+
 var _peek_controller: InspectionPeekController = null
+var _drag: DragSessionController = DragSessionController.new()
+var _suppression: CloseSuppressionState = CloseSuppressionState.new()
+
 
 func get_peek_controller() -> InspectionPeekController:
 	return _peek_controller
 
+
 func is_combat_phase() -> bool:
 	return _is_combat_phase
+
 
 func is_ui_transitioning() -> bool:
 	return _is_ui_transitioning
 
+
 func _ready() -> void:
-	# Register as singleton
 	add_to_group("global_interaction_router")
 	set_process(true)
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	
-	# Instantiate and register central peek controller
+
 	_peek_controller = InspectionPeekController.new()
 	_peek_controller.name = "InspectionPeekController"
 	add_child(_peek_controller)
-	
-	# Get references to other managers
-	_window_manager = WindowManager
-	
-	# Connect to interaction signals
+
 	SignalBus.interaction_context_received.connect(_on_interaction_context_received)
-	# Proactively clear selection on scene transitions and other flows that request it
-	if SignalBus.has_signal("selection_clear_requested"):
-		SignalBus.selection_clear_requested.connect(_on_selection_clear_requested)
-	# Track battle phase to gate interactions during COMBAT
-	if SignalBus.has_signal("battle_phase_changed"):
-		SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
-	if SignalBus.has_signal("interaction_lock_requested"):
-		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
-	
+	SignalBus.selection_clear_requested.connect(_on_selection_clear_requested)
+	SignalBus.battle_phase_changed.connect(_on_battle_phase_changed)
+	SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
 	SignalBus.battle_inventory_transition_started.connect(_on_battle_inventory_transition_started)
 	SignalBus.battle_inventory_transition_finished.connect(_on_battle_inventory_transition_finished)
-	
-	# Connect to WindowManager closing signal to clear stale selections
-	if _window_manager.has_signal("window_closed"):
-		_window_manager.window_closed.connect(_on_window_closed)
+	WindowManager.window_closed.connect(_on_window_closed)
+	ActionQueue.action_rejected.connect(_on_action_rejected)
 
-	if is_instance_valid(ActionQueue):
-		ActionQueue.action_rejected.connect(_on_action_rejected)
 
 func _on_action_rejected(_action: GameAction, _reason: String) -> void:
-	if _is_drag_active:
+	if _drag.is_drag_active:
 		end_drag(false)
 
 
-
 func _exit_tree() -> void:
-	# Scene cleanup per spec: clear drag and selection
-	_end_drag_visuals(false)
-	_is_drag_active = false
-	_drag_origin_context = null
-	# Clear lock state
+	_drag.cleanup()
 	_is_inspection_locked = false
 	_locked_entity_view_id = -1
-	# Emit deselect if needed
 	if _current_selection != null:
 		_emit_view_deselected(_current_selection)
 		_emit_selection_changed(null)
-	_is_drag_active = false
-	_drag_origin_context = null
-	# Disconnect SignalBus hooks connected in _ready()
 	if SignalBus.interaction_context_received.is_connected(_on_interaction_context_received):
 		SignalBus.interaction_context_received.disconnect(_on_interaction_context_received)
-	if SignalBus.has_signal("interaction_lock_requested") and SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
+	if SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
 		SignalBus.interaction_lock_requested.disconnect(_on_interaction_lock_requested)
-	if SignalBus.has_signal("node_selected") and SignalBus.node_selected.is_connected(_on_node_selected):
-		SignalBus.node_selected.disconnect(_on_node_selected)
-	if SignalBus.has_signal("selection_clear_requested") and SignalBus.selection_clear_requested.is_connected(_on_selection_clear_requested):
+	if SignalBus.selection_clear_requested.is_connected(_on_selection_clear_requested):
 		SignalBus.selection_clear_requested.disconnect(_on_selection_clear_requested)
-	if SignalBus.has_signal("battle_phase_changed") and SignalBus.battle_phase_changed.is_connected(_on_battle_phase_changed):
+	if SignalBus.battle_phase_changed.is_connected(_on_battle_phase_changed):
 		SignalBus.battle_phase_changed.disconnect(_on_battle_phase_changed)
-	if _window_manager and _window_manager.has_signal("window_closed"):
-		if _window_manager.is_connected("window_closed", _on_window_closed):
-			_window_manager.disconnect("window_closed", _on_window_closed)
-	_clear_drag_overlay_preview()
-	if is_instance_valid(_drag_preview_layer):
-		_drag_preview_layer.queue_free()
-	_drag_preview_layer = null
+	if WindowManager.window_closed.is_connected(_on_window_closed):
+		WindowManager.window_closed.disconnect(_on_window_closed)
 
-## Main entry point for processing interactions
+
 func _on_interaction_context_received(context: InteractionContext) -> void:
-	var command_queue: Array[Command] = []
-
-	# Full input lock during UI Transitions
 	if _is_ui_transitioning:
 		return
-		
-	# Drag Start: handled separately to initialize drag state
-	# ROBUSTNESS: Check both StringName and string to avoid type issues
-	if context.event_type == &"DRAG_START" or str(context.event_type) == "DRAG_START":
-		if is_vcr_playing() or _is_drag_active: 
+	if context.event_type == &"DRAG_START":
+		if is_vcr_playing() or _drag.is_drag_active:
 			return
 		start_drag(context)
 		return
-
-	# Generate commands based on the interaction context and current state
-	command_queue = _generate_command_queue(context)
-
-	# Execute the command queue
+	var command_queue: Array[Command] = _generate_command_queue(context)
 	_execute_command_queue(command_queue)
 
+
 func _process(_delta: float) -> void:
-	if is_instance_valid(_drag_overlay_preview):
-		_drag_overlay_preview.global_position = get_last_pointer_position()
+	_drag.update_overlay_position(get_last_pointer_position())
+
 
 func _input(event: InputEvent) -> void:
-	# TAB: Toggle glossary detail cards on/off (Always globally available)
 	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_TAB:
-		if is_instance_valid(WindowManager):
-			WindowManager.toggle_glossary_lock()
-			get_viewport().set_input_as_handled()
-			return
+		WindowManager.toggle_glossary_lock()
+		get_viewport().set_input_as_handled()
+		return
 	if WindowManager.is_tutorial_overlay_open():
 		return
 
 	if event is InputEventMouse or event is InputEventScreenTouch or event is InputEventScreenDrag:
 		_last_pointer_pos = InputUtils.get_event_global_position(event)
 
-	var is_choice_open: bool = is_instance_valid(_window_manager) and _window_manager.has_method("is_choice_window_open") and _window_manager.is_choice_window_open()
+	var is_choice_open: bool = WindowManager.is_choice_window_open()
 	if not _is_inspection_locked and not is_choice_open:
 		return
-	if InputUtils.is_primary_pointer_press(event):
-		var pos: Vector2 = InputUtils.get_event_global_position(event)
-		if pos.is_zero_approx():
-			return
-		
-		# If ChoiceWindow is open:
-		# Any click inside ChoiceWindow or its cluster (glossary cards, pill) is handled by the windows.
-		# Any click OUTSIDE the cluster must close ChoiceWindow and cancel the merge preview.
-		if is_choice_open:
-			if WindowManager.is_point_inside_any_inspection_window(pos):
-				return
-			# Click is outside ChoiceWindow and its cluster: close inspection windows (including ChoiceWindow)
-			_is_inspection_locked = false
-			_locked_entity_view_id = -1
-			_execute_close_all_inspection_windows()
-			return
+	if not InputUtils.is_primary_pointer_press(event):
+		return
 
-		# If click is inside an active inspection window, let the window handle it
+	var pos: Vector2 = InputUtils.get_event_global_position(event)
+	if pos.is_zero_approx():
+		return
+
+	if is_choice_open:
 		if WindowManager.is_point_inside_any_inspection_window(pos):
 			return
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+		_execute_close_all_inspection_windows()
+		return
 
-		var main_node = GameManager._active_main_node if GameManager else null
-		var is_inside_drop_zone = false
-		if is_instance_valid(main_node) and main_node.has_method("is_point_inside_active_drop_zone"):
-			is_inside_drop_zone = main_node.is_point_inside_active_drop_zone(pos)
+	if WindowManager.is_point_inside_any_inspection_window(pos):
+		return
 
-		if is_inside_drop_zone:
-			return
+	var main_node: Node = get_tree().get_first_node_in_group("main")
+	if is_instance_valid(main_node) and main_node.is_point_inside_active_drop_zone(pos):
+		return
 
-		# During Combat or VCR playback, the scene tree is paused while inspecting.
-		# Because paused Controls cannot receive _gui_input, GIR._input routes the click:
-		# A different source switches inspection. The same source or the background closes it.
-		if _is_combat_phase or is_vcr_playing():
-			var context: InteractionContext = _find_combat_inspection_at_position(pos)
-			if context != null and context.source_view_instance_id != _locked_entity_view_id:
-				_on_interaction_context_received(context)
-			else:
-				_is_inspection_locked = false
-				_locked_entity_view_id = -1
-				_execute_close_all_inspection_windows()
-			get_viewport().set_input_as_handled()
-			return
-
-		# Outside combat: normal management phase close logic (without swallowing event)
-		if not _is_close_suppressed_now():
+	# During Combat or VCR playback, paused Controls cannot receive _gui_input:
+	# route clicks to switch inspection or close the pinned inspection.
+	if _is_combat_phase or is_vcr_playing():
+		var context: InteractionContext = _find_combat_inspection_at_position(pos)
+		if context != null and context.source_view_instance_id != _locked_entity_view_id:
+			_on_interaction_context_received(context)
+		else:
 			_is_inspection_locked = false
 			_locked_entity_view_id = -1
 			_execute_close_all_inspection_windows()
+		get_viewport().set_input_as_handled()
+		return
+
+	if not _suppression.is_active():
+		_is_inspection_locked = false
+		_locked_entity_view_id = -1
+		_execute_close_all_inspection_windows()
+
 
 func _find_combat_inspection_at_position(pos: Vector2) -> InteractionContext:
 	var screen_position: Vector2 = get_viewport().get_screen_transform() * pos
 	var banner: EnemyBannerView = get_tree().get_first_node_in_group("enemy_banner_view") as EnemyBannerView
 	if banner != null and banner.is_visible_in_tree():
 		var banner_point: Vector2 = banner.get_screen_transform().affine_inverse() * screen_position
-		# The banner's hit test gives the unit drawn over it priority over the cloth.
 		if banner._has_point(banner_point):
 			return banner.create_inspection_context(pos)
 
 	var views: Array[Node] = get_tree().get_nodes_in_group("gachaball_view")
-	for i in range(views.size() - 1, -1, -1):
+	for i: int in range(views.size() - 1, -1, -1):
 		var view: GachaBallView = views[i] as GachaBallView
 		if not view.is_visible_in_tree():
 			continue
@@ -247,570 +186,296 @@ func _find_combat_inspection_at_position(pos: Vector2) -> InteractionContext:
 	return null
 
 
-
-## High-priority input handling (Escape, true background)
 func _unhandled_input(event: InputEvent) -> void:
-	# Full input lock during COMBAT: swallow background clicks
-	# UNLESS the player is currently inspecting something (the game is frozen).
-	# If we are inspecting, allow background clicks to close the inspection window and unfreeze!
-	# Allow ESC during combat to toggle pause menu!
 	if _is_combat_phase and not _is_inspection_locked:
 		if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-			if is_instance_valid(WindowManager):
-				WindowManager.toggle_options_window()
-				get_viewport().set_input_as_handled()
+			WindowManager.toggle_options_window()
+			get_viewport().set_input_as_handled()
 		return
 
-	# ESC: cancel drag, then modals, then contextual windows, then selection
 	if event is InputEventKey and event.pressed and event.keycode == KEY_ESCAPE:
-		# 1) Cancel active drag if any
-		if _is_drag_active:
-			var origin_loc = _drag_origin_context.location if _drag_origin_context else null
-			var origin_view_id: int = _drag_origin_context.source_view_instance_id if _drag_origin_context else -1
-			if is_instance_valid(ActionQueue):
-				ActionQueue.request(CancelDragAction.new(origin_loc, null, "cancelled_by_escape", Vector2.ZERO, origin_view_id))
-			else:
-				end_drag(false)
-				_end_drag_visuals(false)
+		if _drag.is_drag_active:
+			var origin_loc: LocationIdentifier = _drag.drag_origin_context.location if _drag.drag_origin_context != null else null
+			ActionQueue.request(CancelDragAction.new(origin_loc, null, "cancelled_by_escape", Vector2.ZERO))
 			return
-		# 2) Try to close a modal (WindowManager listens to this signal)
-		if is_instance_valid(WindowManager) and WindowManager.is_modal_open():
-			if SignalBus.has_signal("close_modal_requested"):
-				SignalBus.emit_signal("close_modal_requested")
+		if WindowManager.is_modal_open():
+			SignalBus.close_modal_requested.emit()
 			return
-		# 3) Clear lock state
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1
-		# 4) Close contextual windows (guarded by suppression) and clear selection
-		if is_instance_valid(WindowManager) and WindowManager.has_any_contextual_windows():
-			if not _is_close_suppressed_now():
+		if WindowManager.has_any_contextual_windows():
+			if not _suppression.is_active():
 				_execute_close_all_inspection_windows()
 			return
-		if not is_vcr_playing() and not _is_combat_phase:
-			if is_instance_valid(ActionQueue) and _current_selection != null:
-				ActionQueue.request(DeselectAction.new())
-				return
-			elif _current_selection != null:
-				_execute_deselect()
-				return
-		# 5) If nothing else was open or selected, toggle Options / Pause menu
-		if is_instance_valid(WindowManager):
-			WindowManager.toggle_options_window()
+		if not is_vcr_playing() and not _is_combat_phase and _current_selection != null:
+			ActionQueue.request(DeselectAction.new())
+			return
+		WindowManager.toggle_options_window()
 		return
 
-
-	# True background click: left mouse press not handled by any Control
 	if InputUtils.is_primary_pointer_press(event):
-		# Close contextual windows and clear selection (guarded by suppression)
-		if not _is_close_suppressed_now():
-			# Clear lock state
+		if not _suppression.is_active():
 			_is_inspection_locked = false
 			_locked_entity_view_id = -1
 			_execute_close_all_inspection_windows()
 		if not is_vcr_playing() and not _is_combat_phase:
-			if is_instance_valid(ActionQueue) and _current_selection != null:
+			if _current_selection != null:
 				ActionQueue.request(DeselectAction.new())
 			else:
 				_execute_deselect()
 
-## External signal handler: proactively clear selection when requested (e.g., scene transitions)
+
 func _on_selection_clear_requested() -> void:
-	# Clear lock state
 	_is_inspection_locked = false
 	_locked_entity_view_id = -1
-	# Always clear selection if present
 	if _current_selection != null:
 		_execute_deselect()
-	# Also activate a brief, contextless close suppression to guard the very next click
-	# after system-driven actions (e.g., shop purchase, reward choice). This prevents
-	# GR-4 global close or background handlers from triggering immediately.
-	var until_ts := Time.get_ticks_msec() + 240
-	_suppress_close_parent_window_id = 0
-	_suppress_close_until_msec = until_ts
+	_suppression.arm(0, CloseSuppressionState.CLOSE_SUPPRESS_GRACE_FRAMES, false)
 
-func _on_node_selected(_node_def: PathNodeDefinition) -> void:
-	pass
 
-# Handler for external lock requests
 func _on_interaction_lock_requested(locked: bool) -> void:
 	_is_inspection_locked = locked
 
-## Track battle phase to enforce COMBAT gating
+
 func _on_battle_phase_changed(phase_name: StringName) -> void:
-	_is_combat_phase = phase_name == &"COMBAT"
-	# If entering COMBAT, ensure any drag state and engine preview are cleared
+	_is_combat_phase = (phase_name == &"COMBAT")
 	if _is_combat_phase:
-		# Close any open windows immediately
 		_execute_close_all_inspection_windows()
 		_execute_deselect()
-		
-		# Clear lock state
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1
-		if _is_drag_active:
+		if _drag.is_drag_active:
 			end_drag(false)
-		# Also cancel engine-managed drag preview to avoid lingering visuals
-		var vp := get_viewport()
-		if vp and vp.has_method("gui_cancel_drag"):
+		var vp: Viewport = get_viewport()
+		if is_instance_valid(vp):
 			vp.gui_cancel_drag()
+
 
 func _on_battle_inventory_transition_started(_is_opening: bool) -> void:
 	_is_ui_transitioning = true
-	if _is_drag_active:
+	if _drag.is_drag_active:
 		end_drag(false)
+
 
 func _on_battle_inventory_transition_finished() -> void:
 	_is_ui_transitioning = false
 
-## Handler for WindowManager.window_closed signal
-## Clears selection if the selected item was inside the closed window.
-func _on_window_closed(window: Control) -> void:
-	if _current_selection == null: return
-	
-	# Resolve the view for the current selection
-	var sel_view_id = _current_selection.source_view_instance_id
-	var sel_view = _find_view_by_instance_id(sel_view_id)
-	
-	if is_instance_valid(sel_view) and is_instance_valid(window):
-		# check if selection is inside the closed window
-		if window == sel_view or window.is_ancestor_of(sel_view):
-			_execute_deselect()
 
-## Generate command queue based on interaction context and current state
+func _on_window_closed(window: Control) -> void:
+	if _current_selection == null or not is_instance_valid(window):
+		return
+	var sel_view: Control = _find_view_by_instance_id(_current_selection.source_view_instance_id)
+	if is_instance_valid(sel_view) and (window == sel_view or window.is_ancestor_of(sel_view)):
+		_execute_deselect()
+
+
+# =============================================================================
+# COMMAND QUEUE GENERATION
+# =============================================================================
+
 func _generate_command_queue(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
-	
-	# If a drag is active, this incoming context is the drop target.
-	if _is_drag_active and _drag_origin_context != null:
-		# Check if source is from a SelectionOnly context (Shop, Rewards)
-		# In SelectionOnly contexts, dragging is for selection/inspection only - no actions are valid
-		var source_group = get_context_group(_drag_origin_context.location.container) if _drag_origin_context.location else &""
+
+	if _drag.is_drag_active and _drag.drag_origin_context != null:
+		var source_group: StringName = get_context_group(_drag.drag_origin_context.location.container) if _drag.drag_origin_context.location != null else &""
 		if source_group == &"SelectionOnly":
-			# Keep the dragged item selected, don't try to process an action
-			# The item was already selected in start_drag()
 			return commands
-		
-		# For other contexts: Command Queue: [REQUEST_ACTION, DESELECT] (Rule S6)
 		var drop_pos: Vector2 = context.pointer_position if is_instance_valid(context) and not context.pointer_position.is_zero_approx() else get_last_pointer_position()
-		var req_ctx: Dictionary = {
-			"source_context": _drag_origin_context,
-			"target_context": context,
-			"interaction_type": "DRAG",
-			"drop_pos": drop_pos,
-		}
-		# Attach target parent window information for suppression
-		var tgt_parent_id := _resolve_parent_window_id_for_context(context)
-		if tgt_parent_id != -1:
-			req_ctx["target_parent_window_id"] = tgt_parent_id
-			req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
-		commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
+		commands.append(Command.new(CommandType.REQUEST_ACTION, _build_request_action_ctx(_drag.drag_origin_context, context, "DRAG", drop_pos)))
 		commands.append(Command.new(CommandType.DESELECT))
 		return commands
-	
-	# TDD Rule: ANYWHERE outside window group should close entire group
-	# IMPORTANT: Do NOT apply this to UI_LINK interactions, which originate inside windows
-	if context.entity_type != &"UI_LINK":
-		if _window_manager and (_window_manager.is_any_inspection_window_open() or _window_manager.is_any_inventory_window_open()):
-			# First, prune children when clicking anywhere inside a window (except explicit WINDOW_BACKGROUND, handled below)
-			var src_view = _find_view_by_instance_id(context.source_view_instance_id)
-			if src_view and context.entity_type != &"WINDOW_BACKGROUND":
-				var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
-				if is_instance_valid(parent_window):
-					var skip_prune := _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id
-					if not skip_prune:
-						commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
-							"parent_window_id": parent_window.get_instance_id()
-						}))
-			# Next, if the click is outside all windows, close the entire group
-			if not _is_click_inside_inspection_group(context):
-				# Suppress global close if an in-window action just occurred.
-				var suppressed := _is_close_suppressed_for_context(context)
-				if not suppressed and _is_close_suppressed_now():
-					suppressed = true
-				if not suppressed and _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-					suppressed = true
-				if not suppressed:
-					commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-	
-	# Handle different entity types
+
+	if context.entity_type != &"UI_LINK" and (WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open()):
+		var src_view: Control = _find_view_by_instance_id(context.source_view_instance_id)
+		if is_instance_valid(src_view) and context.entity_type != &"WINDOW_BACKGROUND":
+			var parent_window: Control = WindowManager.find_ancestor_window_for_view(src_view)
+			if is_instance_valid(parent_window):
+				var skip_prune: bool = _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id
+				if not skip_prune:
+					commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
+						"parent_window_id": parent_window.get_instance_id(),
+					}))
+		if not _is_click_inside_inspection_group(context):
+			var suppressed: bool = _suppression.is_suppressed_for_context(context, get_tree().root) \
+				or _suppression.is_active() \
+				or (_is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id)
+			if not suppressed:
+				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+
 	match context.entity_type:
 		&"GLOBAL_BACKGROUND":
-			# GR-4: Close on "True" Background Click
-			if not _is_close_suppressed_now():
+			if not _suppression.is_active():
 				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
 				commands.append(Command.new(CommandType.DESELECT))
-			
 		&"WINDOW_BACKGROUND":
-			# GR-6: Child Window Closure - prune that branch
 			commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
 				"window_group_id": context.window_group_id,
-				"parent_window_id": context.source_view_instance_id
+				"parent_window_id": context.source_view_instance_id,
 			}))
 			commands.append(Command.new(CommandType.DESELECT))
-			
 		&"UNIT", &"ITEM", &"TRINKET", &"CONSUMABLE":
 			commands.append_array(_handle_gachaball_interaction(context))
-			
 		&"EMPTY_SLOT":
 			commands.append_array(_handle_empty_slot_interaction(context))
-			
 		&"UI_LINK":
 			commands.append_array(_handle_ui_link_interaction(context))
-	
+
 	return commands
 
-## Handle interactions with GachaBall instances
-func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
+
+func _build_request_action_ctx(source: InteractionContext, target: InteractionContext, interaction_type: String, drop_pos: Vector2) -> Dictionary:
+	var req_ctx: Dictionary = {
+		"source_context": source,
+		"target_context": target,
+		"interaction_type": interaction_type,
+		"drop_pos": drop_pos,
+	}
+	var tgt_parent_id: int = _resolve_parent_window_id_for_context(target)
+	if tgt_parent_id != -1:
+		req_ctx["target_parent_window_id"] = tgt_parent_id
+		req_ctx["is_inside_unit_inspection"] = InteractionTargetRules.is_unit_inspection_window_id(tgt_parent_id)
+	return req_ctx
+
+
+func _handle_locked_inspection_toggle(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
-	
+	if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
+		commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
+	else:
+		if not _is_click_inside_inspection_group(context) and not _suppression.is_suppressed_for_context(context, get_tree().root):
+			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+		commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+			"context": context,
+			"anchor_view_id": context.source_view_instance_id,
+			"lock": true,
+		}))
+	return commands
+
+
+func _handle_gachaball_interaction(context: InteractionContext) -> Array[Command]:
 	match context.interaction_mode:
 		&"FULLY_INTERACTIVE":
-			commands.append_array(_handle_fully_interactive(context))
+			return _handle_fully_interactive(context)
 		&"SELECTION_ONLY":
-			commands.append_array(_handle_selection_only(context))
+			return _handle_selection_only(context)
 		&"INSPECTION_ONLY":
-			if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-				commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
-			else:
-				var click_inside_window = _is_click_inside_inspection_group(context)
-				if not click_inside_window and not _is_close_suppressed_for_context(context):
-					commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-				commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-					"context": context,
-					"anchor_view_id": context.source_view_instance_id,
-					"lock": true
-				}))
-	
-	return commands
+			return _handle_locked_inspection_toggle(context)
+	return []
 
-## Handle fully interactive contexts (battle board, inventory)
+
 func _handle_fully_interactive(context: InteractionContext) -> Array[Command]:
-	var commands: Array[Command] = []
-	
-	# If VCR or Combat is playing, clicking opens/closes pinned inspection and pauses/resumes.
 	if is_vcr_playing() or _is_combat_phase:
-		if _is_inspection_locked and _locked_entity_view_id == context.source_view_instance_id:
-			commands.append(Command.new(CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW))
-		else:
-			var click_inside_window = _is_click_inside_inspection_group(context)
-			if not click_inside_window and not _is_close_suppressed_for_context(context):
-				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-			commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-				"context": context,
-				"anchor_view_id": context.source_view_instance_id,
-				"lock": true
-			}))
-		return commands
-	
-	# Outside combat: Click is strictly select-only (never opens/pins an inspection window)
-	if _current_selection != null:
-		# Clicking already-selected unit: retain selection
-		if _current_selection.source_view_instance_id == context.source_view_instance_id:
-			return commands
-		
-		# Inventory tier change
-		if _is_inventory_tier_change(_current_selection, context):
-			commands.append(Command.new(CommandType.DESELECT))
-			commands.append(Command.new(CommandType.SELECT, {"context": context}))
-			return commands
-		
-		# Check if this is a valid action target
-		var is_valid_action = _is_valid_action_target(_current_selection, context)
-		if is_valid_action:
-			var req_ctx: Dictionary = {
-				"source_context": _current_selection,
-				"target_context": context,
-				"interaction_type": "CLICK",
-				"drop_pos": Vector2.ZERO,
-			}
-			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
-			if tgt_parent_id != -1:
-				req_ctx["target_parent_window_id"] = tgt_parent_id
-				req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
-			commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
-			commands.append(Command.new(CommandType.DESELECT))
-		else:
-			# Not a valid action target - Change of Focus (Rule S2)
-			var click_inside_window = _is_click_inside_inspection_group(context)
-			if not click_inside_window and not _is_close_suppressed_for_context(context):
-				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-			commands.append(Command.new(CommandType.DESELECT))
-			commands.append(Command.new(CommandType.SELECT, {"context": context}))
-	else:
-		# No current selection -> select only
+		return _handle_locked_inspection_toggle(context)
+
+	var commands: Array[Command] = []
+	if _current_selection == null:
 		commands.append(Command.new(CommandType.SELECT, {"context": context}))
-	
+		return commands
+
+	if _current_selection.source_view_instance_id == context.source_view_instance_id:
+		return commands
+
+	if InteractionTargetRules.is_inventory_tier_change(_current_selection, context):
+		commands.append(Command.new(CommandType.DESELECT))
+		commands.append(Command.new(CommandType.SELECT, {"context": context}))
+		return commands
+
+	if InteractionTargetRules.is_valid_action_target(_current_selection, context):
+		commands.append(Command.new(CommandType.REQUEST_ACTION, _build_request_action_ctx(_current_selection, context, "CLICK", Vector2.ZERO)))
+		commands.append(Command.new(CommandType.DESELECT))
+	else:
+		if not _is_click_inside_inspection_group(context) and not _suppression.is_suppressed_for_context(context, get_tree().root):
+			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+		commands.append(Command.new(CommandType.DESELECT))
+		commands.append(Command.new(CommandType.SELECT, {"context": context}))
 	return commands
 
-## Handle selection-only contexts (shop, rewards)
+
 func _handle_selection_only(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
-	
 	if _current_selection != null:
 		var same_view: bool = _current_selection.source_view_instance_id == context.source_view_instance_id
-		var same_loc: bool = _current_selection.location and context.location \
+		var same_loc: bool = _current_selection.location != null and context.location != null \
 			and _current_selection.location.container == context.location.container \
 			and _current_selection.location.index == context.location.index
 		if same_view or same_loc:
 			return commands
-	
-	if _current_selection != null:
 		commands.append(Command.new(CommandType.DESELECT))
 	commands.append(Command.new(CommandType.SELECT, {"context": context}))
-	
 	return commands
 
-## Handle empty slot interactions
+
 func _handle_empty_slot_interaction(context: InteractionContext) -> Array[Command]:
 	var commands: Array[Command] = []
-	
-	# Check if we have a current selection
-	if _current_selection != null:
-		# Check for inventory tier change (special rule for inventory windows)
-		if _is_inventory_tier_change(_current_selection, context):
-			# TDD Rule: Inventory tier changes should be handled as selection changes
-			commands.append(Command.new(CommandType.DESELECT))
-			# Note: Empty slots don't get selected, so we just deselect
-		# Check if this is a valid move target
-		elif _is_valid_move_target(_current_selection, context):
-			if is_vcr_playing() or _is_combat_phase:
-				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-				return commands
-				
-			var req_ctx: Dictionary = {
-				"source_context": _current_selection,
-				"target_context": context,
-				"interaction_type": "CLICK",
-				"drop_pos": Vector2.ZERO,
-			}
-			var tgt_parent_id := _resolve_parent_window_id_for_context(context)
-			if tgt_parent_id != -1:
-				req_ctx["target_parent_window_id"] = tgt_parent_id
-				req_ctx["is_inside_unit_inspection"] = _is_unit_inspection_window_id(tgt_parent_id)
-			commands.append(Command.new(CommandType.REQUEST_ACTION, req_ctx))
-			# Clear selection after any action (valid or invalid)
-			commands.append(Command.new(CommandType.DESELECT))
-		else:
-			# Invalid target - only close windows if clicking OUTSIDE the inspection group
-			var click_inside_window = _is_click_inside_inspection_group(context)
-			if not click_inside_window and not _is_close_suppressed_for_context(context):
-				commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
-			commands.append(Command.new(CommandType.DESELECT))
-	
+	if _current_selection == null:
+		return commands
+
+	if InteractionTargetRules.is_inventory_tier_change(_current_selection, context):
+		commands.append(Command.new(CommandType.DESELECT))
+	elif InteractionTargetRules.is_valid_move_target(_current_selection, context):
+		if is_vcr_playing() or _is_combat_phase:
+			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+			return commands
+		commands.append(Command.new(CommandType.REQUEST_ACTION, _build_request_action_ctx(_current_selection, context, "CLICK", Vector2.ZERO)))
+		commands.append(Command.new(CommandType.DESELECT))
+	else:
+		if not _is_click_inside_inspection_group(context) and not _suppression.is_suppressed_for_context(context, get_tree().root):
+			commands.append(Command.new(CommandType.CLOSE_ALL_INSPECTION_WINDOWS))
+		commands.append(Command.new(CommandType.DESELECT))
 	return commands
 
-## Handle UI link interactions (like "EFFECTS" links)
+
 func _handle_ui_link_interaction(context: InteractionContext) -> Array[Command]:
-	var commands: Array[Command] = []
-	
-	# TDD Rule: Effects link should close existing children of the current window
-	# Resolve the actual parent window containing the link, even if the source id is a child label
-	var parent_window_id: int = -1
-	if _window_manager:
-		var src_view: Control = _find_view_by_instance_id(context.source_view_instance_id)
-		if src_view:
-			var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
-			if is_instance_valid(parent_window):
-				parent_window_id = parent_window.get_instance_id()
-	# Fallback to the raw source id if mapping fails (best effort)
+	var parent_window_id: int = _resolve_parent_window_id_for_context(context)
 	if parent_window_id == -1:
 		parent_window_id = context.source_view_instance_id
-	# Close children of the resolved parent window
-	commands.append(Command.new(CommandType.CLOSE_CHILD_WINDOWS, {
-		"parent_window_id": parent_window_id
-	}))
-	
-	# Then open the effects inspection window (parent remains selected)
-	commands.append(Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
-		"context": context,
-		"anchor_view_id": context.source_view_instance_id
-	}))
-	
-	return commands
+	return [
+		Command.new(CommandType.CLOSE_CHILD_WINDOWS, {"parent_window_id": parent_window_id}),
+		Command.new(CommandType.OPEN_INSPECTION_WINDOW, {
+			"context": context,
+			"anchor_view_id": context.source_view_instance_id,
+		}),
+	]
 
-## Legacy: inspection is now handled by hover + lock. This always returns false.
-func _is_inspection_event(_context: InteractionContext) -> bool:
-	return false
 
-## Check if this is an inventory tier change (special rule for inventory windows)
-func _is_inventory_tier_change(selection: InteractionContext, new_context: InteractionContext) -> bool:
-	if not selection or not new_context or not selection.location or not new_context.location:
-		return false
-	
-	var selection_container = selection.location.container
-	var new_container = new_context.location.container
-	
-	# Check if both are InventoryT containers but different tiers
-	if selection_container.begins_with("RunInventoryT") and new_container.begins_with("RunInventoryT"):
-		return selection_container != new_container
-	if selection_container.begins_with("BattleInventoryT") and new_container.begins_with("BattleInventoryT"):
-		return selection_container != new_container
-	
-	return false
-
-## Check if the target is valid for an action with the current selection
-func _is_valid_action_target(selection: InteractionContext, target: InteractionContext) -> bool:
-	# Check if both contexts have valid locations
-	if not selection or not target or not selection.location or not target.location:
-		return false
-	
-	# Check if they're in the same functional group (can interact with each other)
-	var selection_group = get_context_group(selection.location.container)
-	var target_group = get_context_group(target.location.container)
-	
-	# Same group means they can interact
-	if selection_group == target_group:
-		return true
-
-	# Allow equipping: Inventory -> Equipped
-	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
-		return true
-
-	# Allow equipping onto units: Inventory -> BattleBoard (click item then click unit)
-	if selection_group == &"InventoryGrid" and target_group == &"BattleBoard":
-		return true
-
-	# Consumables may target opposing units even though their slots are inspection-only.
-	if selection.location.container == C.BATTLE_CONTAINER_TAGS.PLAYER_SHELF and target.location.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
-		return selection.entity_type == C.CATEGORY_CONSUMABLE
-	if selection_group == &"InventoryGrid" and target_group == &"InspectionOnly":
-		if selection.entity_type == &"CONSUMABLE":
-			return true
-	
-	# Special case: Inventory tier changes should be handled as selection changes, not actions
-	if _is_inventory_tier_change(selection, target):
-		return false
-	
-	return false
-
-## Check if the empty slot is a valid move target for the current selection
-func _is_valid_move_target(selection: InteractionContext, target: InteractionContext) -> bool:
-	# Check if both contexts have valid locations
-	if not selection or not target or not selection.location or not target.location:
-		return false
-	
-	# Check if they're in the same functional group
-	var selection_group = get_context_group(selection.location.container)
-	var target_group = get_context_group(target.location.container)
-	
-	# Same group means they can interact
-	if selection_group == target_group:
-		return true
-
-	# Allow equipping: Inventory -> Equipped
-	if selection_group == &"InventoryGrid" and target_group == &"EquippedGrid":
-		return true
-	
-	# Special case: Inventory tier changes should be handled as selection changes, not invalid actions
-	if _is_inventory_tier_change(selection, target):
-		return false # This will trigger selection change instead of invalid action
-	
-	return false
-
-## Check if a click is inside the inspection window group
 func _is_click_inside_inspection_group(context: InteractionContext) -> bool:
-	if not _window_manager:
-		return false
-	if _is_shrine_target_context(context):
+	if context != null and is_instance_valid(context.location) and context.location.container == &"Shrine" and WindowManager.is_run_inventory_window_open():
 		return true
 	var view: Control = _find_view_by_instance_id(context.source_view_instance_id)
-	if not view:
+	if not is_instance_valid(view):
 		return false
-	if _window_manager.is_view_inside_inventory(view):
+	if WindowManager.is_view_inside_inventory(view):
 		return true
-	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
-	return is_instance_valid(parent_window)
-
-func _is_shrine_target_context(context: InteractionContext) -> bool:
-	if context == null or not is_instance_valid(context.location):
-		return false
-	return context.location.container == &"Shrine" and WindowManager.is_run_inventory_window_open()
-
-## Temporary suppression after in-window actions: prevent closing the parent inspection window
-func _activate_close_suppression_for_view(view: Control, duration_msec: int = 200) -> void:
-	if not _window_manager or not is_instance_valid(view):
-		return
-	var parent_window: Control = _window_manager.find_ancestor_window_for_view(view)
-	if is_instance_valid(parent_window):
-		var until_ts := Time.get_ticks_msec() + duration_msec
-		_suppress_close_parent_window_id = parent_window.get_instance_id()
-		_suppress_close_until_msec = until_ts
+	return is_instance_valid(WindowManager.find_ancestor_window_for_view(view))
 
 
-# Directly activate suppression for a known parent window id (public API)
-func activate_close_suppression_for_window_id(window_id: int, duration_msec: int = 220) -> void:
-	if window_id <= 0:
-		return
-	var until_ts := Time.get_ticks_msec() + duration_msec
-	_suppress_close_parent_window_id = window_id
-	_suppress_close_until_msec = until_ts
-
-func _is_close_suppressed_for_context(context: InteractionContext) -> bool:
-	if Time.get_ticks_msec() > _suppress_close_until_msec:
-		return false
-	if not _window_manager or context == null:
-		return false
-	var v: Control = _find_view_by_instance_id(context.source_view_instance_id)
-	if not v:
-		return false
-	var parent_window: Control = _window_manager.find_ancestor_window_for_view(v)
-	return is_instance_valid(parent_window) and parent_window.get_instance_id() == _suppress_close_parent_window_id
-
-# Resolve the parent inspection window id for a given interaction context's source view
 func _resolve_parent_window_id_for_context(context: InteractionContext) -> int:
-	if not _window_manager or context == null:
+	if context == null:
 		return -1
 	var v: Control = _find_view_by_instance_id(context.source_view_instance_id)
-	if not v:
+	if not is_instance_valid(v):
 		return -1
-	var parent_window: Control = _window_manager.find_ancestor_window_for_view(v)
+	var parent_window: Control = WindowManager.find_ancestor_window_for_view(v)
 	return parent_window.get_instance_id() if is_instance_valid(parent_window) else -1
 
-## Contextless suppression check (for true background events)
-func _is_close_suppressed_now() -> bool:
-	# Contextless suppression: only care about the active time window.
-	# This allows stage-1 global suppression (id=0) from end_drag() to block
-	# background closures before precise window-tied suppression is established.
-	var now := Time.get_ticks_msec()
-	var active := now <= _suppress_close_until_msec
-	return active
 
-# Heuristic: check whether a given window id refers to a UnitInspection window
-func _is_unit_inspection_window_id(window_id: int) -> bool:
-	var node := instance_from_id(window_id)
-	if not is_instance_valid(node) or not (node is Control):
-		return false
-	var ctrl := node as Control
-	# Prefer explicit name check
-	if ctrl.name.findn("UnitInspection") != -1:
-		return true
-	# Fallbacks: try to infer from script path
-	var s = ctrl.get_script()
-	if is_instance_valid(s):
-		var res_path: String = s.resource_path
-		if res_path.findn("UnitInspection") != -1:
-			return true
-	return false
+# =============================================================================
+# COMMAND EXECUTION
+# =============================================================================
 
-## Execute the command queue
 func _execute_command_queue(commands: Array[Command]) -> void:
-	for command in commands:
+	for command: Command in commands:
 		_execute_command(command)
 
-## Execute a single command
+
 func _execute_command(command: Command) -> void:
 	match command.cmd:
 		CommandType.DESELECT:
-			if is_instance_valid(ActionQueue):
-				ActionQueue.request(DeselectAction.new())
-			else:
-				_execute_deselect()
+			ActionQueue.request(DeselectAction.new())
 		CommandType.SELECT:
-			var ctx: InteractionContext = command.context.get("context")
-			if is_instance_valid(ActionQueue) and is_instance_valid(ctx):
+			var ctx: InteractionContext = command.context.get("context") as InteractionContext
+			if is_instance_valid(ctx):
 				ActionQueue.request(SelectEntityAction.new(ctx.location, ctx.entity_uuid, ctx.source_view_instance_id))
-			else:
-				_execute_select(ctx)
 			Audio.play_sfx("ui_select")
 		CommandType.OPEN_INSPECTION_WINDOW:
 			_execute_open_inspection_window(command.context)
@@ -821,416 +486,233 @@ func _execute_command(command: Command) -> void:
 		CommandType.CLOSE_TOP_CONTEXTUAL_WINDOW:
 			if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 				ActionQueue.request(CloseInspectionAction.new(false))
-			elif _window_manager:
-				_window_manager.close_top_contextual_window()
+			else:
+				WindowManager.close_top_contextual_window()
 		CommandType.REQUEST_ACTION:
 			_execute_request_action(command.context)
-			# AUDIO HOOK: Action requested (usually a valid click)
 			Audio.play_sfx("ui_click")
 		CommandType.INVALID_ACTION:
-			_execute_invalid_action()
+			_execute_close_all_inspection_windows()
+			_execute_deselect()
 
-## Execute deselect command
+
 func _execute_deselect() -> void:
 	apply_deselect_entity()
 
+
 func apply_deselect_entity() -> void:
-	# Only clear lock state if it is an INSPECTION lock (tied to a specific entity).
-	# If _locked_entity_view_id is -1 but _is_inspection_locked is true, it is a SYSTEM/MODAL lock 
-	# (e.g., ChoiceWindow) that must be preserved.
+	# Preserve modal/system locks (_locked_entity_view_id == -1) while clearing entity inspection locks.
 	if _locked_entity_view_id != -1:
 		_is_inspection_locked = false
 		_locked_entity_view_id = -1
-	
 	if _current_selection != null:
 		_emit_view_deselected(_current_selection)
 		_emit_selection_changed(null)
 		_current_selection = null
 
-## Execute select command
+
 func _execute_select(context: InteractionContext) -> void:
 	if context == null:
 		return
 	apply_select_entity(context.location, context.entity_uuid, context.entity_type, context.source_view_instance_id)
 
+
 func apply_select_entity(location: LocationIdentifier, entity_uuid: String = "", entity_type: StringName = &"", source_view_id: int = 0) -> void:
-	var target_location = location
-	if not is_instance_valid(target_location) and not entity_uuid.is_empty():
-		if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
-			target_location = GameManager.run_state.get_location_for_uuid(entity_uuid)
-	
+	var target_location: LocationIdentifier = location
+	if not is_instance_valid(target_location) and not entity_uuid.is_empty() and is_instance_valid(GameManager.run_state):
+		target_location = GameManager.run_state.get_location_for_uuid(entity_uuid)
+
 	var view: Control = _find_view_by_instance_id(source_view_id)
 	if view == null and target_location != null:
 		view = WindowManager.find_entity_view_for_location(target_location)
-	
-	var ctx = InteractionContext.new()
+
+	var ctx := InteractionContext.new()
 	ctx.location = target_location
 	ctx.entity_uuid = entity_uuid
 	ctx.entity_type = entity_type
 	if is_instance_valid(view):
 		ctx.source_view_instance_id = view.get_instance_id()
-	
-	# If entity_type was not provided, infer it from the entity instance
-	if ctx.entity_type == &"" and is_instance_valid(GameManager):
+
+	if ctx.entity_type == &"":
 		var inst: GachaBallInstance = null
 		if not entity_uuid.is_empty() and is_instance_valid(GameManager.run_state):
 			inst = GameManager.run_state.get_instance_by_uuid(entity_uuid)
 		elif is_instance_valid(target_location):
 			inst = GameManager.get_instance_from_location(target_location)
 		if is_instance_valid(inst):
-			var def = inst.get_definition()
-			if is_instance_valid(def):
+			var def: Resource = inst.get_definition()
+			if is_instance_valid(def) and "category" in def:
 				ctx.entity_type = def.category
-	
+
 	if _current_selection != null and _current_selection.source_view_instance_id != ctx.source_view_instance_id:
 		_emit_view_deselected(_current_selection)
 	_current_selection = ctx
 	if is_instance_valid(view):
-		SignalBus.emit_signal("view_selected", view, target_location)
+		SignalBus.view_selected.emit(view, target_location)
 	_emit_selection_changed(target_location)
 
-## Execute open inspection window command
-func _execute_open_inspection_window(command_context: Dictionary) -> void:
-	var context: InteractionContext = command_context.get("context")
-	var anchor_view_id: int = command_context.get("anchor_view_id", 0)
-	var should_lock: bool = command_context.get("lock", false)
-	
-	if context:
-		var anchor_view = _find_view_by_instance_id(anchor_view_id)
-		if should_lock:
-			if is_instance_valid(ActionQueue):
-				var action := InspectEntityAction.new(
-					context.location,
-					should_lock,
-					&"",
-					&"",
-					context.entity_uuid,
-					"",
-					anchor_view_id
-				)
-				ActionQueue.request(action)
-			elif _window_manager and anchor_view:
-				_is_inspection_locked = true
-				_locked_entity_view_id = anchor_view_id
-				_window_manager.open_inspection_window(context.location, anchor_view)
-		else:
-			# Transient mouse hover preview: open directly without polluting ActionQueue
-			if _window_manager and anchor_view and is_instance_valid(context.location):
-				_window_manager.open_inspection_window(context.location, anchor_view)
 
-## Execute close all inspection windows command
+func _execute_open_inspection_window(command_context: Dictionary) -> void:
+	var context: InteractionContext = command_context.get("context") as InteractionContext
+	if context == null:
+		return
+	var anchor_view_id: int = int(command_context.get("anchor_view_id", 0))
+	var should_lock: bool = bool(command_context.get("lock", false))
+	if should_lock:
+		ActionQueue.request(InspectEntityAction.new(context.location, should_lock, &"", &"", context.entity_uuid, ""))
+	else:
+		var anchor_view: Control = _find_view_by_instance_id(anchor_view_id)
+		if is_instance_valid(anchor_view) and is_instance_valid(context.location):
+			WindowManager.open_inspection_window(context.location, anchor_view)
+
+
 func _execute_close_all_inspection_windows() -> void:
 	if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 		ActionQueue.request(CloseInspectionAction.new(true))
 
-## Execute close child windows command
+
 func _execute_close_child_windows(window_group_id: int, parent_window_id: int = -1) -> void:
 	if WindowManager.is_any_inspection_window_open() or WindowManager.is_any_inventory_window_open():
 		ActionQueue.request(CloseInspectionAction.new(false))
-	elif _window_manager:
-		_window_manager.close_child_windows(window_group_id, parent_window_id)
+	else:
+		WindowManager.close_child_windows(window_group_id, parent_window_id)
 
-## Execute request action command
+
 func _execute_request_action(command_context: Dictionary) -> void:
-	# COMBAT-phase gate: full lockout, no side-effects
 	if _is_combat_phase or is_vcr_playing():
 		_execute_close_all_inspection_windows()
 		_execute_deselect()
 		return
-	var source_context: InteractionContext = command_context.get("source_context")
-	var target_context: InteractionContext = command_context.get("target_context")
-	
-	if source_context and target_context:
-		# Prefer explicit window-id suppression if provided by command context
-		var tgt_parent_id: int = command_context.get("target_parent_window_id", -1)
-		var inside_unit: bool = command_context.get("is_inside_unit_inspection", false)
-		if tgt_parent_id != -1:
-			# Slightly longer suppression when inside unit inspection to absorb UI refresh bursts
-			activate_close_suppression_for_window_id(tgt_parent_id, 280 if inside_unit else 220)
-		else:
-			# Activate short-lived suppression tied to the parent window where the action occurs.
-			# For equipping into a UnitInspectionWindow, the TARGET view is inside the unit window.
-			var tgt_view: Control = _find_view_by_instance_id(target_context.source_view_instance_id)
-			if tgt_view:
-				_activate_close_suppression_for_view(tgt_view)
-			else:
-				# Fallback: tie suppression to the source view's parent (covers drag from inventory)
-				var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
-				if src_view:
-					_activate_close_suppression_for_view(src_view)
-		var interaction_type: String = command_context.get("interaction_type", "CLICK")
-		var drop_pos: Vector2 = command_context.get("drop_pos", Vector2.ZERO)
-		var move_action := MoveInventoryAction.new(source_context.location, target_context.location, interaction_type, drop_pos)
-		if is_instance_valid(ActionQueue):
-			var accepted = ActionQueue.request(move_action)
-			if not accepted:
-				ActionQueue.request(CancelDragAction.new(source_context.location, target_context.location, "action_rejected", drop_pos, source_context.source_view_instance_id))
-		else:
-			push_error("[GlobalInteractionRouter] ActionQueue unavailable for MoveInventoryAction.")
+	var source_context: InteractionContext = command_context.get("source_context") as InteractionContext
+	var target_context: InteractionContext = command_context.get("target_context") as InteractionContext
+	if source_context == null or target_context == null:
+		return
 
-## Execute invalid action command
-func _execute_invalid_action() -> void:
-	# GR-5 resolution: close contextual windows and clear selection
-	_execute_close_all_inspection_windows()
-	_execute_deselect()
+	var tgt_parent_id: int = int(command_context.get("target_parent_window_id", -1))
+	if tgt_parent_id != -1:
+		activate_close_suppression_for_window_id(tgt_parent_id)
+	else:
+		var tgt_view: Control = _find_view_by_instance_id(target_context.source_view_instance_id)
+		if is_instance_valid(tgt_view):
+			_suppression.activate_for_view(tgt_view)
+		else:
+			var src_view: Control = _find_view_by_instance_id(source_context.source_view_instance_id)
+			if is_instance_valid(src_view):
+				_suppression.activate_for_view(src_view)
 
-## Emit selection changed uniformly
+	var interaction_type: String = String(command_context.get("interaction_type", "CLICK"))
+	var drop_pos: Vector2 = command_context.get("drop_pos", Vector2.ZERO)
+	var move_action := MoveInventoryAction.new(source_context.location, target_context.location, interaction_type, drop_pos)
+	if not ActionQueue.request(move_action):
+		ActionQueue.request(CancelDragAction.new(source_context.location, target_context.location, "action_rejected", drop_pos))
+
+
 func _emit_selection_changed(loc: LocationIdentifier) -> void:
-	SignalBus.emit_signal("selection_changed", loc)
+	SignalBus.selection_changed.emit(loc)
 
-## Emit view deselected using the stored selection
+
 func _emit_view_deselected(sel: InteractionContext) -> void:
-	var view = _find_view_by_instance_id(sel.source_view_instance_id)
-	if view:
-		SignalBus.emit_signal("view_deselected", view)
+	var view: Control = _find_view_by_instance_id(sel.source_view_instance_id)
+	if is_instance_valid(view):
+		SignalBus.view_deselected.emit(view)
 
-## Find a view by its instance ID
+
 func _find_view_by_instance_id(instance_id: int) -> Control:
-	# Fast path: use engine lookup, then ascend to nearest Control
-	if instance_id <= 0:
-		return null
-	var obj := instance_from_id(instance_id)
-	if is_instance_valid(obj):
-		if obj is Control:
-			return obj as Control
-		# If the id belongs to a non-Control (e.g. TextureRect child), walk up to nearest Control
-		var n: Node = obj
-		while is_instance_valid(n) and not (n is Control) and n != get_tree().root:
-			n = n.get_parent()
-		if n is Control:
-			return n as Control
-	return null
+	return InteractionTargetRules.find_view_by_instance_id(instance_id, get_tree().root)
 
-## Public API for external systems to set selection
+
+# =============================================================================
+# PUBLIC API DELEGATES
+# =============================================================================
+
 func set_current_selection(context: InteractionContext) -> void:
 	_current_selection = context
 
-## Public API for external systems to get current selection
+
 func get_current_selection() -> InteractionContext:
 	return _current_selection
 
-## Public API for external systems to clear selection
+
 func clear_current_selection() -> void:
 	apply_deselect_entity()
 
-## Public method to get the functional group of a container (migrated from InteractionManager)
+
 func get_context_group(container_name: StringName) -> StringName:
-	return _get_container_functional_group(container_name)
-
-## Internal container functional group resolver
-func _get_container_functional_group(container_name: StringName) -> StringName:
-	# Battle board containers
-	if container_name in [&"PlayerLineup", &"PlayerShelf"]:
-		return &"BattleBoard"
-
-	# Inventory containers (can interact with each other)
-	if container_name.begins_with("RunInventoryT") or container_name.begins_with("BattleInventoryT"):
-		return &"InventoryGrid"
-
-	# Selection-only containers (can only be selected)
-	if container_name in [&"Rewards", &"Shop"]:
-		return &"SelectionOnly"
-
-	# Equipped items (special handling)
-	if container_name == C.CONTAINER_EQUIPPED_ITEM:
-		return &"EquippedGrid"
-
-	# Inspection-only containers (no actions allowed)
-	if container_name in [&"DiscardPile", &"PlayerTrinkets", &"EnemyTrinkets", &"EnemyBanner", &"EnemyLineup", &"EnemyShelf"]:
-		return &"InspectionOnly"
+	return InteractionTargetRules.get_container_functional_group(container_name)
 
 
-	return &"Unknown"
-
-## Public API: start a drag operation (called by InteractionManager)
 func start_drag(origin_context: InteractionContext) -> void:
-	# Full input lock during COMBAT or when animations / ActionQueue are active
-	if _is_combat_phase or is_vcr_playing() or (is_instance_valid(ActionQueue) and ActionQueue.is_busy()):
-		return
-	
-	# Per docs: "It clears any current selection"
-	if _current_selection != null:
-		_execute_deselect()
-	
-	# 1. Clear lock state
-	_is_inspection_locked = false
-	_locked_entity_view_id = -1
-	
-	_is_drag_active = true
-	_drag_origin_context = origin_context
+	_drag.start_drag(self, origin_context)
 
-	# Context-Aware Window Management:
-	# - If dragging from an active window (e.g., Inventory), keep it open to preserve the source.
-	# - If dragging from the main view (BattleBoard), close all windows to prevent floating inspections.
-	if _window_manager and origin_context != null:
-		var src_view: Control = _find_view_by_instance_id(origin_context.source_view_instance_id)
-		if src_view:
-			var parent_window: Control = _window_manager.find_ancestor_window_for_view(src_view)
-			if is_instance_valid(parent_window):
-				# Dragging from inside a window -> Close only its children
-				_window_manager.close_children_of(parent_window)
-			else:
-				# Dragging from main view -> Close inspection windows to avoid floating windows, keeping base inventory open
-				if _window_manager.has_method("close_all_inspection_windows"):
-					_window_manager.close_all_inspection_windows(true)
 
-	# Select the dragged item so user sees visual feedback
-	# CRITICAL: Do this AFTER closing windows. Window closure logic might trigger side-effects
-	# (like focus changes or context updates) that could inadvertently deselect the item.
-	# By selecting LAST, we ensure the drag selection "wins".
-	_execute_select(origin_context)
-	
-	# Inform listeners that a drag has started (optional hook for visuals)
-	if SignalBus.has_signal("drag_started"):
-		SignalBus.emit_signal("drag_started", origin_context)
-	
-	# AUDIO HOOK: Drag Start
-	Audio.play_sfx("ui_drag_start")
+func end_drag(was_handled: bool) -> void:
+	_drag.end_drag(self, was_handled)
 
-## Public API: end a drag operation (called by InteractionManager)
-func end_drag(_was_handled: bool) -> void:
-	_is_drag_active = false
-	_drag_origin_context = null
-	# Clear the drag-selection set by start_drag._execute_select.
-	# On handled drops, ACTION → DESELECT already cleared this; on failed drops it's stuck.
-	_execute_deselect()
-	
-	# Only clear if we aren't in a persistent lock state (though usually drag overrides all)
-	# For safety, we clear it, assuming the drag end will re-establish context if needed.
-	_is_inspection_locked = false
 
-	# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
-	# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
-	if _was_handled:
-		# Stage-1 suppression: if the drag produced a handled drop, briefly suppress true background
-		# close so that the ensuing REQUEST_ACTION can set precise window-tied suppression.
-		# Use a minimal duration; precise suppression will override shortly after
-		_suppress_close_parent_window_id = 0
-		var until_ts := Time.get_ticks_msec() + 420
-		_suppress_close_until_msec = until_ts
-		if is_instance_valid(_peek_controller):
-			_peek_controller.suppress_post_drop(0.35)
-	# Centralize drag visual cleanup so views don't have to decide
-	# IMMEDIATE VISUAL CLEANUP: Do not defer this. 
-	_end_drag_visuals(_was_handled)
-	
-	# AUDIO HOOK: Drag End
-	if _was_handled:
-		Audio.play_sfx("ui_drag_drop")
-	else:
-		Audio.play_sfx("ui_deselect")
-	
-	# Inform listeners that a drag has ended (optional hook for visuals)
-	if SignalBus.has_signal("drag_ended"):
-		SignalBus.emit_signal("drag_ended", _was_handled)
-
-## Lightweight helpers to manage drag visuals centrally (temporary until DragVisualController)
 func start_drag_visuals(source_view: Control, placeholder: Control) -> void:
-	# Full input lock during COMBAT: suppress visuals and free placeholder to avoid leaks
-	if _is_combat_phase:
-		if is_instance_valid(placeholder):
-			placeholder.queue_free()
-		return
-	_drag_source_view = source_view
-	_drag_placeholder = placeholder
-	if is_instance_valid(_drag_source_view):
-		# Force invisibility via alpha as well as visible property.
-		# This is a fail-safe against top_level nodes (like hopping animations)
-		# that might bypass parent visibility or render unexpectedly.
-		_drag_source_view.visible = false
-		_drag_source_view.modulate.a = 0.0
+	_drag.start_drag_visuals(_is_combat_phase, source_view, placeholder)
+
 
 func end_drag_visuals(was_handled: bool) -> void:
-	_end_drag_visuals(was_handled)
+	_drag.end_drag_visuals(was_handled)
 
-func _end_drag_visuals(was_handled: bool) -> void:
-	if is_instance_valid(_drag_source_view) and not was_handled:
-		_drag_source_view.visible = true
-		_drag_source_view.modulate.a = 1.0 # Restore visibility
-	# If handled (consumed), let the game logic destroy/move it, but if it remains, ensure it's visible
-	elif is_instance_valid(_drag_source_view):
-		# Even if handled, we should ensure it remains hidden so game logic can animate/remove it.
-		# The view will be restored via populate() if it is repurposed.
-		pass
-		
-	if is_instance_valid(_drag_placeholder):
-		_drag_placeholder.queue_free()
-	_clear_drag_overlay_preview()
-	_drag_source_view = null
-	_drag_placeholder = null
 
 func set_drag_overlay_preview(preview: Control) -> void:
-	_clear_drag_overlay_preview()
-	if not is_instance_valid(preview):
-		return
-	_drag_overlay_preview = preview
-	_drag_overlay_preview.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_get_drag_preview_layer().add_child(_drag_overlay_preview)
-	_drag_overlay_preview.global_position = get_viewport().get_mouse_position()
+	_drag.set_drag_overlay_preview(self, preview)
 
-func _clear_drag_overlay_preview() -> void:
-	if is_instance_valid(_drag_overlay_preview):
-		_drag_overlay_preview.queue_free()
-	_drag_overlay_preview = null
 
-func _get_drag_preview_layer() -> CanvasLayer:
-	if is_instance_valid(_drag_preview_layer):
-		return _drag_preview_layer
-	_drag_preview_layer = CanvasLayer.new()
-	_drag_preview_layer.name = "DragPreviewLayer"
-	_drag_preview_layer.layer = 1023
-	get_tree().root.add_child(_drag_preview_layer)
-	return _drag_preview_layer
-
-## Public API: query drag active state
 func is_drag_active() -> bool:
-	return _is_drag_active
+	return _drag.is_drag_active
 
-## Public API: get the current drag source view (for transferring ownership/visibility)
+
 func get_drag_source_view() -> Control:
-	return _drag_source_view
+	return _drag.drag_source_view
 
-## Public API: expose COMBAT lock state for views
+
+func get_drag_origin_context() -> InteractionContext:
+	return _drag.drag_origin_context
+
+
 func is_combat_locked() -> bool:
 	return _is_combat_phase
 
-## Public API: expose inspection lock state
+
 func is_inspection_locked() -> bool:
 	return _is_inspection_locked
 
-## Public API: expose suppression state for WindowManager
+
+func lock_inspection_on_view(view: Control) -> void:
+	_is_inspection_locked = true
+	_locked_entity_view_id = view.get_instance_id() if is_instance_valid(view) else -1
+
+
+func activate_close_suppression_for_window_id(window_id: int, grace_frames: int = CloseSuppressionState.CLOSE_SUPPRESS_GRACE_FRAMES) -> void:
+	_suppression.activate_for_window_id(window_id, grace_frames)
+
+
+func clear_close_suppression() -> void:
+	_suppression.clear()
+
+
 func is_close_suppressed_for_window_id(window_id: int) -> bool:
-	# Valid only within the active suppression window
-	var now := Time.get_ticks_msec()
-	if now > _suppress_close_until_msec:
-		return false
-	if window_id <= 0:
-		return false
-	var res := window_id == _suppress_close_parent_window_id
-	return res
+	return _suppression.is_suppressed_for_window_id(window_id)
+
 
 func is_close_suppressed_now() -> bool:
-	# Contextless suppression: time-window only
-	return Time.get_ticks_msec() <= _suppress_close_until_msec
+	return _suppression.is_active()
 
-# --- Drag & Drop Accessors ---
 
 func get_last_pointer_position() -> Vector2:
 	if not _last_pointer_pos.is_zero_approx():
 		return _last_pointer_pos
-	var vp := get_viewport()
+	var vp: Viewport = get_viewport()
 	return vp.get_mouse_position() if is_instance_valid(vp) else Vector2.ZERO
 
-func get_drag_origin_context() -> InteractionContext:
-	return _drag_origin_context
 
 func is_vcr_playing() -> bool:
-	if is_instance_valid(ActionQueue) and ActionQueue.is_replay_mode():
+	if ActionQueue.is_replay_mode():
 		return true
-	var animator = get_tree().get_first_node_in_group("battle_animator")
-	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
+	if BattleAnimator.is_playing_sequence():
 		return true
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
-		return true
-	return false
+	var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager
+	return is_instance_valid(bm) and bm.is_animations_playing()

@@ -1,4 +1,5 @@
 # res://scripts/ResultsPopup.gd
+class_name ResultsPopup
 extends Control
 
 ## A modal popup used to display the outcome of an event, like a flashcard Challenge.

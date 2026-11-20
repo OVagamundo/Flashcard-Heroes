@@ -484,8 +484,7 @@ func _restore_checkpoint(event: Dictionary) -> void:
 	_recorded_pause_elapsed = 0.0
 	_current_waiting_action = null
 	if is_instance_valid(WindowManager):
-		if WindowManager.has_method("clear_vfx_layer"):
-			WindowManager.clear_vfx_layer()
+		WindowManager.clear_vfx_layer()
 		WindowManager.close_all_windows()
 	if is_instance_valid(FlashcardManager):
 		FlashcardManager.reset_session_state()
@@ -644,21 +643,21 @@ func _is_scene_busy_with_autonomous_work(action: GameAction) -> bool:
 
 	# 1. Battle animations and phase gating
 	if GameManager.is_in_battle:
-		var bm = GameManager.get_battle_manager()
+		var bm: BattleManager = GameManager.get_battle_manager() as BattleManager
 		if is_instance_valid(bm):
 			if _is_battle_management_action(action):
-				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+				if bm.is_animations_playing():
 					return true
-				if bm.has_method("get_current_phase") and bm.get_current_phase() != bm.Phases.MANAGEMENT:
+				if bm.get_current_phase() != BattleManager.Phases.MANAGEMENT:
 					return true
 			elif action is OpenInventoryAction or action is CloseInventoryAction or action is OpenDiscardPileAction or action is CloseDiscardPileAction:
 				if bm.is_animations_playing() or bm.get_current_phase() == BattleManager.Phases.START_OF_TURN:
 					return true
 			elif action is AcknowledgeBattleResultsAction:
-				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+				if bm.is_animations_playing():
 					return true
 			elif _is_flashcard_action(action):
-				if bm.has_method("is_animations_playing") and bm.is_animations_playing():
+				if bm.is_animations_playing():
 					return true
 
 	# 2. Main screen token/gold animations

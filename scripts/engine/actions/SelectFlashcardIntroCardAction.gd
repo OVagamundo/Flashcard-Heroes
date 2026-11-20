@@ -15,8 +15,8 @@ func validate() -> bool:
 	return not card_id.is_empty()
 
 func execute() -> void:
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and minigame.has_method("execute_select_intro_card"):
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame):
 		minigame.execute_select_intro_card(card_id)
 
 func yields_for_visuals() -> bool:

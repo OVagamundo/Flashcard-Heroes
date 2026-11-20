@@ -19,7 +19,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# ROBUSTNESS: Use snapshotted source PWR from context if available (captured at moment of death)
 	var current_buff: float = float((context.source_pwr if context.source_pwr >= 0 else 1))
 	
-	var result := EffectResult.new() if is_simulation else null
+	var result := EffectResult.new()
 	var current_target_uuid: String = targets[0]
 	var current_target = battle_manager.get_instance_by_uuid(current_target_uuid)
 	

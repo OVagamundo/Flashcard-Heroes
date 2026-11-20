@@ -190,8 +190,9 @@ static func animate_token_spend(
 	# Visually deduct tokens from HUD counter at the exact moment tokens start flying
 	main_node.modify_visual_tokens(-amount, true)
 	
-	var tokens_to_spawn = amount
-	var stagger_delay = AnimationConstants.scaled(0.12)
+	var tokens_to_spawn: int = amount
+	# Pass raw unscaled delay; TokenSpendVFX.play scales it once internally.
+	var stagger_delay: float = 0.12
 	var vfx_layer = WindowManager.get_vfx_layer()
 	# The shared VFX layer may be attached with a deferred tree operation on first use.
 	# Its children must be ready before TokenSpendVFX.play accesses their sprites.

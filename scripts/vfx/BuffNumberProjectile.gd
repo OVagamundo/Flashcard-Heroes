@@ -48,12 +48,18 @@ func setup(value: int, stat: String, start_pos: Vector2, end_pos: Vector2, is_se
 		label.add_theme_color_override("font_color", Color(0.65, 0.65, 0.65)) # Gray
 	elif stat == "static":
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1)) # Yellow
+	elif stat == "gold":
+		label.add_theme_color_override("font_color", AnimationConstants.COLOR_GOLD)
 	elif stat == "timer":
 		if value >= 0:
 			label.text = "+%ds" % value
 		else:
 			label.text = "%ds" % value
 		label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.1)) # Bright gold/yellow
+	else:
+		var status_def: CombatEffectDefinition = CombatEffectRegistry.get_definition(StringName(stat))
+		if is_instance_valid(status_def):
+			label.add_theme_color_override("font_color", status_def.color)
 	
 	# Apply Black font and matching outline to unit stat labels
 	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))

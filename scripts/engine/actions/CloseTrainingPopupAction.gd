@@ -9,8 +9,8 @@ func validate() -> bool:
 	return true
 
 func execute() -> void:
-	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)
-	if is_instance_valid(utg) and utg.has_method("_close_training_popup"):
+	var utg := Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false) as UnitTrainingGround
+	if is_instance_valid(utg):
 		utg._close_training_popup()
 	elif is_instance_valid(GameManager.run_state):
 		GameManager.run_state.is_training_active = false

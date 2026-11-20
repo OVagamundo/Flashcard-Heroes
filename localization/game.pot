@@ -2545,7 +2545,7 @@ msgstr ""
 msgid "trait.specialist.2"
 msgstr ""
 
-#. English: The first Gacha draw of each battle costs 1 less Token (minimum 1).
+#. English: The first Gacha draw of each turn costs 1 less Token (minimum 1).
 msgid "trait.specialist.3"
 msgstr ""
 

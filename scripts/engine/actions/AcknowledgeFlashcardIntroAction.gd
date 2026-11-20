@@ -9,10 +9,9 @@ func validate() -> bool:
 	return is_instance_valid(FlashcardManager) and FlashcardManager.is_session_active and FlashcardManager.is_introducing_new_card
 
 func execute() -> void:
-	if is_instance_valid(FlashcardManager):
-		FlashcardManager.acknowledge_intro()
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode() and minigame.has_method("execute_acknowledge_intro"):
+	FlashcardManager.acknowledge_intro()
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode():
 		minigame.execute_acknowledge_intro()
 
 func yields_for_visuals() -> bool:

@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var mecha_units: int = int(active_traits.get("MECHA", 0))
-	if mecha_units < 2:
+	var mecha_tier: int = TraitRulesEngine.get_active_tier(active_traits, "MECHA")
+	if mecha_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -58,7 +58,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		}))
 
 		# L2 (3 Units): 1 Armor
-		if mecha_units >= 3:
+		if mecha_tier >= 2:
 			var old_armor = unit.get_status_effect_amount(&"armor")
 			var new_armor = battle_manager.apply_stat_delta(unit, "armor_stacks", 1)
 			result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {

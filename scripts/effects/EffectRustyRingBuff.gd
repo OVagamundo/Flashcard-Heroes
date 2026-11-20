@@ -24,8 +24,7 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	
 	var hp_amount := 1
 	var pwr_amount := 1
-	var buff_tag := &"rusty_ring_buffed"
-	var debuff_tag := &"rusty_ring_debuffed"
+	var aura_key: StringName = AuraEvaluator.make_key(&"rusty_ring", _source_uuid)
 	
 	# Determine target units on the same team
 	var batched_target_uuids: Array[String] = []
@@ -36,14 +35,12 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var batched_old_pwr: Array[int] = []
 	var batched_new_pwr: Array[int] = []
 
-	var lineup_container = &"PlayerLineup" if trinket_team == "PLAYER" else &"EnemyLineup"
-
 	for target_uuid in all_instances:
 		var target_instance: GachaBallInstance = all_instances[target_uuid]
 		if not is_instance_valid(target_instance) or target_instance.current_hp <= 0:
 			continue
 			
-		# Must be on the board (lineup or shelf) and on the same team
+		# Must be on the board (lineup) and on the same team
 		var container = target_instance.location_container_tag
 		var is_on_board = container in [&"PlayerLineup", &"EnemyLineup"]
 		if not is_on_board or _get_team_from_container(container) != trinket_team:
@@ -53,47 +50,35 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if not is_instance_valid(target_def) or target_def.category != &"UNIT":
 			continue
 			
-		# Prevent duplicate trigger applications. MergeManager clears this marker on
-		# the newly-created unit, so the one valid post-merge bonus is reapplied.
-		if target_instance.has_tag(buff_tag):
+		# Prevent duplicate entry applications while already registered for this Rusty Ring.
+		if target_instance.has_aura(aura_key):
 			continue
 			
-		# Mark as registered
-		target_instance.add_tag(buff_tag)
-			
-		# Check for equipment
-		var has_equip := false
-		for eq_uuid in target_instance.equipped_item_uuids:
-			if not eq_uuid.is_empty():
-				has_equip = true
-				break
-				
-		if has_equip:
-			# Unit has equipment: it starts in the debuffed state (no stat change needed now)
-			target_instance.add_tag(debuff_tag)
+		var has_equip: bool = AuraEvaluator._unit_has_equipment(target_instance)
+		var target_hp: int = 0 if has_equip else hp_amount
+		var target_pwr: int = 0 if has_equip else pwr_amount
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			target_instance, aura_key, target_hp, target_pwr,
+			_source_uuid, AuraEvaluator.KIND_RUSTY_RING,
+			{
+				"keep_registered": true,
+				"silent": is_simulation,
+				"meta": {"hp_amount": hp_amount, "pwr_amount": pwr_amount},
+			}
+		)
+		if not rec_res.changed:
 			continue
 		
 		if is_simulation:
-			# Capture old stats for visual events
-			var old_hp: int = target_instance.current_hp
-			var old_pwr: int = target_instance.current_pwr
-			var max_hp: int = target_def.base_hp
-			
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, true)
-			var new_hp: int = target_instance.current_hp
-			var new_pwr: int = target_instance.current_pwr
-			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
-			batched_old_hp.append(old_hp)
-			batched_new_hp.append(new_hp)
-			batched_max_hp.append(max_hp)
-			batched_old_pwr.append(old_pwr)
-			batched_new_pwr.append(new_pwr)
+			batched_old_hp.append(rec_res.old_hp)
+			batched_new_hp.append(rec_res.new_hp)
+			batched_max_hp.append(target_def.base_hp)
+			batched_old_pwr.append(rec_res.old_pwr)
+			batched_new_pwr.append(rec_res.new_pwr)
 			state_applied_any = true
 		else:
-			# Non-simulation: apply immediately
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true)
 			state_applied_any = true
 
 	if is_simulation and not batched_target_uuids.is_empty():

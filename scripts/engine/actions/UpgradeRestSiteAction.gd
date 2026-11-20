@@ -12,8 +12,8 @@ func validate() -> bool:
 	return slot_index >= 0
 
 func execute() -> void:
-	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)
-	if is_instance_valid(rest_site) and not ActionQueue.is_headless_mode() and rest_site.has_method("execute_upgrade_visuals"):
+	var rest_site := Engine.get_main_loop().root.find_child("RestSite", true, false) as ResourceSite
+	if is_instance_valid(rest_site) and not ActionQueue.is_headless_mode():
 		rest_site.execute_upgrade_visuals(slot_index)
 	else:
 		GameManager.claim_rest_site_prize(slot_index)

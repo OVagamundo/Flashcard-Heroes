@@ -9,7 +9,9 @@ var demo_mode: bool = true
 
 
 func _input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_O:
+	if not OS.is_debug_build():
+		return
+	if event is InputEventKey and event.pressed and not event.echo and event.keycode == KEY_O and event.ctrl_pressed and event.shift_pressed:
 		demo_mode = not demo_mode
 		SignalBus.title_scene_requested.emit()
 		get_viewport().set_input_as_handled()

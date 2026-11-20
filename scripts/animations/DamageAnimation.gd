@@ -88,16 +88,14 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# 3. Return - attacker jumps back to original position
 		SignalBus.emit_signal("unit_melee_return", source_uuid)
 		await animator.wait_for_animation_completion("melee_return", source_uuid)
-		if animator.has_method("return_pending_guardian"):
-			await animator.return_pending_guardian()
+		await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# TRINKET ACTIVATION AND PROJECTILE ANIMATION
 	# ------------------------------------------------------------------
 	elif attack_type == "trinket":
 		# 1. Activate the trinket view (play hop/bounce animation)
-		if animator.has_method("play_trinket_activation"):
-			animator.play_trinket_activation(source_uuid)
+		animator.play_trinket_activation(source_uuid)
 			
 		# 2. Launch projectile from trinket position to target(s)
 		var p_stat = payload.stat if not payload.stat.is_empty() else "hp"
@@ -117,8 +115,7 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		
 		# 3. Apply damage impact (recoil, flashes, numbers)
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
-		if animator.has_method("return_pending_guardian"):
-			await animator.return_pending_guardian()
+		await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# RANGED ATTACK ANIMATION (Future - uses projectiles)
@@ -159,16 +156,14 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# Wait for bump to fully return
 		if should_bump:
 			await animator.wait_for_animation_completion("bump", source_uuid)
-		if animator.has_method("return_pending_guardian"):
-			await animator.return_pending_guardian()
+		await animator.return_pending_guardian()
 	
 	# ------------------------------------------------------------------
 	# NO SOURCE (Burn damage, environmental) - just flash
 	# ------------------------------------------------------------------
 	else:
 		await _apply_damage_effects(animator, targets, payload, apply_burn, is_burn_damage, amount)
-		if animator.has_method("return_pending_guardian"):
-			await animator.return_pending_guardian()
+		await animator.return_pending_guardian()
 
 	# ==================================================================
 	# KEYFRAME 3: POST-RETURN (Impact Callback)
@@ -210,8 +205,7 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 			_spawn_floating_pwr_damage(animator, target_uuid, pwr_lost)
 			
 			# Update PWR Label
-			if animator.has_method("apply_pwr_delta"):
-				animator.apply_pwr_delta(target_uuid, -pwr_lost, new_pwr)
+			animator.apply_pwr_delta(target_uuid, -pwr_lost, new_pwr)
 		
 		else:
 			# STANDARD HP DAMAGE LOGIC
@@ -262,16 +256,13 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 				recoil_direction = Vector2.RIGHT # Enemy recoils right
 		
 		# Color flash
-		if SignalBus.has_signal("unit_color_flash"):
-			SignalBus.emit_signal("unit_color_flash", target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.unit_color_flash.emit(target_uuid, flash_color, AnimationConstants.FLASH_FADE_DURATION)
 		
 		# Deformation (hit impact)
-		if SignalBus.has_signal("unit_deform"):
-			SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
+		SignalBus.unit_deform.emit(target_uuid, &"HIT_IMPACT")
 		
 		# Movement (recoil back)
-		if SignalBus.has_signal("unit_move"):
-			SignalBus.emit_signal("unit_move", target_uuid, &"RECOIL", recoil_direction)
+		SignalBus.unit_move.emit(target_uuid, &"RECOIL", recoil_direction)
 	
 	# SPIKES DAMAGE: Apply reflection damage to attacker(s) at the same moment
 	# This happens while the attacker is at the lunge peak (touching the target)
@@ -313,12 +304,10 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 			animator.apply_spikes_stack(defender_uuid, new_spikes)
 		
 		# Flash the attacker white (spikes hit feedback)
-		if SignalBus.has_signal("unit_color_flash"):
-			SignalBus.emit_signal("unit_color_flash", attacker_uuid, Color.WHITE, AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.unit_color_flash.emit(attacker_uuid, Color.WHITE, AnimationConstants.FLASH_FADE_DURATION)
 		
 		# Slight recoil on the attacker
-		if SignalBus.has_signal("unit_deform"):
-			SignalBus.emit_signal("unit_deform", attacker_uuid, &"HIT_IMPACT")
+		SignalBus.unit_deform.emit(attacker_uuid, &"HIT_IMPACT")
 	
 	# TOY STATIC REFLECTION: Apply static stacks to attacker(s) at point of contact
 	# This happens while the attacker is at the lunge peak (touching the target)
@@ -345,12 +334,10 @@ func _apply_damage_effects(animator: Node, targets: Array[String], payload: Comb
 		animator.apply_status_stack(attacker_uuid, &"static", new_static)
 		
 		# Flash the attacker yellow (static reflection feedback)
-		if SignalBus.has_signal("unit_color_flash"):
-			SignalBus.emit_signal("unit_color_flash", attacker_uuid, Color(1.0, 0.85, 0.1), AnimationConstants.FLASH_FADE_DURATION)
+		SignalBus.unit_color_flash.emit(attacker_uuid, Color(1.0, 0.85, 0.1), AnimationConstants.FLASH_FADE_DURATION)
 		
 		# Slight deformation on the attacker
-		if SignalBus.has_signal("unit_deform"):
-			SignalBus.emit_signal("unit_deform", attacker_uuid, &"HIT_IMPACT")
+		SignalBus.unit_deform.emit(attacker_uuid, &"HIT_IMPACT")
 	
 	if not payload.static_reflection_data_list.is_empty():
 		# Brief hold at contact so the player sees the yellow static number pop before returning

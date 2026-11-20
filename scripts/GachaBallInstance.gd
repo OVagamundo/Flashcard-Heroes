@@ -34,6 +34,7 @@ var equipped_item_uuids: Array[String] = []
 # --- Dynamic State Properties ---
 var dynamic_tags: Array[StringName] = [] # For status effects like "POISONED", "HONEY_ARMOR"
 var status_effects: Dictionary = {} # Key: StringName (effect_id), Value: int (stack_count)
+var active_auras: Dictionary = {} # Key: StringName (aura_key), Value: Dictionary ({hp, pwr, source_uuid, aura_kind, ...})
 var charged_empowered_attack: Dictionary = {} # Prepared Empowered Attack data (consumed on next attack)
 
 # --- Component Composition ---
@@ -55,6 +56,7 @@ func initialize(definition: GachaBallDefinition, instance_uuid: String = "", pre
 
 	self.components.clear()
 	self.battle_components.clear()
+	self.active_auras.clear()
 
 	# Initialize equipment state
 	self.equipped_on_uuid = ""
@@ -73,6 +75,7 @@ func create_battle_copy(all_instances_db: Dictionary = {}) -> GachaBallInstance:
 	# Deep copy mutable types
 	copy.dynamic_tags = self.dynamic_tags.duplicate(true)
 	copy.status_effects = self.status_effects.duplicate(true)
+	copy.active_auras = {}
 	copy.components = _duplicate_components(self.components)
 	copy.battle_components.clear()
 
@@ -116,6 +119,7 @@ func copy_for_simulation() -> GachaBallInstance:
 	copy.equipped_item_uuids = equipped_item_uuids.duplicate()
 	copy.dynamic_tags = dynamic_tags.duplicate()
 	copy.status_effects = status_effects.duplicate(true)
+	copy.active_auras = active_auras.duplicate(true)
 	copy.charged_empowered_attack = charged_empowered_attack.duplicate(true)
 	copy.components = _duplicate_components(components)
 	copy.battle_components = _duplicate_components(battle_components)
@@ -130,6 +134,7 @@ func initialize_from_trinket(trinket_def: Resource, instance_uuid: String = "") 
 	self.ball_uuid = UUIDUtils.generate_uuid(self.definition_id) if instance_uuid.is_empty() else instance_uuid
 	self.components.clear()
 	self.battle_components.clear()
+	self.active_auras.clear()
 	# Neutralize stats and equipment for trinkets
 	self.current_hp = 0
 	self.current_pwr = 0
@@ -253,11 +258,9 @@ func reset_battle_stats() -> void:
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, &"pwr", old_pwr, current_pwr)
 
 func reset_battle_stats_silent() -> void:
-	# Re-sealing ends Lineup-only conditional bonuses. Entry effects evaluate afresh
+	# Re-sealing ends Lineup-only continuous auras. Entry effects evaluate afresh
 	# when this capsule is deployed again; permanent growth remains on the instance.
-	for component_index: int in range(components.size() - 1, -1, -1):
-		if components[component_index].source_type == &"CONDITIONAL_TRINKET":
-			components.remove_at(component_index)
+	active_auras.clear()
 	# Restore HP and PWR using component-aware persistent modifiers - SILENT VERSION
 	current_hp = get_definition_base_hp() + get_persistent_hp_modifier()
 	current_pwr = get_definition_base_pwr() + get_persistent_pwr_modifier()
@@ -307,6 +310,41 @@ func remove_tag(tag: StringName) -> void:
 func has_tag(tag: StringName) -> bool:
 	return get_active_tags().has(tag)
 
+# --- Continuous Aura Helpers ---
+func has_aura(aura_key: StringName) -> bool:
+	return active_auras.has(aura_key)
+
+func get_aura(aura_key: StringName) -> Dictionary:
+	return active_auras.get(aura_key, {})
+
+func get_aura_hp(aura_key: StringName) -> int:
+	if not active_auras.has(aura_key):
+		return 0
+	return int((active_auras[aura_key] as Dictionary).get("hp", 0))
+
+func get_aura_pwr(aura_key: StringName) -> int:
+	if not active_auras.has(aura_key):
+		return 0
+	return int((active_auras[aura_key] as Dictionary).get("pwr", 0))
+
+func get_total_aura_hp() -> int:
+	var total: int = 0
+	for aura_key: Variant in active_auras:
+		total += int((active_auras[aura_key] as Dictionary).get("hp", 0))
+	return total
+
+func get_total_aura_pwr() -> int:
+	var total: int = 0
+	for aura_key: Variant in active_auras:
+		total += int((active_auras[aura_key] as Dictionary).get("pwr", 0))
+	return total
+
+func set_aura_record(aura_key: StringName, record: Dictionary) -> void:
+	active_auras[aura_key] = record
+
+func erase_aura_record(aura_key: StringName) -> void:
+	active_auras.erase(aura_key)
+
 # --- Status Effect Helpers ---
 func add_status_effect(effect_id: StringName, amount: int) -> void:
 	if amount == 0: return
@@ -346,6 +384,9 @@ func clear_status_effect(effect_id: StringName) -> void:
 		# Emit granular signal with stat name like "armor_stacks", "burn_stacks"
 		var stat_name = StringName(String(effect_id) + "_stacks")
 		SignalBus.emit_signal("unit_stat_changed", self.ball_uuid, stat_name, current, 0)
+
+func clear_status_effect_silent(effect_id: StringName) -> void:
+	status_effects.erase(effect_id)
 
 # --- Location Helpers ---
 # Assembles the definitive location of this instance based on its state.
@@ -613,6 +654,7 @@ func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 			var comp = StatComponent.new()
 			comp.id = &"battle_hp_loss"
 			comp.category = &"COMBAT_STATE"
+			comp.source_type = StringName(context.get("merge_source_type", ""))
 			comp.modifiers = {"hp": -actual_drop}
 			battle_components.append(comp)
 			
@@ -626,6 +668,7 @@ func apply_hp_delta(amount: int, context: Dictionary = {}) -> int:
 			var comp = StatComponent.new()
 			comp.id = &"battle_hp_gain"
 			comp.category = &"COMBAT_STATE"
+			comp.source_type = StringName(context.get("merge_source_type", ""))
 			comp.modifiers = {"hp": actual_gain}
 			battle_components.append(comp)
 		
@@ -647,6 +690,7 @@ func apply_pwr_delta(amount: int, context: Dictionary = {}) -> int:
 			var comp = StatComponent.new()
 			comp.id = &"battle_pwr_loss"
 			comp.category = &"COMBAT_STATE"
+			comp.source_type = StringName(context.get("merge_source_type", ""))
 			comp.modifiers = {"pwr": -actual_drop}
 			battle_components.append(comp)
 			
@@ -1031,10 +1075,6 @@ func _ensure_prismatic_components() -> void:
 			ability_component.add_ability_definition(tiger_spirit_def)
 		add_component(ability_component)
 
-func _ensure_prismatic_legacy_ability() -> void:
-	var tiger_spirit_def := Database.get_ability_definition(&"item_tier1b_extra_attack")
-	if not is_instance_valid(tiger_spirit_def):
-		return
 ## Migrate legacy save data into components. Called once during from_save_dict.
 ## Converts old variant_id and base_hp/pwr_modifier fields into proper components.
 func _migrate_legacy_state_to_components(legacy_variant_id: StringName, legacy_hp_mod: int, legacy_pwr_mod: int) -> void:
@@ -1076,6 +1116,7 @@ func to_save_dict() -> Dictionary:
 		"equipped_item_uuids": equipped_item_uuids.duplicate(),
 		"dynamic_tags": _serialize_tags(),
 		"status_effects": status_effects.duplicate(),
+		"active_auras": active_auras.duplicate(true),
 		"components": _serialize_components(components, true),
 	}
 
@@ -1109,6 +1150,14 @@ func from_save_dict(data: Dictionary) -> void:
 	status_effects.clear()
 	for key in saved_effects.keys():
 		status_effects[StringName(str(key))] = saved_effects[key]
+
+	# Restore active auras
+	var saved_auras: Dictionary = data.get("active_auras", {})
+	active_auras.clear()
+	for aura_key in saved_auras.keys():
+		var aura_val: Variant = saved_auras[aura_key]
+		if aura_val is Dictionary:
+			active_auras[StringName(str(aura_key))] = (aura_val as Dictionary).duplicate(true)
 	
 	_deserialize_components(data.get("components", []))
 	battle_components.clear()

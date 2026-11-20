@@ -53,6 +53,10 @@ func load_base_save_dict(data: Dictionary) -> void:
 	metadata = data.get("metadata", {}).duplicate(true)
 
 
+func load_component_save_dict(_data: Dictionary) -> void:
+	pass
+
+
 static func from_save_dict(data: Dictionary) -> GachaBallComponent:
 	var component_type := StringName(data.get("type", "base"))
 	var component: GachaBallComponent
@@ -68,6 +72,5 @@ static func from_save_dict(data: Dictionary) -> GachaBallComponent:
 		_:
 			component = GachaBallComponent.new()
 	component.load_base_save_dict(data)
-	if component.has_method("load_component_save_dict"):
-		component.call("load_component_save_dict", data)
+	component.load_component_save_dict(data)
 	return component

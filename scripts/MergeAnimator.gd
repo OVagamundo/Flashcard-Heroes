@@ -4,11 +4,14 @@ extends Node
 ## Listens to the `merge_animation_requested` signal and decouples presentation
 ## from the data logic in InventoryManager.
 
+const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
+
+
 func _ready() -> void:
 	SignalBus.merge_animation_requested.connect(_on_merge_animation_requested)
 
+
 func _on_merge_animation_requested(context: Dictionary) -> void:
-	# Extract context
 	var merged_uuid: String = context.get("merged_uuid", "")
 	var source_loc: LocationIdentifier = context.get("source_loc")
 	var target_loc: LocationIdentifier = context.get("target_loc")
@@ -17,21 +20,18 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	var is_merge_encounter: bool = context.get("is_merge_encounter", false)
 	var merge_encounter_cost: int = context.get("merge_encounter_cost", 0)
 	var should_trigger_on_merge: bool = context.get("should_trigger_on_merge", false)
-	var merge_context: Dictionary = context.get("merge_context", {})
 
 	if not is_instance_valid(source_loc) or not is_instance_valid(target_loc) or not is_instance_valid(new_instance):
 		_finish_merge_action_if_active(true)
 		return
 
-	var bm = get_tree().get_first_node_in_group("battle_manager")
+	var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager
 
-	# Locate views
-	var source_view = WindowManager.find_view_for_location(source_loc)
-	var target_view = WindowManager.find_view_for_location(target_loc)
-	var final_view = WindowManager.find_view_for_location(final_loc)
+	var source_view: Control = WindowManager.find_view_for_location(source_loc)
+	var target_view: Control = WindowManager.find_view_for_location(target_loc)
+	var final_view: Control = WindowManager.find_view_for_location(final_loc)
 	var start_pos: Vector2 = target_view.get_global_rect().get_center() if is_instance_valid(target_view) else context.get("start_pos", Vector2.ZERO)
 
-	# Hide ingredients
 	_set_unit_view_visible(source_view, false)
 	_set_unit_view_visible(target_view, false)
 
@@ -40,32 +40,26 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 	if snapshot.is_empty() and should_trigger_on_merge and is_instance_valid(bm):
 		snapshot = bm.get_board_snapshot()
 
-	# Resolve merge visual data strictly from pre-reaction snapshot to prevent leaking post-reaction simulation mutations
 	var merge_visual_data: Dictionary = {}
 	if snapshot.has(merged_uuid):
 		merge_visual_data = snapshot[merged_uuid]
 	else:
-		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-		var db = bm.get_all_instances() if is_instance_valid(bm) else (GameManager.run_state.get_all_instances() if is_instance_valid(GameManager.run_state) else {})
+		var db: Dictionary = bm.get_all_instances() if is_instance_valid(bm) else (GameManager.run_state.get_all_instances() if is_instance_valid(GameManager.run_state) else {})
 		merge_visual_data = VisualDataAdapter.create_visual_data(new_instance, db)
 
-	# Ensure the target/final slot is populated with the new unit's view
-	if is_instance_valid(final_view) and final_view.has_method("set_content"):
-		final_view.set_content(merge_visual_data)
-	if is_instance_valid(source_view) and source_view != final_view and source_view.has_method("set_content"):
-		source_view.set_content({})
+	if final_view is SlotView:
+		(final_view as SlotView).set_content(merge_visual_data)
+	if source_view is SlotView and source_view != final_view:
+		(source_view as SlotView).set_content({})
 
-	# Wait for the tree to process frame so the new final_view is actually ready/instantiated
 	await get_tree().process_frame
 
-	# Ensure we have the latest final_view in case it was created during the frame
 	if not is_instance_valid(final_view):
 		final_view = WindowManager.find_view_for_location(final_loc)
 
-	# Hide the real result unit so we can animate the VFX ball
 	_set_unit_view_visible(final_view, false)
 
-	var vfx_ball = _create_vfx_ball(new_instance, start_pos, merge_visual_data)
+	var vfx_ball: GachaBallView = _create_vfx_ball(new_instance, start_pos, merge_visual_data)
 	if is_instance_valid(vfx_ball):
 		vfx_ball.play_landing_bounce()
 
@@ -73,185 +67,139 @@ func _on_merge_animation_requested(context: Dictionary) -> void:
 
 	if is_merge_encounter and merge_encounter_cost > 0:
 		await _animate_merge_gold_deduction(target_loc)
-		
-	# Wait for UI to completely refresh before arc toss
+
 	await get_tree().process_frame
 
 	if GameManager.is_in_battle and final_loc != null and final_loc.container == C.BATTLE_CONTAINER_TAGS.BATTLE_DISCARD_PILE and not start_pos.is_zero_approx():
 		vfx_ball.queue_free()
-		var animator: Node = get_tree().get_first_node_in_group("battle_animator")
-		assert(animator != null, "A battle merge needs its Discard presentation")
-		await animator._animate_gachaball_to_discard(start_pos, merge_visual_data)
+		await BattleBoardEventPresenter.animate_gachaball_to_discard(BattleAnimator, start_pos, merge_visual_data)
 		SignalBus.inventory_action_completed.emit([merged_uuid])
 	elif is_instance_valid(final_view) and not start_pos.is_zero_approx():
 		await _animate_vfx_ball_toss(vfx_ball, final_view, new_instance)
 	else:
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+		if is_instance_valid(vfx_ball):
+			vfx_ball.queue_free()
 		_set_unit_view_visible(final_view, true)
-		# Use call_deferred to be safe
 		SignalBus.emit_signal.call_deferred("inventory_action_completed", [merged_uuid])
 
-	# Play VCR reactions AFTER the animation completes
 	if is_instance_valid(bm) and (should_trigger_on_merge or not reaction_events.is_empty()):
-		# Let queue_free/redraw settle so animator registers the latest merged views.
 		await get_tree().process_frame
-		
+
 		var typed_events: Array[CombatEvent] = []
 		for ev in reaction_events:
 			if ev is CombatEvent:
-				typed_events.append(ev)
-				
+				typed_events.append(ev as CombatEvent)
+
 		if not typed_events.is_empty():
 			bm.enqueue_management_animation(snapshot, typed_events)
-			if bm.get("_is_animating_management_queue"):
+			if bm.is_animating_management_queue():
 				await bm.management_animation_queue_completed
-		else:
-			var pending_count: int = 0
-			if bm.has_method("get_pending_reactions_size"):
-				pending_count = int(bm.get_pending_reactions_size())
-			elif "_pending_reactions" in bm:
-				pending_count = int(bm._pending_reactions.size())
-				
-			if pending_count > 0:
-				await bm.resolve_management_effects_and_animate(snapshot)
-			
-	if is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
+		elif bm.get_pending_reactions_size() > 0:
+			await bm.resolve_management_effects_and_animate(snapshot)
+
+	if is_instance_valid(bm):
 		bm.unblock_ui_updates()
 
 	final_view = WindowManager.find_view_for_location(final_loc)
 	_set_unit_view_visible(final_view, true)
 	if not GameManager.is_in_battle:
-		SignalBus.emit_signal("run_data_changed")
-		SignalBus.emit_signal("inventory_ui_refresh_requested")
+		SignalBus.run_data_changed.emit()
+		SignalBus.inventory_ui_refresh_requested.emit()
 
 	_finish_merge_action_if_active()
 
+
 func _finish_merge_action_if_active(unblock_bm: bool = false) -> void:
 	if unblock_bm:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm) and bm.has_method("unblock_ui_updates"):
+		var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager
+		if is_instance_valid(bm):
 			bm.unblock_ui_updates()
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
-		var act = ActionQueue.get_active_action()
+	if ActionQueue.is_busy():
+		var act: GameAction = ActionQueue.get_active_action()
 		if is_instance_valid(act) and (act is ConfirmMergeAction or act is MergeEncounterAction):
 			ActionQueue.finish_action(act)
 
-func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2, visual_data_override: Dictionary = {}) -> Control:
-	var visual_data = visual_data_override
-	if visual_data.is_empty():
-		var VisualDataAdapter = load("res://scripts/VisualDataAdapter.gd")
-		visual_data = VisualDataAdapter.create_visual_data(instance)
-	var anim_ball = preload("res://scenes/GachaBallView.tscn").instantiate()
-	var effects_layer = WindowManager.get_vfx_layer()
-	effects_layer.add_child(anim_ball)
-	
-	# Fix warning: Reset anchors before setting size for a manual-transform node
+
+func _create_vfx_ball(instance: GachaBallInstance, global_pos: Vector2, visual_data_override: Dictionary = {}) -> GachaBallView:
+	var visual_data: Dictionary = visual_data_override if not visual_data_override.is_empty() else VisualDataAdapter.create_visual_data(instance)
+	var anim_ball: GachaBallView = GachaBallViewScene.instantiate() as GachaBallView
+	WindowManager.get_vfx_layer().add_child(anim_ball)
 	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
-	
 	anim_ball.force_inventory_mode = not GameManager.is_in_battle
 	anim_ball.show_capsule_overlay = not GameManager.is_in_battle
-	# CRITICAL: Set size scale to 1.0 (inventory) and fix dimensions before populate
-	# to ensure stat labels and icons are correctly positioned.
-	if anim_ball.has_method("set_size_scale"):
-		anim_ball.set_size_scale(1.0)
-	
-	anim_ball.custom_minimum_size = Vector2(96.0, 96.0) # Match C.SLOT_SIZE_BASE
+	anim_ball.set_size_scale(1.0)
+	anim_ball.custom_minimum_size = Vector2(96.0, 96.0)
 	anim_ball.size = Vector2(96.0, 96.0)
-	
 	anim_ball.populate(null, visual_data, false)
 	anim_ball.set_is_interactive(false)
-	
-	var pivot = anim_ball.size / 2.0
-	anim_ball.global_position = global_pos - pivot
+	anim_ball.global_position = global_pos - (anim_ball.size / 2.0)
 	return anim_ball
 
-func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
-	if not is_instance_valid(slot_view): return
+
+func _find_ball_in_slot(slot_view: Control) -> GachaBallView:
+	if not is_instance_valid(slot_view):
+		return null
 	for child in slot_view.get_children():
-		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("populate")):
-			child.visible = is_visible
+		if child is GachaBallView and not child.is_queued_for_deletion():
+			return child as GachaBallView
+	return null
 
-func _animate_vfx_ball_toss(vfx_ball: Control, target_slot: Control, instance: GachaBallInstance) -> void:
-	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball): 
-		if is_instance_valid(vfx_ball): vfx_ball.queue_free()
+
+func _set_unit_view_visible(slot_view: Control, is_visible: bool) -> void:
+	if not is_instance_valid(slot_view):
 		return
-	
-	var start_pos = vfx_ball.global_position + (vfx_ball.size / 2.0)
-	var end_pos = target_slot.get_global_rect().get_center()
-	
-	# Locate real ball view in target slot
-	var real_ball_view: Control = null
-	for child in target_slot.get_children():
-		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
-			real_ball_view = child
-			break
+	for child in slot_view.get_children():
+		if child is GachaBallView and not child.is_queued_for_deletion():
+			(child as GachaBallView).visible = is_visible
 
-	# If start and end are too close, reveal the real unit view, trigger bounce and return
+
+func _animate_vfx_ball_toss(vfx_ball: GachaBallView, target_slot: Control, instance: GachaBallInstance) -> void:
+	if not is_instance_valid(target_slot) or not is_instance_valid(vfx_ball):
+		if is_instance_valid(vfx_ball):
+			vfx_ball.queue_free()
+		return
+
+	var start_pos: Vector2 = vfx_ball.global_position + (vfx_ball.size / 2.0)
+	var end_pos: Vector2 = target_slot.get_global_rect().get_center()
+	var real_ball_view: GachaBallView = _find_ball_in_slot(target_slot)
+
 	if start_pos.distance_to(end_pos) < 20.0:
 		vfx_ball.queue_free()
-		real_ball_view = null
-		for child in target_slot.get_children():
-			if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
-				real_ball_view = child
-				break
 		if is_instance_valid(real_ball_view):
 			real_ball_view.visible = true
-		SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+		SignalBus.inventory_action_completed.emit([instance.ball_uuid])
 		await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
 		return
-		
-	# Hide the real ball view in the target slot during flight
+
 	if is_instance_valid(real_ball_view):
 		real_ball_view.visible = false
 		target_slot.visible = true
 
-	# Animate Arc (Kinematic Parabola)
-	var arc_height = clamp(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
-	var duration = 0.55
-	
-	var control_point = Vector2(
-		(start_pos.x + end_pos.x) / 2.0,
-		min(start_pos.y, end_pos.y) - arc_height
-	)
-	
-	var tween = vfx_ball.create_tween()
-	tween.set_trans(Tween.TRANS_LINEAR)
-	
-	var Audio = get_node_or_null("/root/Audio")
-	if is_instance_valid(Audio) and Audio.has_method("play_sfx"):
-		Audio.play_sfx("unit_toss")
-	
-	var pivot = vfx_ball.size / 2.0
-	tween.tween_method(func(t: float):
-		if not is_instance_valid(vfx_ball): return
-		var eased_t = pow(t, 1.05)
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_pos) + \
-				  (2.0 * inv_t * eased_t * control_point) + \
-				  (eased_t * eased_t * end_pos)
-		vfx_ball.global_position = pos - pivot
-	, 0.0, 1.0, duration)
-	
+	var arc_height: float = clampf(start_pos.distance_to(end_pos) * 0.5, 80.0, 300.0)
+	Audio.play_sfx("unit_toss")
+
+	var tween: Tween = ArcTossAnimator.toss_bezier(vfx_ball, start_pos, end_pos, {
+		"arc_height": arc_height,
+		"duration": 0.55,
+		"ease_power": 1.05,
+		"pivot": vfx_ball.size / 2.0,
+	})
 	await tween.finished
-	
-	# Cleanup
-	if is_instance_valid(vfx_ball): vfx_ball.queue_free()
-	real_ball_view = null
-	for child in target_slot.get_children():
-		if not child.is_queued_for_deletion() and ("GachaBallView" in child.name or child.has_method("play_landing_bounce")):
-			real_ball_view = child
-			break
+
+	if is_instance_valid(vfx_ball):
+		vfx_ball.queue_free()
+	real_ball_view = _find_ball_in_slot(target_slot)
 	if is_instance_valid(real_ball_view):
 		real_ball_view.visible = true
-			
-	SignalBus.emit_signal("inventory_action_completed", [instance.ball_uuid])
+
+	SignalBus.inventory_action_completed.emit([instance.ball_uuid])
 	await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.35)).timeout
 
+
 func _animate_merge_gold_deduction(target_loc: LocationIdentifier) -> void:
-	var target_view = WindowManager.find_view_for_location(target_loc)
-	if not is_instance_valid(target_view): return
-	var end_pos = target_view.get_global_rect().get_center()
-	var cost = 5
-	if is_instance_valid(GameManager) and is_instance_valid(GameManager.run_state):
-		cost = GameManager.run_state.merge_encounter_cost
+	var target_view: Control = WindowManager.find_view_for_location(target_loc)
+	if not is_instance_valid(target_view):
+		return
+	var end_pos: Vector2 = target_view.get_global_rect().get_center()
+	var cost: int = GameManager.run_state.merge_encounter_cost if is_instance_valid(GameManager.run_state) else 5
 	await CurrencyAnimator.animate_gold_spend(cost, end_pos)

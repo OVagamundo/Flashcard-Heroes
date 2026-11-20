@@ -82,8 +82,7 @@ func get_total_next_minigame_bonus_time() -> float:
 	var total: float = get_next_minigame_bonus_time()
 	if GameManager.has_trinket(&"trinket_time_sprint_charm") or _has_team_trinket(true, &"trinket_time_sprint_charm"):
 		total += 2.0
-	var active_traits: Dictionary = get_active_traits("PLAYER")
-	if int(active_traits.get("NOVICE", 0)) >= 2:
+	if TraitRulesEngine.has_tier(get_active_traits("PLAYER"), "NOVICE", 1):
 		total += 1.0
 	return total
 
@@ -117,7 +116,6 @@ func get_last_minigame_results() -> Dictionary:
 var _current_turn: int = 0
 var _turn_start_abilities_triggered: bool = false
 var _bargain_charm_uses: Dictionary = {}
-var _specialist_gacha_discount_used: bool = false
 var _specialist_gold_awarded_battle: int = 0
 var _pending_inventory_refresh: bool = false
 
@@ -177,8 +175,8 @@ func get_replay_state_snapshot() -> Dictionary:
 			continue
 		var instance_data: Dictionary = instance.to_save_dict()
 		var battle_components: Array[Dictionary] = []
-		for component in instance.battle_components:
-			if is_instance_valid(component) and component.has_method("to_save_dict"):
+		for component: GachaBallComponent in instance.battle_components:
+			if is_instance_valid(component):
 				battle_components.append(component.to_save_dict())
 		instance_data["battle_components"] = battle_components
 		instances[String(uuid)] = instance_data
@@ -210,6 +208,7 @@ func get_replay_state_snapshot() -> Dictionary:
 		"phase": int(_current_battle_phase),
 		"turn": _current_turn,
 		"turn_metadata": _turn_metadata.duplicate(true),
+		"specialist_gacha_discount_used": _state.specialist_gacha_discount_used,
 		"dead_this_turn": _state._dead_this_turn.duplicate(true),
 		"gacha_tokens": _gacha_tokens,
 		"player_shelf_slots_unlocked": _state.player_shelf_slots_unlocked,
@@ -236,29 +235,27 @@ func _exit_tree() -> void:
 	GameManager.unregister_battle_manager() # ADD THIS LINE
 	GameManager.is_in_battle = false
 	SignalBus.emit_signal("battle_state_changed", false)
-	if SignalBus.is_connected("end_turn_requested", _on_end_turn_requested):
+	if SignalBus.battle_entry_animation_finished.is_connected(_on_battle_entry_animation_finished):
+		SignalBus.battle_entry_animation_finished.disconnect(_on_battle_entry_animation_finished)
+	if SignalBus.end_turn_requested.is_connected(_on_end_turn_requested):
 		SignalBus.end_turn_requested.disconnect(_on_end_turn_requested)
-	if SignalBus.is_connected("unit_inventory_changed", _on_unit_inventory_changed):
+	if SignalBus.unit_inventory_changed.is_connected(_on_unit_inventory_changed):
 		SignalBus.unit_inventory_changed.disconnect(_on_unit_inventory_changed)
 	if FlashcardManager.minigame_finished.is_connected(_on_flashcard_completed):
 		FlashcardManager.minigame_finished.disconnect(_on_flashcard_completed)
-	if SignalBus.is_connected("results_acknowledged", _on_results_acknowledged):
+	if SignalBus.results_acknowledged.is_connected(_on_results_acknowledged):
 		SignalBus.results_acknowledged.disconnect(_on_results_acknowledged)
 	if is_instance_valid(_animator) and _animator.turn_animation_finished.is_connected(_on_turn_animation_finished):
 		_animator.turn_animation_finished.disconnect(_on_turn_animation_finished)
-	if SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+	if SignalBus.management_animation_requested.is_connected(_on_management_animation_requested):
 		SignalBus.management_animation_requested.disconnect(_on_management_animation_requested)
 
 func _connect_signals() -> void:
 	SignalBus.battle_entry_animation_finished.connect(_on_battle_entry_animation_finished)
 	SignalBus.end_turn_requested.connect(_on_end_turn_requested)
 	SignalBus.unit_inventory_changed.connect(_on_unit_inventory_changed)
-	# Apply deaths after animator finishes death fades
-	if SignalBus.has_signal("apply_deaths_requested") and not SignalBus.is_connected("apply_deaths_requested", _on_apply_deaths_requested):
-		SignalBus.apply_deaths_requested.connect(_on_apply_deaths_requested)
-	if SignalBus.has_signal("management_animation_requested") and not SignalBus.is_connected("management_animation_requested", _on_management_animation_requested):
+	if not SignalBus.management_animation_requested.is_connected(_on_management_animation_requested):
 		SignalBus.management_animation_requested.connect(_on_management_animation_requested)
-	# Removed legacy reshuffle trigger; draw now reshuffles atomically when needed.
 
 func _is_unit_instance(inst: GachaBallInstance) -> bool:
 	if not is_instance_valid(inst):
@@ -267,246 +264,13 @@ func _is_unit_instance(inst: GachaBallInstance) -> bool:
 	return is_instance_valid(def) and def.category == &"UNIT"
 
 func _capture_all_unit_stats() -> Dictionary:
-	var stats: Dictionary = {}
-	for uuid in _battle_instances:
-		var inst = _battle_instances[uuid]
-		if _is_unit_instance(inst):
-			stats[uuid] = {
-				"hp": inst.current_hp,
-				"pwr": inst.current_pwr,
-				"burn_stacks": inst.get_status_effect_amount(&"burn"),
-				"armor_stacks": inst.get_status_effect_amount(&"armor"),
-				"spikes_stacks": inst.get_status_effect_amount(&"spikes"),
-				"status_effects": inst.status_effects.duplicate(true)
-			}
-	return stats
+	return BoardStatDiffBuilder.capture_all_unit_stats(_battle_instances)
 
 static func _apply_unit_stat_override(snapshot_unit: Dictionary, unit_override: Dictionary) -> void:
-	if unit_override.has("hp"):
-		snapshot_unit["hp"] = unit_override["hp"]
-	if unit_override.has("pwr"):
-		snapshot_unit["pwr"] = unit_override["pwr"]
-	if unit_override.has("burn_stacks"):
-		snapshot_unit["burn_stacks"] = unit_override["burn_stacks"]
-	if unit_override.has("armor_stacks"):
-		snapshot_unit["armor_stacks"] = unit_override["armor_stacks"]
-	if unit_override.has("spikes_stacks"):
-		snapshot_unit["spikes_stacks"] = unit_override["spikes_stacks"]
-	if unit_override.has("status_effects"):
-		snapshot_unit["status_effects"] = unit_override["status_effects"].duplicate(true)
+	BoardStatDiffBuilder.apply_unit_stat_override(snapshot_unit, unit_override)
 
 func _generate_inventory_stat_events(pre_stats: Dictionary) -> Dictionary:
-	var extra_events: Array[CombatEvent] = []
-	var pre_stats_override: Dictionary = {}
-	
-	for uuid in pre_stats:
-		var inst = get_instance(uuid)
-		if not is_instance_valid(inst):
-			continue
-		var old_hp: int = pre_stats[uuid]["hp"]
-		var old_pwr: int = pre_stats[uuid]["pwr"]
-		var new_hp: int = inst.current_hp
-		var new_pwr: int = inst.current_pwr
-		var delta_hp: int = new_hp - old_hp
-		var delta_pwr: int = new_pwr - old_pwr
-		
-		if delta_hp != 0 or delta_pwr != 0:
-			pre_stats_override[uuid] = pre_stats[uuid].duplicate(true)
-			
-			if delta_hp > 0 and delta_pwr > 0:
-				var both_payload := CombatPayload.both_stats_change(
-					uuid,
-					delta_hp,
-					delta_pwr,
-					[old_hp],
-					[new_hp],
-					[old_pwr],
-					[new_pwr]
-				)
-				both_payload.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				var both_event := CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": uuid,
-					"target_uuids": [uuid],
-					"ability_holder_uuid": uuid,
-					"visual_payload": both_payload,
-					"action_type": C.ACTION_BUFF,
-					"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL
-				})
-				extra_events.append(both_event)
-				var hp_inc_ctx := TriggerContext.new()
-				hp_inc_ctx.unit_uuid = uuid
-				hp_inc_ctx.triggering_uuid = uuid
-				hp_inc_ctx.source_uuid = uuid
-				hp_inc_ctx.stat = "hp"
-				hp_inc_ctx.amount = delta_hp
-				hp_inc_ctx.is_stackable = false
-				hp_inc_ctx.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				hp_inc_ctx.is_simulation = true
-				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, hp_inc_ctx)
-
-				var pwr_inc_ctx := TriggerContext.new()
-				pwr_inc_ctx.unit_uuid = uuid
-				pwr_inc_ctx.triggering_uuid = uuid
-				pwr_inc_ctx.source_uuid = uuid
-				pwr_inc_ctx.stat = "pwr"
-				pwr_inc_ctx.amount = delta_pwr
-				pwr_inc_ctx.is_stackable = false
-				pwr_inc_ctx.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				pwr_inc_ctx.is_simulation = true
-				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, pwr_inc_ctx)
-			elif delta_hp < 0 and delta_pwr < 0:
-				var both_payload := CombatPayload.both_stats_change(
-					uuid,
-					delta_hp,
-					delta_pwr,
-					[old_hp],
-					[new_hp],
-					[old_pwr],
-					[new_pwr]
-				)
-				both_payload.action_type = C.ACTION_DEBUFF
-				both_payload.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				var both_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
-					"source_uuid": uuid,
-					"target_uuids": [uuid],
-					"ability_holder_uuid": uuid,
-					"visual_payload": both_payload,
-					"action_type": C.ACTION_DEBUFF,
-					"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL
-				})
-				extra_events.append(both_event)
-				var hp_dec_ctx := TriggerContext.new()
-				hp_dec_ctx.unit_uuid = uuid
-				hp_dec_ctx.triggering_uuid = uuid
-				hp_dec_ctx.source_uuid = uuid
-				hp_dec_ctx.stat = "hp"
-				hp_dec_ctx.amount = abs(delta_hp)
-				hp_dec_ctx.is_stackable = false
-				hp_dec_ctx.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				hp_dec_ctx.is_simulation = true
-				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, hp_dec_ctx)
-
-				var pwr_dec_ctx := TriggerContext.new()
-				pwr_dec_ctx.unit_uuid = uuid
-				pwr_dec_ctx.triggering_uuid = uuid
-				pwr_dec_ctx.source_uuid = uuid
-				pwr_dec_ctx.stat = "pwr"
-				pwr_dec_ctx.amount = abs(delta_pwr)
-				pwr_dec_ctx.is_stackable = false
-				pwr_dec_ctx.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-				pwr_dec_ctx.is_simulation = true
-				AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, pwr_dec_ctx)
-			else:
-				if delta_hp > 0:
-					var hp_payload := CombatPayload.hp_buff(
-						uuid,
-						delta_hp,
-						[old_hp],
-						[new_hp]
-					)
-					hp_payload.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					var hp_event := CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": uuid,
-						"target_uuids": [uuid],
-						"ability_holder_uuid": uuid,
-						"visual_payload": hp_payload,
-						"action_type": C.ACTION_BUFF,
-						"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL
-					})
-					extra_events.append(hp_event)
-					var hp_single_inc := TriggerContext.new()
-					hp_single_inc.unit_uuid = uuid
-					hp_single_inc.triggering_uuid = uuid
-					hp_single_inc.source_uuid = uuid
-					hp_single_inc.stat = "hp"
-					hp_single_inc.amount = delta_hp
-					hp_single_inc.is_stackable = false
-					hp_single_inc.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					hp_single_inc.is_simulation = true
-					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, hp_single_inc)
-				elif delta_hp < 0:
-					var hp_payload := CombatPayload.hp_debuff(
-						uuid,
-						abs(delta_hp),
-						[old_hp],
-						[new_hp]
-					)
-					hp_payload.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					var hp_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
-						"source_uuid": uuid,
-						"target_uuids": [uuid],
-						"ability_holder_uuid": uuid,
-						"visual_payload": hp_payload,
-						"action_type": C.ACTION_DEBUFF,
-						"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL
-					})
-					extra_events.append(hp_event)
-					var hp_single_dec := TriggerContext.new()
-					hp_single_dec.unit_uuid = uuid
-					hp_single_dec.triggering_uuid = uuid
-					hp_single_dec.source_uuid = uuid
-					hp_single_dec.stat = "hp"
-					hp_single_dec.amount = abs(delta_hp)
-					hp_single_dec.is_stackable = false
-					hp_single_dec.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					hp_single_dec.is_simulation = true
-					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, hp_single_dec)
-					
-				if delta_pwr > 0:
-					var pwr_payload := CombatPayload.pwr_buff(
-						uuid,
-						delta_pwr,
-						[old_pwr],
-						[new_pwr]
-					)
-					pwr_payload.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					var pwr_event := CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": uuid,
-						"target_uuids": [uuid],
-						"ability_holder_uuid": uuid,
-						"visual_payload": pwr_payload,
-						"action_type": C.ACTION_BUFF,
-						"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL
-					})
-					extra_events.append(pwr_event)
-					var pwr_single_inc := TriggerContext.new()
-					pwr_single_inc.unit_uuid = uuid
-					pwr_single_inc.triggering_uuid = uuid
-					pwr_single_inc.source_uuid = uuid
-					pwr_single_inc.stat = "pwr"
-					pwr_single_inc.amount = delta_pwr
-					pwr_single_inc.is_stackable = false
-					pwr_single_inc.buff_subgroup = C.BUFF_SUBGROUP_CONDITIONAL
-					pwr_single_inc.is_simulation = true
-					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_INCREASED, pwr_single_inc)
-				elif delta_pwr < 0:
-					var pwr_payload := CombatPayload.pwr_debuff(
-						uuid,
-						abs(delta_pwr),
-						[old_pwr],
-						[new_pwr]
-					)
-					var pwr_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
-						"source_uuid": uuid,
-						"target_uuids": [uuid],
-						"ability_holder_uuid": uuid,
-						"visual_payload": pwr_payload,
-						"action_type": C.ACTION_DEBUFF
-					})
-					extra_events.append(pwr_event)
-					var pwr_single_dec := TriggerContext.new()
-					pwr_single_dec.unit_uuid = uuid
-					pwr_single_dec.triggering_uuid = uuid
-					pwr_single_dec.source_uuid = uuid
-					pwr_single_dec.stat = "pwr"
-					pwr_single_dec.amount = abs(delta_pwr)
-					pwr_single_dec.is_simulation = true
-					AbilityResolver.process_trigger(C.TRIGGER_ON_STAT_DECREASED, pwr_single_dec)
-			
-	return {
-		"events": extra_events,
-		"pre_stats": pre_stats_override
-	}
+	return BoardStatDiffBuilder.generate_inventory_stat_events(pre_stats, self)
 
 func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_stats_override: Dictionary = {}, pre_equipped_override: Dictionary = {}, pre_board_snapshot: Dictionary = {}) -> void:
 	# Trigger real-time passive updates whenever the inventory changes
@@ -589,8 +353,7 @@ func _emit_battle_inventory_changed(extra_events: Array[CombatEvent] = [], pre_s
 
 func _on_management_animation_requested(snapshot: Dictionary) -> void:
 	await resolve_management_effects_and_animate(snapshot)
-	if has_method("unblock_ui_updates"):
-		unblock_ui_updates()
+	unblock_ui_updates()
 
 
 func start_battle(encounter_def: EncounterDefinition) -> void:
@@ -601,7 +364,6 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	# Any changes to units during battle (HP, stats, etc.) will be discarded when the battle ends.
 	_setup_battle(encounter_def)
 	GameManager.is_in_battle = true
-	SignalBus.emit_signal("battle_state_changed", true)
 	SignalBus.emit_signal("battle_state_changed", true)
 	_emit_battle_inventory_changed()
 	
@@ -616,7 +378,7 @@ func start_battle(encounter_def: EncounterDefinition) -> void:
 	# Start the first turn with the Challenge
 	_change_phase(Phases.START_OF_TURN)
 
-	if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is SelectPathAction:
+	if ActionQueue.get_active_action() is SelectPathAction:
 		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _setup_battle(encounter_def: EncounterDefinition = null) -> void:
@@ -720,35 +482,7 @@ func bm_remove_instance(uuid: String) -> bool:
 func _cleanup_removed_trinket_passives(instance: GachaBallInstance) -> void:
 	if not is_instance_valid(instance):
 		return
-
-	var definition = instance.get_definition()
-	if not is_instance_valid(definition):
-		return
-	if definition.category != &"TRINKET":
-		return
-	if definition.id != &"trinket_twin_charm":
-		return
-
-	var team = "PLAYER" if _is_player_owned(instance) else "ENEMY"
-	var status_key := StringName("twin_charm_scaling_" + team)
-	var legacy_status_key := StringName("twin_charm_scaling_" + instance.ball_uuid)
-	for uuid in _battle_instances:
-		var target: GachaBallInstance = _battle_instances[uuid]
-		if not is_instance_valid(target):
-			continue
-		var target_def = target.get_definition()
-		if not is_instance_valid(target_def) or target_def.category != &"UNIT":
-			continue
-
-		var last_bonus := target.get_status_effect_amount(status_key)
-		if last_bonus <= 0:
-			last_bonus = target.get_status_effect_amount(legacy_status_key)
-			status_key = legacy_status_key
-		if last_bonus <= 0:
-			continue
-
-		target.clear_status_effect(status_key)
-		target.apply_pwr_delta(-last_bonus)
+	AuraEvaluator.clear_auras_for_source(instance.ball_uuid, _battle_instances, false)
 
 
 func bm_move_instance(source_loc: LocationIdentifier, target_loc: LocationIdentifier) -> bool:
@@ -1176,53 +910,9 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 	if should_trigger_on_merge:
 		var scope_id = _combat.get_crr().begin_scope()
 
-		# Resolve pending expired insignia from evolutionary level-up:
-		# Emits explicit DEBUFF event before new level-entry insignia abilities run.
-		if new_instance.has_meta(&"pending_expired_insignia"):
-			var exp_data: Dictionary = new_instance.get_meta(&"pending_expired_insignia")
-			new_instance.remove_meta(&"pending_expired_insignia")
-			var trinket_uuid: String = exp_data.get("trinket_uuid", "")
-			var hp_loss: int = exp_data.get("hp", 1)
-			var pwr_loss: int = exp_data.get("pwr", 1)
-			var t_name: String = exp_data.get("trinket_name", "Insignia")
-
-			var old_hp: int = new_instance.current_hp
-			var old_pwr: int = new_instance.current_pwr
-			var max_hp: int = new_instance.get_definition_base_hp()
-
-			set_conditional_trinket_bonus(new_instance, trinket_uuid, 0, 0, false, true)
-			new_instance.remove_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))
-			new_instance.remove_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid))
-
-			var new_hp: int = new_instance.current_hp
-			var new_pwr: int = new_instance.current_pwr
-
-			var debuff_payload := CombatPayload.both_stats_change(
-				trinket_uuid,
-				-hp_loss,
-				-pwr_loss,
-				[old_hp],
-				[new_hp],
-				[old_pwr],
-				[new_pwr],
-				[max_hp]
-			)
-			debuff_payload.action_type = C.ACTION_DEBUFF
-
-			var unit_name: String = BattleHelpers.get_instance_display_name(new_instance)
-			var log_event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "%s bonus lost on %s (-%d HP, -%d PWR)" % [t_name, unit_name, hp_loss, pwr_loss]
-			})
-			var debuff_event := CombatEvent.new(CombatEvent.Type.DEBUFF, {
-				"source_uuid": trinket_uuid,
-				"target_uuids": [new_instance.ball_uuid],
-				"ability_id": StringName("ability_%s_expire" % trinket_uuid),
-				"action_type": C.ACTION_DEBUFF,
-				"ability_holder_uuid": trinket_uuid,
-				"visual_payload": debuff_payload
-			})
-			reaction_events.append(log_event)
-			reaction_events.append(debuff_event)
+		# Resolve pending expired continuous auras from evolutionary level-up
+		# before new level-entry aura abilities run.
+		AuraEvaluator.drain_expired_auras(new_instance, reaction_events, true)
 
 		if result_def.category == C.CATEGORY_UNIT and _is_lineup_container(merge_container_tag):
 			_process_lineup_entry(new_instance)
@@ -1241,50 +931,7 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 		board_ctx.is_simulation = true
 		AbilityResolver.process_trigger(C.TRIGGER_ON_BOARD_STATE_CHANGED, board_ctx)
 
-		# Mecha L3 (4 Units): on_merge, each Mecha fires ranged shot (1 dmg + 1 Static) to random enemy
-		var p_traits = get_active_traits("PLAYER")
-		if p_traits.get("MECHA", 0) >= 4:
-			var p_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-			var mechas = p_lineup.filter(func(u): return is_instance_valid(u) and u.current_hp > 0 and has_trait(u, "MECHA"))
-			var opp_lineup = get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP).filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
-			if not mechas.is_empty() and not opp_lineup.is_empty():
-				for mecha in mechas:
-					var living_enemies = opp_lineup.filter(func(e): return is_instance_valid(e) and e.current_hp > 0)
-					if living_enemies.is_empty():
-						break
-					var target_enemy = RNGManager.combat_rng.pick_random(living_enemies)
-					var old_h = target_enemy.current_hp
-					var old_a = target_enemy.get_status_effect_amount(&"armor")
-					var dmg_res = apply_damage(target_enemy, 1, C.DamageType.RANGED, mecha.ball_uuid)
-					var new_h = dmg_res.get("new_hp", target_enemy.current_hp)
-					var a_cons = dmg_res.get("armor_consumed", 0)
-					var new_a = dmg_res.get("new_armor", old_a)
-					var max_h = 0
-					var t_def = target_enemy.get_definition()
-					if is_instance_valid(t_def): max_h = t_def.base_hp
-
-					var p := CombatPayload.damage(mecha.ball_uuid, 1, [old_h], [new_h], [old_a], [new_a], [a_cons])
-					p.attack_type = "ranged"
-					p.skip_bump = true
-					p.projectile = CombatProjectile.new("hp", 1, "yellow")
-					p.targets_max_hp = [max_h] as Array[int]
-					reaction_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-						"source_uuid": mecha.ball_uuid,
-						"target_uuids": [target_enemy.ball_uuid],
-						"visual_payload": p
-					}))
-
-					var old_st = target_enemy.get_status_effect_amount(&"static")
-					var new_st = apply_stat_delta(target_enemy, "static_stacks", 1)
-					var st_p := CombatPayload.status_change(mecha.ball_uuid, 1, "static_stacks", [old_st], [new_st])
-					reaction_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-						"source_uuid": mecha.ball_uuid,
-						"target_uuids": [target_enemy.ball_uuid],
-						"visual_payload": st_p
-					}))
-
-					if new_h <= 0:
-						trigger_on_kill(mecha.ball_uuid, target_enemy.ball_uuid)
+		TraitRulesEngine.apply_on_merge_traits(self, reaction_events)
 
 		var death_tracking: Dictionary = {}
 		reaction_events.append_array(_combat.process_reaction_queue(self, death_tracking))
@@ -1299,13 +946,7 @@ func bm_merge_instances(source_loc: LocationIdentifier, target_loc: LocationIden
 
 		CausalReactionResolver.stamp_cause_id(reaction_events, merge_event.event_id)
 	else:
-		if new_instance.has_meta(&"pending_expired_insignia"):
-			var exp_data: Dictionary = new_instance.get_meta(&"pending_expired_insignia")
-			new_instance.remove_meta(&"pending_expired_insignia")
-			var trinket_uuid: String = exp_data.get("trinket_uuid", "")
-			set_conditional_trinket_bonus(new_instance, trinket_uuid, 0, 0, false, true)
-			new_instance.remove_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))
-			new_instance.remove_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid))
+		AuraEvaluator.drain_expired_auras(new_instance, reaction_events, false)
 
 	reaction_events.append_array(take_inventory_events())
 	var all_events: Array[CombatEvent] = [merge_event]
@@ -1402,14 +1043,14 @@ func get_gacha_draw_cost(tier: int) -> int:
 	var bargain_used = _bargain_charm_uses.get(tier, false)
 	if has_bargain and not bargain_used:
 		cost = maxi(1, cost - 1)
-	elif get_active_traits("PLAYER").get("SPECIALIST", 0) >= 3 and not _specialist_gacha_discount_used:
+	elif TraitRulesEngine.has_tier(get_active_traits("PLAYER"), "SPECIALIST", 2) and not _state.specialist_gacha_discount_used:
 		cost = maxi(1, cost - 1)
 	return cost
 
 func is_animations_playing() -> bool:
 	if _is_entrance_sequence_running or _is_processing_effect or _is_animating_management_queue:
 		return true
-	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+	if is_instance_valid(_animator) and _animator.is_playing_sequence():
 		return true
 	return false
 
@@ -1538,8 +1179,8 @@ func bm_draw_gacha_instance(tier: int) -> Array[CombatEvent]:
 			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": ""})
 			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_bargain_charm", false))
 			chain_events.append(event)
-	elif get_active_traits("PLAYER").get("SPECIALIST", 0) >= 3 and not _specialist_gacha_discount_used:
-		_specialist_gacha_discount_used = true
+	elif TraitRulesEngine.has_tier(get_active_traits("PLAYER"), "SPECIALIST", 2) and not _state.specialist_gacha_discount_used:
+		_state.specialist_gacha_discount_used = true
 		if cost < base_cost:
 			var event := CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "Specialist discount applied!"})
 			event.trinket_activations.append(CombatTrinketActivation.new(&"trinket_trait_specialist", false))
@@ -1713,7 +1354,7 @@ func _change_phase(new_phase: Phases) -> void:
 	if new_phase == Phases.START_OF_TURN or new_phase == Phases.MANAGEMENT or new_phase == Phases.PRE_COMBAT or new_phase == Phases.BATTLE_OVER:
 		SignalBus.emit_signal("gacha_tokens_changed", _gacha_tokens)
 
-	if (new_phase == Phases.START_OF_TURN or new_phase == Phases.MANAGEMENT or new_phase == Phases.BATTLE_OVER) and is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is EndTurnAction:
+	if (new_phase == Phases.START_OF_TURN or new_phase == Phases.MANAGEMENT or new_phase == Phases.BATTLE_OVER) and ActionQueue.get_active_action() is EndTurnAction:
 		ActionQueue.finish_action(ActionQueue.get_active_action())
 		
 	match _current_battle_phase:
@@ -1722,6 +1363,7 @@ func _change_phase(new_phase: Phases) -> void:
 			_current_turn += 1
 			_turn_start_abilities_triggered = false
 			_bargain_charm_uses.clear()
+			_state.specialist_gacha_discount_used = false
 			_locked_ready_traits.clear()
 			
 			# Timekeeper hero bonus: +5 tokens for easy testing
@@ -1965,7 +1607,7 @@ func _resolve_combat_phase() -> void:
 	# to find a null view for the management chain's targets.
 	if _is_animating_management_queue:
 		await management_animation_queue_completed
-	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+	if is_instance_valid(_animator) and _animator.is_playing_sequence():
 		await _animator.turn_animation_finished
 	
 	var start_snapshot: Dictionary = get_board_snapshot()
@@ -2005,7 +1647,6 @@ func get_held_turn_preview() -> Dictionary:
 	simulation._state = _state.copy_for_simulation()
 	simulation._current_turn = _current_turn
 	simulation._bargain_charm_uses = _bargain_charm_uses.duplicate()
-	simulation._specialist_gacha_discount_used = _specialist_gacha_discount_used
 	simulation._specialist_gold_awarded_battle = _specialist_gold_awarded_battle
 
 	# Effect handlers use the active battle, run and RNG streams. Swap the
@@ -2364,21 +2005,9 @@ func drain_lethal_counters() -> Array[CombatEvent]:
 func drain_cascade() -> Array[CombatEvent]:
 	return _combat.drain_cascade(self)
 
-func drain_pending_reactions_inline(start_index: int) -> void:
-	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_reactions_inline(start_index, self)
-
-func drain_and_capture_reactions_inline(start_index: int) -> Array[CombatEvent]:
-	# THIN WRAPPER: Delegates to CombatSimulator
-	return _combat.drain_and_capture_reactions_inline(start_index, self)
-
 func collect_inline_events() -> Array[CombatEvent]:
 	# THIN WRAPPER: Delegates to CombatSimulator
 	return _combat.collect_and_clear_inline_events()
-
-func drain_lethal_reactions_only(start_index: int) -> void:
-	# THIN WRAPPER: Delegates to CombatSimulator
-	_combat.drain_lethal_reactions(start_index, self)
 
 
 ## Get an instance by UUID.
@@ -2494,27 +2123,36 @@ func _get_ability_definition(ability_id: StringName, source: GachaBallInstance) 
 # DAMAGE & STAT DELTAS
 # ============================================================================
 
-func get_bonus_burn_stacks_for_attack(source: GachaBallInstance) -> int:
-	if not is_instance_valid(source): return 0
-	var is_player = _is_player_unit(source)
-	var burn = 0
-	
-	if _has_team_trinket(is_player, &"trinket_burn_vial"):
-		burn += 1
-		
-	var active_traits = get_active_traits("PLAYER" if is_player else "ENEMY")
-	var fire_level = active_traits.get("FIRE", 0)
-	
-	if fire_level >= 3 and _has_trait_soul(source, "FIRE"):
-		burn += 1
-		if fire_level >= 6:
-			burn += 1
+func get_bonus_burn_stacks_for_attack(source: GachaBallInstance, target: GachaBallInstance = null) -> int:
+	return TraitRulesEngine.get_bonus_burn_stacks_for_attack(source, target, self)
 
-	var appliance_level = active_traits.get("APPLIANCE", 0)
-	if appliance_level >= 3 and has_trait(source, "APPLIANCE"):
-		burn += 1
-			
-	return burn
+func _emit_inline_trait_status_event(source_uuid: String, target: GachaBallInstance, stat_name: String, delta: int, old_val: int, new_val: int, ability_id: StringName) -> void:
+	if new_val == old_val:
+		return
+	_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
+		"source_uuid": source_uuid,
+		"target_uuids": [target.ball_uuid],
+		"ability_id": ability_id,
+		"visual_payload": CombatPayload.status_change(source_uuid, delta, stat_name, [old_val], [new_val])
+	}))
+
+func _emit_inline_trait_buff_event(source_uuid: String, target: GachaBallInstance, stat_name: String, delta: int, old_val: int, new_val: int, ability_id: StringName) -> void:
+	if new_val == old_val:
+		return
+	var payload: CombatPayload
+	if stat_name == "hp":
+		var target_def := target.get_definition()
+		var max_hp: int = target_def.base_hp if is_instance_valid(target_def) and "base_hp" in target_def else new_val
+		payload = CombatPayload.hp_buff(source_uuid, delta, [old_val], [new_val], [max_hp])
+	else:
+		payload = CombatPayload.pwr_buff(source_uuid, delta, [old_val], [new_val])
+	_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+		"source_uuid": source_uuid,
+		"target_uuids": [target.ball_uuid],
+		"ability_id": ability_id,
+		"action_type": C.ACTION_BUFF,
+		"visual_payload": payload
+	}))
 
 func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, attacker_uuid: String = "") -> Dictionary:
 	assert(is_instance_valid(instance), "apply_damage: instance is null")
@@ -2537,20 +2175,7 @@ func apply_damage(instance: GachaBallInstance, amount: int, damage_type: int, at
 			# Consume armor stacks
 			instance.add_status_effect_silent(&"armor", -armor_consumed)
 			new_armor = instance.get_status_effect_amount(&"armor")
-
-			# Tank L2: When a Tank absorbs damage with Armor, ally directly behind gains 1 Armor
-			var is_player = _is_player_unit(instance)
-			var team_traits = get_active_traits("PLAYER" if is_player else "ENEMY")
-			if team_traits.get("TANK", 0) >= 3 and has_trait(instance, "TANK"):
-				var ally_behind = _get_ally_behind(instance)
-				if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
-					apply_stat_delta(ally_behind, "armor_stacks", 1)
-
-			# Mecha L2: When Mecha Armor absorbs damage, inflicts 1 Static on attacker
-			if team_traits.get("MECHA", 0) >= 3 and has_trait(instance, "MECHA") and not attacker_uuid.is_empty():
-				var attacker_inst = get_instance_by_uuid(attacker_uuid)
-				if is_instance_valid(attacker_inst) and attacker_inst.current_hp > 0:
-					apply_stat_delta(attacker_inst, "static_stacks", 1)
+			TraitRulesEngine.apply_on_armor_absorbed_traits(instance, attacker_uuid, self)
 			
 	var new_hp = instance.current_hp - actual_damage
 	
@@ -2637,37 +2262,6 @@ func apply_permanent_stat_delta(instance: GachaBallInstance, stat_type: String, 
 	
 	return apply_stat_delta(instance, stat_type, delta, source_id, C.ACTION_BUFF, false, &"", &"", {}, C.BUFF_SUBGROUP_PERMANENT)
 
-## Sets a non-stacking, condition-bound trinket bonus on one unit.
-## Unlike ordinary permanent buffs, this component is intentionally excluded from
-## merge inheritance and can be safely removed when its eligibility changes.
-func set_conditional_trinket_bonus(instance: GachaBallInstance, source_id: String,
-		hp_amount: int, pwr_amount: int, enabled: bool, silent: bool = false) -> void:
-	assert(is_instance_valid(instance), "set_conditional_trinket_bonus: instance is null")
-	var component_id := StringName(source_id + "_conditional")
-	var old_hp := 0
-	var old_pwr := 0
-	for component in instance.components:
-		if component is StatComponent and component.id == component_id:
-			old_hp = int(component.modifiers.get("hp", 0))
-			old_pwr = int(component.modifiers.get("pwr", 0))
-			break
-
-	instance.remove_component_by_id(component_id)
-	var new_hp := hp_amount if enabled else 0
-	var new_pwr := pwr_amount if enabled else 0
-	if enabled:
-		instance.add_or_update_stat_component(
-			component_id, &"CONDITIONAL_TRINKET", source_id, new_hp, new_pwr, false,
-			"Conditional Trinket Bonus", "Conditional trinket stat bonus"
-		)
-
-	var hp_delta := new_hp - old_hp
-	var pwr_delta := new_pwr - old_pwr
-	if hp_delta != 0:
-		instance.apply_hp_delta(hp_delta, {"silent": silent})
-	if pwr_delta != 0:
-		instance.apply_pwr_delta(pwr_delta, {"silent": silent})
-
 func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int, source_uuid: String = "", action_type: StringName = &"", is_stackable: bool = true, source_category: StringName = &"", source_def_id: StringName = &"", extra_context: Dictionary = {}, buff_subgroup: StringName = &"") -> Variant:
 	assert(is_instance_valid(instance), "apply_stat_delta: instance is null")
 	var is_in_lineup: bool = _is_lineup_container(instance.location_container_tag)
@@ -2712,11 +2306,7 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 					_state.clear_lethal_transition(instance.ball_uuid)
 				
 				if action_type == C.ACTION_HEAL:
-					# Plant L4: whenever a Plant receives ACTION_HEAL, it gains 1 Spikes
-					var u_is_player = _is_player_unit(instance)
-					var u_traits = get_active_traits("PLAYER" if u_is_player else "ENEMY")
-					if is_in_lineup and u_traits.get("PLANT", 0) >= 5 and has_trait(instance, "PLANT"):
-						apply_stat_delta(instance, "spikes_stacks", 1, source_uuid, C.ACTION_BUFF)
+					TraitRulesEngine.apply_on_heal_traits(instance, source_uuid, is_in_lineup, self)
 
 					var heal_ctx := TriggerContext.new()
 					heal_ctx.healed_uuid = instance.ball_uuid
@@ -2791,10 +2381,9 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 							gain_component.source_type = &"BATTLE_BUFF"
 							gain_component.source_id = source_uuid
 						else:
-							# Non-stackable deltas are either recalculated from an external
-							# condition (such as tokens or gold) or represented by a separate
-							# persistent component. Do not inherit this runtime delta too.
-							gain_component.source_type = &"CONDITIONAL_ABILITY"
+							# Non-stackable deltas are continuous auras or represented by a separate
+							# persistent component. Tag as AURA so merges never inherit this runtime delta.
+							gain_component.source_type = &"AURA"
 							gain_component.source_id = source_uuid
 				
 				var trigger_ctx := TriggerContext.new()
@@ -2826,40 +2415,18 @@ func apply_stat_delta(instance: GachaBallInstance, stat_type: String, delta: int
 				return new_pwr
 				
 		"burn_stacks":
-			if is_in_lineup and delta > 0 and has_trait(instance, "APPLIANCE"):
-				var is_app_player = _is_player_unit(instance)
-				var app_traits = get_active_traits("PLAYER" if is_app_player else "ENEMY")
-				var app_level = app_traits.get("APPLIANCE", 0)
-				if app_level >= 3:
-					if app_level >= 5:
-						apply_stat_delta(instance, "hp", delta, source_uuid, C.ACTION_BUFF)
-					if app_level >= 4:
-						_handle_appliance_reflection(source_uuid, "burn_stacks", delta)
-					return instance.status_effects.get(&"burn", 0)
+			if TraitRulesEngine.try_intercept_appliance_status(instance, "burn", delta, source_uuid, is_in_lineup, self):
+				return instance.status_effects.get(&"burn", 0)
 			instance.add_status_effect_silent(&"burn", delta)
 			return instance.status_effects.get(&"burn", 0)
 		_:
 			if stat_type.ends_with("_stacks"):
 				var effect_name = stat_type.trim_suffix("_stacks")
-				if is_in_lineup and effect_name == "static" and delta > 0 and has_trait(instance, "APPLIANCE"):
-					var is_app_player = _is_player_unit(instance)
-					var app_traits = get_active_traits("PLAYER" if is_app_player else "ENEMY")
-					var app_level = app_traits.get("APPLIANCE", 0)
-					if app_level >= 2:
-						if app_level >= 5:
-							apply_stat_delta(instance, "pwr", delta, source_uuid, C.ACTION_BUFF)
-						if app_level >= 4:
-							_handle_appliance_reflection(source_uuid, "static_stacks", delta)
-						return instance.status_effects.get(&"static", 0)
+				if TraitRulesEngine.try_intercept_appliance_status(instance, effect_name, delta, source_uuid, is_in_lineup, self):
+					return instance.status_effects.get(StringName(effect_name), 0)
 
 				instance.add_status_effect_silent(StringName(effect_name), delta)
-
-				# Tank L4: When a Tank gains Armor, it gains equal Spikes
-				if is_in_lineup and effect_name == "armor" and delta > 0:
-					var is_tnk_player = _is_player_unit(instance)
-					var tnk_traits = get_active_traits("PLAYER" if is_tnk_player else "ENEMY")
-					if tnk_traits.get("TANK", 0) >= 5 and has_trait(instance, "TANK"):
-						apply_stat_delta(instance, "spikes_stacks", delta, source_uuid, C.ACTION_BUFF)
+				TraitRulesEngine.apply_on_status_gained_traits(instance, effect_name, delta, source_uuid, is_in_lineup, self)
 
 				return instance.status_effects.get(StringName(effect_name), 0)
 			else:
@@ -2927,24 +2494,6 @@ func spend_gold(amount: int, origin_uuid: String = "") -> bool:
 
 	return true
 
-func _handle_appliance_reflection(source_uuid: String, stat_name: String, delta: int) -> void:
-	if source_uuid.is_empty():
-		return
-	var sender = get_instance_by_uuid(source_uuid)
-	if not is_instance_valid(sender):
-		return
-	var sender_def = sender.get_definition()
-	if not is_instance_valid(sender_def):
-		return
-	if sender_def.category == &"ITEM":
-		if not sender.equipped_on_uuid.is_empty():
-			var holder = get_instance_by_uuid(sender.equipped_on_uuid)
-			if is_instance_valid(holder) and holder.current_hp > 0 and not has_trait(holder, "APPLIANCE"):
-				apply_stat_delta(holder, stat_name, delta, source_uuid)
-	elif sender_def.category == &"UNIT":
-		if sender.current_hp > 0 and not has_trait(sender, "APPLIANCE"):
-			apply_stat_delta(sender, stat_name, delta, source_uuid)
-
 func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: String, cause: StringName = C.CAUSE_ATTACK, status_id: StringName = &"", trigger_damage_dealt: bool = true) -> void:
 	# Get target instance data for context (effects should not query instances directly)
 	var target_instance = get_instance_by_uuid(target_uuid)
@@ -2976,81 +2525,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 	
 	# Trigger on_hurt for the victim (counter-attacks, etc.) AFTER lifesteal
 	TurnAbilities.trigger_on_hurt(target_uuid, damage_amount, attacker_uuid, victim_team, victim_current_hp, cause, status_id, victim_category)
-	
-	var target_is_player = (victim_team == "PLAYER")
-	var target_traits = get_active_traits("PLAYER" if target_is_player else "ENEMY")
-
-	# Fighter L2: Retaliation on attack damage (1 ranged damage to attacker, 1/turn per Fighter)
-	if cause == C.CAUSE_ATTACK and is_instance_valid(target_instance) and _is_lineup_container(target_instance.location_container_tag) and not attacker_uuid.is_empty():
-		if target_traits.get("FIGHTER", 0) >= 3 and has_trait(target_instance, "FIGHTER"):
-			var retal_key = "fighter_retaliated_turn_" + str(_current_turn) + "_" + target_uuid
-			if not _turn_metadata.get(retal_key, false):
-				_turn_metadata[retal_key] = true
-				var atk_inst = get_instance_by_uuid(attacker_uuid)
-				if is_instance_valid(atk_inst) and atk_inst.current_hp > 0:
-					var old_h = atk_inst.current_hp
-					var old_a = atk_inst.get_status_effect_amount(&"armor")
-					var retal_res = apply_damage(atk_inst, 1, C.DamageType.RANGED, target_uuid)
-					var new_h = retal_res.get("new_hp", atk_inst.current_hp)
-					var a_cons = retal_res.get("armor_consumed", 0)
-					var new_a = retal_res.get("new_armor", old_a)
-					var max_h = 0
-					var atk_def = atk_inst.get_definition()
-					if is_instance_valid(atk_def):
-						max_h = atk_def.base_hp
-					var payload := CombatPayload.damage(target_uuid, 1, [old_h], [new_h], [old_a], [new_a], [a_cons])
-					payload.attack_type = "ranged"
-					payload.skip_bump = true
-					payload.projectile = CombatProjectile.new("hp", 1, "red")
-					payload.targets_max_hp = [max_h] as Array[int]
-					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-						"source_uuid": target_uuid,
-						"target_uuids": [attacker_uuid],
-						"visual_payload": payload
-					}))
-					if new_h <= 0:
-						trigger_on_kill(target_uuid, attacker_uuid)
-
-	# Food Trait: L1-L4 on_hurt targeting TARGET_ALLY_BEHIND
-	if is_instance_valid(target_instance) and _is_lineup_container(target_instance.location_container_tag):
-		var food_level = target_traits.get("FOOD", 0)
-		if food_level >= 2 and has_trait(target_instance, "FOOD"):
-			var ally_behind = _get_ally_behind(target_instance)
-			if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
-				var heal_amount := 1
-				var pwr_amount := 0
-				if food_level >= 5:
-					heal_amount = 4
-					pwr_amount = 2
-				elif food_level >= 4:
-					heal_amount = 3
-					pwr_amount = 1
-				elif food_level >= 3:
-					heal_amount = 2
-				elif food_level >= 2:
-					heal_amount = 1
-
-				var old_h = ally_behind.current_hp
-				var new_h = apply_stat_delta(ally_behind, "hp", heal_amount, target_uuid, C.ACTION_HEAL)
-				var ab_def = ally_behind.get_definition()
-				var max_h = ab_def.base_hp if is_instance_valid(ab_def) else 0
-
-				_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.HEAL, {
-					"source_uuid": target_uuid,
-					"target_uuids": [ally_behind.ball_uuid],
-					"action_type": C.ACTION_HEAL,
-					"visual_payload": CombatPayload.heal(target_uuid, heal_amount, [old_h], [new_h], [max_h])
-				}))
-
-				if pwr_amount > 0:
-					var old_p = ally_behind.current_pwr
-					var new_p = apply_stat_delta(ally_behind, "pwr", pwr_amount, target_uuid, C.ACTION_BUFF)
-					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-						"source_uuid": target_uuid,
-						"target_uuids": [ally_behind.ball_uuid],
-						"action_type": C.ACTION_BUFF,
-						"visual_payload": CombatPayload.pwr_change(target_uuid, pwr_amount, [old_p], [new_p])
-					}))
+	TraitRulesEngine.apply_on_hurt_traits(target_instance, victim_team, attacker_uuid, cause, self)
 
 	# NEW: Also fire on_ally_hurt for reactive abilities that watch teammates
 	var victim_loc = get_location_for_uuid(target_uuid)
@@ -3063,93 +2538,7 @@ func trigger_on_hurt(target_uuid: String, damage_amount: int, attacker_uuid: Str
 ## @param killed_uuid: String - The UUID of the unit that was killed
 func trigger_on_kill(killer_uuid: String, killed_uuid: String) -> void:
 	TurnAbilities.trigger_on_kill(killer_uuid, killed_uuid)
-
-	var killer = get_instance_by_uuid(killer_uuid)
-	var killed = get_instance_by_uuid(killed_uuid)
-	if is_instance_valid(killer) and is_instance_valid(killed) and _is_lineup_container(killer.location_container_tag):
-		var killer_is_player = _is_player_unit(killer)
-		var killer_traits = get_active_traits("PLAYER" if killer_is_player else "ENEMY")
-
-		# Fire L5: Burn dispersion on kill
-		if killer_traits.get("FIRE", 0) >= 32 and has_trait(killer, "FIRE"):
-			var burn_stacks = killed.get_status_effect_amount(&"burn")
-			if burn_stacks > 0:
-				killed.clear_status_effect(&"burn")
-				var killed_loc = get_location_for_uuid(killed_uuid)
-				if is_instance_valid(killed_loc):
-					var lineup = get_instances_in_container(killed_loc.container)
-					var adj_living: Array[GachaBallInstance] = []
-					for unit in lineup:
-						if not is_instance_valid(unit) or unit.current_hp <= 0 or unit.ball_uuid == killed_uuid:
-							continue
-						if unit.location_slot_index == killed_loc.index - 1 or unit.location_slot_index == killed_loc.index + 1:
-							adj_living.append(unit)
-
-					adj_living.sort_custom(func(a, b): return a.location_slot_index < b.location_slot_index)
-
-					if adj_living.size() == 2:
-						var half = int(floor(burn_stacks / 2.0))
-						var remainder = burn_stacks % 2
-						var front_burn = half + remainder
-						var rear_burn = half
-
-						var old_f = adj_living[0].get_status_effect_amount(&"burn")
-						var new_f = apply_stat_delta(adj_living[0], "burn_stacks", front_burn, killer_uuid)
-						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-							"source_uuid": killer_uuid,
-							"target_uuids": [adj_living[0].ball_uuid],
-							"visual_payload": CombatPayload.status_change(killer_uuid, front_burn, "burn_stacks", [old_f], [new_f])
-						}))
-
-						var old_r = adj_living[1].get_status_effect_amount(&"burn")
-						var new_r = apply_stat_delta(adj_living[1], "burn_stacks", rear_burn, killer_uuid)
-						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-							"source_uuid": killer_uuid,
-							"target_uuids": [adj_living[1].ball_uuid],
-							"visual_payload": CombatPayload.status_change(killer_uuid, rear_burn, "burn_stacks", [old_r], [new_r])
-						}))
-					elif adj_living.size() == 1:
-						var old_b = adj_living[0].get_status_effect_amount(&"burn")
-						var new_b = apply_stat_delta(adj_living[0], "burn_stacks", burn_stacks, killer_uuid)
-						_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-							"source_uuid": killer_uuid,
-							"target_uuids": [adj_living[0].ball_uuid],
-							"visual_payload": CombatPayload.status_change(killer_uuid, burn_stacks, "burn_stacks", [old_b], [new_b])
-						}))
-
-		# Fighter L4: +1 PWR and extra action on kill (1/turn per Fighter)
-		if killer_traits.get("FIGHTER", 0) >= 5 and has_trait(killer, "FIGHTER"):
-			var key = "fighter_kill_action_" + killer_uuid
-			if not _turn_metadata.get(key, false):
-				_turn_metadata[key] = true
-				apply_stat_delta(killer, "pwr", 1, killer_uuid, C.ACTION_BUFF)
-				grant_extra_action(killer_uuid)
-
-		# Specialist L3: Defeating an enemy awards +1 Gold (max 1/turn, 5/battle)
-		if killer_traits.get("SPECIALIST", 0) >= 4 and has_trait(killer, "SPECIALIST"):
-			if killer_is_player:
-				var turn_key = "specialist_gold_awarded_turn_" + str(_current_turn)
-				var battle_awarded = _specialist_gold_awarded_battle
-				if not _turn_metadata.get(turn_key, false) and battle_awarded < 5:
-					_turn_metadata[turn_key] = true
-					_specialist_gold_awarded_battle += 1
-					var target_gold_amount = 0
-					if is_instance_valid(GameManager.run_state):
-						GameManager.run_state.add_gold(1, true)
-						target_gold_amount = GameManager.run_state.gold
-					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-						"text": "Specialist earns 1 Gold from defeat!"
-					}))
-					var gold_payload := CombatPayload.new()
-					gold_payload.amount = 1
-					gold_payload.origin_uuid = killed_uuid
-					gold_payload.target_gold_amount = target_gold_amount
-					_combat.add_inline_event(CombatEvent.new(CombatEvent.Type.GOLD_GAIN, {
-						"source_uuid": killer_uuid,
-						"target_uuids": [killer_uuid],
-						"amount": 1,
-						"visual_payload": gold_payload
-					}))
+	TraitRulesEngine.apply_on_kill_traits(get_instance_by_uuid(killer_uuid), get_instance_by_uuid(killed_uuid), self)
 
 ## Trigger on_battle_start abilities for all units.
 func _trigger_battle_start_abilities() -> void:
@@ -3292,7 +2681,7 @@ func _resolve_pending_reactions_only(extra_events: Array[CombatEvent] = []) -> v
 	_resolve_animator()
 	if _is_animating_management_queue:
 		await management_animation_queue_completed
-	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+	if is_instance_valid(_animator) and _animator.is_playing_sequence():
 		await _animator.turn_animation_finished
 	_is_processing_effect = true
 	
@@ -3471,161 +2860,9 @@ func _simulate_turn_end_effects() -> Array[CombatEvent]:
 	return all_events
 
 
-# Deprecated: Logic moved into _trigger_turn_end_abilities
-func _process_turn_end_status_effects() -> void:
-	pass
-
 ## Generic combat effect turn processor. Handles any combat effect at turn start/end.
-## @param effect_def: CombatEffectDefinition resource from registry
-## @param all_units: Array of units to process
-## @param all_events: Array to append CombatEvents to
-## @param death_tracking: Dictionary for death deduplication
 func _process_status_turn_effect(status_def: Resource, all_units: Array, all_events: Array[CombatEvent], death_tracking: Dictionary) -> void:
-	for unit in all_units:
-		if not _is_lineup_container(unit.location_container_tag):
-			continue
-		if unit.current_hp <= 0:
-			continue
-		
-		var stacks: int = unit.get_status_effect_amount(status_def.id)
-		if stacks <= 0:
-			continue
-		
-		var unit_name: String = _get_instance_display_name(unit)
-		var status_name: String = tr(status_def.display_name_key) if not status_def.display_name_key.is_empty() else String(status_def.id)
-		
-		# Apply turn effect (DAMAGE or HEAL)
-		if status_def.turn_effect == "DAMAGE":
-			var damage: int = int(stacks * status_def.turn_effect_multiplier)
-			var old_hp: int = unit.current_hp
-			var old_armor: int = unit.get_status_effect_amount(&"armor")
-			
-			# apply_damage now returns dictionary for damage with armor mitigation data
-			var damage_type = C.DamageType.BURN
-			var damage_result = apply_damage(unit, damage, damage_type)
-			
-			# Extract data from dictionary return
-			var new_hp: int = damage_result.get("new_hp", unit.current_hp) if not damage_result.is_empty() else unit.current_hp
-			var armor_consumed: int = damage_result.get("armor_consumed", 0) if not damage_result.is_empty() else 0
-			var new_armor: int = damage_result.get("new_armor", 0) if not damage_result.is_empty() else 0
-			
-			var max_hp: int = 0
-			var unit_def = unit.get_definition()
-			if is_instance_valid(unit_def):
-				max_hp = unit_def.base_hp
-			
-			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "%s takes %d %s dmg" % [unit_name, damage, status_name]
-			}))
-			var status_damage_payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
-			status_damage_payload.skip_bump = true
-			status_damage_payload.is_status_damage = true
-			status_damage_payload.status_color = status_def.color
-			status_damage_payload.targets_max_hp = [max_hp] as Array[int]
-			all_events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"visual_payload": status_damage_payload
-			}))
-			if damage > 0:
-				trigger_on_hurt(unit.ball_uuid, damage, "", C.CAUSE_STATUS_EFFECT, status_def.id)
-				all_events.append_array(_combat.process_reaction_queue(self, death_tracking))
-
-			# Fire L3 (12 Souls): Spread 1 Burn to each living adjacent ally
-			if status_def.id == &"burn":
-				var is_player_unit = _is_player_unit(unit)
-				var opp_team = "ENEMY" if is_player_unit else "PLAYER"
-				var fire_souls: int = get_active_traits(opp_team).get("FIRE", 0)
-				if fire_souls >= 12:
-					var loc = get_location_for_uuid(unit.ball_uuid)
-					if is_instance_valid(loc):
-						var lineup = get_instances_in_container(loc.container)
-						for adj in lineup:
-							if not is_instance_valid(adj) or adj.current_hp <= 0 or adj.ball_uuid == unit.ball_uuid:
-								continue
-							if adj.location_slot_index == loc.index - 1 or adj.location_slot_index == loc.index + 1:
-								var old_b = adj.get_status_effect_amount(&"burn")
-								var new_b = apply_stat_delta(adj, "burn_stacks", 1, unit.ball_uuid)
-								var spread_payload := CombatPayload.status_change(unit.ball_uuid, 1, "burn_stacks", [old_b], [new_b])
-								all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-									"source_uuid": unit.ball_uuid,
-									"target_uuids": [adj.ball_uuid],
-									"visual_payload": spread_payload
-								}))
-
-		elif status_def.turn_effect == "HEAL":
-			var heal: int = int(stacks * status_def.turn_effect_multiplier)
-			var old_hp: int = unit.current_hp
-			var new_hp = apply_stat_delta(unit, "hp", heal, "", C.ACTION_HEAL)
-			var max_hp: int = 0
-			var unit_def = unit.get_definition()
-			if is_instance_valid(unit_def):
-				max_hp = unit_def.base_hp
-			
-			all_events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "%s heals %d from %s" % [unit_name, heal, status_name]
-			}))
-			all_events.append(CombatEvent.new(CombatEvent.Type.HEAL, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"action_type": C.ACTION_HEAL,
-				"visual_payload": CombatPayload.heal("", heal, [old_hp], [new_hp], [max_hp])
-			}))
-		
-		# Apply decay
-		var old_stacks: int = unit.get_status_effect_amount(status_def.id)
-		var new_stacks: int = old_stacks
-		
-		var is_burn_decay_immune := false
-		if status_def.id == &"burn":
-			var loc = get_location_for_uuid(unit.ball_uuid)
-			if is_instance_valid(loc):
-				if loc.container == C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP:
-					if loc.index >= 0 and loc.index < _state.player_slot_effects.size() and _state.player_slot_effects[loc.index] == &"burn":
-						is_burn_decay_immune = true
-				elif loc.container == C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
-					if loc.index >= 0 and loc.index < _state.enemy_slot_effects.size() and _state.enemy_slot_effects[loc.index] == &"burn":
-						is_burn_decay_immune = true
-		
-		if is_burn_decay_immune:
-			new_stacks = old_stacks
-		else: # Apply normal decay
-			match status_def.decay_mode:
-				"HALVE":
-					new_stacks = int(floor(old_stacks / 2.0))
-				"DECREMENT":
-					new_stacks = old_stacks - status_def.decay_amount
-				"CLEAR":
-					if status_def.id == &"armor":
-						var reinforce_stacks: int = unit.get_status_effect_amount(&"reinforce")
-						if reinforce_stacks > 0:
-							new_stacks = old_stacks
-						else:
-							new_stacks = 0
-					else:
-						new_stacks = 0
-		
-		if new_stacks != old_stacks:
-			if new_stacks <= 0:
-				unit.clear_status_effect(status_def.id)
-				new_stacks = 0
-			else:
-				var decay_delta: int = new_stacks - old_stacks
-				apply_stat_delta(unit, String(status_def.id) + "_stacks", decay_delta)
-			
-			# Emit STATUS_EFFECT event for status decay so animator updates the visual
-			var decay_payload := CombatPayload.status_change("", new_stacks - old_stacks, String(status_def.id) + "_stacks", [], [new_stacks], status_def.color)
-			all_events.append(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"visual_payload": decay_payload
-			}))
-		
-		# Handle death from status damage
-		if unit.current_hp <= 0:
-			var death_team: String = "PLAYER" if _is_player_unit(unit) else "ENEMY"
-			var death_phase: StringName = StringName(status_def.turn_phase) if not status_def.turn_phase.is_empty() and status_def.turn_phase != "NONE" else &"END_OF_TURN"
-			_process_registered_death(unit, death_phase, death_team, all_events, death_tracking)
+	StatusTickProcessor.process_status_turn_effect(status_def, all_units, all_events, death_tracking, self)
 
 func _reshuffle_discard_pile(tier_to_reshuffle: int) -> void:
 	# Delegate to BattleState's authoritative reshuffle logic
@@ -3777,225 +3014,11 @@ func _on_results_acknowledged() -> void:
 
 ## Executes entrance animation of staged hero unit at its PlayerLineup slot.
 func execute_hero_entrance_sequence() -> void:
-	if _state.staged_hero_placement.is_empty() or not is_instance_valid(_state.staged_hero_instance):
-		return
-
-	_resolve_animator()
-
-	# 1. Capture snapshot before hero enters (hero is not yet in _battle_instances)
-	var pre_snap := get_board_snapshot()
-
-	# 2. Atomically place staged hero and register any equipped hero items
-	var hero_inst: GachaBallInstance = _state.place_staged_hero()
-	if not is_instance_valid(hero_inst):
-		return
-	if OS.is_debug_build():
-		_bm_validate_state_consistency()
-
-	var pos: int = hero_inst.location_slot_index
-	var hero_def = hero_inst.get_definition()
-	if not is_instance_valid(hero_def):
-		return
-	
-	# 3. Create standard SUMMON event (same as all other summons)
-	var summon_loc := LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, pos)
-	var unit_snap := EffectHandlers.create_unit_snapshot(hero_inst, hero_def)
-	
-	var equipped_items_data: Array = []
-	for u_item_uuid in hero_inst.equipped_item_uuids:
-		if not u_item_uuid.is_empty():
-			var u_item = get_instance(u_item_uuid)
-			if is_instance_valid(u_item):
-				var u_def = u_item.get_definition()
-				if is_instance_valid(u_def):
-					equipped_items_data.append({
-						"uuid": u_item_uuid,
-						"icon": u_def.icon if "icon" in u_def else null,
-						"definition_id": u_item.definition_id
-					})
-	if not equipped_items_data.is_empty():
-		unit_snap["equipped_items"] = equipped_items_data
-		unit_snap["equipped_item_icon"] = equipped_items_data[0]["icon"]
-
-	var summon_payload := EffectHandlers._make_summon_payload("", hero_inst.ball_uuid, summon_loc, unit_snap)
-	var summon_event := CombatEvent.new(CombatEvent.Type.SUMMON, {
-		"source_uuid": "",
-		"target_uuids": [hero_inst.ball_uuid],
-		"visual_payload": summon_payload
-	})
-	
-	# 4. Trigger on_board_enter, on_battle_start, on_board_changed
-	var enter_ctx := TriggerContext.new()
-	enter_ctx.entered_uuid = hero_inst.ball_uuid
-	AbilityResolver.process_trigger(C.TRIGGER_ON_ENTER_BOARD, enter_ctx)
-
-	var start_ctx := TriggerContext.new()
-	start_ctx.source_uuid = hero_inst.ball_uuid
-	AbilityResolver.process_trigger(C.TRIGGER_AT_BATTLE_START, start_ctx)
-
-	var board_ctx := TriggerContext.new()
-	board_ctx.is_simulation = true
-	AbilityResolver.process_trigger(C.TRIGGER_ON_BOARD_STATE_CHANGED, board_ctx)
-	
-	# 5. Collect reaction events (e.g. Rusty Ring buff, Apprentice Insignia buff)
-	var reaction_events := _combat.process_reaction_queue(self, {})
-	var entrance_events: Array[CombatEvent] = [summon_event]
-	entrance_events.append_array(reaction_events)
-	
-	# 6. Animate SUMMON followed by reactions via BattleAnimator
-	if is_instance_valid(_animator):
-		await _animator.play_turn_sequence(pre_snap, entrance_events)
-	_emit_battle_inventory_changed()
+	await BattleEntranceSequencer.execute_hero_entrance_sequence(self)
 
 ## Executes sequential entrance of staged enemy units from Slot 4 (Backline) down to Slot 0 (Frontline).
 func execute_enemy_entrance_sequence() -> void:
-	if _state.staged_enemy_placements.is_empty():
-		return
-		
-	var placements: Array = _state.staged_enemy_placements.duplicate(true)
-	_state.staged_enemy_placements.clear()
-	
-	# Order strictly Slot 4 (Rightmost, Backline) down to Slot 0 (Leftmost, Frontline)
-	placements.sort_custom(func(a, b): return a.get("position", 0) > b.get("position", 0))
-	
-	var battle_view = get_tree().get_first_node_in_group("battle_view") if is_inside_tree() else null
-	_resolve_animator()
-	
-	for placement in placements:
-		var unit_id = placement.get("id", placement.get("unit_id", ""))
-		var unit_def = Database.get_definition(unit_id)
-		if not is_instance_valid(unit_def):
-			continue
-			
-		var pos: int = placement.get("position", 0)
-		var enemy_inst := GachaBallInstance.new()
-		enemy_inst.initialize(unit_def)
-		
-		var unit_level: int = int(placement.get("level", 1))
-		if unit_level > 1:
-			enemy_inst.set_unit_level(unit_level)
-		var b_hp: int = int(placement.get("bonus_hp", 0))
-		var b_pwr: int = int(placement.get("bonus_pwr", 0))
-		if b_hp != 0 or b_pwr != 0:
-			enemy_inst.apply_encounter_stat_bonus(b_hp, b_pwr)
-		
-		# 1. Capture snapshot before this unit enters
-		var pre_snap := get_board_snapshot()
-		
-		# 2. Place unit in EnemyLineup[pos] in data
-		_state.bm_add_instance(enemy_inst, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
-		
-		# 3. Create standard SUMMON event (same as boss / elite summons)
-		var summon_loc := LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, pos)
-		var unit_snap := EffectHandlers.create_unit_snapshot(enemy_inst, unit_def)
-		var summon_payload := EffectHandlers._make_summon_payload("", enemy_inst.ball_uuid, summon_loc, unit_snap)
-		var summon_event := CombatEvent.new(CombatEvent.Type.SUMMON, {
-			"source_uuid": "",
-			"target_uuids": [enemy_inst.ball_uuid],
-			"visual_payload": summon_payload
-		})
-		
-		# 4. Trigger on_board_enter, on_battle_start, on_board_changed
-		var enter_ctx := TriggerContext.new()
-		enter_ctx.entered_uuid = enemy_inst.ball_uuid
-		AbilityResolver.process_trigger(C.TRIGGER_ON_ENTER_BOARD, enter_ctx)
-
-		var start_ctx := TriggerContext.new()
-		start_ctx.source_uuid = enemy_inst.ball_uuid
-		AbilityResolver.process_trigger(C.TRIGGER_AT_BATTLE_START, start_ctx)
-
-		var board_ctx := TriggerContext.new()
-		board_ctx.is_simulation = true
-		AbilityResolver.process_trigger(C.TRIGGER_ON_BOARD_STATE_CHANGED, board_ctx)
-		
-		# 5. Collect reaction events (e.g. Apprentice Insignia buff, Templar power scaling)
-		var reaction_events := _combat.process_reaction_queue(self, {})
-		var entrance_events: Array[CombatEvent] = [summon_event]
-		entrance_events.append_array(reaction_events)
-		
-		# 6. Animate SUMMON followed by reactions via BattleAnimator
-		if is_instance_valid(_animator):
-			await _animator.play_turn_sequence(pre_snap, entrance_events)
-		
-		# 7. If unit has equipment, equip each item sequentially
-		var equipment = placement.get("equipment", placement.get("items", []))
-		for item_data in equipment:
-			var item_id = item_data if item_data is StringName or item_data is String else item_data.get("id", "")
-			var item_def = Database.get_definition(item_id)
-			if not is_instance_valid(item_def):
-				continue
-				
-			var equip_pre_stats := _capture_all_unit_stats()
-			var old_equipped_items_data := _capture_unit_equipped_items_data(enemy_inst.ball_uuid)
-
-			var item_inst := GachaBallInstance.new()
-			item_inst.initialize(item_def)
-			var equip_result := InventoryOperations.register_and_equip_item(_state, item_inst, enemy_inst.ball_uuid)
-			if equip_result.success:
-				if OS.is_debug_build():
-					_bm_validate_state_consistency()
-				var discard_event: CombatEvent = null
-				if not equip_result.replaced_item_uuid.is_empty():
-					var discard_payload := CombatPayload.item_discard(
-						equip_result.replaced_from_unit_uuid,
-						equip_result.replaced_item_uuid,
-						equip_result.replaced_item_icon,
-						equip_result.replaced_item_icon_path,
-						equip_result.replaced_item_name
-					)
-					discard_event = CombatEvent.new(CombatEvent.Type.ITEM_DISCARD, {
-						"source_uuid": equip_result.replaced_from_unit_uuid,
-						"target_uuids": [equip_result.replaced_item_uuid],
-						"visual_payload": discard_payload
-					})
-
-				var equip_payload := CombatPayload.item_equip(
-					enemy_inst.ball_uuid,
-					item_inst.ball_uuid,
-					item_def.icon if (is_instance_valid(item_def) and "icon" in item_def) else null,
-					item_def.icon_path if (is_instance_valid(item_def) and "icon_path" in item_def) else "",
-					item_def.name if (is_instance_valid(item_def) and "name" in item_def) else "Item"
-				)
-				var equip_event := CombatEvent.new(CombatEvent.Type.ITEM_EQUIP, {
-					"source_uuid": enemy_inst.ball_uuid,
-					"target_uuids": [enemy_inst.ball_uuid],
-					"visual_payload": equip_payload
-				})
-
-				var equip_board_ctx := TriggerContext.new()
-				equip_board_ctx.is_simulation = true
-				AbilityResolver.process_trigger(C.TRIGGER_ON_BOARD_STATE_CHANGED, equip_board_ctx)
-				var equip_reaction_events := _combat.process_reaction_queue(self, {})
-
-				var stat_data := _generate_inventory_stat_events(equip_pre_stats)
-				var equip_events: Array[CombatEvent] = []
-				if discard_event != null:
-					equip_events.append(discard_event)
-				equip_events.append(equip_event)
-				equip_events.append_array(stat_data.events)
-				equip_events.append_array(equip_reaction_events)
-
-				if is_instance_valid(_animator):
-					var eq_snapshot = get_board_snapshot(equip_pre_stats)
-					if not old_equipped_items_data.is_empty():
-						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = old_equipped_items_data
-						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = old_equipped_items_data[0]["icon"]
-					else:
-						eq_snapshot[enemy_inst.ball_uuid]["equipped_items"] = []
-						eq_snapshot[enemy_inst.ball_uuid]["equipped_item_icon"] = null
-					await _animator.play_turn_sequence(eq_snapshot, equip_events)
-				else:
-					if is_inside_tree() and is_instance_valid(get_tree()):
-						await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
-			else:
-				push_warning("BattleManager: failed to equip item %s on %s" % [item_inst.ball_uuid, enemy_inst.ball_uuid])
-		
-		# Brief pause before next unit enters
-		if is_inside_tree() and is_instance_valid(get_tree()):
-			await AnimationConstants.create_pausable_timer(get_tree(), AnimationConstants.scaled(0.15)).timeout
-	
-	# Final sync
-	_emit_battle_inventory_changed()
+	await BattleEntranceSequencer.execute_enemy_entrance_sequence(self)
 
 
 # ------------------------------------------------------------------
@@ -4066,34 +3089,7 @@ func get_active_traits(team: String) -> Dictionary:
 
 ## Internal calculation of active traits based on current board state.
 func _calculate_active_traits(team: String) -> Dictionary:
-	var counts: Dictionary = {}
-	for trait_name in C.TRAIT_SORT_ORDER:
-		counts[trait_name] = 0
-
-	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
-	
-	var units = get_instances_in_container(container_tag)
-	var all_inst = get_all_instances()
-	for unit in units:
-		if not is_instance_valid(unit) or unit.current_hp <= 0:
-			continue
-		
-		var soul_counts = unit.get_trait_soul_counts(all_inst)
-		for soul_type in ["FIRE", "EARTH", "WATER", "AIR"]:
-			if counts.has(soul_type):
-				counts[soul_type] += soul_counts.get(soul_type, 0)
-
-		var tags = unit.get_active_tags(all_inst)
-		for tag in tags:
-			var upper = String(tag).to_upper()
-			if counts.has(upper):
-				counts[upper] += 1
-
-	for trait_name in C.TRAIT_SORT_ORDER:
-		if not _team_has_trait_trinket(team, trait_name):
-			counts[trait_name] = 0
-
-	return counts
+	return TraitRulesEngine.calculate_active_traits(team, self)
 
 ## Lock current active traits into snapshot.
 func _lock_traits() -> void:
@@ -4103,23 +3099,10 @@ func _lock_traits() -> void:
 
 ## Check if a unit contributes to a specific Soul trait.
 func _has_trait_soul(unit: GachaBallInstance, trait_name: String) -> bool:
-	if not is_instance_valid(unit):
-		return false
-	var target_tag = StringName("SOUL_" + trait_name)
-	return unit.get_active_tags(get_all_instances()).has(target_tag)
+	return TraitRulesEngine.has_trait_soul(unit, trait_name, get_all_instances())
 
 func has_trait(unit: GachaBallInstance, trait_name: String) -> bool:
-	if not is_instance_valid(unit):
-		return false
-	var upper_trait = trait_name.to_upper()
-	var all_inst = get_all_instances()
-	if upper_trait in ["FIRE", "EARTH", "WATER", "AIR"]:
-		var target_tag = StringName("SOUL_" + upper_trait)
-		return unit.get_active_tags(all_inst).has(target_tag)
-	for tag in unit.get_active_tags(all_inst):
-		if String(tag).to_upper() == upper_trait:
-			return true
-	return false
+	return TraitRulesEngine.has_trait(unit, trait_name, get_all_instances())
 
 func get_frontmost_unit_on_team(is_player: bool, trait_name: String = "") -> GachaBallInstance:
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -4144,27 +3127,6 @@ func get_hero_on_team(is_player: bool) -> GachaBallInstance:
 			if is_instance_valid(def) and def.is_hero:
 				return u
 	return get_frontmost_unit_on_team(is_player, "")
-
-func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
-	if tag == &"SOUL_FIRE":
-		counts["FIRE"] = counts.get("FIRE", 0) + 1
-	elif tag == &"SOUL_EARTH":
-		counts["EARTH"] = counts.get("EARTH", 0) + 1
-	elif tag == &"SOUL_WATER":
-		counts["WATER"] = counts.get("WATER", 0) + 1
-	elif tag == &"SOUL_AIR":
-		counts["AIR"] = counts.get("AIR", 0) + 1
-	else:
-		var upper = String(tag).to_upper()
-		if counts.has(upper):
-			counts[upper] = counts.get(upper, 0) + 1
-
-
-## Legacy start-of-turn trait effects stub (traits now trigger during on_pre_combat at combat start)
-func _apply_trait_start_of_turn_effects() -> Array[CombatEvent]:
-	return []
-
-# =============================================================================
 
 # =============================================================================
 # TEST MODE HELPERS

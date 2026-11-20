@@ -76,32 +76,21 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 	merged_instance.current_pwr = final_pwr
 	
 	# Merge status effects: sum up stacks of each status effect (Armor, Burn, Spikes, Static, etc.).
-	# CRITICAL: Do NOT copy internal scaling trackers (like 'doppleganger_scaling' or 'twin_charm_scaling'). 
-	# These are used to calculate dynamic deltas. Summing them creates artificially massive trackers 
-	# that cause catastrophic negative deltas (debuffs) when the board re-evaluates the unit.
+	# Continuous auras live strictly in `active_auras` and never pollute `status_effects`.
 	for status_id in instance_a.status_effects:
-		if String(status_id).contains("scaling"):
-			continue
 		var amount = instance_a.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 	for status_id in instance_b.status_effects:
-		if String(status_id).contains("scaling"):
-			continue
 		var amount = instance_b.status_effects[status_id]
 		if amount > 0:
 			merged_instance.status_effects[status_id] = merged_instance.status_effects.get(status_id, 0) + amount
 			
-	# Merge dynamic tags (ensuring uniqueness). Conditional trinket registration is
-	# deliberately not inherited: the resulting unit is evaluated as a new unit.
+	# Merge dynamic tags (ensuring uniqueness).
 	for tag in instance_a.dynamic_tags:
-		if _is_conditional_trinket_tag(tag):
-			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	for tag in instance_b.dynamic_tags:
-		if _is_conditional_trinket_tag(tag):
-			continue
 		if not merged_instance.dynamic_tags.has(tag):
 			merged_instance.dynamic_tags.append(tag)
 	
@@ -117,40 +106,10 @@ func calculate_merge_result(instance_a: GachaBallInstance, instance_b: GachaBall
 		false
 	)
 
-	# Post-merge scaling preservation for Level Up merges:
-	# When duplicate units merge to level up (is_level_up), pre-inherit the post-merge battle pool
-	# scaling bonus directly into initial stats and tracking state.
-	# NOTE: Strictly applies to level-up merges (is_level_up), NEVER to tier evolutions.
+	# Continuous aura continuity for Level-Up merges (delegated generically to AuraEvaluator).
+	# Tier evolutions always re-evaluate all continuous auras cleanly as a new unit.
 	if is_level_up:
-		_apply_level_up_scaling_trackers(instance_a, instance_b, merged_instance, all_instances_db)
-
-		# Rusty Ring Level-Up Evaluation:
-		# The leveled-up unit is considered the "same" unit. If it holds no item,
-		# Rusty Ring applies once pre-baked without firing an extraneous visual cast.
-		var team: String = _get_instance_team(instance_a, all_instances_db)
-		var rusty_ring_uuid := _get_trinket_uuid(all_instances_db, &"trinket_rusty_ring", team)
-		if not rusty_ring_uuid.is_empty():
-			if items_to_equip.is_empty():
-				# Resulting unit holds no item: Rusty Ring applies once pre-baked
-				merged_instance.current_hp += 1
-				merged_instance.current_pwr += 1
-				merged_instance.add_tag(&"rusty_ring_buffed")
-				merged_instance.add_or_update_stat_component(
-					StringName(rusty_ring_uuid + "_conditional"),
-					&"CONDITIONAL_TRINKET",
-					rusty_ring_uuid,
-					1, 1, false,
-					"Conditional Trinket Bonus", "Conditional trinket stat bonus"
-				)
-			else:
-				# Resulting unit holds an item: debuffed state (no bonus)
-				merged_instance.add_tag(&"rusty_ring_buffed")
-				merged_instance.add_tag(&"rusty_ring_debuffed")
-
-		# Insignia Level-Up Evaluation:
-		# Leveled-up unit temporarily inherits the lower-level insignia so it lands
-		# displaying continuous stats, then expires it via an explicit debuff event upon landing.
-		_check_and_apply_level_up_insignia(instance_a, instance_b, merged_instance, all_instances_db)
+		AuraEvaluator.prepare_level_up_auras(instance_a, instance_b, merged_instance, all_instances_db, not items_to_equip.is_empty())
 
 
 
@@ -377,29 +336,25 @@ func _get_equipped_item_instances(unit_instance: GachaBallInstance, all_instance
 	return equipped_items
 
 ## Calculates all valid accumulated stackable stats (Dojo training, prior merge surplus,
-## prismatic rarity, permanent buffs, and in-combat ability buffs like Vengeance Charm and Convergence Surge).
-## Excludes unique and conditional buffs (items, Rusty Ring, Royal/Veteran Insignia, dynamic scaling).
-func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: StringName, all_instances_db: Dictionary) -> int:
+## prismatic rarity, permanent buffs, and in-combat discrete ability/consumable buffs).
+## Continuous auras (`source_type == &"AURA"`) are excluded automatically.
+func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: StringName, _all_instances_db: Dictionary) -> int:
 	var total := 0
 	
 	# 1. Persistent components on the instance (Dojo training, previous merge surplus, prismatic rarity, permanent buffs)
 	for component in instance.components:
 		if not component is StatComponent:
 			continue
-		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
+		if component.source_type == &"AURA":
 			continue
 		total += int(component.modifiers.get(String(stat), 0))
 		
 	# 2. In-combat stat gains from abilities and consumables.
-	# Ability results belong to the recipient once applied, even when the ability came
-	# from equipped gear. Passive/conditional equipment and scaling bonuses are tagged
-	# separately and are deliberately not inherited.
+	# Continuous auras are tagged with `source_type == &"AURA"` and never inherited here.
 	for component in instance.battle_components:
 		if not component is StatComponent:
 			continue
-		if _is_conditional_trinket_component(component as StatComponent, all_instances_db):
-			continue
-		if component.source_type == &"CONDITIONAL_ABILITY":
+		if component.source_type == &"AURA":
 			continue
 		if component.source_type == &"CONSUMABLE" or component.category == &"CONSUMABLE":
 			total += maxi(0, int(component.modifiers.get(String(stat), 0)))
@@ -410,44 +365,6 @@ func _get_mergeable_stackable_modifier(instance: GachaBallInstance, stat: String
 			total += maxi(0, int(component.modifiers.get(String(stat), 0)))
 
 	return total
-
-func _get_trinket_uuid(all_instances_db: Dictionary, trinket_id: StringName, team: String) -> String:
-	for uuid in all_instances_db:
-		var inst: GachaBallInstance = all_instances_db[uuid]
-		if not is_instance_valid(inst):
-			continue
-		if inst.definition_id == trinket_id:
-			if team.is_empty() or _get_instance_team(inst, all_instances_db) == team:
-				return inst.ball_uuid
-				
-	if is_instance_valid(GameManager.run_state):
-		for uuid in GameManager.run_state.get_all_instances():
-			var inst: GachaBallInstance = GameManager.run_state.get_all_instances()[uuid]
-			if is_instance_valid(inst) and inst.definition_id == trinket_id:
-				if team.is_empty() or team == "PLAYER":
-					return inst.ball_uuid
-	return ""
-
-func _is_conditional_trinket_component(component: StatComponent, all_instances_db: Dictionary) -> bool:
-	if component.source_type == &"CONDITIONAL_TRINKET":
-		return true
-	if component.id == &"rusty_ring_conditional" or String(component.id).ends_with("_conditional"):
-		return true
-	var source_instance: GachaBallInstance = all_instances_db.get(component.source_id)
-	if is_instance_valid(source_instance):
-		var def = source_instance.get_definition()
-		if is_instance_valid(def) and def.category == &"TRINKET":
-			return true
-		if String(source_instance.definition_id).begins_with("trinket_"):
-			return true
-	return false
-
-func _is_conditional_trinket_tag(tag: StringName) -> bool:
-	var value := String(tag)
-	return value.begins_with("rusty_ring_") \
-		or value.contains("_buffed_") \
-		or value.contains("_debuffed") \
-		or value.contains("_insignia_")
 
 ## Performs an evolution by merging the instance with a 'phantom' copy of itself.
 func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Dictionary) -> Dictionary:
@@ -461,166 +378,3 @@ func evolve_unit_instance(instance: GachaBallInstance, all_instances_db: Diction
 	
 	# Perform the merge. We use the instance's own location as a placeholder.
 	return calculate_merge_result(instance, template_instance, instance.get_location(), instance.get_location(), all_instances_db)
-
-## Pre-inherits dynamic scaling passives (Twin Charm, Doppleganger) onto a newly leveled-up unit.
-## Ensures the unit starts with the correct post-merge bonus without triggering duplicate animations.
-## STRICTLY applied to level-up merges (is_level_up), NEVER to tier evolutions.
-func _apply_level_up_scaling_trackers(instance_a: GachaBallInstance, instance_b: GachaBallInstance, merged_instance: GachaBallInstance, all_instances_db: Dictionary) -> void:
-	# 1. Twin Charm scaling
-	var twin_charm_key := StringName("")
-	for key in instance_a.status_effects:
-		if String(key).begins_with("twin_charm_scaling_"):
-			twin_charm_key = key
-			break
-	if twin_charm_key.is_empty():
-		for key in instance_b.status_effects:
-			if String(key).begins_with("twin_charm_scaling_"):
-				twin_charm_key = key
-				break
-
-	if not twin_charm_key.is_empty():
-		var team := "PLAYER" if String(twin_charm_key).ends_with("PLAYER") else "ENEMY"
-		var current_pool_count := 0
-		for uuid in all_instances_db:
-			var inst = all_instances_db[uuid]
-			if not is_instance_valid(inst):
-				continue
-			if inst.definition_id != instance_a.definition_id:
-				continue
-			var def = inst.get_definition()
-			if not is_instance_valid(def) or def.category != &"UNIT":
-				continue
-			if _get_instance_team(inst, all_instances_db) == team:
-				current_pool_count += 1
-		
-		# Ensure we count at least the 2 merging parents if they weren't in all_instances_db
-		current_pool_count = maxi(current_pool_count, 2)
-		
-		# In battle pool, instance_a and instance_b merge into 1 unit (reduction of 1 copy)
-		var post_merge_count: int = maxi(0, current_pool_count - 1)
-		var post_merge_bonus: int = int(post_merge_count / 2)
-		var parent_bonus: int = instance_a.get_status_effect_amount(twin_charm_key)
-		if parent_bonus == 0:
-			parent_bonus = instance_b.get_status_effect_amount(twin_charm_key)
-
-		if post_merge_bonus < parent_bonus:
-			# Merging dropped unit copies below an active threshold pair (e.g. 2 -> 1 or 4 -> 3).
-			# Continuous unit starts holding parent_bonus in its landing state, allowing
-			# EffectTwinCharmScaling to trigger an explicit on-unit debuff (-1 PWR) on board changed.
-			merged_instance.status_effects[twin_charm_key] = parent_bonus
-			merged_instance.apply_pwr_delta(parent_bonus, {
-				"silent": true,
-				"merge_source_type": &"CONDITIONAL_ABILITY"
-			})
-		elif post_merge_bonus > 0:
-			# Threshold maintained: pre-bake post_merge_bonus seamlessly.
-			merged_instance.status_effects[twin_charm_key] = post_merge_bonus
-			merged_instance.apply_pwr_delta(post_merge_bonus, {
-				"silent": true,
-				"merge_source_type": &"CONDITIONAL_ABILITY"
-			})
-
-	# 2. Doppleganger scaling
-	if instance_a.status_effects.has(&"doppleganger_scaling") or instance_b.status_effects.has(&"doppleganger_scaling"):
-		var current_pool_count := 0
-		var team := _get_instance_team(instance_a, all_instances_db)
-		for uuid in all_instances_db:
-			var inst = all_instances_db[uuid]
-			if not is_instance_valid(inst):
-				continue
-			if inst.definition_id != instance_a.definition_id:
-				continue
-			var def = inst.get_definition()
-			if not is_instance_valid(def) or def.category != &"UNIT":
-				continue
-			if _get_instance_team(inst, all_instances_db) == team:
-				current_pool_count += 1
-		
-		current_pool_count = maxi(current_pool_count, 2)
-		var post_merge_count: int = maxi(0, current_pool_count - 1)
-		var scale_amount: int = 2 + merged_instance.level
-		for ability in merged_instance.get_active_abilities(all_instances_db):
-			if String(ability.id).begins_with("ability_doppleganger_scale"):
-				if ability.effects.size() > 0 and "parameters" in ability.effects[0]:
-					scale_amount = ability.effects[0].parameters.get("scale_amount", scale_amount)
-				break
-		var post_merge_bonus: int = maxi(0, (post_merge_count - 1) * scale_amount)
-		if post_merge_bonus > 0:
-			merged_instance.status_effects[&"doppleganger_scaling"] = post_merge_bonus
-			merged_instance.apply_pwr_delta(post_merge_bonus, {
-				"silent": true,
-				"merge_source_type": &"CONDITIONAL_ABILITY"
-			})
-
-func _get_instance_team(inst: GachaBallInstance, all_instances_db: Dictionary) -> String:
-	if not is_instance_valid(inst):
-		return ""
-	var loc = inst.get_location()
-	if not is_instance_valid(loc):
-		return ""
-	if loc.container == C.CONTAINER_EQUIPPED_ITEM:
-		var parent: GachaBallInstance = all_instances_db.get(loc.unit_uuid)
-		if is_instance_valid(parent):
-			return _get_instance_team(parent, all_instances_db)
-		return ""
-	var container := String(loc.container)
-	if container.begins_with("Player") or container.begins_with("BattleInventory") or container == "DiscardPile":
-		return "PLAYER"
-	if container.begins_with("Enemy"):
-		return "ENEMY"
-	return ""
-
-## Helper to evaluate and apply temporary insignia carryover for an evolutionary level-up.
-## Leveled-up unit carries over the lower-level insignia bonus into its starting landing stats,
-## and sets pending_expired_insignia metadata so BattleManager can trigger an explicit debuff event.
-func _check_and_apply_level_up_insignia(instance_a: GachaBallInstance, instance_b: GachaBallInstance, merged_instance: GachaBallInstance, all_instances_db: Dictionary) -> void:
-	var team: String = _get_instance_team(instance_a, all_instances_db)
-	if team.is_empty():
-		return
-	
-	var parent_level: int = instance_a.level
-	var trinket_id := &""
-	var trinket_name := ""
-	if parent_level == 1:
-		trinket_id = &"trinket_royal_insignia"
-		trinket_name = "Apprentice Insignia"
-	elif parent_level == 2:
-		trinket_id = &"trinket_veteran_insignia"
-		trinket_name = "Veteran Insignia"
-	
-	if trinket_id.is_empty():
-		return
-		
-	var trinket_uuid := _get_trinket_uuid(all_instances_db, trinket_id, team)
-	if trinket_uuid.is_empty():
-		return
-		
-	var cond_comp_id := StringName(trinket_uuid + "_conditional")
-	var had_buff := instance_a.has_component(cond_comp_id) or \
-		(is_instance_valid(instance_b) and instance_b.has_component(cond_comp_id)) or \
-		instance_a.has_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid)) or \
-		(is_instance_valid(instance_b) and instance_b.has_tag(StringName("royal_insignia_buffed_%s" % trinket_uuid))) or \
-		instance_a.has_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid)) or \
-		(is_instance_valid(instance_b) and instance_b.has_tag(StringName("veteran_insignia_buffed_%s" % trinket_uuid)))
-	
-	if not had_buff:
-		return
-		
-	# Parent had this insignia. The continuous leveled-up unit lands carrying this stat bonus,
-	# and will expire it via an explicit debuff upon landing on the board.
-	merged_instance.current_hp += 1
-	merged_instance.current_pwr += 1
-	merged_instance.add_or_update_stat_component(
-		cond_comp_id,
-		&"CONDITIONAL_TRINKET",
-		trinket_uuid,
-		1, 1, false,
-		"Conditional Trinket Bonus", "Conditional trinket stat bonus"
-	)
-	merged_instance.set_meta(&"pending_expired_insignia", {
-		"trinket_uuid": trinket_uuid,
-		"level": parent_level,
-		"hp": 1,
-		"pwr": 1,
-		"trinket_name": trinket_name
-	})

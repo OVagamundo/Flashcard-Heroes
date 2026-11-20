@@ -28,8 +28,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var specialist_units: int = int(active_traits.get("SPECIALIST", 0))
-	if specialist_units < 5:
+	if not TraitRulesEngine.has_tier(active_traits, "SPECIALIST", 4):
 		return EffectResult.empty()
 
 	var frontmost_specialist = battle_manager.get_frontmost_unit_on_team(is_player, "SPECIALIST")

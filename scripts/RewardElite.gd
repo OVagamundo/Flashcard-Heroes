@@ -1,12 +1,5 @@
 # res://scripts/RewardElite.gd
-extends Control
-
-const GachaBallViewScene = preload("res://scenes/GachaBallView.tscn")
-const GoldCoinVFXScene = preload("res://scripts/vfx/GoldCoinVFX.gd")
-const RejectionFeedbackScript = preload("res://scripts/vfx/RejectionFeedback.gd")
-const CurrencyAnimator = preload("res://scripts/CurrencyAnimator.gd")
-const InputUtils = preload("res://scripts/InputUtils.gd")
-const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
+extends EncounterBase
 
 @onready var title_label: Label = %TitleLabel
 @onready var choices_container: HBoxContainer = %RewardChoicesContainer
@@ -15,123 +8,88 @@ const ACTION_BUTTON_AVOID_SCOPE_META = "action_button_avoid_scope"
 @onready var back_to_path_button: Button = %BackToPathButton
 
 var _reward_instances: Array = []
-var _gold_amount: int = 10 # Default to 10 for Elite rewards
+var _gold_amount: int = 10
 var _current_reroll_cost: int = 5
 var _action_in_progress: bool = false
-var _original_reward_instances: Array = [] 
-var _is_first_populate: bool = true
-var _transient_drop_pos: Vector2 = Vector2.ZERO
+
 
 func _ready() -> void:
 	add_to_group("reward_scene")
 	Audio.play_music(SoundRegistry.BGM_REWARD)
-	
-	SignalBus.selection_changed.connect(_on_selection_changed)
+
 	SignalBus.reward_stock_refreshed.connect(populate)
 	SignalBus.reward_collect_zone_activated.connect(_on_collect_pressed)
 	SignalBus.reward_sell_zone_activated.connect(_on_sell_pressed)
-	
-	gold_button.pressed.connect(_on_gold_pressed)
+
 	gold_button.visible = false # Replaced by Sell drop zone
 	back_to_path_button.visible = false
 	back_to_path_button.disabled = true
 	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	reroll_button.pressed.connect(_on_reroll_pressed)
 	back_to_path_button.pressed.connect(_on_back_to_path_pressed)
-	gui_input.connect(_on_gui_input)
-	
+	gui_input.connect(_handle_window_background_click)
+
 	SignalBus.locale_changed.connect(_update_localized_text)
 	_update_localized_text()
-	_mark_reward_action_buttons()
-	
+	_mark_action_buttons_for_avoidance([gold_button, reroll_button, back_to_path_button], &"Rewards")
 	_show_initial_instruction()
 
+
 func _show_initial_instruction() -> void:
-	if is_instance_valid(GameManager._active_main_node):
-		if GameManager._active_main_node.has_method("show_action_instruction"):
-			GameManager._active_main_node.show_action_instruction(tr("ui.reward_elite_instruction"))
+	var main_node: Node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		main_node.show_action_instruction(tr("ui.reward_elite_instruction"))
+
 
 func _exit_tree() -> void:
-	# Cleanup overlays when leaving
-	if is_instance_valid(GameManager._active_main_node):
-		if GameManager._active_main_node.has_method("hide_action_instruction"):
-			GameManager._active_main_node.hide_action_instruction()
-		if GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-			GameManager._active_main_node.hide_reward_drop_zones()
-		if GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
-			GameManager._active_main_node.hide_empty_trinket_slots()
+	var main_node: Node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		main_node.hide_action_instruction()
+		main_node.hide_reward_drop_zones()
+		main_node.hide_empty_trinket_slots()
 
-var _last_inventory_open: bool = false
+
 func _process(_delta: float) -> void:
-	var is_open := WindowManager.is_run_inventory_window_open()
-	if is_open != _last_inventory_open:
-		_last_inventory_open = is_open
-		var main_node = GameManager._active_main_node
-		if is_instance_valid(main_node):
-			if is_open:
-				if main_node.has_method("hide_action_instruction"):
-					main_node.hide_action_instruction()
-				if main_node.has_method("hide_reward_drop_zones"):
-					main_node.hide_reward_drop_zones()
-			else:
-				var sel = GlobalInteractionRouter.get_current_selection()
-				var is_prize_selected = sel and sel.location and sel.location.container == &"Rewards"
-				# Only show instructions if choice is not yet complete
-				if not is_prize_selected and not back_to_path_button.visible:
-					if main_node.has_method("show_action_instruction"):
-						main_node.show_action_instruction(tr("ui.reward_elite_instruction"))
+	_sync_reward_inventory_overlay("ui.reward_elite_instruction", not back_to_path_button.visible)
 
-func _mark_reward_action_buttons() -> void:
-	_mark_action_button_for_inspection_avoidance(gold_button)
-	_mark_action_button_for_inspection_avoidance(reroll_button)
-	_mark_action_button_for_inspection_avoidance(back_to_path_button)
-
-func _mark_action_button_for_inspection_avoidance(button: Button) -> void:
-	if is_instance_valid(button):
-		button.set_meta(ACTION_BUTTON_AVOID_SCOPE_META, &"Rewards")
 
 func _get_reroll_cost() -> int:
-	if is_instance_valid(GameManager.run_state) and GameManager.run_state.has_method("get_elite_reward_reroll_cost"):
+	if is_instance_valid(GameManager.run_state):
 		return GameManager.run_state.get_elite_reward_reroll_cost()
 	return 5
 
+
 func _update_localized_text() -> void:
-	var locale = TranslationServer.get_locale().left(2)
+	var locale: String = TranslationServer.get_locale().left(2)
 	if locale == "pt":
 		title_label.text = "Escolha seu Amuleto"
 		back_to_path_button.text = "Voltar ao Caminho"
 	else:
 		title_label.text = "Choose Your Trinket"
 		back_to_path_button.text = tr("ui.back_to_path")
-	
+
 	gold_button.text = tr("ui.take_gold_amount") % _gold_amount
 	reroll_button.text = tr("ui.reroll_gold") % _current_reroll_cost
 
+
 func populate(context: Dictionary) -> void:
 	_reward_instances = context.get("reward_instances", [])
-	_original_reward_instances = _reward_instances.duplicate()
-	
 	_gold_amount = context.get("gold_amount", 10)
 	_current_reroll_cost = context.get("reroll_cost", _get_reroll_cost())
-	
+
 	_update_localized_text()
 	reroll_button.visible = true
 	reroll_button.disabled = false
-	
+
 	var created_views: Array[GachaBallView] = []
-	var slot_nodes = choices_container.get_children()
-	for i in range(slot_nodes.size()):
-		var slot_view = slot_nodes[i]
+	var slot_nodes: Array[Node] = choices_container.get_children()
+	for i: int in range(slot_nodes.size()):
+		var slot_view: SlotView = slot_nodes[i] as SlotView
 		if i < _reward_instances.size():
-			var inst = _reward_instances[i]
+			var inst: GachaBallInstance = _reward_instances[i] as GachaBallInstance
 			if is_instance_valid(inst):
-				var loc = LocationIdentifier.new(&"Rewards", i)
-				slot_view.populate(loc)
-				
-				var visual_data = VisualDataAdapter.create_visual_data(inst)
-				var ball_view = slot_view.set_content(visual_data, true, false)
-				
-				# Hide immediately for staggered entry; preserve unit scale
+				slot_view.populate(LocationIdentifier.new(&"Rewards", i))
+				var ball_view: GachaBallView = slot_view.set_content(VisualDataAdapter.create_visual_data(inst), true, false)
 				if is_instance_valid(ball_view):
 					ball_view.visible = false
 					ball_view.scale = Vector2.ONE
@@ -141,403 +99,182 @@ func populate(context: Dictionary) -> void:
 				slot_view.visible = true
 			else:
 				slot_view.visible = false
+
 	back_to_path_button.visible = false
 	back_to_path_button.modulate.a = 0.0
 	back_to_path_button.disabled = true
 	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("show_empty_trinket_slots"):
+	if is_instance_valid(GameManager._active_main_node):
 		GameManager._active_main_node.show_empty_trinket_slots()
-	
-	_animate_staggered_entry(created_views)
 
-# Replaced by direct call in populate
-func _on_staggered_entry_timer_timeout() -> void:
-	pass
+	_animate_staggered_slot_entry(choices_container, created_views)
 
-func _animate_staggered_entry(p_views: Array[GachaBallView] = []) -> void:
-	"""Animate trinkets appearing one-by-one with landing bounce"""
-	# STAGE 2: Wait before starting the population sequence
-	# Only wait a short time on first entry (per USER request)
-	if _is_first_populate:
-		await AnimationConstants.create_pausable_timer(get_tree(), 0.5).timeout
-		_is_first_populate = false
-	else:
-		# Just a tiny delay for subsequent refreshes to let layout settle
-		await get_tree().process_frame
-	
-	# STAGE 3: Wait for layout to settle so icon_rect.size is populated
-	# This is critical for play_landing_bounce() which skips if size is zero.
-	await get_tree().process_frame
-	
-	var targets: Array[GachaBallView] = []
-	if not p_views.is_empty():
-		for b in p_views:
-			if is_instance_valid(b) and not b.is_queued_for_deletion():
-				targets.append(b)
-	else:
-		var slot_nodes = choices_container.get_children()
-		for slot_view in slot_nodes:
-			for child in slot_view.get_children():
-				if child is GachaBallView and not child.is_queued_for_deletion():
-					targets.append(child)
-					break
-	
-	for ball_index in range(targets.size()):
-		var ball_view = targets[ball_index]
-		if is_instance_valid(ball_view) and is_instance_valid(ball_view.icon_rect):
-			# Ensure pivot is centered based on now-valid size
-			ball_view.icon_rect.pivot_offset = ball_view.icon_rect.size / 2.0
-			
-			# Schedule delayed reveal with landing bounce
-			var delay = ball_index * AnimationConstants.ENTRY_STAGGER_DELAY
-			var wait_tween = ball_view.create_tween()
-			wait_tween.tween_interval(delay)
-			wait_tween.tween_callback(func():
-				if is_instance_valid(ball_view):
-					ball_view.visible = true
-					ball_view.scale = Vector2.ONE
-					ball_view.play_landing_bounce()
-			)
-
-func _on_selection_changed(_new_location: LocationIdentifier) -> void:
-	pass
-
-func _get_selected_prize() -> Dictionary:
-	var selected_ctx = GlobalInteractionRouter.get_current_selection()
-	if selected_ctx == null: return {}
-	var selected_loc = selected_ctx.location if selected_ctx else null
-	if not is_instance_valid(selected_loc) or selected_loc.container != &"Rewards": return {}
-	
-	if selected_loc.index < 0 or selected_loc.index >= _reward_instances.size():
-		return {}
-		
-	var instance = _reward_instances[selected_loc.index]
-	if not is_instance_valid(instance): return {}
-	
-	return {"location": selected_loc, "instance": instance, "uuid": instance.ball_uuid}
 
 func _on_collect_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
-	var prize_data = _get_selected_prize()
-	if prize_data.is_empty(): return
-	var instance = prize_data.instance
+	if _action_in_progress:
+		return
+	var prize_data: Dictionary = _get_selected_reward_entry(_reward_instances)
+	if prize_data.is_empty():
+		return
+	var drop: Dictionary = _resolve_drop_interaction(is_drag, mouse_pos)
+	ActionQueue.request(CollectRewardAction.new(prize_data["uuid"], drop["interaction_type"], drop["drop_pos"]))
 
-	var drop_pos := Vector2.ZERO
-	var interaction_type := "CLICK"
-	if is_drag:
-		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
-		interaction_type = "DRAG"
-	_transient_drop_pos = drop_pos
-
-	var action := CollectRewardAction.new(instance.ball_uuid, interaction_type, drop_pos)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_collect_visuals(instance.ball_uuid, drop_pos)
 
 func execute_collect_visuals(uuid: String, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
-	var prize_data = _get_selected_prize()
-	if prize_data.is_empty() or prize_data.uuid != uuid:
-		for i in range(_reward_instances.size()):
-			if is_instance_valid(_reward_instances[i]) and _reward_instances[i].ball_uuid == uuid:
-				prize_data = {
-					"location": LocationIdentifier.new(&"Rewards", i),
-					"instance": _reward_instances[i],
-					"uuid": uuid
-				}
-				break
+	var prize_data: Dictionary = _resolve_reward_entry_by_uuid(_reward_instances, uuid)
 	if prize_data.is_empty():
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
 
 	_action_in_progress = true
-	var loc = prize_data.location
-	var instance = prize_data.instance
-	
+	var loc: LocationIdentifier = prize_data["location"] as LocationIdentifier
+	var instance: GachaBallInstance = prize_data["instance"] as GachaBallInstance
+
 	_clear_reward_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
-	
-	var raw_pos = _get_slot_global_center(loc.index)
-	if not p_drop_pos.is_zero_approx():
-		raw_pos = p_drop_pos
-	elif not _transient_drop_pos.is_zero_approx():
-		raw_pos = _transient_drop_pos
-		_transient_drop_pos = Vector2.ZERO
-	
-	var visual_data = VisualDataAdapter.create_visual_data(instance)
-	var target_trinket_slot: int = 0
-	if is_instance_valid(GameManager.run_state):
-		var trinket_container = GameManager.run_state.get_container(RunState.RUN_CONTAINER_TAGS.PLAYER_TRINKETS)
-		if trinket_container and trinket_container.has_method("find_first_empty_slot"):
-			target_trinket_slot = max(0, trinket_container.find_first_empty_slot())
-	
-	var main_node = GameManager._active_main_node
+	SignalBus.selection_clear_requested.emit()
+
+	var raw_pos: Vector2 = _consume_animation_start_pos(_get_slot_global_center(loc.index), p_drop_pos)
+	var visual_data: Dictionary = VisualDataAdapter.create_visual_data(instance)
+	var target_trinket_slot: int = _find_first_empty_trinket_slot()
+
+	var main_node: Node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		# We don't restore instruction here because choice is complete
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
-	
-	# Mapping for collection vfx (must stay global as it flies to Main bar)
-	var start_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
-	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot)
-	
-	SignalBus.emit_signal("reward_chosen", {"type": "gachaball", "instance_uuid": instance.ball_uuid})
-	
+		main_node.hide_reward_drop_zones()
+		main_node.hide_action_instruction()
+
+	var start_pos: Vector2 = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
+	await _animate_gachaball_to_trinket_bar(start_pos, visual_data, target_trinket_slot, 2.0, true, false)
+
+	SignalBus.reward_chosen.emit({"type": "gachaball", "instance_uuid": instance.ball_uuid})
 	_complete_choice()
 	_action_in_progress = false
+	_finish_active_action()
 
-	if is_instance_valid(ActionQueue):
-		ActionQueue.finish_action(ActionQueue.get_active_action())
 
 func _on_sell_pressed(is_drag: bool = false, mouse_pos: Vector2 = Vector2.ZERO) -> void:
-	if _action_in_progress: return
-	var prize_data = _get_selected_prize()
-	if prize_data.is_empty(): return
-	var instance = prize_data.instance
+	if _action_in_progress:
+		return
+	var prize_data: Dictionary = _get_selected_reward_entry(_reward_instances)
+	if prize_data.is_empty():
+		return
+	var drop: Dictionary = _resolve_drop_interaction(is_drag, mouse_pos)
+	ActionQueue.request(SellRewardAction.new(prize_data["uuid"], drop["interaction_type"], drop["drop_pos"]))
 
-	var drop_pos := Vector2.ZERO
-	var interaction_type := "CLICK"
-	if is_drag:
-		drop_pos = mouse_pos if not mouse_pos.is_zero_approx() else GlobalInteractionRouter.get_last_pointer_position()
-		interaction_type = "DRAG"
-	_transient_drop_pos = drop_pos
-
-	var action := SellRewardAction.new(instance.ball_uuid, interaction_type, drop_pos)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		var gold_yield = GameManager.sell_reward_instance(instance.ball_uuid)
-		execute_sell_visuals(instance.ball_uuid, gold_yield, drop_pos)
 
 func execute_sell_visuals(uuid: String, gold_yield: int = -1, p_drop_pos: Vector2 = Vector2.ZERO) -> void:
-	var prize_data = _get_selected_prize()
-	if prize_data.is_empty() or prize_data.uuid != uuid:
-		for i in range(_reward_instances.size()):
-			if is_instance_valid(_reward_instances[i]) and _reward_instances[i].ball_uuid == uuid:
-				prize_data = {
-					"location": LocationIdentifier.new(&"Rewards", i),
-					"instance": _reward_instances[i],
-					"uuid": uuid
-				}
-				break
+	var prize_data: Dictionary = _resolve_reward_entry_by_uuid(_reward_instances, uuid)
 	if prize_data.is_empty():
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		_finish_active_action()
 		return
 
 	_action_in_progress = true
-	var loc = prize_data.location
-	var instance = prize_data.instance
-	
+	var loc: LocationIdentifier = prize_data["location"] as LocationIdentifier
+
 	_clear_reward_slot(loc.index)
-	SignalBus.emit_signal("selection_clear_requested")
-	
-	var main_node = GameManager._active_main_node
+	SignalBus.selection_clear_requested.emit()
+
+	var main_node: Node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_reward_drop_zones"):
-			main_node.hide_reward_drop_zones()
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
-	
-	var raw_pos = _get_slot_global_center(loc.index)
-	if not p_drop_pos.is_zero_approx():
-		raw_pos = p_drop_pos
-	elif not _transient_drop_pos.is_zero_approx():
-		raw_pos = _transient_drop_pos
-		_transient_drop_pos = Vector2.ZERO
-	
-	var screen_pos = _get_absolute_screen_pos(raw_pos)
-	var vfx_start_pos = _map_screen_to_vfx_viewport(screen_pos)
-	
-	var amt = gold_yield if gold_yield > 0 else _gold_amount
-	await _animate_gold_receive(amt, vfx_start_pos)
-	
+		main_node.hide_reward_drop_zones()
+		main_node.hide_action_instruction()
+
+	var raw_pos: Vector2 = _consume_animation_start_pos(_get_slot_global_center(loc.index), p_drop_pos)
+	var vfx_start_pos: Vector2 = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(raw_pos))
+	var amt: int = gold_yield if gold_yield > 0 else _gold_amount
+	await CurrencyAnimator.animate_gold_gain(amt, vfx_start_pos)
+
 	_complete_choice()
 	_action_in_progress = false
+	_finish_active_action()
 
-	if is_instance_valid(ActionQueue):
-		ActionQueue.finish_action(ActionQueue.get_active_action())
-
-func _on_gold_pressed() -> void:
-	# Keep legacy method for compatibility if needed, but it's now redundant
-	pass
 
 func _on_reroll_pressed() -> void:
 	if _action_in_progress:
 		return
-	var current_gold: int = 0
-	if is_instance_valid(GameManager.run_state):
-		current_gold = GameManager.run_state.gold
-	
+	var current_gold: int = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
 	if current_gold < _current_reroll_cost:
-		var main_node = GameManager._active_main_node
-		var gold_group = main_node.get_node_or_null("%GoldGroup") if is_instance_valid(main_node) else null
+		var main_node: Node = GameManager._active_main_node
+		var gold_group: Control = main_node.get_node_or_null("%GoldGroup") as Control if is_instance_valid(main_node) else null
 		RejectionFeedbackScript.play_rejection_with_counter(reroll_button, gold_group, get_tree())
 		return
+	ActionQueue.request(RerollRewardAction.new())
 
-	var action := RerollRewardAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_reroll_visuals()
 
 func execute_reroll_visuals(cost: int = -1) -> void:
 	_action_in_progress = true
 	reroll_button.disabled = true
-	var target_pos = reroll_button.get_global_rect().get_center()
-			
-	var spend_cost = cost if cost >= 0 else _current_reroll_cost
-	_animate_gold_spend(spend_cost, target_pos, func():
-		SignalBus.emit_signal("selection_clear_requested")
-		var main_node = GameManager._active_main_node
-		if is_instance_valid(main_node) and main_node.has_method("hide_reward_drop_zones"):
+	var target_pos: Vector2 = reroll_button.get_global_rect().get_center()
+	var spend_cost: int = cost if cost >= 0 else _current_reroll_cost
+
+	var on_complete := func() -> void:
+		SignalBus.selection_clear_requested.emit()
+		var main_node: Node = GameManager._active_main_node
+		if is_instance_valid(main_node):
 			main_node.hide_reward_drop_zones()
 		_show_initial_instruction()
-		if not is_instance_valid(ActionQueue):
-			SignalBus.emit_signal("reward_reroll_requested")
 		Audio.play_sfx("shop_reroll")
 		reroll_button.disabled = false
 		_action_in_progress = false
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
-	)
+		_finish_active_action()
 
-func _animate_gold_spend(amount: int, target_pos: Vector2, on_complete: Callable) -> void:
-	if is_instance_valid(GameManager) and is_instance_valid(GameManager._active_main_node):
-		CurrencyAnimator.animate_gold_spend(amount, target_pos, on_complete)
+	if is_instance_valid(GameManager._active_main_node):
+		CurrencyAnimator.animate_gold_spend(spend_cost, target_pos, on_complete)
 	else:
-		if on_complete.is_valid():
-			on_complete.call()
+		on_complete.call()
+
 
 func _complete_choice() -> void:
-	SignalBus.emit_signal("reward_chosen", {"type": "elite_choice_complete"})
+	SignalBus.reward_chosen.emit({"type": "elite_choice_complete"})
 	gold_button.visible = false
 	reroll_button.visible = false
 	reroll_button.disabled = true
 	reroll_button.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	
-	# Reveal navigation button
+
 	back_to_path_button.visible = true
 	back_to_path_button.modulate.a = 1.0
 	back_to_path_button.disabled = false
 	back_to_path_button.mouse_filter = Control.MOUSE_FILTER_STOP
-	
-	# Animate unselected balls flying away (parallel staggered)
-	var slot_nodes = choices_container.get_children()
-	for i in range(slot_nodes.size()):
-		var slot = slot_nodes[i]
+
+	var slot_nodes: Array[Node] = choices_container.get_children()
+	for i: int in range(slot_nodes.size()):
 		var ball: Control = null
-		for child in slot.get_children():
+		for child in slot_nodes[i].get_children():
 			if child is GachaBallView:
-				ball = child
+				ball = child as Control
 				break
-		
 		if is_instance_valid(ball) and ball.visible and ball.modulate.a > 0.1:
-			var delay = i * 0.1
-			var ball_tween = create_tween()
-			ball_tween.tween_interval(delay)
-			# Move and Fade in parallel, faster duration (0.4s)
-			ball_tween.tween_property(ball, "position:y", ball.position.y - 120, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+			var ball_tween: Tween = create_tween()
+			ball_tween.tween_interval(i * 0.1)
+			ball_tween.tween_property(ball, "position:y", ball.position.y - 120.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
 			ball_tween.parallel().tween_property(ball, "modulate:a", 0.0, 0.4).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_IN)
 			ball_tween.tween_callback(ball.queue_free)
-	
+
 	_reward_instances.clear()
-	if is_instance_valid(GameManager._active_main_node) and GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
+	if is_instance_valid(GameManager._active_main_node):
 		GameManager._active_main_node.hide_empty_trinket_slots()
 
+
 func _clear_reward_slot(index: int) -> void:
-	var slot_nodes = choices_container.get_children()
+	var slot_nodes: Array[Node] = choices_container.get_children()
 	if index >= 0 and index < slot_nodes.size():
-		var slot_view = slot_nodes[index]
-		if slot_view.has_method("set_content"):
-			slot_view.set_content({}, false)
+		(slot_nodes[index] as SlotView).set_content({}, false)
+
 
 func _get_slot_global_center(index: int) -> Vector2:
-	var slot_nodes = choices_container.get_children()
+	var slot_nodes: Array[Node] = choices_container.get_children()
 	if index >= 0 and index < slot_nodes.size() and is_instance_valid(slot_nodes[index]):
-		return slot_nodes[index].get_global_rect().get_center()
+		return (slot_nodes[index] as Control).get_global_rect().get_center()
 	return Vector2.ZERO
 
+
 func _on_back_to_path_pressed() -> void:
-	var action := LeaveRewardAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_leave_visuals()
+	ActionQueue.request(LeaveRewardAction.new())
+
 
 func execute_leave_visuals() -> void:
-	if is_instance_valid(GameManager._active_main_node):
-		if GameManager._active_main_node.has_method("hide_reward_drop_zones"):
-			GameManager._active_main_node.hide_reward_drop_zones()
-		if GameManager._active_main_node.has_method("hide_empty_trinket_slots"):
-			GameManager._active_main_node.hide_empty_trinket_slots()
-	SignalBus.emit_signal("path_choice_scene_requested")
+	var main_node: Node = GameManager._active_main_node
+	if is_instance_valid(main_node):
+		main_node.hide_reward_drop_zones()
+		main_node.hide_empty_trinket_slots()
+	SignalBus.path_choice_scene_requested.emit()
 	queue_free()
-
-func _on_gui_input(event: InputEvent) -> void:
-	if InputUtils.is_primary_pointer_press(event):
-		var context = InteractionContext.new()
-		context.source_view_instance_id = get_instance_id()
-		context.event_type = &"SINGLE_CLICK"
-		context.entity_type = &"WINDOW_BACKGROUND"
-		SignalBus.emit_signal("interaction_context_received", context)
-		get_viewport().set_input_as_handled()
-
-func _animate_gachaball_to_trinket_bar(start_pos: Vector2, visual_data: Dictionary, target_slot_index: int) -> void:
-	var main_node = GameManager._active_main_node
-	if not is_instance_valid(main_node): return
-	var trinket_bar = main_node.get_node_or_null("%PlayerTrinketBar")
-	if not is_instance_valid(trinket_bar) or trinket_bar.get_child_count() == 0: return
-	
-	var target_slot = trinket_bar.get_child(clampi(target_slot_index, 0, trinket_bar.get_child_count() - 1))
-	var end_pos = _map_screen_to_vfx_viewport(_get_absolute_screen_pos(target_slot.get_global_rect().get_center(), target_slot.get_viewport()))
-	
-	var anim_ball = GachaBallViewScene.instantiate()
-	WindowManager.get_vfx_layer().add_child(anim_ball)
-	
-	# Fix warning: Reset anchors before setting size for a manual-transform node
-	anim_ball.set_anchors_preset(Control.PRESET_TOP_LEFT, true)
-	
-	anim_ball.top_level = true
-	anim_ball.z_index = 100
-	anim_ball.custom_minimum_size = Vector2(96, 96)
-	anim_ball.size = Vector2(96, 96)
-	anim_ball.populate(null, visual_data)
-	anim_ball.pivot_offset = Vector2(48, 48)
-	
-	var control_point = Vector2((start_pos.x + end_pos.x) / 2.0, min(start_pos.y, end_pos.y) - 400)
-	var tween = create_tween()
-	var slot_hidden: bool = false
-	tween.tween_method(func(t: float):
-		var eased_t = pow(t, 0.55)
-		var current_scale = lerp(2.0, 1.0, t) 
-		var inv_t = 1.0 - eased_t
-		var pos = (inv_t * inv_t * start_pos) + (2.0 * inv_t * eased_t * control_point) + (eased_t * eased_t * end_pos)
-		anim_ball.global_position = pos - (anim_ball.pivot_offset * current_scale)
-		anim_ball.scale = Vector2(current_scale, current_scale)
-		
-		# Disappear the target slot just before taking its place (at 85% progress)
-		if t >= 0.85 and not slot_hidden:
-			slot_hidden = true
-			if is_instance_valid(target_slot) and "show_empty_trinket_slot" in target_slot:
-				target_slot.show_empty_trinket_slot = false
-	, 0.0, 1.0, 0.45)
-	await tween.finished
-	anim_ball.queue_free()
-
-func _animate_gold_receive(amount: int, start_pos: Vector2) -> void:
-	await CurrencyAnimator.animate_gold_gain(amount, start_pos)
-
-func _map_screen_to_vfx_viewport(screen_pos: Vector2) -> Vector2:
-	var vfx_layer = WindowManager.get_vfx_layer()
-	if is_instance_valid(vfx_layer):
-		var vp = vfx_layer.get_viewport()
-		return (vp.get_screen_transform() * vp.get_canvas_transform()).affine_inverse() * screen_pos
-	return screen_pos
-
-func _get_absolute_screen_pos(pos: Vector2, vp: Viewport = null) -> Vector2:
-	if not vp: vp = get_viewport()
-	return vp.get_screen_transform() * (vp.get_canvas_transform() * pos) if is_instance_valid(vp) else pos

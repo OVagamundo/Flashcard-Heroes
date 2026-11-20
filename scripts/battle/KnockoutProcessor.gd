@@ -758,7 +758,7 @@ static func _process_bounty_death(bm: Node, unit: GachaBallInstance, out_events:
 	var bounty_stacks: int = unit.get_status_effect_amount(&"bounty")
 	if bounty_stacks <= 0:
 		return
-	unit.clear_status_effect(&"bounty")
+	unit.clear_status_effect_silent(&"bounty")
 	bm.earn_gold(bounty_stacks, unit.ball_uuid)
 	var bounty_inline: Array[CombatEvent] = bm.collect_inline_events()
 	out_events.append_array(bounty_inline)
@@ -780,7 +780,7 @@ static func _process_static_collateral_damage(bm: Node, unit: GachaBallInstance,
 	if static_stacks <= 0:
 		return
 	
-	unit.clear_status_effect(&"static")
+	unit.clear_status_effect_silent(&"static")
 	
 	var death_slot: int = death_location.index
 	var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -833,7 +833,7 @@ static func _process_food_death_pass(bm: Node, unit: GachaBallInstance, death_lo
 	if not bm._is_lineup_container(death_location.container):
 		return
 	var traits = bm.get_active_traits(team)
-	if traits.get("FOOD", 0) < 5 or not bm.has_trait(unit, "FOOD"):
+	if not TraitRulesEngine.has_tier(traits, "FOOD", 4) or not bm.has_trait(unit, "FOOD"):
 		return
 
 	var ally_behind = bm._get_ally_behind(unit, true)
@@ -866,7 +866,7 @@ static func _process_toy_death_detonation(bm: Node, unit: GachaBallInstance, tea
 	if not bm._is_lineup_container(death_location.container):
 		return
 	var traits = bm.get_active_traits(team)
-	if traits.get("TOY", 0) < 5 or not bm.has_trait(unit, "TOY"):
+	if not TraitRulesEngine.has_tier(traits, "TOY", 4) or not bm.has_trait(unit, "TOY"):
 		return
 
 	var opp_tag = C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP
@@ -886,7 +886,7 @@ static func _process_toy_death_detonation(bm: Node, unit: GachaBallInstance, tea
 	)
 	var target_enemy = enemies[0]
 	var static_amt = target_enemy.get_status_effect_amount(&"static")
-	target_enemy.clear_status_effect(&"static")
+	target_enemy.clear_status_effect_silent(&"static")
 	var old_h = target_enemy.current_hp
 	var old_a = target_enemy.get_status_effect_amount(&"armor")
 	var dmg_res = bm.apply_damage(target_enemy, static_amt, C.DamageType.STATIC, unit.ball_uuid)
@@ -923,7 +923,7 @@ static func _process_mecha_ally_death(bm: Node, dying_unit: GachaBallInstance, t
 	if not is_instance_valid(dying_unit):
 		return
 	var traits = bm.get_active_traits(team)
-	if traits.get("MECHA", 0) < 5 or not bm.has_trait(dying_unit, "MECHA"):
+	if not TraitRulesEngine.has_tier(traits, "MECHA", 4) or not bm.has_trait(dying_unit, "MECHA"):
 		return
 
 	var lineup_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP

@@ -12,36 +12,41 @@ const FLASH_COLOR := Color(1.0, 0.3, 0.3, 1.0) # Red flash
 
 ## Play rejection feedback on a Control node (shake + red flash)
 ## @param target: The Control to animate
-## @param tree: SceneTree reference for creating tweens
-static func play_rejection(target: Control, tree: SceneTree) -> void:
-	if not is_instance_valid(target) or not is_instance_valid(tree):
-		return
+## @param _tree: Legacy parameter kept for call-site compatibility (tween is bound to target)
+static func play_rejection(target: Control, _tree: SceneTree = null) -> void:
+	assert(is_instance_valid(target), "RejectionFeedback.play_rejection: target must be valid")
 	
 	# AUDIO HOOK: Rejection sound
 	Audio.play_sfx("ui_rejection")
-	
-	# Store original position
-	var original_pos := target.position
+
+	# Kill any in-flight rejection tween on this target and restore canonical rest pose
+	if target.has_meta(&"_rejection_tween"):
+		var prev_tween: Variant = target.get_meta(&"_rejection_tween")
+		if prev_tween is Tween and prev_tween.is_valid():
+			prev_tween.kill()
+	target.rotation = 0.0
+	target.modulate = Color.WHITE
 	
 	# Set pivot for visual effects if the target has size
 	if target.size.x > 0 and target.size.y > 0:
 		target.pivot_offset = target.size / 2.0
 	
-	# Create combined shake and flash animation
-	var tween := tree.create_tween()
+	# Node-bound tween: automatically freed if target leaves tree
+	var tween: Tween = target.create_tween()
+	target.set_meta(&"_rejection_tween", tween)
 	tween.set_parallel(true)
 	
-	# Shake animation - rapid rotation oscillation (works in containers)
-	_add_shake_keyframes(tween, target, target.rotation)
+	# Shake animation around canonical rest rotation (0.0) so rapid clicks never tilt permanently
+	_add_shake_keyframes(tween, target, 0.0)
 	
 	# Red flash on modulate
 	tween.tween_property(target, "modulate", FLASH_COLOR, 0.05)
 	tween.tween_property(target, "modulate", Color.WHITE, SHAKE_DURATION - 0.05).set_delay(0.05)
 	
-	# Ensure transform resets at the end
-	tween.chain().tween_callback(func():
-		target.rotation = 0
-		target.position = original_pos
+	# Ensure canonical rest pose at the end
+	tween.chain().tween_callback(func() -> void:
+		target.rotation = 0.0
+		target.modulate = Color.WHITE
 	)
 
 

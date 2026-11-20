@@ -57,6 +57,7 @@ func _ready() -> void:
 	if not instance_uuid.is_empty():
 		ui_anchor.set_meta("bound_uuid", instance_uuid)
 		ui_anchor.set_meta("location_identifier", location)
+		WindowManager.register_location_view(location, ui_anchor)
 
 	if _pending_texture:
 		icon_sprite.texture = _pending_texture
@@ -69,6 +70,8 @@ func _ready() -> void:
 		_adjust_icon_scale()
 
 func _exit_tree() -> void:
+	if is_instance_valid(ui_anchor):
+		WindowManager.unregister_location_view(ui_anchor)
 	if is_instance_valid(_inspection_trigger):
 		_inspection_trigger.cancel()
 
@@ -85,6 +88,7 @@ func populate(uuid: String, type: StringName, loc: LocationIdentifier, tex: Text
 	if is_instance_valid(ui_anchor):
 		ui_anchor.set_meta("bound_uuid", uuid)
 		ui_anchor.set_meta("location_identifier", loc)
+		WindowManager.register_location_view(loc, ui_anchor)
 	if tex:
 		if is_node_ready() and is_instance_valid(icon_sprite):
 			icon_sprite.texture = tex

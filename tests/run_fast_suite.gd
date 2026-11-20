@@ -7,7 +7,6 @@ const EffectGainDeadAllyPwrAsHPScript = preload("res://scripts/effects/EffectGai
 const EffectGalebloomPreBattleScript = preload("res://scripts/effects/EffectGalebloomPreBattle.gd")
 const EffectStormshroudHealOnHurtScript = preload("res://scripts/effects/EffectStormshroudHealOnHurt.gd")
 const EffectSummonOnDeathScript = preload("res://scripts/EffectSummonOnDeath.gd")
-const EffectSummonT2OnDeathScript = preload("res://scripts/EffectSummonT2OnDeath.gd")
 const ReplayStateDigest = preload("res://scripts/engine/replay/ReplayStateDigest.gd")
 
 var suite_has_failed: bool = false
@@ -86,9 +85,23 @@ func _ready() -> void:
 	# ----------------------------------------------------
 	# SUITE 8: Alternating Action Order & Highest-Rank Summon Placement
 	# ----------------------------------------------------
-	print("[SUITE 8/8] Alternating Action Order & Highest-Rank Summon Placement...")
-	_run_suite_8_alternating_initiative()
+	print("[SUITE 8/10] Alternating Action Order & Highest-Rank Summon Placement...")
+	await _run_suite_8_alternating_initiative()
 	print("  -> [PASS] Suite 8 Passed!")
+
+	# ----------------------------------------------------
+	# SUITE 9: Backlog Bugfix & Replay Hygiene Regressions
+	# ----------------------------------------------------
+	print("[SUITE 9/10] Backlog Bugfix & Replay Hygiene Regressions...")
+	_run_suite_9_backlog_regressions()
+	print("  -> [PASS] Suite 9 Passed!")
+
+	# ----------------------------------------------------
+	# SUITE 10: VCR Snapshot Isolation & Puppet-Parity
+	# ----------------------------------------------------
+	print("[SUITE 10/10] VCR Snapshot Isolation & Puppet-Parity...")
+	await _run_suite_10_vcr_snapshot_parity()
+	print("  -> [PASS] Suite 10 Passed!")
 
 	if suite_has_failed:
 		printerr("==================================================")
@@ -109,7 +122,7 @@ func _ready() -> void:
 func _test_insignia_and_crest_inspection() -> void:
 	var previous_locale: String = TranslationServer.get_locale()
 	var window: ItemInspectionWindow = preload("res://scenes/ItemInspectionWindow.tscn").instantiate()
-	get_tree().root.add_child(window)
+	add_child(window)
 
 	for locale: String in ["en", "pt_BR"]:
 		TranslationServer.set_locale(locale)
@@ -133,7 +146,8 @@ func _test_insignia_and_crest_inspection() -> void:
 			for level: Dictionary in trait_definition["levels"]:
 				_assert_ok(inspection_text.contains(" %d: " % int(level["min"])), "[%s] %s shows its %d threshold" % [locale, crest.id, level["min"]])
 
-	window.queue_free()
+	remove_child(window)
+	window.free()
 	TranslationServer.set_locale(previous_locale)
 
 
@@ -247,18 +261,6 @@ func _run_suite_1_database() -> void:
 	var item_summoned_def: GachaBallDefinition = Database.units[item_res.summon_request["summon_unit_id"]]
 	_assert_ok(not item_summoned_def.is_player_exclusive, "Enemy item on-death summon %s must not be player-exclusive" % item_summoned_def.id)
 	_assert_ok(Database.get_entity_set(item_summoned_def) == Database.SET_BASE, "Enemy item on-death summon %s must be SET_BASE" % item_summoned_def.id)
-
-	# EffectSummonT2OnDeath in enemy context
-	var enemy_t2_summon = EffectSummonT2OnDeathScript.new()
-	var enemy_t2_ctx := TriggerContext.new()
-	enemy_t2_ctx.knocked_out_uuid = "enemy_t2_holder_uuid"
-	enemy_t2_ctx.knocked_out_team = "ENEMY"
-	enemy_t2_ctx.knocked_out_location = LocationIdentifier.new(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, 2)
-	var t2_res: EffectResult = enemy_t2_summon.execute("enemy_t2_holder_uuid", [], null, enemy_t2_ctx)
-	_assert_ok(not t2_res.summon_request.is_empty(), "EffectSummonT2OnDeath generates summon request for enemy")
-	var t2_summoned_def: GachaBallDefinition = Database.units[t2_res.summon_request["summon_unit_id"]]
-	_assert_ok(not t2_summoned_def.is_player_exclusive, "Enemy T2 on-death summon %s must not be player-exclusive" % t2_summoned_def.id)
-	_assert_ok(Database.get_entity_set(t2_summoned_def) == Database.SET_BASE, "Enemy T2 on-death summon %s must be SET_BASE" % t2_summoned_def.id)
 
 	# Check recipes referential integrity
 	for r_id in Database.recipes.keys():
@@ -1177,7 +1179,7 @@ func _run_suite_6_phase2_content() -> void:
 		var udef: GachaBallDefinition = Database.units[uid]
 		_assert_ok(TranslationServer.translate(udef.display_name_key) == canonical_mercenary_units[uid], "%s resolves to %s" % [uid, canonical_mercenary_units[uid]])
 
-	_assert_ok(TranslationServer.translate("trinket.polished_plate.desc").begins_with("Before battle,"), "Pre-Battle behavior is described without a heading")
+	_assert_ok(TranslationServer.translate("trinket.polished_plate.desc").begins_with("When you press Ready,"), "Pre-Battle behavior is described without a heading")
 	_assert_ok(TranslationServer.translate("item_t1_b.desc").contains("[color=#ffd166]Extra Attack[/color]"), "Extra Attack trigger uses approved highlight")
 	_assert_ok(TranslationServer.translate("item_t1_b.desc").contains("[color=#ffd166]Melee Attack[/color]"), "Melee Attack term uses approved highlight")
 	_assert_ok(TranslationServer.translate("item_t2_b.desc").contains("[color=#ffd166]Extra Action[/color]"), "Extra Action trigger uses approved highlight")
@@ -1185,7 +1187,7 @@ func _run_suite_6_phase2_content() -> void:
 	_assert_ok(TranslationServer.translate("item.claim_ticket.desc") == "When the holder is knocked out, earn 1 Gold.", "Gold Coin description has no ability heading")
 	_assert_ok(TranslationServer.translate("ability.hero_timekeeper_temporal_aura.desc").contains("+1 HP") and TranslationServer.translate("ability.hero_timekeeper_temporal_aura.desc").contains("+1 PWR"), "Deko aura description matches its +1/+1 values")
 	TranslationServer.set_locale("pt_BR")
-	_assert_ok(TranslationServer.translate("trinket.polished_plate.desc").begins_with("Antes da batalha,"), "PT-BR Pre-Battle behavior is described without a heading")
+	_assert_ok(TranslationServer.translate("trinket.polished_plate.desc").begins_with("Ao apertar Pronto,"), "PT-BR Pre-Battle behavior is described without a heading")
 	_assert_ok(TranslationServer.translate("item_t1_b.desc").contains("[color=#ffd166]Ataque Extra[/color]"), "PT-BR Extra Attack trigger uses approved highlight")
 	_assert_ok(TranslationServer.translate("item_t1_b.desc").contains("[color=#ffd166]Ataque Corpo a Corpo[/color]"), "PT-BR Melee Attack term uses approved highlight")
 	_assert_ok(TranslationServer.translate("item_t2_b.desc").contains("[color=#ffd166]Ação Extra[/color]"), "PT-BR Extra Action trigger uses approved highlight")
@@ -1198,7 +1200,7 @@ func _run_suite_6_phase2_content() -> void:
 	_assert_ok(shiken_def.ability_definitions[0].id == &"hero_shiken_gold_on_kill", "Shiken ability is hero_shiken_gold_on_kill")
 	_assert_ok(shiken_def.ability_definitions[0].trigger == &"on_knockout_blow", "Shiken ability triggers on_knockout_blow")
 	TranslationServer.set_locale("en")
-	_assert_ok(TranslationServer.translate(shiken_def.ability_definitions[0].description_key) == "When this hero defeats an enemy, earn 1 Gold.", "Shiken ability translation matches")
+	_assert_ok(TranslationServer.translate(shiken_def.ability_definitions[0].description_key) == "When this hero knocks out an enemy, it earns 1 Gold.", "Shiken ability translation matches")
 
 	# Golden Seal Definition & Scaling Check
 	var seal_def: GachaBallDefinition = Database.items[&"item_golden_seal"]
@@ -1244,8 +1246,9 @@ func _run_suite_6_phase2_content() -> void:
 	_assert_ok(res1.state_applied, "Golden Seal initial 25 gold scaling applied")
 	_assert_ok(test_unit.current_hp == 12, "Golden Seal holder HP scaled to 12 at 25 gold (was 10)")
 	_assert_ok(test_unit.current_pwr == 4, "Golden Seal holder PWR scaled to 4 at 25 gold (was 2)")
-	var status_key := StringName("golden_seal_scaling_" + test_seal.ball_uuid)
-	_assert_ok(test_unit.get_status_effect_amount(status_key) == 2, "Golden Seal status tracker is 2")
+	var seal_aura_key: StringName = AuraEvaluator.make_key(&"golden_seal", test_seal.ball_uuid)
+	_assert_ok(test_unit.get_aura_hp(seal_aura_key) == 2 and test_unit.get_aura_pwr(seal_aura_key) == 2, "Golden Seal active_auras contribution is +2/+2")
+	_assert_ok(test_unit.status_effects.is_empty(), "Golden Seal does not pollute status_effects with fake scaling keys")
 
 	# 2. Spend 10 gold -> gold drops to 15 -> bonus drops to +1 -> holder stats drop by 1
 	test_rs.gold = 15
@@ -1253,7 +1256,7 @@ func _run_suite_6_phase2_content() -> void:
 	_assert_ok(res2.state_applied, "Golden Seal spend gold scaling applied")
 	_assert_ok(test_unit.current_hp == 11, "Golden Seal holder HP decreased to 11 at 15 gold")
 	_assert_ok(test_unit.current_pwr == 3, "Golden Seal holder PWR decreased to 3 at 15 gold")
-	_assert_ok(test_unit.get_status_effect_amount(status_key) == 1, "Golden Seal status tracker decreased to 1")
+	_assert_ok(test_unit.get_aura_hp(seal_aura_key) == 1 and test_unit.get_aura_pwr(seal_aura_key) == 1, "Golden Seal active_auras decreased to +1/+1")
 
 	# 3. Unequip Golden Seal -> bonus removed cleanly
 	test_seal.equipped_on_uuid = ""
@@ -1261,7 +1264,7 @@ func _run_suite_6_phase2_content() -> void:
 	_assert_ok(res3.state_applied, "Golden Seal unequip scaling applied")
 	_assert_ok(test_unit.current_hp == 10, "Golden Seal holder HP restored to base 10 on unequip")
 	_assert_ok(test_unit.current_pwr == 2, "Golden Seal holder PWR restored to base 2 on unequip")
-	_assert_ok(test_unit.get_status_effect_amount(status_key) == 0, "Golden Seal status tracker cleared to 0")
+	_assert_ok(not test_unit.has_aura(seal_aura_key), "Golden Seal active_auras cleared cleanly on unequip")
 
 	GameManager.run_state = old_rs
 	test_bm.queue_free()
@@ -2332,3 +2335,533 @@ func _run_suite_8_alternating_initiative() -> void:
 	GameManager.run_state = old_rs_rec
 	recruit_bm.queue_free()
 	GameManager.unregister_battle_manager()
+	await get_tree().process_frame
+
+
+# ==============================================================================
+# SUITE 9 IMPLEMENTATION: Backlog Bugfix & Replay Hygiene Regressions
+# ==============================================================================
+func _run_suite_9_backlog_regressions() -> void:
+	# 1. BUG-VCR-02: InspectEntityAction & CancelDragAction must never serialize runtime view IDs
+	var inspect_act := InspectEntityAction.new(LocationIdentifier.new(&"PlayerLineup", 0), true)
+	var inspect_dict: Dictionary = inspect_act.to_dict()
+	_assert_ok(not inspect_dict.has("anchor_view_id"), "InspectEntityAction.to_dict omits ephemeral anchor_view_id")
+
+	var cancel_act := CancelDragAction.new(LocationIdentifier.new(&"PlayerLineup", 0), null, "test")
+	var cancel_dict: Dictionary = cancel_act.to_dict()
+	_assert_ok(not cancel_dict.has("source_view_id"), "CancelDragAction.to_dict omits ephemeral source_view_id")
+
+	# 2. BUG-VFX-01: AnimationCompletionTracker timeouts must exceed animation durations (incl. MELEE_RETURN)
+	var melee_return_duration: float = AnimationConstants.MELEE_RETURN_DURATION + (4.0 * AnimationConstants.DEFORM_DURATION)
+	_assert_ok(float(AnimationCompletionTracker.TIMEOUTS[AnimationCompletionTracker.AnimationType.MELEE_RETURN]) > melee_return_duration, "MELEE_RETURN timeout exceeds full return+deform duration")
+	var lethal_save_duration: float = AnimationConstants.LETHAL_SAVE_RISE_DURATION + AnimationConstants.LETHAL_SAVE_HOLD_DURATION + AnimationConstants.LETHAL_SAVE_LAND_DURATION
+	_assert_ok(float(AnimationCompletionTracker.TIMEOUTS[AnimationCompletionTracker.AnimationType.PREVENT_KNOCKOUT]) > lethal_save_duration, "PREVENT_KNOCKOUT timeout exceeds full save duration")
+
+	# 3. BUG-SIM-07: EffectEmpathicLink must not NPE when is_simulation == false
+	var empathic_bm := BattleManagerScript.new()
+	var empathic_unit := GachaBallInstance.new()
+	empathic_unit.initialize(Database.units[&"ETnkPla"])
+	empathic_bm._state.bm_add_instance(empathic_unit, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 4)
+	var empathic_effect := preload("res://scripts/EffectEmpathicLink.gd").new()
+	var empathic_ctx := TriggerContext.new()
+	empathic_ctx.is_simulation = false
+	empathic_ctx.source_pwr = 4
+	var empathic_res: EffectResult = empathic_effect.execute(empathic_unit.ball_uuid, [empathic_unit.ball_uuid], empathic_bm, empathic_ctx)
+	_assert_ok(is_instance_valid(empathic_res) and empathic_res.state_applied, "EffectEmpathicLink returns valid EffectResult when is_simulation == false")
+	empathic_bm.free()
+
+	# 4. BUG-SIM-03: Specialist discount lives in BattleState and resets on clear_turn_data()
+	var spec_state := BattleState.new()
+	spec_state.specialist_gacha_discount_used = true
+	var spec_copy: BattleState = spec_state.copy_for_simulation()
+	_assert_ok(spec_copy.specialist_gacha_discount_used, "BattleState.copy_for_simulation preserves specialist_gacha_discount_used")
+	spec_state.clear_turn_data()
+	_assert_ok(not spec_state.specialist_gacha_discount_used, "BattleState.clear_turn_data resets specialist_gacha_discount_used per turn")
+	TranslationServer.set_locale("en")
+	_assert_ok(TranslationServer.translate("trait.specialist.3").contains("each turn"), "trait.specialist.3 EN text states once per turn")
+
+	# 5. BUG-SIM-02: Fire L2 (+1 bonus Burn) requires target to already hold Burn
+	var fire_bm := BattleManagerScript.new()
+	var fire_trinket := GachaBallInstance.new()
+	fire_trinket.initialize_from_trinket(Database.trinkets[&"trinket_trait_fire"])
+	fire_bm._state.bm_add_instance(fire_trinket, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, 0)
+	var fire_attacker := GachaBallInstance.new()
+	fire_attacker.initialize(Database.units[&"EFFASupMec"]) # 2 Fire souls
+	fire_bm._state.bm_add_instance(fire_attacker, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 4)
+	var fire_ally1 := GachaBallInstance.new()
+	fire_ally1.initialize(Database.units[&"EFFASupMec"]) # +2 Fire souls
+	fire_bm._state.bm_add_instance(fire_ally1, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 3)
+	var fire_ally2 := GachaBallInstance.new()
+	fire_ally2.initialize(Database.units[&"EFFASupMec"]) # +2 Fire souls => 6 total (L2)
+	fire_bm._state.bm_add_instance(fire_ally2, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 2)
+	var target_clean := GachaBallInstance.new()
+	target_clean.initialize(Database.units[&"ETnkPla"])
+	fire_bm._state.bm_add_instance(target_clean, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, 0)
+	_assert_ok(fire_bm.get_active_traits("PLAYER").get("FIRE", 0) >= 6, "Fire test lineup reaches L2 (6+ Fire souls)")
+	_assert_ok(fire_bm.get_bonus_burn_stacks_for_attack(fire_attacker, target_clean) == 1, "Fire L2 (6 souls) grants only 1 Burn when target has 0 Burn")
+	target_clean.add_status_effect_silent(&"burn", 1)
+	_assert_ok(fire_bm.get_bonus_burn_stacks_for_attack(fire_attacker, target_clean) == 2, "Fire L2 (6 souls) grants 2 Burn when target already holds Burn")
+	fire_bm.free()
+
+	# 6. BUG-SIM-01: Tank L4 (5 Tanks) Armor -> Spikes emits inline STATUS_EFFECT event
+	var tank_bm := BattleManagerScript.new()
+	var tank_trinket := GachaBallInstance.new()
+	tank_trinket.initialize_from_trinket(Database.trinkets[&"trinket_trait_tank"])
+	tank_bm._state.bm_add_instance(tank_trinket, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, 0)
+	var front_tank: GachaBallInstance = null
+	for slot_idx in range(5):
+		var t_unit := GachaBallInstance.new()
+		t_unit.initialize(Database.units[&"ETnkPla"])
+		tank_bm._state.bm_add_instance(t_unit, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, slot_idx)
+		if slot_idx == 4:
+			front_tank = t_unit
+	tank_bm.collect_inline_events() # Clear setup events
+	tank_bm.apply_stat_delta(front_tank, "armor_stacks", 2)
+	var tank_inline: Array[CombatEvent] = tank_bm.collect_inline_events()
+	var found_tank_spikes_evt: bool = false
+	for evt: CombatEvent in tank_inline:
+		if evt.type == CombatEvent.Type.STATUS_EFFECT and evt.visual_payload != null and evt.visual_payload.stat == "spikes_stacks" and evt.visual_payload.amount == 2:
+			found_tank_spikes_evt = true
+			break
+	_assert_ok(front_tank.get_status_effect_amount(&"spikes") == 2 and found_tank_spikes_evt, "Tank L4 Armor->Spikes emits STATUS_EFFECT CombatEvent")
+	tank_bm.free()
+
+	# 7. BUG-SIM-09: Out-of-battle consumable executes EffectDefinition.execute()
+	var prev_rs: RunState = GameManager.run_state
+	var prev_in_battle: bool = GameManager.is_in_battle
+	var cons_rs := RunState.new()
+	GameManager.run_state = cons_rs
+	GameManager.is_in_battle = false
+	var hero_target := GachaBallInstance.new()
+	hero_target.initialize(Database.units[&"ETnkPla"])
+	cons_rs.add_instance(hero_target, &"RunInventoryT1", 0)
+	var heroism_potion := GachaBallInstance.new()
+	heroism_potion.initialize(Database.items[&"item_potion_heroism"])
+	cons_rs.add_instance(heroism_potion, &"RunInventoryT2", 0)
+	var old_hp_cons: int = hero_target.current_hp
+	var old_pwr_cons: int = hero_target.current_pwr
+	InventoryManager._use_consumable_outside_battle(heroism_potion, hero_target)
+	_assert_ok(hero_target.current_hp == old_hp_cons + 3 and hero_target.current_pwr == old_pwr_cons + 3 and hero_target.get_status_effect_amount(&"armor") == 3, "Out-of-battle Battery consumable applies +3 HP, +3 PWR, and 3 Armor via EffectDefinition.execute()")
+	_assert_ok(cons_rs.get_instance_by_uuid(heroism_potion.ball_uuid) == null, "Consumed Battery potion is removed from RunState")
+	GameManager.run_state = prev_rs
+	GameManager.is_in_battle = prev_in_battle
+
+
+# ==============================================================================
+# SUITE 10 IMPLEMENTATION: VCR Snapshot Isolation & Puppet-Parity
+# ==============================================================================
+func _run_suite_10_vcr_snapshot_parity() -> void:
+	var prev_rs: RunState = GameManager.run_state
+	var prev_in_battle: bool = GameManager.is_in_battle
+
+	# 1. Mid-playback inspection isolation (WindowManager must read VisualSnapshotStore, not live BattleManager)
+	GameManager.is_in_battle = false
+	GameManager.start_run_with_seed(&"hero_bounty_hunter", &"deck_nihongo_starter")
+	var bm := BattleManagerScript.new()
+	add_child(bm)
+	bm.add_to_group("battle_manager")
+	GameManager.register_battle_manager(bm)
+	GameManager.is_in_battle = true
+
+	RNGManager.initialize(10101)
+	var enc := EncounterGenerator.generate_encounter(1)
+	bm._setup_battle(enc)
+	await bm.execute_hero_entrance_sequence()
+	await bm.execute_enemy_entrance_sequence()
+
+	var player_units: Array[GachaBallInstance] = bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
+	_assert_ok(not player_units.is_empty(), "Suite 10 has player lineup unit")
+	var hero_u: GachaBallInstance = player_units[0]
+	var orig_hp: int = hero_u.current_hp
+	var orig_pwr: int = hero_u.current_pwr
+	var hero_loc: LocationIdentifier = hero_u.get_location()
+
+	var start_snap: Dictionary = VisualDataAdapter.create_board_snapshot(bm.get_all_instances())
+	BattleAnimator._snapshot_store.begin_playback(start_snap)
+	BattleAnimator._is_playing_sequence = true
+
+	# Mutate live BattleManager instance to simulate future post-turn state
+	hero_u.current_hp = 1
+	hero_u.current_pwr = 999
+	hero_u.add_status_effect_silent(&"burn", 7)
+
+	# Derive inspection payload mid-playback: must reflect frozen snapshot, NOT live mutations
+	var mid_payload: Dictionary = WindowManager._derive_window_payload(hero_loc, null)
+	var mid_ctx: Dictionary = mid_payload.get("context", {})
+	var mid_inst: GachaBallInstance = mid_ctx.get("instance") as GachaBallInstance
+	_assert_ok(mid_ctx.get("is_vcr_snapshot", false) == true, "Mid-playback inspection payload sets is_vcr_snapshot = true")
+	_assert_ok(is_instance_valid(mid_inst), "Mid-playback inspection payload returns materialized snapshot instance")
+	if is_instance_valid(mid_inst):
+		_assert_ok(mid_inst.current_hp == orig_hp, "Mid-playback inspection HP matches frozen snapshot (%d == %d), not live mutated 1" % [mid_inst.current_hp, orig_hp])
+		_assert_ok(mid_inst.current_pwr == orig_pwr, "Mid-playback inspection PWR matches frozen snapshot (%d == %d), not live mutated 999" % [mid_inst.current_pwr, orig_pwr])
+		_assert_ok(mid_inst.get_status_effect_amount(&"burn") == 0, "Mid-playback inspection Burn matches frozen snapshot (0), not live mutated 7")
+
+	# Step snapshot forward by one DAMAGE event and re-check inspection
+	var dmg_payload := CombatPayload.new()
+	dmg_payload.targets_new_hp.append(maxi(1, orig_hp - 3))
+	dmg_payload.apply_burn = true
+	dmg_payload.targets_new_burn.append(2)
+	var dmg_evt := CombatEvent.new(CombatEvent.Type.DAMAGE, {
+		"source_uuid": "enemy_test",
+		"target_uuids": [hero_u.ball_uuid],
+		"visual_payload": dmg_payload
+	})
+	BattleAnimator.get_visual_snapshot_store().apply_event(dmg_evt)
+
+	var stepped_payload: Dictionary = WindowManager._derive_window_payload(hero_loc, null)
+	var stepped_ctx: Dictionary = stepped_payload.get("context", {})
+	var stepped_inst: GachaBallInstance = stepped_ctx.get("instance") as GachaBallInstance
+	_assert_ok(is_instance_valid(stepped_inst) and stepped_inst.current_hp == maxi(1, orig_hp - 3), "Stepped snapshot HP advances strictly on CombatEvent")
+	_assert_ok(is_instance_valid(stepped_inst) and stepped_inst.get_status_effect_amount(&"burn") == 2, "Stepped snapshot Burn advances strictly on CombatEvent")
+
+	# End playback: inspection must return live BattleManager state again
+	BattleAnimator._snapshot_store.end_playback()
+	BattleAnimator._is_playing_sequence = false
+	var live_payload: Dictionary = WindowManager._derive_window_payload(hero_loc, null)
+	var live_ctx: Dictionary = live_payload.get("context", {})
+	var live_inst: GachaBallInstance = live_ctx.get("instance") as GachaBallInstance
+	_assert_ok(not live_ctx.get("is_vcr_snapshot", false), "Post-playback inspection clears is_vcr_snapshot")
+	_assert_ok(live_inst == hero_u and live_inst.current_pwr == 999, "Post-playback inspection reads live BattleManager instance")
+
+	# Restore clean unit state before puppet-parity combat turn test
+	hero_u.current_hp = orig_hp
+	hero_u.current_pwr = orig_pwr
+	hero_u.clear_status_effect_silent(&"burn")
+
+	# 2. VCR Puppet-Parity Test: simulate full turn and verify VisualSnapshotStore matches live BattleState
+	var pre_turn_snap: Dictionary = VisualDataAdapter.create_board_snapshot(bm.get_all_instances())
+	var parity_store := VisualSnapshotStore.new()
+	parity_store.begin_playback(pre_turn_snap)
+
+	bm._state.clear_turn_data()
+	bm._populate_actor_queue()
+	var turn_events: Array[CombatEvent] = []
+	var death_tracking: Dictionary = {}
+	var safety: int = 0
+	while not bm._actor_queue.is_empty() and safety < 30:
+		safety += 1
+		var actor: GachaBallInstance = bm._actor_queue.pop_front()
+		if not is_instance_valid(actor) or actor.current_hp <= 0:
+			continue
+		if actor.location_container_tag != C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP and actor.location_container_tag != C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP:
+			continue
+		var basic_ab: AbilityDefinition = bm.get_basic_attack_for(actor)
+		if is_instance_valid(basic_ab) and not basic_ab.effects.is_empty():
+			var targets: Array[String] = bm.resolve_target(actor.ball_uuid, basic_ab.effects[0].target_type, TriggerContext.new())
+			var req := EffectRequest.new(actor.ball_uuid, basic_ab.id, basic_ab.effects[0], targets, TriggerContext.new(), C.SubPhase.STANDARD)
+			bm.enqueue_effect_request(req)
+			turn_events.append_array(bm._combat.process_reaction_queue(bm, death_tracking))
+			KnockoutProcessor.check_for_knockouts_with_counter_delay(true, turn_events, death_tracking, bm)
+			KnockoutProcessor.process_completed_counter_knockouts(turn_events, death_tracking, bm)
+	bm._finalize_deaths()
+
+	for evt: CombatEvent in turn_events:
+		parity_store.apply_event(evt)
+
+	# Assert puppet-parity on every surviving lineup unit
+	var alive_units: Array[GachaBallInstance] = []
+	alive_units.append_array(bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP))
+	alive_units.append_array(bm.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
+	for live_u: GachaBallInstance in alive_units:
+		if not is_instance_valid(live_u):
+			continue
+		var snap_u: Dictionary = parity_store.get_snapshot_by_uuid(live_u.ball_uuid)
+		_assert_ok(not snap_u.is_empty(), "Puppet-parity: surviving unit %s present in VisualSnapshotStore" % live_u.ball_uuid)
+		if not snap_u.is_empty():
+			_assert_ok(int(snap_u.get("hp", -1)) == live_u.current_hp, "Puppet-parity HP mismatch for %s: snap=%s live=%d" % [live_u.ball_uuid, str(snap_u.get("hp")), live_u.current_hp])
+			_assert_ok(int(snap_u.get("pwr", -1)) == live_u.current_pwr, "Puppet-parity PWR mismatch for %s: snap=%s live=%d" % [live_u.ball_uuid, str(snap_u.get("pwr")), live_u.current_pwr])
+			var snap_statuses: Dictionary = snap_u.get("status_effects", {})
+			for status_key: StringName in [&"burn", &"armor", &"spikes", &"static"]:
+				var live_amt: int = live_u.get_status_effect_amount(status_key)
+				var snap_amt: int = int(snap_statuses.get(status_key, 0))
+				_assert_ok(snap_amt == live_amt, "Puppet-parity status %s mismatch for %s: snap=%d live=%d" % [String(status_key), live_u.ball_uuid, snap_amt, live_amt])
+
+	parity_store.end_playback()
+	bm.queue_free()
+	GameManager.unregister_battle_manager()
+	GameManager.run_state = prev_rs
+	GameManager.is_in_battle = prev_in_battle
+	await get_tree().process_frame
+
+	# 3. BUG-UI-02: Deterministic frame-based close suppression & node-bound post-drop timer
+	GlobalInteractionRouter.clear_close_suppression()
+	_assert_ok(not GlobalInteractionRouter.is_close_suppressed_now(), "Close suppression initially inactive")
+	GlobalInteractionRouter.activate_close_suppression_for_window_id(12345, 2)
+	_assert_ok(GlobalInteractionRouter.is_close_suppressed_for_window_id(12345), "Window-tied close suppression active on arm frame")
+	_assert_ok(not GlobalInteractionRouter.is_close_suppressed_for_window_id(99999), "Window-tied close suppression does not match other window IDs")
+	await get_tree().process_frame
+	_assert_ok(GlobalInteractionRouter.is_close_suppressed_for_window_id(12345), "Close suppression remains active on frame +1")
+	await get_tree().process_frame
+	_assert_ok(GlobalInteractionRouter.is_close_suppressed_for_window_id(12345), "Close suppression remains active on frame +2")
+	await get_tree().process_frame
+	_assert_ok(not GlobalInteractionRouter.is_close_suppressed_now(), "Close suppression expires deterministically after grace frames (frame +3)")
+	var peek: InspectionPeekController = GlobalInteractionRouter.get_peek_controller()
+	_assert_ok(is_instance_valid(peek), "InspectionPeekController available on GlobalInteractionRouter")
+	if is_instance_valid(peek):
+		peek.suppress_post_drop(0.35)
+		_assert_ok(peek.is_post_drop_suppressed(), "InspectionPeekController post-drop suppression uses active node-bound Timer")
+		peek._post_drop_timer.stop()
+		_assert_ok(not peek.is_post_drop_suppressed(), "InspectionPeekController post-drop suppression clears when Timer stops")
+
+	# 4. LocationViewRegistry O(1) lookup & priority & lifecycle cleanup
+	var reg_loc := LocationIdentifier.new(&"PlayerLineup", 3)
+	var test_slot: SlotView = preload("res://scenes/SlotView.tscn").instantiate() as SlotView
+	var test_gb: GachaBallView = preload("res://scenes/GachaBallView.tscn").instantiate() as GachaBallView
+	add_child(test_slot)
+	test_slot.add_child(test_gb)
+	test_slot.populate(reg_loc)
+	test_gb.populate(reg_loc, {}, false)
+	_assert_ok(WindowManager.find_view_for_location(reg_loc) == test_slot, "LocationViewRegistry returns SlotView in O(1) with parent-first priority")
+	test_slot.queue_free()
+	await get_tree().process_frame
+	_assert_ok(WindowManager.find_view_for_location(reg_loc) == null, "LocationViewRegistry auto-unregisters freed views on _exit_tree")
+
+	# 5. AuraEvaluator: Templar, Rusty Ring, Insignia level-up expiry, Twin Charm pair drop & cleanup
+	var tok_bm := BattleManagerScript.new()
+	add_child(tok_bm)
+	tok_bm.add_to_group("battle_manager")
+	GameManager.register_battle_manager(tok_bm)
+	GameManager.is_in_battle = true
+	var tok_unit := GachaBallInstance.new()
+	tok_unit.initialize(Database.units[&"ETnkPla"])
+	var base_tok_hp: int = tok_unit.current_hp
+	var base_tok_pwr: int = tok_unit.current_pwr
+	tok_bm._state.bm_add_instance(tok_unit, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 4)
+	tok_bm._gacha_tokens = 4
+	var tok_eff := EffectUpdatePwrToTokens.new()
+	tok_eff.parameters = {"multiplier": 1.0}
+	var tok_res: EffectResult = tok_eff.execute(tok_unit.ball_uuid, [tok_unit.ball_uuid], tok_bm, TriggerContext.new())
+	_assert_ok(tok_res.state_applied and tok_unit.current_pwr == base_tok_pwr + 4, "EffectUpdatePwrToTokens applies +4 PWR for 4 tokens")
+	_assert_ok(not tok_unit.has_meta("token_pwr_bonus"), "EffectUpdatePwrToTokens does not store gameplay state in set_meta")
+	_assert_ok(tok_unit.status_effects.is_empty(), "EffectUpdatePwrToTokens does not pollute status_effects")
+	_assert_ok(tok_unit.get_aura_pwr(&"templar_tokens") == 4, "EffectUpdatePwrToTokens tracks bonus in authoritative active_auras")
+	var tok_copy: GachaBallInstance = tok_unit.copy_for_simulation()
+	_assert_ok(tok_copy.get_aura_pwr(&"templar_tokens") == 4, "copy_for_simulation preserves active_auras cleanly")
+	tok_bm._gacha_tokens = 1
+	var tok_res2: EffectResult = tok_eff.execute(tok_unit.ball_uuid, [tok_unit.ball_uuid], tok_bm, TriggerContext.new())
+	_assert_ok(tok_res2.state_applied and tok_unit.current_pwr == base_tok_pwr + 1 and tok_unit.get_aura_pwr(&"templar_tokens") == 1, "EffectUpdatePwrToTokens accurately computes negative delta when tokens drop")
+
+	# 5b. Rusty Ring + Apprentice Insignia + Twin Charm level-up merge via AuraEvaluator (zero MergeManager hardcoding)
+	var aura_u1 := GachaBallInstance.new()
+	aura_u1.initialize(Database.units[&"ETnkPla"])
+	var aura_u2 := GachaBallInstance.new()
+	aura_u2.initialize(Database.units[&"ETnkPla"])
+	tok_bm._state.bm_add_instance(aura_u1, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+	tok_bm._state.bm_add_instance(aura_u2, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 1)
+	var rr_trinket := GachaBallInstance.new()
+	rr_trinket.initialize_from_trinket(Database.trinkets[&"trinket_rusty_ring"])
+	tok_bm._state.bm_add_instance(rr_trinket, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, 0)
+	var ins_trinket := GachaBallInstance.new()
+	ins_trinket.initialize_from_trinket(Database.trinkets[&"trinket_royal_insignia"])
+	tok_bm._state.bm_add_instance(ins_trinket, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, 1)
+	var tc_trinket := GachaBallInstance.new()
+	tc_trinket.initialize_from_trinket(Database.trinkets[&"trinket_twin_charm"])
+	tok_bm._state.bm_add_instance(tc_trinket, C.BATTLE_CONTAINER_TAGS.PLAYER_TRINKETS, 2)
+
+	var rr_eff := preload("res://scripts/effects/EffectRustyRingBuff.gd").new()
+	var ins_eff := preload("res://scripts/EffectBuffDrawnUnit.gd").new()
+	var tc_eff := preload("res://scripts/effects/EffectTwinCharmScaling.gd").new()
+	var aura_ctx := TriggerContext.new()
+	aura_ctx.is_simulation = true
+	aura_ctx.team = "PLAYER"
+	rr_eff.execute(rr_trinket.ball_uuid, [], tok_bm, aura_ctx)
+	ins_eff.execute(ins_trinket.ball_uuid, [aura_u1.ball_uuid, aura_u2.ball_uuid], tok_bm, aura_ctx)
+	tc_eff.execute(tc_trinket.ball_uuid, [], tok_bm, aura_ctx)
+	# Note: tok_unit + aura_u1 + aura_u2 = 3 ETnkPla copies -> Twin Charm grants +1 PWR
+	_assert_ok(aura_u1.current_hp == base_tok_hp + 2 and aura_u1.current_pwr == base_tok_pwr + 3, "Rusty Ring (+1/+1) + Apprentice Insignia (+1/+1) + Twin Charm (+1 PWR) all reconcile cleanly")
+	_assert_ok(aura_u1.status_effects.is_empty() and aura_u1.dynamic_tags.is_empty(), "No fake status_effects or dynamic_tags created for continuous auras")
+
+	# Level-up merge aura_u1 + aura_u2 -> L2 unit (base + 1 level bonus + 1 Rusty Ring + 1 pending-expire Insignia + 1 Twin Charm (3->2 still 1 pair))
+	var merge_res: Dictionary = MergeManager.calculate_merge_result(aura_u1, aura_u2, aura_u1.get_location(), aura_u2.get_location(), tok_bm.get_all_instances())
+	var merged_u: GachaBallInstance = merge_res.get("merged_instance") as GachaBallInstance
+	_assert_ok(is_instance_valid(merged_u) and merged_u.level == 2, "Aura merge produced L2 unit")
+	_assert_ok(not merged_u.has_meta(&"pending_expired_insignia"), "Level-up merge uses active_auras pending_expire, zero set_meta")
+	# Pre-drain stats: base_hp + 1 (L2) + 1 (RR) + 1 (expiring L1 Insignia) = base + 3; base_pwr + 1 (L2) + 1 (RR) + 1 (expiring Insignia) + 1 (Twin Charm) = base + 4
+	_assert_ok(merged_u.current_hp == base_tok_hp + 3 and merged_u.current_pwr == base_tok_pwr + 4, "Level-up merge carries continuous auras without double-dipping (got %d/%d, expected %d/%d)" % [merged_u.current_hp, merged_u.current_pwr, base_tok_hp + 3, base_tok_pwr + 4])
+	var expire_evts: Array[CombatEvent] = []
+	AuraEvaluator.drain_expired_auras(merged_u, expire_evts, true)
+	var found_expire_debuff: bool = false
+	for ev: CombatEvent in expire_evts:
+		if ev.type == CombatEvent.Type.DEBUFF and ev.target_uuids.has(merged_u.ball_uuid):
+			found_expire_debuff = true
+			break
+	_assert_ok(found_expire_debuff and merged_u.current_hp == base_tok_hp + 2 and merged_u.current_pwr == base_tok_pwr + 3, "drain_expired_auras emits explicit DEBUFF and strips only expired L1 Insignia")
+	# Removing Twin Charm trinket clears its aura generically from all units
+	AuraEvaluator.clear_auras_for_source(tc_trinket.ball_uuid, tok_bm.get_all_instances(), true)
+	_assert_ok(aura_u1.get_aura_pwr(AuraEvaluator.make_key(&"twin_charm", "PLAYER")) == 0, "clear_auras_for_source strips Twin Charm aura cleanly")
+
+	tok_bm.queue_free()
+	GameManager.unregister_battle_manager()
+	GameManager.is_in_battle = prev_in_battle
+	await get_tree().process_frame
+
+	# 6. ArcTossAnimator math invariants
+	var p0 := Vector2(100.0, 400.0)
+	var p2 := Vector2(500.0, 400.0)
+	var p1 := Vector2(300.0, 200.0)
+	_assert_ok(ArcTossAnimator.evaluate_bezier(p0, p1, p2, 0.0).is_equal_approx(p0), "ArcTossAnimator bezier t=0 equals start")
+	_assert_ok(ArcTossAnimator.evaluate_bezier(p0, p1, p2, 1.0).is_equal_approx(p2), "ArcTossAnimator bezier t=1 equals end")
+	_assert_ok(ArcTossAnimator.evaluate_parabola(p0, p2, 200.0, 0.5).is_equal_approx(Vector2(300.0, 200.0)), "ArcTossAnimator parabola apex matches expected height")
+
+	# 7. TraitRulesEngine: Constants-derived thresholds & centralized combat rules
+	_assert_ok(TraitRulesEngine.get_tier("FIRE", 2) == 0 and TraitRulesEngine.get_tier("FIRE", 3) == 1, "TraitRulesEngine FIRE tier 1 threshold derives from Constants (3)")
+	_assert_ok(TraitRulesEngine.get_tier("FIRE", 19) == 3 and TraitRulesEngine.get_tier("FIRE", 20) == 4, "TraitRulesEngine FIRE tier 4 threshold derives from Constants (20, not stale 9)")
+	_assert_ok(TraitRulesEngine.get_tier("FIRE", 32) == 5, "TraitRulesEngine FIRE tier 5 threshold derives from Constants (32)")
+	_assert_ok(TraitRulesEngine.get_tier_min("TANK", 3) == 4 and TraitRulesEngine.get_tier_min("MECHA", 4) == 5, "TraitRulesEngine class/species tier mins match Constants (2/3/4/5)")
+	_assert_ok(TraitRulesEngine.has_tier({"APPLIANCE": 4}, "APPLIANCE", 3) and not TraitRulesEngine.has_tier({"APPLIANCE": 3}, "APPLIANCE", 3), "TraitRulesEngine has_tier enforces exact Appliance L3 threshold (4)")
+
+	var tre_bm := BattleManagerScript.new()
+	add_child(tre_bm)
+	tre_bm.add_to_group("battle_manager")
+	GameManager.register_battle_manager(tre_bm)
+	GameManager.is_in_battle = true
+	var fire_src := GachaBallInstance.new()
+	fire_src.initialize(Database.units[&"FFigMec"])
+	var burn_tgt := GachaBallInstance.new()
+	burn_tgt.initialize(Database.units[&"ETnkPla"])
+	burn_tgt.add_status_effect_silent(&"burn", 5)
+	tre_bm._state.bm_add_instance(fire_src, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 0)
+	tre_bm._state.bm_add_instance(burn_tgt, C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP, 0)
+	tre_bm._current_battle_phase = BattleManagerScript.Phases.COMBAT
+	# Below Fire L4 (19) -> 0 bonus damage; at Fire L4 (20) -> 5 bonus damage
+	tre_bm._locked_ready_traits["PLAYER"] = {"FIRE": 19}
+	_assert_ok(TraitRulesEngine.get_fire_burn_bonus_damage(fire_src, burn_tgt, tre_bm) == 0, "TraitRulesEngine Fire L4 bonus damage is 0 at FIRE=19")
+	tre_bm._locked_ready_traits["PLAYER"] = {"FIRE": 20}
+	_assert_ok(TraitRulesEngine.get_fire_burn_bonus_damage(fire_src, burn_tgt, tre_bm) == 5, "TraitRulesEngine Fire L4 bonus damage equals target Burn stacks (5) at FIRE=20")
+	# Mecha L2 static bonus (+1) + Mecha L1 (0) check
+	tre_bm._locked_ready_traits["PLAYER"] = {"MECHA": 3}
+	_assert_ok(TraitRulesEngine.get_bonus_static_stacks_for_attack(fire_src, tre_bm) == 1, "TraitRulesEngine Mecha L2 grants +1 Static on attack")
+	tre_bm._locked_ready_traits["PLAYER"] = {"MECHA": 2}
+	_assert_ok(TraitRulesEngine.get_bonus_static_stacks_for_attack(fire_src, tre_bm) == 0, "TraitRulesEngine Mecha L1 does not grant Static")
+	# Appliance L1/L2/L4 Burn/Static intercept & conversion
+	var app_unit := GachaBallInstance.new()
+	app_unit.initialize(Database.units[&"EFWATnkApp"])
+	tre_bm._state.bm_add_instance(app_unit, C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP, 1)
+	tre_bm._locked_ready_traits["PLAYER"] = {"APPLIANCE": 2}
+	_assert_ok(not TraitRulesEngine.try_intercept_appliance_status(app_unit, "burn", 2, "", true, tre_bm), "TraitRulesEngine does not intercept Burn below Appliance L2")
+	_assert_ok(TraitRulesEngine.try_intercept_appliance_status(app_unit, "static", 2, "", true, tre_bm), "TraitRulesEngine intercepts Static at Appliance L1")
+	tre_bm._locked_ready_traits["PLAYER"] = {"APPLIANCE": 5}
+	var pre_hp: int = app_unit.current_hp
+	_assert_ok(TraitRulesEngine.try_intercept_appliance_status(app_unit, "burn", 2, "", true, tre_bm), "TraitRulesEngine intercepts Burn at Appliance L4")
+	_assert_ok(app_unit.current_hp == pre_hp + 2, "TraitRulesEngine Appliance L4 converts 2 Burn into +2 HP")
+
+	# 8. BoardStatDiffBuilder & StatusTickProcessor invariants
+	var diff_pre: Dictionary = BoardStatDiffBuilder.capture_all_unit_stats(tre_bm._battle_instances)
+	app_unit.current_hp += 2
+	app_unit.current_pwr += 1
+	var diff_out: Dictionary = BoardStatDiffBuilder.generate_inventory_stat_events(diff_pre, tre_bm)
+	var diff_events: Array[CombatEvent] = diff_out.get("events", [])
+	_assert_ok(diff_events.size() == 1 and diff_events[0].type == CombatEvent.Type.BUFF, "BoardStatDiffBuilder emits unified BUFF event when both HP and PWR increase")
+	_assert_ok((diff_out.get("pre_stats", {}) as Dictionary).has(app_unit.ball_uuid), "BoardStatDiffBuilder records pre_stats override for mutated unit")
+
+	var burn_def: CombatEffectDefinition = CombatEffectRegistry.get_definition(&"burn")
+	var pre_burn_hp: int = burn_tgt.current_hp
+	var tick_events: Array[CombatEvent] = []
+	StatusTickProcessor.process_status_turn_effect(burn_def, [burn_tgt], tick_events, {}, tre_bm)
+	_assert_ok(burn_tgt.current_hp == pre_burn_hp - 5, "StatusTickProcessor applies 5 Burn damage")
+	_assert_ok(burn_tgt.get_status_effect_amount(&"burn") == 2, "StatusTickProcessor halves 5 Burn stacks to 2 on decay")
+	_assert_ok(tick_events.any(func(e: CombatEvent) -> bool: return e.type == CombatEvent.Type.DAMAGE) and tick_events.any(func(e: CombatEvent) -> bool: return e.type == CombatEvent.Type.STATUS_EFFECT), "StatusTickProcessor emits DAMAGE and STATUS_EFFECT decay events")
+
+	# 9. TooltipPositioner & DrawerAnimator UI controller invariants
+	var vp_rect := Rect2(Vector2.ZERO, Vector2(1920, 1080))
+	var clamped_tl: Vector2 = TooltipPositioner.clamp_window_to_viewport(Vector2(-50, -50), Vector2(360, 200), vp_rect)
+	var clamped_br: Vector2 = TooltipPositioner.clamp_window_to_viewport(Vector2(2000, 1200), Vector2(360, 200), vp_rect)
+	_assert_ok(clamped_tl.is_equal_approx(Vector2(20, 20)), "TooltipPositioner clamps top-left inside viewport margin")
+	_assert_ok(clamped_br.is_equal_approx(Vector2(1540, 860)), "TooltipPositioner clamps bottom-right inside viewport margin")
+	var drawer_anim := DrawerAnimator.new()
+	var dummy_ctrl := Control.new()
+	add_child(dummy_ctrl)
+	_assert_ok(not drawer_anim.is_opening(dummy_ctrl) and not drawer_anim.is_closing(dummy_ctrl), "DrawerAnimator starts idle without Control metadata")
+	drawer_anim.animate_discard_pile_open(dummy_ctrl)
+	_assert_ok(drawer_anim.is_opening(dummy_ctrl) and not dummy_ctrl.has_meta(&"wm_opening"), "DrawerAnimator tracks opening state in typed dictionary, zero set_meta")
+	drawer_anim.clear_window_state(dummy_ctrl.get_instance_id())
+	_assert_ok(not drawer_anim.is_opening(dummy_ctrl), "DrawerAnimator clear_window_state clears active transition & tween cleanly")
+	dummy_ctrl.queue_free()
+
+	# 10. GachaBallHoverOutlineController outline priority invariants
+	var spec_focus: Dictionary = GachaBallHoverOutlineController.resolve_outline_spec(true, &"LEVEL_UP", true, true, 3, true)
+	_assert_ok(not bool(spec_focus["enabled"]), "Focus outline takes precedence over shader outlines")
+	var spec_merge: Dictionary = GachaBallHoverOutlineController.resolve_outline_spec(false, &"LEVEL_UP", true, true, 3, true)
+	_assert_ok(bool(spec_merge["enabled"]) and spec_merge["color"] == GachaBallHoverOutlineController.MERGE_LEVEL_UP_OUTLINE_COLOR, "Merge level-up outline takes precedence over locked recipe and trait outlines")
+	var spec_recipe: Dictionary = GachaBallHoverOutlineController.resolve_outline_spec(false, &"", true, true, 2, false)
+	_assert_ok(bool(spec_recipe["enabled"]) and spec_recipe["color"] == GachaBallHoverOutlineController.RECIPE_LOCKED_OUTLINE_COLOR, "Locked recipe outline applies in reward/shop context")
+	var spec_trait: Dictionary = GachaBallHoverOutlineController.resolve_outline_spec(false, &"", false, false, 3, true)
+	_assert_ok(bool(spec_trait["enabled"]) and spec_trait["color"] == GachaBallHoverOutlineController.TRAIT_OUTLINE_COLORS[2], "In-battle trait level 3 resolves Gold outline")
+
+	# 11. Main UI Presenters (HudTopBarPresenter & EncounterDropZoneBar) invariants
+	var drop_bar := EncounterDropZoneBar.new()
+	drop_bar.set_action_zone_texts("Left", "Right", true)
+	_assert_ok(drop_bar._action_zone_category_filter == EncounterDropZoneBar.ActionZoneCategoryFilter.UNITS_ONLY, "EncounterDropZoneBar stores explicit UNITS_ONLY filter enum")
+	_assert_ok(not drop_bar.is_point_inside_active_drop_zone(Vector2(500, 950)), "EncounterDropZoneBar reports false when no zones are visible")
+	_assert_ok(HudTopBarPresenter._format_bonus_timer(3.0) == "+3s" and HudTopBarPresenter._format_bonus_timer(1.5) == "+1.5s", "HudTopBarPresenter formats integer and fractional bonus timers cleanly")
+
+	# 12. BattlePuppetRegistry & BattleBoardEventPresenter invariants
+	var pos_dict: Dictionary = BattlePuppetRegistry.rect_to_pos_dict(Rect2(Vector2(100.0, 200.0), Vector2(80.0, 40.0)))
+	_assert_ok((pos_dict["center"] as Vector2).is_equal_approx(Vector2(140.0, 220.0)), "BattlePuppetRegistry.rect_to_pos_dict computes exact center coordinates")
+	var dyn_ctrl := Control.new()
+	dyn_ctrl.position = Vector2(50.0, 60.0)
+	dyn_ctrl.size = Vector2(100.0, 100.0)
+	add_child(dyn_ctrl)
+	BattleAnimator.register_dynamic_position("test_puppet_uuid", dyn_ctrl)
+	var live_pos: Dictionary = BattleAnimator.get_live_position("test_puppet_uuid")
+	_assert_ok(not live_pos.is_empty() and (live_pos["size"] as Vector2).is_equal_approx(Vector2(100.0, 100.0)), "BattleAnimator delegates dynamic position registration and live rect lookup to BattlePuppetRegistry")
+	BattleAnimator._visual_registry.erase("test_puppet_uuid")
+	BattleAnimator._position_snapshot.erase("test_puppet_uuid")
+	dyn_ctrl.queue_free()
+
+	# 13. BattleTurnPreviewOverlay & BattleDrawAnimator invariants
+	var preview_overlay := BattleTurnPreviewOverlay.new()
+	_assert_ok(not preview_overlay.is_preview_active() and not preview_overlay.order_button_held, "BattleTurnPreviewOverlay initializes cleanly with preview and order-hold inactive")
+	var explicit_snap: Dictionary = {"uuid": "snap_1", "hp": 7}
+	var resolved_draw_data: Dictionary = BattleDrawAnimator.resolve_draw_visual_data(tre_bm, "snap_1", explicit_snap)
+	_assert_ok(resolved_draw_data == explicit_snap, "BattleDrawAnimator.resolve_draw_visual_data prioritizes explicit turn snapshot over live state")
+
+	# 14. EncounterBase shared reward/shop helpers
+	var enc_base := EncounterBase.new()
+	var drop_click: Dictionary = enc_base._resolve_drop_interaction(false, Vector2.ZERO)
+	_assert_ok(drop_click["interaction_type"] == "CLICK" and (drop_click["drop_pos"] as Vector2).is_zero_approx(), "EncounterBase resolves CLICK drop interaction cleanly")
+	var drop_drag: Dictionary = enc_base._resolve_drop_interaction(true, Vector2(320.0, 240.0))
+	_assert_ok(drop_drag["interaction_type"] == "DRAG" and (drop_drag["drop_pos"] as Vector2).is_equal_approx(Vector2(320.0, 240.0)), "EncounterBase captures DRAG drop position")
+	var consumed_pos: Vector2 = enc_base._consume_animation_start_pos(Vector2(10.0, 10.0), Vector2.ZERO)
+	_assert_ok(consumed_pos.is_equal_approx(Vector2(320.0, 240.0)) and enc_base._transient_drop_pos.is_zero_approx(), "EncounterBase consumes transient drop position once and resets it")
+	var resolved_entry: Dictionary = enc_base._resolve_reward_entry_by_uuid([fire_src], fire_src.ball_uuid)
+	_assert_ok(not resolved_entry.is_empty() and resolved_entry["uuid"] == fire_src.ball_uuid and (resolved_entry["location"] as LocationIdentifier).container == &"Rewards", "EncounterBase resolves reward entry by UUID")
+	enc_base.free()
+	for enc_path: String in ["res://scenes/Reward.tscn", "res://scenes/RewardElite.tscn", "res://scenes/Shop.tscn", "res://scenes/UnitTrainingGround.tscn", "res://scenes/Shrine.tscn", "res://scenes/RestSite.tscn"]:
+		var enc_scene: PackedScene = load(enc_path) as PackedScene
+		var enc_inst: Node = enc_scene.instantiate() if enc_scene != null else null
+		_assert_ok(enc_inst is EncounterBase, "Encounter scene %s instantiates as EncounterBase" % enc_path)
+		if enc_inst != null:
+			enc_inst.free()
+
+	# 15. InteractionTargetRules & CloseSuppressionState invariants
+	_assert_ok(InteractionTargetRules.get_container_functional_group(&"PlayerLineup") == &"BattleBoard", "InteractionTargetRules maps PlayerLineup to BattleBoard")
+	_assert_ok(InteractionTargetRules.get_container_functional_group(&"RunInventoryT2") == &"InventoryGrid", "InteractionTargetRules maps RunInventoryT2 to InventoryGrid")
+	var sel_shelf := InteractionContext.new()
+	sel_shelf.location = LocationIdentifier.new(&"PlayerShelf", 0)
+	sel_shelf.entity_type = C.CATEGORY_CONSUMABLE
+	var tgt_enemy := InteractionContext.new()
+	tgt_enemy.location = LocationIdentifier.new(&"EnemyLineup", 0)
+	_assert_ok(InteractionTargetRules.is_valid_action_target(sel_shelf, tgt_enemy), "InteractionTargetRules allows PlayerShelf consumable targeting EnemyLineup")
+	var supp := CloseSuppressionState.new()
+	supp.activate_for_window_id(999, 2)
+	_assert_ok(supp.is_suppressed_for_window_id(999) and not supp.is_suppressed_for_window_id(888), "CloseSuppressionState scopes suppression to armed parent window ID")
+	supp.clear()
+	_assert_ok(not supp.is_active(), "CloseSuppressionState.clear resets active suppression")
+
+	# 16. GameManager subsystems (PathNodeGenerator, ReplayStateSerializer, EncounterTransactionEngine)
+	var drs := DirectorRunState.new()
+	drs.current_day = 4
+	drs.player_gold = 17
+	drs.current_purpose = DirectorRunState.Purpose.SHOP
+	var drs_snap: Dictionary = ReplayStateSerializer.snapshot_director_run_state(drs)
+	var drs_restored: DirectorRunState = ReplayStateSerializer.restore_director_run_state(drs_snap)
+	_assert_ok(drs_restored.current_day == 4 and drs_restored.player_gold == 17 and drs_restored.current_purpose == DirectorRunState.Purpose.SHOP, "ReplayStateSerializer roundtrips DirectorRunState faithfully")
+	var t1_roll: int = EncounterTransactionEngine.roll_training_reward(1)
+	_assert_ok(t1_roll >= 0 and t1_roll <= 2, "EncounterTransactionEngine.roll_training_reward(1) stays within [0, 2]")
+	_assert_ok(PathNodeGenerator._node_history_key("BATTLE", "ELITE") == "BATTLE_ELITE" and PathNodeGenerator._node_history_key("SHOP", "") == "SHOP", "PathNodeGenerator formats node history keys consistently")
+
+	tre_bm.queue_free()
+	GameManager.unregister_battle_manager()
+	GameManager.is_in_battle = prev_in_battle
+	await get_tree().process_frame

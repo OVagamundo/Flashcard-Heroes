@@ -291,21 +291,14 @@ static func handle_damage_effect(
 	# Check if burn should be applied
 	# Check if burn should be applied (Trinket + Fire Trait)
 	var is_player_source := false
-	var burn_amount := 0
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	elif not request.trigger_context.team.is_empty():
 		is_player_source = (request.trigger_context.team == "PLAYER")
 	
-	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
-	var fire_level = active_traits.get("FIRE", 0)
-	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
-	
-	if is_instance_valid(source):
-		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
-			
-	var should_apply_burn = burn_amount > 0
+	var burn_from_trinket: bool = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
+	var should_apply_burn: bool = false
 	
 	# Apply HP delta and capture old/new values
 	var targets_old_hp: Array[int] = []
@@ -329,14 +322,10 @@ static func handle_damage_effect(
 		if not is_instance_valid(tgt) or tgt.current_hp <= 0:
 			continue
 			
-		# Fire 9: Bonus Damage = Target's Burn Stacks
+		# Fire L4: Bonus Damage = Target's Burn Stacks
 		var damage_to_apply = amount
-		if fire_level >= 9 and damage_to_apply < 0: # Check damage < 0 to be sure it's damage
-			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-				var burn_count = tgt.get_status_effect_amount(&"burn")
-				if burn_count > 0:
-					var bonus_damage = burn_count
-					damage_to_apply -= bonus_damage # Make it more negative (increase damage)
+		if damage_to_apply < 0:
+			damage_to_apply -= TraitRulesEngine.get_fire_burn_bonus_damage(source, tgt, battle_manager)
 		
 		# Log message (Per Target)
 		var target_display_name = ""
@@ -453,9 +442,11 @@ static func handle_damage_effect(
 		else:
 			targets_max_hp.append(0)
 		
-		var burn_val := 0
-		if should_apply_burn:
-			burn_val = battle_manager.apply_stat_delta(tgt, "burn_stacks", burn_amount)
+		var target_burn_amount: int = battle_manager.get_bonus_burn_stacks_for_attack(source, tgt) if is_instance_valid(source) else 0
+		var burn_val: int = tgt.get_status_effect_amount(&"burn")
+		if target_burn_amount > 0:
+			burn_val = battle_manager.apply_stat_delta(tgt, "burn_stacks", target_burn_amount)
+			should_apply_burn = true
 		targets_new_burn.append(burn_val)
 
 	
@@ -553,19 +544,11 @@ static func handle_cascade_damage(
 	
 	# Check if burn should be applied
 	var is_player_source := false
-	var burn_amount := 0
 	
 	if is_instance_valid(source):
 		is_player_source = battle_manager._is_player_unit(source)
 	
-	var active_traits = battle_manager.get_active_traits("PLAYER" if is_player_source else "ENEMY")
-	var fire_level = active_traits.get("FIRE", 0)
-	var burn_from_trinket = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
-	
-	if is_instance_valid(source):
-		burn_amount = battle_manager.get_bonus_burn_stacks_for_attack(source)
-			
-	var should_apply_burn = burn_amount > 0
+	var burn_from_trinket: bool = battle_manager._has_team_trinket(is_player_source, &"trinket_burn_vial")
 	
 	# Process each cascade target
 	for cascade_item in cascade_list:
@@ -580,14 +563,8 @@ static func handle_cascade_damage(
 		if not is_instance_valid(cascade_tgt):
 			continue
 		
-		# Fire 9: Bonus Damage = Target's Burn Stacks
-		# Note: Cascade amount is usually positive in request, but negative in application.
-		if fire_level >= 9:
-			if is_instance_valid(source) and battle_manager._has_trait_soul(source, "FIRE"):
-				var burn_count = cascade_tgt.get_status_effect_amount(&"burn")
-				if burn_count > 0:
-					var bonus_damage = burn_count
-					cascade_amount += bonus_damage # Increase the positive damage amount (which becomes more negative)
+		# Fire L4: Bonus Damage = Target's Burn Stacks
+		cascade_amount += TraitRulesEngine.get_fire_burn_bonus_damage(source, cascade_tgt, battle_manager)
 		
 		# GUARDIAN SENTINEL INTERCEPT CHECK
 		var intercept_res = BattleHelpers.resolve_guardian_intercept(
@@ -665,10 +642,12 @@ static func handle_cascade_damage(
 				"new_spikes": spikes["new_spikes"]
 			})
 		
-		# Apply burn if needed
+		# Apply burn if needed (evaluated per target for Fire L2 existing-Burn check)
+		var target_burn_amount: int = battle_manager.get_bonus_burn_stacks_for_attack(source, cascade_tgt) if is_instance_valid(source) else 0
+		var should_apply_burn: bool = target_burn_amount > 0
 		var burn_val := old_burn
 		if should_apply_burn:
-			burn_val = battle_manager.apply_stat_delta(cascade_tgt, "burn_stacks", burn_amount)
+			burn_val = battle_manager.apply_stat_delta(cascade_tgt, "burn_stacks", target_burn_amount)
 		
 		# Compute animation source
 		var animation_source_uuid: String = request.source_uuid
@@ -1107,8 +1086,7 @@ static func handle_mirror_transform(
 	var persistent_components_to_transfer: Array[GachaBallComponent] = []
 	for comp in source.components:
 		if comp is StatComponent:
-			# Exclude conditional trinket components which will re-evaluate on board entry
-			if comp.source_type == &"CONDITIONAL_TRINKET" or String(comp.id).ends_with("_conditional") or String(comp.id).begins_with("rusty_ring_"):
+			if comp.source_type == &"AURA":
 				continue
 			persistent_components_to_transfer.append(comp.duplicate(true))
 
@@ -1117,9 +1095,8 @@ static func handle_mirror_transform(
 	var in_combat_pwr_delta := 0
 	for comp in source.battle_components:
 		if comp is StatComponent:
-			# Exclude conditional trinket or dynamic scaling trackers
-			if comp.source_type in [&"CONDITIONAL_ABILITY", &"CONDITIONAL_TRINKET"] \
-					or String(comp.id).ends_with("_conditional") or String(comp.id).begins_with("rusty_ring_"):
+			# Continuous auras re-evaluate cleanly on board entry
+			if comp.source_type == &"AURA":
 				continue
 			# Only inherit true combat buffs (from abilities, consumables, etc.)
 			var is_battle_buff = comp.source_type in [&"BATTLE_BUFF", &"CONSUMABLE"] \

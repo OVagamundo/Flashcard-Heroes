@@ -58,6 +58,9 @@ var deferred_ally_knockouts_enemy: Array[TriggerContext] = []
 var deferred_enemy_erasures: Array[String] = []
 var _inventory_events: Array[CombatEvent] = []
 
+## Per-turn Specialist L2 (3+ Specialists) Gacha draw discount flag (resets each turn)
+var specialist_gacha_discount_used: bool = false
+
 ## Gacha tokens available for spending (synchronized with RunState if present)
 var _gacha_tokens: int = 0:
 	get:
@@ -94,6 +97,7 @@ func copy_for_simulation() -> BattleState:
 	copy._dead_this_turn = _dead_this_turn.duplicate(true)
 	copy._lethal_sequence_counter = _lethal_sequence_counter
 	copy._lethal_sequence_by_uuid = _lethal_sequence_by_uuid.duplicate()
+	copy.specialist_gacha_discount_used = specialist_gacha_discount_used
 	copy.player_shelf_slots_unlocked = player_shelf_slots_unlocked
 	copy.player_slot_effects = player_slot_effects.duplicate()
 	copy.enemy_slot_effects = enemy_slot_effects.duplicate()
@@ -424,6 +428,7 @@ func clear_turn_data() -> void:
 	_dead_this_turn.clear()
 	_lethal_sequence_counter = 0
 	_lethal_sequence_by_uuid.clear()
+	specialist_gacha_discount_used = false
 	is_resolving_knockouts = false
 	deferred_knockouts.clear()
 	deferred_ally_knockouts_player.clear()

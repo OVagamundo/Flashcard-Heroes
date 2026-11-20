@@ -84,27 +84,10 @@ func populate(context: Dictionary) -> void:
 	_reset_window_size()
 
 func _reset_window_size() -> void:
-	if is_instance_valid(self):
-		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var margin_container = get_node_or_null("MarginContainer")
-		if margin_container:
-			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
-		if vbox:
-			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-			
-		custom_minimum_size = Vector2(480, 0)
-		size = Vector2.ZERO # Force immediate recalculation of minimum size
-		reset_size()
+	_shrink_window_layout(480.0, true)
 
 func get_glossary_terms() -> Array[String]:
-	var terms: Array[String] = []
-	var text_to_search: String = ""
-	if is_instance_valid(description_label):
-		text_to_search += description_label.text + " "
-	
-	terms.append_array(DescriptionParser.find_keywords(text_to_search))
-	return terms
+	return _collect_glossary_terms_from_labels([description_label])
 
 func get_child_window_specs() -> Array[Dictionary]:
 	return []

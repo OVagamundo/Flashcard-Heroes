@@ -9,8 +9,8 @@ func validate() -> bool:
 	return GameManager._rest_site_active
 
 func execute() -> void:
-	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)
-	if is_instance_valid(rest_site) and not ActionQueue.is_headless_mode() and rest_site.has_method("execute_leave_visuals"):
+	var rest_site := Engine.get_main_loop().root.find_child("RestSite", true, false) as ResourceSite
+	if is_instance_valid(rest_site) and not ActionQueue.is_headless_mode():
 		rest_site.execute_leave_visuals()
 	else:
 		GameManager.auto_claim_all_rest_site_prizes()

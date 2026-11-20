@@ -8,12 +8,11 @@ func _init() -> void:
 func validate() -> bool:
 	return true
 func execute() -> void:
-	if is_instance_valid(ActionQueue):
-		ActionQueue.pause_timer()
+	ActionQueue.pause_timer()
 	var popup = Engine.get_main_loop().root.find_child("RunCompletePopup", true, false)
 	if is_instance_valid(popup):
 		popup.queue_free()
-	elif is_instance_valid(WindowManager) and WindowManager.has_method("_close_top_modal"):
+	else:
 		WindowManager._close_top_modal()
 	if not GameManager.is_replay_run:
 		SaveManager.clear_save()

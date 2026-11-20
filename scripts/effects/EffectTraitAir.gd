@@ -27,8 +27,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			team = "PLAYER"
 
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var air_souls: int = int(active_traits.get("AIR", 0))
-	if air_souls < 20:
+	if not TraitRulesEngine.has_tier(active_traits, "AIR", 4):
 		return EffectResult.empty()
 
 	# Target enemy lineup

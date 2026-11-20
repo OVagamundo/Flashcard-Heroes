@@ -12,8 +12,8 @@ func execute() -> void:
 	if is_instance_valid(GameManager.run_state):
 		GameManager.run_state.reset_room_tokens()
 		GameManager.run_state.is_training_active = false
-	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)
-	if is_instance_valid(utg) and not ActionQueue.is_headless_mode() and utg.has_method("execute_leave_visuals"):
+	var utg := Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false) as UnitTrainingGround
+	if is_instance_valid(utg) and not ActionQueue.is_headless_mode():
 		utg.execute_leave_visuals()
 	else:
 		SignalBus.emit_signal("path_choice_scene_requested")

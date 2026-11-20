@@ -23,8 +23,7 @@ var _drop_pos: Vector2 = Vector2.ZERO
 
 func _ready() -> void:
 	# Request interaction lock to prevent hover from closing this window
-	if SignalBus.has_signal("interaction_lock_requested"):
-		SignalBus.emit_signal("interaction_lock_requested", true)
+	SignalBus.interaction_lock_requested.emit(true)
 		
 	# Populate decides whether exchanging these two locations is legal.
 	swap_button.pressed.connect(func(): _on_choice_made(&"SWAP", &""))
@@ -58,8 +57,7 @@ func _exit_tree() -> void:
 		WindowManager.close_glossary_pill()
 		WindowManager.close_modal_child_windows(self)
 	# Release interaction lock
-	if SignalBus.has_signal("interaction_lock_requested"):
-		SignalBus.emit_signal("interaction_lock_requested", false)
+	SignalBus.interaction_lock_requested.emit(false)
 		
 	if SignalBus.locale_changed.is_connected(_update_localized_text):
 		SignalBus.locale_changed.disconnect(_update_localized_text)
@@ -72,16 +70,16 @@ func _exit_tree() -> void:
 			if is_instance_valid(tgt_v):
 				effective_drop_pos = tgt_v.get_global_rect().get_center()
 
-		if is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
-			ActionQueue.request(CancelDragAction.new(_source_location, _target_location, "cancelled_choice", effective_drop_pos, _source_view_instance_id))
+		if not ActionQueue.is_replay_mode():
+			ActionQueue.request(CancelDragAction.new(_source_location, _target_location, "cancelled_choice", effective_drop_pos))
 		else:
-			var view = instance_from_id(_source_view_instance_id)
-			if is_instance_valid(view) and view is Control:
+			var view: GachaBallView = instance_from_id(_source_view_instance_id) as GachaBallView
+			if is_instance_valid(view):
 				view.visible = true
 				view.modulate.a = 1.0
-				if not effective_drop_pos.is_zero_approx() and view.has_method("play_snap_back_from"):
+				if not effective_drop_pos.is_zero_approx():
 					view.play_snap_back_from(effective_drop_pos)
-				elif view.has_method("play_landing_bounce"):
+				else:
 					view.play_landing_bounce()
 
 
@@ -121,13 +119,14 @@ func populate(context: Dictionary) -> void:
 			
 		var preview_instance: GachaBallInstance = context.get("preview_instance")
 		if not is_instance_valid(preview_instance) and is_instance_valid(_source_location) and is_instance_valid(_target_location):
-			var data_owner: Object = null
+			var all_instances: Dictionary = {}
 			if GameManager.is_in_battle:
-				data_owner = get_tree().get_first_node_in_group("battle_manager")
-			else:
-				data_owner = GameManager.run_state
-			if is_instance_valid(data_owner):
-				var all_instances: Dictionary = data_owner.get_all_instances() if data_owner.has_method("get_all_instances") else {}
+				var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager
+				if is_instance_valid(bm):
+					all_instances = bm.get_all_instances()
+			elif is_instance_valid(GameManager.run_state):
+				all_instances = GameManager.run_state.get_all_instances()
+			if not all_instances.is_empty():
 				var src_inst = GameManager.get_instance_from_location(_source_location)
 				var tgt_inst = GameManager.get_instance_from_location(_target_location)
 				if is_instance_valid(src_inst) and is_instance_valid(tgt_inst):
@@ -198,12 +197,13 @@ func populate(context: Dictionary) -> void:
 	reset_size()
 
 func _deferred_shrink() -> void:
-	if not is_instance_valid(self) or not is_inside_tree():
+	call_deferred("_deferred_shrink_step", 3)
+
+func _deferred_shrink_step(frames_remaining: int) -> void:
+	if not is_inside_tree():
 		return
-	await get_tree().process_frame
-	await get_tree().process_frame
-	await get_tree().process_frame
-	if not is_instance_valid(self):
+	if frames_remaining > 0:
+		call_deferred("_deferred_shrink_step", frames_remaining - 1)
 		return
 	if is_instance_valid(inspection_container):
 		for child in inspection_container.get_children():
@@ -219,19 +219,18 @@ func _on_merge_pressed() -> void:
 
 func _on_choice_made(choice: StringName, recipe_id: StringName) -> void:
 	_choice_made = true
-	if is_instance_valid(ActionQueue):
-		if choice == &"MERGE":
-			var action: GameAction
-			if is_instance_valid(MergeManager) and MergeManager.is_merge_encounter_active():
-				action = MergeEncounterAction.new(_source_location, _target_location, recipe_id)
-			else:
-				action = ConfirmMergeAction.new(_source_location, _target_location, recipe_id)
-			ActionQueue.request(action)
-		elif choice == &"SWAP":
-			var action := ConfirmSwapAction.new(_source_location, _target_location)
-			ActionQueue.request(action)
+	if choice == &"MERGE":
+		var action: GameAction
+		if is_instance_valid(MergeManager) and MergeManager.is_merge_encounter_active():
+			action = MergeEncounterAction.new(_source_location, _target_location, recipe_id)
+		else:
+			action = ConfirmMergeAction.new(_source_location, _target_location, recipe_id)
+		ActionQueue.request(action)
+	elif choice == &"SWAP":
+		var action := ConfirmSwapAction.new(_source_location, _target_location)
+		ActionQueue.request(action)
 	else:
-		push_error("[ChoiceWindow] ActionQueue unavailable for choice.")
+		assert(false, "[ChoiceWindow] Unknown choice: %s" % String(choice))
 
 func get_embedded_inspection_window() -> InspectionWindow:
 	if is_instance_valid(inspection_container):

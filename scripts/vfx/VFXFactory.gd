@@ -9,7 +9,6 @@ extends Node
 const CannonballProjectileScene = preload("res://scenes/vfx/CannonballProjectile.tscn")
 const BuffNumberProjectileScene = preload("res://scenes/vfx/BuffNumberProjectile.tscn")
 const FloatingDamageNumberScene = preload("res://scenes/vfx/FloatingDamageNumber.tscn")
-const ItemPopupScene = preload("res://scenes/vfx/ItemPopup.tscn")
 const CapsulePopVFXScene = preload("res://scenes/vfx/CapsulePopVFX.tscn")
 
 # -----------------------------------------------------------------------------
@@ -26,10 +25,6 @@ func create_projectile(is_attack_projectile: bool = false) -> Node:
 func create_damage_number() -> Node:
 	return FloatingDamageNumberScene.instantiate()
 
-## Create an item activation popup
-func create_item_popup() -> Node:
-	return ItemPopupScene.instantiate()
-
 ## Create a capsule pop VFX instance
 func create_capsule_pop() -> Node:
 	return CapsulePopVFXScene.instantiate()
@@ -40,11 +35,7 @@ func create_capsule_pop() -> Node:
 
 ## Get the effects layer for rendering VFX above all content and UI
 func get_effects_layer() -> Node:
-	if WindowManager.has_method("get_vfx_layer"):
-		return WindowManager.get_vfx_layer()
-	var vfx_layer = get_tree().get_first_node_in_group("vfx_layer")
-	if is_instance_valid(vfx_layer): return vfx_layer
-	return get_tree().get_first_node_in_group("effects_layer")
+	return WindowManager.get_vfx_layer()
 
 ## Calculate viewport offset for correct VFX positioning
 ## Returns Vector2.ZERO if no offset needed (e.g. layer is in same viewport as content)
@@ -183,7 +174,7 @@ func spawn_stat_number_on_layer(amount: int, spawn_pos: Vector2, color: Color = 
 ## Returns the projectile node for awaiting impact, or null if positions invalid.
 func launch_projectile_between(animator: Node, source_uuid: String, target_uuid: String, amount: int, stat: String, is_attack_projectile: bool = false, custom_duration: float = 0.0) -> Node:
 	# Get target position from animator live view (fallback to snapshot)
-	var tgt_snap = animator.get_live_position(target_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(target_uuid)
+	var tgt_snap = animator.get_live_position(target_uuid)
 	if tgt_snap.is_empty():
 		return null
 	
@@ -191,7 +182,7 @@ func launch_projectile_between(animator: Node, source_uuid: String, target_uuid:
 	var start_pos = Vector2.ZERO
 	var is_source_valid = false
 	if not source_uuid.is_empty():
-		var src_snap = animator.get_live_position(source_uuid) if animator.has_method("get_live_position") else animator.get_snapshot_position(source_uuid)
+		var src_snap = animator.get_live_position(source_uuid)
 		# No defensive code! If a source was specified, its visual must exist.
 		assert(not src_snap.is_empty(), "CRITICAL: Missing valid source view in snapshot for uuid: " + source_uuid)
 		start_pos = Vector2(src_snap.position.x + src_snap.size.x / 2, src_snap.position.y)

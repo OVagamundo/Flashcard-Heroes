@@ -1912,7 +1912,7 @@ msgid "trait.specialist.2"
 msgstr "[color=#ffd166][b]When a Battle begins[/b][/color], if you have 0 Tokens remaining, gain 1 Token."
 
 msgid "trait.specialist.3"
-msgstr "The first Gacha draw of each battle costs 1 less Token (minimum 1)."
+msgstr "The first Gacha draw of each turn costs 1 less Token (minimum 1)."
 
 msgid "trait.specialist.4"
 msgstr "When a Specialist knocks out an enemy, it awards +1 Gold (maximum 1 per turn and 5 per battle)."

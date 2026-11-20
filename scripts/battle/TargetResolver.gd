@@ -431,9 +431,7 @@ static func check_condition(condition_def: ConditionDefinition, source_uuid: Str
 		C.COND_MIN_TRAIT_COUNT:
 			var trait_id: String = String(condition_def.parameters.get("trait_id", ""))
 			var min_count: int = int(condition_def.parameters.get("min_count", 1))
-			var is_player: bool = true
-			if battle_manager.has_method("_is_player_unit"):
-				is_player = battle_manager._is_player_unit(source_instance)
+			var is_player: bool = battle_manager._is_player_unit(source_instance)
 			var team: String = "PLAYER" if is_player else "ENEMY"
 			var active_traits: Dictionary = battle_manager.get_active_traits(team)
 			result = int(active_traits.get(trait_id, 0)) >= min_count

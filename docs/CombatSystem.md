@@ -27,17 +27,23 @@ The BattleManager delegates to specialized helper classes:
 
 ```mermaid
 graph TD
-    BM[BattleManager<br/>~1570 lines<br/>Orchestrator]
+    BM[BattleManager<br/>Orchestrator]
     
-    CS[CombatSimulator<br/>~600 lines]
-    EH[EffectHandlers<br/>~720 lines]
-    IO[InventoryOperations<br/>465 lines]
-    BS[BattleState<br/>423 lines]
+    CS[CombatSimulator]
+    EH[EffectHandlers]
+    IO[InventoryOperations]
+    BS[BattleState]
+    AE[AuraEvaluator]
+    TRE[TraitRulesEngine]
+    VSS[VisualSnapshotStore]
     
     BM --> |Combat Loop|CS
     BM --> |Effects|EH
     BM --> |Items/Draws|IO
     BM --> |State/Containers|BS
+    BM --> |Derived Auras|AE
+    BM --> |Trait Rules|TRE
+    BM --> |VCR Snapshots|VSS
 ```
 
 | Helper File | Responsibility |
@@ -48,6 +54,12 @@ graph TD
 | EffectHandlers | Helper functions for raw stat/summon execution (invoked by commands) |
 | InventoryOperations | **Exclusive** handler for ALL inventory mutations (move, swap, equip, remove, discard) |
 | BattleState | Instance storage, container management |
+| AuraEvaluator | Pure continuous derived-aura evaluator (`source_type == &"AURA"`) for conditional trinket/trait buffs |
+| TraitRulesEngine | Centralized combat trait threshold and tier rule evaluation |
+| BoardStatDiffBuilder | Computes board-wide stat/status diffs between simulation snapshots |
+| StatusTickProcessor | Processes turn-start/turn-end status effect ticks |
+| BattleEntranceSequencer | Orchestrates hero/unit entrance trigger sequences |
+| VisualSnapshotStore | Immutable VCR puppet snapshot store stepped by `BattleAnimator` during playback |
 | KnockoutProcessor | Knockout and death cleanup logic (delegates inventory moves to InventoryOperations) |
 | TurnAbilities | Turn start/end triggers |
 | TargetResolver | Target resolution |
@@ -234,11 +246,11 @@ During the presentation phase:
 > **Zero-Tolerance Rule**: During COMBAT phase, presentation code must make **ZERO** queries to simulation data. Any `get_instance()` call is a violation.
 
 
-### The Inspection Window Exception
-The **ONLY** exception to this rule is the **Inspection Window**, which actively queries simulation data to display real-time status (like current HP, applied statuses, and dynamic components).
-Because the simulation finishes before the visual VCR playback:
-1. **UUID Lookup Fallback:** Units moving between containers (e.g., moving to the Discard during combat) might not be found via their pre-combat `LocationIdentifier`. The `WindowManager` explicitly falls back to `get_instance_by_uuid()` to locate them mid-flight.
-2. **Deferred Memory Erasure:** Enemies that die during the simulation are normally erased from memory. However, to ensure they can still be inspected while their death animation plays, `BattleManager` defers `_flush_deferred_enemy_erasures()` until the turn animation has completely finished.
+### Inspection Windows & `VisualSnapshotStore`
+Inspection windows are **no longer an exception** to Presentation Isolation. During active VCR playback:
+1. **`VisualSnapshotStore` Stepping:** `BattleAnimator` drives a pure `RefCounted` `VisualSnapshotStore` (`begin_playback`, `apply_event`, `end_playback`) in lockstep with each played `CombatEvent`.
+2. **Read-Only Snapshot Materialization:** `WindowManager._derive_window_payload()` materializes read-only snapshot instances (`is_vcr_snapshot = true`, `snapshot_instances_db`) directly from `VisualSnapshotStore` instead of querying live post-turn `BattleManager` state.
+3. **Live Signal Suppression:** `UnitInspectionWindow` and `ItemInspectionWindow` suppress live simulation refresh signals while displaying a VCR snapshot so paused mid-turn inspections always match the exact visual frame on screen.
 
 ---
 
@@ -252,7 +264,7 @@ To determine if animations or effect resolution are active, `BattleManager` expo
 func is_animations_playing() -> bool:
 	if _is_processing_effect or _is_animating_management_queue:
 		return true
-	if is_instance_valid(_animator) and _animator.has_method("is_playing_sequence") and _animator.is_playing_sequence():
+	if is_instance_valid(_animator) and _animator.is_playing_sequence():
 		return true
 	return false
 ```
@@ -640,7 +652,9 @@ All abilities and effects must return a strictly typed `EffectResult` containing
 
 
 
-The `BattleAnimator` is a dumb playback engine. It does not know rules; it only knows how to visualize events.
+The `BattleAnimator` is a dumb playback engine. It does not know rules; it only knows how to visualize events. Internally, `BattleAnimator.gd` delegates to two specialized helpers under `scripts/animations/`:
+- **`BattlePuppetRegistry.gd`**: VCR puppet registration, board slot lookups, screen-space position snapshots, trinket view lookup/activation, and snapshot-first item/holder resolution.
+- **`BattleBoardEventPresenter.gd`**: Board-level event choreography (`DRAW`, `SUMMON`, unified currency/timer animations, `ITEM_TRANSFER`, `ITEM_DISCARD`, `ITEM_EQUIP`, incubator `MOVE`, player death departure, and deduplicated capsule arc tossing via `ArcTossAnimator`).
 
 ### Playback Speed & Scale
 

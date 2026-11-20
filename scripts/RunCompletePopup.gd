@@ -66,14 +66,7 @@ func populate(context: Dictionary) -> void:
 	]
 
 func _on_return_button_pressed() -> void:
-	var action := AcknowledgeRunCompleteAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		if not GameManager.is_replay_run:
-			SaveManager.clear_save()
-		SignalBus.emit_signal("title_scene_requested")
-		queue_free()
+	ActionQueue.request(AcknowledgeRunCompleteAction.new())
 
 func get_window_to_animate() -> Control:
 	return $CenterContainer/PanelContainer

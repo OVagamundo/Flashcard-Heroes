@@ -131,10 +131,7 @@ func _ready() -> void:
 	)
 	
 	# Keep _active_inspected_card in sync when inspection windows close
-	WindowManager.window_closed.connect(func(_w):
-		if not WindowManager.is_any_inspection_window_open():
-			_active_inspected_card = null
-	)
+	WindowManager.window_closed.connect(_on_window_closed)
 	
 	# Setup Test Starters UI (in bottom-left DevToolsContainer)
 	var popup: PopupMenu = _test_starters_option.get_popup()
@@ -887,4 +884,12 @@ func _inspect_preview_hero() -> void:
 		}
 	}
 	WindowManager._open_contextual_window(context)
+
+func _on_window_closed(_w: Control) -> void:
+	if not WindowManager.is_any_inspection_window_open():
+		_active_inspected_card = null
+
+func _exit_tree() -> void:
+	if WindowManager.window_closed.is_connected(_on_window_closed):
+		WindowManager.window_closed.disconnect(_on_window_closed)
 

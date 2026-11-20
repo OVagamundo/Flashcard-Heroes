@@ -12,13 +12,12 @@ func _ready() -> void:
 	SignalBus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 	if InputUtils.prefers_touch_input() and is_instance_valid(physics_container):
 		physics_container.use_static_bounds = false
-		if physics_container.has_method("refresh_runtime_bounds"):
-			physics_container.refresh_runtime_bounds()
+		physics_container.refresh_runtime_bounds()
 
 func _on_battle_inventory_changed() -> void:
 	if not visible:
 		return
-	if has_meta("wm_opening") and get_meta("wm_opening"):
+	if WindowManager.is_window_opening(self):
 		return
 	var bm = get_tree().get_first_node_in_group("battle_manager")
 	if is_instance_valid(bm):
@@ -48,16 +47,14 @@ func clear_cached_inventory_visuals() -> void:
 func on_window_opened() -> void:
 	await get_tree().process_frame
 	if is_instance_valid(physics_container):
-		if physics_container.has_method("refresh_runtime_bounds"):
-			physics_container.refresh_runtime_bounds()
-		if physics_container.has_method("finish_open"):
-			physics_container.finish_open()
+		physics_container.refresh_runtime_bounds()
+		physics_container.finish_open()
 	refresh_cached_inventory()
 	if is_instance_valid(physics_container):
 		physics_container.apply_jolt(Vector2(-500, 0))
 
 func prepare_for_open() -> void:
-	if is_instance_valid(physics_container) and physics_container.has_method("prepare_for_open"):
+	if is_instance_valid(physics_container):
 		physics_container.prepare_for_open()
 
 func _cache_valid_instances(instances: Array) -> void:
@@ -69,7 +66,7 @@ func _cache_valid_instances(instances: Array) -> void:
 func _can_sync_physics() -> bool:
 	if not visible:
 		return false
-	if has_meta("wm_opening") and get_meta("wm_opening"):
+	if WindowManager.is_window_opening(self):
 		return false
 	return is_instance_valid(physics_container)
 

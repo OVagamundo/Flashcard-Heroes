@@ -1,4 +1,5 @@
 # res://scripts/FlashcardMinigame.gd
+class_name FlashcardMinigame
 extends Control
 
 ## Flashcard minigame UI that implements the TDD specification
@@ -461,11 +462,7 @@ func _populate_priority_cards() -> void:
 
 func _on_priority_card_clicked(card_id: StringName) -> void:
 	"""Handle click on a priority card button - switch which card is displayed"""
-	var action := SelectFlashcardIntroCardAction.new(card_id)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		push_error("[FlashcardMinigame] ActionQueue is unavailable; intro-card input was ignored.")
+	ActionQueue.request(SelectFlashcardIntroCardAction.new(card_id))
 
 func execute_select_intro_card(card_id: StringName) -> void:
 	_displayed_card_id = card_id
@@ -485,11 +482,7 @@ func _show_new_card_tutorial() -> void:
 
 func _on_got_it_pressed() -> void:
 	"""Called when player clicks 'Got It!' on card introduction"""
-	var action := AcknowledgeFlashcardIntroAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		push_error("[FlashcardMinigame] ActionQueue is unavailable; intro acknowledgement was ignored.")
+	ActionQueue.request(AcknowledgeFlashcardIntroAction.new())
 
 func execute_acknowledge_intro() -> void:
 	# The action commits the manager transition before this presentation callback.
@@ -681,11 +674,7 @@ func _configure_choice_focus() -> void:
 func _on_choice_button_pressed(selected_answer_id: StringName) -> void:
 	if _input_locked or _session_timer <= 0:
 		return
-	var action := SubmitFlashcardAnswerAction.new(_current_question_id, selected_answer_id)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		push_error("[FlashcardMinigame] ActionQueue is unavailable; answer input was ignored.")
+	ActionQueue.request(SubmitFlashcardAnswerAction.new(_current_question_id, selected_answer_id))
 
 func get_current_question_id() -> StringName:
 	return _current_question_id
@@ -735,7 +724,7 @@ func _update_panel_color(color: Color) -> void:
 func _present_choice_result(selected_answer_id: StringName, question_id: StringName, committed_result: Dictionary) -> void:
 	"""Present an answer after SubmitFlashcardAnswerAction commits it."""
 	if _input_locked or _session_timer <= 0:
-		if is_instance_valid(ActionQueue) and ActionQueue.get_active_action() is SubmitFlashcardAnswerAction:
+		if ActionQueue.get_active_action() is SubmitFlashcardAnswerAction:
 			ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 		
@@ -772,9 +761,7 @@ func _present_choice_result(selected_answer_id: StringName, question_id: StringN
 	if was_correct:
 		# Hop animation for trinket trigger
 		if tokens_to_give > 1 and GameManager.is_in_battle:
-			var animator = get_node_or_null("/root/BattleAnimator")
-			if is_instance_valid(animator) and animator.has_method("hop_trinket_by_definition_id"):
-				animator.call_deferred("hop_trinket_by_definition_id", &"trinket_beginners_charm", false)
+			BattleAnimator.call_deferred("hop_trinket_by_definition_id", &"trinket_beginners_charm", false)
 		
 		_update_timer_display()
 		_update_aura_vfx()
@@ -840,20 +827,16 @@ func _present_choice_result(selected_answer_id: StringName, question_id: StringN
 	var delay_tween = create_tween()
 	delay_tween.tween_interval(feedback_pause)
 	delay_tween.tween_callback(func():
-		if not is_instance_valid(self): return
-		
 		# Check timer again before proceeding
 		if _session_timer <= 0:
 			_end_minigame()
-			if is_instance_valid(ActionQueue):
-				ActionQueue.finish_action(ActionQueue.get_active_action())
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 			return
 			
 		_show_next_question_with_data(next_question)
 		if not midgame_unlocked_card_id.is_empty():
 			_trigger_midgame_unlock_fanfare(midgame_unlocked_card_id, next_mastery_color)
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 func _trigger_midgame_unlock_fanfare(_unlocked_card_id: StringName, target_mastery_color: Color) -> void:
@@ -1114,19 +1097,14 @@ func _flash_button_correct(correct_answer_id: StringName, token_count: int = 1, 
 func _on_skip_pressed() -> void:
 	if _input_locked or _session_timer <= 0:
 		return
-	var action := SkipFlashcardAction.new(_current_question_id)
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		push_error("[FlashcardMinigame] ActionQueue is unavailable; skip input was ignored.")
+	ActionQueue.request(SkipFlashcardAction.new(_current_question_id))
 
 func execute_skip(question_id: StringName, committed_result: Dictionary) -> void:
 	if committed_result.is_empty():
 		push_error("[FlashcardMinigame] Refusing to present an uncommitted skip result.")
 		return
 	if _input_locked or _session_timer <= 0:
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 		return
 	
 	_input_locked = true
@@ -1162,15 +1140,12 @@ func execute_skip(question_id: StringName, committed_result: Dictionary) -> void
 	var delay_tween = create_tween()
 	delay_tween.tween_interval(0.5)
 	delay_tween.tween_callback(func():
-		if not is_instance_valid(self): return
 		if _session_timer <= 0:
 			_end_minigame()
-			if is_instance_valid(ActionQueue):
-				ActionQueue.finish_action(ActionQueue.get_active_action())
+			ActionQueue.finish_action(ActionQueue.get_active_action())
 			return
 		_show_next_question_with_data(next_question)
-		if is_instance_valid(ActionQueue):
-			ActionQueue.finish_action(ActionQueue.get_active_action())
+		ActionQueue.finish_action(ActionQueue.get_active_action())
 	)
 
 
@@ -1204,7 +1179,7 @@ func _end_minigame() -> void:
 		Audio.play_music(SoundRegistry.BGM_REST)
 	
 	# Finish any active flashcard action if queue was waiting on visual resolution
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+	if ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction:
 			ActionQueue.finish_action(act)
@@ -1241,7 +1216,7 @@ func _exit_tree() -> void:
 		Audio.play_music(SoundRegistry.BGM_REST)
 	
 	# Clean up any lingering flashcard action if the minigame node was freed while an action was active
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+	if ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction or act is AcknowledgeFlashcardIntroAction or act is SelectFlashcardIntroCardAction:
 			ActionQueue.finish_action(act)
@@ -1262,8 +1237,8 @@ func _is_japanese(text: String) -> bool:
 func _has_trinket(trinket_id: StringName) -> bool:
 	# First check battle state if in battle (critical for Test Mode parity)
 	if GameManager.is_in_battle:
-		var bm = get_tree().get_first_node_in_group("battle_manager")
-		if is_instance_valid(bm) and bm.has_method("get_container"):
+		var bm: BattleManager = get_tree().get_first_node_in_group("battle_manager") as BattleManager
+		if is_instance_valid(bm):
 			var container = bm.get_container(&"PlayerTrinkets")
 			if is_instance_valid(container):
 				for uuid in container.get_all_non_empty_uuids():

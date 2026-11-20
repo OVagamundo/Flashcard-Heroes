@@ -39,8 +39,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	# Ensure any visual equipped icon from payload is displayed on targets if view is valid
 	if payload is CombatPayload and is_instance_valid(payload.item_icon):
 		for target_uuid in targets:
-			var target_view = animator._visual_registry.get(target_uuid)
-			if is_instance_valid(target_view) and target_view.has_method("set_visual_equipped_item_icon"):
+			var target_view: GachaBallView = animator._visual_registry.get(target_uuid) as GachaBallView
+			if is_instance_valid(target_view):
 				if target_view.get("_visual_equipped_item_icon") == null:
 					target_view.set_visual_equipped_item_icon(payload.item_icon)
 
@@ -132,8 +132,6 @@ func _launch_projectile(animator: Node, source_uuid: String, target_uuid: String
 	return VFXFactory.launch_projectile_between(animator, source_uuid, target_uuid, amount, stat)
 
 func _spawn_floating_stat_debuff(animator: Node, target_uuid: String, amount: int, type: String) -> void:
-	if not VFXFactory.has_method("spawn_stat_number_on_layer"):
-		return
 	var target_view = animator._visual_registry.get(target_uuid)
 	if not is_instance_valid(target_view):
 		return

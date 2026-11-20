@@ -4,8 +4,6 @@ extends RefCounted
 ## Dictionary key order is normalized before hashing so equivalent state does not
 ## depend on resource or container insertion order.
 static func current_digest() -> String:
-	if not is_instance_valid(GameManager) or not GameManager.has_method("get_replay_state_snapshot"):
-		return ""
 	return digest(GameManager.get_replay_state_snapshot())
 
 static func digest(value: Variant) -> String:
@@ -42,10 +40,18 @@ static func _normalize(value: Variant) -> Variant:
 	if typeof(value) == TYPE_OBJECT:
 		if value == null or not is_instance_valid(value):
 			return null
-		if value.has_method("to_dict"):
-			return _normalize(value.to_dict())
-		if value.has_method("to_save_dict"):
-			return _normalize(value.to_save_dict())
+		if value is PathNodeDefinition:
+			return _normalize((value as PathNodeDefinition).to_dict())
+		if value is LocationIdentifier:
+			return _normalize((value as LocationIdentifier).to_dict())
+		if value is GameAction:
+			return _normalize((value as GameAction).to_dict())
+		if value is GachaBallInstance:
+			return _normalize((value as GachaBallInstance).to_save_dict())
+		if value is RunState:
+			return _normalize((value as RunState).to_save_dict())
+		if value is GachaBallComponent:
+			return _normalize((value as GachaBallComponent).to_save_dict())
 		if value is Resource and not value.resource_path.is_empty():
 			return value.resource_path
 		return ""

@@ -14,9 +14,7 @@ func setup(view: Control, request_callable: Callable) -> void:
 	_request_callable = request_callable
 
 func _get_controller() -> InspectionPeekController:
-	if is_instance_valid(GlobalInteractionRouter) and GlobalInteractionRouter.has_method("get_peek_controller"):
-		return GlobalInteractionRouter.get_peek_controller()
-	return null
+	return GlobalInteractionRouter.get_peek_controller()
 
 func on_mouse_entered() -> void:
 	if InputUtils.prefers_touch_input():

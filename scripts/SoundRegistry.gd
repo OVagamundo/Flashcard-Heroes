@@ -11,8 +11,7 @@ const UI_ERROR = preload("res://assets/audio/sfx/ui/error1.ogg")
 const UI_DROP = preload("res://assets/audio/sfx/ui/drop.ogg")
 const COIN_LAND = preload("res://assets/audio/sfx/shop/coin.ogg")
 
-# Combat SFX (legacy)
-const COMBAT_HIT_LEGACY = preload("res://assets/audio/sfx/combat/hit.ogg")
+# Combat SFX
 const COMBAT_STEP = preload("res://assets/audio/sfx/combat/step.ogg")
 
 # Action SFX - New distinct sounds for various animations

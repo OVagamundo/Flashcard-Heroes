@@ -27,13 +27,11 @@ func _ready() -> void:
 	ReplayController.playback_error.connect(_on_playback_error)
 	ReplayController.playback_paused.connect(_on_playback_paused)
 	ReplayController.playback_speed_changed.connect(_on_speed_changed)
-	if ReplayController.has_signal("skip_idle_changed"):
-		ReplayController.skip_idle_changed.connect(func(enabled: bool):
-			if is_instance_valid(_skip_idle_toggle):
-				_skip_idle_toggle.button_pressed = enabled
-		)
-	if ReplayController.has_signal("action_executing"):
-		ReplayController.action_executing.connect(_on_action_executing)
+	ReplayController.skip_idle_changed.connect(func(enabled: bool):
+		if is_instance_valid(_skip_idle_toggle):
+			_skip_idle_toggle.button_pressed = enabled
+	)
+	ReplayController.action_executing.connect(_on_action_executing)
 
 	_action_indicator.visible = true
 	_pause_popup.visible = false

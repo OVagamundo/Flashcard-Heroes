@@ -92,7 +92,11 @@ func _update_merge_target_indicators() -> void:
 		return
 
 	var data_owner = _get_data_owner()
-	var all_instances: Dictionary = data_owner.get_all_instances() if is_instance_valid(data_owner) and data_owner.has_method("get_all_instances") else {}
+	var all_instances: Dictionary = {}
+	if data_owner is BattleManager:
+		all_instances = (data_owner as BattleManager).get_all_instances()
+	elif data_owner is RunState:
+		all_instances = (data_owner as RunState).get_all_instances()
 
 	var merge_targets: Dictionary = {}
 	var views = get_tree().get_nodes_in_group("gachaball_view")

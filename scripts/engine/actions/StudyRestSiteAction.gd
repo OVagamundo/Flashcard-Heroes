@@ -10,8 +10,8 @@ func validate() -> bool:
 
 func execute() -> void:
 	GameManager._rest_site_study_used = true
-	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)
-	if is_instance_valid(rest_site) and rest_site.has_method("_execute_study"):
+	var rest_site := Engine.get_main_loop().root.find_child("RestSite", true, false) as ResourceSite
+	if is_instance_valid(rest_site):
 		rest_site._execute_study()
 	FlashcardManager.start_minigame(GameManager.run_state, GameManager.run_state.active_deck_ids)
 

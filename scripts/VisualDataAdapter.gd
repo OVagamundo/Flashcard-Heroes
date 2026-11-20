@@ -70,6 +70,7 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		"incubating": incubating,
 		"capsule_sealed": instance.location_container_tag in [&"PlayerShelf", &"EnemyShelf"] or String(instance.location_container_tag).begins_with("BattleInventoryT"),
 		"uuid": instance.ball_uuid,
+		"origin_uuid": instance.origin_uuid,
 		"definition_id": instance.definition_id,
 		"category": def.category,
 		"tier": tier,
@@ -82,10 +83,16 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 		# Stats
 		"hp": instance.current_hp,
 		"pwr": instance.current_pwr,
+		"equipped_on_uuid": instance.equipped_on_uuid,
+		"equipped_slot_index": instance.equipped_slot_index,
+		"dynamic_tags": instance.dynamic_tags.duplicate(),
+		"components": _clone_components(instance.components),
+		"battle_components": _clone_components(instance.battle_components),
 		"burn_stacks": instance.get_status_effect_amount(&"burn"), # Backward compat
 		"armor_stacks": instance.get_status_effect_amount(&"armor"), # Same pattern as burn
 		"spikes_stacks": instance.get_status_effect_amount(&"spikes"), # Spikes status effect
 		"status_effects": instance.status_effects.duplicate(), # Generic status effects
+		"active_auras": instance.active_auras.duplicate(true), # Continuous derived aura contributions
 		
 		# Equipped items (for units only)
 		"equipped_items": equipped_items_data,
@@ -110,6 +117,13 @@ static func create_visual_data(instance: GachaBallInstance, all_instances: Dicti
 
 static func create_empty_visual_data() -> Dictionary:
 	return {}
+
+static func _clone_components(source_components: Array[GachaBallComponent]) -> Array[GachaBallComponent]:
+	var result: Array[GachaBallComponent] = []
+	for component: GachaBallComponent in source_components:
+		if is_instance_valid(component):
+			result.append(component.duplicate(true) as GachaBallComponent)
+	return result
 
 static func _create_visual_layers(instance: GachaBallInstance, all_instances: Dictionary) -> Array:
 	var layers: Array = []

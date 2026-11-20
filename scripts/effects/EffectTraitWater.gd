@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			team = "PLAYER"
 
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var water_souls: int = int(active_traits.get("WATER", 0))
-	if water_souls < 3:
+	var water_tier: int = TraitRulesEngine.get_active_tier(active_traits, "WATER")
+	if water_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if team == "PLAYER" else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -67,7 +67,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		}))
 
 		# L2 Cleanse (Burn or Static)
-		if water_souls >= 6:
+		if water_tier >= 2:
 			var old_burn = ally_ahead.get_status_effect_amount(&"burn")
 			var old_static = ally_ahead.get_status_effect_amount(&"static")
 			if old_burn > 0:
@@ -88,7 +88,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				}))
 
 	# L4 Cleanse All Allies
-	if water_souls >= 20:
+	if water_tier >= 4:
 		for ally in units:
 			if not is_instance_valid(ally) or ally.current_hp <= 0:
 				continue

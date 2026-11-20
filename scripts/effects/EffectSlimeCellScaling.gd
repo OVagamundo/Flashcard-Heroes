@@ -24,7 +24,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if active_holder.current_hp > 0 and _is_on_battle_board(active_holder):
 			target_bonus = battle_cell_count
 
-	var status_key: StringName = StringName("slime_cell_scaling_" + source_uuid)
+	var aura_key: StringName = AuraEvaluator.make_key(&"slime_cell", source_uuid)
 	var result := EffectResult.new()
 	var holder_updated: bool = false
 	for instance_uuid: String in all_instances:
@@ -32,45 +32,24 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if instance_uuid == source_uuid:
 			continue
 
-		var previous_bonus: int = instance.get_status_effect_amount(status_key)
-		if instance_uuid == active_holder_uuid:
-			var holder_delta: int = target_bonus - previous_bonus
-			if holder_delta == 0:
-				continue
-			if previous_bonus > 0:
-				instance.clear_status_effect(status_key)
-			if target_bonus > 0:
-				instance.add_status_effect_silent(status_key, target_bonus)
-			instance.apply_pwr_delta(holder_delta, {
-				"silent": true,
-				"merge_source_type": &"CONDITIONAL_ABILITY"
-			})
-			holder_updated = true
-			if _is_on_battle_board(instance):
-				var payload := CombatPayload.pwr_change(active_holder_uuid, holder_delta, [instance.current_pwr - holder_delta], [instance.current_pwr])
-				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": active_holder_uuid,
-					"target_uuids": [active_holder_uuid],
-					"ability_id": context.ability_id,
-					"ability_holder_uuid": active_holder_uuid,
-					"visual_payload": payload
-				}))
-		elif previous_bonus > 0:
-			instance.clear_status_effect(status_key)
-			instance.apply_pwr_delta(-previous_bonus, {
-				"silent": true,
-				"merge_source_type": &"CONDITIONAL_ABILITY"
-			})
-			holder_updated = true
-			if _is_on_battle_board(instance):
-				var payload := CombatPayload.pwr_change(instance_uuid, -previous_bonus, [instance.current_pwr + previous_bonus], [instance.current_pwr])
-				result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-					"source_uuid": instance_uuid,
-					"target_uuids": [instance_uuid],
-					"ability_id": context.ability_id,
-					"ability_holder_uuid": instance_uuid,
-					"visual_payload": payload
-				}))
+		var desired_bonus: int = target_bonus if instance_uuid == active_holder_uuid else 0
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			instance, aura_key, 0, desired_bonus, source_uuid, AuraEvaluator.KIND_SLIME_CELL,
+			{"silent": true}
+		)
+		if not rec_res.changed:
+			continue
+
+		holder_updated = true
+		if _is_on_battle_board(instance):
+			var payload := CombatPayload.pwr_change(instance_uuid, rec_res.delta_pwr, [rec_res.old_pwr], [rec_res.new_pwr])
+			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+				"source_uuid": instance_uuid,
+				"target_uuids": [instance_uuid],
+				"ability_id": context.ability_id,
+				"ability_holder_uuid": instance_uuid,
+				"visual_payload": payload
+			}))
 
 	if not holder_updated:
 		return EffectResult.empty()

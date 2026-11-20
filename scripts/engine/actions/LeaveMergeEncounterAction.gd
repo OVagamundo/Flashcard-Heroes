@@ -10,7 +10,7 @@ func validate() -> bool:
 
 func execute() -> void:
 	var me = Engine.get_main_loop().root.find_child("MergeEncounter", true, false)
-	if is_instance_valid(me) and not ActionQueue.is_headless_mode() and me.has_method("execute_leave_visuals"):
+	if is_instance_valid(me) and not ActionQueue.is_headless_mode():
 		me.execute_leave_visuals()
 	else:
 		SignalBus.emit_signal("path_choice_scene_requested")

@@ -23,7 +23,7 @@ func execute() -> void:
 	if not is_instance_valid(reward_view):
 		reward_view = Engine.get_main_loop().root.find_child("RewardElite", true, false)
 	
-	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode() and reward_view.has_method("execute_collect_visuals"):
+	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode():
 		reward_view.execute_collect_visuals(instance_uuid, drop_pos)
 	else:
 		# Direct data mutation

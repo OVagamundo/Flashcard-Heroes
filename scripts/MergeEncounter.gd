@@ -29,8 +29,7 @@ func _exit_tree() -> void:
 		
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
+		main_node.hide_action_instruction()
 
 func _process(_delta: float) -> void:
 	var is_open := WindowManager.is_run_inventory_window_open()
@@ -39,14 +38,10 @@ func _process(_delta: float) -> void:
 		var main_node = GameManager._active_main_node
 		if is_instance_valid(main_node):
 			if is_open:
-				if main_node.has_method("show_action_instruction"):
-					var cost = 5
-					if is_instance_valid(GameManager.run_state):
-						cost = GameManager.run_state.merge_encounter_cost
-					main_node.show_action_instruction(tr("ui.merge_encounter_instruction").format({"cost": str(cost)}))
+				var cost: int = GameManager.run_state.merge_encounter_cost if is_instance_valid(GameManager.run_state) else 5
+				main_node.show_action_instruction(tr("ui.merge_encounter_instruction").format({"cost": str(cost)}))
 			else:
-				if main_node.has_method("hide_action_instruction"):
-					main_node.hide_action_instruction()
+				main_node.hide_action_instruction()
 
 func _update_localized_text() -> void:
 	title_label.text = tr("ui.merge_encounter_title")
@@ -66,17 +61,12 @@ func _on_open_inventory_pressed() -> void:
 		ActionQueue.request(OpenInventoryAction.new("RUN"))
 
 func _on_leave_pressed() -> void:
-	var action := LeaveMergeEncounterAction.new()
-	if is_instance_valid(ActionQueue):
-		ActionQueue.request(action)
-	else:
-		execute_leave_visuals()
+	ActionQueue.request(LeaveMergeEncounterAction.new())
 
 func execute_leave_visuals() -> void:
 	var main_node = GameManager._active_main_node
 	if is_instance_valid(main_node):
-		if main_node.has_method("hide_action_instruction"):
-			main_node.hide_action_instruction()
+		main_node.hide_action_instruction()
 			
-	SignalBus.emit_signal("path_choice_scene_requested")
+	SignalBus.path_choice_scene_requested.emit()
 	queue_free()

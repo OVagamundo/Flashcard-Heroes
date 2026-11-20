@@ -16,7 +16,7 @@ func execute() -> void:
 	GameManager._on_shop_reroll_requested()
 
 	var shop = Engine.get_main_loop().root.find_child("Shop", true, false)
-	if is_instance_valid(shop) and not ActionQueue.is_headless_mode() and shop.has_method("execute_reroll_visuals"):
+	if is_instance_valid(shop) and not ActionQueue.is_headless_mode():
 		shop.execute_reroll_visuals(current_cost)
 
 func yields_for_visuals() -> bool:

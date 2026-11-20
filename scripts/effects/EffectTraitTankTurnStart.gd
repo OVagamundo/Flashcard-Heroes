@@ -28,8 +28,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var tank_units: int = int(active_traits.get("TANK", 0))
-	if tank_units < 4:
+	if not TraitRulesEngine.has_tier(active_traits, "TANK", 3):
 		return EffectResult.empty()
 
 	var frontmost_tank = battle_manager.get_frontmost_unit_on_team(is_player, "TANK")

@@ -19,17 +19,15 @@ func execute() -> void:
 	if not ActionQueue.is_timer_running():
 		ActionQueue.start_timer()
 
-	var tree = Engine.get_main_loop() as SceneTree
-	var bv = tree.get_first_node_in_group("battle_view") if is_instance_valid(tree) else null
+	var tree := Engine.get_main_loop() as SceneTree
+	var bv := (tree.get_first_node_in_group("battle_view") as BattleView) if is_instance_valid(tree) else null
 	if not is_instance_valid(bv) and is_instance_valid(tree) and is_instance_valid(tree.root):
-		bv = tree.root.find_child("Battle", true, false)
+		bv = tree.root.find_child("Battle", true, false) as BattleView
 
-	if is_instance_valid(bv) and not ActionQueue.is_headless_mode() and bv.has_method("execute_speed"):
+	if is_instance_valid(bv) and not ActionQueue.is_headless_mode():
 		bv.execute_speed(speed)
 	else:
-		var animator = Engine.get_main_loop().root.get_node_or_null("/root/BattleAnimator")
-		if is_instance_valid(animator) and animator.has_method("play_continuous"):
-			animator.play_continuous(speed)
+		BattleAnimator.play_continuous(speed)
 
 func yields_for_visuals() -> bool:
 	return false

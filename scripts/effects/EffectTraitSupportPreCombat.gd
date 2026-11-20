@@ -30,8 +30,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var support_units: int = int(active_traits.get("SUPPORT", 0))
-	if support_units < 2:
+	var support_tier: int = TraitRulesEngine.get_active_tier(active_traits, "SUPPORT")
+	if support_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -65,7 +65,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			}))
 
 		# L2 (3 Units): +1 PWR to ally directly behind
-		if support_units >= 3:
+		if support_tier >= 2:
 			var ally_behind = battle_manager._get_ally_behind(unit)
 			if is_instance_valid(ally_behind) and ally_behind.current_hp > 0:
 				var old_pwr = ally_behind.current_pwr
@@ -79,7 +79,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				}))
 
 	# L4 (5 Units): +1 HP and +1 PWR to Hero unit (stacks cumulatively with positional buffs)
-	if support_units >= 5:
+	if support_tier >= 4:
 		var hero = battle_manager.get_hero_on_team(is_player)
 		if is_instance_valid(hero) and hero.current_hp > 0:
 			var hero_old_hp = hero.current_hp

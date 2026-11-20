@@ -68,7 +68,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		var armor_consumed = dmg_res["armor_consumed"]
 		
 		# 1b. Apply Bonus Burn Stacks (Trinket/Trait)
-		var bonus_burn = battle_manager.get_bonus_burn_stacks_for_attack(source_instance)
+		var bonus_burn = battle_manager.get_bonus_burn_stacks_for_attack(source_instance, target_inst)
 		var old_burn = 0
 		var new_burn = 0
 		var should_apply_burn = false

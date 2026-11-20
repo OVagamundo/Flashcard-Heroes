@@ -15,11 +15,15 @@ var _tutorial_pause_id: StringName = &""
 # Click suppression: after a selection click occurs on an inspectable element,
 # hover peek is suppressed for that element until the cursor exits the element.
 var _click_suppressed_source_id: int = -1
-var _post_drop_suppress_until_msec: int = 0
+var _post_drop_timer: Timer = null
 
 func suppress_post_drop(duration_sec: float = 0.35) -> void:
-	_post_drop_suppress_until_msec = Time.get_ticks_msec() + int(duration_sec * 1000.0)
+	if is_instance_valid(_post_drop_timer) and duration_sec > 0.0:
+		_post_drop_timer.start(duration_sec)
 	_cancel_internal()
+
+func is_post_drop_suppressed() -> bool:
+	return is_instance_valid(_post_drop_timer) and not _post_drop_timer.is_stopped()
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -37,12 +41,17 @@ func _ready() -> void:
 	_dismiss_timer.timeout.connect(_on_dismiss_timer_timeout)
 	add_child(_dismiss_timer)
 
-	if SignalBus.has_signal("interaction_lock_requested"):
-		SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
+	_post_drop_timer = Timer.new()
+	_post_drop_timer.name = "PostDropSuppressTimer"
+	_post_drop_timer.one_shot = true
+	_post_drop_timer.process_mode = Node.PROCESS_MODE_ALWAYS
+	add_child(_post_drop_timer)
+
+	SignalBus.interaction_lock_requested.connect(_on_interaction_lock_requested)
 	SignalBus.tutorial_pause_changed.connect(_on_tutorial_pause_changed)
 
 func _exit_tree() -> void:
-	if SignalBus.has_signal("interaction_lock_requested") and SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
+	if SignalBus.interaction_lock_requested.is_connected(_on_interaction_lock_requested):
 		SignalBus.interaction_lock_requested.disconnect(_on_interaction_lock_requested)
 	if SignalBus.tutorial_pause_changed.is_connected(_on_tutorial_pause_changed):
 		SignalBus.tutorial_pause_changed.disconnect(_on_tutorial_pause_changed)
@@ -88,9 +97,8 @@ func hover_enter(view: Control, request: Dictionary) -> void:
 	_armed_request = request
 
 	var delay: float = InputUtils.HOVER_PEEK_DELAY_SEC
-	var remaining_suppress_ms: int = _post_drop_suppress_until_msec - Time.get_ticks_msec()
-	if remaining_suppress_ms > 0:
-		delay += float(remaining_suppress_ms) / 1000.0
+	if is_instance_valid(_post_drop_timer) and not _post_drop_timer.is_stopped():
+		delay += _post_drop_timer.time_left
 	_timer.start(delay)
 
 func hover_exit(view: Control) -> void:
@@ -245,11 +253,10 @@ func _can_peek() -> bool:
 		return false
 	if GlobalInteractionRouter.is_inspection_locked():
 		return false
-	if is_instance_valid(WindowManager):
-		if WindowManager.has_method("is_choice_window_open") and WindowManager.is_choice_window_open():
-			return false
-		if WindowManager.has_method("is_modal_open") and WindowManager.is_modal_open():
-			return false
+	if WindowManager.is_choice_window_open():
+		return false
+	if WindowManager.is_modal_open():
+		return false
 	return true
 
 func _is_blocked_by_inventory_boundary(view: Control) -> bool:

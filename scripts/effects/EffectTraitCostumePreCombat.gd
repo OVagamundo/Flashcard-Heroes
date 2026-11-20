@@ -35,8 +35,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var costume_units: int = int(active_traits.get("COSTUME", 0))
-	if costume_units < 2:
+	var costume_tier: int = TraitRulesEngine.get_active_tier(active_traits, "COSTUME")
+	if costume_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -53,7 +53,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"ability_trait_costume")
 
 	# L1-L3: Per Costume unit mirror theft
-	if costume_units >= 2 and costume_units <= 4:
+	if costume_tier >= 1 and costume_tier <= 3:
 		for unit in units:
 			if not is_instance_valid(unit) or unit.current_hp <= 0:
 				continue
@@ -75,7 +75,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			var m_armor = mirror_enemy.get_status_effect_amount(&"armor")
 			var m_spikes = mirror_enemy.get_status_effect_amount(&"spikes")
 
-			if costume_units == 2:
+			if costume_tier == 1:
 				# L1 (2 Units): Steal 1 stack of highest status or 1 point of highest stat
 				if m_armor > 0 or m_spikes > 0:
 					if m_armor >= m_spikes:
@@ -96,7 +96,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					else:
 						_steal_pwr(battle_manager, result, mirror_enemy, unit, 1, ability_id)
 
-			elif costume_units == 3:
+			elif costume_tier == 2:
 				# L2 (3 Units): Steal entire highest status or 1 HP + 1 PWR
 				if m_armor > 0 or m_spikes > 0:
 					if m_armor >= m_spikes:
@@ -107,7 +107,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					_steal_hp(battle_manager, result, mirror_enemy, unit, 1, ability_id)
 					_steal_pwr(battle_manager, result, mirror_enemy, unit, 1, ability_id)
 
-			elif costume_units == 4:
+			elif costume_tier == 3:
 				# L3 (4 Units): Steal all Armor and all Spikes or 2 HP + 2 PWR
 				if m_armor > 0 or m_spikes > 0:
 					if m_armor > 0:
@@ -119,7 +119,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 					_steal_pwr(battle_manager, result, mirror_enemy, unit, 2, ability_id)
 
 	# L4 (5 Units): Executed ONCE per team. Steals from enemy with highest total armor+spikes to Hero
-	elif costume_units >= 5:
+	elif costume_tier >= 4:
 		var hero = battle_manager.get_hero_on_team(is_player)
 		if is_instance_valid(hero) and hero.current_hp > 0:
 			var opp_units = battle_manager.get_instances_in_container(opp_tag).filter(func(e):

@@ -25,8 +25,8 @@ func validate() -> bool:
 	var choices: Array = current_question.get("choices", [])
 	if not choices.has(selected_answer_id):
 		return false
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and minigame.has_method("get_current_question_id"):
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame):
 		if minigame.get_current_question_id() != question_id:
 			return false
 	return think_time >= 0.0
@@ -37,8 +37,8 @@ func execute() -> void:
 		push_error("[SubmitFlashcardAnswerAction] Flashcard session rejected an accepted answer.")
 		finish_visuals()
 		return
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode() and minigame.has_method("execute_choice_selected"):
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode():
 		minigame.execute_choice_selected(question_id, selected_answer_id, result)
 
 func yields_for_visuals() -> bool:

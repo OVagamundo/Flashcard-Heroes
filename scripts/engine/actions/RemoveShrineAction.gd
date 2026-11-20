@@ -25,7 +25,7 @@ func validate() -> bool:
 
 func execute() -> void:
 	var shrine = Engine.get_main_loop().root.find_child("Shrine", true, false)
-	if is_instance_valid(shrine) and not ActionQueue.is_headless_mode() and shrine.has_method("execute_remove_visuals"):
+	if is_instance_valid(shrine) and not ActionQueue.is_headless_mode():
 		shrine.execute_remove_visuals(target_uuid, cost, drop_pos)
 	else:
 		# Direct data mutation

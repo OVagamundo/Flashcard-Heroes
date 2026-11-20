@@ -112,52 +112,39 @@ func _update_shadow(shadow: TextureRect) -> void:
 func _connect_signals() -> void:
 	var bus = get_node_or_null("/root/SignalBus")
 	if is_instance_valid(bus):
-		if bus.has_signal("unit_bump_attack"):
-			bus.connect("unit_bump_attack", _on_unit_bump_attack)
-		if bus.has_signal("unit_death_fade"):
-			bus.connect("unit_death_fade", _on_unit_death_fade)
-		if bus.has_signal("unit_summon_fade"):
-			bus.connect("unit_summon_fade", _on_unit_summon_fade)
-		if bus.has_signal("unit_melee_lunge"):
-			bus.connect("unit_melee_lunge", _on_unit_melee_lunge)
-		if bus.has_signal("unit_melee_return"):
-			bus.connect("unit_melee_return", _on_unit_melee_return)
-		if bus.has_signal("unit_flash_effect"):
-			bus.connect("unit_flash_effect", _on_unit_flash_effect)
-		if bus.has_signal("unit_lethal_save"):
-			bus.connect("unit_lethal_save", _on_unit_lethal_save)
+		bus.unit_bump_attack.connect(_on_unit_bump_attack)
+		bus.unit_death_fade.connect(_on_unit_death_fade)
+		bus.unit_summon_fade.connect(_on_unit_summon_fade)
+		bus.unit_melee_lunge.connect(_on_unit_melee_lunge)
+		bus.unit_melee_return.connect(_on_unit_melee_return)
+		bus.unit_lethal_save.connect(_on_unit_lethal_save)
 		# Composable animation effects
-		if bus.has_signal("unit_color_flash"):
-			bus.connect("unit_color_flash", _on_unit_color_flash)
-		if bus.has_signal("unit_deform"):
-			bus.connect("unit_deform", _on_unit_deform)
-		if bus.has_signal("unit_move"):
-			bus.connect("unit_move", _on_unit_move)
+		bus.unit_color_flash.connect(_on_unit_color_flash)
+		bus.unit_deform.connect(_on_unit_deform)
+		bus.unit_move.connect(_on_unit_move)
 
 func _disconnect_signals() -> void:
 	var bus = get_node_or_null("/root/SignalBus")
 	if is_instance_valid(bus):
-		if bus.has_signal("unit_bump_attack") and bus.is_connected("unit_bump_attack", _on_unit_bump_attack):
-			bus.disconnect("unit_bump_attack", _on_unit_bump_attack)
-		if bus.has_signal("unit_death_fade") and bus.is_connected("unit_death_fade", _on_unit_death_fade):
-			bus.disconnect("unit_death_fade", _on_unit_death_fade)
-		if bus.has_signal("unit_summon_fade") and bus.is_connected("unit_summon_fade", _on_unit_summon_fade):
-			bus.disconnect("unit_summon_fade", _on_unit_summon_fade)
-		if bus.has_signal("unit_melee_lunge") and bus.is_connected("unit_melee_lunge", _on_unit_melee_lunge):
-			bus.disconnect("unit_melee_lunge", _on_unit_melee_lunge)
-		if bus.has_signal("unit_melee_return") and bus.is_connected("unit_melee_return", _on_unit_melee_return):
-			bus.disconnect("unit_melee_return", _on_unit_melee_return)
-		if bus.has_signal("unit_flash_effect") and bus.is_connected("unit_flash_effect", _on_unit_flash_effect):
-			bus.disconnect("unit_flash_effect", _on_unit_flash_effect)
-		if bus.has_signal("unit_lethal_save") and bus.is_connected("unit_lethal_save", _on_unit_lethal_save):
-			bus.disconnect("unit_lethal_save", _on_unit_lethal_save)
+		if bus.unit_bump_attack.is_connected(_on_unit_bump_attack):
+			bus.unit_bump_attack.disconnect(_on_unit_bump_attack)
+		if bus.unit_death_fade.is_connected(_on_unit_death_fade):
+			bus.unit_death_fade.disconnect(_on_unit_death_fade)
+		if bus.unit_summon_fade.is_connected(_on_unit_summon_fade):
+			bus.unit_summon_fade.disconnect(_on_unit_summon_fade)
+		if bus.unit_melee_lunge.is_connected(_on_unit_melee_lunge):
+			bus.unit_melee_lunge.disconnect(_on_unit_melee_lunge)
+		if bus.unit_melee_return.is_connected(_on_unit_melee_return):
+			bus.unit_melee_return.disconnect(_on_unit_melee_return)
+		if bus.unit_lethal_save.is_connected(_on_unit_lethal_save):
+			bus.unit_lethal_save.disconnect(_on_unit_lethal_save)
 		# Composable animation effects
-		if bus.has_signal("unit_color_flash") and bus.is_connected("unit_color_flash", _on_unit_color_flash):
-			bus.disconnect("unit_color_flash", _on_unit_color_flash)
-		if bus.has_signal("unit_deform") and bus.is_connected("unit_deform", _on_unit_deform):
-			bus.disconnect("unit_deform", _on_unit_deform)
-		if bus.has_signal("unit_move") and bus.is_connected("unit_move", _on_unit_move):
-			bus.disconnect("unit_move", _on_unit_move)
+		if bus.unit_color_flash.is_connected(_on_unit_color_flash):
+			bus.unit_color_flash.disconnect(_on_unit_color_flash)
+		if bus.unit_deform.is_connected(_on_unit_deform):
+			bus.unit_deform.disconnect(_on_unit_deform)
+		if bus.unit_move.is_connected(_on_unit_move):
+			bus.unit_move.disconnect(_on_unit_move)
 
 # =============================================================================
 # Helper to get parent's UUID

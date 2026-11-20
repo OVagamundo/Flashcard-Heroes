@@ -9,28 +9,28 @@
 
 ## Quick Reference Index
 
-| ID | Issue Title | Severity | Recommended Model | User Approval Required? |
-| :--- | :--- | :--- | :--- | :---: |
-| **`BUG-SIM-01`** | [6 Silent VCR Trait Desyncs in BattleManager](#bug-sim-01-6-silent-vcr-trait-desyncs-in-battlemanager) | **High (VCR Desync)** | Gemini 3.8 Flash | Yes (Aligns combat visuals) |
-| **`BUG-SIM-02`** | [Fire Trait Tier-3 Threshold Mismatch (9 vs 20)](#bug-sim-02-fire-trait-tier-3-threshold-mismatch-9-vs-20) | **Medium (Rule Inconsistency)** | Gemini 3.8 Flash | Yes (Confirms intended threshold) |
-| **`BUG-SIM-03`** | [Specialist Gacha Discount Never Resets Per Turn](#bug-sim-03-specialist-gacha-discount-never-resets-per-turn) | **High (Gameplay Bug)** | Gemini 3.8 Flash | Yes (Restores per-turn discount) |
-| **`BUG-SIM-04`** | [SPECIALIST >= 4 Gold Award Bypasses ON_GOLD_EARNED](#bug-sim-04-specialist--4-gold-award-bypasses-on_gold_earned) | **Medium (Event Bypass)** | Gemini 3.8 Flash | No (Fixes event pipeline) |
-| **`BUG-SIM-05`** | [Dynamic Hero Pack Tags Vanish on Save/Load](#bug-sim-05-dynamic-hero-pack-tags-vanish-on-saveload) | **High (Save Corruption)** | Gemini 4 Argon | No (Fixes save persistence) |
-| **`BUG-SIM-06`** | [EffectCascadeAOE Drains Unrelated Reactions & Drops Visuals](#bug-sim-06-effectcascadeaoe-drains-unrelated-reactions--drops-visuals) | **Medium (Reaction Queue)** | Gemini 3.8 Flash | No (Fixes reaction scoping) |
-| **`BUG-SIM-07`** | [EffectEmpathicLink NPE Risk in CombatSimulator](#bug-sim-07-effectempathiclink-npe-risk-in-combatsimulator) | **Medium (Crash Risk)** | Gemini 3.8 Flash | No (Fixes context routing) |
-| **`BUG-SIM-08`** | [AbilityResolver Unknown Triggers Default to `return true`](#bug-sim-08-abilityresolver-unknown-triggers-default-to-return-true) | **High (Defensive Bug Trap)** | Gemini 3.8 Flash | No (Enforces fail-fast) |
-| **`BUG-SIM-09`** | [InventoryManager Bypasses EffectDefinition on Consumables](#bug-sim-09-inventorymanager-bypasses-effectdefinition-on-consumables) | **High (Content Pipeline)** | Gemini 4 Argon | Yes (Enables consumable effects outside battle) |
-| **`BUG-VFX-01`** | [AnimationCompletionTracker Mid-Air Timeout Cutoffs](#bug-vfx-01-animationcompletiontracker-mid-air-timeout-cutoffs) | **High (Visual Snap Glitch)** | Gemini 3.8 Flash | No (Fixes animation sync) |
-| **`BUG-VFX-02`** | [Double Speed-Scaling Bug in TokenSpendVFX](#bug-vfx-02-double-speed-scaling-bug-in-tokenspendvfx) | **Medium (Speed Factor)** | Gemini 3.8 Flash | No (Fixes visual pacing) |
-| **`BUG-VFX-03`** | [RejectionFeedback Unbound Tween Crash & Permanent Tilt](#bug-vfx-03-rejectionfeedback-unbound-tween-crash--permanent-tilt) | **Medium (Crash / UI Tilt)** | Gemini 3.8 Flash | No (Fixes tween lifecycle) |
-| **`BUG-VFX-04`** | [Missing "gold" Color Branch in BuffNumberProjectile](#bug-vfx-04-missing-gold-color-branch-in-buffnumberprojectile) | **Low (Visual Consistency)** | Gemini 3.8 Flash | No (Adds missing color) |
-| **`BUG-VCR-01`** | [Mid-Combat Inspection & Draw Reads Live Post-Turn State](#bug-vcr-01-mid-combat-inspection--draw-reads-live-post-turn-state) | **High (Snapshot Leak)** | Gemini 4 Argon | No (Enforces Puppet snapshot rule) |
-| **`BUG-VCR-02`** | [Ephemeral Object Instance IDs Serialized into Replays](#bug-vcr-02-ephemeral-object-instance-ids-serialized-into-replays) | **High (Replay Collision)** | Gemini 3.8 Flash | No (Replaces with LocationIdentifier) |
-| **`BUG-UI-01`** | [Localized UI String Comparison for Scene Detection](#bug-ui-01-localized-ui-string-comparison-for-scene-detection) | **High (Localization Fragility)** | Gemini 3.8 Flash | No (Replaces with explicit descriptors) |
-| **`BUG-UI-02`** | [Wall-Clock Input Suppression in GlobalInteractionRouter](#bug-ui-02-wall-clock-input-suppression-in-globalinteractionrouter) | **Medium (Frame-Rate Dependency)**| Gemini 3.8 Flash | No (Replaces with state gating) |
-| **`ENFORCE-TYPE-01`** | [Strict GDScript Compiler Enforcement in project.godot](#5-static-typing--gdscript-compiler-enforcement-enforce-type-01) | **High (Code Quality Gate)** | Gemini 3.8 Flash | Yes (Enables compile-time type errors) |
-| **`TRACK-CONTENT`** | [Content Scaling Engine: Traits, Composable Effects & Auras](#track-a-rapid-content-scaling-engine-phase-2) | **Feature Engine** | Flash / Argon | Yes (Decouples content from engine) |
-| **`TRACK-UIVFX`** | [UI Polish & Animation Engine: VisualRig & VisualCueSequence](#track-b-ui-polish-animation--vfx-engine-phase-4) | **Visual Engine** | Flash / Argon | Yes (Enables juice without breaking VCR) |
+| ID | Issue Title | Status | Severity |
+| :--- | :--- | :---: | :--- |
+| **`BUG-SIM-01`** | [6 Silent VCR Trait Desyncs in BattleManager](#bug-sim-01-6-silent-vcr-trait-desyncs-in-battlemanager) | **[RESOLVED]** | High (VCR Desync) |
+| **`BUG-SIM-02`** | [Fire Trait Threshold Mismatch (9 vs 20 & L2 Burn)](#bug-sim-02-fire-trait-tier-3-threshold-mismatch-9-vs-20) | **[RESOLVED]** | Medium (Rule Inconsistency) |
+| **`BUG-SIM-03`** | [Specialist Gacha Discount Never Resets Per Turn](#bug-sim-03-specialist-gacha-discount-never-resets-per-turn) | **[RESOLVED]** | High (Gameplay Bug) |
+| **`BUG-SIM-04`** | [SPECIALIST >= 4 Gold Award Bypasses ON_GOLD_EARNED](#bug-sim-04-specialist--4-gold-award-bypasses-on_gold_earned) | **[RESOLVED]** | Medium (Event Bypass) |
+| **`BUG-SIM-05`** | [Dynamic Hero Pack Tags Vanish on Save/Load](#bug-sim-05-dynamic-hero-pack-tags-vanish-on-saveload) | **[RESOLVED]** | High (Save Corruption) |
+| **`BUG-SIM-06`** | [EffectShockwave Drains Unrelated Reactions](#bug-sim-06-effectcascadeaoe-drains-unrelated-reactions--drops-visuals) | **[RESOLVED]** | Medium (Reaction Queue) |
+| **`BUG-SIM-07`** | [EffectEmpathicLink NPE Risk](#bug-sim-07-effectempathiclink-npe-risk-in-combatsimulator) | **[RESOLVED]** | Medium (Crash Risk) |
+| **`BUG-SIM-08`** | [AbilityResolver Unknown Triggers Default to `return true`](#bug-sim-08-abilityresolver-unknown-triggers-default-to-return-true) | **[RESOLVED]** | High (Defensive Bug Trap) |
+| **`BUG-SIM-09`** | [InventoryManager Bypasses EffectDefinition on Consumables](#bug-sim-09-inventorymanager-bypasses-effectdefinition-on-consumables) | **[RESOLVED]** | High (Content Pipeline) |
+| **`BUG-VFX-01`** | [AnimationCompletionTracker Mid-Air Timeout Cutoffs](#bug-vfx-01-animationcompletiontracker-mid-air-timeout-cutoffs) | **[RESOLVED]** | High (Visual Snap Glitch) |
+| **`BUG-VFX-02`** | [Double Speed-Scaling Bug in TokenSpendVFX](#bug-vfx-02-double-speed-scaling-bug-in-tokenspendvfx) | **[RESOLVED]** | Medium (Speed Factor) |
+| **`BUG-VFX-03`** | [RejectionFeedback Unbound Tween Crash & Permanent Tilt](#bug-vfx-03-rejectionfeedback-unbound-tween-crash--permanent-tilt) | **[RESOLVED]** | Medium (Crash / UI Tilt) |
+| **`BUG-VFX-04`** | [Missing "gold" & Status Colors in BuffNumberProjectile](#bug-vfx-04-missing-gold-color-branch-in-buffnumberprojectile) | **[RESOLVED]** | Low (Visual Consistency) |
+| **`BUG-VCR-01`** | [Mid-Combat Inspection & Draw Reads Live Post-Turn State](#bug-vcr-01-mid-combat-inspection--draw-reads-live-post-turn-state) | **[RESOLVED]** | High (Snapshot Leak) |
+| **`BUG-VCR-02`** | [Ephemeral Object Instance IDs Serialized into Replays](#bug-vcr-02-ephemeral-object-instance-ids-serialized-into-replays) | **[RESOLVED]** | High (Replay Collision) |
+| **`BUG-UI-01`** | [Localized UI String Comparison for Scene Detection](#bug-ui-01-localized-ui-string-comparison-for-scene-detection) | **[RESOLVED]** | High (Localization Fragility) |
+| **`BUG-UI-02`** | [Wall-Clock Input Suppression in GlobalInteractionRouter](#bug-ui-02-wall-clock-input-suppression-in-globalinteractionrouter) | **[RESOLVED]** | Medium (Frame-Rate Dependency) |
+| **`ENFORCE-TYPE-01`** | [Strict GDScript Compiler Enforcement in project.godot](#5-static-typing--gdscript-compiler-enforcement-enforce-type-01) | **STEP 1 DONE (`=1`)** | High (Code Quality Gate) |
+| **`TRACK-CONTENT`** | [Content Scaling Engine: Traits, Composable Effects & Auras](#track-a-rapid-content-scaling-engine-phase-2) | **PARTIAL** | Feature Engine |
+| **`TRACK-UIVFX`** | [UI Polish & Animation Engine: VisualRig & VisualCueSequence](#track-b-ui-polish-animation--vfx-engine-phase-4) | **PARTIAL** | Visual Engine |
 
 ---
 
@@ -216,17 +216,10 @@
 ## 3. VCR Playback & Command Pipeline Violations
 
 ### `BUG-VCR-01`: Mid-Combat Inspection & Draw Reads Live Post-Turn State
+- **Status**: [RESOLVED]
 - **Severity**: High (Violates the Snapshot Rule: players see future end-of-turn stats)
-- **Files & Lines**:
-  - [WindowManager.gd:1011-1025](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/WindowManager.gd#L1011-L1025) (`_derive_window_payload`)
-  - [UnitInspectionWindow.gd:88, 200-239](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/UnitInspectionWindow.gd#L88)
-  - [BattleView.gd:905-908](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleView.gd#L905-L908) (`_on_gacha_draw_animated`)
-  - [BattleAnimator.gd:742-768, 863-873](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/BattleAnimator.gd#L742-L768)
-- **Root Cause**:
-  When a player clicks a unit to inspect it during combat VCR playback, `WindowManager` queries `GameManager.get_instance_by_uuid(uuid)`. Because the simulation has already finished calculating the turn in memory, this returns the **live, post-turn instance**—revealing future HP, PWR, or even death state before the animation has caught up!
-- **Clean Resolution**:
-  Implement an explicit `VisualSnapshotStore` updated solely as `BattleAnimator` advances through `CombatEvent`s. When VCR playback is active, inspection windows read exclusively from `VisualSnapshotStore`.
-- **Model**: `Gemini 4 Argon`
+- **Resolution**:
+  Added pure `RefCounted` [VisualSnapshotStore.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/VisualSnapshotStore.gd) driven strictly by `BattleAnimator` (`begin_playback`, `apply_event`, `end_playback`). During active VCR playback, `WindowManager._derive_window_payload()` materializes read-only snapshot instances (`is_vcr_snapshot = true`, `snapshot_instances_db`) instead of querying live `BattleManager`, `UnitInspectionWindow`/`ItemInspectionWindow` suppress live signal refreshes, and `BattleAnimator`/`BattleView` prefer snapshot data over live lookups. Verified by Suite 10 VCR Snapshot Isolation & Puppet-Parity tests in [run_fast_suite.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/tests/run_fast_suite.gd).
 
 ---
 
@@ -258,14 +251,10 @@
 ---
 
 ### `BUG-UI-02`: Wall-Clock Input Suppression in GlobalInteractionRouter
+- **Status**: [RESOLVED]
 - **Severity**: Medium (Frame-rate and time-scale dependent input drops)
-- **Files & Lines**:
-  - [GlobalInteractionRouter.gd:323, 725, 736, 942, 1106](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GlobalInteractionRouter.gd#L323) (`Time.get_ticks_msec() + 240`)
-- **Root Cause**:
-  To prevent race conditions between clicking and dragging, `GlobalInteractionRouter` suppresses input by comparing `Time.get_ticks_msec()`. Under frame drops or speed changes (`Engine.time_scale`), this hardcoded millisecond window causes valid clicks to be dropped or clicks to register during animations.
-- **Clean Resolution**:
-  Use explicit state-machine transitions and signal/action awaiting rather than wall-clock timestamp offsets.
-- **Model**: `Gemini 3.8 Flash (High)`
+- **Resolution**:
+  Replaced all `Time.get_ticks_msec()` close-suppression windows in [GlobalInteractionRouter.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/GlobalInteractionRouter.gd) with deterministic process-frame (`Engine.get_process_frames()`) and `ActionQueue.is_busy()` lifecycle gating (`_arm_close_suppression`, `_is_close_suppression_active`), and replaced wall-clock post-drop suppression in [InspectionPeekController.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/InspectionPeekController.gd) with a node-bound `Timer`. Verified by Suite 10 deterministic frame-expiration assertions in [run_fast_suite.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/tests/run_fast_suite.gd).
 
 ---
 
@@ -315,13 +304,14 @@ Once Phase 0 guardrails and the Phase 1 bugfixes are in place, future work divid
 ### Track A: Rapid Content Scaling Engine (Phase 2)
 > **Goal**: Make adding new Hero Packs (e.g. Bounty Hunter, Apprentice), units, items, trinkets, and traits require **zero edits to core engine files** (`BattleManager.gd`, `BattleView.gd`, `EffectHandlers.gd`).
 
-1. **`TraitDefinition` & `HeroPackDefinition` `.tres` Resources**:
-   - Create `TraitDefinition` (`id`, `display_name_key`, `icon`, `badge_color`, `sort_priority`, `tier_thresholds: PackedInt32Array`, `tier_abilities: Array[AbilityDefinition]`).
-   - Traits become standard board-level `AbilityDefinition` listeners evaluated by the exact same `AbilityResolver` + `CombatEvent` pipeline as Trinkets.
-   - Eliminates hardcoded trait checks in `BattleManager.gd`, `BasicAttackEffect.gd`, `EffectHandlers.gd`, `BattleView.gd`, and `UnitInspectionWindow.gd`.
-2. **Derived `AuraEvaluator` (Continuous Stat Queries)**:
-   - Separate **Permanent Base + Buff Deltas** (`base_pwr + permanent_pwr_delta + turn_pwr_delta`) from **Continuous Derived Auras** (`AuraEvaluator.compute_bonus(unit, board_state)`).
-   - Deletes **200+ lines of fake-tag and fake-status compensation math** in [MergeManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/MergeManager.gd#L79-L154). Merging two units only merges their permanent stats, and `AuraEvaluator` recomputes trinket/trait auras cleanly.
+1. **`TraitRulesEngine` Extraction & Threshold Unification (`[PARTIAL — CORE ENGINE DONE]`)**:
+   - **[DONE]** Extracted all inline combat trait rules and threshold math from `BattleManager.gd`, `BasicAttackEffect.gd`, `EffectHandlers.gd`, `BattleHelpers.gd`, `KnockoutProcessor.gd`, and all 18 active `scripts/effects/EffectTrait*.gd` scripts into pure simulation module [TraitRulesEngine.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/TraitRulesEngine.gd). 100% of tier checks now derive strictly from `Constants.TRAIT_DEFINITIONS["levels"]` (`get_tier`/`get_active_tier`/`has_tier`/`get_tier_min`), leaving zero hardcoded trait threshold integers in simulation or effect scripts (including fixing a lingering stale `fire_level >= 9` check in `EffectHandlers.gd`).
+   - **[DONE]** Further decomposed `BattleManager.gd` (**4,190 → 3,152 LOC**, -1,038 lines / -24.8%) by extracting [BoardStatDiffBuilder.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/BoardStatDiffBuilder.gd), [StatusTickProcessor.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/StatusTickProcessor.gd), and presentation-layer [BattleEntranceSequencer.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/BattleEntranceSequencer.gd), and eliminating all remaining `.has_method(` duck-typing guards in `scripts/battle/`, `BattleManager.gd`, and `MergeManager.gd` (now **0**).
+   - **[REMAINING]** Promote traits into `TraitDefinition` & `HeroPackDefinition` `.tres` resources (`id`, `display_name_key`, `icon`, `badge_color`, `sort_priority`, `tier_thresholds`, `tier_abilities`) evaluated via `AbilityResolver`.
+2. **Derived `AuraEvaluator` (Continuous Stat Queries) (`[DONE]`)**:
+   - **[DONE]** Implemented pure simulation [AuraEvaluator.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/battle/AuraEvaluator.gd) backed by first-class `GachaBallInstance.active_auras` (serialized, deep-copied for simulation, and snapshotted in `VisualSnapshotStore` for VCR Puppet Mode).
+   - Migrated all 9 continuous aura scripts (`EffectRustyRingBuff`, `EffectRustyRingPassive`, `EffectBuffDrawnUnit`, `EffectBuffHighLevelUnit`, `EffectTwinCharmScaling`, `EffectDopplegangerScaling`, `EffectSlimeCellScaling`, `EffectGoldenSealScaling`, `EffectUpdatePwrToTokens`) onto `AuraEvaluator` — zero fake `status_effects`, `dynamic_tags`, or `set_meta` flags.
+   - Deleted **246 lines** of hardcoded aura/trinket compensation math from [MergeManager.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/MergeManager.gd) (**626 → 380 LOC**, -39.3%); merges now filter strictly by `component.source_type == &"AURA"` and delegate level-up expiry to `AuraEvaluator.prepare_level_up_auras` / `drain_expired_auras`.
 3. **Composable Atomic `Effect` Primitives + `ValueProvider`s + Tiered Arrays**:
    - Replace 75 bespoke `Effect*.gd` files with **~15 atomic `EffectDefinition` subclasses** (`ModifyStatEffect`, `DealDamageEffect`, `HealEffect`, `ApplyStatusEffect`, `SpawnEntityEffect`, `TransformEntityEffect`, `GrantCurrencyEffect`, `ConditionalEffect`, `RepeatEffect`).
    - Support tiered level arrays: `@export var amounts_by_level: PackedInt32Array = [3, 6, 12]` (cuts `.tres` file volume by 60%+).
@@ -341,13 +331,45 @@ Once Phase 0 guardrails and the Phase 1 bugfixes are in place, future work divid
    - Never set `top_level = true` on a Control inside a container.
    - Bind **100% of Tweens** to the node being animated (`create_tween()`, never unbound `get_tree().create_tween()`).
 2. **Decompose the 5 UI Monoliths (`8,804` LOC combined)**:
-   - **`GachaBallView.gd` (2,439 LOC)** $\rightarrow$ Split into separate `.tscn` compositions (`BattleUnitCardView.tscn`, `CapsuleItemView.tscn`, `TrinketBadgeView.tscn`) sharing reusable child components (`RubberDragController`, `StatusPillStrip`, `OutlinePriorityController`).
-   - **`Main.gd` (1,907 LOC)** $\rightarrow$ Extract `AppSceneRouter`, `HudTopBarPresenter`, `GachaMachineView`, and declarative `EncounterDropZoneBar`.
-   - **`WindowManager.gd` (1,873 LOC)** $\rightarrow$ Extract `ModalStackController`, `DrawerPresenter`, `TooltipPositioner` (synchronous minimum-size math instead of 8-frame offscreen parking), and `LocationViewRegistry` (O(1) dictionary lookups instead of full-tree BFS).
-   - **Consolidate Duplicate Encounters & Animators**: Replace the **10+ copy-pasted Bezier ball-toss implementations** with a shared `ArcTossAnimator`, and consolidate `Reward` vs `RewardElite` vs `Shop` into `EncounterBase`.
+   - **`GachaBallView.gd` (`2,674 → 1,672` LOC, -37.5%)** $\rightarrow$ Extracted:
+     - [GachaBallStatusStrip.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GachaBallStatusStrip.gd) (**[DONE]** — battle/overlay stat layouts, plastic pill styling, dynamic status icons, stat/status pop animations with typed tween tracking, and tooltip click routing),
+     - [GachaBallDragController.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GachaBallDragController.gd) (**[DONE]** — rubber-toy velocity deformation, padded shader drag preview construction, drag notification lifecycle, snap-back, landing bounce, and trinket activation bounce),
+     - [GachaBallHoverOutlineController.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GachaBallHoverOutlineController.gd) (**[DONE]** — hover/press tweening, z-index draw priority, selection feedback, and priority-ordered shader outline resolution).
+     - Eliminated all **8** `.has_method(` and **4** `is_instance_valid(ActionQueue)` guards in `GachaBallView.gd` (now **0**).
+     - Remaining: optional `.tscn` composition split (`BattleUnitCardView.tscn`, `CapsuleItemView.tscn`, `TrinketBadgeView.tscn`).
+   - **`Main.gd` (`1,830 → 658` LOC, -64.0%)** $\rightarrow$ Extracted:
+     - [EncounterDropZoneBar.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/EncounterDropZoneBar.gd) (**[DONE]** — Confirm, Shrine/UTG Split Action + Instruction, and Reward Collect/Sell drop-zone overlays with typed `ActionZoneCategoryFilter`),
+     - [HudTopBarPresenter.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/HudTopBarPresenter.gd) (**[DONE]** — visual gold/token/bonus-timer counters, animation locks, typed pop tweens, day label, and speed/pause controls),
+     - [GachaMachineBarPresenter.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GachaMachineBarPresenter.gd) (**[DONE]** — tier badges, cost/count labels, knob hover, draw choreography, and vertical landing bounces).
+     - Eliminated all **18** `.has_method(`, **4** `.has_signal(`, and **5** `is_instance_valid(ActionQueue)` guards in `Main.gd` (now **0**).
+   - **`WindowManager.gd` (`2,571 → 1,448` LOC, -43.7%)** $\rightarrow$ Extracted:
+     - [LocationViewRegistry.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/LocationViewRegistry.gd) (**[DONE]** — O(1) dictionary lookups replacing full-tree BFS),
+     - [TooltipPositioner.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/TooltipPositioner.gd) (**[DONE]** — pure screen-space rect, sizing, and viewport clamping math),
+     - [DrawerAnimator.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/DrawerAnimator.gd) (**[DONE]** — typed tween/open-close state machine replacing `wm_opening`/`wm_closing`/`wm_anim_tween` metadata flags, dead vertical step helpers, and 13 `.has_method(` guards),
+     - [GlossaryClusterController.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GlossaryClusterController.gd) (**[DONE]** — recursive glossary spec BFS, multi-column outward tray layout, modal child windows, glossary toggle pill, plus fixed duplicate `remove_at(i)` bug).
+     - Remaining: optional `ModalStackController` extraction & synchronous minimum-size math.
+   - **`BattleAnimator.gd` (`1,567 → 427` LOC, -72.8%)** $\rightarrow$ Extracted:
+     - [BattlePuppetRegistry.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/BattlePuppetRegistry.gd) (**[DONE]** — VCR puppet registration, board slot lookups, screen-space position snapshots, trinket view lookup/activation, and snapshot-first item/holder resolution),
+     - [BattleBoardEventPresenter.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/animations/BattleBoardEventPresenter.gd) (**[DONE]** — `DRAW`, `SUMMON`, unified currency/timer animations, `ITEM_TRANSFER`, `ITEM_DISCARD`, `ITEM_EQUIP`, incubator `MOVE`, player death departure, and deduplicated capsule arc tossing).
+     - Eliminated all **38+** `.has_method(` and `.has_signal(` guards and dead legacy state in `BattleAnimator.gd` (now **0**).
+   - **`BattleView.gd` (`1,348 → 487` LOC, -63.9%)** $\rightarrow$ Extracted:
+     - [BattleTurnPreviewOverlay.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/BattleTurnPreviewOverlay.gd) (**[DONE]** — actor order number overlay and held turn preview board),
+     - [BattleDrawAnimator.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/BattleDrawAnimator.gd) (**[DONE]** — gacha draw flight & landing choreography, initial unit entry stagger, capsule-open VFX, deduplicated snapshot/live draw visual resolution, and battle tutorials).
+     - Deleted **204 LOC** of unreferenced legacy Trait HUD code and unified machine landing/reaction bounces via static helpers on [GachaMachineBarPresenter.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/GachaMachineBarPresenter.gd). Eliminated all **25** `.has_method(` / `.has_signal(` / `is_instance_valid(ActionQueue)` guards (now **0**).
+   - **`GlobalInteractionRouter.gd` (`1,242 → 718` LOC, -42.2%)** $\rightarrow$ Extracted:
+     - [InteractionTargetRules.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/InteractionTargetRules.gd) (**[DONE]** — pure container functional-group mapping, tier-change detection, valid action/move targeting rules, and view instance lookup),
+     - [DragSessionController.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/DragSessionController.gd) (**[DONE]** — centralized drag session state, placeholder/source visibility, overlay preview tracking, and `DragPreviewLayer` lifecycle),
+     - [CloseSuppressionState.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/CloseSuppressionState.gd) (**[DONE]** — deterministic frame/action-scoped close suppression state machine).
+     - Eliminated all **28** `.has_method(` / `.has_signal(` / `is_instance_valid(ActionQueue)` guards (now **0**).
+   - **`GameManager.gd` (`1,525 → 669` LOC, -56.1%)** $\rightarrow$ Extracted:
+     - [PathNodeGenerator.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/systems/PathNodeGenerator.gd) (**[DONE]** — deduplicated daily path node pool construction & deterministic RNG draw ordering),
+     - [ReplayStateSerializer.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/systems/ReplayStateSerializer.gd) (**[DONE]** — logical/replay state snapshots, temporary encounter container serialization, and `DirectorRunState` checkpointing),
+     - [EncounterTransactionEngine.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/systems/EncounterTransactionEngine.gd) (**[DONE]** — authoritative Shop, Reward/Elite Reward, Shrine, RestSite, and Dojo transaction simulations & director state updates).
+     - Eliminated all **16** `.has_method(` / `is_instance_valid(ActionQueue)` guards (now **0**).
+   - **Consolidate Duplicate Encounters & Animators**: Replace the **14 copy-pasted Bezier/parabolic ball-toss implementations** with shared [ArcTossAnimator.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/ArcTossAnimator.gd) (**[DONE]**), lift shared inspection window layout/recipe/preview helpers into [InspectionWindow.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/InspectionWindow.gd) (**[DONE]**), and consolidate all 6 encounter scenes — `Reward` (`773 → 415`), `RewardElite` (`542 → 280`), `Shop` (`460 → 275`), `UnitTrainingGround` (`700 → 433`), `Shrine` (`570 → 261`), and `RestSite` (`524 → 416`) — onto shared [EncounterBase.gd](file:///Users/danhh/Desktop/Flashcard%20Heroes/scripts/ui/EncounterBase.gd) (`433` LOC, net `-1,056` LOC, all **150** defensive guards eliminated) (**[DONE]**).
+   - **Project-Wide Fail-Fast Guard Sweep (`scripts/`)**: Eliminated **100%** of remaining `.has_method(`, `.has_signal(`, `is_instance_valid(ActionQueue)`, and `is_instance_valid(self)` defensive guards across the entire `scripts/` codebase — including animations, core UI/inventory, replay/recorder, `FlashcardMinigame`, and all 32 `scripts/engine/actions/` scripts (**0 defensive guards remaining project-wide**) (**[DONE]**).
 3. **Data-Driven `VisualCueSequence` Resources**:
-   - Route **100% of `CombatEvent` types** through `AnimationRegistry` (eliminating inline `SUMMON`, `DEATH`, `DRAW`, `ITEM_TRANSFER` blocks in `BattleAnimator.gd`).
-   - Allow any ability, item, or status effect to reference a `VisualCueSequence.tres` (`caster_cue` $\rightarrow$ `delivery_cue` $\rightarrow$ `impact_cue`). Adding custom ability animations requires zero edits to engine core.
+   - Route remaining inline board event choreography (`BattleBoardEventPresenter`) through `AnimationRegistry` / `VisualCueSequence.tres` (`caster_cue` $\rightarrow$ `delivery_cue` $\rightarrow$ `impact_cue`) so adding custom ability animations requires zero edits to engine core.
    - Replace reflection-based `ArtStyleManager` with Godot Theme variations.
 
 - **Model**: `Gemini 3.8 Flash (High)` for UI views, VFX shaders & animations; `Gemini 4 Argon` for `VisualRig` core layout & `WindowManager` decomposition.

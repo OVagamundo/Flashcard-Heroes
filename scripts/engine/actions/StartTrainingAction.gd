@@ -41,8 +41,8 @@ func execute() -> void:
 		GameManager.run_state.training_unit_uuid = target_unit_uuid
 		GameManager.run_state.training_stat = stat_type
 
-	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)
-	if is_instance_valid(utg) and not ActionQueue.is_headless_mode() and utg.has_method("execute_start_training_visuals"):
+	var utg := Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false) as UnitTrainingGround
+	if is_instance_valid(utg) and not ActionQueue.is_headless_mode():
 		utg.execute_start_training_visuals(target_unit_uuid, stat_type, drop_pos)
 	else:
 		if is_instance_valid(GameManager.run_state):

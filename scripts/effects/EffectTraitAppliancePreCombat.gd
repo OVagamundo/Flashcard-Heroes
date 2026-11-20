@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var appliance_units: int = int(active_traits.get("APPLIANCE", 0))
-	if appliance_units < 2:
+	var appliance_tier: int = TraitRulesEngine.get_active_tier(active_traits, "APPLIANCE")
+	if appliance_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -50,7 +50,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		# L1 (2 Units): Cleanse Static
 		var st_stacks = unit.get_status_effect_amount(&"static")
 		if st_stacks > 0:
-			unit.clear_status_effect(&"static")
+			unit.clear_status_effect_silent(&"static")
 			result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 				"source_uuid": trinket.ball_uuid,
 				"target_uuids": [unit.ball_uuid],
@@ -59,10 +59,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			}))
 
 		# L2 (3 Units): Cleanse Burn
-		if appliance_units >= 3:
+		if appliance_tier >= 2:
 			var bn_stacks = unit.get_status_effect_amount(&"burn")
 			if bn_stacks > 0:
-				unit.clear_status_effect(&"burn")
+				unit.clear_status_effect_silent(&"burn")
 				result.add_event(CombatEvent.new(CombatEvent.Type.STATUS_EFFECT, {
 					"source_uuid": trinket.ball_uuid,
 					"target_uuids": [unit.ball_uuid],

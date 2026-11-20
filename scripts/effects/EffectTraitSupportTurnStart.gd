@@ -29,8 +29,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var support_units: int = int(active_traits.get("SUPPORT", 0))
-	if support_units < 4:
+	if not TraitRulesEngine.has_tier(active_traits, "SUPPORT", 3):
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP

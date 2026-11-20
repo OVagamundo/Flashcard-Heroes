@@ -20,10 +20,7 @@ func execute() -> void:
 	var event_log: Dictionary = GameManager.simulate_reward_draw(tier)
 	var reward_view = Engine.get_main_loop().root.find_child("Reward", true, false)
 	if is_instance_valid(reward_view) and not ActionQueue.is_headless_mode():
-		if reward_view.has_method("play_transaction_log"):
-			reward_view.play_transaction_log(event_log)
-		elif reward_view.has_method("execute_draw_tier_visuals"):
-			reward_view.execute_draw_tier_visuals(tier, event_log.get("drawn_instance", null))
+		reward_view.play_transaction_log(event_log)
 
 func yields_for_visuals() -> bool:
 	var reward_view = Engine.get_main_loop().root.find_child("Reward", true, false)

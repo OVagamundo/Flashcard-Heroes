@@ -634,7 +634,7 @@ trait.plant.4,"When you press Ready, all Plants gain 1 Spikes and +1 HP. The fro
 trait.plant.5,"At the start of each turn, all Plants gain 1 Spikes and +1 HP. Whenever a Plant receives healing, it gains 1 Spikes.","No início de cada turno, todas as Plantas ganham 1 de Espinhos e +1 de Vida. Sempre que uma Planta recebe cura, ganha 1 de Espinhos."
 trait.plant.name,Plant,Planta
 trait.specialist.2,"[color=#ffd166][b]When a Battle begins[/b][/color], if you have 0 Tokens remaining, gain 1 Token.","[color=#ffd166][b]Quando uma batalha começa[/b][/color], se você tiver 0 Fichas restantes, ganha 1 Ficha."
-trait.specialist.3,The first Gacha draw of each battle costs 1 less Token (minimum 1).,O primeiro uso de uma Máquina Gacha em cada batalha custa 1 Ficha a menos (mínimo de 1).
+trait.specialist.3,The first Gacha draw of each turn costs 1 less Token (minimum 1).,O primeiro uso de uma Máquina Gacha em cada turno custa 1 Ficha a menos (mínimo de 1).
 trait.specialist.4,"When a Specialist knocks out an enemy, it awards +1 Gold (maximum 1 per turn and 5 per battle).","Quando um Especialista nocauteia um inimigo, ganha +1 de Ouro (máximo de 1 por turno e 5 por batalha)."
 trait.specialist.5,"When you press Ready, a battle-only copy of your lowest-tier or lowest-level unit is summoned to the Shelf. At the start of each turn, the frontmost Specialist gains +1 PWR per 5 Gold held.","Ao apertar Pronto, uma cópia exclusiva desta batalha da sua unidade de menor Tier ou Nível é invocada para a Estante. No início de cada turno, o Especialista mais à frente ganha +1 de Poder a cada 5 de Ouro possuídos."
 trait.specialist.name,Specialist,Especialista

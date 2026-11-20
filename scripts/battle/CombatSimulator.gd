@@ -702,42 +702,6 @@ func drain_cascade(bm) -> Array[CombatEvent]:
 			
 	return captured_events
 
-# ============================================================================
-# LEGACY DRAIN BRIDGES (Deprecated: preserved for backward-compatibility)
-# ============================================================================
-
-## Drain pending reactions inline during effect execution (legacy wrapper).
-func drain_reactions_inline(start_index: int, bm) -> void:
-	var evts = drain_and_capture_reactions_inline(start_index, bm)
-	_inline_events.append_array(evts)
-
-func drain_and_capture_reactions_inline(start_index: int, bm) -> Array[CombatEvent]:
-	if start_index >= _crr.size():
-		return []
-	
-	var reactions_to_process: Array[EffectRequest] = []
-	for i in range(start_index, _crr.size()):
-		reactions_to_process.append(_crr._pending_reactions[i])
-	
-	_crr._pending_reactions.resize(start_index)
-	reactions_to_process.sort_custom(CausalReactionResolver.compare_reactions)
-	
-	var captured_events: Array[CombatEvent] = []
-	for request in reactions_to_process:
-		var inline_start_index := captured_events.size()
-		resolve_effect_request(request, captured_events, {"__skip_death_triggers__": true}, bm)
-		_tag_trinket_events(captured_events, request, bm, inline_start_index)
-		
-		if not _crr.is_empty():
-			captured_events.append_array(drain_and_capture_reactions_inline(start_index, bm))
-			
-	return captured_events
-
-## Drain ONLY execute_before_knockout reactions (legacy wrapper).
-func drain_lethal_reactions(start_index: int, bm) -> void:
-	var evts = drain_lethal_counters(bm)
-	_inline_events.append_array(evts)
-
 ## Collect and clear inline events. Returns the collected events.
 func collect_and_clear_inline_events() -> Array[CombatEvent]:
 	var events = _inline_events.duplicate()

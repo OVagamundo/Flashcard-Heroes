@@ -17,12 +17,9 @@ func validate() -> bool:
 
 func execute() -> void:
 	var event_log: Dictionary = GameManager.simulate_rest_site_draw(tier)
-	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)
+	var rest_site := Engine.get_main_loop().root.find_child("RestSite", true, false) as ResourceSite
 	if is_instance_valid(rest_site) and not ActionQueue.is_headless_mode():
-		if rest_site.has_method("play_transaction_log"):
-			rest_site.play_transaction_log(event_log)
-		elif rest_site.has_method("execute_draw_tier_visuals"):
-			rest_site.execute_draw_tier_visuals(tier, event_log.get("prize_data", {}))
+		rest_site.play_transaction_log(event_log)
 
 func yields_for_visuals() -> bool:
 	var rest_site = Engine.get_main_loop().root.find_child("RestSite", true, false)

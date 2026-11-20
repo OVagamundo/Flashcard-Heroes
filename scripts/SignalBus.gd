@@ -10,9 +10,6 @@ extends Node
 # RUN & SCENE MANAGEMENT SIGNALS
 # -----------------------------------------------------------------------------
 
-## Emitted when a new game is requested
-signal new_game_requested
-
 ## Emitted when a run should start
 ## @param hero_def_id: StringName - The hero definition ID
 ## @param deck_id: StringName - The deck ID
@@ -39,28 +36,11 @@ signal title_scene_requested
 ## Emitted when path choice scene is requested
 signal path_choice_scene_requested
 
-## Emitted when shop scene is requested
-## @param context: Dictionary - Shop context with instances and reroll cost
-signal shop_scene_requested(context: Dictionary)
-
-## Emitted when battle scene is requested
-## @param encounter_def: EncounterDefinition - The encounter to start
-signal battle_scene_requested(encounter_def: EncounterDefinition)
-
-## Emitted when rest site scene is requested
-signal rest_site_scene_requested
-
 # Battle events
 
 ## Emitted when reward scene is requested
 ## @param context: Dictionary - Reward context
 signal reward_scene_requested(context: Dictionary)
-
-
-## Emitted when flashcard minigame scene is requested
-## @param run_state: RunState - The current run state
-## @param active_deck: Array[String] - The active deck IDs
-signal flashcard_minigame_requested(run_state: RunState, active_deck: Array[StringName])
 
 ## Emitted when battle victory is acknowledged
 signal battle_victory_acknowledged
@@ -75,10 +55,6 @@ signal trait_threshold_reached(trinket_uuid: String, definition_id: StringName, 
 # -----------------------------------------------------------------------------
 # BATTLE SYSTEM SIGNALS
 # -----------------------------------------------------------------------------
-
-## Emitted when battle starts with encounter definition
-## @param encounter_def: EncounterDefinition - The encounter to start
-signal battle_start_requested(encounter_def: EncounterDefinition)
 
 ## Emitted when battle ends with results
 ## @param results: Dictionary - Battle results (winner, rewards, etc.)
@@ -98,19 +74,6 @@ signal combat_pause_changed(is_paused: bool)
 ## @param old_value: int - The previous value
 ## @param new_value: int - The new value
 signal unit_stat_changed(unit_uuid: String, stat_name: StringName, old_value: int, new_value: int)
-
-## [DEPRECATED] Use unit_stat_changed instead for granular updates
-## Emitted when a unit's stats change (HP, PWR, etc.) - triggers full refresh
-## @param unit_uuid: String - The UUID of the unit whose stats changed
-signal unit_stats_changed(unit_uuid: String)
-
-## VCR Pattern: Visual stat update for battle animations (doesn't modify logical state)
-signal unit_visual_stat_update(unit_uuid: String, new_value: int, delta: int, stat_type: String)
-
-## Triggers a flash effect on a unit with a specific color
-## @param unit_uuid: String - The UUID of the unit to flash
-## @param flash_color: Color - The color to flash to
-signal unit_flash_effect(unit_uuid: String, flash_color: Color)
 
 ## Emitted when a unit's flash animation completes
 ## @param unit_uuid: String - The UUID of the unit that finished flashing
@@ -172,13 +135,7 @@ signal unit_melee_return(unit_uuid: String)
 ## @param unit_uuid: String - The UUID of the unit that finished returning
 signal unit_melee_return_finished(unit_uuid: String)
 
-## Emitted by the animator after playing death fades so the BattleManager can
-## actually remove dead units from containers/registry.
-## @param dead_unit_uuids: Array[String] - UUIDs to remove
-signal apply_deaths_requested(dead_unit_uuids: Array)
-
 ## Request that a unit view plays its death fade animation (visual only).
-## The actual removal from data happens via apply_deaths_requested after fade.
 signal unit_death_fade(unit_uuid: String, stay_in_place: bool)
 
 ## Emitted when a unit's death fade animation completes
@@ -217,25 +174,6 @@ signal battle_inventory_transition_started(is_opening: bool)
 ## Emitted when the battle inventory finishes its animation
 signal battle_inventory_transition_finished
 
-# -----------------------------------------------------------------------------
-# UNIT LABEL OVERLAY SIGNALS (Decoupled stat display system)
-# -----------------------------------------------------------------------------
-
-## Emitted when a unit view is registered for label overlay tracking
-## @param uuid: String - The unit UUID
-## @param view: GachaBallView - The view to track
-signal unit_view_registered(uuid: String, view: GachaBallView)
-
-## Emitted when a unit view is unregistered from label overlay tracking
-## @param uuid: String - The unit UUID being unregistered
-signal unit_view_unregistered(uuid: String)
-
-## Emitted when a unit's label should be updated in the overlay
-## @param uuid: String - The unit UUID
-## @param stat_name: StringName - The stat name (hp, pwr, burn_stacks, armor_stacks)
-## @param value: int - The new value
-signal unit_label_update(uuid: String, stat_name: StringName, value: int)
-
 ## Emitted for each combat animation event (driven by BattleAnimator)
 ## @param event: CombatEvent - The animation event being played
 signal log_animation_event(event: CombatEvent)
@@ -261,9 +199,6 @@ signal gacha_draw_animation_completed(draw_result: InventoryOperations.DrawResul
 ## Emitted when gacha tokens change (canonical signal for both logic and UI presentation)
 ## @param new_amount: int - The new token amount
 signal gacha_tokens_changed(new_amount: int)
-
-## @deprecated - Use gacha_tokens_changed instead. Preserved only for backward compatibility.
-signal gacha_tokens_visual_changed(new_amount: int)
 
 ## Emitted when the shrine receives a user action (remove or transform)
 ## @param payload: Dictionary containing 'type', 'instance_uuid', etc.
@@ -303,11 +238,6 @@ signal inventory_action_completed(target_uuids: Array)
 ## The animation layer uses this to orchestrate the visual merge sequence.
 ## @param context: Dictionary - Contains all data the animator needs
 signal merge_animation_requested(context: Dictionary)
-
-## Emitted when inventory action is attempted
-## @param source_loc: LocationIdentifier - Source location
-## @param target_loc: LocationIdentifier - Target location
-signal try_inventory_action(source_loc: LocationIdentifier, target_loc: LocationIdentifier)
 
 ## Emitted when inventory action is invalid
 ## @param source_loc: LocationIdentifier - Source location
@@ -406,24 +336,6 @@ signal reward_sell_zone_activated(is_drag: bool, mouse_position: Vector2)
 ## @param context: InteractionContext - The interaction context
 signal interaction_context_received(context: InteractionContext)
 
-## Emitted when a choice is made
-## @param choice_id: StringName - The choice ID
-## @param source_loc: LocationIdentifier - Source location
-## @param target_loc: LocationIdentifier - Target location
-## @param recipe_id: StringName - The recipe ID
-signal choice_made(choice_id: StringName, source_loc: LocationIdentifier, target_loc: LocationIdentifier, recipe_id: StringName)
-
-## Emitted when inspection is requested
-## @param loc: LocationIdentifier - Location to inspect
-## @param source_view: Control - The source view
-signal inspection_requested(loc: LocationIdentifier, source_view: Control)
-
-## Emitted when trait inspection is requested
-## @param trait_id: String - The trait ID ("FIRE", "EARTH")
-## @param source_view: Control - The source view (TraitTracker)
-signal trait_inspection_requested(trait_id: String, source_view: Control)
-
-
 ## Emitted when a view is selected
 ## @param view: Control - The selected view
 ## @param location: LocationIdentifier - The location
@@ -435,10 +347,6 @@ signal view_deselected(view: Control)
 
 ## Emitted when an entity's inspection panel starts or stops using this source.
 signal view_inspection_changed(view: Control, active: bool)
-
-## Emitted when an invalid action is triggered
-## @param view: Control - The view that triggered the action
-signal invalid_action_triggered(view: Control)
 
 ## Emitted when a node is selected
 ## @param node_def: PathNodeDefinition - The selected node definition
@@ -452,23 +360,8 @@ signal interaction_lock_requested(locked: bool)
 # WINDOW MANAGEMENT SIGNALS
 # -----------------------------------------------------------------------------
 
-## Emitted when inspection windows should be closed
-signal inspection_windows_close_requested
-
-## Emitted when all inspection windows should be closed
-signal all_inspection_windows_close_requested
-
-## Emitted when inventory inspection is requested
-signal inspect_inventory_requested
-
-## Emitted when Discard display is requested
-signal display_discard_pile_requested
-
 ## Emitted when modal should be closed
 signal close_modal_requested
-
-## Emitted when the top contextual window should be closed
-signal close_top_contextual_requested
 
 ## Emitted when the glossary details lock is toggled on/off
 signal glossary_lock_changed(is_locked: bool)
@@ -476,22 +369,9 @@ signal glossary_lock_changed(is_locked: bool)
 ## Emitted when background is clicked
 signal background_clicked
 
-## Emitted when an ambiguous action requires the player to choose (e.g., Merge or Swap).
-## @param context: Dictionary - The context for the ChoiceWindow to populate itself.
-signal open_choice_window_requested(context: Dictionary)
-
 # -----------------------------------------------------------------------------
 # FLASHCARD SYSTEM SIGNALS
 # -----------------------------------------------------------------------------
-
-## Emitted when flashcard minigame ends
-## @param results: Dictionary - Minigame results (score, cards reviewed, etc.)
-signal flashcard_minigame_completed(results: Dictionary)
-
-## Emitted when flashcard progress is updated
-## @param card_id: String - The card ID that was updated
-## @param new_progress: FlashcardProgress - The updated progress
-signal flashcard_progress_updated(card_id: StringName, new_progress: FlashcardProgress)
 
 ## Emitted when results are acknowledged
 signal results_acknowledged

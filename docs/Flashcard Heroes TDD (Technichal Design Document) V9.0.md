@@ -57,27 +57,40 @@ Logical locations are categorized by their lifecycle:
 
 ### 3.1 Gameplay & Simulation
 - **Battle System (`BattleManager.gd`)**: Orchestrates combat via a strict **"Simulate First, Present Later"** model. (See [CombatSystem.md](CombatSystem.md) for full phase and event logic).
-  - Delegates to specialized helpers:
+  - Delegates to specialized helpers under `scripts/battle/`:
     - `CombatSimulator`: Combat loop, actor turn queue, reaction processing, and command pipeline execution.
     - `EffectHandlers`: Processing of raw stat/summon mutations into `CombatEvent` streams.
     - `BattleState`: Instance storage and container indexing during battle.
     - `InventoryOperations`: Exclusive handler for in-combat inventory mutations (draws, equips, merges, discards).
-  - **Snapshotting**: Captures value-based snapshots of board states before turn execution to ensure views render consistent visual baselines.
+    - `AuraEvaluator`: Pure continuous derived-aura evaluator (`source_type == &"AURA"`) replacing legacy merge compensation patches.
+    - `TraitRulesEngine`: Centralized combat trait threshold and tier rule evaluation.
+    - `BoardStatDiffBuilder`, `StatusTickProcessor`, `BattleEntranceSequencer`: Focused simulation helpers for board stat diffs, status ticks, and battle entrance choreography.
+    - `VisualSnapshotStore`: Immutable VCR puppet snapshot store stepped strictly by `BattleAnimator` (`begin_playback`, `apply_event`, `end_playback`) so mid-combat UI and inspection windows never read post-turn live instances.
+- **Run & Encounter Orchestration (`GameManager.gd`)**: Manages run lifecycle, scene transitions, and encounter sessions, delegating to focused system modules under `scripts/systems/`:
+  - `PathNodeGenerator`: Daily path node pool construction and deterministic RNG draw ordering.
+  - `ReplayStateSerializer`: Logical/replay state snapshots, temporary encounter serialization, and `DirectorRunState` checkpointing.
+  - `EncounterTransactionEngine`: Authoritative Shop, Reward/Elite Reward, Shrine, RestSite, and Dojo transaction simulations.
 - **Ability System (`AbilityResolver.gd`)**: A source-aware broadcast system that queries active ability entries from units, items, and traits in a unified priority pass (**Unit -> Item -> Trinket**).
 - **Encounter System (`EncounterGenerator.gd`)**: Budget-based procedural enemy generator (`3 + (Day-1)`) utilizing a greedy fill algorithm to guarantee 100% budget spend. (See [EncounterSystem.md](EncounterSystem.md)).
 - **Flashcard System (`FlashcardManager.gd`)**: Persistent autoload managing SRS challenge sessions, weighted distractor generation, and mid-challenge streak unlocks. (See [FlashcardSystem.md](FlashcardSystem.md)).
-- **Inventory System (`InventoryManager.gd`)**: Stateless logic controller executing validated moves, equips, merges, and item replacements. (See [InventoryManager.md](InventoryManager.md)).
+- **Inventory & Merge Systems (`InventoryManager.gd`, `MergeManager.gd`)**: Stateless logic controllers executing validated moves, equips, merges (filtering transient `&"AURA"` components cleanly), and item replacements. (See [InventoryManager.md](InventoryManager.md)).
 
 ### 3.2 Interactions & UI Flow
-- **Global Interaction Router (GIR)**: The central command factory that translates raw user input (`InteractionContext`) into validated `GameAction` commands. (See [UIInteraction.md](UIInteraction.md)).
-- **Window Manager (`WindowManager.gd`)**: Manages the hierarchical lifecycle of modals and inspection peek windows using "Show-before-Measure" layout synchronization and a strict five-tier CanvasLayer system:
+- **Global Interaction Router (`GlobalInteractionRouter.gd`)**: Central command factory that translates raw user input (`InteractionContext`) into validated `GameAction` commands, delegating to `InteractionTargetRules`, `DragSessionController`, and frame/action-scoped `CloseSuppressionState`. (See [UIInteraction.md](UIInteraction.md)).
+- **Main Shell (`Main.gd`)**: Top-level viewport host delegating HUD, drop zones, and gacha machines to `HudTopBarPresenter`, `EncounterDropZoneBar`, and `GachaMachineBarPresenter`.
+- **Battle Presentation (`BattleView.gd`, `BattleAnimator.gd`, `GachaBallView.gd`)**:
+  - `BattleView` delegates actor-order/held-turn previews to `BattleTurnPreviewOverlay` and draw choreography to `BattleDrawAnimator`.
+  - `BattleAnimator` delegates puppet lookup/registration to `BattlePuppetRegistry` and board-level event choreography to `BattleBoardEventPresenter`.
+  - `GachaBallView` delegates status strips, drag gestures, and hover/synergy outlines to `GachaBallStatusStrip`, `GachaBallDragController`, and `GachaBallHoverOutlineController`.
+- **Shared Encounter Views (`EncounterBase.gd` & `ArcTossAnimator.gd`)**: All 6 non-combat encounter scenes (`Reward`, `RewardElite`, `Shop`, `UnitTrainingGround`, `Shrine`, `RestSite`) inherit from `EncounterBase` and share unified parabolic capsule-toss choreography via `ArcTossAnimator`.
+- **Window Manager (`WindowManager.gd`)**: Manages the hierarchical lifecycle of modals and inspection peek windows using "Show-before-Measure" layout synchronization, delegating to `LocationViewRegistry` (O(1) slot/view registry), `TooltipPositioner`, `DrawerAnimator`, and `GlossaryClusterController`, across a strict CanvasLayer hierarchy:
   - `BackgroundUILayer` (Layer 40): Inventory drawers and discard trays.
   - `HUDLayer` (Layer 60): Persistent HUD and Gacha Machines.
   - `EffectsLayer` (Layer 90): Standard visual effects.
   - `ModalLayer` (Layer 120): Modals, popups, and locked inspection windows.
   - `GlobalVFXLayer` (Layer 150): High-priority currency animations (Gold/Token Gain/Spend) and screen transitions.
   - `CursorLayer` (Layer 1024): 1000Hz raw software cursor overlay (`CursorManager.gd`).
-- **Interactive Overlays**: Dedicated service zones (Shop, Shrine, Rewards) using `DropZone.gd` and visual proxies for stable drag-and-drop transactions.
+- **Interactive Overlays**: Dedicated service zones (Shop, Shrine, Rewards, Training) using `EncounterDropZoneBar` + `DropZone.gd` and visual proxies for stable drag-and-drop transactions.
 - **Audio System (`AudioManager.gd` & `Audio.gd`)**: Global SFX pooling (16 pre-instantiated players), dynamic BGM pitch tweens, and semantic sound registry mapping. (See [AudioSystem.md](AudioSystem.md)).
 
 ---

@@ -16,9 +16,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	
 
 	# Emit lethal save signal for visual effect (golden glow + float)
-	if SignalBus.has_signal("unit_lethal_save"):
-		SignalBus.emit_signal("unit_lethal_save", saved_uuid)
-		await animator.wait_for_animation_completion("lethal_save", saved_uuid)
+	SignalBus.unit_lethal_save.emit(saved_uuid)
+	await animator.wait_for_animation_completion("lethal_save", saved_uuid)
 	
 	# Unit survives at 1 HP (not heal_amount which is the delta)
 	# heal_amount = 1 - old_hp, so if old_hp was -5, heal_amount is 6

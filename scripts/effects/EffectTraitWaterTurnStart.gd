@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var water_souls: int = int(active_traits.get("WATER", 0))
-	if water_souls < 12:
+	var water_tier: int = TraitRulesEngine.get_active_tier(active_traits, "WATER")
+	if water_tier < 3:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -71,14 +71,14 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	}))
 
 	# L5 (32 Souls): All allies consume all Burn and Static stacks, healing 1 HP per stack consumed
-	if water_souls >= 32:
+	if water_tier >= 5:
 		for ally in living_allies:
 			var burn_st = ally.get_status_effect_amount(&"burn")
 			var static_st = ally.get_status_effect_amount(&"static")
 			var total_stacks = burn_st + static_st
 			if total_stacks > 0:
-				ally.clear_status_effect(&"burn")
-				ally.clear_status_effect(&"static")
+				ally.clear_status_effect_silent(&"burn")
+				ally.clear_status_effect_silent(&"static")
 				var ally_old_hp = ally.current_hp
 				var ally_new_hp = battle_manager.apply_stat_delta(ally, "hp", total_stacks, source_uuid, C.ACTION_HEAL)
 				var a_def = ally.get_definition()

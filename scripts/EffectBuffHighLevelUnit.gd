@@ -61,6 +61,42 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 	var raw_pwr = parameters.get("pwr_amount", 1)
 	var pwr_amount: int = int(raw_pwr) if raw_pwr != null else 1
 	
+	var trinket_name: String = ""
+	if is_instance_valid(trinket_instance):
+		var trinket_def = trinket_instance.get_definition()
+		if is_instance_valid(trinket_def):
+			trinket_name = tr(trinket_def.name_key)
+	var effect_target_tier := int(parameters.get("target_tier", 0))
+	var effect_target_level := int(parameters.get("target_level", 2))
+	var effect_target_trait := String(parameters.get("target_trait", "")).to_lower()
+	var effect_ability_id: StringName = &"ability_trinket_veteran_insignia"
+	if not effect_target_trait.is_empty():
+		trinket_name = trinket_name if not trinket_name.is_empty() else "%s Insignia" % effect_target_trait.capitalize()
+		effect_ability_id = StringName("ability_%s_insignia_draw" % effect_target_trait)
+	elif effect_target_tier > 0:
+		trinket_name = trinket_name if not trinket_name.is_empty() else "Tier %d Insignia" % effect_target_tier
+		effect_ability_id = StringName("ability_tier%d_insignia_draw" % effect_target_tier)
+	elif effect_target_level == 3:
+		trinket_name = trinket_name if not trinket_name.is_empty() else "Master Insignia"
+		effect_ability_id = &"ability_level3_insignia_draw"
+	elif trinket_name.is_empty():
+		trinket_name = "Veteran Insignia"
+
+	var raw_tier = parameters.get("target_tier", 0)
+	var target_tier: int = int(raw_tier) if raw_tier != null else 0
+	var target_trait := String(parameters.get("target_trait", "")).to_upper()
+	var raw_level = parameters.get("target_level", 2)
+	var target_level: int = int(raw_level) if raw_level != null else 2
+	var aura_key: StringName = AuraEvaluator.make_key(&"insignia", _source_uuid)
+	var aura_meta: Dictionary = {
+		"hp_amount": hp_amount,
+		"pwr_amount": pwr_amount,
+		"target_level": target_level,
+		"target_tier": target_tier,
+		"target_trait": target_trait,
+		"trinket_name": trinket_name,
+	}
+
 	for target_uuid in targets_to_process:
 		# Get the target instance
 		var target_instance = battle_manager.get_instance(target_uuid)
@@ -84,11 +120,6 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 		if target_def.category != &"UNIT":
 			continue
 		
-		var raw_tier = parameters.get("target_tier", 0)
-		var target_tier: int = int(raw_tier) if raw_tier != null else 0
-		var target_trait := String(parameters.get("target_trait", "")).to_upper()
-		var raw_level = parameters.get("target_level", 2)
-		var target_level: int = int(raw_level) if raw_level != null else 2
 		# Heroes can receive trait-based insignia buffs. They do not participate in
 		# level- or tier-based insignia matching.
 		if target_def.is_hero and target_trait.is_empty():
@@ -104,67 +135,26 @@ func execute(_source_uuid: String, _targets: Array[String], battle_manager: Node
 			if target_instance.level != target_level:
 				continue
 		
-		var buff_tag: StringName
-		if not target_trait.is_empty():
-			buff_tag = StringName("trait_insignia_buffed_%s_%s" % [_source_uuid, target_trait.to_lower()])
-		elif target_tier > 0:
-			buff_tag = StringName("tier_insignia_buffed_%s_%s" % [_source_uuid, target_tier])
-		elif target_level == 2:
-			buff_tag = StringName("veteran_insignia_buffed_%s" % _source_uuid)
-		else:
-			buff_tag = StringName("insignia_buffed_%s_%s" % [_source_uuid, target_level])
-		# Check recursion prevention tag
-		if target_instance.has_tag(buff_tag):
+		# Prevent duplicate aura application for this insignia instance
+		if target_instance.has_aura(aura_key):
 			continue
 		
-		# Mark as buffed to prevent recursion
-		target_instance.add_tag(buff_tag)
-		
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			target_instance, aura_key, hp_amount, pwr_amount,
+			_source_uuid, AuraEvaluator.KIND_INSIGNIA,
+			{"keep_registered": true, "silent": is_simulation, "meta": aura_meta}
+		)
 		if is_simulation:
-			# Capture old stats
-			var old_hp: int = target_instance.current_hp
-			var old_pwr: int = target_instance.current_pwr
-			var max_hp: int = target_def.base_hp
-			
-			# Apply HP & PWR buff as conditional trinket bonus
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, true)
-			var new_hp: int = target_instance.current_hp
-			var new_pwr: int = target_instance.current_pwr
-			
 			batched_target_uuids.append(target_uuid)
 			batched_target_names.append(BattleHelpers.get_instance_display_name(target_instance))
-			batched_old_hp.append(old_hp)
-			batched_new_hp.append(new_hp)
-			batched_max_hp.append(max_hp)
-			batched_old_pwr.append(old_pwr)
-			batched_new_pwr.append(new_pwr)
+			batched_old_hp.append(rec_res.old_hp)
+			batched_new_hp.append(rec_res.new_hp)
+			batched_max_hp.append(target_def.base_hp)
+			batched_old_pwr.append(rec_res.old_pwr)
+			batched_new_pwr.append(rec_res.new_pwr)
 			state_applied_any = true
-			
 		else:
-			# Non-simulation: apply immediately
-			battle_manager.set_conditional_trinket_bonus(target_instance, _source_uuid, hp_amount, pwr_amount, true, false)
 			state_applied_any = true
-
-	var trinket_name: String = ""
-	if is_instance_valid(trinket_instance):
-		var trinket_def = trinket_instance.get_definition()
-		if is_instance_valid(trinket_def):
-			trinket_name = tr(trinket_def.name_key)
-	var effect_target_tier := int(parameters.get("target_tier", 0))
-	var effect_target_level := int(parameters.get("target_level", 2))
-	var effect_target_trait := String(parameters.get("target_trait", "")).to_lower()
-	var effect_ability_id: StringName = &"ability_trinket_veteran_insignia"
-	if not effect_target_trait.is_empty():
-		trinket_name = trinket_name if not trinket_name.is_empty() else "%s Insignia" % effect_target_trait.capitalize()
-		effect_ability_id = StringName("ability_%s_insignia_draw" % effect_target_trait)
-	elif effect_target_tier > 0:
-		trinket_name = trinket_name if not trinket_name.is_empty() else "Tier %d Insignia" % effect_target_tier
-		effect_ability_id = StringName("ability_tier%d_insignia_draw" % effect_target_tier)
-	elif effect_target_level == 3:
-		trinket_name = trinket_name if not trinket_name.is_empty() else "Master Insignia"
-		effect_ability_id = &"ability_level3_insignia_draw"
-	elif trinket_name.is_empty():
-		trinket_name = "Veteran Insignia"
 
 	if is_simulation and not batched_target_uuids.is_empty():
 		# Single Log message for all targets

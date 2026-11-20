@@ -249,7 +249,7 @@ static func resolve_guardian_intercept(
 
 	# Tank L3: Intercept ANY physical attack aimed at the ally directly behind it
 	var team_traits: Dictionary = battle_manager.get_active_traits("PLAYER" if tgt_is_player_unit else "ENEMY")
-	if team_traits.get("TANK", 0) >= 4:
+	if TraitRulesEngine.has_tier(team_traits, "TANK", 3):
 		var ahead_unit = battle_manager._get_slot_ahead(target_inst)
 		if is_instance_valid(ahead_unit) and ahead_unit.current_hp > 0 and battle_manager.has_trait(ahead_unit, "TANK"):
 			res.intercepted = true

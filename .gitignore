@@ -32,15 +32,19 @@ Thumbs.db
 
 # Build artifacts
 build/
+Build/
 bin/
 export/
 builds/
 
 # Logs and temporary files
 *.log
+log.txt
 *.sqlite
 *.sqlite3
 logs/
+__pycache__/
+*.pyc
 
 # Local development settings
 .env

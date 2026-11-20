@@ -1912,7 +1912,7 @@ msgid "trait.specialist.2"
 msgstr "[color=#ffd166][b]Quando uma batalha começa[/b][/color], se você tiver 0 Fichas restantes, ganha 1 Ficha."
 
 msgid "trait.specialist.3"
-msgstr "O primeiro uso de uma Máquina Gacha em cada batalha custa 1 Ficha a menos (mínimo de 1)."
+msgstr "O primeiro uso de uma Máquina Gacha em cada turno custa 1 Ficha a menos (mínimo de 1)."
 
 msgid "trait.specialist.4"
 msgstr "Quando um Especialista nocauteia um inimigo, ganha +1 de Ouro (máximo de 1 por turno e 5 por batalha)."

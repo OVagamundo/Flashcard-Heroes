@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var tank_units: int = int(active_traits.get("TANK", 0))
-	if tank_units < 2:
+	var tank_tier: int = TraitRulesEngine.get_active_tier(active_traits, "TANK")
+	if tank_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -51,10 +51,10 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			continue
 
 		var should_buff := false
-		if tank_units >= 3:
+		if tank_tier >= 2:
 			# L2: All Tanks gain 1 Armor
 			should_buff = true
-		elif tank_units >= 2:
+		elif tank_tier >= 1:
 			# L1: Frontmost Tank gains 1 Armor
 			should_buff = (unit == frontmost_tank)
 

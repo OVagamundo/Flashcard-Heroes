@@ -137,6 +137,9 @@ var _touch_press_active: bool = false
 var _touch_press_position: Vector2 = Vector2.ZERO
 var _is_landing_bounce_active: bool = false
 var _landing_bounce_until_msec: int = 0
+var _status_strip: GachaBallStatusStrip = GachaBallStatusStrip.new()
+var _drag_controller: GachaBallDragController = GachaBallDragController.new()
+var _hover_outline_controller: GachaBallHoverOutlineController = GachaBallHoverOutlineController.new()
 
 func is_landing_bounce_active() -> bool:
 	return _is_landing_bounce_active and Time.get_ticks_msec() < _landing_bounce_until_msec
@@ -173,37 +176,23 @@ func _ready() -> void:
 	if is_instance_valid(bus):
 		bus.connect("view_selected", _on_view_selected)
 		bus.connect("view_deselected", _on_view_deselected)
-		# Safety fallback: ensure visual state matches global selection truth
-		if bus.has_signal("selection_changed"):
-			bus.connect("selection_changed", _on_selection_changed)
+		bus.selection_changed.connect(_on_selection_changed)
 		bus.connect("inventory_action_completed", _on_inventory_action_completed)
 		if not bus.unit_deform_finished.is_connected(_on_unit_deform_finished):
 			bus.unit_deform_finished.connect(_on_unit_deform_finished)
-		
-		# unit_visual_stat_update is still handled here for puppet mode updates 
-		if bus.has_signal("unit_visual_stat_update"):
-			if not bus.is_connected("unit_visual_stat_update", _on_unit_visual_stat_update):
-				bus.connect("unit_visual_stat_update", _on_unit_visual_stat_update)
-			
-		if bus.has_signal("drag_ended"):
-			if not bus.is_connected("drag_ended", _on_drag_ended):
-				bus.drag_ended.connect(_on_drag_ended)
-				
-		if bus.has_signal("battle_inventory_changed"):
-			if not bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
-				bus.connect("battle_inventory_changed", _on_battle_inventory_changed)
+		if not bus.drag_ended.is_connected(_on_drag_ended):
+			bus.drag_ended.connect(_on_drag_ended)
+		if not bus.battle_inventory_changed.is_connected(_on_battle_inventory_changed):
+			bus.battle_inventory_changed.connect(_on_battle_inventory_changed)
 
-		if bus.has_signal("run_data_changed"):
-			if not bus.is_connected("run_data_changed", _on_run_data_changed):
-				bus.connect("run_data_changed", _on_run_data_changed)
+		if not bus.run_data_changed.is_connected(_on_run_data_changed):
+			bus.run_data_changed.connect(_on_run_data_changed)
 
-		if bus.has_signal("show_merge_target_indicators"):
-			if not bus.is_connected("show_merge_target_indicators", _on_show_merge_target_indicators):
-				bus.connect("show_merge_target_indicators", _on_show_merge_target_indicators)
+		if not bus.show_merge_target_indicators.is_connected(_on_show_merge_target_indicators):
+			bus.show_merge_target_indicators.connect(_on_show_merge_target_indicators)
 
-		if bus.has_signal("hide_merge_target_indicators"):
-			if not bus.is_connected("hide_merge_target_indicators", _on_hide_merge_target_indicators):
-				bus.connect("hide_merge_target_indicators", _on_hide_merge_target_indicators)
+		if not bus.hide_merge_target_indicators.is_connected(_on_hide_merge_target_indicators):
+			bus.hide_merge_target_indicators.connect(_on_hide_merge_target_indicators)
 		# NOTE: Animation signals (flash, bump, death, summon, melee, lethal_save)
 	
 	# Connect click handlers for status effect icons (burn/armor)
@@ -238,45 +227,14 @@ func _needs_hover_visual_update() -> bool:
 	return false
 
 func _update_drag_deformation(delta: float) -> void:
-	# Drag deformation: Apply rubber-toy physics to drag preview based on velocity
-	if not _is_dragging: return
-	if not is_instance_valid(_drag_preview): return
-	
-	var mouse_pos = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_global_mouse_position()
-	
-	# Skip velocity calculation on first frame to prevent initial spike
-	if _drag_first_frame:
-		_drag_first_frame = false
-		_last_mouse_pos = mouse_pos
-		return
-	
-	var velocity = (mouse_pos - _last_mouse_pos) / max(delta, 0.001)
-	_last_mouse_pos = mouse_pos
-	
-	# Smooth velocity for less jittery deformation
-	_drag_velocity = _drag_velocity.lerp(velocity, 0.25)
-	
-	# --- Pendulum swing (realistic momentum-based) ---
-	var target_rotation = clamp(_drag_velocity.x * 0.0001, -0.12, 0.12)
-	_drag_preview.rotation = lerp(_drag_preview.rotation, target_rotation, 0.15)
-	
-	# --- Stretch only when moving UP (sag effect) ---
-	var stretch_factor := 0.0
-	# Clamp velocity to prevent infinite stretch on potential spikes
-	var clamped_velocity_y = max(_drag_velocity.y, -2000.0)
-	
-	if clamped_velocity_y < -100: # Only when moving up fast enough
-		# Limit max stretch to 20% (0.2) to prevent "spaghetti" effect
-		stretch_factor = clamp(-clamped_velocity_y * 0.00005, 0.0, 0.2)
-	
-	# Target scale - return to 1.0 when not stretching
-	var target_scale = Vector2(1.0 - stretch_factor * 0.15, 1.0 + stretch_factor)
-	
-	# Quick return to normal scale (faster lerp when near 1.0)
-	var lerp_speed = 0.3 if stretch_factor < 0.01 else 0.15
-	_drag_preview.scale = _drag_preview.scale.lerp(target_scale, lerp_speed)
+	_drag_controller.update_drag_deformation(self, delta)
+
+func _enter_tree() -> void:
+	if is_instance_valid(_location):
+		WindowManager.register_location_view(_location, self)
 
 func _exit_tree() -> void:
+	WindowManager.unregister_location_view(self)
 	SignalBus.view_inspection_changed.disconnect(_on_view_inspection_changed)
 	if is_instance_valid(_inspection_trigger):
 		_inspection_trigger.cancel()
@@ -319,12 +277,12 @@ func _exit_tree() -> void:
 	if is_instance_valid(bus):
 		if bus.is_connected("battle_inventory_changed", _on_battle_inventory_changed):
 			bus.disconnect("battle_inventory_changed", _on_battle_inventory_changed)
-		if bus.is_connected("run_data_changed", _on_run_data_changed):
-			bus.disconnect("run_data_changed", _on_run_data_changed)
-		if bus.has_signal("show_merge_target_indicators") and bus.is_connected("show_merge_target_indicators", _on_show_merge_target_indicators):
-			bus.disconnect("show_merge_target_indicators", _on_show_merge_target_indicators)
-		if bus.has_signal("hide_merge_target_indicators") and bus.is_connected("hide_merge_target_indicators", _on_hide_merge_target_indicators):
-			bus.disconnect("hide_merge_target_indicators", _on_hide_merge_target_indicators)
+		if bus.run_data_changed.is_connected(_on_run_data_changed):
+			bus.run_data_changed.disconnect(_on_run_data_changed)
+		if bus.show_merge_target_indicators.is_connected(_on_show_merge_target_indicators):
+			bus.show_merge_target_indicators.disconnect(_on_show_merge_target_indicators)
+		if bus.hide_merge_target_indicators.is_connected(_on_hide_merge_target_indicators):
+			bus.hide_merge_target_indicators.disconnect(_on_hide_merge_target_indicators)
 
 	# If this view is being freed during a drag, centrally end the drag ONLY if it is the source
 	if GlobalInteractionRouter.is_drag_active():
@@ -441,6 +399,7 @@ func populate(loc: LocationIdentifier, visual_data: Dictionary, is_inspectable: 
 	if selection_ring:
 		selection_ring.visible = false
 	set_meta("location_identifier", loc) # For InteractionManager and WindowManager
+	WindowManager.register_location_view(loc, self)
 
 	if visual_data.is_empty():
 		definition_id = &""
@@ -683,9 +642,7 @@ func _update_trait_trinket_visuals(animate_if_changed: bool) -> void:
 			level = i + 1
 			
 	if animate_if_changed and level != _last_trait_level:
-		var bus = get_node_or_null("/root/SignalBus")
-		if is_instance_valid(bus) and bus.has_signal("trait_threshold_reached"):
-			bus.emit_signal("trait_threshold_reached", _instance_uuid, definition_id, is_enemy)
+		SignalBus.trait_threshold_reached.emit(_instance_uuid, definition_id, is_enemy)
 		
 	_last_trait_level = level
 	_last_soul_count = current_souls
@@ -831,7 +788,7 @@ func set_is_interactive(is_interactive: bool) -> void:
 	self._is_interactive = is_interactive
 
 func set_animation_controller_active(active: bool) -> void:
-	if is_instance_valid(_anim_controller) and _anim_controller.has_method("set_active"):
+	if is_instance_valid(_anim_controller):
 		_anim_controller.set_active(active)
 
 ## Configure the interaction context for this view
@@ -857,54 +814,15 @@ func _create_interaction_context(event_type: StringName, pointer_pos: Vector2 = 
 	return context
 
 func _get_hover_fx_mode() -> int:
-	if not _is_inspectable:
-		return HoverFxMode.OFF
-	if not is_instance_valid(_location):
-		return HoverFxMode.OFF
-	if InputUtils.prefers_touch_input():
-		return HoverFxMode.OFF
-
-	var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-	if context_group == &"InventoryGrid":
-		return HoverFxMode.OFF
-	if context_group == &"BattleBoard":
-		return HoverFxMode.BATTLE_NO_SHEEN
-	return HoverFxMode.OFF
+	return _hover_outline_controller.get_hover_fx_mode(self)
 
 func _set_hover_state(active: bool, play_sound: bool = false) -> void:
-	if active and _get_hover_fx_mode() == HoverFxMode.OFF:
-		active = false
-	if _is_hovered == active:
-		return
-	_is_hovered = active
-	_update_hover_draw_priority()
-
-	if is_landing_bounce_active():
-		return
-
-	if active and play_sound:
-		Audio.play_sfx("ui_hover", RNGManager.cosmetic_rng.randf_range(1.05, 1.12))
-
-	_animate_hover_to(1.0 if active else 0.0, 0.16 if active else 0.12)
-	if not active:
-		_animate_press_to(0.0, 0.08)
+	_hover_outline_controller.set_hover_state(self, active, play_sound)
 
 # Inspection peek and long-press are handled centrally via InspectionTrigger.
 
 func _can_begin_drag() -> bool:
-	if not _is_interactive:
-		return false
-	if GlobalInteractionRouter and GlobalInteractionRouter.is_combat_locked():
-		return false
-	if GlobalInteractionRouter and GlobalInteractionRouter.is_vcr_playing():
-		return false
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
-		return false
-	if is_instance_valid(_location):
-		var context_group = GlobalInteractionRouter.get_context_group(_location.container)
-		if context_group == &"InspectionOnly":
-			return false
-	return true
+	return _drag_controller.can_begin_drag(self)
 
 func _begin_touch_drag() -> void:
 	var drag_payload := _prepare_drag_payload()
@@ -914,173 +832,16 @@ func _begin_touch_drag() -> void:
 	force_drag(drag_payload["data"], drag_payload["preview"])
 
 func _prepare_drag_payload() -> Dictionary:
-	if not _can_begin_drag():
-		return {}
-
-	_drag_initiated_for_click = true
-	_pressed_pending_click = false
-	if is_instance_valid(_inspection_trigger):
-		_inspection_trigger.cancel()
-
-	# --- Drag Deformation: Start tracking ---
-	_is_dragging = true
-	_drag_first_frame = true
-	var current_pointer: Vector2 = GlobalInteractionRouter.get_last_pointer_position() if is_instance_valid(GlobalInteractionRouter) else get_global_mouse_position()
-	_last_mouse_pos = current_pointer
-	_drag_velocity = Vector2.ZERO
-	if is_instance_valid(icon_rect):
-		_original_icon_scale = icon_rect.scale
-		_original_icon_rotation = icon_rect.rotation
-
-	var drag_visual := _build_drag_preview_visual()
-	var engine_preview := _build_drag_engine_preview_stub()
-
-	_drag_preview = drag_visual
-	_drag_preview.scale = Vector2.ONE
-	_drag_preview.pivot_offset = Vector2.ZERO
-	_last_mouse_pos = current_pointer
-
-	var placeholder = Control.new()
-	placeholder.custom_minimum_size = self.size
-	get_parent().add_child(placeholder)
-	get_parent().move_child(placeholder, get_index())
-
-	GlobalInteractionRouter.start_drag_visuals(self, placeholder)
-	GlobalInteractionRouter.set_drag_overlay_preview(drag_visual)
-	var origin_ctx = _create_interaction_context(&"DRAG_ORIGIN")
-	GlobalInteractionRouter.start_drag(origin_ctx)
-
-	if not GlobalInteractionRouter.is_drag_active():
-		GlobalInteractionRouter.end_drag_visuals(false)
-		if is_instance_valid(drag_visual):
-			drag_visual.queue_free()
-		_drag_preview = null
-		_is_dragging = false
-		_drag_initiated_for_click = false
-		return {}
-
-	return {
-		"data": {"source_loc": _location},
-		"preview": engine_preview,
-	}
+	return _drag_controller.prepare_drag_payload(self)
 
 func _build_drag_preview_visual() -> Control:
-	var drag_texture: Texture2D = icon_rect.texture
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-	if unit_sprite and unit_sprite.texture:
-		drag_texture = unit_sprite.texture
-
-	var has_capsule_overlay: bool = _has_overlay_heuristic()
-	var is_battle_shelf_capsule: bool = GameManager.is_in_battle and _is_shelf_capsule()
-	var capsule_preview_size: float = float(C.GACHA_CAPSULE_DIAMETER) * (_size_scale if is_battle_shelf_capsule else 1.0)
-	var current_slot_size: float = capsule_preview_size if has_capsule_overlay else float(C.SLOT_SIZE_BASE) * _size_scale
-	var preview_size: Vector2 = Vector2(current_slot_size, current_slot_size)
-	var container_size: Vector2 = preview_size * 2.0
-	var offset: Vector2 = -preview_size / 2.0
-	var is_item_preview: bool = _entity_type == &"ITEM"
-	var preview_scale: float = current_slot_size / C.GACHA_CAPSULE_DIAMETER if has_capsule_overlay else _size_scale
-	var authored_preview_size: Vector2 = Vector2(drag_texture.get_size()) * preview_scale
-
-	var preview_container = Control.new()
-	preview_container.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	preview_container.z_index = RenderingServer.CANVAS_ITEM_Z_MAX
-	preview_container.custom_minimum_size = container_size
-	preview_container.size = container_size
-
-	var preview = TextureRect.new()
-	preview.texture = drag_texture
-	preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	preview.stretch_mode = TextureRect.STRETCH_SCALE
-	_match_icon_texture_filter(preview)
-	if has_capsule_overlay:
-		var current_unit_size: float = (float(C.UNIT_SPRITE_SIZE) / 2.0) * preview_scale
-		var unit_size: Vector2 = Vector2(current_unit_size, current_unit_size)
-		var displayed_size: Vector2 = authored_preview_size if is_item_preview else unit_size
-		preview.custom_minimum_size = displayed_size
-		preview.size = displayed_size
-		preview.position = offset + (preview_size - displayed_size) / 2.0
-	elif is_item_preview:
-		preview.custom_minimum_size = authored_preview_size
-		preview.size = authored_preview_size
-		preview.position = offset + (preview_size - authored_preview_size) / 2.0
-	else:
-		preview.custom_minimum_size = preview_size
-		preview.size = preview_size
-		preview.position = offset
-	preview_container.add_child(preview)
-	if icon_rect.material and (not has_capsule_overlay or _is_selected):
-		_add_padded_drag_outline(preview_container, preview, drag_texture)
-
-	if has_capsule_overlay:
-		var overlay_texture: Texture2D = load(GACHABALL_OVERLAY_PATH)
-		if overlay_texture:
-			var overlay_preview = TextureRect.new()
-			overlay_preview.texture = overlay_texture
-			if _visual_incubating:
-				overlay_preview.modulate = INCUBATOR_CAPSULE_TINT
-			overlay_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-			overlay_preview.stretch_mode = TextureRect.STRETCH_SCALE
-			overlay_preview.custom_minimum_size = preview_size
-			overlay_preview.size = preview_size
-			overlay_preview.position = offset
-			preview_container.add_child(overlay_preview)
-			preview_container.move_child(overlay_preview, 0)
-
-	_set_preview_tree_mouse_ignore(preview_container)
-	return preview_container
-
-func _add_padded_drag_outline(preview_container: Control, preview: TextureRect, source_texture: Texture2D) -> void:
-	var outline_texture: Texture2D = SpriteOutline.padded_texture(source_texture)
-	var source_size: Vector2 = Vector2(source_texture.get_size())
-	var pixels_per_source_pixel: Vector2 = preview.size / source_size
-	var displayed_padding: Vector2 = float(SpriteOutline.PADDING) * pixels_per_source_pixel
-	var outline_preview := TextureRect.new()
-	outline_preview.texture = outline_texture
-	outline_preview.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	outline_preview.stretch_mode = TextureRect.STRETCH_SCALE
-	_match_icon_texture_filter(outline_preview)
-	outline_preview.custom_minimum_size = preview.size + displayed_padding * 2.0
-	outline_preview.size = outline_preview.custom_minimum_size
-	outline_preview.position = preview.position - displayed_padding
-	var outline_material: ShaderMaterial = icon_rect.material.duplicate() as ShaderMaterial
-	assert(outline_material != null, "GachaBallView drag outline requires a ShaderMaterial.")
-	outline_material.set_shader_parameter("outline_enabled", true)
-	if _is_selected:
-		outline_material.set_shader_parameter("outline_color", Color.WHITE)
-		outline_material.set_shader_parameter("outline_width", 3.0)
-	outline_preview.material = outline_material
-	preview_container.add_child(outline_preview)
-	preview_container.move_child(outline_preview, preview.get_index())
-
-func _build_drag_engine_preview_stub() -> Control:
-	var preview_stub := Control.new()
-	preview_stub.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	preview_stub.custom_minimum_size = Vector2.ONE
-	preview_stub.size = Vector2.ONE
-	preview_stub.modulate.a = 0.0
-	return preview_stub
-
-func _set_preview_tree_mouse_ignore(node: Node) -> void:
-	if node is Control:
-		node.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	for child in node.get_children():
-		_set_preview_tree_mouse_ignore(child)
+	return _drag_controller.build_drag_preview_visual(self)
 
 func _animate_hover_to(target: float, duration: float) -> void:
-	if _interaction_mode == &"INSPECTION_ONLY":
-		return
-	if is_instance_valid(_hover_tween):
-		_hover_tween.kill()
-	_hover_tween = create_tween()
-	_hover_tween.tween_method(_set_hover_amount, _hover_amount, target, duration).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	_hover_outline_controller.animate_hover_to(self, target, duration)
 
 func _animate_press_to(target: float, duration: float) -> void:
-	if _interaction_mode == &"INSPECTION_ONLY":
-		return
-	if is_instance_valid(_press_tween):
-		_press_tween.kill()
-	_press_tween = create_tween()
-	_press_tween.tween_method(_set_press_amount, _press_amount, target, duration).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
+	_hover_outline_controller.animate_press_to(self, target, duration)
 
 func _set_hover_amount(value: float) -> void:
 	_hover_amount = clampf(value, 0.0, 1.0)
@@ -1088,62 +849,21 @@ func _set_hover_amount(value: float) -> void:
 func _set_press_amount(value: float) -> void:
 	_press_amount = clampf(value, 0.0, 1.0)
 
-func _update_hover_animation(delta: float) -> void:
-	var mode: int = _get_hover_fx_mode()
-	if _is_dragging or GlobalInteractionRouter.is_drag_active():
-		mode = HoverFxMode.OFF
-
-	if mode == HoverFxMode.OFF and _is_hovered:
-		_set_hover_state(false, false)
-
-	_apply_hover_visuals(mode)
+func _update_hover_animation(_delta: float) -> void:
+	_hover_outline_controller.update_hover_animation(self)
 
 func _apply_hover_visuals(mode: int) -> void:
-	if is_landing_bounce_active():
-		scale = Vector2.ONE
-		rotation = 0.0
-		_apply_inventory_brightness(mode)
-		return
-
-	if mode == HoverFxMode.INVENTORY_SPHERE:
-		pivot_offset = get_capsule_rect().get_center()
-	else:
-		pivot_offset = Vector2(size.x / 2.0, C.SLOT_UNIT_OFFSET_Y + C.UNIT_SPRITE_SIZE)
-	var transform_factor: float = INVENTORY_TRANSFORM_FACTOR if mode == HoverFxMode.INVENTORY_SPHERE else 1.0
-
-	var hover_scale = 1.0 + (HOVER_SCALE * _hover_amount * transform_factor)
-	var press_scale = 1.0 - (PRESS_SQUASH * _press_amount * transform_factor)
-	var stretch_x = 1.0 + (_press_amount * 0.04 * transform_factor)
-	var stretch_y = 1.0 - (_press_amount * 0.06 * transform_factor)
-	var final_scale = hover_scale * press_scale
-	scale = Vector2(final_scale * stretch_x, final_scale * stretch_y)
-	rotation = 0.0
-
-	_apply_inventory_brightness(mode)
+	_hover_outline_controller.apply_hover_visuals(self, mode)
 
 func _apply_inventory_brightness(mode: int) -> void:
-	var sprite = _get_active_visual_sprite()
-	if not is_instance_valid(sprite):
-		return
-
-	if mode == HoverFxMode.INVENTORY_SPHERE:
-		var effective_hover = _hover_amount
-		if _is_selected:
-			effective_hover = maxf(effective_hover, 1.0)
-			
-		var brightness = 1.0 + (INVENTORY_BRIGHTNESS_BOOST * effective_hover)
-		sprite.modulate = Color(brightness, brightness, brightness, 1.0)
-	else:
-		sprite.modulate = Color.WHITE
+	_hover_outline_controller.apply_inventory_brightness(self, mode)
 
 func _get_active_visual_sprite() -> TextureRect:
 	if not is_instance_valid(icon_rect):
 		return null
-
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
+	var unit_sprite: TextureRect = icon_rect.get_node_or_null("UnitSprite") as TextureRect
 	if is_instance_valid(unit_sprite) and unit_sprite.visible:
 		return unit_sprite
-
 	return icon_rect
 
 func _match_icon_texture_filter(item: CanvasItem) -> void:
@@ -1153,13 +873,7 @@ func _match_icon_texture_filter(item: CanvasItem) -> void:
 		item.texture_filter = icon_rect.texture_filter
 
 func _update_hover_draw_priority() -> void:
-	var raise_priority: bool = _is_hovered and _get_hover_fx_mode() != HoverFxMode.OFF
-	# Keep selected inventory balls above neighbors too, so the selection ring is not occluded.
-	if _is_selected and _has_overlay_heuristic():
-		raise_priority = true
-	z_index = HOVER_RAISED_Z_INDEX if raise_priority else _base_z_index
-	if is_instance_valid(_slot_view_ref):
-		_slot_view_ref.z_index = HOVER_RAISED_SLOT_Z_INDEX if raise_priority else _slot_base_z_index
+	_hover_outline_controller.update_hover_draw_priority(self)
 
 func _update_stats(animate: bool = false, visual_data: Dictionary = {}) -> void:
 	# Always hide by default
@@ -1288,352 +1002,50 @@ func set_visual_state(snapshot: Dictionary) -> void:
 	
 	_update_stats()
 
-func animate_burn_change(target_stacks: int) -> void: # Renamed from animate_poison_change
-	var old_stacks = _visual_burn_stacks
-	_visual_burn_stacks = target_stacks
-	
-	if target_stacks > 0:
-		burn_container.visible = true
-		# Update number
-		burn_label.text = str(target_stacks)
-		
-		if old_stacks == 0:
-			# Initial appearance: scale from zero then pop
-			burn_container.scale = Vector2.ZERO
-			var tween = create_tween()
-			tween.tween_property(burn_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tween.tween_callback(func(): 
-				_pop_container(burn_container)
-				Audio.play_sfx("status_burn", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
-			)
-		elif target_stacks > old_stacks:
-			# Stacks increased: pop the container
-			_pop_container(burn_container)
-			Audio.play_sfx("status_burn", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
-		
-		# Always flash label on change
-		_flash_label(burn_label)
-			
-	else:
-		# Fade out - need animation
-		var tween = create_tween()
-		tween.tween_property(burn_container, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-		tween.tween_callback(func(): burn_container.visible = false)
+func animate_burn_change(target_stacks: int) -> void:
+	_status_strip.animate_burn_change(self, target_stacks)
 
-## Animate armor change - same pattern as burn
 func animate_armor_change(target_stacks: int) -> void:
-	var old_stacks = _visual_armor_stacks
-	_visual_armor_stacks = target_stacks
-	
-	if target_stacks > 0:
-		armor_container.visible = true
-		# Update number
-		armor_label.text = str(target_stacks)
-		
-		if old_stacks == 0:
-			# Initial appearance: scale from zero then pop
-			armor_container.scale = Vector2.ZERO
-			var tween = create_tween()
-			tween.tween_property(armor_container, "scale", Vector2.ONE, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-			tween.tween_callback(func():
-				_pop_container(armor_container)
-				Audio.play_sfx("status_armor", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
-			)
-		elif target_stacks > old_stacks:
-			# Stacks increased: pop the container
-			_pop_container(armor_container)
-			Audio.play_sfx("status_armor", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
-		
-		# Always flash label on change
-		_flash_label(armor_label)
-		
-		# Tween the number (Counting up/down)
-		_animate_number(armor_label, old_stacks, target_stacks)
-			
-	else:
-		# Fade out - need animation
-		var tween = create_tween()
-		tween.tween_property(armor_container, "scale", Vector2.ZERO, 0.3).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-		tween.tween_callback(func(): armor_container.visible = false)
-## Animate armor stat change with countdown (for damage visualization)
-## Similar to animate_stat_change but for armor - counts down from current to new value
+	_status_strip.animate_armor_change(self, target_stacks)
+
 func animate_armor_stat_change(target_stacks: int, _amount: int) -> void:
-	var start_val = _visual_armor_stacks
-	_visual_armor_stacks = target_stacks
-	
-	if target_stacks > 0:
-		armor_container.visible = true
-		# Flash the label
-		_flash_label(armor_label)
-		# Tween the number countdown
-		var tween = create_tween()
-		tween.tween_method(func(val): armor_label.text = str(val), start_val, target_stacks, 0.3)
-	elif start_val > 0:
-		# Armor depleted: count down to 0, then fade out
-		armor_container.visible = true
-		_flash_label(armor_label)
-		var tween = create_tween()
-		# Count down to 0
-		tween.tween_method(func(val): armor_label.text = str(maxi(0, val)), start_val, 0, 0.3)
-		# Then fade out
-		tween.tween_property(armor_container, "scale", Vector2.ZERO, 0.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_IN)
-		tween.tween_callback(func(): armor_container.visible = false)
+	_status_strip.animate_armor_stat_change(self, target_stacks)
 
-## Update dynamic status icons for any status effect tracked in _visual_status_effects.
-## Creates icons on-the-fly using CombatEffectRegistry if they don't exist.
 func _update_dynamic_status_icons(animate: bool = true) -> void:
-	# Get the bottom stats container to add icons to (below the unit)
-	var stats_container = get_node_or_null("StatsOverlay/BottomStatsContainer")
-	if %StatsUnderlay.visible and %Row2:
-		stats_container = %Row2
-		
-	if not is_instance_valid(stats_container):
-		return
-	
-	# Proactively hide all dynamic status icon nodes to ensure anything no longer active is hidden
-	for status_id in _status_icon_nodes:
-		var node = _status_icon_nodes[status_id]
-		if is_instance_valid(node):
-			node.visible = false
-	
-	# Update or create icons for each active status effect
-	for status_id in _visual_status_effects:
-		var stacks: int = _visual_status_effects[status_id]
-		
-		# Skip burn and armor - handled by dedicated systems
-		if status_id == &"burn" or status_id == &"armor":
-			continue
-		
-		if stacks > 0:
-			# Create icon if doesn't exist
-			if not _status_icon_nodes.has(status_id):
-				_create_status_icon(status_id, stats_container, animate)
-			
-			# Update label and ensure visible
-			var icon_node = _status_icon_nodes.get(status_id)
-			if is_instance_valid(icon_node):
-				icon_node.visible = true
-				var label = icon_node.get_node_or_null("Label")
-				if is_instance_valid(label):
-					# Tween the status number (counting up)
-					# CRITICAL: We just updated _visual_status_effects[status_id] to the NEW value
-					# So querying it gets the NEW value. We must use the current label text as the visual "old" value.
-					var visual_current = label.text.to_int()
-					
-					if animate and visual_current != stacks:
-						_animate_number(label, visual_current, stacks)
-						# Add visual feedback
-						if stacks > visual_current:
-							_pop_container(icon_node)
-							if status_id == &"spikes":
-								Audio.play_sfx("status_spikes", RNGManager.cosmetic_rng.randf_range(0.95, 1.05))
-						_flash_label(label)
-					else:
-						label.text = str(stacks)
+	_status_strip.update_dynamic_status_icons(self, animate)
 
-## Create a dynamic status icon for a combat effect
-func _create_status_icon(status_id: StringName, parent: Node, animate: bool = true) -> void:
-	# Get definition from registry
-	var effect_def = CombatEffectRegistry.get_definition(status_id)
-	if not is_instance_valid(effect_def):
-		return
-	
-	# Unified Scaling Math
-	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
-	# Window (1.0 scale): Icon=24, Font=14, Outline=4
-	var container_size = 8.0 * _size_scale + 16.0
-	var font_size = int(18.0 * _size_scale - 4.0)
-	var outline_size = int(4.0 * _size_scale)
-	
-	# Create HBoxContainer for Icon + Label
-	var hbox = HBoxContainer.new()
-	hbox.name = str(status_id) + "Container"
-	hbox.alignment = BoxContainer.ALIGNMENT_CENTER
-	hbox.add_theme_constant_override("separation", 4)
-	
-	# Apply plastic pill background
-	_apply_plastic_pill_style(hbox)
-	
-	# Create TextureRect for icon
-	var status_icon_rect = TextureRect.new()
-	status_icon_rect.name = "Icon"
-	status_icon_rect.custom_minimum_size = Vector2(container_size, container_size)
-	status_icon_rect.expand_mode = TextureRect.EXPAND_IGNORE_SIZE
-	status_icon_rect.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-	status_icon_rect.texture = effect_def.icon
-	
-	# Create label for stack count
-	var label = Label.new()
-	label.name = "Label"
-	label.layout_mode = 2
-	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-	label.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-	label.add_theme_color_override("font_color", Color.WHITE)
-	label.add_theme_color_override("font_outline_color", Color.BLACK)
-	label.add_theme_constant_override("outline_size", outline_size)
-	label.add_theme_font_size_override("font_size", font_size)
-	label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	
-	hbox.add_child(status_icon_rect)
-	hbox.add_child(label)
-	parent.add_child(hbox)
-	
-	# Store reference
-	_status_icon_nodes[status_id] = hbox
-	
-	# Animate in
-	hbox.scale = Vector2.ONE # default
-	if animate:
-		hbox.scale = Vector2.ZERO # Start scaled down for animation
-		var tween = create_tween()
-		tween.tween_property(hbox, "scale", Vector2.ONE, AnimationConstants.scaled(0.3)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-
-## Animate a status effect change (for non-burn effects)
 func animate_status_change(status_id: StringName, new_stacks: int) -> void:
-	var old_stacks = _visual_status_effects.get(status_id, 0)
-	_visual_status_effects[status_id] = new_stacks
-	_update_dynamic_status_icons()
-	
-	if new_stacks > old_stacks:
-		var icon_node = _status_icon_nodes.get(status_id)
-		if is_instance_valid(icon_node):
-			_pop_container(icon_node)
+	_status_strip.animate_status_change(self, status_id, new_stacks)
 
 func animate_stat_change(target_val: int, _delta: int, type: String, trigger_reactions: bool = true) -> void:
-	# type: "hp" or "pwr"
-	var label = hp_label if type == "hp" else pwr_label
-	var container = hp_container if type == "hp" else pwr_container
-	var start_val = _visual_hp if type == "hp" else _visual_pwr
-	
-	# Update internal visual state immediately so subsequent calls are correct
-	if type == "hp": _visual_hp = target_val
-	else: _visual_pwr = target_val
-	
-	# If value increased (buff), pop the container like tokens/gold
-	if target_val > start_val:
-		_pop_container(container)
-	
-	# Flash the label white
-	_flash_label(label)
-	
-	# Tween the number
-	var tween = create_tween()
-	tween.tween_method(func(val): label.text = str(val), start_val, target_val, AnimationConstants.scaled(0.5))
-
-	# Visual Reactions: Buff animations (color flash, hop, deform).
-	# Damage reactions (floating numbers, hit impacts, recoils) are strictly owned by DamageAnimation.
-	if trigger_reactions:
-		if target_val > start_val:
-			SignalBus.emit_signal("unit_color_flash", _instance_uuid, AnimationConstants.COLOR_HEAL_BUFF, AnimationConstants.FLASH_FADE_DURATION)
-			SignalBus.emit_signal("unit_deform", _instance_uuid, &"HOP_DEFORM")
-			SignalBus.emit_signal("unit_move", _instance_uuid, &"HOP", Vector2.ZERO)
-		elif target_val < start_val:
-			SignalBus.emit_signal("unit_color_flash", _instance_uuid, Color(0.4, 0.4, 0.4), AnimationConstants.FLASH_FADE_DURATION)
+	_status_strip.animate_stat_change(self, target_val, type, trigger_reactions)
 
 func _flash_label(label: Label) -> void:
-	# Quick white flash on the label when its value changes
-	if not is_instance_valid(label):
-		return
-	
-	var original_modulate: Color = label.modulate
-	label.modulate = Color(2.0, 2.0, 2.0, 1.0) # Bright white flash
-	
-	var tween = create_tween()
-	tween.tween_property(label, "modulate", original_modulate, AnimationConstants.scaled(0.2)).set_trans(Tween.TRANS_SINE).set_ease(Tween.EASE_OUT)
+	_status_strip.flash_label(self, label)
 
-## Pop animation for stat containers - scales up then bounces back (like token/gold)
-## Includes color flash just like the token counter animation
 func _pop_container(container: Control) -> void:
-	if not is_instance_valid(container):
-		return
-	
-	# Kill any existing pop tween on this container
-	if container.has_meta("_pop_tween"):
-		var existing = container.get_meta("_pop_tween")
-		if existing is Tween and existing.is_valid():
-			existing.kill()
-	
-	# Set pivot to center for proper scaling
-	# Set pivot to center for proper scaling
-	# Since HBoxContainers may have zero size before first draw, ensure we use a fallback
-	if container.size == Vector2.ZERO:
-		container.pivot_offset = container.custom_minimum_size / 2
-	else:
-		container.pivot_offset = container.size / 2
-	
-	# Create pop tween (same pattern as token/gold: scale 2.0x then elastic back + color flash)
-	var pop_tween = create_tween()
-	container.set_meta("_pop_tween", pop_tween)
-	
-	# Flash color - bright gold like tokens
-	var flash_color = Color(1.0, 0.9, 0.2, 1.0) # Same bright gold as token counter
-	
-	pop_tween.set_parallel(true)
-	
-	# Scale: pop big then bounce back (1.4x like token counter)
-	pop_tween.tween_property(container, "scale", Vector2(1.4, 1.4), AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	pop_tween.tween_property(container, "scale", Vector2(1.0, 1.0), AnimationConstants.scaled(0.15)).set_delay(AnimationConstants.scaled(0.1)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
-	
-	# Color flash - modulate the container (icon + label together)
-	pop_tween.tween_property(container, "modulate", flash_color, AnimationConstants.scaled(0.05))
-	pop_tween.tween_property(container, "modulate", Color.WHITE, AnimationConstants.scaled(0.2)).set_delay(AnimationConstants.scaled(0.05))
+	_status_strip.pop_container(self, container)
 
 func _update_item_slots() -> void:
 	_apply_unit_corner_icon_layout()
 	_update_level_display()
 	_update_equipped_item_icon()
 
-## Setup click handlers for status effect icons (burn/armor)
-## Opens a tooltip window when clicked
 func _setup_status_effect_click_handlers() -> void:
-	# Ensure burn container is clickable
-	if is_instance_valid(burn_container):
-		burn_container.mouse_filter = Control.MOUSE_FILTER_STOP
-		burn_container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		if not burn_container.is_connected("gui_input", _on_burn_container_clicked):
-			burn_container.gui_input.connect(_on_burn_container_clicked)
-	
-	# Ensure armor container is clickable
-	if is_instance_valid(armor_container):
-		armor_container.mouse_filter = Control.MOUSE_FILTER_STOP
-		armor_container.mouse_default_cursor_shape = Control.CURSOR_POINTING_HAND
-		if not armor_container.is_connected("gui_input", _on_armor_container_clicked):
-			armor_container.gui_input.connect(_on_armor_container_clicked)
+	_status_strip.setup_status_effect_click_handlers(self)
 
-## Handle click on burn container to show status effect tooltip
 func _on_burn_container_clicked(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
 		_open_status_effect_tooltip(&"burn", burn_container)
 		get_viewport().set_input_as_handled()
 
-## Handle click on armor container to show status effect tooltip
 func _on_armor_container_clicked(event: InputEvent) -> void:
 	if InputUtils.is_primary_pointer_press(event):
 		_open_status_effect_tooltip(&"armor", armor_container)
 		get_viewport().set_input_as_handled()
 
-## Open a tooltip window for a combat effect
-func _open_status_effect_tooltip(status_id: StringName, anchor: Control) -> void:
-	if is_instance_valid(ActionQueue):
-		var action := InspectEntityAction.new(_location, false, &"EffectInspection", status_id)
-		ActionQueue.request(action)
-		return
-	var effect_def = CombatEffectRegistry.get_definition(status_id)
-	if not is_instance_valid(effect_def):
-		return
-	
-	# Create a context dictionary matching EffectInspectionWindow expectations
-	var effect_context = {
-		"name_key": effect_def.display_name_key,
-		"description_key": effect_def.description_key
-	}
-	
-	var populate_ctx = {
-		"effect_definition": [effect_context],
-		"source_view": anchor
-	}
-	
-	WindowManager.open_child_contextual_window(&"EffectInspection", anchor, populate_ctx)
+func _open_status_effect_tooltip(status_id: StringName, _anchor: Control) -> void:
+	_status_strip.open_status_effect_tooltip(_location, status_id)
 
 func set_visual_equipped_item_icon(texture: Texture2D) -> void:
 	_visual_equipped_item_icon = texture
@@ -1697,39 +1109,21 @@ func _set_unit_corner_icon(icon_rect_to_position: TextureRect, align_left: bool,
 	icon_rect_to_position.offset_bottom = scaled_inset + icon_size.y
 
 ## Handle click on an equipped item icon
-func _on_equipped_item_clicked(event: InputEvent, anchor: Control, item_uuid: String) -> void:
+func _on_equipped_item_clicked(event: InputEvent, _anchor: Control, item_uuid: String) -> void:
 	if InputUtils.is_primary_pointer_press(event):
-		var item_loc = LocationIdentifier.new()
+		var item_loc := LocationIdentifier.new()
 		item_loc.container = C.CONTAINER_EQUIPPED_ITEM
 		item_loc.unit_uuid = _instance_uuid
-		if is_instance_valid(ActionQueue):
-			var action := InspectEntityAction.new(item_loc, false, &"ItemInspection", &"", item_uuid)
-			ActionQueue.request(action)
-		else:
-			# Find the item instance and open its inspection window
-			var all_instances = _get_all_instances_db()
-			if all_instances.has(item_uuid):
-				var item_instance = all_instances[item_uuid]
-				var populate_ctx = {
-					"source_view": anchor,
-					"instance": item_instance,
-					"location": item_loc
-				}
-				WindowManager.open_child_contextual_window(&"ItemInspection", anchor, populate_ctx)
+		ActionQueue.request(InspectEntityAction.new(item_loc, false, &"ItemInspection", &"", item_uuid))
 		get_viewport().set_input_as_handled()
 
 ## Get all instances database from the appropriate game state
 func _get_all_instances_db() -> Dictionary:
-	# Try BattleManager first (during battle)
-	var battle_manager = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(battle_manager) and battle_manager.has_method("get_all_instances"):
+	var battle_manager: Node = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(battle_manager):
 		return battle_manager.get_all_instances()
-	
-	# Fall back to RunState (outside battle)
-	var game_manager = get_node_or_null("/root/GameManager")
-	if is_instance_valid(game_manager) and "run_state" in game_manager and is_instance_valid(game_manager.run_state):
-		return game_manager.run_state.run_instances
-	
+	if is_instance_valid(GameManager.run_state):
+		return GameManager.run_state.run_instances
 	return {}
 
 ## Create gachaball overlay for inventory windows
@@ -1863,11 +1257,10 @@ func _on_unit_stat_changed(unit_uuid: String, stat_name: StringName, _old_value:
 	# ARCHITECTURE: Puppet Mode Guard
 	# If BattleManager or BattleAnimator is playing a sequence, views are pure puppets.
 	# Visual updates are driven strictly by animation events at their exact impact beat.
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+	var bm: Node = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.is_animations_playing():
 		return
-	var animator = get_tree().get_first_node_in_group("battle_animator")
-	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
+	if BattleAnimator.is_playing_sequence():
 		return
 	
 	# Update ONLY the specific stat that changed
@@ -2126,11 +1519,10 @@ func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void
 		return
 
 	# ARCHITECTURE: Puppet Mode Guard
-	var bm = get_tree().get_first_node_in_group("battle_manager")
-	if is_instance_valid(bm) and bm.has_method("is_animations_playing") and bm.is_animations_playing():
+	var bm: Node = get_tree().get_first_node_in_group("battle_manager")
+	if is_instance_valid(bm) and bm.is_animations_playing():
 		return
-	var animator = get_tree().get_first_node_in_group("battle_animator")
-	if is_instance_valid(animator) and animator.has_method("is_playing_sequence") and animator.is_playing_sequence():
+	if BattleAnimator.is_playing_sequence():
 		return
 		
 	if stat == "hp":
@@ -2143,21 +1535,7 @@ func _on_unit_visual_stat_update(uuid: String, stat: String, value: int) -> void
 # moved to UnitAnimationController child node
 
 func _apply_selection_feedback() -> void:
-	if not is_inside_tree(): return
-	if not is_instance_valid(icon_rect): return
-	_update_hover_draw_priority()
-
-	var overlay = get_node_or_null("GachaBallOverlay")
-	var use_inventory_capsule_feedback := is_instance_valid(overlay) and _has_overlay_heuristic()
-
-	if use_inventory_capsule_feedback:
-		var selection_ring = get_node_or_null("SelectionRing")
-		if is_instance_valid(selection_ring):
-			selection_ring.queue_free()
-		var overlay_base_scale: Vector2 = overlay.get_meta("base_scale", Vector2.ONE)
-		overlay.scale = overlay_base_scale * (1.05 if _is_selected else 1.0)
-		overlay.modulate = Color(1.3, 1.3, 1.3) if _is_selected else Color.WHITE
-	_update_outline_visuals()
+	_hover_outline_controller.apply_selection_feedback(self)
 
 func _is_reward_or_shop_context() -> bool:
 	if is_instance_valid(_location):
@@ -2183,63 +1561,10 @@ func _on_hide_merge_target_indicators() -> void:
 		_update_outline_visuals()
 
 func _set_shader_outline(mat: ShaderMaterial, enabled: bool, color: Color = Color.WHITE, width: float = 3.0) -> void:
-	if not is_instance_valid(mat):
-		return
-	mat.set_shader_parameter("outline_enabled", enabled)
-	if enabled:
-		mat.set_shader_parameter("outline_color", color)
-		mat.set_shader_parameter("outline_width", width)
+	GachaBallHoverOutlineController.set_shader_outline(mat, enabled, color, width)
 
 func _update_outline_visuals() -> void:
-	if not is_instance_valid(icon_rect):
-		return
-
-	var unit_sprite: TextureRect = icon_rect.get_node_or_null("UnitSprite") as TextureRect
-	var unit_sprite_mat = unit_sprite.material as ShaderMaterial if is_instance_valid(unit_sprite) and is_instance_valid(unit_sprite.material) else null
-	var icon_mat = icon_rect.material as ShaderMaterial if is_instance_valid(icon_rect.material) else null
-
-	var outline_enabled: bool = false
-	var outline_color: Color = Color.WHITE
-	var outline_width: float = 3.0
-
-	var focused: bool = _is_selected or _is_inspected
-	var use_unit_sprite: bool = icon_rect.texture == null and unit_sprite != null
-	SpriteOutline.set_highlight(icon_rect, focused and not use_unit_sprite)
-	if unit_sprite != null:
-		SpriteOutline.set_highlight(unit_sprite, focused and use_unit_sprite)
-
-	# Selection and inspection take precedence over the sprite's other outlines.
-	if focused:
-		outline_enabled = false
-	# Priority 2: Merge target highlight (Cyan for Level Up, Magenta for Recipe Tier Up / Items)
-	elif _merge_target_type == &"LEVEL_UP":
-		outline_enabled = true
-		outline_color = MERGE_LEVEL_UP_OUTLINE_COLOR
-		outline_width = MERGE_TARGET_OUTLINE_WIDTH
-	elif _merge_target_type == &"RECIPE_TIER_UP":
-		outline_enabled = true
-		outline_color = MERGE_RECIPE_TIER_UP_OUTLINE_COLOR
-		outline_width = MERGE_TARGET_OUTLINE_WIDTH
-	elif _merge_target_type == &"EQUIP":
-		outline_enabled = true
-		outline_color = EQUIP_TARGET_OUTLINE_COLOR
-		outline_width = EQUIP_TARGET_OUTLINE_WIDTH
-	# Priority 3: Locked recipe discovery highlight (Violet in Shop / Rewards)
-	elif _has_locked_recipe and _is_reward_or_shop_context():
-		outline_enabled = true
-		outline_color = RECIPE_LOCKED_OUTLINE_COLOR
-		outline_width = RECIPE_LOCKED_OUTLINE_WIDTH
-	# Priority 4: In-battle trait level outline (Bronze / Silver / Gold / Prismatic)
-	elif _last_trait_level > 0 and GameManager.is_in_battle:
-		outline_enabled = true
-		var color_idx = min(_last_trait_level - 1, TRAIT_OUTLINE_COLORS.size() - 1)
-		outline_color = TRAIT_OUTLINE_COLORS[color_idx]
-		outline_width = TRAIT_OUTLINE_WIDTH
-	else:
-		outline_enabled = false
-
-	_set_shader_outline(unit_sprite_mat, outline_enabled, outline_color, outline_width)
-	_set_shader_outline(icon_mat, outline_enabled, outline_color, outline_width)
+	_hover_outline_controller.update_outline_visuals(self)
 
 func _update_recipe_unlock_outline() -> void:
 	_update_outline_visuals()
@@ -2256,83 +1581,20 @@ func _on_run_data_changed() -> void:
 				_update_recipe_unlock_outline()
 
 func _notification(what: int) -> void:
-	# Signal Drag Start to GIR (Critical for State Management)
-	if what == NOTIFICATION_DRAG_BEGIN:
-		if _drag_initiated_for_click:
-			if is_instance_valid(_inspection_trigger):
-				_inspection_trigger.cancel()
-			_set_hover_state(false, false)
-			_animate_press_to(0.0, 0.05)
-			var context = _create_interaction_context(&"DRAG_START")
-			SignalBus.emit_signal("interaction_context_received", context)
-			
-			# Visuals: Hide self during drag (standard drag behavior)
-			# We use modulate instead of visible to keep layout size if needed,
-			# but for GridContainers, visible=false is usually better to collapse hole?
-			# No, we want the hole to stay. Modulate is safer for layout stability.
-			modulate.a = 0.0
-
-	# Fallback: if a drag ends without any drop target handling it, restore visuals
-	if what == NOTIFICATION_DRAG_END:
-		var was_dragging_me = _is_dragging # Capture local state before reset
-		if not was_dragging_me:
-			return
-
-		var godot_successful = is_drag_successful()
-		
-		# Combine Godot's mechanical success with our logical success (from inventory)
-		# If we dropped on a slot (Godot success) but Inventory rejected it (logic fail),
-		# we must treat it as a failure and bounce.
-		var combined_success = godot_successful and _logical_drag_success
-		
-		# Reset deformation first so we start animation from a clean state (scale 1.0)
-		_reset_drag_deformation()
-		
-		# Restore visibility ONLY if the drag failed.
-		# If it was successful, the state refresh will handle the view's ultimate fate.
-		if not combined_success:
-			modulate.a = 1.0
-		
-		# If drag was NOT successful (dropped on nothing OR rejected by logic), bounce back
-		if not combined_success:
-			var drop_pos: Vector2 = _last_mouse_pos
-			if drop_pos.is_zero_approx() and is_instance_valid(GlobalInteractionRouter):
-				drop_pos = GlobalInteractionRouter.get_last_pointer_position()
-			if not godot_successful and is_instance_valid(ActionQueue) and not ActionQueue.is_replay_mode():
-				ActionQueue.request(CancelDragAction.new(_location, null, "empty_drop", drop_pos, get_instance_id()))
-			else:
-				if GlobalInteractionRouter.is_drag_active():
-					GlobalInteractionRouter.end_drag(false)
-				if not drop_pos.is_zero_approx():
-					play_snap_back_from(drop_pos)
-				else:
-					play_landing_bounce()
-		
-		# Reset local drag flag
-		_drag_initiated_for_click = false
-		_animate_press_to(0.0, 0.08)
-		_logical_drag_success = false # Reset for next time
-		
-		# Ensure drag signals are cleared if they haven't been already
-		if GlobalInteractionRouter.is_drag_active():
-			# If it was successful, it's likely already handled by InventoryManager calling end_drag(true)
-			# But if we are here and it's still active, it might be a race or unhandled case.
-			# Safe default: end it as handled if successful (to keep view hidden/transferred), false if not.
-			GlobalInteractionRouter.end_drag(combined_success)
-			GlobalInteractionRouter.end_drag_visuals(combined_success)
+	_drag_controller.handle_drag_notification(self, what)
 
 # -----------------------------------------------------------------------------
 # Guardian Leap (Forwarding to UnitAnimationController)
 # Called by BattleAnimator for GUARDIAN_INTERCEPT events
 # -----------------------------------------------------------------------------
 func animate_leap_to(target_center: Vector2) -> void:
-	var controller = get_node_or_null("AnimationController")
-	if is_instance_valid(controller) and controller.has_method("animate_leap_to"):
+	var controller: UnitAnimationController = get_node_or_null("AnimationController") as UnitAnimationController
+	if is_instance_valid(controller):
 		await controller.animate_leap_to(target_center)
 
 func animate_leap_return() -> void:
-	var controller = get_node_or_null("AnimationController")
-	if is_instance_valid(controller) and controller.has_method("animate_leap_return"):
+	var controller: UnitAnimationController = get_node_or_null("AnimationController") as UnitAnimationController
+	if is_instance_valid(controller):
 		await controller.animate_leap_return()
 
 var force_inventory_mode: bool = false
@@ -2379,299 +1641,25 @@ func _on_inventory_action_completed(target_uuids: Array) -> void:
 		play_landing_bounce()
 
 func _reset_drag_deformation() -> void:
-	if not _is_dragging: return
-	_is_dragging = false
-	_drag_velocity = Vector2.ZERO
-	_drag_preview = null
-	if is_instance_valid(icon_rect):
-		icon_rect.scale = _original_icon_scale
-		icon_rect.rotation = _original_icon_rotation
+	_drag_controller.reset_drag_deformation(self)
 
 func play_trinket_activation_bounce() -> void:
-	if not is_instance_valid(icon_rect): return
-	
-	Audio.play_sfx("unit_hop")
-	
-	if not visible:
-		visible = true
-	var parent_canvas: CanvasItem = get_parent() as CanvasItem
-	if is_instance_valid(parent_canvas):
-		parent_canvas.visible = true
-	
-	# Trinkets live inside HBoxContainer layouts — position-based animations
-	# (unit_move HOP) get immediately overridden by the container.
-	# Always use inline scale tween which is layout-safe.
-	if icon_rect.size == Vector2.ZERO:
-		await get_tree().process_frame
-		if not is_instance_valid(icon_rect): return
-		
-	icon_rect.pivot_offset = icon_rect.size / 2.0
-	var original_scale := icon_rect.scale
-	var tween := create_tween()
-	tween.tween_property(icon_rect, "scale", Vector2(0.85, 1.15), AnimationConstants.scaled(0.08)).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", Vector2(1.1, 0.9), AnimationConstants.scaled(0.06)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_property(icon_rect, "scale", original_scale, AnimationConstants.scaled(0.12)).set_trans(Tween.TRANS_ELASTIC).set_ease(Tween.EASE_OUT)
+	await _drag_controller.play_trinket_activation_bounce(self)
 
 func play_snap_back_from(origin_pos: Vector2) -> void:
-	if not is_instance_valid(icon_rect):
-		play_landing_bounce()
-		return
-	
-	visible = true
-	modulate.a = 1.0
-	var parent_canvas: CanvasItem = get_parent() as CanvasItem
-	if is_instance_valid(parent_canvas):
-		parent_canvas.visible = true
-		
-	var target_global_pos = global_position + (size / 2.0)
-	if origin_pos.is_zero_approx() or origin_pos.distance_to(target_global_pos) < 6.0:
-		play_landing_bounce()
-		return
-		
-	var offset = origin_pos - target_global_pos
-	var original_pos = icon_rect.position
-	icon_rect.position = original_pos + offset
-	
-	Audio.play_sfx("unit_hop")
-	var tween = create_tween()
-	tween.tween_property(icon_rect, "position", original_pos, AnimationConstants.scaled(0.16)).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_OUT)
-	tween.tween_callback(play_landing_bounce)
+	_drag_controller.play_snap_back_from(self, origin_pos)
 
 func play_landing_bounce() -> void:
-	if not is_instance_valid(icon_rect): return
-	
-	# AUDIO HOOK: Play hop sound for all landing bounces
-	Audio.play_sfx("unit_hop")
-	
-	# Force visibility
-	if not visible:
-		visible = true
-	var parent_canvas: CanvasItem = get_parent() as CanvasItem
-	if is_instance_valid(parent_canvas):
-		parent_canvas.visible = true
-	
-	_is_landing_bounce_active = true
-	_landing_bounce_until_msec = Time.get_ticks_msec() + int(AnimationConstants.scaled(0.40) * 1000.0)
+	_drag_controller.play_landing_bounce(self)
 
-	# Reset hover transform so bounce starts at neutral scale
-	if _hover_amount > 0.001:
-		_hover_amount = 0.0
-		scale = Vector2.ONE
-	
-	# For battle units with AnimationController, delegate to composable system
-	# This uses proper tween management (kill existing, restore state) built into controller
-	var controller = get_node_or_null("AnimationController")
-	if is_instance_valid(controller) and not _bound_uuid.is_empty():
-		SignalBus.emit_signal("unit_deform", _bound_uuid, &"LANDING_BOUNCE")
-		return
-	
-	# For non-battle units (inventory window, shop, reward), use simple inline tween
-	var target_sprite: Control = icon_rect
-	var unit_sprite = icon_rect.get_node_or_null("UnitSprite")
-	if is_instance_valid(unit_sprite):
-		target_sprite = unit_sprite
-		target_sprite.pivot_offset = Vector2(target_sprite.size.x / 2.0, target_sprite.size.y)
-	else:
-		if icon_rect.size == Vector2.ZERO:
-			_is_landing_bounce_active = false
-			return # Layout not ready
-		icon_rect.pivot_offset = icon_rect.size / 2.0
-	
-	var original_scale := target_sprite.scale
-	var tween := create_tween()
-	AnimationConstants.append_landing_bounce(tween, target_sprite, original_scale)
-	tween.finished.connect(func():
-		_is_landing_bounce_active = false
-		if _is_hovered and not GlobalInteractionRouter.is_drag_active():
-			_animate_hover_to(1.0, 0.16)
-	)
 # ------------------------------------------------------------------
-# Layout Helpers
+# Layout Helpers (Delegated to GachaBallStatusStrip)
 
 func _setup_battle_stats_layout() -> void:
-	if not %StatsUnderlay: return
-	
-	%StatsOverlay.visible = false
-	%StatsUnderlay.visible = true
-	
-	# Move Main Stats to Row1
-	if hp_container.get_parent() != %Row1:
-		hp_container.reparent(%Row1)
-		pwr_container.reparent(%Row1)
-		
-	# Apply plastic pill style to main stat containers
-	_apply_plastic_pill_style(hp_container)
-	_apply_plastic_pill_style(pwr_container)
-		
-	# Apply bold colored styles for battle
-	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
-	var standard_font_size = 32
-	var standard_outline_size = 8
-	var standard_icon_size = Vector2(32, 32)
+	_status_strip.setup_battle_stats_layout(self)
 
-	hp_label.add_theme_color_override("font_color", Color.RED)
-	hp_label.add_theme_color_override("font_outline_color", Color.WHITE)
-	hp_label.add_theme_constant_override("outline_size", standard_outline_size)
-	hp_label.add_theme_font_size_override("font_size", standard_font_size)
-	
-	pwr_label.add_theme_color_override("font_color", Color.BLACK)
-	pwr_label.add_theme_color_override("font_outline_color", Color.WHITE)
-	pwr_label.add_theme_constant_override("outline_size", standard_outline_size)
-	pwr_label.add_theme_font_size_override("font_size", standard_font_size)
-
-	# Position much closer to unit base (5px gap)
-	# Increased offset slightly to account for thicker font height
-	%StatsUnderlay.offset_top = -28
-	%StatsUnderlay.offset_bottom = -28
-	
-	# Standardize all icons
-	var hp_icon = %HPIcon
-	var pwr_icon = %PWRIcon
-	if hp_icon: hp_icon.custom_minimum_size = standard_icon_size
-	if pwr_icon: pwr_icon.custom_minimum_size = standard_icon_size
-
-	# Move Secondary Stats to Row2
-	if burn_container.get_parent() != %Row2:
-		burn_container.reparent(%Row2)
-		armor_container.reparent(%Row2)
-	
-	# Apply plastic pill style to status containers
-	_apply_plastic_pill_style(burn_container)
-	_apply_plastic_pill_style(armor_container)
-	
-	burn_container.custom_minimum_size = Vector2.ZERO
-	armor_container.custom_minimum_size = Vector2.ZERO
-	
-	var burn_icon = %BurnIcon
-	var armor_icon = %ArmorIcon
-	if burn_icon: burn_icon.custom_minimum_size = standard_icon_size
-	if armor_icon: armor_icon.custom_minimum_size = standard_icon_size
-	
-	burn_label.add_theme_color_override("font_color", Color.WHITE)
-	burn_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	burn_label.add_theme_constant_override("outline_size", standard_outline_size)
-	burn_label.add_theme_font_size_override("font_size", standard_font_size)
-	burn_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	
-	armor_label.add_theme_color_override("font_color", Color.WHITE)
-	armor_label.add_theme_color_override("font_outline_color", Color.BLACK)
-	armor_label.add_theme_constant_override("outline_size", standard_outline_size)
-	armor_label.add_theme_font_size_override("font_size", standard_font_size)
-	armor_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-
-## Apply a realistic rounded "plastic pill" background to a container
 func _apply_plastic_pill_style(container: HBoxContainer) -> void:
-	if not is_instance_valid(container): return
-	
-	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0, 0, 0, 0.45) # Semi-transparent dark
-	
-	# Scale aesthetics based on _size_scale
-	var radius = int(6.0 * _size_scale) # 12 in battle, 6 in inventory
-	var h_margin = int(4.0 * _size_scale)
-	var v_margin = int(1.0 * _size_scale)
-	
-	style.set_corner_radius_all(radius)
-	style.content_margin_left = h_margin + 2
-	style.content_margin_right = h_margin + 4
-	style.content_margin_top = v_margin
-	style.content_margin_bottom = v_margin
-	
-	# Subtle inner glow/border for the plastic look
-	style.border_width_left = 1
-	style.border_width_top = 1
-	style.border_color = Color(1, 1, 1, 0.15) # Barely visible white shine
-	
-	container.add_theme_stylebox_override("panel", style)
-	
-	# Update separation for uniform look
-	var separation = int(3.0 * _size_scale)
-	container.add_theme_constant_override("separation", separation)
+	GachaBallStatusStrip.apply_plastic_pill_style(container, _size_scale)
 
 func _setup_overlay_stats_layout() -> void:
-	if not %StatsOverlay: return
-	
-	# In overlay/inventory mode, we also want the new styling but scaled
-	%StatsUnderlay.visible = false
-	%StatsOverlay.visible = true
-	
-	var top_container = %StatsContainer
-	var bottom_container = %BottomStatsContainer
-	
-	if not top_container or not bottom_container: return
-	
-	# Unified Scaling Math
-	# Battle (2.0 scale): Icon=32, Font=32, Outline=8
-	# Window (1.0 scale): Icon=24, Font=14, Outline=4
-	var container_size = 8.0 * _size_scale + 16.0
-	var font_size = int(18.0 * _size_scale - 4.0)
-	var outline_size = int(4.0 * _size_scale)
-	
-	# Positioning in Overlay: closer to base
-	# Slot is SLOT_SIZE_BASE * _size_scale.
-	# Unit bottom is (SLOT_SIZE_BASE/2 + UNIT_SPRITE_SIZE/4) * _size_scale = (48+32) * _size_scale = 80 * _size_scale
-	# 5px gap -> 85 * _size_scale
-	top_container.anchors_preset = Control.PRESET_CENTER_TOP
-	top_container.offset_top = C.SHELF_SURFACE_Y + 5 if _is_shelf_capsule() else 85 * _size_scale
-	
-	# Move Main Stats back to Top Container and scale
-	if hp_container.get_parent() != top_container:
-		hp_container.reparent(top_container)
-		pwr_container.reparent(top_container)
-		
-	# Apply plastic pill style
-	_apply_plastic_pill_style(hp_container)
-	_apply_plastic_pill_style(pwr_container)
-	
-	hp_container.custom_minimum_size = Vector2.ZERO
-	pwr_container.custom_minimum_size = Vector2.ZERO
-	
-	var hp_icon = %HPIcon
-	var pwr_icon = %PWRIcon
-	if hp_icon: hp_icon.custom_minimum_size = Vector2(container_size, container_size)
-	if pwr_icon: pwr_icon.custom_minimum_size = Vector2(container_size, container_size)
-	
-	hp_label.add_theme_color_override("font_color", Color.RED)
-	hp_label.add_theme_color_override("font_outline_color", Color.WHITE)
-	hp_label.add_theme_font_size_override("font_size", font_size)
-	hp_label.add_theme_constant_override("outline_size", outline_size)
-	hp_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	
-	pwr_label.add_theme_color_override("font_color", Color.BLACK)
-	pwr_label.add_theme_color_override("font_outline_color", Color.WHITE)
-	pwr_label.add_theme_font_size_override("font_size", font_size)
-	pwr_label.add_theme_constant_override("outline_size", outline_size)
-	pwr_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-
-	# Apply to bottom row (Burn, Armor) as well
-	burn_label.add_theme_font_size_override("font_size", font_size)
-	burn_label.add_theme_constant_override("outline_size", outline_size)
-	burn_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	_apply_plastic_pill_style(burn_container)
-	
-	armor_label.add_theme_font_size_override("font_size", font_size)
-	armor_label.add_theme_constant_override("outline_size", outline_size)
-	armor_label.add_theme_font_override("font", load("res://assets/fonts/static/NotoSansJP-Black.ttf"))
-	_apply_plastic_pill_style(armor_container)
-
-	# Move Secondary Stats back to Bottom Container and scale
-	if burn_container.get_parent() != bottom_container:
-		burn_container.reparent(bottom_container)
-		armor_container.reparent(bottom_container)
-	
-	# Apply plastic pill style
-	_apply_plastic_pill_style(burn_container)
-	_apply_plastic_pill_style(armor_container)
-	
-	burn_container.custom_minimum_size = Vector2.ZERO
-	armor_container.custom_minimum_size = Vector2.ZERO
-	
-	var burn_icon = %BurnIcon
-	var armor_icon = %ArmorIcon
-	if burn_icon: burn_icon.custom_minimum_size = Vector2(container_size, container_size)
-	if armor_icon: armor_icon.custom_minimum_size = Vector2(container_size, container_size)
-	
-	burn_label.add_theme_font_size_override("font_size", font_size)
-	burn_label.add_theme_constant_override("outline_size", outline_size)
-	armor_label.add_theme_font_size_override("font_size", font_size)
-	armor_label.add_theme_constant_override("outline_size", outline_size)
+	_status_strip.setup_overlay_stats_layout(self, _is_shelf_capsule())

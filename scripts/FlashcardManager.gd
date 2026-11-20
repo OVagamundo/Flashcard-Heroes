@@ -464,7 +464,7 @@ func _on_minigame_complete(correct: int, incorrect: int) -> void:
 	}
 	
 	# Finish any active flashcard action if queue was waiting
-	if is_instance_valid(ActionQueue) and ActionQueue.is_busy():
+	if ActionQueue.is_busy():
 		var act = ActionQueue.get_active_action()
 		if act is SubmitFlashcardAnswerAction or act is SkipFlashcardAction:
 			ActionQueue.finish_action(act)
@@ -557,17 +557,13 @@ func get_review_priority_cards(run_state: RunState, max_count: int = 6) -> Array
 			selected_cards.append_array(tier_cards)
 		else:
 			# More candidates than remaining slots on this mastery rank: randomly select among them
-			if is_instance_valid(RNGManager) and is_instance_valid(RNGManager.map_rng):
-				RNGManager.map_rng.shuffle(tier_cards)
-			else:
-				tier_cards.shuffle()
+			assert(is_instance_valid(RNGManager.map_rng), "FlashcardManager: RNGManager.map_rng must be initialized for deterministic shuffling")
+			RNGManager.map_rng.shuffle(tier_cards)
 			selected_cards.append_array(tier_cards.slice(0, needed))
 			break
 	
 	# Final shuffle so the presentation order does not match the Challenge question order
-	if is_instance_valid(RNGManager) and is_instance_valid(RNGManager.map_rng):
-		RNGManager.map_rng.shuffle(selected_cards)
-	else:
-		selected_cards.shuffle()
+	assert(is_instance_valid(RNGManager.map_rng), "FlashcardManager: RNGManager.map_rng must be initialized for deterministic shuffling")
+	RNGManager.map_rng.shuffle(selected_cards)
 		
 	return selected_cards

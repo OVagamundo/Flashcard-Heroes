@@ -31,8 +31,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var earth_souls: int = int(active_traits.get("EARTH", 0))
-	if earth_souls < 3:
+	var earth_tier: int = TraitRulesEngine.get_active_tier(active_traits, "EARTH")
+	if earth_tier < 1:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -57,7 +57,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		var armor_to_apply := 0
 		var spikes_to_apply := 0
 
-		if earth_souls >= 20:
+		if earth_tier >= 4:
 			# L4: All Earth get 3A + 3S; non-Earth get 1A + 1S
 			if is_earth:
 				armor_to_apply = 3
@@ -65,17 +65,17 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 			else:
 				armor_to_apply = 1
 				spikes_to_apply = 1
-		elif earth_souls >= 12:
+		elif earth_tier >= 3:
 			# L3: All Earth get 2A + 2S
 			if is_earth:
 				armor_to_apply = 2
 				spikes_to_apply = 2
-		elif earth_souls >= 6:
+		elif earth_tier >= 2:
 			# L2: Frontmost Earth gets 1A + 1S
 			if unit == frontmost_earth:
 				armor_to_apply = 1
 				spikes_to_apply = 1
-		elif earth_souls >= 3:
+		elif earth_tier >= 1:
 			# L1: Frontmost Earth gets 1A
 			if unit == frontmost_earth:
 				armor_to_apply = 1

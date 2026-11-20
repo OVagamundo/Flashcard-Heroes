@@ -14,7 +14,7 @@ func execute() -> void:
 	if not is_instance_valid(reward):
 		reward = Engine.get_main_loop().root.find_child("RewardElite", true, false)
 	
-	if is_instance_valid(reward) and not ActionQueue.is_headless_mode() and reward.has_method("execute_leave_visuals"):
+	if is_instance_valid(reward) and not ActionQueue.is_headless_mode():
 		reward.execute_leave_visuals()
 	else:
 		# Auto collect remaining capsule rewards in headless mode if any

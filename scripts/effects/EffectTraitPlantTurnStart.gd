@@ -29,8 +29,8 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var plant_units: int = int(active_traits.get("PLANT", 0))
-	if plant_units < 3:
+	var plant_tier: int = TraitRulesEngine.get_active_tier(active_traits, "PLANT")
+	if plant_tier < 2:
 		return EffectResult.empty()
 
 	var container_tag = C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP if is_player else C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP
@@ -70,7 +70,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 	}))
 
 	# L4 (5 Units): All Plants gain 1 Spikes and recover 1 HP (ACTION_HEAL)
-	if plant_units >= 5:
+	if plant_tier >= 4:
 		for plant in living_plants:
 			var old_spk = plant.get_status_effect_amount(&"spikes")
 			var new_spk = battle_manager.apply_stat_delta(plant, "spikes_stacks", 1)

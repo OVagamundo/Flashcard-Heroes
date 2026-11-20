@@ -1493,8 +1493,6 @@ static func _get_hero_starter_pack(hero_id: StringName) -> Array[StringName]:
 			starters.append(&"trinket_trait_tank")
 		&"hero_pyro":
 			starters.append(&"trinket_trait_fire")
-		&"hero_starter":
-			starters.append(&"trinket_beginners_charm")
 		&"hero_timekeeper":
 			starters.append(&"trinket_trait_support")
 	return starters
@@ -1592,7 +1590,7 @@ func prismatize_unit(instance: GachaBallInstance) -> void:
 
 ## Converts the entire run state to a Dictionary for saving.
 func to_save_dict(refresh_elapsed_time: bool = true) -> Dictionary:
-	if refresh_elapsed_time and is_instance_valid(ActionQueue):
+	if refresh_elapsed_time:
 		elapsed_simulation_time = ActionQueue.get_global_run_timer()
 
 	var saved_boss_ids: Dictionary = {}
@@ -1806,8 +1804,8 @@ func from_save_dict(data: Dictionary) -> void:
 
 func _serialize_available_path_nodes() -> Array:
 	var result: Array = []
-	for node in available_path_nodes:
-		if is_instance_valid(node) and node.has_method("to_dict"):
+	for node: PathNodeDefinition in available_path_nodes:
+		if is_instance_valid(node):
 			result.append(node.to_dict())
 	return result
 

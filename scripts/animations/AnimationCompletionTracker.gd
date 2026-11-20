@@ -20,18 +20,20 @@ enum AnimationType {
 	DEFORM # Composable sprite deformation effect
 }
 
-# Default timeout durations per animation type (seconds)
+const TIMEOUT_SAFETY_BUFFER: float = 0.4
+
+# Timeout durations derived directly from AnimationConstants plus a safety buffer
 const TIMEOUTS: Dictionary = {
-	AnimationType.FLASH: 0.8,
-	AnimationType.COLOR_FLASH: 0.8,
-	AnimationType.BUMP: 0.8,
-	AnimationType.DEATH_FADE: 1.4,
-	AnimationType.SUMMON_FADE: 1.5,
-	AnimationType.MELEE_LUNGE: 1.0,
-	AnimationType.MELEE_RETURN: 0.6,
-	AnimationType.PREVENT_KNOCKOUT: 1.8,
-	AnimationType.MOVE: 0.6, # Movement effects are quick
-	AnimationType.DEFORM: 0.8 # Sprite deformation effects are quick
+	AnimationType.FLASH: AnimationConstants.FLASH_HOP_UP_DURATION + AnimationConstants.FLASH_HOP_DOWN_DURATION + AnimationConstants.FLASH_GOLD_FADE_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.COLOR_FLASH: AnimationConstants.FLASH_GOLD_FADE_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.BUMP: AnimationConstants.BUMP_TOTAL_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.DEATH_FADE: AnimationConstants.DEATH_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.SUMMON_FADE: maxf(AnimationConstants.SUMMON_DROP_DURATION, AnimationConstants.SUMMON_FADE_DURATION) + 0.34 + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.MELEE_LUNGE: AnimationConstants.MELEE_WINDUP_DURATION + AnimationConstants.MELEE_LUNGE_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.MELEE_RETURN: AnimationConstants.MELEE_RETURN_DURATION + (4.0 * AnimationConstants.DEFORM_DURATION) + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.PREVENT_KNOCKOUT: AnimationConstants.LETHAL_SAVE_RISE_DURATION + AnimationConstants.LETHAL_SAVE_HOLD_DURATION + AnimationConstants.LETHAL_SAVE_LAND_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.MOVE: AnimationConstants.BUMP_TOTAL_DURATION + TIMEOUT_SAFETY_BUFFER,
+	AnimationType.DEFORM: (4.0 * AnimationConstants.DEFORM_DURATION) + TIMEOUT_SAFETY_BUFFER
 }
 
 # Pending completions: Key = uuid, Value = Array of AnimationType still awaiting
@@ -50,8 +52,7 @@ func _connect_signals() -> void:
 		return # Already connected
 	
 	SignalBus.unit_flash_finished.connect(_on_flash_finished)
-	if SignalBus.has_signal("unit_color_flash_finished"):
-		SignalBus.unit_color_flash_finished.connect(_on_color_flash_finished)
+	SignalBus.unit_color_flash_finished.connect(_on_color_flash_finished)
 	SignalBus.unit_bump_finished.connect(_on_bump_finished)
 	SignalBus.unit_death_fade_finished.connect(_on_death_fade_finished)
 	SignalBus.unit_summon_fade_finished.connect(_on_summon_fade_finished)

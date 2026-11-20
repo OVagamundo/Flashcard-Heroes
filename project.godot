@@ -53,6 +53,11 @@ MergeAnimator="*res://scripts/MergeAnimator.gd"
 
 file_logging/log_path="res://log.txt"
 file_logging/max_log_files=1
+gdscript/warnings/untyped_declaration=1
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/unsafe_method_access=1
+gdscript/warnings/unsafe_call_argument=1
+gdscript/warnings/return_value_discarded=1
 
 [display]
 

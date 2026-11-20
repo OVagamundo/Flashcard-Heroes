@@ -17,8 +17,8 @@ func validate() -> bool:
 		return false
 	if StringName(FlashcardManager.current_question.get("question_id", "")) != question_id:
 		return false
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and minigame.has_method("get_current_question_id"):
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame):
 		if minigame.get_current_question_id() != question_id:
 			return false
 	return think_time >= 0.0
@@ -29,8 +29,8 @@ func execute() -> void:
 		push_error("[SkipFlashcardAction] Flashcard session rejected an accepted skip.")
 		finish_visuals()
 		return
-	var minigame = Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false)
-	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode() and minigame.has_method("execute_skip"):
+	var minigame := Engine.get_main_loop().root.find_child("FlashcardMinigame", true, false) as FlashcardMinigame
+	if is_instance_valid(minigame) and not ActionQueue.is_headless_mode():
 		minigame.execute_skip(question_id, result)
 
 func yields_for_visuals() -> bool:

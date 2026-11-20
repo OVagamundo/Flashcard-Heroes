@@ -30,15 +30,15 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 
 	var is_player = (team == "PLAYER")
 	var active_traits: Dictionary = battle_manager.get_active_traits(team)
-	var mercenary_units: int = int(active_traits.get("MERCENARY", 0))
-	if mercenary_units < 4:
+	var mercenary_tier: int = TraitRulesEngine.get_active_tier(active_traits, "MERCENARY")
+	if mercenary_tier < 3:
 		return EffectResult.empty()
 
 	var result := EffectResult.new()
 	var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"ability_trait_mercenary_pre_combat")
 
 	# Prismatic (5 Units): Earn 1 Gold at pre-combat (resolves first so Gold threshold checks updated wallet)
-	if mercenary_units >= 5 and is_player:
+	if mercenary_tier >= 4 and is_player:
 		battle_manager.earn_gold(1, source_uuid)
 
 	# Gold (4 Units): Each Mercenary unit gains +1 Armor for every full 10 Gold held

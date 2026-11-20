@@ -2,7 +2,6 @@ class_name ItemInspectionWindow
 extends InspectionWindow
 
 const _InputUtils = preload("res://scripts/InputUtils.gd")
-const _SlotView = preload("res://scenes/SlotView.tscn")
 const C = preload("res://scripts/Constants.gd")
 
 @onready var name_label: Label = %NameLabel
@@ -18,6 +17,8 @@ var _instance: GachaBallInstance
 var _location: LocationIdentifier
 var _inspected_item_uuid: String
 var _is_preview: bool = false
+var _is_vcr_snapshot: bool = false
+var _snapshot_instances_db: Dictionary = {}
 var _explicit_recipe_id: StringName = &""
 
 func _ready() -> void:
@@ -46,6 +47,8 @@ func populate(context: Dictionary) -> void:
 	_instance = context.get("instance")
 	_location = context.get("location")
 	_is_preview = context.get("is_preview", false)
+	_is_vcr_snapshot = context.get("is_vcr_snapshot", false)
+	_snapshot_instances_db = context.get("snapshot_instances_db", {})
 	_explicit_recipe_id = context.get("recipe_id", &"")
 
 	if not is_instance_valid(_instance):
@@ -139,20 +142,10 @@ func _update_description_and_stats(item_def: Resource) -> void:
 				ability_desc = ability_desc.replace("(PWR)", str(_instance.current_pwr) + " (PWR)")
 				ability_desc = ability_desc.replace("(HP)", str(_instance.current_hp) + " (HP)")
 				if ability.id == &"ability_slime_cell_scale":
-					var current_bonus = 0
-					var all_db = _get_all_instances_db()
-					if not _instance.equipped_on_uuid.is_empty():
-						var holder = all_db.get(_instance.equipped_on_uuid)
-						if is_instance_valid(holder):
-							current_bonus = holder.get_status_effect_amount(StringName("slime_cell_scaling_" + _instance.ball_uuid))
-					if current_bonus == 0:
-						var count = 0
-						for uuid in all_db:
-							var inst = all_db[uuid]
-							if is_instance_valid(inst) and inst.definition_id == &"item_t2_d":
-								count += 1
-						current_bonus = maxi(1, count)
-					var suffix = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
+					var all_db: Dictionary = _get_all_instances_db()
+					var holder: GachaBallInstance = all_db.get(_instance.equipped_on_uuid) as GachaBallInstance if not _instance.equipped_on_uuid.is_empty() else null
+					var current_bonus: int = AuraEvaluator.get_displayed_aura_pwr(holder, ability.id, _instance.ball_uuid, all_db) if is_instance_valid(holder) else AuraEvaluator.get_displayed_aura_pwr(_instance, ability.id, _instance.ball_uuid, all_db)
+					var suffix: String = " (Currently %+d PWR)" % current_bonus if TranslationServer.get_locale().begins_with("en") else " (Atualmente %+d PWR)" % current_bonus
 					ability_desc += " [color=#4ade80]%s[/color]" % suffix
 			
 			var description_signature := ability_desc.strip_edges()
@@ -208,19 +201,10 @@ func _update_description_and_stats(item_def: Resource) -> void:
 
 	# Force window to shrink to its minimal content size after layout settles
 	_reset_window_size()
-	call_deferred("_deferred_shrink")
-
-func _deferred_shrink() -> void:
-	if not is_instance_valid(self) or not is_inside_tree():
-		return
-	await get_tree().process_frame
-	await get_tree().process_frame
-	if not is_instance_valid(self):
-		return
-	_reset_window_size()
+	_schedule_deferred_shrink()
 
 func _on_inventory_changed() -> void:
-	if _is_preview or not is_instance_valid(self):
+	if _is_preview or _is_vcr_snapshot:
 		return
 	var all_instances: Dictionary = _get_all_instances_db()
 	var current_instance: GachaBallInstance = all_instances.get(_inspected_item_uuid)
@@ -234,7 +218,7 @@ func _on_inventory_changed() -> void:
 		_update_description_and_stats(item_def)
 
 func _on_unit_stat_changed(unit_uuid: String, _stat_name: StringName, _old_value: int, _new_value: int) -> void:
-	if _is_preview:
+	if _is_preview or _is_vcr_snapshot:
 		return
 	if is_instance_valid(_instance):
 		if unit_uuid == _instance.equipped_on_uuid or unit_uuid == _inspected_item_uuid:
@@ -244,29 +228,16 @@ func _is_trinket(item_def: Resource) -> bool:
 	return item_def is TrinketDefinition or (item_def is GachaBallDefinition and item_def.category == &"TRINKET")
 
 func _reset_window_size() -> void:
-	# With WindowManager now enforcing width before population, we can reset instantly
-	if is_instance_valid(self):
-		for container in [recipe_container, separator, bottom_description_label]:
-			if is_instance_valid(container) and not container.visible:
-				container.custom_minimum_size = Vector2.ZERO
-		if is_instance_valid(view_container) and not view_container.visible:
-			view_container.custom_minimum_size = Vector2.ZERO
-		
-		# Enforce shrinking on EVERY container in the hierarchy
-		size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var margin_container = get_node_or_null("MarginContainer")
-		if margin_container:
-			margin_container.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-		var vbox = get_node_or_null("MarginContainer/VBoxContainer")
-		if vbox:
-			vbox.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-			
-		custom_minimum_size = Vector2(0 if _is_preview else 360, 0)
-		size = Vector2(0 if _is_preview else 360, 0) # Force immediate recalculation of minimum size
-		reset_size()
-		enforce_display_only()
+	_shrink_window_layout(
+		0.0 if _is_preview else 360.0,
+		false,
+		[recipe_container, separator, bottom_description_label, view_container]
+	)
+	enforce_display_only()
 
 func _get_all_instances_db() -> Dictionary:
+	if _is_vcr_snapshot:
+		return _snapshot_instances_db
 	var result: Dictionary = {}
 	if GameManager.is_in_battle:
 		var bm = get_tree().get_first_node_in_group("battle_manager")
@@ -361,141 +332,15 @@ func _accumulate_trait_tag(counts: Dictionary, tag: StringName) -> void:
 
 ## Populate the ViewContainer to show the resulting item's view at 2x scale (battle board size) during merge preview.
 func _update_item_view() -> void:
-	if not is_instance_valid(view_container):
-		return
-	
-	for child in view_container.get_children():
-		view_container.remove_child(child)
-		child.queue_free()
-	
-	if not _is_preview or not is_instance_valid(_instance):
-		view_container.visible = false
-		view_container.custom_minimum_size = Vector2.ZERO
-		return
-	
-	var item_def = _instance.get_definition()
-	if _is_trinket(item_def):
-		view_container.visible = false
-		view_container.custom_minimum_size = Vector2.ZERO
-		return
-	
-	var slot_view: SlotView = _SlotView.instantiate()
-	slot_view.show_background = false
-	slot_view.set_size_scale(2.0)
-	slot_view.custom_minimum_size = Vector2(C.SLOT_SIZE_2X, C.SLOT_SIZE_2X)
-	
-	var slot_color: StringName = _location.container if is_instance_valid(_location) else &"EquippedItem"
-	slot_view.set_slot_color(slot_color)
-	
-	if SignalBus.show_slot_indicators.is_connected(slot_view._on_show_slot_indicators):
-		SignalBus.show_slot_indicators.disconnect(slot_view._on_show_slot_indicators)
-	if SignalBus.hide_slot_indicators.is_connected(slot_view._on_hide_slot_indicators):
-		SignalBus.hide_slot_indicators.disconnect(slot_view._on_hide_slot_indicators)
-	if SignalBus.unit_stat_changed.is_connected(slot_view._on_unit_stat_changed):
-		SignalBus.unit_stat_changed.disconnect(slot_view._on_unit_stat_changed)
-		
-	slot_view.set_interaction_context(&"INSPECTION_ONLY", 0)
-	
-	view_container.add_child(slot_view)
-	slot_view.z_as_relative = true
-	slot_view.z_index = 1
-	view_container.visible = true
-	view_container.custom_minimum_size = Vector2(0, C.SLOT_SIZE_2X)
-	
-	var all_instances_db = _get_all_instances_db()
-	var visual_data = VisualDataAdapter.create_visual_data(_instance, all_instances_db)
-	var gb = slot_view.set_content(visual_data, false, false)
-	if is_instance_valid(gb):
-		gb.z_as_relative = true
-		gb.z_index = 1
-		gb._base_z_index = 1
-		gb._slot_base_z_index = 1
-		gb.show_capsule_overlay = false
-		gb.set_is_interactive(false)
-		var overlay = gb.get_node_or_null("GachaBallOverlay")
-		if is_instance_valid(overlay):
-			overlay.queue_free()
-		var trait_count = gb.get_node_or_null("%TraitCountLabel")
-		if is_instance_valid(trait_count):
-			trait_count.visible = false
+	var item_def: Resource = _instance.get_definition() if is_instance_valid(_instance) else null
+	var show_preview: bool = _is_preview and is_instance_valid(item_def) and not _is_trinket(item_def)
+	_populate_preview_slot_view(view_container, _instance, _location, _get_all_instances_db(), show_preview, &"EquippedItem")
 
 func _update_recipe_display(item_def: Resource) -> void:
-	if not is_instance_valid(recipe_container):
-		return
-	
-	for child in recipe_container.get_children():
-		recipe_container.remove_child(child)
-		child.queue_free()
-	
-	if _is_preview:
-		recipe_container.visible = false
-		recipe_container.custom_minimum_size = Vector2.ZERO
-		return
-	
-	if not item_def is GachaBallDefinition:
-		recipe_container.visible = false
-		return
-	
-	var recipe: MergeRecipe = null
-	if not _explicit_recipe_id.is_empty():
-		recipe = Database.recipes.get(_explicit_recipe_id)
-	if not is_instance_valid(recipe):
-		recipe = Database.get_recipe_for_result(item_def.id)
-	if not is_instance_valid(recipe):
-		recipe_container.visible = false
-		return
-	
-	var def_a = Database.get_definition(recipe.ingredient_a_id)
-	var def_b = Database.get_definition(recipe.ingredient_b_id)
-	
-	if not is_instance_valid(def_a) or not is_instance_valid(def_b):
-		recipe_container.visible = false
-		return
-	
-	recipe_container.alignment = BoxContainer.ALIGNMENT_BEGIN
-	recipe_container.custom_minimum_size = Vector2(0, 96)
-	
-	var _make_icon = func(def: Resource) -> TextureRect:
-		var tex = TextureRect.new()
-		if def and def.icon:
-			tex.texture = def.icon
-			tex.expand_mode = TextureRect.EXPAND_FIT_WIDTH_PROPORTIONAL
-		tex.custom_minimum_size = Vector2(96, 96)
-		tex.stretch_mode = TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-		tex.mouse_filter = MOUSE_FILTER_IGNORE
-		return tex
-	
-	var _make_label = func(txt: String) -> Control:
-		var container = CenterContainer.new()
-		container.custom_minimum_size = Vector2(32, 96)
-		container.mouse_filter = MOUSE_FILTER_IGNORE
-		
-		var lbl = Label.new()
-		lbl.text = txt
-		lbl.add_theme_font_override("font", Database.get_current_locale_font())
-		lbl.add_theme_font_size_override("font_size", 32)
-		lbl.vertical_alignment = VERTICAL_ALIGNMENT_CENTER
-		lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
-		lbl.mouse_filter = MOUSE_FILTER_IGNORE
-		
-		container.add_child(lbl)
-		return container
-	
-	recipe_container.add_child(_make_icon.call(def_a))
-	recipe_container.add_child(_make_label.call("+"))
-	recipe_container.add_child(_make_icon.call(def_b))
-	recipe_container.visible = true
+	_populate_recipe_container(recipe_container, item_def, _explicit_recipe_id, _is_preview)
 
 func get_glossary_terms() -> Array[String]:
-	var terms: Array[String] = []
-	var text_to_search: String = ""
-	if is_instance_valid(description_label):
-		text_to_search += description_label.text + " "
-	if is_instance_valid(bottom_description_label) and bottom_description_label.visible:
-		text_to_search += bottom_description_label.text + " "
-	
-	terms.append_array(DescriptionParser.find_keywords(text_to_search))
-	return terms
+	return _collect_glossary_terms_from_labels([description_label, bottom_description_label])
 
 func get_child_window_specs() -> Array[Dictionary]:
 	return []
@@ -504,14 +349,18 @@ func get_location() -> LocationIdentifier:
 	return _location
 
 func _trigger_trait_tutorial() -> void:
-	if _is_preview:
+	if _is_preview or not is_inside_tree():
 		return
-	# Wait 1.0s before showing tutorial to avoid "quick pass" triggers as requested
-	await get_tree().create_timer(1.0, true).timeout
-	
-	if not is_instance_valid(self) or not is_inside_tree():
+	# Wait 1.0s before showing tutorial to avoid "quick pass" triggers as requested.
+	# Node-bound Tween automatically cancels if this inspection window is freed.
+	var tutorial_tween: Tween = create_tween()
+	tutorial_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	tutorial_tween.tween_interval(1.0)
+	tutorial_tween.tween_callback(_show_trait_tutorial)
+
+func _show_trait_tutorial() -> void:
+	if not is_inside_tree():
 		return
-		
 	TutorialManager.show_tutorial(&"traits", [
 		{
 			"text": "tutorial.traits",

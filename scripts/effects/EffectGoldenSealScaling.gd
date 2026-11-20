@@ -29,7 +29,7 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 				gold = GameManager.run_state.gold
 			target_bonus = int(gold / 10)
 
-	var status_key: StringName = StringName("golden_seal_scaling_" + source_uuid)
+	var aura_key: StringName = AuraEvaluator.make_key(&"golden_seal", source_uuid)
 	var result := EffectResult.new()
 	var holder_updated: bool = false
 
@@ -38,68 +38,42 @@ func execute(source_uuid: String, _targets: Array[String], battle_manager: Node,
 		if not is_instance_valid(instance) or instance_uuid == source_uuid:
 			continue
 
-		var previous_bonus: int = instance.get_status_effect_amount(status_key)
-		if instance_uuid == active_holder_uuid and not active_holder_uuid.is_empty():
-			var delta: int = target_bonus - previous_bonus
-			if delta == 0:
-				continue
-			if previous_bonus > 0:
-				instance.clear_status_effect(status_key)
-			if target_bonus > 0:
-				instance.add_status_effect_silent(status_key, target_bonus)
+		var is_holder: bool = (instance_uuid == active_holder_uuid and not active_holder_uuid.is_empty())
+		var desired_bonus: int = target_bonus if is_holder else 0
+		var rec_res: AuraEvaluator.ReconcileResult = AuraEvaluator.reconcile_aura(
+			instance, aura_key, desired_bonus, desired_bonus,
+			source_uuid, AuraEvaluator.KIND_GOLDEN_SEAL,
+			{"silent": true, "emit_stat_triggers": true},
+			battle_manager
+		)
+		if not rec_res.changed:
+			continue
 
-			var old_hp: int = instance.current_hp
-			var old_pwr: int = instance.current_pwr
-			var action_type: StringName = C.ACTION_BUFF if delta > 0 else C.ACTION_DEBUFF
-
-			var new_hp = battle_manager.apply_stat_delta(instance, "hp", delta, source_uuid, action_type, false, &"", &"", {}, C.BUFF_SUBGROUP_CONDITIONAL)
-			var new_pwr = battle_manager.apply_stat_delta(instance, "pwr", delta, source_uuid, action_type, false, &"", &"", {}, C.BUFF_SUBGROUP_CONDITIONAL)
-
-			holder_updated = true
-			var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"golden_seal_scaling")
-			var holder_name: String = BattleHelpers.get_instance_display_name(instance)
+		holder_updated = true
+		var ability_id: StringName = (context.ability_id if context.ability_id != &"" else &"golden_seal_scaling")
+		var holder_name: String = BattleHelpers.get_instance_display_name(instance)
+		var visual_source: String = active_holder_uuid if is_holder else instance_uuid
+		if is_holder:
 			var gold_held: int = GameManager.run_state.gold if is_instance_valid(GameManager.run_state) else 0
-
 			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "Golden Seal adjusts %s: %+d HP / %+d PWR (%d Gold held)" % [holder_name, delta, delta, gold_held]
+				"text": "Golden Seal adjusts %s: %+d HP / %+d PWR (%d Gold held)" % [holder_name, rec_res.delta_hp, rec_res.delta_pwr, gold_held]
 			}))
-			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": active_holder_uuid,
-				"target_uuids": [instance_uuid],
-				"ability_id": ability_id,
-				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
-				"ability_holder_uuid": source_uuid,
-				"visual_payload": CombatPayload.both_stats_change(
-					active_holder_uuid, delta, delta,
-					[old_hp], [new_hp],
-					[old_pwr], [new_pwr]
-				)
-			}))
-		elif previous_bonus > 0:
-			# Unequipped or moved from this previous holder: remove previously applied scaling
-			instance.clear_status_effect(status_key)
-			var old_hp: int = instance.current_hp
-			var old_pwr: int = instance.current_pwr
-			var new_hp = battle_manager.apply_stat_delta(instance, "hp", -previous_bonus, source_uuid, C.ACTION_DEBUFF, false, &"", &"", {}, C.BUFF_SUBGROUP_CONDITIONAL)
-			var new_pwr = battle_manager.apply_stat_delta(instance, "pwr", -previous_bonus, source_uuid, C.ACTION_DEBUFF, false, &"", &"", {}, C.BUFF_SUBGROUP_CONDITIONAL)
-
-			holder_updated = true
-			var holder_name: String = BattleHelpers.get_instance_display_name(instance)
+		else:
 			result.add_event(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {
-				"text": "Golden Seal unequipped from %s: -%d HP / -%d PWR" % [holder_name, previous_bonus, previous_bonus]
+				"text": "Golden Seal unequipped from %s: %+d HP / %+d PWR" % [holder_name, rec_res.delta_hp, rec_res.delta_pwr]
 			}))
-			result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
-				"source_uuid": instance_uuid,
-				"target_uuids": [instance_uuid],
-				"ability_id": &"golden_seal_scaling",
-				"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
-				"ability_holder_uuid": source_uuid,
-				"visual_payload": CombatPayload.both_stats_change(
-					instance_uuid, -previous_bonus, -previous_bonus,
-					[old_hp], [new_hp],
-					[old_pwr], [new_pwr]
-				)
-			}))
+		result.add_event(CombatEvent.new(CombatEvent.Type.BUFF, {
+			"source_uuid": visual_source,
+			"target_uuids": [instance_uuid],
+			"ability_id": ability_id,
+			"buff_subgroup": C.BUFF_SUBGROUP_CONDITIONAL,
+			"ability_holder_uuid": source_uuid,
+			"visual_payload": CombatPayload.both_stats_change(
+				visual_source, rec_res.delta_hp, rec_res.delta_pwr,
+				[rec_res.old_hp], [rec_res.new_hp],
+				[rec_res.old_pwr], [rec_res.new_pwr]
+			)
+		}))
 
 	if not holder_updated:
 		return EffectResult.empty()

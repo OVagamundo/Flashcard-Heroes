@@ -17,12 +17,9 @@ func validate() -> bool:
 
 func execute() -> void:
 	var event_log: Dictionary = GameManager.simulate_dojo_training(token_cost)
-	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)
+	var utg := Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false) as UnitTrainingGround
 	if is_instance_valid(utg) and not ActionQueue.is_headless_mode():
-		if utg.has_method("play_transaction_log"):
-			utg.play_transaction_log(event_log)
-		elif utg.has_method("execute_train_visuals"):
-			utg.execute_train_visuals(token_cost, event_log.get("roll", -1))
+		utg.play_transaction_log(event_log)
 
 func yields_for_visuals() -> bool:
 	var utg = Engine.get_main_loop().root.find_child("UnitTrainingGround", true, false)

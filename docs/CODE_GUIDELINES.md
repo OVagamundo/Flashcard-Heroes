@@ -15,12 +15,13 @@ Flashcard Heroes uses a **Hybrid Architecture** that strictly separates "Truth" 
     *   **Status Effects** (Burn, Spikes, Armor) are tracked in the `status_effects` dictionary and converted dynamically into status components.
 *   **The Container (`Inventory`, `Lineup`) is just a List.** It only holds UUIDs. It *never* owns data.
 *   **Effective Stat Calculation**: Never assume standard stats are static. Use `get_effective_starting_hp()` and `get_effective_starting_pwr()` to query the fully resolved stats from the aggregated component stack.
+*   **Derived Continuous Auras (`AuraEvaluator`)**: Conditional board/trinket/trait stat bonuses must be represented as `GachaBallComponent` entries with `source_type == &"AURA"` evaluated by `AuraEvaluator`, never as fake `status_effects`, fake `dynamic_tags`, or `set_meta` flags. Merging filters out `&"AURA"` components automatically and recomputes derived auras cleanly.
 *   **No Caching:** Never cache properties like `current_hp` in localized variables for longer than a single function scope. Always query the instance.
 
 ### 1.2 The Atomic Transaction
 Any operation that moves an instance (Equip, Move, Swap) **MUST** update both the Truth and the Index in a single, atomic transaction.
 *   **Incorrect:** Removing from `Inventory A` then adding to `Inventory B` manually.
-*   **Correct:** using `InventoryOperations.move_item(uuid, from_loc, to_loc)`.
+*   **Correct:** using `BattleState.execute_transfer(...)` / `InventoryOperations` atomic routines.
 
 ### 1.3 The Unified Command Pipeline (Command Pattern)
 No out-of-combat UI controller or event handler may directly mutate `RunState` or inventory contents.
@@ -88,16 +89,16 @@ Combat is a pre-recorded movie.
 
 ### 3.2 The Async Pattern (Management Phase)
 During the Management phase, actions like drawing units or merging do NOT use the sequential VCR.
-*   **Simulation** runs the action instantly and returns a localized event chain.
-*   **Presentation** plays this chain asynchronously (`animator.play_async_chain()`).
+*   **Simulation** runs the action instantly and returns a localized event chain (`Array[CombatEvent]`).
+*   **Presentation** plays this chain asynchronously through `BattleAnimator.play_management_sequence(...)` / `BattleManager.resolve_management_effects_and_animate(...)`.
 *   **Implication:** Multiple visual actions (like rapid-fire drawing) overlap and execute in parallel, completely decoupled from the strict sequential turn log.
 
 ### 3.3 The Snapshot Rule (Combat Phase)
-During the `COMBAT` phase, the UI must **NEVER** query the live `GachaBallInstance`.
+During the `COMBAT` phase and active VCR playback, the UI (including inspection windows) must **NEVER** query the live `GachaBallInstance`.
 *   **Why?** The live instance is already at the "End of Turn" state (damaged/dead).
-*   **How:** The UI uses a **Visual Snapshot** captured before the turn started.
-*   ❌ **Banned in UI:** `BattleManager.get_instance(id)`
-*   ✅ **Allowed:** `_visual_snapshot[id]`
+*   **How:** `BattleAnimator` steps a pure `VisualSnapshotStore` (`begin_playback`, `apply_event`, `end_playback`) in lockstep with `CombatEvent`s. Views and `WindowManager` read strictly from `VisualSnapshotStore`, `VisualDataAdapter.create_board_snapshot(...)`, and `CombatPayload` fields.
+*   ❌ **Banned in UI:** `BattleManager.get_instance(id)` during VCR playback
+*   ✅ **Allowed:** Reading `VisualSnapshotStore`, `CombatPayload` fields, and captured board snapshot dictionaries
 
 ### 3.4 The Puppet Mode (Orchestration)
 During complex animation sequences (like a potion usage or combat event), the Data Model ("Truth") updates instantly, but visuals must animate.
@@ -121,7 +122,7 @@ Every reaction has a strict numeric priority defined in `Constants.gd`.
 *   `PRIORITY_TRINKET_SUMMON` (210) > `PRIORITY_ITEM_SUMMON` (200).
 *   **Rule:** Always explicitly define priority in `.tres` files if the ability reacts to an event.
 
-### 4.2 Ownerless Trinkets
+### 4.3 Ownerless Trinkets
 Trinkets are not "held" by units in the simulation sense (even if the UI shows them there).
 *   **Context:** `source_uuid` is always `""` (empty string).
 *   **Team Check:** You **MUST** use `context.team` (or `fainting_ally_team`) to determine which side owns the trinket.
@@ -132,14 +133,12 @@ Trinkets are not "held" by units in the simulation sense (even if the UI shows t
 
 1.  **Never `await` in Simulation:** The simulation must be synchronous and instant. `await` breaks the VCR generation.
 2.  **Never Return Primitives from Effects:** Effects must return `EffectResult` objects. Returning raw `int` or `bool` causes crashes in the animation loop.
-3.  **Never Defensive Code:** Do not use `if is_instance_valid(x): return`. Use `assert(is_instance_valid(x))` and crash. We fail fast to find bugs, we don't hide them.
-2.  **Never Defensive Code:** Do not use `if is_instance_valid(x): return`. Use `assert(is_instance_valid(x))` and crash. We fail fast to find bugs, we don't hide them.
-3.  **Never Modify Core for One Ability:** If you need to change `BattleManager.gd` for a specific trinket, your design is wrong. Use the existing Event/Trigger system.
-4.  **Never Mix Logic and Visuals:** If your script imports `Control` or `Sprite2D`, it CANNOT contain combat logic. If your script imports `GachaBallInstance`, it CANNOT contain visual code.
-5.  **Never Leak Engine Resources:** When destroying nodes (`queue_free`), ALWAYS ensure that any active `Tween` or `SceneTreeTimer` is explicitly killed or properly bound (`tween.bind_node(self)`). Orphaned tweens holding references to freed nodes will cause severe memory leaks and desyncs.
-
-6.  **Never Assume Existence:** Do not call a function (e.g. `enqueue_reaction`) unless you have verified it exists in the definition file.
-7.  **Never Leave Zombies:** When removing a unit, ALWAYS use `bm_remove_instance`. Never use `container.set_uuid(i, "")` directly.
+3.  **Never Defensive Code:** Do not use duck-typing guards (`has_method(...)`, `has_signal(...)`), redundant autoload/self guards (`is_instance_valid(self)`, `is_instance_valid(ActionQueue)`), or silent `if is_instance_valid(x): return` masks on required contracts. Use strict static typing and `assert(...)` so broken contracts fail fast with an actionable stack trace.
+4.  **Never Modify Core for One Ability:** If you need to change `BattleManager.gd` for a specific trinket, your design is wrong. Use the existing Event/Trigger system.
+5.  **Never Mix Logic and Visuals:** If your script imports `Control` or `Sprite2D`, it CANNOT contain combat logic. If your script imports `GachaBallInstance`, it CANNOT contain visual code.
+6.  **Never Leak Engine Resources:** When destroying nodes (`queue_free`), ALWAYS ensure that any active `Tween` or `SceneTreeTimer` is explicitly killed or properly bound (`node.create_tween()`). Orphaned tweens holding references to freed nodes will cause severe memory leaks and desyncs.
+7.  **Never Assume Existence:** Do not call a function (e.g. `enqueue_effect_request`) unless you have verified it exists in the definition file.
+8.  **Never Leave Zombies:** When removing a unit, ALWAYS use `bm_remove_instance`. Never use `container.set_uuid(i, "")` directly.
 
 ---
 
@@ -188,9 +187,9 @@ Before creating ANY new resource (`.tres`) or script (`.gd`):
 
 ### 8.2 The "Copy First" Workflow
 When implementing content (Units, Items, Recipes, Abilities):
-1.  **USE THE WORKFLOW**: Check `.agent/workflows/implement_new_content.md` for the mandatory checklist.
+1.  **USE THE SKILL**: Check `.agents/skills/implement-content/SKILL.md` for the mandatory checklist.
 2.  **Search**: Find a similar existing item.
-3.  **Read**: `view_file` the existing item.
+3.  **Read**: Read the existing item and backing `.gd` script.
 4.  **Replicate**: Create your new item using the *exact same structure* as the existing one, changing only the values.
 
 > [!CRITICAL]

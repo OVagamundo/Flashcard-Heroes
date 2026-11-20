@@ -15,8 +15,8 @@ func validate() -> bool:
 	return prize_index >= 0
 
 func execute() -> void:
-	var rs = Engine.get_main_loop().root.find_child("RestSite", true, false)
-	if is_instance_valid(rs) and not ActionQueue.is_headless_mode() and rs.has_method("execute_upgrade_visuals"):
+	var rs := Engine.get_main_loop().root.find_child("RestSite", true, false) as ResourceSite
+	if is_instance_valid(rs) and not ActionQueue.is_headless_mode():
 		rs.execute_upgrade_visuals(prize_index)
 	else:
 		# Direct data mutation in headless or decoupled mode

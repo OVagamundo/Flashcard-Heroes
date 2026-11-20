@@ -24,9 +24,8 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 		# Fallback: Still play death at source's current position if we have a view
 		var source_view = animator._visual_registry.get(source_uuid)
 		if is_instance_valid(source_view):
-			if SignalBus.has_signal("unit_death_fade"):
-				SignalBus.emit_signal("unit_death_fade", source_uuid, false)
-				await animator.wait_for_animation_completion("death_fade", source_uuid)
+			SignalBus.unit_death_fade.emit(source_uuid, false)
+			await animator.wait_for_animation_completion("death_fade", source_uuid)
 			if animator._visual_registry.has(source_uuid):
 				animator._visual_registry.erase(source_uuid)
 		return
@@ -53,17 +52,15 @@ func execute(animator: Node, targets: Array[String], payload: CombatPayload) -> 
 	await _apply_kamikaze_damage(animator, target_uuid, amount, payload)
 	
 	# 3. DEATH AT TARGET - No return, die where we are
-	if SignalBus.has_signal("unit_death_fade"):
-		SignalBus.emit_signal("unit_death_fade", source_uuid, true)
-		await animator.wait_for_animation_completion("death_fade", source_uuid)
+	SignalBus.unit_death_fade.emit(source_uuid, true)
+	await animator.wait_for_animation_completion("death_fade", source_uuid)
 	
 	# Cleanup from registry
 	if animator._visual_registry.has(source_uuid):
 		animator._visual_registry.erase(source_uuid)
 		
 	# Departure to the Discard for player unit
-	if animator.has_method("animate_player_death_departure"):
-		await animator.animate_player_death_departure(source_uuid, target_position, payload)
+	await animator.animate_player_death_departure(source_uuid, target_position, payload)
 
 func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, payload: CombatPayload) -> void:
 	var targets_new_hp = payload.targets_new_hp
@@ -104,10 +101,8 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 		animator.apply_hp_delta(target_uuid, -hp_damage, new_hp)
 	
 	# Visual effects
-	if SignalBus.has_signal("unit_color_flash"):
-		SignalBus.emit_signal("unit_color_flash", target_uuid, Color.WHITE, AnimationConstants.FLASH_FADE_DURATION)
-	if SignalBus.has_signal("unit_deform"):
-		SignalBus.emit_signal("unit_deform", target_uuid, &"HIT_IMPACT")
+	SignalBus.unit_color_flash.emit(target_uuid, Color.WHITE, AnimationConstants.FLASH_FADE_DURATION)
+	SignalBus.unit_deform.emit(target_uuid, &"HIT_IMPACT")
 	
 	# Determine recoil direction
 	var recoil_direction = Vector2.LEFT
@@ -115,8 +110,7 @@ func _apply_kamikaze_damage(animator: Node, target_uuid: String, amount: int, pa
 		if target_view.icon_rect and target_view.icon_rect.flip_h:
 			recoil_direction = Vector2.RIGHT
 	
-	if SignalBus.has_signal("unit_move"):
-		SignalBus.emit_signal("unit_move", target_uuid, &"RECOIL", recoil_direction)
+	SignalBus.unit_move.emit(target_uuid, &"RECOIL", recoil_direction)
 	
 	# SPIKES: When target has Spikes, decay stacks (attacker is dead so no damage shown)
 	for spikes_data in spikes_data_list:

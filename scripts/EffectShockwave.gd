@@ -66,6 +66,7 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	# - Player attacks: cascade from frontmost (index 0) toward back (higher indices) = +1
 	# - Enemy attacks: cascade from frontmost (highest index) toward back (lower indices) = -1
 	var cascade_direction: int = 1 if is_player_unit else -1
+	var pre_damage_events: Array[CombatEvent] = []
 	
 	for offset in range(cascade_depth + 1): # 0, 1, 2 = frontmost + 2 behind
 		var target_slot = frontmost_slot + (offset * cascade_direction)
@@ -89,17 +90,18 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 		
 		var damage_amount = int(current_damage)
 		
-		# Trigger on_before_damage for this target (defensive abilities like Defensive Stance)
+		# Trigger on_before_damage for this target inside an isolated reaction scope
 		var before_attack_context := TriggerContext.new()
 		before_attack_context.source_uuid = target.ball_uuid
 		before_attack_context.defender_uuid = target.ball_uuid
 		before_attack_context.attacker_uuid = source_uuid
 		before_attack_context.target_initial_hp = target.current_hp
 		before_attack_context.is_simulation = true
+		var before_damage_scope: int = battle_manager.begin_reaction_scope()
 		AbilityResolver.process_trigger(C.TRIGGER_BEFORE_TAKING_DAMAGE, before_attack_context)
-		
-		# Drain the on_before_damage reactions immediately (like BasicAttackEffect does)
-		battle_manager.drain_pending_reactions_inline(0)
+		var scoped_events: Array[CombatEvent] = battle_manager.drain_reaction_scope(before_damage_scope)
+		if not scoped_events.is_empty():
+			pre_damage_events.append_array(scoped_events)
 		
 		# Add to damage data - CombatSimulator will handle applying damage and triggering on_hurt
 		damage_data.append(EffectResult.CascadeRequestItem.new(
@@ -114,8 +116,10 @@ func execute(source_uuid: String, targets: Array[String], battle_manager: Node, 
 	if damage_data.is_empty():
 		return EffectResult.empty()
 
-	# Return EffectResult with cascade_request for CombatSimulator to process
+	# Return EffectResult with cascade_request and any scoped pre-damage reaction events
 	var result := EffectResult.new()
+	for evt in pre_damage_events:
+		result.add_event(evt)
 	var damage_type = parameters.get("damage_type", C.DamageType.MELEE)
 	result.cascade_request = EffectResult.CascadeRequest.new(
 		damage_type,

@@ -39,59 +39,6 @@ static func trigger_turn_start_abilities(current_turn: int) -> bool:
 	return true
 
 # ============================================================================
-# TURN END - STATUS EFFECTS
-# ============================================================================
-
-## Process burn damage for all units. Returns array of CombatEvents.
-static func process_burn_damage(state: BattleState, get_display_name_callback: Callable, _apply_stat_delta_callback: Callable) -> Array[CombatEvent]:
-	var events: Array[CombatEvent] = []
-	
-	var all_units := state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.PLAYER_LINEUP)
-	all_units.append_array(state.get_instances_in_container(C.BATTLE_CONTAINER_TAGS.ENEMY_LINEUP))
-	
-	for unit in all_units:
-		if unit.current_hp <= 0:
-			continue # Skip dead units
-		
-		var burn_stacks: int = unit.get_status_effect_amount(&"burn")
-		if burn_stacks > 0:
-			var damage := burn_stacks
-			var old_hp := unit.current_hp
-			var old_armor := unit.get_status_effect_amount(&"armor")
-			
-			# Direct HP Damage (Bypasses Armor)
-			# We manually subtract HP instead of using apply_stat_delta("hp") which consumes armor
-			var damage_to_take = min(unit.current_hp, damage)
-			unit.current_hp -= damage_to_take
-			
-			var new_hp: int = unit.current_hp
-			var armor_consumed: int = 0 # No armor consumed for burn (Direct Damage)
-			var new_armor: int = old_armor
-			
-			var max_hp := 0
-			var unit_def := unit.get_definition()
-			if is_instance_valid(unit_def):
-				max_hp = unit_def.base_hp
-			
-			var unit_name: String = get_display_name_callback.call(unit)
-			events.append(CombatEvent.new(CombatEvent.Type.LOG_MESSAGE, {"text": "%s takes %d burn dmg" % [unit_name, damage]}))
-			events.append(CombatEvent.new(CombatEvent.Type.DAMAGE, {
-				"source_uuid": "",
-				"target_uuids": [unit.ball_uuid],
-				"visual_payload": _make_burn_payload(damage, old_hp, new_hp, max_hp, old_armor, new_armor, armor_consumed)
-			}))
-
-	
-	return events
-
-static func _make_burn_payload(damage: int, old_hp: int, new_hp: int, max_hp: int, old_armor: int, new_armor: int, armor_consumed: int) -> CombatPayload:
-	var payload := CombatPayload.damage("", -damage, [old_hp], [new_hp], [old_armor], [new_armor], [armor_consumed])
-	payload.skip_bump = true
-	payload.is_burn_damage = true
-	payload.targets_max_hp = [max_hp] as Array[int]
-	return payload
-
-# ============================================================================
 # TURN END ABILITIES
 # ============================================================================
 
